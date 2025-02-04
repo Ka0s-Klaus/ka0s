@@ -11,8 +11,8 @@ on:
 env:
     KAOS_CODE: ""
     KAOS_EVENT_NAME: ${{ github.event_name }}
-jobs:
-  run:
+jobs: 
+  job-core:
     runs-on: ubuntu-latest
     steps:
       - id: repo
@@ -66,3 +66,23 @@ jobs:
       - id: view
         name: Ver JSON
         run: cat event_data.json
+        
+  handle-success:
+    runs-on: ubuntu-latest
+    needs: [job-core]
+    if: ${{ success() }}
+    steps:
+      - id: handle-success-execution
+        name: handle-success-execution
+        run: |
+          # Si todo ha ido correcto añadimos el contenido del fichero 
+          echo "Todo ha ido bien"
+  handle_failure:
+          runs-on: ubuntu-latest
+          needs: [job-core, handle-success]
+          if: ${{ failure() }} 
+          steps:
+            - id: handle-failure-execution
+              name: handle-failure-execution
+              run: |
+                echo "Error detected in process"
