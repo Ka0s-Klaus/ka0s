@@ -9,13 +9,14 @@ on:
   watch: {} # Ejecutar cuando se hace un watch
   repository_dispatch: {} # Ejecutar cuando se hace un dispatch  https://proyecto.kaos.io
 env:
-    KAOS_CODE: ""
+    KAOS_CODE: ${{ github.run_id }}
     KAOS_EVENT_NAME: ${{ github.event_name }}
     KAOS_ACTION: ${{ github.action }}
 jobs: 
   job-core:
     runs-on:
         group: ka0s
+    if: ${{ !contains(github.event.head_commit.message, '[Ka0S] ') }} 
     steps:
       - id: repo
         name: Checkout code
@@ -24,7 +25,6 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.KAOS_REPO_TOKEN}}
-
       - name: Crear JSON
         id: crear_json
         run: |
@@ -91,3 +91,14 @@ jobs:
               name: handle-failure-execution
               run: |
                 echo "Error detected in process"
+  end-workflow:
+    runs-on: 
+      group: ka0s
+    needs: [job-core, handle-success, handle_failure]
+    if: ${{ always() && !contains(github.event.head_commit.message, '[Ka0S] ') }} 
+    steps:
+      - id: end-process
+        name: Finaliza el workflow
+        run: |
+          echo "End process"
+          gh workflow run inspector.yaml --ref ${{ github.ref }} -f kaos-issue-id="" -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start=""
