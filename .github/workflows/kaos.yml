@@ -11,9 +11,11 @@ on:
 env:
     KAOS_CODE: ""
     KAOS_EVENT_NAME: ${{ github.event_name }}
+    KAOS_ACTION: ${{ github.action }}
 jobs: 
   job-core:
-    runs-on: ubuntu-latest
+    runs-on:
+        group: ka0s
     steps:
       - id: repo
         name: Checkout code
@@ -30,6 +32,7 @@ jobs:
           case "${{ env.KAOS_EVENT_NAME }}" in
             "push")
               echo "{\"event\": \"push\", \"ref\": \"${{ github.ref }}\", \"sha\": \"${{ github.sha }}\"}" > event_data.json # Ejemplo: {"event": "push", "ref": "refs/heads/main", "sha": "abc123"}
+              echo "Variable github.action=${{ github.action }}"
               ;;
             "pull_request")
               echo "{\"event\": \"pull_request\", \"action\": \"${{ github.event.action }}\", \"number\": \"${{ github.event.number }}\"}" > event_data.json # Ejemplo: {"event": "pull_request", "action": "opened", "number": "42"}
@@ -68,7 +71,8 @@ jobs:
         run: cat event_data.json
         
   handle-success:
-    runs-on: ubuntu-latest
+    runs-on:
+        group: ka0s
     needs: [job-core]
     if: ${{ success() }}
     steps:
@@ -78,7 +82,8 @@ jobs:
           # Si todo ha ido correcto añadimos el contenido del fichero 
           echo "Todo ha ido bien"
   handle_failure:
-          runs-on: ubuntu-latest
+          runs-on:
+            group: ka0s
           needs: [job-core, handle-success]
           if: ${{ failure() }} 
           steps:
