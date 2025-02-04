@@ -1,0 +1,44 @@
+version: "1.0"
+application:
+  name: "MiAplicacion"
+  description: "Descripción breve de aplicación"
+  environment: "producción"
+  settings:
+    debug: false
+    logging:
+      level: "info"
+      file: "/var/log/miaplicacion.log"
+  database:
+    host: "localhost"
+    port: 5432
+    name: "miaplicacion_db"
+    user: "usuario_db"
+    password: "contraseña_db"
+  services:
+    - name: "servicio1"
+      url: "http://servicio1.ejemplo.com"
+      timeout: 30
+    - name: "servicio2"
+      url: "http://servicio2.ejemplo.com"
+      timeout: 30
+  cache:
+    type: "redis"
+    host: "localhost"
+    port: 6379
+    ttl: 3600
+  security:
+    encryption_key: "mi_clave_secreta"
+    allowed_ips:
+      - "192.168.1.1"
+      - "192.168.1.2"
+  notifications:
+    email:
+      enabled: true
+      smtp_server: "smtp.ejemplo.com"
+      smtp_port: 587
+      username: "usuario_email"
+      password: "contraseña_email"
+    sms:
+      enabled: false
+      provider: "twilio"
+      api_key: "mi_api_key"
