@@ -1,0 +1,68 @@
+name: Ka0s 
+on: 
+  workflow_dispatch: {} # Ejecutar manualmente
+  push: {} # Ejecutar cuando se hace un push en funcion de la rama
+  pull_request: {} # Ejecutar cuando se hace un pull request en funcion de la rama
+  issues: {} # Ejecutar cuando se crea un issue proyecto y la organizacion
+  issue_comment: {} # Ejecutar cuando se comenta un issue comprobar que exista
+  release: {} # Ejecutar cuando se crea un release
+  watch: {} # Ejecutar cuando se hace un watch
+  repository_dispatch: {} # Ejecutar cuando se hace un dispatch  https://proyecto.kaos.io
+env:
+    KAOS_CODE: ""
+    KAOS_EVENT_NAME: ${{ github.event_name }}
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - id: repo
+        name: Checkout code
+        if: ${{ always() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN}}
+
+      - name: Crear JSON
+        id: crear_json
+        run: |
+          echo "{}" > event_data.json
+          case "${{ env.KAOS_EVENT_NAME }}" in
+            "push")
+              echo "{\"event\": \"push\", \"ref\": \"${{ github.ref }}\", \"sha\": \"${{ github.sha }}\"}" > event_data.json # Ejemplo: {"event": "push", "ref": "refs/heads/main", "sha": "abc123"}
+              ;;
+            "pull_request")
+              echo "{\"event\": \"pull_request\", \"action\": \"${{ github.event.action }}\", \"number\": \"${{ github.event.number }}\"}" > event_data.json # Ejemplo: {"event": "pull_request", "action": "opened", "number": "42"}
+              ;;
+            "issues")
+              echo "{\"event\": \"issues\", \"action\": \"${{ github.event.action }}\", \"issue\": \"${{ github.event.issue.number }}\"}" > event_data.json # Ejemplo: {"event": "issues", "action": "opened", "issue": "99"}
+              ;;
+            "issue_comment")
+              echo "{\"event\": \"issue_comment\", \"action\": \"${{ github.event.action }}\", \"comment\": \"${{ github.event.comment.id }}\"}" > event_data.json # Ejemplo: {"event": "issue_comment", "action": "created", "comment": "123456"}
+              ;;
+            "create")
+              echo "{\"event\": \"create\", \"ref\": \"${{ github.ref }}\", \"ref_type\": \"${{ github.event.ref }}\"}" > event_data.json # Ejemplo: {"event": "create", "ref": "refs/tags/v1.0", "ref_type": "tag"}
+              ;;
+            "delete")
+              echo "{\"event\": \"delete\", \"ref\": \"${{ github.ref }}\", \"ref_type\": \"${{ github.event.ref }}\"}" > event_data.json # Ejemplo: {"event": "delete", "ref": "refs/heads/feature-branch", "ref_type": "branch"}
+              ;;
+            "release")
+              echo "{\"event\": \"release\", \"action\": \"${{ github.event.action }}\", \"release\": \"${{ github.event.release.tag_name }}\"}" > event_data.json # Ejemplo: {"event": "release", "action": "published", "release": "v1.0"}
+              ;;
+            "watch")
+              echo "{\"event\": \"watch\", \"action\": \"${{ github.event.action }}\"}" > event_data.json # Ejemplo: {"event": "watch", "action": "started"}
+              ;;
+            "repository_dispatch")
+              echo "{\"event\": \"repository_dispatch\", \"action\": \"${{ github.event.action }}\"}" > event_data.json # Ejemplo: {"event": "repository_dispatch", "action": "custom-event"}
+              ;;
+            "workflow_dispatch")
+              echo "{\"event\": \"workflow_dispatch\"}" > event_data.json # Ejemplo: {"event": "workflow_dispatch"}
+              ;;
+            *)
+              echo "{\"event\": \"unknown\"}" > event_data.json # Ejemplo: {"event": "unknown"}
+              ;;
+          esac
+
+      - id: view
+        name: Ver JSON
+        run: cat event_data.json
