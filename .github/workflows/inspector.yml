@@ -44,12 +44,12 @@ jobs:
         name: Upload Files
         run: |
           echo "Uploading files to the repository..."
-          #git config --global user.name "${{ secrets.KAOS_USER_NAME }}"
-          #git config --global user.email "${{ secrets.KAOS_USER_EMAIL }}"
-          #git pull
-          #git add ${{ env.KAOS_OUTPUT_EXECUTION }}*
-          #git commit -m "[Ka0S] Uploading resume execution files to the repository..."
-          #git push origin ${{ env.BRANCH_NAME }}
+          git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
+          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
+          git pull
+          git add ${{ env.KAOS_OUTPUT_EXECUTION }}
+          git commit -m "[Ka0S] Uploading resume execution files to the repository..."
+          git push origin ${{ github.ref }}
   handle-success:
     runs-on:
       group: ka0s
@@ -72,7 +72,7 @@ jobs:
   handle_failure:
     runs-on:
       group: ka0s
-    needs: [job-core]
+    needs: [job-core, handle-success]
     if: ${{ failure() }}
     steps:
       - id: handle-failure-execution
