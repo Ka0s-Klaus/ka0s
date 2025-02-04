@@ -35,6 +35,8 @@ jobs:
           token: ${{ secrets.KAOS_REPO_TOKEN }}
       - id: check-data
         name: Check Information
+        env:
+          GH_TOKEN: ${{ secrets.KAOS_ACTIONS_TOKEN }}
         run: |
           echo "Checking the execution of the workflow..."
           gh run view ${{ github.event.inputs.kaos-workflow-id }} --log > ${{ env.KAOS_OUTPUT_EXECUTION }}${{ github.event.inputs.kaos-workflow-id }}.log
