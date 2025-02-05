@@ -28,7 +28,7 @@ permissions:
 
 env:
   KAOS_MODULE: "[Ka0S] MDLINT"
-  GH_TOKEN: ${{ secrets.KAOS_TOKEN }}
+  GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
   FILE_ERROR: ""
   KAOS_MD_CONFIG: "core/config/.markdownlint.json"
   KAOS_PATH_RESUME: "core/results/"
@@ -38,15 +38,15 @@ env:
   
 jobs:
   md-lint-process:
-    runs-on: 
-      group: kaos-mdlint
+    runs-on: ubuntu-latest
+    #  group: kaos-mdlint
 
     steps:
       - id: repo
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.KAOS_TOKEN }}
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
     
       - id: node
         uses: actions/setup-node@v4
@@ -89,14 +89,14 @@ jobs:
                 fi
   
   handle_failure:
-    runs-on: 
-      group: kaos-issue
+    runs-on: ubuntu-latest
+    # group: kaos-issue
     needs: [md-lint-process]
     if: ${{ failure() }}
     steps:
       - id: check-execution
         env:
-          GH_TOKEN: ${{ secrets.KAOS_TOKEN }}
+          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
         run: |
           echo "Error detected in ${{ env.KAOS_MODULE }}, creating issue..."
           KAOS_ISSUE_TITLE="${{ env.KAOS_MODULE }} Module failed in ${{ github.run_id }}"
