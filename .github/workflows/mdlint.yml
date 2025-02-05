@@ -1,0 +1,131 @@
+name: Ka0s Markdown Lint
+
+on:
+  workflow_dispatch:
+    inputs:
+      kaos-origin:
+        description: 'Dispatcher Workflow Run ID'
+        default: ""
+        required: true
+      kaos-files:
+        description: 'Files Involved'
+        default: ""
+        required: true
+      kaos-issue-id:
+        description: 'Issue ID'
+        default: "Kaos Issue ID"
+        required: true
+      kaos-user-start:
+        description: 'User initiated process'
+        default: ""
+        required: true
+  
+permissions:
+  contents: write
+  actions: write
+  issues: write
+  pull-requests: write
+
+env:
+  KAOS_MODULE: "[Ka0S] MDLINT"
+  GH_TOKEN: ${{ secrets.KAOS_TOKEN }}
+  FILE_ERROR: ""
+  KAOS_MD_CONFIG: "core/config/.markdownlint.json"
+  KAOS_PATH_RESUME: "core/results/"
+  KAOS_REPO: "/actions-runner/_work/kaos/kaos"
+  KAOS_STEP_MODULE: ""
+  KAOS_CODE: ""
+  
+jobs:
+  md-lint-process:
+    runs-on: 
+      group: kaos-mdlint
+
+    steps:
+      - id: repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_TOKEN }}
+    
+      - id: node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+  
+      - id: markdownlint-cli2
+        run: |
+          npm install -g markdownlint-cli2
+  
+      - id: check-md
+        run: |
+            # Realizamos el check del documento md 
+                # Run markdownlint with the specified files and ignore rules
+                markdownlint-cli2 ${{ github.event.inputs.kaos-files }} --config ${{ env.KAOS_MD_CONFIG }} > ${{ env.KAOS_PATH_RESUME }}mdlint-results-${{ github.run_id }}.txt 2>&1 || true
+                # Check if exist errors in file
+                # Abre el fichero en modo lectura y lee todas las líneas
+                lines=$(cat ${{ env.KAOS_PATH_RESUME }}mdlint-results-${{ github.run_id }}.txt)
+                # Inicializa la variable summary_value
+                summary_value=""
+                # Busca la línea que contiene "Summary:"
+                while IFS= read -r line; do
+                    if [[ "$line" == *"Summary:"* ]]; then
+                        # Extrae el número después de "Summary:"
+                        summary_value=$(echo "$line" | awk -F'Summary: ' '{print $2}' | awk '{print $1}')
+                        break
+                    fi
+                done <<< "$lines"
+                # Comprueba si el valor es cero
+                if [ "$summary_value" == "0" ]; then
+                  echo "File ${{ env.KAOS_PATH_RESUME }}mdlint-results-${{ github.run_id }}.txt is empty and $file is content correct"
+                  KAOS_ISSUE_BODY="The ${{ env.KAOS_MODULE }} process (${{ github.event.inputs.kaos-origin }}) launch the check (${{ github.run_id }}) over file (${{ github.event.inputs.kaos-files }}) and its result has been SUCCESS. Please MERGE"
+                  gh workflow run issue.yaml --ref ${{ github.ref }} -f kaos-issue-title="" -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=comment -f kaos-issue-tag="" -f kaos-issue-id=${{ github.event.inputs.kaos-issue-id }}
+                  gh issue comment  ${{ github.event.inputs.kaos-issue-id }} -F ${{ env.KAOS_PATH_RESUME }}mdlint-results-${{ github.run_id }}.txt
+                else
+                  echo "File ${{ env.KAOS_PATH_RESUME }}mdlint-results-${{ github.run_id }}.txt is not empty and $file is content not correct and write commit info"
+                  KAOS_ISSUE_BODY="The ${{ env.KAOS_MODULE }} process (${{ github.event.inputs.kaos-origin }}) launch the check (${{ github.run_id }}) over file (${{ github.event.inputs.kaos-files }}) and its result has been FAILED, please check and solved it"
+                  gh workflow run issue.yaml --ref ${{ github.ref }} -f kaos-issue-title="" -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=comment -f kaos-issue-tag="" -f kaos-issue-id=${{ github.event.inputs.kaos-issue-id }} 
+                  gh issue comment  ${{ github.event.inputs.kaos-issue-id }} -F ${{ env.KAOS_PATH_RESUME }}mdlint-results-${{ github.run_id }}.txt
+                fi
+  
+  handle_failure:
+    runs-on: 
+      group: kaos-issue
+    needs: [md-lint-process]
+    if: ${{ failure() }}
+    steps:
+      - id: check-execution
+        env:
+          GH_TOKEN: ${{ secrets.KAOS_TOKEN }}
+        run: |
+          echo "Error detected in ${{ env.KAOS_MODULE }}, creating issue..."
+          KAOS_ISSUE_TITLE="${{ env.KAOS_MODULE }} Module failed in ${{ github.run_id }}"
+          KAOS_ISSUE_BODY=$(cat <<'EOF'
+          An error occurred in the execution Action workflow RunID: **${{ github.run_id }}**.
+          Initiated by #${{ github.event.inputs.kaos-user-start }} from issue number #${{ github.event.inputs.kaos-issue-id }}
+          **${{ env.KAOS_MODULE }}  Message:**
+          El error ha sido en : ${{ github.run_id }}
+          ejecute este comando en su consola y podrá consultar el fallo del trabajo
+          gh run view ${{  github.run_id }} --log-failed
+          \`\`\`
+          **Please check the job logs for ${{ secrets.KAOS_ACTIONS_URL }}${{ github.run_id }}**
+          \`\`\`
+          **Requested By:** ${{ github.event.inputs.kaos-user-start }}
+          **Workflow Name:** ${{ github.workflow }}
+          **Job Name:** ${{ github.job }}
+          **Run ID:** ${{ github.run_id }}
+          **Run Number:** ${{ github.run_number }}
+          **Repository:** ${{ github.repository }}
+          **Branch:** ${{ github.ref }}
+          **Launch by:** ${{ github.event.inputs.kaos-origin }}
+          **Files:** ${{ github.event.inputs.kaos-files }}
+          Please investigate the issue.
+          EOF
+          )
+          # Creamos la issue dado que ha fallado el modulo principal
+          gh workflow run issue.yaml --ref ${{ github.ref }} -f kaos-issue-title="$KAOS_ISSUE_TITLE" -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=create -f kaos-issue-tag="bug" -f kaos-user-start="${{ github.event.inputs.kaos-user-start }}"
+          # Buscamos el numero de la issue en funcion del titulo de la misma 
+          ISSUE_NUMBRE=$(gh issue list --limit 1 --state open --label bug --json number --jq '.[0].number')
+          # Añadimos el comentario a la issue que dispara el proceso
+          KAOS_ISSUE_BODY="Se ha generado la issue (#$ISSUE_NUMBRE) con el error detectado en el proceso ${{ env.KAOS_MODULE }} en el run ${{ github.run_id }}"
+          gh workflow run issue.yaml --ref ${{ github.ref }} -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=comment -f kaos-issue-tag="bug" -f kaos-issue-id=${{ github.event.inputs.kaos-issue-id }}
