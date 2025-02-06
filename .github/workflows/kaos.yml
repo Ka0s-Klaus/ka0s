@@ -14,8 +14,8 @@ env:
     KAOS_ACTION: ${{ github.action }}
 jobs: 
   job-core:
-    runs-on: ubuntu-latest
-    #    group: ka0s
+    runs-on:
+        group: ka0s
     if: ${{ !contains(github.event.head_commit.message, '[Ka0S] ') }} 
     steps:
       - id: repo
@@ -71,8 +71,8 @@ jobs:
         run: cat event_data.json
         
   handle-success:
-    runs-on: ubuntu-latest
-    #   group: ka0s
+    runs-on:
+        group: ka0s
     needs: [job-core]
     if: ${{ success() }}
     steps:
@@ -82,8 +82,8 @@ jobs:
           # Si todo ha ido correcto añadimos el contenido del fichero 
           echo "Todo ha ido bien"
   handle_failure:
-    runs-on: ubuntu-latest
-    #  group: ka0s
+    runs-on:
+        group: ka0s
     needs: [job-core, handle-success]
     if: ${{ failure() }} 
     steps:
@@ -92,8 +92,8 @@ jobs:
         run: |
                 echo "Error detected in process"
   end-workflow:
-    runs-on: ubuntu-latest
-    #  group: ka0s
+    runs-on:
+        group: ka0s
     needs: [job-core, handle-success, handle_failure]
     if: ${{ always() && !contains(github.event.head_commit.message, '[Ka0S] ') }} 
     env:
