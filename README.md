@@ -15,8 +15,8 @@ Albert Einstein dijo una vez: "... si tu intención es describir la verdad, hazl
 3. ¿Y cómo me lo puedo instalar?
 4. El equipo
 5. ¿Y si quiero contribuir con el proyecto?
-6. License
-7. Contact
+6. Licencia
+7. Contacto
 
 ## Nuestra filosofía
 
@@ -57,11 +57,11 @@ A fecha de hoy es tan secillo como seguir los pasos de:
 
 En estos momentos estamos trabajando en el proceso y el procedimiento para poder abrir la colaboración al proyecto de Ka0S. En breve estará disponible..
 
-## License
+## Licencia
 
 Information about the [license](./LICENSE) under which the project is distributed.
 
-## Contact
+## Contacto
 
 Contact information for questions or support.
 
