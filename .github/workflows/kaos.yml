@@ -14,8 +14,8 @@ env:
     KAOS_ACTION: ${{ github.action }}
 jobs: 
   job-core:
-    runs-on:
-        group: ka0s
+    runs-on: ubuntu-latest
+    #    group: ka0s
     if: ${{ !contains(github.event.head_commit.message, '[Ka0S] ') }} 
     steps:
       - id: repo
@@ -71,8 +71,8 @@ jobs:
         run: cat event_data.json
         
   handle-success:
-    runs-on:
-        group: ka0s
+    runs-on: ubuntu-latest
+    #   group: ka0s
     needs: [job-core]
     if: ${{ success() }}
     steps:
@@ -82,18 +82,18 @@ jobs:
           # Si todo ha ido correcto añadimos el contenido del fichero 
           echo "Todo ha ido bien"
   handle_failure:
-          runs-on:
-            group: ka0s
-          needs: [job-core, handle-success]
-          if: ${{ failure() }} 
-          steps:
-            - id: handle-failure-execution
-              name: handle-failure-execution
-              run: |
+    runs-on: ubuntu-latest
+    #  group: ka0s
+    needs: [job-core, handle-success]
+    if: ${{ failure() }} 
+    steps:
+      - id: handle-failure-execution
+        name: handle-failure-execution
+        run: |
                 echo "Error detected in process"
   end-workflow:
-    runs-on: 
-      group: ka0s
+    runs-on: ubuntu-latest
+    #  group: ka0s
     needs: [job-core, handle-success, handle_failure]
     if: ${{ always() && !contains(github.event.head_commit.message, '[Ka0S] ') }} 
     env:
@@ -103,4 +103,4 @@ jobs:
         name: Finaliza el workflow
         run: |
           echo "End process"
-          gh workflow run inspector.yml --ref 'main' -f kaos-issue-id="" -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start=""
+          #gh workflow run inspector.yml --ref 'main' -f kaos-issue-id="" -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start=""
