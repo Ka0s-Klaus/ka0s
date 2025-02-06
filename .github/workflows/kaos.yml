@@ -71,8 +71,8 @@ jobs:
         run: cat event_data.json
         
   handle-success:
-    runs-on:
-        group: ka0s
+    runs-on: ubuntu-latest
+    #   group: ka0s
     needs: [job-core]
     if: ${{ success() }}
     steps:
@@ -82,14 +82,14 @@ jobs:
           # Si todo ha ido correcto añadimos el contenido del fichero 
           echo "Todo ha ido bien"
   handle_failure:
-          runs-on: ubuntu-latest
-          #  group: ka0s
-          needs: [job-core, handle-success]
-          if: ${{ failure() }} 
-          steps:
-            - id: handle-failure-execution
-              name: handle-failure-execution
-              run: |
+    runs-on: ubuntu-latest
+    #  group: ka0s
+    needs: [job-core, handle-success]
+    if: ${{ failure() }} 
+    steps:
+      - id: handle-failure-execution
+        name: handle-failure-execution
+        run: |
                 echo "Error detected in process"
   end-workflow:
     runs-on: ubuntu-latest
