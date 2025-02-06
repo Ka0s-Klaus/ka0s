@@ -38,8 +38,8 @@ env:
   
 jobs:
   md-lint-process:
-    runs-on: ubuntu-latest
-    #  group: kaos-mdlint
+    runs-on:
+      group: kaos-mdlint
 
     steps:
       - id: repo
@@ -88,8 +88,8 @@ jobs:
                   #gh issue comment  ${{ github.event.inputs.kaos-issue-id }} -F ${{ env.KAOS_PATH_RESUME }}mdlint-results-${{ github.run_id }}.txt
                 fi
   handle-success:
-    runs-on: ubuntu-latest
-    #    group: ka0s
+    runs-on:
+      group: ka0s
     needs: [md-lint-process]
     if: ${{ success() }}
     steps:
@@ -99,8 +99,8 @@ jobs:
           # Si todo ha ido correcto añadimos el contenido del fichero 
           echo "Todo ha ido bien"
   handle_failure:
-    runs-on: ubuntu-latest
-    # group: kaos-issue
+    runs-on:
+      group: kaos-issue
     needs: [md-lint-process, handle-success]
     if: ${{ failure() }}
     steps:
