@@ -99,8 +99,15 @@ jobs:
     env:
         GH_TOKEN: ${{ secrets.KAOS_ACTIONS_TOKEN }}
     steps:
+      - id: repo
+        name: Checkout code
+        if: ${{ always() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
       - id: end-process
         name: Finaliza el workflow
         run: |
           echo "End process"
-          #gh workflow run inspector.yml --ref 'main' -f kaos-issue-id="" -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start=""
+          gh workflow run inspector.yml --ref 'main' -f kaos-issue-id="" -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start=""
