@@ -37,7 +37,7 @@ env:
   KAOS_CODE: ""
   
 jobs:
-  md-lint-process:
+  job-core:
     runs-on:
       group: ka0s
     steps:
@@ -86,7 +86,7 @@ jobs:
   handle-success:
     runs-on:
       group: ka0s
-    needs: [md-lint-process]
+    needs: [job-core]
     if: ${{ success() }}
     steps:
       - id: handle-success-execution
@@ -138,7 +138,7 @@ jobs:
   end-workflow:
     runs-on:
       group: ka0s
-    needs: [job-core, handle-success, handle_failure]
+    needs: [job-core, handle-success]
     if: ${{ always() }} 
     env:
       GH_TOKEN: ${{ secrets.KAOS_ACTIONS_TOKEN }}
