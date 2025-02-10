@@ -12,6 +12,8 @@ env:
     KAOS_CODE: ${{ github.run_id }}
     KAOS_EVENT_NAME: ${{ github.event_name }}
     KAOS_ACTION: ${{ github.action }}
+    KAOS_MODULE: "[Ka0S] kaos"
+
 jobs: 
   job-core:
     runs-on:
@@ -25,6 +27,18 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.KAOS_REPO_TOKEN }}
+
+      - id: validate
+        name: Validate file extensions
+        run: |
+          IFS=' ' read -r -a extensions <<< "${{ secrets.KAOS_CORE_FILES }}"
+          for file in $(git diff --name-only HEAD~1 HEAD); do
+          extension="${file##*.}"
+            if [[ ! " ${extensions[@]} " =~ " ${extension} " ]]; then
+              echo "File $file has an invalid extension: $extension"
+            fi
+          done
+
       - name: Crear JSON
         id: crear_json
         run: |
@@ -69,6 +83,73 @@ jobs:
       - id: view
         name: Ver JSON
         run: cat event_data.json
+      
+      - id: module
+        env:
+            modules: ${{ secrets.KAOS_CORE_MODULES }}
+            files: ${{ secrets.KAOS_CORE_FILES }}
+        run: |
+          # Nuevo proceso de activacion de los modulos
+          while IFS= read -r line; do
+            echo "I Leemos el fichero ${{ github.event.inputs.kaos-involved-file }} y extraemos el fichero $line"
+            module_failed=0
+            extension_failed=0
+            file_name=$(basename "$line")
+            echo "I-1 Calculamos el nombre del fichero $file_name"
+            file_extension="${file_name##*.}"
+            echo "I-2 Calculamos la extension del fichero $file_extension"
+            file_module="$file_extension""lint.yaml"
+            echo "I-3 Calculamos el modulo $file_module"
+            IFS=',' read -r -a file_array <<< "$files"
+            for file in "${file_array[@]}"; do
+              echo "II Leemos el array de $file"
+              if [[ "$file_extension" == "$file" ]]; then
+                echo "III Comprobamos si $file_extension es igual a $file"
+                IFS=',' read -r -a module_array <<< "$modules"
+                for module in "${module_array[@]}"; do
+                  echo "IV Leemos el array $module"
+                  if [[ "$file_module" == *"$module"* ]]; then
+                    echo "V Comprobamos que el $file_module es igual a $module y ejecutamos el flujo"
+                    # Si hemos llegado hasta aquí ejecutamos el módulo
+                    # Añadimos los valores a las variables de la issue
+                    KAOS_ISSUE_BODY="${{ env.KAOS_MODULE }} has been initiated and Launch workflow $file_module to check file $line"
+                    # Añadimos el comentario a la issue
+                    #gh workflow run issue.yaml --ref ${{ github.ref }} -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-id=${{ github.event.inputs.kaos-issue-id }} -f kaos-issue-actions=comment
+                    # Lanzamos el lint del fichero
+                    #gh workflow run $file_module --ref ${{ github.ref }} -f kaos-origin=${{ github.run_id }} -f kaos-files=$line -f kaos-issue-id=${{ github.event.inputs.kaos-issue-id }} -f kaos-user-start=${{ github.event.inputs.kaos-user-start }}
+                    module_failed=0
+                    extension_failed=0
+                    break
+                  else
+                    # Control de si existe el modulo para esa extension"
+                    echo "VI No es igual $file_module a $module y lo indicamos en la variable module_failed=1"
+                    module_failed=1
+                  fi
+                done
+                break
+              else
+                # Control de si existe el modulo para esa extension"
+                echo "VII No es igual $file_extension a $file y lo indicamos en la variable extension_failed=1"
+                extension_failed=1
+              fi  
+            done
+            if [[ $module_failed == 1 ]]; then
+              echo "IX Si el modulo falla ($module_failed) añadimos el comentario a la issue"
+              # Si hemos llegado hasta aquí añadimos el mensaje de que la extension esta permitida pero no dispone de modulo activo y aqui finaliza el proceso
+              # Añadimos los valores a las variables de la issue
+              KAOS_ISSUE_BODY="${{ env.KAOS_MODULE }} ha detectado que la extensión ($file_extension) esta permitida dentro de KAOS_CORE_FILES, pero el módulo asociado ($file_module) no esta activo. Por favor compruebe que exista y esta activo."
+              # Añadimos el comentario a la issue
+              #gh workflow run issue.yaml --ref ${{ github.ref }} -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-id=${{ github.event.inputs.kaos-issue-id }} -f kaos-issue-actions=comment
+            fi
+            if [[ $extension_failed == 1 ]]; then
+              echo "X Si extension falla falla ($extension_failed) añadimos el comentario a la issue"
+              # Si hemos llegado hasta aquí añadimos el mensaje de que la extension no esta permitida
+              # Añadimos los valores a las variables de la issue
+              KAOS_ISSUE_BODY="${{ env.KAOS_MODULE }} ha detectado que la extensión ($file_extension) NO esta permitida dentro de KAOS_CORE_FILES. Por favor compruebe que exista y esta activo."
+              # Añadimos el comentario a la issue
+              #gh workflow run issue.yaml --ref ${{ github.ref }} -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-id=${{ github.event.inputs.kaos-issue-id }} -f kaos-issue-actions=comment
+            fi  
+          done < ${{ github.event.inputs.kaos-involved-file }}
         
   handle-success:
     runs-on:
