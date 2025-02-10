@@ -21,7 +21,7 @@ jobs:
       group: ka0s
     env:
       GITHUB_OUTPUT: ""
-    if: ${{ !contains(github.event.head_commit.message, '[Ka0S] ') || !contains(github.event.head_commit.message, '[E] ') }} 
+    if: ${{ !startsWith(github.event.head_commit.message, '[Ka0S]') && !startsWith(github.event.head_commit.message, '[E]') }} 
     steps:
       - id: repo
         name: Checkout code
@@ -162,8 +162,7 @@ jobs:
               # Añadimos el comentario a la issue
               #gh workflow run issue.yaml --ref ${{ github.ref }} -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-id=${{ github.event.inputs.kaos-issue-id }} -f kaos-issue-actions=comment
             fi  
-          done < $GITHUB_OUTPUT
-        
+          done < $GITHUB_OUTPUT       
   handle-success:
     runs-on:
         group: ka0s
