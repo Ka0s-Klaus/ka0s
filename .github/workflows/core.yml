@@ -1,0 +1,178 @@
+name: Ka0s Core Execution
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: write
+  issues: write
+  pull-requests: write
+env:
+  KAOS_MODULE: "[Ka0S] Core Execution"
+  GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+  BRANCH_NAME: ${{ github.ref }}
+  KAOS_AUTOMATION_COMPLIANCE: "compliance/core/core.json"
+  KAOS_PATH_RESUME: "core/results/"
+  KAOS_PATH_OUTPUT: "core/outputs/e/"
+  KAOS_REPO: "/actions-runner/_work/kaos/kaos"
+  KAOS_STEP_MODULE: ""
+  KAOS_CODE: ${{ github.run_id }}
+  KAOS_ISSUE_NUMBER: ${{ github.event.issue.number }}
+  KAOS_ISSUE_TITLE: ${{ github.event.issue.title }}
+  KAOS_ISSUE_BODY: ${{ github.event.issue.body }}
+  # KAOS_ISSUE_LABELS: ${{ github.event.issue.labels }}
+  KAOS_ISSUE_USER: ${{ github.actor}}
+jobs:
+  job-repo:
+    runs-on: 
+      group: kaos-execution
+    steps:
+      - id: repo
+        name: Checkout repository
+        if: ${{ success() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+      - id: message
+        name: Message
+        if: ${{ success() }}
+        run: |
+          echo "Init repository"
+          # Vemos si con inicializar el fichero solventamos el problema
+          touch ${{ env.KAOS_PATH_OUTPUT}}${{ env.KAOS_CODE}}-${{ env.KAOS_ISSUE_NUMBER}}.txt
+          _timestamp=$(TZ='Europe/Madrid' date +'%Y-%m-%d %H:%M:%S %Z')
+          echo "($_timestamp) - Se ha iniciado la ejecución ${{ env.KAOS_CODE}} a través de la tarjeta #${{ env.KAOS_ISSUE_NUMBER }}." >> ${{ env.KAOS_PATH_OUTPUT}}${{ env.KAOS_CODE}}-${{ env.KAOS_ISSUE_NUMBER}}.txt
+          _timestamp=$(TZ='Europe/Madrid' date +'%Y-%m-%d %H:%M:%S %Z')
+          echo "($_timestamp) - Se ha iniciado el Repositorio." >> ${{ env.KAOS_PATH_OUTPUT}}${{ env.KAOS_CODE}}-${{ env.KAOS_ISSUE_NUMBER}}.txt
+  check-data:
+    runs-on: 
+      group: kaos-execution
+    needs: check-issue
+    outputs:
+      KAOS_EXECUTION_TYPE: ${{ steps.extract.outputs.KAOS_EXECUTION_TYPE }}
+      KAOS_EXECUTION_VARS: ${{ steps.extract.outputs.KAOS_EXECUTION_VARS }}
+    if: ${{ success() }}
+    steps:
+      - id: extract
+        name: extract data
+        if: ${{ success() }}
+        run: |
+            echo "Extract data"
+      - id: data
+        name: Check data
+        if: ${{ success() }}
+        run: |
+            echo "Check lógical data"
+            # Cambiamos de Backlog a In Progress
+            _timestamp=$(TZ='Europe/Madrid' date +'%Y-%m-%d %H:%M:%S %Z')
+            echo "($_timestamp) - Se comprobado los datos asociados a la tarjeta #${{ env.KAOS_ISSUE_NUMBER }}." >> ${{ env.KAOS_PATH_OUTPUT}}${{ env.KAOS_CODE}}-${{ env.KAOS_ISSUE_NUMBER}}.txt
+  show-data:
+    runs-on: 
+      group: kaos-execution
+    needs: check-data
+    steps:
+      - id: show
+        name: Show data
+        if: ${{ success() }}
+        run: |
+          echo "Datos de la ejecución"
+          echo "KAOS_ISSUE_NUMBER: $KAOS_ISSUE_NUMBER" 
+          echo "KAOS_ISSUE_TITLE: $KAOS_ISSUE_TITLE"
+          echo "KAOS_ISSUE_BODY: $KAOS_ISSUE_BODY"
+          _timestamp=$(TZ='Europe/Madrid' date +'%Y-%m-%d %H:%M:%S %Z')
+          echo "($_timestamp) - Estos son los datos de la ejecucion ${{ env.KAOS_CODE}} de la tarjeta #${{ env.KAOS_ISSUE_NUMBER }}." >> ${{ env.KAOS_PATH_OUTPUT}}${{ env.KAOS_CODE}}-${{ env.KAOS_ISSUE_NUMBER}}.txt
+          echo "KAOS_ISSUE_NUMBER: $KAOS_ISSUE_NUMBER" >> ${{ env.KAOS_PATH_OUTPUT}}${{ env.KAOS_CODE}}-${{ env.KAOS_ISSUE_NUMBER}}.txt
+          echo "KAOS_ISSUE_TITLE: $KAOS_ISSUE_TITLE" >> ${{ env.KAOS_PATH_OUTPUT}}${{ env.KAOS_CODE}}-${{ env.KAOS_ISSUE_NUMBER}}.txt
+          echo "KAOS_ISSUE_BODY: $KAOS_ISSUE_BODY" >> ${{ env.KAOS_PATH_OUTPUT}}${{ env.KAOS_CODE}}-${{ env.KAOS_ISSUE_NUMBER}}.txt
+  start-execution:
+    runs-on: 
+      group: kaos-execution
+    needs: [check-issue, check-data, show-data]
+    outputs:
+        KAOS_EXECUTION_RESULT: ${{ steps.execution.outputs.KAOS_EXECUTION_RESULT }}
+        KAOS_EXECUTION_STATUS: ${{ steps.execution.outputs.KAOS_EXECUTION_STATUS }}
+        KAOS_EXECUTION_RUN_ID: ${{ steps.type.outputs.RUN_ID }}
+    steps:
+      - id: execution
+        name: Start execution
+        if: ${{ success() }}
+        run: |
+          # Sección donde definimos como será la ejecución
+          echo "Start execution"
+          _timestamp=$(TZ='Europe/Madrid' date +'%Y-%m-%d %H:%M:%S %Z')
+          echo "($_timestamp) - Se ha iniciado la ejecución de la tarjeta #${{ env.KAOS_ISSUE_NUMBER }}." >> ${{ env.KAOS_PATH_OUTPUT}}${{ env.KAOS_CODE}}-${{ env.KAOS_ISSUE_NUMBER}}.txt
+          echo "KAOS_EXECUTION_RESULT=fichero_de_resultado" >> $GITHUB_OUTPUT
+          echo "KAOS_EXECUTION_STATUS=success" >> $GITHUB_OUTPUT
+  end-execution:
+    runs-on: 
+      group: kaos-execution
+    needs: [start-execution]
+    steps:
+      - id: end
+        name: End execution
+        if: ${{ success() }}
+        run: |
+          echo "End execution"
+          _timestamp=$(TZ='Europe/Madrid' date +'%Y-%m-%d %H:%M:%S %Z')
+          echo "($_timestamp) - La ejecución de la tarjeta #${{ env.KAOS_ISSUE_NUMBER }} ha finalizado con el resultado ${{ needs.start-execution.outputs.KAOS_EXECUTION_STATUS }}." >> ${{ env.KAOS_PATH_OUTPUT}}${{ env.KAOS_CODE}}-${{ env.KAOS_ISSUE_NUMBER}}.txt
+          _timestamp=$(TZ='Europe/Madrid' date +'%Y-%m-%d %H:%M:%S %Z')
+          echo "($_timestamp) - El resultado de la ejecución se añade a la tajeta #${{ env.KAOS_ISSUE_NUMBER }}, ha finalizado con el resultado SUCCESS." >> ${{ env.KAOS_PATH_OUTPUT}}${{ env.KAOS_CODE}}-${{ env.KAOS_ISSUE_NUMBER}}.txt
+  handle-success:
+    runs-on: 
+      group: kaos-execution
+    needs: [end-execution]
+    if: ${{ success() }}
+    steps: 
+      - id: handle-success-execution
+        run: |
+          # Si todo ha iso correctamente pasamos la tarjeta a done
+          # Añadimos a cada paso el mensaje de éxito incluido en la issue original
+          echo "${{ env.KAOS_MODULE }} Success in runid ${{ github.run_id }} initiated by $KAOS_ISSUE_USER trouhg issue number $KAOS_ISSUE_NUMBER."
+          echo "La ejecución solicitada en el issue #$KAOS_ISSUE_NUMBER ha sido completada con éxito."
+          echo "El log de la ejecucion se envuentra en ${{ secrets.KAOS_ACTIONS_URL }}${{ github.run_id }}"
+          echo "Se añade el log de la ejecución al issue #$KAOS_ISSUE_NUMBER"
+          echo "Se procede a cerrar la issue #$KAOS_ISSUE_NUMBER"
+          # gh issue comment $KAOS_ISSUE_NUMBER --body "La ejecución ha sido SUCCESS #${{ env.KAOS_ISSUE_NUMBER }} el siguiente mensaje muestra el resultado de las operaciones"
+          # gh issue comment $KAOS_ISSUE_NUMBER --body-file "${{ env.KAOS_PATH_OUTPUT}}${{ env.KAOS_CODE}}-${{ env.KAOS_ISSUE_NUMBER}}.txt"
+          # gh issue close $KAOS_ISSUE_NUMBER --comment "Puede proceder a cerrar la tarjeta." --reason completed
+  handle_failure:
+      runs-on: 
+        group: kaos-execution
+      needs: [job-repo, check-issue, check-data, show-data, start-execution, end-execution]
+      if: ${{ failure() }} 
+      steps: 
+        - id: check-execution
+          run: |
+            # si ha existido un error dejamos la tarjeta In Review
+            echo "Error detected in ${{ env.KAOS_MODULE }}, creating issue..."
+            KAOS_TITLE="${{ env.KAOS_MODULE }} Module failed in ${{ env.KAOS_CODE }}"
+            KAOS_BODY=$(cat <<'EOF'
+            **${{ env.KAOS_MODULE }}  Message:**
+            El error ha sido en: ${{ env.KAOS_CODE }}
+            si dispòne de los permisos necesarios 
+            ejecute este comando en su consola y podrá consultar el fallo del trabajo
+            gh run view ${{ env.KAOS_CODE }} --log-failed
+            \`\`\`
+            **La información de la ejecución ${{ secrets.KAOS_ACTIONS_URL }}${{ env.KAOS_CODE }}**
+            \`\`\`
+            Please investigate the issue.
+            EOF
+            )
+            # Añadimos a la tarjeta de ejecución cual es la issue que se crea
+            # Creamos la issue dado que ha fallado el modulo principal
+            # gh workflow run issue.yaml --ref ${{ github.ref }} -f kaos-issue-title="$KAOS_TITLE" -f kaos-issue-body="$KAOS_BODY" -f kaos-issue-actions=create -f kaos-issue-tag="bug" -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start="${{ env.KAOS_ISSUE_USER }}"
+            # Añadimos el comentario a la issue que dispara el proceso
+            KAOS_ISSUE_BODY="OPS¡ se ha producido un error en el proceso (${{ env.KAOS_MODULE }}) lanzado desde (#$KAOS_ISSUE_NUMBER) en la ejecución (${{ env.KAOS_CODE }}) y esto ha generado una issue con el titulo ($KAOS_TITLE)"
+            # gh workflow run issue.yaml --ref ${{ github.ref }} -f kaos-issue-body="$KAOS_BODY" -f kaos-issue-actions=comment -f kaos-issue-tag="bug" -f kaos-issue-id=$KAOS_ISSUE_NUMBER -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start="${{ env.KAOS_ISSUE_USER }}"
+            # gh workflow run issue.yaml --ref ${{ github.ref }}-f kaos-issue-actions=comment -f kaos-issue-id=$KAOS_ISSUE_NUMBER -f kaos-issue-body-file="${{ env.KAOS_PATH_OUTPUT}}${{ env.KAOS_CODE}}-${{ env.KAOS_ISSUE_NUMBER}}.txt" -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start="${{ env.KAOS_ISSUE_USER }}"
+  end-workflow:
+    runs-on: 
+      group: kaos-execution
+    needs: [job-repo, check-issue, check-data, show-data, start-execution, end-execution, handle-success, handle_failure]
+    if: ${{ always() }}
+    steps:
+      - id: end-process
+        name: Finaliza el workflow
+        run: |
+          echo "End process"
+          gh workflow run inspector.yaml --ref ${{ github.ref }} -f kaos-issue-id="$KAOS_ISSUE_NUMBER" -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start="${{ env.KAOS_ISSUE_USER }}"
