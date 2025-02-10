@@ -3,8 +3,8 @@ on:
   workflow_dispatch: {} # Ejecutar manualmente
   push: {} # Ejecutar cuando se hace un push en funcion de la rama
   pull_request: {} # Ejecutar cuando se hace un pull request en funcion de la rama
-  issues: {} # Ejecutar cuando se crea un issue proyecto y la organizacion
-  issue_comment: {} # Ejecutar cuando se comenta un issue comprobar que exista
+  # issues: {} # Ejecutar cuando se crea un issue proyecto y la organizacion
+  # issue_comment: {} # Ejecutar cuando se comenta un issue comprobar que exista
   release: {} # Ejecutar cuando se crea un release
   watch: {} # Ejecutar cuando se hace un watch
   repository_dispatch: {} # Ejecutar cuando se hace un dispatch  https://proyecto.kaos.io
@@ -21,7 +21,7 @@ jobs:
       group: ka0s
     env:
       GITHUB_OUTPUT: ""
-    if: ${{ !startsWith(github.event.head_commit.message, '[Ka0S]') && !startsWith(github.event.head_commit.message, '[E]') }} 
+    if: ${{ !startsWith(github.event.head_commit.message, '[Ka0S]') }} 
     steps:
       - id: repo
         name: Checkout code
