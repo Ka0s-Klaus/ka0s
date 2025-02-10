@@ -65,7 +65,7 @@ jobs:
           echo "Extraemos el usuario asignado"
           echo "KAOS_ISSUE_USER=$(gh issue view $KAOS_ISSUE_NUMBER --json assignees |jq -r '.assignees[].login')" >> $GITHUB_ENV
           echo "Añadimos la etiqueta automations a la tarjeta"
-          gh issue edit $KAOS_ISSUE_NUMBER --add-label 'automations'
+          # gh issue edit $KAOS_ISSUE_NUMBER --add-label 'automations'
   check-data:
     runs-on: 
       group: execution
@@ -169,8 +169,8 @@ jobs:
               # en esta parte de la ejecucion tenemos que tener en cuenta que podemos iniciar un workflow
               # Run the workflow file 'module.yaml' with JSON via standard input of variable {"name":"scully", "greeting":"hello"}
               # echo 'KAOS_EXECUTION_VARS' | gh workflow run triage.yml --json
-              gh workflow run "${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }}.yaml"
-              RUN_ID=$(gh run list --workflow="${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }}.yaml" --limit=1 --json databaseId --jq '.[0].databaseId')
+              gh workflow run "${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }}.yml"
+              RUN_ID=$(gh run list --workflow="${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }}.yml" --limit=1 --json databaseId --jq '.[0].databaseId')
               echo "RUN_ID=$RUN_ID" >> $GITHUB_OUTPUT
               _timestamp=$(TZ='Europe/Madrid' date +'%Y-%m-%d %H:%M:%S %Z')
               echo "($_timestamp) - Se ha lanzado la ejecución de #${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }} con run_id: $RUN_ID. con las variables {${{ needs.check-data.outputs.KAOS_EXECUTION_VARS }}}" >> ${{ env.KAOS_PATH_OUTPUT}}${{ env.KAOS_CODE}}-${{ env.KAOS_ISSUE_NUMBER}}.txt
@@ -258,4 +258,4 @@ jobs:
         name: Finaliza el workflow
         run: |
           echo "End process"
-          gh workflow run inspector.yaml --ref ${{ github.ref }} -f kaos-issue-id="$KAOS_ISSUE_NUMBER" -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start="${{ env.KAOS_ISSUE_USER }}"
+          gh workflow run inspector.yml --ref ${{ github.ref }} -f kaos-issue-id="$KAOS_ISSUE_NUMBER" -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start="${{ env.KAOS_ISSUE_USER }}"
