@@ -1,14 +1,13 @@
-name: Ka0s Execution
+name: Ka0s Core Execution
 on:
-  issues:
-    types: [opened]
+  workflow_dispatch:
 permissions:
   contents: write
   actions: write
   issues: write
   pull-requests: write
 env:
-  KAOS_MODULE: "[Ka0S] Execution"
+  KAOS_MODULE: "[Ka0S] Core Execution"
   GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
   BRANCH_NAME: ${{ github.ref }}
   KAOS_AUTOMATION_COMPLIANCE: "compliance/core/core.json"
@@ -25,8 +24,7 @@ env:
 jobs:
   job-repo:
     runs-on: 
-      group: ka0s
-    if: ${{ startsWith(github.event.issue.title, '[E]') && github.ref == 'refs/heads/main' }}
+      group: kaos-execution
     steps:
       - id: repo
         name: Checkout repository
@@ -46,29 +44,9 @@ jobs:
           echo "($_timestamp) - Se ha iniciado la ejecución ${{ env.KAOS_CODE}} a través de la tarjeta #${{ env.KAOS_ISSUE_NUMBER }}." >> ${{ env.KAOS_PATH_OUTPUT}}${{ env.KAOS_CODE}}-${{ env.KAOS_ISSUE_NUMBER}}.txt
           _timestamp=$(TZ='Europe/Madrid' date +'%Y-%m-%d %H:%M:%S %Z')
           echo "($_timestamp) - Se ha iniciado el Repositorio." >> ${{ env.KAOS_PATH_OUTPUT}}${{ env.KAOS_CODE}}-${{ env.KAOS_ISSUE_NUMBER}}.txt
-  check-issue:
-    runs-on: 
-      group: ka0s
-    needs: job-repo
-    steps:
-      - id: check-info
-        name: Check Info
-        if: ${{ success() }}
-        run: |
-            echo "Check issue for execution $KAOS_ISSUE_NUMBER"
-            _timestamp=$(TZ='Europe/Madrid' date +'%Y-%m-%d %H:%M:%S %Z')
-            echo "($_timestamp) - Se ha comprobado que la tarjeta #${{ env.KAOS_ISSUE_NUMBER }} se puede ejecutar." >> ${{ env.KAOS_PATH_OUTPUT}}${{ env.KAOS_CODE}}-${{ env.KAOS_ISSUE_NUMBER}}.txt
-      - id: check-kaos
-        name: Check Kaos
-        if: ${{ success() }}
-        run: |
-          echo "Extraemos el usuario asignado"
-          echo "KAOS_ISSUE_USER=$(gh issue view $KAOS_ISSUE_NUMBER --json assignees |jq -r '.assignees[].login')" >> $GITHUB_ENV
-          echo "Añadimos la etiqueta automations a la tarjeta"
-          gh issue edit $KAOS_ISSUE_NUMBER --add-label 'automations'
   check-data:
     runs-on: 
-      group: ka0s
+      group: kaos-execution
     needs: check-issue
     outputs:
       KAOS_EXECUTION_TYPE: ${{ steps.extract.outputs.KAOS_EXECUTION_TYPE }}
@@ -80,36 +58,6 @@ jobs:
         if: ${{ success() }}
         run: |
             echo "Extract data"
-            # Separar las claves y valores
-            IFS=',' read -ra PAIRS <<< "$KAOS_ISSUE_BODY"
-            # Procesar el primer par clave-valor
-            FIRST_PAIR=${PAIRS[0]}
-            # Eliminar las comillas
-            FIRST_PAIR=$(echo $FIRST_PAIR | tr -d '"')
-            # Separar la clave y el valor
-            IFS=':' read -ra KV <<< "$FIRST_PAIR"
-            FIRST_KEY=${KV[0]}
-            FIRST_VALUE=${KV[1]}
-            # Procesar el resto de los pares clave-valor
-            REMAINING_PAIRS="${PAIRS[@]:1}"
-            REMAINING_VALUES=""   
-            for PAIR in ${REMAINING_PAIRS[@]}; do
-                # Eliminar las comillas
-                PAIR=$(echo $PAIR | tr -d '"')
-                # Separar la clave y el valor
-                IFS=':' read -ra KV <<< "$PAIR"
-                KEY=${KV[0]}
-                VALUE=${KV[1]}
-                # Añadir al string de valores restantes
-                REMAINING_VALUES+="$KEY:$VALUE;"
-            done
-            echo "KAOS_EXECUTION_VARS=$REMAINING_VALUES" >> $GITHUB_OUTPUT
-            # Eliminar el último punto y coma
-            REMAINING_VALUES=${REMAINING_VALUES%?}            
-            # Asignar el valor de la primera clave a una variable
-            echo "KAOS_EXECUTION_TYPE=$FIRST_VALUE" >> $GITHUB_OUTPUT
-            _timestamp=$(TZ='Europe/Madrid' date +'%Y-%m-%d %H:%M:%S %Z')
-            echo "($_timestamp) - Se han extraido los datos de la tarjeta #${{ env.KAOS_ISSUE_NUMBER }}." >> ${{ env.KAOS_PATH_OUTPUT}}${{ env.KAOS_CODE}}-${{ env.KAOS_ISSUE_NUMBER}}.txt
       - id: data
         name: Check data
         if: ${{ success() }}
@@ -120,7 +68,7 @@ jobs:
             echo "($_timestamp) - Se comprobado los datos asociados a la tarjeta #${{ env.KAOS_ISSUE_NUMBER }}." >> ${{ env.KAOS_PATH_OUTPUT}}${{ env.KAOS_CODE}}-${{ env.KAOS_ISSUE_NUMBER}}.txt
   show-data:
     runs-on: 
-      group: ka0s
+      group: kaos-execution
     needs: check-data
     steps:
       - id: show
@@ -138,7 +86,7 @@ jobs:
           echo "KAOS_ISSUE_BODY: $KAOS_ISSUE_BODY" >> ${{ env.KAOS_PATH_OUTPUT}}${{ env.KAOS_CODE}}-${{ env.KAOS_ISSUE_NUMBER}}.txt
   start-execution:
     runs-on: 
-      group: ka0s
+      group: kaos-execution
     needs: [check-issue, check-data, show-data]
     outputs:
         KAOS_EXECUTION_RESULT: ${{ steps.execution.outputs.KAOS_EXECUTION_RESULT }}
@@ -155,40 +103,9 @@ jobs:
           echo "($_timestamp) - Se ha iniciado la ejecución de la tarjeta #${{ env.KAOS_ISSUE_NUMBER }}." >> ${{ env.KAOS_PATH_OUTPUT}}${{ env.KAOS_CODE}}-${{ env.KAOS_ISSUE_NUMBER}}.txt
           echo "KAOS_EXECUTION_RESULT=fichero_de_resultado" >> $GITHUB_OUTPUT
           echo "KAOS_EXECUTION_STATUS=success" >> $GITHUB_OUTPUT
-      - id: type
-        name: Execution type
-        if: ${{ success() }}
-        run: |
-          echo "Check type"
-          # Buscar el valorexecution en el formato JSON de la ejecución
-          RESULT=$(jq -r --arg valorexecution "${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }}" '.[] | select(.module == $valorexecution) | .active' "${{ env.KAOS_AUTOMATION_COMPLIANCE}}")
-          # Evaluar el resultado
-          case $RESULT in
-            "true")
-              echo "El modulo ${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }} está activo y se puede ejecutar"
-              # en esta parte de la ejecucion tenemos que tener en cuenta que podemos iniciar un workflow
-              # Run the workflow file 'module.yaml' with JSON via standard input of variable {"name":"scully", "greeting":"hello"}
-              # echo 'KAOS_EXECUTION_VARS' | gh workflow run triage.yml --json
-              gh workflow run "${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }}.yaml"
-              RUN_ID=$(gh run list --workflow="${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }}.yaml" --limit=1 --json databaseId --jq '.[0].databaseId')
-              echo "RUN_ID=$RUN_ID" >> $GITHUB_OUTPUT
-              _timestamp=$(TZ='Europe/Madrid' date +'%Y-%m-%d %H:%M:%S %Z')
-              echo "($_timestamp) - Se ha lanzado la ejecución de #${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }} con run_id: $RUN_ID. con las variables {${{ needs.check-data.outputs.KAOS_EXECUTION_VARS }}}" >> ${{ env.KAOS_PATH_OUTPUT}}${{ env.KAOS_CODE}}-${{ env.KAOS_ISSUE_NUMBER}}.txt
-              ;;
-            "false")
-              echo "El modulo ${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }} está inactivo y necesita autorización para su ejecución"
-              _timestamp=$(TZ='Europe/Madrid' date +'%Y-%m-%d %H:%M:%S %Z')
-              echo "($_timestamp) - El módulo solicitado#${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }} está inactivo y necesita autorización para su ejecución" >> ${{ env.KAOS_PATH_OUTPUT}}${{ env.KAOS_CODE}}-${{ env.KAOS_ISSUE_NUMBER}}.txt
-              ;;
-            *)
-              echo "El modulo ${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }} no está definido"
-              _timestamp=$(TZ='Europe/Madrid' date +'%Y-%m-%d %H:%M:%S %Z')
-              echo "($_timestamp) - El módulo solicitado#${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }} no está definido" >> ${{ env.KAOS_PATH_OUTPUT}}${{ env.KAOS_CODE}}-${{ env.KAOS_ISSUE_NUMBER}}.txt
-              ;;
-          esac 
   end-execution:
     runs-on: 
-      group: ka0s
+      group: kaos-execution
     needs: [start-execution]
     steps:
       - id: end
@@ -202,7 +119,7 @@ jobs:
           echo "($_timestamp) - El resultado de la ejecución se añade a la tajeta #${{ env.KAOS_ISSUE_NUMBER }}, ha finalizado con el resultado SUCCESS." >> ${{ env.KAOS_PATH_OUTPUT}}${{ env.KAOS_CODE}}-${{ env.KAOS_ISSUE_NUMBER}}.txt
   handle-success:
     runs-on: 
-      group: ka0s
+      group: kaos-execution
     needs: [end-execution]
     if: ${{ success() }}
     steps: 
@@ -220,7 +137,7 @@ jobs:
           # gh issue close $KAOS_ISSUE_NUMBER --comment "Puede proceder a cerrar la tarjeta." --reason completed
   handle_failure:
       runs-on: 
-        group: ka0s
+        group: kaos-execution
       needs: [job-repo, check-issue, check-data, show-data, start-execution, end-execution]
       if: ${{ failure() }} 
       steps: 
@@ -250,7 +167,7 @@ jobs:
             # gh workflow run issue.yaml --ref ${{ github.ref }}-f kaos-issue-actions=comment -f kaos-issue-id=$KAOS_ISSUE_NUMBER -f kaos-issue-body-file="${{ env.KAOS_PATH_OUTPUT}}${{ env.KAOS_CODE}}-${{ env.KAOS_ISSUE_NUMBER}}.txt" -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start="${{ env.KAOS_ISSUE_USER }}"
   end-workflow:
     runs-on: 
-      group: ka0s
+      group: kaos-execution
     needs: [job-repo, check-issue, check-data, show-data, start-execution, end-execution, handle-success, handle_failure]
     if: ${{ always() }}
     steps:
