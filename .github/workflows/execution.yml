@@ -25,7 +25,7 @@ env:
 jobs:
   job-repo:
     runs-on: 
-      group: ka0s
+      group: execution
     if: ${{ startsWith(github.event.issue.title, '[E]') && github.ref == 'refs/heads/main' }}
     steps:
       - id: repo
@@ -48,7 +48,7 @@ jobs:
           echo "($_timestamp) - Se ha iniciado el Repositorio." >> ${{ env.KAOS_PATH_OUTPUT}}${{ env.KAOS_CODE}}-${{ env.KAOS_ISSUE_NUMBER}}.txt
   check-issue:
     runs-on: 
-      group: ka0s
+      group: execution
     needs: job-repo
     steps:
       - id: check-info
@@ -68,7 +68,7 @@ jobs:
           gh issue edit $KAOS_ISSUE_NUMBER --add-label 'automations'
   check-data:
     runs-on: 
-      group: ka0s
+      group: execution
     needs: check-issue
     outputs:
       KAOS_EXECUTION_TYPE: ${{ steps.extract.outputs.KAOS_EXECUTION_TYPE }}
@@ -120,7 +120,7 @@ jobs:
             echo "($_timestamp) - Se comprobado los datos asociados a la tarjeta #${{ env.KAOS_ISSUE_NUMBER }}." >> ${{ env.KAOS_PATH_OUTPUT}}${{ env.KAOS_CODE}}-${{ env.KAOS_ISSUE_NUMBER}}.txt
   show-data:
     runs-on: 
-      group: ka0s
+      group: execution
     needs: check-data
     steps:
       - id: show
@@ -138,7 +138,7 @@ jobs:
           echo "KAOS_ISSUE_BODY: $KAOS_ISSUE_BODY" >> ${{ env.KAOS_PATH_OUTPUT}}${{ env.KAOS_CODE}}-${{ env.KAOS_ISSUE_NUMBER}}.txt
   start-execution:
     runs-on: 
-      group: ka0s
+      group: execution
     needs: [check-issue, check-data, show-data]
     outputs:
         KAOS_EXECUTION_RESULT: ${{ steps.execution.outputs.KAOS_EXECUTION_RESULT }}
@@ -188,7 +188,7 @@ jobs:
           esac 
   end-execution:
     runs-on: 
-      group: ka0s
+      group: execution
     needs: [start-execution]
     steps:
       - id: end
@@ -202,7 +202,7 @@ jobs:
           echo "($_timestamp) - El resultado de la ejecución se añade a la tajeta #${{ env.KAOS_ISSUE_NUMBER }}, ha finalizado con el resultado SUCCESS." >> ${{ env.KAOS_PATH_OUTPUT}}${{ env.KAOS_CODE}}-${{ env.KAOS_ISSUE_NUMBER}}.txt
   handle-success:
     runs-on: 
-      group: ka0s
+      group: execution
     needs: [end-execution]
     if: ${{ success() }}
     steps: 
@@ -220,7 +220,7 @@ jobs:
           # gh issue close $KAOS_ISSUE_NUMBER --comment "Puede proceder a cerrar la tarjeta." --reason completed
   handle_failure:
       runs-on: 
-        group: ka0s
+        group: execution
       needs: [job-repo, check-issue, check-data, show-data, start-execution, end-execution]
       if: ${{ failure() }} 
       steps: 
@@ -250,7 +250,7 @@ jobs:
             # gh workflow run issue.yaml --ref ${{ github.ref }}-f kaos-issue-actions=comment -f kaos-issue-id=$KAOS_ISSUE_NUMBER -f kaos-issue-body-file="${{ env.KAOS_PATH_OUTPUT}}${{ env.KAOS_CODE}}-${{ env.KAOS_ISSUE_NUMBER}}.txt" -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start="${{ env.KAOS_ISSUE_USER }}"
   end-workflow:
     runs-on: 
-      group: ka0s
+      group: execution
     needs: [job-repo, check-issue, check-data, show-data, start-execution, end-execution, handle-success, handle_failure]
     if: ${{ always() }}
     steps:
