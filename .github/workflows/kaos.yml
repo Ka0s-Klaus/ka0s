@@ -13,12 +13,15 @@ env:
     KAOS_EVENT_NAME: ${{ github.event_name }}
     KAOS_ACTION: ${{ github.action }}
     KAOS_MODULE: "[Ka0S] kaos"
+    KAOS_PATH_RESUME: "core/results/"
 
 jobs: 
   job-core:
     runs-on:
-        group: ka0s
-    if: ${{ !contains(github.event.head_commit.message, '[Ka0S] ') }} 
+      group: ka0s
+    env:
+      GITHUB_OUTPUT: ""
+    if: ${{ !contains(github.event.head_commit.message, '[Ka0S] ') || !contains(github.event.head_commit.message, '[E] ') }} 
     steps:
       - id: repo
         name: Checkout code
@@ -47,6 +50,16 @@ jobs:
             "push")
               echo "{\"event\": \"push\", \"ref\": \"${{ github.ref }}\", \"sha\": \"${{ github.sha }}\"}" > event_data.json # Ejemplo: {"event": "push", "ref": "refs/heads/main", "sha": "abc123"}
               echo "Variable github.action=${{ github.action }}"
+              echo "Variable github.event.action=${{ github.event.action }}"
+              echo "Variable github.event.pusher.name=${{ github.event.pusher.name }}"
+              echo "variable github.event.pusher.email=${{ github.event.pusher.email }}" 
+              echo "Variable github.event.issue.number=${{ github.event.issue.number }}"
+              # Crear un fichero de resumen con todos los datos de los commits asociados, esta información es usada en todo el ciclo de vida del workflow
+              git log ${{ github.event.before }}..${{ github.sha }} --pretty=format:'%H%n%an%n%ae%n%ad%n%s' > ${{ env.KAOS_PATH_RESUME }}commit-summary-$KAOS_CODE_FILES.txt
+              # Crear un fichero con la ruta completa y el nombre ficheros implicados en el commit
+              git diff --name-only ${{ github.event.before }} ${{ github.sha }} > ${{ env.KAOS_PATH_RESUME }}files-in-commit-$KAOS_CODE_FILES.txt
+              INVOLVED=${{ env.KAOS_PATH_RESUME }}files-in-commit-$KAOS_CODE_FILES.txt
+              echo "INVOLVED=$INVOLVED" >> $GITHUB_OUTPUT
               ;;
             "pull_request")
               echo "{\"event\": \"pull_request\", \"action\": \"${{ github.event.action }}\", \"number\": \"${{ github.event.number }}\"}" > event_data.json # Ejemplo: {"event": "pull_request", "action": "opened", "number": "42"}
@@ -149,7 +162,7 @@ jobs:
               # Añadimos el comentario a la issue
               #gh workflow run issue.yaml --ref ${{ github.ref }} -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-id=${{ github.event.inputs.kaos-issue-id }} -f kaos-issue-actions=comment
             fi  
-          done < ${{ github.event.inputs.kaos-involved-file }}
+          done < $GITHUB_OUTPUT
         
   handle-success:
     runs-on:
