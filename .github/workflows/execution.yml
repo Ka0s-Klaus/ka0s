@@ -169,8 +169,8 @@ jobs:
               # en esta parte de la ejecucion tenemos que tener en cuenta que podemos iniciar un workflow
               # Run the workflow file 'module.yaml' with JSON via standard input of variable {"name":"scully", "greeting":"hello"}
               # echo 'KAOS_EXECUTION_VARS' | gh workflow run triage.yml --json
-              gh workflow run "${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }}.yaml"
-              RUN_ID=$(gh run list --workflow="${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }}.yaml" --limit=1 --json databaseId --jq '.[0].databaseId')
+              gh workflow run "${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }}.yml"
+              RUN_ID=$(gh run list --workflow="${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }}.yml" --limit=1 --json databaseId --jq '.[0].databaseId')
               echo "RUN_ID=$RUN_ID" >> $GITHUB_OUTPUT
               _timestamp=$(TZ='Europe/Madrid' date +'%Y-%m-%d %H:%M:%S %Z')
               echo "($_timestamp) - Se ha lanzado la ejecución de #${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }} con run_id: $RUN_ID. con las variables {${{ needs.check-data.outputs.KAOS_EXECUTION_VARS }}}" >> ${{ env.KAOS_PATH_OUTPUT}}${{ env.KAOS_CODE}}-${{ env.KAOS_ISSUE_NUMBER}}.txt
