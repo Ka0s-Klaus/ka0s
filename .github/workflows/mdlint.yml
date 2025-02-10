@@ -37,26 +37,22 @@ env:
   KAOS_CODE: ""
   
 jobs:
-  md-lint-process:
+  job-core:
     runs-on:
-      group: kaos-mdlint
-
+      group: ka0s
     steps:
       - id: repo
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.KAOS_REPO_TOKEN }}
-    
       - id: node
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-  
       - id: markdownlint-cli2
         run: |
           npm install -g markdownlint-cli2
-  
       - id: check-md
         run: |
             # Realizamos el check del documento md 
@@ -90,7 +86,7 @@ jobs:
   handle-success:
     runs-on:
       group: ka0s
-    needs: [md-lint-process]
+    needs: [job-core]
     if: ${{ success() }}
     steps:
       - id: handle-success-execution
@@ -100,8 +96,8 @@ jobs:
           echo "Todo ha ido bien"
   handle_failure:
     runs-on:
-      group: kaos-issue
-    needs: [md-lint-process, handle-success]
+      group: ka0s
+    needs: [job-core, handle-success]
     if: ${{ failure() }}
     steps:
       - id: check-execution
@@ -139,3 +135,23 @@ jobs:
           # Añadimos el comentario a la issue que dispara el proceso
           KAOS_ISSUE_BODY="Se ha generado la issue (#$ISSUE_NUMBRE) con el error detectado en el proceso ${{ env.KAOS_MODULE }} en el run ${{ github.run_id }}"
           #gh workflow run issue.yaml --ref ${{ github.ref }} -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=comment -f kaos-issue-tag="bug" -f kaos-issue-id=${{ github.event.inputs.kaos-issue-id }}
+  end-workflow:
+    runs-on:
+      group: ka0s
+    needs: [job-core, handle-success]
+    if: ${{ always() }} 
+    env:
+      GH_TOKEN: ${{ secrets.KAOS_ACTIONS_TOKEN }}
+    steps:
+      - id: repo
+        name: Checkout code
+        if: ${{ always() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+      - id: end-process
+        name: Finaliza el workflow
+        run: |
+          echo "End process"
+          #gh workflow run inspector.yml --ref 'main' -f kaos-issue-id="" -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start=""
