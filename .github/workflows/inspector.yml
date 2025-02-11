@@ -25,7 +25,7 @@ env:
 jobs:
   job-core:
     runs-on:
-      group: ka0s
+      group: inspector
     steps:
       - id: repo
         name: Checkout Repository
@@ -54,7 +54,7 @@ jobs:
           git push origin ${{ github.ref }}
   handle-success:
     runs-on:
-      group: ka0s
+      group: inspector
     needs: [job-core]
     if: ${{ success() }}
     steps: 
@@ -73,7 +73,7 @@ jobs:
           fi       
   handle_failure:
     runs-on:
-      group: ka0s
+      group: inspector
     needs: [job-core, handle-success]
     if: ${{ failure() }}
     steps:
