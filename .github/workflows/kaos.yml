@@ -55,7 +55,7 @@ jobs:
               echo "Variable github.event.pusher.name=${{ github.event.pusher.name }}" >> ${{ env.KAOS_JSON }}
               echo "variable github.event.pusher.email=${{ github.event.pusher.email }}" >> ${{ env.KAOS_JSON }}
               echo "Variable github.event.issue.number=${{ github.event.issue.number }}" >> ${{ env.KAOS_JSON }}
-              # Crear un fichero de resumen con todos los datos de los commits asociados, esta información es usada en todo el ciclo de vida del workflow
+              #Crear un fichero de resumen con todos los datos de los commits asociados, esta información es usada en todo el ciclo de vida del workflow
               git log ${{ github.event.before }}..${{ github.sha }} --pretty=format:'%H%n%an%n%ae%n%ad%n%s' > ${{ env.KAOS_PATH_RESUME }}commit-summary-$KAOS_CODE_FILES.txt
               # Crear un fichero con la ruta completa y el nombre ficheros implicados en el commit
               git diff --name-only ${{ github.event.before }} ${{ github.sha }} > ${{ env.KAOS_PATH_RESUME }}files-in-commit-$KAOS_CODE_FILES.txt
