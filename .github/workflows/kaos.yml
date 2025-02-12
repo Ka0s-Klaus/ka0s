@@ -20,6 +20,7 @@ env:
     KAOS_CODE: ${{ github.run_id }}
     KAOS_EVENT_NAME: ${{ github.event_name }}
     KAOS_ACTION: ${{ github.action }}
+    KAOS_REF: ${{ github.ref }}
     KAOS_MODULE: "[Ka0S] kaos"
     KAOS_PATH_RESUME: "core/results/"
     KAOS_JSON: "core/results/event_data"
@@ -102,10 +103,6 @@ jobs:
               echo "{\"event\": \"unknown\"}" > event_data.json # Ejemplo: {"event": "unknown"}
               ;;
           esac
-      
-      - name: Set environment variable for ref
-        id: ref
-        run: echo "GITHUB_REF=${{ github.ref }}" >> $GITHUB_ENV
 
       - id: upload-files
         name: Upload Files
@@ -116,8 +113,7 @@ jobs:
           git pull
           git add ${{ env.KAOS_JSON }}*
           git commit -m "[Ka0S] Uploading resume execution files to the repository..."
-          git push origin ${{ github.ref }}
-          git push origin $GITHUB_REF
+          git push origin ${{ env.KAOS_REF }}
 
       - id: view
         name: Ver JSON
