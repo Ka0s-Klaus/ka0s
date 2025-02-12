@@ -22,7 +22,7 @@ env:
     KAOS_ACTION: ${{ github.action }}
     KAOS_MODULE: "[Ka0S] kaos"
     KAOS_PATH_RESUME: "core/results/"
-    KAOS_JSON: "core/results/event_data.json"
+    KAOS_JSON: "core/results/event_data"
 
 jobs: 
   job-core:
@@ -54,22 +54,22 @@ jobs:
       - name: Crear JSON
         id: crear_json
         run: |
-          echo "{}" >> ${{ env.KAOS_JSON }}
+          echo "{}" >> ${{ env.KAOS_JSON }}${{ github.run_id }}.json
           case "${{ env.KAOS_EVENT_NAME }}" in
             "push")
-              echo "{\"event\": \"push\", \"ref\": \"${{ github.ref }}\", \"sha\": \"${{ github.sha }}\"}" >> ${{ env.KAOS_JSON }} # Ejemplo: {"event": "push", "ref": "refs/heads/main", "sha": "abc123"}
-              echo "Variable github.action=${{ github.action }}" >> ${{ env.KAOS_JSON }}
+              echo "{\"event\": \"push\", \"ref\": \"${{ github.ref }}\", \"sha\": \"${{ github.sha }}\"}" >> ${{ env.KAOS_JSON }}${{ github.run_id }}.json # Ejemplo: {"event": "push", "ref": "refs/heads/main", "sha": "abc123"}
+              echo "Variable github.action=${{ github.action }}" >> ${{ env.KAOS_JSON }}${{ github.run_id }}.json
               echo "Variable github.event.action=${{ github.event.action }}"
-              echo "Variable github.event.pusher.name=${{ github.event.pusher.name }}" >> ${{ env.KAOS_JSON }}
-              echo "variable github.event.pusher.email=${{ github.event.pusher.email }}" >> ${{ env.KAOS_JSON }}
-              echo "Variable github.event.issue.number=${{ github.event.issue.number }}" >> ${{ env.KAOS_JSON }}
+              echo "Variable github.event.pusher.name=${{ github.event.pusher.name }}" >> ${{ env.KAOS_JSON }}${{ github.run_id }}.json
+              echo "variable github.event.pusher.email=${{ github.event.pusher.email }}" >> ${{ env.KAOS_JSON }}${{ github.run_id }}.json
+              echo "Variable github.event.issue.number=${{ github.event.issue.number }}" >> ${{ env.KAOS_JSON }}${{ github.run_id }}.json
               #Crear un fichero de resumen con todos los datos de los commits asociados, esta información es usada en todo el ciclo de vida del workflow
               git log ${{ github.event.before }}..${{ github.sha }} --pretty=format:'%H%n%an%n%ae%n%ad%n%s' > ${{ env.KAOS_PATH_RESUME }}commit-summary-$KAOS_CODE_FILES.txt
               # Crear un fichero con la ruta completa y el nombre ficheros implicados en el commit
               git diff --name-only ${{ github.event.before }} ${{ github.sha }} > ${{ env.KAOS_PATH_RESUME }}files-in-commit-$KAOS_CODE_FILES.txt
               INVOLVED=${{ env.KAOS_PATH_RESUME }}files-in-commit-$KAOS_CODE_FILES.txt
               #echo "INVOLVED=$INVOLVED" >> $GITHUB_OUTPUT
-              echo "INVOLVED=$INVOLVED" >> ${{ env.KAOS_JSON }}
+              echo "INVOLVED=$INVOLVED" >> ${{ env.KAOS_JSON }}${{ github.run_id }}.json
               ;;
             "pull_request")
               echo "{\"event\": \"pull_request\", \"action\": \"${{ github.event.action }}\", \"number\": \"${{ github.event.number }}\"}" > event_data.json # Ejemplo: {"event": "pull_request", "action": "opened", "number": "42"}
@@ -102,11 +102,27 @@ jobs:
               echo "{\"event\": \"unknown\"}" > event_data.json # Ejemplo: {"event": "unknown"}
               ;;
           esac
+      
+      - name: Set environment variable for ref
+        id: ref
+        run: echo "GITHUB_REF=${{ github.ref }}" >> $GITHUB_ENV
+
+      - id: upload-files
+        name: Upload Files
+        run: |
+          echo "Uploading files to the repository..."
+          git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
+          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
+          git pull
+          git add ${{ env.KAOS_JSON }}*
+          git commit -m "[Ka0S] Uploading resume execution files to the repository..."
+          git push origin ${{ github.ref }}
+          git push origin $GITHUB_REF
 
       - id: view
         name: Ver JSON
         #run: cat event_data.json
-        run: cat ${{ env.KAOS_JSON }}
+        run: cat ${{ env.KAOS_JSON }}${{ github.run_id }}.json
       
       - id: module
         env:
