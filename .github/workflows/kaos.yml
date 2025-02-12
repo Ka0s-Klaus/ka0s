@@ -102,6 +102,10 @@ jobs:
               echo "{\"event\": \"unknown\"}" > event_data.json # Ejemplo: {"event": "unknown"}
               ;;
           esac
+      
+      - name: Set environment variable for ref
+        id: ref
+        run: echo "GITHUB_REF=${{ github.ref }}" >> $GITHUB_ENV
 
       - id: upload-files
         name: Upload Files
@@ -113,6 +117,7 @@ jobs:
           git add ${{ env.KAOS_JSON }}*
           git commit -m "[Ka0S] Uploading resume execution files to the repository..."
           git push origin ${{ github.ref }}
+          git push origin $GITHUB_REF
 
       - id: view
         name: Ver JSON
