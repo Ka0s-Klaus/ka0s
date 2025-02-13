@@ -42,7 +42,8 @@ jobs:
                 echo "Iniciando el contenedor"
                 docker start ${{ env.KAOS_RUNNER_GROUPNAME }}-$i
                 echo "Cargando la configuracion en el contenedor"
-                docker exec ${{ env.KAOS_RUNNER_GROUPNAME }}-$i sh -c 'cd /actions-runner/ && ./config.sh --url https://github.com/Ka0s-Klaus --token ${{ secrets.KAOS_RUNNER_TOKEN }} --name ${{ env.KAOS_RUNNER_GROUPNAME }}-$i --runnergroup ${{ env.KAOS_RUNNER_GROUPNAME }} --labels ${{ env.KAOS_RUNNER_GROUPNAME }}-$i --work _work && sleep 20 && ./run.sh'
-                echo "Ahora toca comprobar que el contenedor esta funcionando"
+                docker exec ${{ env.KAOS_RUNNER_GROUPNAME }}-$i sh -c 'cd /actions-runner/ && ./config.sh --url https://github.com/Ka0s-Klaus --token ${{ secrets.KAOS_RUNNER_TOKEN }} --name ${{ env.KAOS_RUNNER_GROUPNAME }}-$i --runnergroup ${{ env.KAOS_RUNNER_GROUPNAME }} --labels ${{ env.KAOS_RUNNER_GROUPNAME }}-$i --work _work'
+                echo "Ahora ejecutamos run en segundo plano y comprobamos los runner"
+                docker exec -d ${{ env.KAOS_RUNNER_GROUPNAME }}-$i sh -c 'cd /actions-runner/ && ./run.sh'
               done
               
