@@ -16,7 +16,8 @@ env:
   KAOS_PULL_IMAGE: "github-runner:25.04"
 jobs:
     job-core:
-        runs-on: ubuntu-latest
+        runs-on:
+            group: test
         steps:
             - id: test
               name: bateria de pruebas de docker
@@ -32,13 +33,12 @@ jobs:
                   echo "Indicamos la posicion en el runner"
                   pwd
                   echo "creamos el fichero en la ruta por defecto"
-                  echo "${{ secrets.KAOS_SSHKEY_PRIVATE }}" > /home/runner/work/ka0s/ka0s/id_rsa
+
                   echo "Visualizamos el contenido del fichero"
-                  cat /home/runner/work/ka0s/ka0s/id_rsa
+                  cat ~/.ssh/kaosmaster/home/kaos/.ssh/kaosmaster
                   echo "Creando contenedor"
-                  ssh -i /home/runner/work/ka0s/ka0s/id_rsa ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_PORT_1 }} "docker ${{ env.KAOS_RUNNER_ACTION }} -i -t --name ${{ env.KAOS_RUNNER_GROUPNAME }}-1 ${{ secrets.KAOS_PULL_IMAGE }} "
-                  ssh -i /home/runner/work/ka0s/ka0s/id_rsa ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_PORT_1 }} "docker start ${{ env.KAOS_RUNNER_GROUPNAME }}-1"
-                  ssh -i /home/runner/work/ka0s/ka0s/id_rsa ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_PORT_1 }} "docker exec -d ${{ env.KAOS_RUNNER_GROUPNAME }}-1 sh -c 'cd /actions-runner/ && ./config.sh --url https://github.com/Ka0s-Klaus --token ${{ secrets.KAOS_RUNNER_TOKEN }} --name ${{ env.KAOS_RUNNER_GROUPNAME }}-1 --runnergroup ${{ env.KAOS_RUNNER_GROUPNAME }} --labels ${{ env.KAOS_RUNNER_GROUPNAME }}-1 --work _work --unnattend'"
-                  ssh -i /home/runner/work/ka0s/ka0s/id_rsa ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_PORT_1 }} "docker exec -d ${{ env.KAOS_RUNNER_GROUPNAME }}-1 sh -c 'cd /actions-runner/ && ./run.sh'"
+                  ssh -i /home/kaos/.ssh/kaosmaster ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_PORT_1 }} "docker ${{ env.KAOS_RUNNER_ACTION }} -i -t --name ${{ env.KAOS_RUNNER_GROUPNAME }}-2 ${{ secrets.KAOS_PULL_IMAGE }} "
+                  ssh -i /home/kaos/.ssh/kaosmaster ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_PORT_1 }} "docker start ${{ env.KAOS_RUNNER_GROUPNAME }}-2"
+                  ssh -i /home/kaos/.ssh/kaosmaster ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_PORT_1 }} "docker exec -d ${{ env.KAOS_RUNNER_GROUPNAME }}-2 sh -c 'cd /actions-runner/ && ./config.sh --url https://github.com/Ka0s-Klaus --token ${{ secrets.KAOS_RUNNER_TOKEN }} --name ${{ env.KAOS_RUNNER_GROUPNAME }}-2 --runnergroup ${{ env.KAOS_RUNNER_GROUPNAME }} --labels ${{ env.KAOS_RUNNER_GROUPNAME }}-2 --work _work --unnattend'"
+                  ssh -i /home/kaos/.ssh/kaosmaster ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_PORT_1 }} "docker exec -d ${{ env.KAOS_RUNNER_GROUPNAME }}-2 sh -c 'cd /actions-runner/ && ./run.sh'"
                   echo "Eliminamos el rastro de la clave privada"
-                  rm -rf /home/runner/work/ka0s/ka0s/id_rsa
