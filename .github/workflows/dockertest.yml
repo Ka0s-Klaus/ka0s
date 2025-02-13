@@ -12,26 +12,33 @@ env:
   KAOS_PATH_RESUME: "core/outputs/iac/r/"
   KAOS_RUNNER_JSON: "core/iac/r.json"
   KAOS_RUNNER_ACTION: "create"
-  KAOS_RUNNER_GROUPNAME: "test"
+  KAOS_RUNNER_GROUPNAME: "version"
   KAOS_PULL_IMAGE: "github-runner:25.04"
 jobs:
-    job-core:
-        runs-on: ubuntu-latest
-        steps:
-            - id: test
-              name: bateria de pruebas de docker
-              if: ${{ success() }}
-              uses: actions/checkout@v4
-              with:
-                  fetch-depth: 0
-                  token: ${{ secrets.KAOS_REPO_TOKEN }}
-            - id: create
-              name: Crear contenedor
-              if: ${{ success() }}
-              run: |
-                  echo "Creando contenedor"
-                  KAOS_RUNNER_ACTION="create"
-                  ssh -i ${{ secrets.KAOS_SSHKEY_PRIVATE }} ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_PORT_1 }} "docker ${{ env.KAOS_RUNNER_ACTION }} -i -t --name ${{ env.KAOS_RUNNER_GROUPNAME }}-1 ${{ secrets.KAOS_PULL_IMAGE }} "
-                  ssh -i ${{ secrets.KAOS_SSHKEY_PRIVATE }} ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_PORT_1 }} "docker start ${{ env.KAOS_RUNNER_GROUPNAME }}-1"
-                  ssh -i ${{ secrets.KAOS_SSHKEY_PRIVATE }} ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_PORT_1 }} "docker exec -d ${{ env.KAOS_RUNNER_GROUPNAME }}-1 sh -c 'cd /actions-runner/ && ./config.sh --url https://github.com/Ka0s-Klaus --token ${{ secrets.KAOS_RUNNER_TOKEN }} --name ${{ env.KAOS_RUNNER_GROUPNAME }}-1 --runnergroup ${{ env.KAOS_RUNNER_GROUPNAME }} --labels ${{ env.KAOS_RUNNER_GROUPNAME }}-1 --work _work --unnattend'"
-                  ssh -i ${{ secrets.KAOS_SSHKEY_PRIVATE }} ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_PORT_1 }} "docker exec -d ${{ env.KAOS_RUNNER_GROUPNAME }}-1 sh -c 'cd /actions-runner/ && ./run.sh'"
+  job-core:
+    runs-on:
+      group: ka0s
+    steps:
+        - id: repo
+          name: bateria de pruebas de docker
+          if: ${{ success() }}
+          uses: actions/checkout@v4
+          with:
+              fetch-depth: 0
+              token: ${{ secrets.KAOS_REPO_TOKEN }}
+        - name: executing remote ssh commands using ssh key
+          uses: appleboy/ssh-action@v1.2.0
+          with:
+            host: ${{ secrets.KAOS_HOST_1 }}
+            username: ${{ secrets.KAOS_USER_CONNECT }}
+            key: ${{ secrets.KAOS_SSHKEY_PRIVATE }}
+            port: ${{ secrets.KAOS_PORT_1 }}
+            script: |
+              echo "Indicamos la posicion en el runner"
+              pwd
+              echo "Creando contenedor"
+              docker ${{ env.KAOS_RUNNER_ACTION }} -i -t --name ${{ env.KAOS_RUNNER_GROUPNAME }}-2 ${{ secrets.KAOS_PULL_IMAGE }}
+              docker start ${{ env.KAOS_RUNNER_GROUPNAME }}-2
+              docker exec -d ${{ env.KAOS_RUNNER_GROUPNAME }}-2 sh -c 'cd /actions-runner/ && ./config.sh --url https://github.com/Ka0s-Klaus --token ${{ secrets.KAOS_RUNNER_TOKEN }} --name ${{ env.KAOS_RUNNER_GROUPNAME }}-2 --runnergroup ${{ env.KAOS_RUNNER_GROUPNAME }} --labels ${{ env.KAOS_RUNNER_GROUPNAME }}-2 --work _work --unnattend'
+              docker exec -d ${{ env.KAOS_RUNNER_GROUPNAME }}-2 sh -c 'cd /actions-runner/ && ./run.sh'
+              

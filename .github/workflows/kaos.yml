@@ -1,6 +1,5 @@
 name: Ka0s 
 on: 
-  workflow_dispatch: {} # Ejecutar manualmente
   push:
     paths:
       - '**.yaml'
@@ -11,11 +10,6 @@ on:
       - 'H*'
       - 'F*'
       - 'RN*'
-
-  pull_request:
-    branches:
-      - main
-
 env:
     KAOS_CODE: ${{ github.run_id }}
     KAOS_EVENT_NAME: ${{ github.event_name }}
@@ -24,7 +18,6 @@ env:
     KAOS_MODULE: "[Ka0S] kaos"
     KAOS_PATH_RESUME: "core/results/"
     KAOS_JSON: "core/results/event_data"
-
 jobs: 
   job-core:
     runs-on:
@@ -40,7 +33,6 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.KAOS_REPO_TOKEN }}
-
       - id: validate
         name: Validate file extensions
         run: |
@@ -51,7 +43,6 @@ jobs:
               echo "File $file has an invalid extension: $extension"
             fi
           done
-
       - name: Crear JSON
         id: crear_json
         run: |
@@ -102,8 +93,10 @@ jobs:
             *)
               echo "{\"event\": \"unknown\"}" > event_data.json # Ejemplo: {"event": "unknown"}
               ;;
-          esac
-
+          esac      
+      - name: Set environment variable for ref
+        id: ref
+        run: echo "GITHUB_REF=${{ github.ref }}" >> $GITHUB_ENV
       - id: upload-files
         name: Upload Files
         run: |
@@ -113,13 +106,12 @@ jobs:
           git pull
           git add ${{ env.KAOS_JSON }}*
           git commit -m "[Ka0S] Uploading resume execution files to the repository..."
-          git push origin ${{ env.KAOS_REF }}
-
+          git push origin ${{ github.ref }}
+          git push origin $GITHUB_REF
       - id: view
         name: Ver JSON
         #run: cat event_data.json
-        run: cat ${{ env.KAOS_JSON }}${{ github.run_id }}.json
-      
+        run: cat ${{ env.KAOS_JSON }}${{ github.run_id }}.json      
       - id: module
         env:
             modules: ${{ secrets.KAOS_CORE_MODULES }}
