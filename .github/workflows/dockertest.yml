@@ -15,30 +15,30 @@ env:
   KAOS_RUNNER_GROUPNAME: "test"
   KAOS_PULL_IMAGE: "github-runner:25.04"
 jobs:
-    job-core:
-        runs-on:
-            group: test
-        steps:
-            - id: test
-              name: bateria de pruebas de docker
-              if: ${{ success() }}
-              uses: actions/checkout@v4
-              with:
-                  fetch-depth: 0
-                  token: ${{ secrets.KAOS_REPO_TOKEN }}
-            - id: create
-              name: Crear contenedor
-              if: ${{ success() }}
-              run: |
-                  echo "Indicamos la posicion en el runner"
-                  pwd
-                  echo "creamos el fichero en la ruta por defecto"
+  job-core:
+    runs-on:
+        group: test
+    steps:
+        - id: repo
+          name: bateria de pruebas de docker
+          if: ${{ success() }}
+          uses: actions/checkout@v4
+          with:
+              fetch-depth: 0
+              token: ${{ secrets.KAOS_REPO_TOKEN }}
+        - id: createnew-docker
+          name: Crear contenedor
+          if: ${{ success() }}
+          run: |
+              echo "Indicamos la posicion en el runner"
+              pwd
+              echo "creamos el fichero en la ruta por defecto"
 
-                  echo "Visualizamos el contenido del fichero"
-                  cat ~/.ssh/kaosmaster/home/kaos/.ssh/kaosmaster
-                  echo "Creando contenedor"
-                  ssh -i /home/kaos/.ssh/kaosmaster ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_PORT_1 }} "docker ${{ env.KAOS_RUNNER_ACTION }} -i -t --name ${{ env.KAOS_RUNNER_GROUPNAME }}-2 ${{ secrets.KAOS_PULL_IMAGE }} "
-                  ssh -i /home/kaos/.ssh/kaosmaster ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_PORT_1 }} "docker start ${{ env.KAOS_RUNNER_GROUPNAME }}-2"
-                  ssh -i /home/kaos/.ssh/kaosmaster ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_PORT_1 }} "docker exec -d ${{ env.KAOS_RUNNER_GROUPNAME }}-2 sh -c 'cd /actions-runner/ && ./config.sh --url https://github.com/Ka0s-Klaus --token ${{ secrets.KAOS_RUNNER_TOKEN }} --name ${{ env.KAOS_RUNNER_GROUPNAME }}-2 --runnergroup ${{ env.KAOS_RUNNER_GROUPNAME }} --labels ${{ env.KAOS_RUNNER_GROUPNAME }}-2 --work _work --unnattend'"
-                  ssh -i /home/kaos/.ssh/kaosmaster ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_PORT_1 }} "docker exec -d ${{ env.KAOS_RUNNER_GROUPNAME }}-2 sh -c 'cd /actions-runner/ && ./run.sh'"
-                  echo "Eliminamos el rastro de la clave privada"
+              echo "Visualizamos el contenido del fichero"
+              cat ~/.ssh/kaosmaster/home/kaos/.ssh/kaosmaster
+              echo "Creando contenedor"
+              ssh -i /home/kaos/.ssh/kaosmaster ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_PORT_1 }} "docker ${{ env.KAOS_RUNNER_ACTION }} -i -t --name ${{ env.KAOS_RUNNER_GROUPNAME }}-2 ${{ secrets.KAOS_PULL_IMAGE }} "
+              ssh -i /home/kaos/.ssh/kaosmaster ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_PORT_1 }} "docker start ${{ env.KAOS_RUNNER_GROUPNAME }}-2"
+              ssh -i /home/kaos/.ssh/kaosmaster ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_PORT_1 }} "docker exec -d ${{ env.KAOS_RUNNER_GROUPNAME }}-2 sh -c 'cd /actions-runner/ && ./config.sh --url https://github.com/Ka0s-Klaus --token ${{ secrets.KAOS_RUNNER_TOKEN }} --name ${{ env.KAOS_RUNNER_GROUPNAME }}-2 --runnergroup ${{ env.KAOS_RUNNER_GROUPNAME }} --labels ${{ env.KAOS_RUNNER_GROUPNAME }}-2 --work _work --unnattend'"
+              ssh -i /home/kaos/.ssh/kaosmaster ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_PORT_1 }} "docker exec -d ${{ env.KAOS_RUNNER_GROUPNAME }}-2 sh -c 'cd /actions-runner/ && ./run.sh'"
+              echo "Eliminamos el rastro de la clave privada"
