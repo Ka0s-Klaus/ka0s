@@ -1,0 +1,37 @@
+name: Ka0s DockerTest
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: write
+  issues: write
+  pull-requests: write
+env:
+  KAOS_MODULE: "[Ka0S] CORE IaC"
+  GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+  KAOS_PATH_RESUME: "core/outputs/iac/r/"
+  KAOS_RUNNER_JSON: "core/iac/r.json"
+  KAOS_RUNNER_ACTION: "create"
+  KAOS_RUNNER_GROUPNAME: "test"
+  KAOS_PULL_IMAGE: "github-runner:25.04"
+jobs:
+    job-core:
+        runs-on: ubuntu-latest
+        steps:
+            - id: test
+              name: bateria de pruebas de docker
+              if: ${{ success() }}
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+                  token: ${{ secrets.KAOS_REPO_TOKEN }}
+            - id: create
+              name: Crear contenedor
+              if: ${{ success() }}
+              run: |
+                  echo "Creando contenedor"
+                  KAOS_RUNNER_ACTION="create"
+                  ssh -i ${{ secrets.KAOS_SSHKEY_PRIVATE }} ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_PORT_1 }} "docker ${{ env.KAOS_RUNNER_ACTION }} -i -t --name ${{ env.KAOS_RUNNER_GROUPNAME }}-1 ${{ secrets.KAOS_PULL_IMAGE }} "
+                  ssh -i ${{ secrets.KAOS_SSHKEY_PRIVATE }} ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_PORT_1 }} "docker start ${{ env.KAOS_RUNNER_GROUPNAME }}-1"
+                  ssh -i ${{ secrets.KAOS_SSHKEY_PRIVATE }} ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_PORT_1 }} "docker exec -d ${{ env.KAOS_RUNNER_GROUPNAME }}-1 sh -c 'cd /actions-runner/ && ./config.sh --url https://github.com/Ka0s-Klaus --token ${{ secrets.KAOS_RUNNER_TOKEN }} --name ${{ env.KAOS_RUNNER_GROUPNAME }}-1 --runnergroup ${{ env.KAOS_RUNNER_GROUPNAME }} --labels ${{ env.KAOS_RUNNER_GROUPNAME }}-1 --work _work --unnattend'"
+                  ssh -i ${{ secrets.KAOS_SSHKEY_PRIVATE }} ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_PORT_1 }} "docker exec -d ${{ env.KAOS_RUNNER_GROUPNAME }}-1 sh -c 'cd /actions-runner/ && ./run.sh'"
