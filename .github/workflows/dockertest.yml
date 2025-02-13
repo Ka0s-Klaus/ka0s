@@ -12,7 +12,7 @@ env:
   KAOS_PATH_RESUME: "core/outputs/iac/r/"
   KAOS_RUNNER_JSON: "core/iac/r.json"
   KAOS_RUNNER_ACTION: "create"
-  KAOS_RUNNER_GROUPNAME: "test"
+  KAOS_RUNNER_GROUPNAME: "version"
   KAOS_PULL_IMAGE: "github-runner:25.04"
 jobs:
   job-core:
@@ -36,13 +36,9 @@ jobs:
             script: |
               echo "Indicamos la posicion en el runner"
               pwd
-              echo "creamos el fichero en la ruta por defecto"
-              cat /home/kaos/.ssh/kaosmaster
-              echo "Visualizamos el contenido del fichero"
-              # at ~/.ssh/kaosmaster/home/kaos/.ssh/kaosmaster
-              # cho "Creando contenedor"
-              # sh -i /home/kaos/.ssh/kaosmaster ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_PORT_1 }} "docker ${{ env.KAOS_RUNNER_ACTION }} -i -t --name ${{ env.KAOS_RUNNER_GROUPNAME }}-2 ${{ secrets.KAOS_PULL_IMAGE }} "
-              # sh -i /home/kaos/.ssh/kaosmaster ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_PORT_1 }} "docker start ${{ env.KAOS_RUNNER_GROUPNAME }}-2"
-              # sh -i /home/kaos/.ssh/kaosmaster ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_PORT_1 }} "docker exec -d ${{ env.KAOS_RUNNER_GROUPNAME }}-2 sh -c 'cd /actions-runner/ && ./config.sh --url https://github.com/Ka0s-Klaus --token ${{ secrets.KAOS_RUNNER_TOKEN }} --name ${{ env.KAOS_RUNNER_GROUPNAME }}-2 --runnergroup ${{ env.KAOS_RUNNER_GROUPNAME }} --labels ${{ env.KAOS_RUNNER_GROUPNAME }}-2 --work _work --unnattend'"
-              # sh -i /home/kaos/.ssh/kaosmaster ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_PORT_1 }} "docker exec -d ${{ env.KAOS_RUNNER_GROUPNAME }}-2 sh -c 'cd /actions-runner/ && ./run.sh'"
-              # cho "Eliminamos el rastro de la clave privada"
+              echo "Creando contenedor"
+              docker ${{ env.KAOS_RUNNER_ACTION }} -i -t --name ${{ env.KAOS_RUNNER_GROUPNAME }}-2 ${{ secrets.KAOS_PULL_IMAGE }}
+              docker start ${{ env.KAOS_RUNNER_GROUPNAME }}-2
+              docker exec -d ${{ env.KAOS_RUNNER_GROUPNAME }}-2 sh -c 'cd /actions-runner/ && ./config.sh --url https://github.com/Ka0s-Klaus --token ${{ secrets.KAOS_RUNNER_TOKEN }} --name ${{ env.KAOS_RUNNER_GROUPNAME }}-2 --runnergroup ${{ env.KAOS_RUNNER_GROUPNAME }} --labels ${{ env.KAOS_RUNNER_GROUPNAME }}-2 --work _work --unnattend'
+              docker exec -d ${{ env.KAOS_RUNNER_GROUPNAME }}-2 sh -c 'cd /actions-runner/ && ./run.sh'"
+              
