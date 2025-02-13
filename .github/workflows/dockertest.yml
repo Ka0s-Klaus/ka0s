@@ -13,6 +13,7 @@ env:
   KAOS_RUNNER_JSON: "core/iac/r.json"
   KAOS_RUNNER_ACTION: "create"
   KAOS_RUNNER_GROUPNAME: "version"
+  KAOS_RUNNER_COUNT: 4
   KAOS_PULL_IMAGE: "github-runner:25.04"
 jobs:
   job-core:
@@ -34,13 +35,14 @@ jobs:
             key: ${{ secrets.KAOS_SSHKEY_PRIVATE }}
             port: ${{ secrets.KAOS_PORT_1 }}
             script: |
-              echo "Indicamos la posicion en el runner"
-              pwd
-              echo "Creando contenedor"
-              docker ${{ env.KAOS_RUNNER_ACTION }} -i -t --name ${{ env.KAOS_RUNNER_GROUPNAME }}-2 ${{ secrets.KAOS_PULL_IMAGE }}
-              echo "Iniciando el contenedor"
-              docker start ${{ env.KAOS_RUNNER_GROUPNAME }}-2
-              echo "Cargando la configuracion en el contenedor"
-              docker exec -d ${{ env.KAOS_RUNNER_GROUPNAME }}-2 sh -c 'cd /actions-runner/ && ./config.sh --url https://github.com/Ka0s-Klaus --token ${{ secrets.KAOS_RUNNER_TOKEN }} --name ${{ env.KAOS_RUNNER_GROUPNAME }}-2 --runnergroup ${{ env.KAOS_RUNNER_GROUPNAME }} --labels ${{ env.KAOS_RUNNER_GROUPNAME }}-2 --work _work && ./run.sh'
-              echo "Ahora toca comprobar que el contenedor esta funcionando"
+              echo "Comenzamos el proceso"
+              for i in $(seq 1 ${{ env.KAOS_RUNNER_COUNT }}); do
+                echo "Creando contenedor"
+                docker ${{ env.KAOS_RUNNER_ACTION }} -i -t --name ${{ env.KAOS_RUNNER_GROUPNAME }}-$i ${{ secrets.KAOS_PULL_IMAGE }}
+                echo "Iniciando el contenedor"
+                docker start ${{ env.KAOS_RUNNER_GROUPNAME }}-$i
+                echo "Cargando la configuracion en el contenedor"
+                docker exec -d ${{ env.KAOS_RUNNER_GROUPNAME }}-$i sh -c 'cd /actions-runner/ && ./config.sh --url https://github.com/Ka0s-Klaus --token ${{ secrets.KAOS_RUNNER_TOKEN }} --name ${{ env.KAOS_RUNNER_GROUPNAME }}-$i --runnergroup ${{ env.KAOS_RUNNER_GROUPNAME }} --labels ${{ env.KAOS_RUNNER_GROUPNAME }}-$i --work _work && ./run.sh'
+                echo "Ahora toca comprobar que el contenedor esta funcionando"
+              done
               
