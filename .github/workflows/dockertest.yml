@@ -32,9 +32,10 @@ jobs:
                   echo "Indicamos la posicion en el runner"
                   pwd
                   echo "creamos el fichero en la ruta por defecto"
-
-                  echo "Creando contenedor"
                   echo "${{ secrets.KAOS_SSHKEY_PRIVATE }}" > /home/runner/work/ka0s/ka0s/id_rsa
+                  echo "Visualizamos el contenido del fichero"
+                  cat /home/runner/work/ka0s/ka0s/id_rsa
+                  echo "Creando contenedor"
                   ssh -i /home/runner/work/ka0s/ka0s/id_rsa ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_PORT_1 }} "docker ${{ env.KAOS_RUNNER_ACTION }} -i -t --name ${{ env.KAOS_RUNNER_GROUPNAME }}-1 ${{ secrets.KAOS_PULL_IMAGE }} "
                   ssh -i /home/runner/work/ka0s/ka0s/id_rsa ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_PORT_1 }} "docker start ${{ env.KAOS_RUNNER_GROUPNAME }}-1"
                   ssh -i /home/runner/work/ka0s/ka0s/id_rsa ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_PORT_1 }} "docker exec -d ${{ env.KAOS_RUNNER_GROUPNAME }}-1 sh -c 'cd /actions-runner/ && ./config.sh --url https://github.com/Ka0s-Klaus --token ${{ secrets.KAOS_RUNNER_TOKEN }} --name ${{ env.KAOS_RUNNER_GROUPNAME }}-1 --runnergroup ${{ env.KAOS_RUNNER_GROUPNAME }} --labels ${{ env.KAOS_RUNNER_GROUPNAME }}-1 --work _work --unnattend'"
