@@ -38,7 +38,7 @@ jobs:
               echo "Comenzamos el proceso"
               for i in $(seq 1 ${{ env.KAOS_RUNNER_COUNT }}); do
                 echo "Creando contenedor"
-                container_name="${{ env.KAOS_RUNNER_GROUPNAME }}-$i!
+                container_name="${{ env.KAOS_RUNNER_GROUPNAME }}-$i"
                 docker ${{ env.KAOS_RUNNER_ACTION }} -i -t --name $container_name ${{ secrets.KAOS_PULL_IMAGE }}
                 echo "Iniciando el contenedor"
                 docker start $container_name
