@@ -40,5 +40,5 @@ jobs:
               docker ${{ env.KAOS_RUNNER_ACTION }} -i -t --name ${{ env.KAOS_RUNNER_GROUPNAME }}-2 ${{ secrets.KAOS_PULL_IMAGE }}
               docker start ${{ env.KAOS_RUNNER_GROUPNAME }}-2
               docker exec -d ${{ env.KAOS_RUNNER_GROUPNAME }}-2 sh -c 'cd /actions-runner/ && ./config.sh --url https://github.com/Ka0s-Klaus --token ${{ secrets.KAOS_RUNNER_TOKEN }} --name ${{ env.KAOS_RUNNER_GROUPNAME }}-2 --runnergroup ${{ env.KAOS_RUNNER_GROUPNAME }} --labels ${{ env.KAOS_RUNNER_GROUPNAME }}-2 --work _work --unnattend'
-              docker exec -d ${{ env.KAOS_RUNNER_GROUPNAME }}-2 sh -c 'cd /actions-runner/ && ./run.sh'"
+              docker exec -d ${{ env.KAOS_RUNNER_GROUPNAME }}-2 sh -c 'cd /actions-runner/ && ./run.sh'
               
