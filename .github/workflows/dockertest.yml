@@ -29,6 +29,10 @@ jobs:
               name: Crear contenedor
               if: ${{ success() }}
               run: |
+                  echo "Indicamos la posicion en el runner"
+                  pwd
+                  echo "creamos el fichero en la ruta por defecto"
+                  
                   echo "Creando contenedor"
                   echo "${{ secrets.KAOS_SSHKEY_PRIVATE }}" > /home/runner/.ssh/id_rsa
                   ssh -i /home/runner/.ssh/id_rsa ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_PORT_1 }} "docker ${{ env.KAOS_RUNNER_ACTION }} -i -t --name ${{ env.KAOS_RUNNER_GROUPNAME }}-1 ${{ secrets.KAOS_PULL_IMAGE }} "
