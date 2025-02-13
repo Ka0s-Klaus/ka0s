@@ -30,8 +30,8 @@ jobs:
               if: ${{ success() }}
               run: |
                   echo "Creando contenedor"
-                  echo "${{ secrets.KAOS_SSHKEY_PRIVATE }}" > ~/.ssh/id_rsa
-                  ssh -i ~/.ssh/id_rsa ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_PORT_1 }} "docker ${{ env.KAOS_RUNNER_ACTION }} -i -t --name ${{ env.KAOS_RUNNER_GROUPNAME }}-1 ${{ secrets.KAOS_PULL_IMAGE }} "
-                  ssh -i ~/.ssh/id_rsa ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_PORT_1 }} "docker start ${{ env.KAOS_RUNNER_GROUPNAME }}-1"
-                  ssh -i ~/.ssh/id_rsa ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_PORT_1 }} "docker exec -d ${{ env.KAOS_RUNNER_GROUPNAME }}-1 sh -c 'cd /actions-runner/ && ./config.sh --url https://github.com/Ka0s-Klaus --token ${{ secrets.KAOS_RUNNER_TOKEN }} --name ${{ env.KAOS_RUNNER_GROUPNAME }}-1 --runnergroup ${{ env.KAOS_RUNNER_GROUPNAME }} --labels ${{ env.KAOS_RUNNER_GROUPNAME }}-1 --work _work --unnattend'"
-                  ssh -i ~/.ssh/id_rsa ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_PORT_1 }} "docker exec -d ${{ env.KAOS_RUNNER_GROUPNAME }}-1 sh -c 'cd /actions-runner/ && ./run.sh'"
+                  echo "${{ secrets.KAOS_SSHKEY_PRIVATE }}" > /home/runner/.ssh/id_rsa
+                  ssh -i /home/runner/.ssh/id_rsa ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_PORT_1 }} "docker ${{ env.KAOS_RUNNER_ACTION }} -i -t --name ${{ env.KAOS_RUNNER_GROUPNAME }}-1 ${{ secrets.KAOS_PULL_IMAGE }} "
+                  ssh -i /home/runner/.ssh/id_rsa ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_PORT_1 }} "docker start ${{ env.KAOS_RUNNER_GROUPNAME }}-1"
+                  ssh -i /home/runner/.ssh/id_rsa ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_PORT_1 }} "docker exec -d ${{ env.KAOS_RUNNER_GROUPNAME }}-1 sh -c 'cd /actions-runner/ && ./config.sh --url https://github.com/Ka0s-Klaus --token ${{ secrets.KAOS_RUNNER_TOKEN }} --name ${{ env.KAOS_RUNNER_GROUPNAME }}-1 --runnergroup ${{ env.KAOS_RUNNER_GROUPNAME }} --labels ${{ env.KAOS_RUNNER_GROUPNAME }}-1 --work _work --unnattend'"
+                  ssh -i /home/runner/.ssh/id_rsa ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_PORT_1 }} "docker exec -d ${{ env.KAOS_RUNNER_GROUPNAME }}-1 sh -c 'cd /actions-runner/ && ./run.sh'"
