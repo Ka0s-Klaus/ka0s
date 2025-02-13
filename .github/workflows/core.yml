@@ -1,29 +1,22 @@
-name: Ka0s Core Execution
+name: Ka0s ka0s Execution
 on:
-  workflow_dispatch:
-    inputs:
-      kaos-runner-group:
-        description: 'Seleccione el grupo de ejecución'
-        required: true
-        default: 'ka0s'
-        type: choice
-        options:
-          - ka0s
-          - core
-          - execution
-          - inspector
+  push:
+    branches:
+      - main
 permissions:
   contents: write
   actions: write
   issues: write
   pull-requests: write
 env:
-  KAOS_MODULE: "[Ka0S] Core Execution"
+  KAOS_MODULE: "[Ka0S] CORE IaC"
   GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+  KAOS_PATH_RESUME: "core/outputs/iac/r/"
+  KAOS_RUNNER_JSON: "core/iac/r.json"
 jobs:
   job-repo:
     runs-on: 
-      group: core
+      group: ka0s
     steps:
       - id: repo
         name: Checkout repository
@@ -34,7 +27,7 @@ jobs:
           token: ${{ secrets.KAOS_REPO_TOKEN }}
   job-user:
     runs-on: 
-      group: core
+      group: ka0s
     needs: check-issue
     outputs:
       KAOS_EXECUTION_TYPE: ${{ steps.extract.outputs.KAOS_EXECUTION_TYPE }}
@@ -56,7 +49,7 @@ jobs:
             echo "($_timestamp) - Se comprobado los datos asociados a la tarjeta #${{ env.KAOS_ISSUE_NUMBER }}." >> ${{ env.KAOS_PATH_OUTPUT}}${{ env.KAOS_CODE}}-${{ env.KAOS_ISSUE_NUMBER}}.txt
   job-docker:
     runs-on: 
-      group: core
+      group: ka0s
     needs: check-data
     steps:
       - id: show
@@ -74,26 +67,51 @@ jobs:
           echo "KAOS_ISSUE_BODY: $KAOS_ISSUE_BODY" >> ${{ env.KAOS_PATH_OUTPUT}}${{ env.KAOS_CODE}}-${{ env.KAOS_ISSUE_NUMBER}}.txt
   job-runner:
     runs-on: 
-      group: core
-    needs: [check-issue, check-data, show-data]
+      group: ka0s
+    needs: [job-repo]
     outputs:
-        KAOS_EXECUTION_RESULT: ${{ steps.execution.outputs.KAOS_EXECUTION_RESULT }}
-        KAOS_EXECUTION_STATUS: ${{ steps.execution.outputs.KAOS_EXECUTION_STATUS }}
-        KAOS_EXECUTION_RUN_ID: ${{ steps.type.outputs.RUN_ID }}
+        KAOS_RUNNER_STATUS: ${{ steps.read.outputs.KAOS_RUNNER_STATUS }}
+        KAOS_RUNNER_ACTION: ${{ steps.read.outputs.KAOS_RUNNER_ACTION }}
+        KAOS_RUNNER_GROUPNAME: ${{ steps.read.outputs.KAOS_RUNNER_GROUPNAME }}
+        KAOS_RUNNER_NUMBER: ${{ steps.read.outputs.KAOS_RUNNER_NUMBER }}
     steps:
-      - id: execution
-        name: Start execution
+      - id: read
+        name: Read json
         if: ${{ success() }}
         run: |
-          # Sección donde definimos como será la ejecución
-          echo "Start execution"
-          _timestamp=$(TZ='Europe/Madrid' date +'%Y-%m-%d %H:%M:%S %Z')
-          echo "($_timestamp) - Se ha iniciado la ejecución de la tarjeta #${{ env.KAOS_ISSUE_NUMBER }}." >> ${{ env.KAOS_PATH_OUTPUT}}${{ env.KAOS_CODE}}-${{ env.KAOS_ISSUE_NUMBER}}.txt
-          echo "KAOS_EXECUTION_RESULT=fichero_de_resultado" >> $GITHUB_OUTPUT
-          echo "KAOS_EXECUTION_STATUS=success" >> $GITHUB_OUTPUT
+          # Sección donde vamos a leer el contenido del fichero que nos permite realizar la ejecución
+          # Leer el fichero JSON
+            json_data=$(cat ${{ env.KAOS_RUNNER_JSON }})
+          # Extraer los valores usando jq
+          runner=$(echo $json_data | jq -r '.runner')
+          echo "KAOS_RUNNER_STATUS=$runner" >> $GITHUB_OUTPUT
+          action=$(echo $json_data | jq -r '.action')
+          echo "KAOS_RUNNER_ACTION=$action" >> $GITHUB_OUTPUT
+          groupname=$(echo $json_data | jq -r '.groupname')
+          echo "KAOS_RUNNER_GROUPNAME=$groupname" >> $GITHUB_OUTPUT
+          number=$(echo $json_data | jq -r '.number')
+          echo "KAOS_RUNNER_NUMBER=$number" >> $GITHUB_OUTPUT
+          if
+      - id: create
+        name: Create execution
+        if: ${{ success() && steps.read.outputs.KAOS_RUNNER_ACTION == "create" }}
+        run: |
+          # Bucle for que repite el proceso
+          for ((i=1; i<=${{ steps.read.outputs.KAOS_RUNNER_NUMBER }}; i++))
+            #Solicitamos la creación del contener basado en la imagen de kaos:latest
+            ssh -i kaosmaster} kaos@master.ka0s.io -p 1712 "docker create -i -t --name core-1 github-runner:25.04"
+            ssh -i ${{ secrets.KAOS_SSHKEY_PRIVATE }} ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_HOSTPORT_1 }} "docker ${{ steps.read.outputs.KAOS_RUNNER_ACTION }} -i -t --name ${{ steps.read.outputs.KAOS_RUNNER_GROUPNAME }}-1 ${{ secrets.KAOS_PULL_IMAGE }} "
+            ssh -i ${{ secrets.KAOS_SSHKEY_PRIVATE }} ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_HOSTPORT_1 }} "docker start core-1"
+            ssh -i ${{ secrets.KAOS_SSHKEY_PRIVATE }} ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_HOSTPORT_1 }} "docker exec -d core-1 sh -c 'cd /actions-runner/ && ./config.sh --url https://github.com/Ka0s-Klaus --token BO7XQANVE2WLG74LZOKGGETHVTHTW --name core-1 --runnergroup core --labels core-1 --work _work --unnattend'"
+            ssh -i ${{ secrets.KAOS_SSHKEY_PRIVATE }} ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_HOSTPORT_1 }} "docker exec -d ka0s-4 sh -c 'cd /actions-runner/ && ./run.sh'"
+          do
+          # Se crea la ejecución y se obtiene el id de la ejecución
+          # Se añade el id de la ejecución al fichero de salida
+          echo "Execution created"
+          echo "KAOS_EXECUTION_RUN_ID: $KAOS_EXECUTION_RUN_ID" >> ${{ env.KAOS_PATH_OUTPUT}}${{ env.KAOS_CODE}}-${{ env.KAOS_ISSUE_NUMBER}}.txt
   handle-success:
     runs-on: 
-      group: core
+      group: ka0s
     needs: [end-execution]
     if: ${{ success() }}
     steps: 
@@ -111,7 +129,7 @@ jobs:
           # gh issue close $KAOS_ISSUE_NUMBER --comment "Puede proceder a cerrar la tarjeta." --reason completed
   handle_failure:
       runs-on: 
-        group: core
+        group: ka0s
       needs: [job-repo, check-issue, check-data, show-data, start-execution, end-execution]
       if: ${{ failure() }} 
       steps: 
@@ -141,7 +159,7 @@ jobs:
             # gh workflow run issue.yaml --ref ${{ github.ref }}-f kaos-issue-actions=comment -f kaos-issue-id=$KAOS_ISSUE_NUMBER -f kaos-issue-body-file="${{ env.KAOS_PATH_OUTPUT}}${{ env.KAOS_CODE}}-${{ env.KAOS_ISSUE_NUMBER}}.txt" -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start="${{ env.KAOS_ISSUE_USER }}"
   end-workflow:
     runs-on: 
-      group: core
+      group: ka0s
     needs: [job-repo, check-issue, check-data, show-data, start-execution, end-execution, handle-success, handle_failure]
     if: ${{ always() }}
     steps:
