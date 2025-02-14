@@ -1,16 +1,13 @@
 name: Ka0S Version
-
 on:
   pull_request:
     types: [opened]
     branches:
       - 'main'
-
 permissions:
   contents: write
   actions: write
   issues: write
-
 env:
   KAOS_MODULE: "[Ka0S] VERSION"
   GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
@@ -18,10 +15,10 @@ env:
   KAOS_REPO: "/actions-runner/_work/kaos/kaos"
   KAOS_STEP_MODULE: ""
   KAOS_CODE: ""
-  GH_VERSION: ""
+  KAOS_VERSION: ""
+  KAOS_RELEASE: ""
   KAOS_REPOSITORY: ${{ github.repository}}
   KAOS_REF: ${{ github.ref }}
-
 jobs:
   kaos-version:
     if: github.event.pull_request.state == 'open'
@@ -35,78 +32,54 @@ jobs:
       AUTHOR_NAME: ${{ steps.information.outputs.AUTHOR_NAME }}
       AUTHOR_EMAIL: ${{ steps.information.outputs.AUTHOR_EMAIL }}
       COMMIT_MESSAGE: ${{ steps.information.outputs.COMMIT_MESSAGE }}
-      
     steps:
     - id: repo
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
         token: ${{ secrets.KAOS_REPO_TOKEN }}
-    
-    - id: python
-      name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.x'
-
-    - id: dependencies
-      name: Install dependencies
+    - id: commit_details
       run: |
-        python -m pip install --upgrade pip
-        pip install requests
-    
+        echo "KAOS_VERSION=$(gh api repos/:owner/:repo/git/matching-refs/tags --jq '.[-1].ref' | sed 's|refs/tags/||')" >> $GITHUB_ENV
+        echo "AUTHOR_NAME=$(git log -1 --pretty=format:'%an')" >> $GITHUB_OUTPUT
+        echo "AUTHOR_EMAIL=$(git log -1 --pretty=format:'%ae')" >> $GITHUB_OUTPUT
+        echo "COMMIT_MESSAGE=$(git log origin/main..HEAD --pretty=format:'%s')" >> $GITHUB_OUTPUT
+        RNBRANCH=$(echo "${{ github.event.pull_request.title }}" | grep -o '^[A-Za-z]*')
+        RNNUMBER=$(echo "${{ github.event.pull_request.title }}" | grep -o '[0-9]*')
+        echo "Extracted RN Branch: $RNBRANCH"
+        echo "Extracted RN Number: $RNNUMBER"
+        echo "RNBRANCH=$RNBRANCH" >> $GITHUB_OUTPUT
+        echo "RNNUMBER=$RNNUMBER" >> $GITHUB_OUTPUT 
     - id: information
       name: Gather pull request information
       env:
         GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN}}
       run: |
-          python <<EOF
-          import os
-          import requests
-
-          # Obtener variables de entorno
-          repo = os.getenv('KAOS_REPOSITORY')
-          pr_number = os.getenv('KAOS_REF').split('/')[-1]
-          token = os.getenv('GH_TOKEN')
-    
-          # URL del pull request
-          pull_request_url = f"https://api.github.com/repos/{repo}/pulls/{pr_number}"
-      
-          headers = {
-              "Authorization": f"token {token}"
-          }
-      
-          # Obtener información del pull request
-          response = requests.get(pull_request_url, headers=headers)
-          pull_request_data = response.json()
-      
-          # Extraer información relevante
-          autor = pull_request_data['user']['login']
-          commits_url = pull_request_data['commits_url']
-          files_url = pull_request_data['url'] + "/files"
-      
-          # Obtener commits
-          commits_response = requests.get(commits_url, headers=headers)
-          commits_data = commits_response.json()
-      
-          # Obtener archivos modificados
-          files_response = requests.get(files_url, headers=headers)
-          files_data = files_response.json()
-      
-          # Crear contenido para el CHANGELOG
-          changelog_content = f"Autor del pull request: {autor}\n\nCommits:\n"
-          for commit in commits_data:
-              changelog_content += f"- {commit['commit']['message']} por {commit['commit']['author']['name']}\n"
-      
-          changelog_content += "\nArchivos modificados:\n"
-          for file in files_data:
-              changelog_content += f"- {file['filename']} (cambios: {file['changes']})\n"
-      
-          # Escribir en el fichero CHANGELOG
-          with open('CHANGELOG', 'a') as changelog_file:
-              changelog_file.write(changelog_content)
+        echo "GH_VERSION=$(gh api repos/:owner/:repo/git/matching-refs/tags --jq '.[-1].ref' | sed 's|refs/tags/||')" >> $GITHUB_ENV
+        echo "AUTHOR_NAME=$(git log -1 --pretty=format:'%an')" >> $GITHUB_OUTPUT
+        echo "AUTHOR_EMAIL=$(git log -1 --pretty=format:'%ae')" >> $GITHUB_OUTPUT
+        echo "COMMIT_MESSAGE=$(git log origin/main..HEAD --pretty=format:'%h - %s (%an)')" >> $GITHUB_OUTPUT
+        RNBRANCH=$(echo "${{ github.event.pull_request.title }}" | grep -o '^[A-Za-z]*')
+        RNNUMBER=$(echo "${{ github.event.pull_request.title }}" | grep -o '[0-9]*')
+        echo "Extracted RN Branch: $RNBRANCH"
+        echo "Extracted RN Number: $RNNUMBER"
+        echo "RNBRANCH=$RNBRANCH" >> $GITHUB_OUTPUT
+        echo "RNNUMBER=$RNNUMBER" >> $GITHUB_OUTPUT 
+        CHANGED_FILES=$(git diff --name-only HEAD~1 --pretty=format:'%h - %s (%an)')
+        echo "CHANGED_FILES=$CHANGED_FILES" >> $GITHUB_OUTPUT
+    - id: write
+      name: Write Changelog
+      run: |
+        KAOS_ISSUE_BODY=$(cat <<'EOF'
+          Version: v$KAOS_VERSION
+          Autor del pull request: $AUTHOR_NAME
+          Fecha de creación: $(date +'%Y-%m-%d')   
+          Commits: 
+          $COMMIT_MESSAGE
+          Archivos modificados:
+          $CHANGED_FILES 
           EOF
-    
+          )
     - id: upload-files
       name: Upload Files
       run: |
@@ -120,9 +93,9 @@ jobs:
 
     - id: version
       run: |
-        if [ ! -f version.txt ]; then echo "0.0.0" > version.txt; fi
-        VERSION=$(cat version.txt)
-        IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+        echo "KAOS_VERSION=$(gh api repos/:owner/:repo/git/matching-refs/tags --jq '.[-1].ref' | sed 's|refs/tags/||')" >> $GITHUB_ENV
+        if [ ! -f ${{ env.KAOS_VERSION }} ]; then echo "${{ env.KAOS_VERSION }}"; else echo "KAOS_VERSION=0.0.0"; fi
+        IFS='.' read -r MAJOR MINOR PATCH <<< "${{ env.KAOS_VERSION }}"
         if [[ "${{ steps.information.outputs.RNBRANCH }}" =~ (H) ]]; then
           PATCH=$((PATCH + 1))
         elif [[ "${{ steps.information.outputs.RNBRANCH }}" =~ (F) ]]; then
@@ -133,12 +106,8 @@ jobs:
           MINOR=0
           PATCH=0
         fi
-        
         NEW_VERSION="$MAJOR.$MINOR.$PATCH"
-        echo "VERSION=$NEW_VERSION" >> version.txt
-        echo "GH_VERSION=$NEW_VERSION" >> $GITHUB_ENV
-        echo "VERSION=$NEW_VERSION" >> $GITHUB_OUTPUT
-
+        echo "KAOS_VERSION=$NEW_VERSION" >> $GITHUB_ENV
     - id: push-log-tag-index
       env:
         USER_NAME: ${{ secrets.KAOS_BOT_NAME }}
@@ -146,23 +115,20 @@ jobs:
       run: |
         git config --global user.name '${{ env.USER_NAME }}'
         git config --global user.email '${{ env.USER_EMAIL}}'
-        git tag -a "${{ steps.version.outputs.VERSION }}" -m "${{ env.KAOS_MODULE }} NEW Ka0S version ${{ steps.version.outputs.VERSION }}"
-        git push origin "${{ steps.version.outputs.VERSION }}"
+        git tag -a "${{ env.KAOS_VERSION }}" -m "${{ env.KAOS_MODULE }} NEW Ka0S version ${{ env.KAOS_VERSION}}"
+        git push origin "${{ env.KAOS_VERSION }}"
         if [ ! -f INDEX.md ]; then echo "# Version Index" > INDEX.md; fi
-        echo "- **Version**: ${{ steps.version.outputs.VERSION }} - **Description**: ${{ steps.information.outputs.COMMIT_MESSAGE }}" >> INDEX.md
+        echo "- **Version**: ${{ env.KAOS_VERSION }} - **Description**: ${{ steps.information.outputs.COMMIT_MESSAGE }}" >> INDEX.md
         git add *
-        git commit -m "${{ env.KAOS_MODULE }}  Upload: CHANGELOG.md, INDEX.md with version ${{ steps.version.outputs.VERSION }}"
+        git commit -m "${{ env.KAOS_MODULE }}  Upload: CHANGELOG.md, INDEX.md with version ${{ env.KAOS_VERSION }}"
         git push origin HEAD:${{ github.head_ref }}
-
     - id: failure-delete-tag
       if: ${{ failure() }}
       run: |
         # Antes de nada borramos el tag asignado en el paso anterior
-        git push origin --delete "${{ steps.version.outputs.VERSION }}"
+        git push origin --delete "${{ env.KAOS_VERSION }}"
         KAOS_ISSUE_BODY="Sentimos comunicarle que no se cumplen los requerimientos, por favor revise los checks"
         gh workflow run issue.yaml --ref main -f kaos-issue-id="${{ github.event.pull_request.number }}" -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=comment
-    
-    
   handle_failure:
     runs-on: 
       group: ka0s
@@ -194,10 +160,10 @@ jobs:
           EOF
           )
           # Creamos la issue dado que ha fallado el modulo principal
-          gh workflow run issue.yaml --ref ${{ github.ref }} -f kaos-issue-title="$KAOS_ISSUE_TITLE" -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=create -f kaos-issue-tag="bug"
+          #gh workflow run issue.yaml --ref ${{ github.ref }} -f kaos-issue-title="$KAOS_ISSUE_TITLE" -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=create -f kaos-issue-tag="bug"
           # Añadimos el comentario a la issue que dispara el proceso
           KAOS_ISSUE_BODY="OPS¡ se ha producido un error en el proceso (${{ env.KAOS_MODULE }})  lanzado desde (#${{ needs.kaos-version.outputs.KAOS_NUMBER }}) en la ejecución (${{ github.run_id }}) y esto ha generado una issue con el titulo ($KAOS_ISSUE_TITLE)"
-          gh workflow run issue.yaml --ref ${{ github.ref }} -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=comment -f kaos-issue-tag="bug" -f kaos-issue-id=${{ needs.kaos-version.outputs.KAOS_NUMBER }}
+          #gh workflow run issue.yaml --ref ${{ github.ref }} -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=comment -f kaos-issue-tag="bug" -f kaos-issue-id=${{ needs.kaos-version.outputs.KAOS_NUMBER }}
   handle-success:
     runs-on:
         group: ka0s
