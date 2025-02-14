@@ -46,7 +46,7 @@ jobs:
         echo "KAOS_VERSION=$(gh api repos/:owner/:repo/git/matching-refs/tags --jq '.[-1].ref' | sed 's|refs/tags/||')" >> $GITHUB_OUTPUT
         echo "AUTHOR_NAME=$(git log -1 --pretty=format:'%an')" >> $GITHUB_OUTPUT
         echo "AUTHOR_EMAIL=$(git log -1 --pretty=format:'%ae')" >> $GITHUB_OUTPUT
-        echo "COMMIT_MESSAGE=$(git log origin/main..HEAD --pretty=format:'%s')" >> $GITHUB_OUTPUT
+        echo "COMMIT_MESSAGE=$(git log origin/main..HEAD --pretty=format:'%s' | sed 's/[^a-zA-Z0-9 ]/\ /g')" >> $GITHUB_OUTPUT
         RNBRANCH=$(echo "${{ github.event.pull_request.title }}" | grep -o '^[A-Za-z]*')
         RNNUMBER=$(echo "${{ github.event.pull_request.title }}" | grep -o '[0-9]*')
         echo "Extracted RN Branch: $RNBRANCH"
