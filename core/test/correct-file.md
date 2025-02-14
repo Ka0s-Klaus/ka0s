@@ -10,8 +10,6 @@
 
 #### Subtitulo 5
 
-#### Subtitulo 6
-
 - primera cita
 - segunda cita
 - tercera cita
