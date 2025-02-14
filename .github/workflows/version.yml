@@ -26,7 +26,7 @@ jobs:
   kaos-version:
     if: github.event.pull_request.state == 'open'
     runs-on: 
-      group: kaos-version
+      group: version
     outputs:
       KAOS_BRANCH: ${{ steps.commit_details.outputs.RNBRANCH }}
       KAOS_NUMBER: ${{ steps.commit_details.outputs.RNNUMBER }}
@@ -165,7 +165,7 @@ jobs:
     
   handle_failure:
     runs-on: 
-      group: kaos-issue
+      group: ka0s
     needs: [kaos-version]
     if: ${{ failure() }}
     steps:
