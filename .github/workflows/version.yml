@@ -18,7 +18,8 @@ env:
   KAOS_REPO: "/actions-runner/_work/kaos/kaos"
   KAOS_STEP_MODULE: ""
   KAOS_CODE: ""
-  GH_VERSION: ""
+  KAOS_VERSION: ""
+  KAOS_RELEASE: ""
   KAOS_REPOSITORY: ${{ github.repository}}
   KAOS_REF: ${{ github.ref }}
 
@@ -47,7 +48,7 @@ jobs:
       name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.x'
+        python-version: '3.12'
 
     - id: dependencies
       name: Install dependencies
@@ -120,9 +121,9 @@ jobs:
 
     - id: version
       run: |
-        if [ ! -f version.txt ]; then echo "0.0.0" > version.txt; fi
-        VERSION=$(cat version.txt)
-        IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+        echo "KAOS_VERSION=$(gh api repos/:owner/:repo/git/matching-refs/tags --jq '.[-1].ref' | sed 's|refs/tags/||')" >> $GITHUB_ENV
+        if [ ! -f ${{ env.KAOS_VERSION }} ]; then echo "${{ env.KAOS_VERSION }}"; else echo "KAOS_VERSION=0.0.0"; fi
+        IFS='.' read -r MAJOR MINOR PATCH <<< "${{ env.KAOS_VERSION }}"
         if [[ "${{ steps.information.outputs.RNBRANCH }}" =~ (H) ]]; then
           PATCH=$((PATCH + 1))
         elif [[ "${{ steps.information.outputs.RNBRANCH }}" =~ (F) ]]; then
@@ -135,9 +136,7 @@ jobs:
         fi
         
         NEW_VERSION="$MAJOR.$MINOR.$PATCH"
-        echo "VERSION=$NEW_VERSION" >> version.txt
-        echo "GH_VERSION=$NEW_VERSION" >> $GITHUB_ENV
-        echo "VERSION=$NEW_VERSION" >> $GITHUB_OUTPUT
+        echo "KAOS_VERSION=$NEW_VERSION" >> $GITHUB_ENV
 
     - id: push-log-tag-index
       env:
@@ -146,19 +145,19 @@ jobs:
       run: |
         git config --global user.name '${{ env.USER_NAME }}'
         git config --global user.email '${{ env.USER_EMAIL}}'
-        git tag -a "${{ steps.version.outputs.VERSION }}" -m "${{ env.KAOS_MODULE }} NEW Ka0S version ${{ steps.version.outputs.VERSION }}"
-        git push origin "${{ steps.version.outputs.VERSION }}"
+        git tag -a "${{ env.KAOS_VERSION }}" -m "${{ env.KAOS_MODULE }} NEW Ka0S version ${{ env.KAOS_VERSION}}"
+        git push origin "${{ env.KAOS_VERSION }}"
         if [ ! -f INDEX.md ]; then echo "# Version Index" > INDEX.md; fi
-        echo "- **Version**: ${{ steps.version.outputs.VERSION }} - **Description**: ${{ steps.information.outputs.COMMIT_MESSAGE }}" >> INDEX.md
+        echo "- **Version**: ${{ env.KAOS_VERSION }} - **Description**: ${{ steps.information.outputs.COMMIT_MESSAGE }}" >> INDEX.md
         git add *
-        git commit -m "${{ env.KAOS_MODULE }}  Upload: CHANGELOG.md, INDEX.md with version ${{ steps.version.outputs.VERSION }}"
+        git commit -m "${{ env.KAOS_MODULE }}  Upload: CHANGELOG.md, INDEX.md with version ${{ env.KAOS_VERSION }}"
         git push origin HEAD:${{ github.head_ref }}
 
     - id: failure-delete-tag
       if: ${{ failure() }}
       run: |
         # Antes de nada borramos el tag asignado en el paso anterior
-        git push origin --delete "${{ steps.version.outputs.VERSION }}"
+        git push origin --delete "${{ env.KAOS_VERSION }}"
         KAOS_ISSUE_BODY="Sentimos comunicarle que no se cumplen los requerimientos, por favor revise los checks"
         gh workflow run issue.yaml --ref main -f kaos-issue-id="${{ github.event.pull_request.number }}" -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=comment
     
@@ -194,10 +193,10 @@ jobs:
           EOF
           )
           # Creamos la issue dado que ha fallado el modulo principal
-          gh workflow run issue.yaml --ref ${{ github.ref }} -f kaos-issue-title="$KAOS_ISSUE_TITLE" -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=create -f kaos-issue-tag="bug"
+          #gh workflow run issue.yaml --ref ${{ github.ref }} -f kaos-issue-title="$KAOS_ISSUE_TITLE" -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=create -f kaos-issue-tag="bug"
           # Añadimos el comentario a la issue que dispara el proceso
           KAOS_ISSUE_BODY="OPS¡ se ha producido un error en el proceso (${{ env.KAOS_MODULE }})  lanzado desde (#${{ needs.kaos-version.outputs.KAOS_NUMBER }}) en la ejecución (${{ github.run_id }}) y esto ha generado una issue con el titulo ($KAOS_ISSUE_TITLE)"
-          gh workflow run issue.yaml --ref ${{ github.ref }} -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=comment -f kaos-issue-tag="bug" -f kaos-issue-id=${{ needs.kaos-version.outputs.KAOS_NUMBER }}
+          #gh workflow run issue.yaml --ref ${{ github.ref }} -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=comment -f kaos-issue-tag="bug" -f kaos-issue-id=${{ needs.kaos-version.outputs.KAOS_NUMBER }}
   handle-success:
     runs-on:
         group: ka0s
