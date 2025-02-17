@@ -127,7 +127,7 @@ jobs:
         # Antes de nada borramos el tag asignado en el paso anterior
         git push origin --delete "${{ env.KAOS_VERSION }}"
         KAOS_ISSUE_BODY="Sentimos comunicarle que no se cumplen los requerimientos, por favor revise los checks"
-        gh workflow run issue.yaml --ref main -f kaos-issue-id="${{ github.event.pull_request.number }}" -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=comment
+        #gh workflow run issue.yaml --ref main -f kaos-issue-id="${{ github.event.pull_request.number }}" -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=comment
   handle_failure:
     runs-on: 
       group: ka0s
