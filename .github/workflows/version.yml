@@ -38,35 +38,25 @@ jobs:
       with:
         fetch-depth: 0
         token: ${{ secrets.KAOS_REPO_TOKEN }}
-    - id: commit_details
-      run: |
-        echo "KAOS_VERSION=$(gh api repos/:owner/:repo/git/matching-refs/tags --jq '.[-1].ref' | sed 's|refs/tags/||')" >> $GITHUB_ENV
-        echo "AUTHOR_NAME=$(git log -1 --pretty=format:'%an')" >> $GITHUB_OUTPUT
-        echo "AUTHOR_EMAIL=$(git log -1 --pretty=format:'%ae')" >> $GITHUB_OUTPUT
-        echo "COMMIT_MESSAGE=$(git log origin/main..HEAD --pretty=format:'%s')" >> $GITHUB_OUTPUT
-        RNBRANCH=$(echo "${{ github.event.pull_request.title }}" | grep -o '^[A-Za-z]*')
-        RNNUMBER=$(echo "${{ github.event.pull_request.title }}" | grep -o '[0-9]*')
-        echo "Extracted RN Branch: $RNBRANCH"
-        echo "Extracted RN Number: $RNNUMBER"
-        echo "RNBRANCH=$RNBRANCH" >> $GITHUB_OUTPUT
-        echo "RNNUMBER=$RNNUMBER" >> $GITHUB_OUTPUT 
     - id: information
       name: Gather pull request information
       env:
         GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN}}
       run: |
-        echo "GH_VERSION=$(gh api repos/:owner/:repo/git/matching-refs/tags --jq '.[-1].ref' | sed 's|refs/tags/||')" >> $GITHUB_ENV
+        echo "KAOS_VERSION=$(gh api repos/:owner/:repo/git/matching-refs/tags --jq '.[-1].ref' | sed 's|refs/tags/||')" >> $GITHUB_OUTPUT
         echo "AUTHOR_NAME=$(git log -1 --pretty=format:'%an')" >> $GITHUB_OUTPUT
         echo "AUTHOR_EMAIL=$(git log -1 --pretty=format:'%ae')" >> $GITHUB_OUTPUT
-        echo "COMMIT_MESSAGE=$(git log origin/main..HEAD --pretty=format:'%h - %s (%an)')" >> $GITHUB_OUTPUT
+        echo "COMMIT_MESSAGE=$(git log origin/main..HEAD --pretty=format:'%s' | sed 's/[^a-zA-Z0-9 ]/\ /g')" >> $GITHUB_OUTPUT
         RNBRANCH=$(echo "${{ github.event.pull_request.title }}" | grep -o '^[A-Za-z]*')
         RNNUMBER=$(echo "${{ github.event.pull_request.title }}" | grep -o '[0-9]*')
         echo "Extracted RN Branch: $RNBRANCH"
         echo "Extracted RN Number: $RNNUMBER"
         echo "RNBRANCH=$RNBRANCH" >> $GITHUB_OUTPUT
         echo "RNNUMBER=$RNNUMBER" >> $GITHUB_OUTPUT 
-        CHANGED_FILES=$(git diff --name-only HEAD~1 --pretty=format:'%h - %s (%an)')
+        CHANGED_FILES=$(git diff --name-only origin/main..HEAD)
+        echo "Ficheros modificados: $CHANGED_FILES"
         echo "CHANGED_FILES=$CHANGED_FILES" >> $GITHUB_OUTPUT
+        #echo "CHANGED_FILES=$(git diff --name-only origin/main..HEAD)" >> $GITHUB_OUTPUT
     - id: write
       name: Write Changelog
       run: |
