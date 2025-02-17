@@ -27,7 +27,6 @@ jobs:
     outputs:
       KAOS_BRANCH: ${{ steps.information.outputs.RNBRANCH }}
       KAOS_NUMBER: ${{ steps.information.outputs.RNNUMBER }}
-      KAOS_VERSION: ${{ steps.version.outputs.VERSION }}
       KAOS_FILES: ${{ steps.information.outputs.FILES_INVOLVED }}
       AUTHOR_NAME: ${{ steps.information.outputs.AUTHOR_NAME }}
       AUTHOR_EMAIL: ${{ steps.information.outputs.AUTHOR_EMAIL }}
@@ -43,7 +42,7 @@ jobs:
       env:
         GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN}}
       run: |
-        echo "KAOS_VERSION=$(gh api repos/:owner/:repo/git/matching-refs/tags --jq '.[-1].ref' | sed 's|refs/tags/||')" >> $GITHUB_OUTPUT
+        echo "KAOS_VERSION=$(gh api repos/:owner/:repo/git/matching-refs/tags --jq '.[-1].ref' | sed 's|refs/tags/||')" >> $GITHUB_ENV
         echo "AUTHOR_NAME=$(git log -1 --pretty=format:'%an')" >> $GITHUB_OUTPUT
         echo "AUTHOR_EMAIL=$(git log -1 --pretty=format:'%ae')" >> $GITHUB_OUTPUT
         git log origin/main..HEAD --pretty=format:'%s' | sed 's/[^a-zA-Z0-9 ]/\ /g' > commit.txt
@@ -67,9 +66,8 @@ jobs:
         #echo "CHANGED_FILES=$(git diff --name-only origin/main..HEAD)" >> $GITHUB_OUTPUT
     - id: version
       run: |
-        echo "KAOS_VERSION=$(gh api repos/:owner/:repo/git/matching-refs/tags --jq '.[-1].ref' | sed 's|refs/tags/||')" >> $GITHUB_ENV
-        if [ ! -f ${{ env.KAOS_VERSION }} ]; then echo "${{ env.KAOS_VERSION }}"; else echo "KAOS_VERSION=0.0.0"; fi
-        IFS='.' read -r MAJOR MINOR PATCH <<< "${{ env.KAOS_VERSION }}"
+        if [ ! -f ${{ env.KAOS_VERSION }} ]; then echo "${{ env.KAOS_VERSION }}"; else echo "KAOS_VERSION='0.0.0'" >> GITHUB_ENV; fi
+        IFS='.' read -r MAJOR MINOR PATCH <<< "${{ env.KAOS_VERSION }}" 
         if [[ "${{ steps.information.outputs.RNBRANCH }}" =~ (H) ]]; then
           PATCH=$((PATCH + 1))
         elif [[ "${{ steps.information.outputs.RNBRANCH }}" =~ (F) ]]; then
@@ -86,7 +84,7 @@ jobs:
       name: Write Changelog
       run: |
         KAOS_ISSUE_BODY=$(cat <<'EOF'
-        Version: v$KAOS_VERSION
+        Version: v${{ env.KAOS_VERSION }}
         Autor del pull request: $AUTHOR_NAME
         Fecha de creación: $(date +'%Y-%m-%d')   
         Commits: 
@@ -98,6 +96,7 @@ jobs:
         echo $KAOS_ISSUE_BODY >> CHANGELOG
 
     - id: push-log-tag-index
+      if: ${{ success() && env.KAOS_VERSION != '' }}
       env:
         USER_NAME: ${{ secrets.KAOS_BOT_NAME }}
         USER_EMAIL: ${{ secrets.KAOS_BOT_EMAIL }}
