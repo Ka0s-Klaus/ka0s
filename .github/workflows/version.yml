@@ -65,31 +65,6 @@ jobs:
         echo "Ficheros modificados: $FILES_INVOLVED"
         echo "FILES_INVOLVED=$FILES_INVOLVED" >> $GITHUB_OUTPUT
         #echo "CHANGED_FILES=$(git diff --name-only origin/main..HEAD)" >> $GITHUB_OUTPUT
-    - id: write
-      name: Write Changelog
-      run: |
-        KAOS_ISSUE_BODY=$(cat <<'EOF'
-        Version: v$KAOS_VERSION
-        Autor del pull request: $AUTHOR_NAME
-        Fecha de creación: $(date +'%Y-%m-%d')   
-        Commits: 
-        $COMMIT_MESSAGE
-        Archivos modificados:
-        $FILES_INVOLVED 
-        EOF
-        )
-        echo $KAOS_ISSUE_BODY >> CHANGELOG
-    - id: upload-files
-      name: Upload Files
-      run: |
-        echo "Uploading files to the repository..."
-        git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
-        git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
-        git pull origin main
-        git add CHANGELOG
-        git commit -m "[Ka0S] Uploading resume files to version"
-        git push origin main
-
     - id: version
       run: |
         echo "KAOS_VERSION=$(gh api repos/:owner/:repo/git/matching-refs/tags --jq '.[-1].ref' | sed 's|refs/tags/||')" >> $GITHUB_ENV
@@ -107,6 +82,21 @@ jobs:
         fi
         NEW_VERSION="$MAJOR.$MINOR.$PATCH"
         echo "KAOS_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+    - id: write
+      name: Write Changelog
+      run: |
+        KAOS_ISSUE_BODY=$(cat <<'EOF'
+        Version: v$KAOS_VERSION
+        Autor del pull request: $AUTHOR_NAME
+        Fecha de creación: $(date +'%Y-%m-%d')   
+        Commits: 
+        $COMMIT_MESSAGE
+        Archivos modificados:
+        $FILES_INVOLVED 
+        EOF
+        )
+        echo $KAOS_ISSUE_BODY >> CHANGELOG
+
     - id: push-log-tag-index
       env:
         USER_NAME: ${{ secrets.KAOS_BOT_NAME }}
