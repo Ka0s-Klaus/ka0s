@@ -28,7 +28,7 @@ jobs:
       KAOS_BRANCH: ${{ steps.information.outputs.RNBRANCH }}
       KAOS_NUMBER: ${{ steps.information.outputs.RNNUMBER }}
       KAOS_VERSION: ${{ steps.version.outputs.VERSION }}
-      KAOS_FILES: ${{ steps.information.outputs.CHANGED_FILES }}
+      KAOS_FILES: ${{ steps.information.outputs.FILES_INVOLVED }}
       AUTHOR_NAME: ${{ steps.information.outputs.AUTHOR_NAME }}
       AUTHOR_EMAIL: ${{ steps.information.outputs.AUTHOR_EMAIL }}
       COMMIT_MESSAGE: ${{ steps.information.outputs.COMMIT_MESSAGE }}
@@ -54,9 +54,9 @@ jobs:
         echo "RNBRANCH=$RNBRANCH" >> $GITHUB_OUTPUT
         echo "RNNUMBER=$RNNUMBER" >> $GITHUB_OUTPUT 
         #CHANGED_FILES=$(git diff --name-only origin/main..HEAD)
-        CHANGED_FILES="ESTO UN FICHERO DE PRUEBA"
-        echo "Ficheros modificados: $CHANGED_FILES"
-        echo "CHANGED_FILES=$CHANGED_FILES" >> $GITHUB_OUTPUT
+        FILES_INVOLVED="ESTO UN FICHERO DE PRUEBA"
+        echo "Ficheros modificados: $FILES_INVOLVED"
+        echo "FILES_INVOLVED=$FILES_INVOLVED" >> $GITHUB_OUTPUT
         #echo "CHANGED_FILES=$(git diff --name-only origin/main..HEAD)" >> $GITHUB_OUTPUT
     - id: write
       name: Write Changelog
