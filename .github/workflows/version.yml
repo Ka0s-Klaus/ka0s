@@ -111,7 +111,7 @@ jobs:
         git commit -m "${{ env.KAOS_MODULE }}  Upload: CHANGELOG.md, INDEX.md with version ${{ env.KAOS_VERSION }}"
         git push origin HEAD:${{ github.head_ref }}
     - id: failure-delete-tag
-      if: ${{ failure() }}
+      if: ${{ failure() && env.KAOS_VERSION != '' }}
       run: |
         # Antes de nada borramos el tag asignado en el paso anterior
         git push origin --delete "${{ env.KAOS_VERSION }}"
