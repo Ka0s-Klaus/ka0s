@@ -37,6 +37,8 @@ Ventajas de utilizar Ka0S
 - Integración Contínua y Entrega Contínua *Permite integrar y entregar cambios de manera rápida y segura.*
 - Reatroalimentación y reciclaje del código *Fomenta la mejora continua a través de la retroalimentación y la reutilización de componentes.*
 
+Si quieres saber más a cerca de [Ka0s](./core/docs/README.md).
+
 ## ¿Y cómo me lo puedo instalar?
 
 A fecha de hoy es tan secillo como seguir los pasos de:
