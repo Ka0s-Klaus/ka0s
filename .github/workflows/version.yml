@@ -45,6 +45,7 @@ jobs:
       run: |
         #echo "KAOS_VERSION=$(gh api repos/:owner/:repo/git/matching-refs/tags --jq '.[-1].ref' | sed 's|refs/tags/||')" >> $GITHUB_ENV
         VERSION=$(git describe --tags $(git rev-list --tags --max-count=1))
+        echo $VERSION
         echo "KAOS_VERSION=$VERSION" >> $GITHUB_ENV
         echo "AUTHOR_NAME=$(git log -1 --pretty=format:'%an')" >> $GITHUB_OUTPUT
         echo "AUTHOR_EMAIL=$(git log -1 --pretty=format:'%ae')" >> $GITHUB_OUTPUT
@@ -90,6 +91,7 @@ jobs:
         echo -e "# Commit Messages:\n\n$COMMIT_MESSAGE" >> CHANGELOG
         echo -e "Archivos modificados:\n\n${{ env.FILES_INVOLVED }}" >> CHANGELOG
     - id: version
+      name: Version
       run: |
         echo "${{ env.KAOS_VERSION }}"
         IFS='.' read -r MAJOR MINOR PATCH <<< "${{ env.KAOS_VERSION }}" 
@@ -116,6 +118,7 @@ jobs:
         echo "KAOS_VERSION=$NEW_VERSION" >> $GITHUB_ENV
     
     - id: push-log-tag-index
+      name: Push Log Tag
       if: ${{ success() && env.KAOS_VERSION != '' }}
       env:
         USER_NAME: ${{ secrets.KAOS_BOT_NAME }}
