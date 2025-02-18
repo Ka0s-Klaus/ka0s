@@ -80,15 +80,11 @@ jobs:
       run: |
         KAOS_DATE=$(date +'%Y-%m-%d')
         COMMIT_MESSAGE=$(git log --pretty=format:'%h %s')
-        KAOS_ISSUE_BODY=$(cat << EOF
-        Version: v${{ env.KAOS_VERSION }}
-        Autor del pull request: ${{ env.AUTHOR_NAME }}
-        Fecha de creación: $KAOS_DATE
-        EOF
+        echo -e "Version: v${{ env.KAOS_VERSION }}" >> CHANGELOG
+        echo -e "Autor del pull request: ${{ env.AUTHOR_NAME }}" >> CHANGELOG
+        echo -e "Fecha de creación: $KAOS_DATE" >> CHANGELOG
         echo -e $KAOS_ISSUE_BODY >> CHANGELOG
         echo -e "# Commit Messages:\n\n$COMMIT_MESSAGE" >> CHANGELOG
-        #Commits: ${{ env.COMMIT_MESSAGE }}
-        Archivos modificados: ${{ env.FILES_INVOLVED }} 
         echo -e "Archivos modificados:\n\n${{ env.FILES_INVOLVED }}" >> CHANGELOG
     - id: version
       run: |
