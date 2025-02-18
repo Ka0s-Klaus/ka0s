@@ -1,12 +1,13 @@
 # Ka0S
 
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/203720c203a84af7a9d888680a047df4)](https://app.codacy.com/gh/SantaKa0S/kaos/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/203720c203a84af7a9d888680a047df4)](https://app.codacy.com/gh/SantaKa0S/kaos/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade) 
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 <p align="center">
-  <img src="core/imgs/kaos.png" alt="All is Code">
+  <img src="core/imgs/kaos.jpeg" alt="All is Code">
 </p>
 
-Albert Einstein dijo una vez: "... si tu intención es describir la verdad, hazlo con sencillez y la elegancia dejasela al sastre."
+Albert Einstein dijo una vez: "... si tu intención es describir la verdad, hazlo con sencillez y la elegancia déjasela al sastre."
 
 ## Table of Contents
 
@@ -40,8 +41,8 @@ Ventajas de utilizar Ka0S
 
 A fecha de hoy es tan secillo como seguir los pasos de:
 
-- Solicitar al equipo Core de Ka0s "un fork" actualizado del respositorio. *Actualmente estamos trabajando es que la solicitud se haga de manera automática, mediante una template.*
-- Documentación personalizada de la configuración de Ka0S en tu entorno
+- Envianos un mensaje de correo a <support@ka0s.io>. *Actualmente estamos trabajando en que la solicitud se haga de manera automática, mediante una template.*
+- Recibirás un mensaje de correo con las instrucciones a aplicar en tu repositorio/organización de GitHub.
 
 ## El equipo
 
@@ -55,7 +56,12 @@ A fecha de hoy es tan secillo como seguir los pasos de:
 
 ## ¿Y si quiero contribuir con el proyecto?
 
-En estos momentos estamos trabajando en el proceso y el procedimiento para poder abrir la colaboración al proyecto de Ka0S. En breve estará disponible..
+En estos momentos estamos trabajando en el proceso y el procedimiento para poder abrir la colaboración al proyecto de Ka0S. En breve estará disponible.
+Pero podemos anticiparos que estamos buscando colaboraciones en los siguiente productos:
+
+- Wazuh, SIEM + XDR
+- Grafana, Loki, CaDvisor, Prometheus
+- Kubernetes
 
 ## Licencia
 
@@ -66,5 +72,6 @@ Information about the [license](./LICENSE) under which the project is distribute
 Contact information for questions or support.
 
 - **Name:** Ka0S Support
-- **Email:** santacana.canton@icloud.com (add [KAOS] in the title of email)
-- **GitHub:** SantaKloud
+- **Email:** <support@ka0s.io> (add [KA0S] in the title of email)
+- **GitHub:** [Ka0s (Release Klaus)](https://github.com/Ka0s-Klaus)
+- **Web:** [Ka0s (Release Klaus)](https://www.ka0s.io)
