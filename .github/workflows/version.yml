@@ -44,7 +44,7 @@ jobs:
         GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN}}
       run: |
         #echo "KAOS_VERSION=$(gh api repos/:owner/:repo/git/matching-refs/tags --jq '.[-1].ref' | sed 's|refs/tags/||')" >> $GITHUB_ENV
-        echo "KAOS_VERSION=$(git describe --tags $(git rev-list --tags --max-count=1)" >> $GITHUB_ENV
+        echo "KAOS_VERSION=$(git describe --tags $(git rev-list --tags --max-count=1))" >> $GITHUB_ENV
         echo "AUTHOR_NAME=$(git log -1 --pretty=format:'%an')" >> $GITHUB_OUTPUT
         echo "AUTHOR_EMAIL=$(git log -1 --pretty=format:'%ae')" >> $GITHUB_OUTPUT
         RNBRANCH=$(echo "${{ github.event.pull_request.title }}" | grep -o '^[A-Za-z]*')
