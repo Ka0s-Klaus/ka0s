@@ -134,7 +134,7 @@ jobs:
   handle_failure:
     runs-on: 
       group: ka0s
-    needs: [job-core, kaos-version]
+    needs: [job-core, job-version]
     if: ${{ failure() }}
     steps:
       - id: check-execution
@@ -169,7 +169,7 @@ jobs:
   handle-success:
     runs-on:
         group: ka0s
-    needs: [job-core, kaos-version, handle_failure]
+    needs: [job-core, job-version, handle_failure]
     if: ${{ success() }}
     steps:
       - id: handle-success-execution
@@ -180,7 +180,7 @@ jobs:
   end-workflow:
     runs-on:
         group: ka0s
-    needs: [job-core, kaos-version, handle-success, handle_failure]
+    needs: [job-core, job-version, handle-success, handle_failure]
     if: ${{ always() }} 
     env:
         GH_TOKEN: ${{ secrets.KAOS_ACTIONS_TOKEN }}
