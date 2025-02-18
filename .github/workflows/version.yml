@@ -30,7 +30,7 @@ jobs:
       KAOS_FILES: ${{ steps.information.outputs.FILES_INVOLVED }}
       AUTHOR_NAME: ${{ steps.information.outputs.AUTHOR_NAME }}
       AUTHOR_EMAIL: ${{ steps.information.outputs.AUTHOR_EMAIL }}
-      COMMIT_MESSAGE: ${{ steps.information.outputs.COMMIT_MESSAGE }}
+      #COMMIT_MESSAGE: ${{ steps.information.outputs.COMMIT_MESSAGE }}
     steps:
     - id: repo
       name: Checkout code
@@ -59,7 +59,7 @@ jobs:
         echo "AUTHOR_EMAIL=$AUTHOR_EMAIL" >> $GITHUB_OUTPUT
         echo "Extracted RN Branch: $RNBRANCH"
         echo "Extracted RN Number: $RNNUMBER"
-        echo "COMMIT_MESSAGE=$(git log origin/main..HEAD --pretty=format:'%s')" >> $GITHUB_OUTPUT
+        #echo "COMMIT_MESSAGE=$(git log origin/main..HEAD --pretty=format:'%s')" >> $GITHUB_OUTPUT
         echo "Ficheros modificados: $FILES_INVOLVED"
         echo "FILES_INVOLVED=$FILES_INVOLVED" >> $GITHUB_OUTPUT
         #echo "CHANGED_FILES=$(git diff --name-only origin/main..HEAD)" >>
@@ -82,7 +82,7 @@ jobs:
         Version: v${{ env.KAOS_VERSION }}
         Autor del pull request: ${{ env.AUTHOR_NAME }}
         Fecha de creación: $KAOS_DATE  
-        Commits: ${{ env.COMMIT_MESSAGE }}
+        #Commits: ${{ env.COMMIT_MESSAGE }}
         Archivos modificados: ${{ env.FILES_INVOLVED }} 
         EOF
         )
