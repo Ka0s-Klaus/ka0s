@@ -90,7 +90,7 @@ jobs:
         echo -e "Archivos modificados:\n\n${{ env.FILES_INVOLVED }}" >> CHANGELOG
     - id: version
       run: |
-        if [ ! -n ${{ env.KAOS_VERSION }} ]; then echo "${{ env.KAOS_VERSION }}"; else echo "KAOS_VERSION='0.0.0'" >> GITHUB_ENV; fi
+        echo "${{ env.KAOS_VERSION }}"
         IFS='.' read -r MAJOR MINOR PATCH <<< "${{ env.KAOS_VERSION }}" 
         echo "KAOS_VERSION: $KAOS_VERSION"
         echo "PATCH: $PATCH"
