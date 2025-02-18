@@ -46,7 +46,6 @@ jobs:
         echo "KAOS_VERSION=$(gh api repos/:owner/:repo/git/matching-refs/tags --jq '.[-1].ref' | sed 's|refs/tags/||')" >> $GITHUB_ENV
         echo "AUTHOR_NAME=$(git log -1 --pretty=format:'%an')" >> $GITHUB_OUTPUT
         echo "AUTHOR_EMAIL=$(git log -1 --pretty=format:'%ae')" >> $GITHUB_OUTPUT
-        git log origin/main..HEAD --pretty=format:'%s' > commit.txt
         RNBRANCH=$(echo "${{ github.event.pull_request.title }}" | grep -o '^[A-Za-z]*')
         RNNUMBER=$(echo "${{ github.event.pull_request.title }}" | grep -o '[0-9]*')
         echo "Extracted RN Branch: $RNBRANCH"
@@ -60,8 +59,7 @@ jobs:
         echo "AUTHOR_EMAIL=$AUTHOR_EMAIL" >> $GITHUB_OUTPUT
         echo "Extracted RN Branch: $RNBRANCH"
         echo "Extracted RN Number: $RNNUMBER"
-        echo "COMMIT_MESSAGE=$(cat commit.txt)" >> $GITHUB_OUTPUT
-        cat commit.txt
+        echo "COMMIT_MESSAGE=$(git log origin/main..HEAD --pretty=format:'%s')" >> $GITHUB_OUTPUT
         echo "Ficheros modificados: $FILES_INVOLVED"
         echo "FILES_INVOLVED=$FILES_INVOLVED" >> $GITHUB_OUTPUT
         #echo "CHANGED_FILES=$(git diff --name-only origin/main..HEAD)" >>
