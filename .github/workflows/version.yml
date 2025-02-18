@@ -27,7 +27,6 @@ jobs:
     outputs:
       KAOS_BRANCH: ${{ steps.information.outputs.RNBRANCH }}
       KAOS_NUMBER: ${{ steps.information.outputs.RNNUMBER }}
-      KAOS_VERSION: ${{ steps.version.outputs.VERSION }}
       KAOS_FILES: ${{ steps.information.outputs.FILES_INVOLVED }}
       AUTHOR_NAME: ${{ steps.information.outputs.AUTHOR_NAME }}
       AUTHOR_EMAIL: ${{ steps.information.outputs.AUTHOR_EMAIL }}
@@ -43,7 +42,7 @@ jobs:
       env:
         GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN}}
       run: |
-        echo "KAOS_VERSION=$(gh api repos/:owner/:repo/git/matching-refs/tags --jq '.[-1].ref' | sed 's|refs/tags/||')" >> $GITHUB_OUTPUT
+        echo "KAOS_VERSION=$(gh api repos/:owner/:repo/git/matching-refs/tags --jq '.[-1].ref' | sed 's|refs/tags/||')" >> $GITHUB_ENV
         echo "AUTHOR_NAME=$(git log -1 --pretty=format:'%an')" >> $GITHUB_OUTPUT
         echo "AUTHOR_EMAIL=$(git log -1 --pretty=format:'%ae')" >> $GITHUB_OUTPUT
         git log origin/main..HEAD --pretty=format:'%s' | sed 's/[^a-zA-Z0-9 ]/\ /g' > commit.txt
@@ -65,36 +64,10 @@ jobs:
         echo "Ficheros modificados: $FILES_INVOLVED"
         echo "FILES_INVOLVED=$FILES_INVOLVED" >> $GITHUB_OUTPUT
         #echo "CHANGED_FILES=$(git diff --name-only origin/main..HEAD)" >> $GITHUB_OUTPUT
-    - id: write
-      name: Write Changelog
-      run: |
-        KAOS_ISSUE_BODY=$(cat <<'EOF'
-        Version: v$KAOS_VERSION
-        Autor del pull request: $AUTHOR_NAME
-        Fecha de creación: $(date +'%Y-%m-%d')   
-        Commits: 
-        $COMMIT_MESSAGE
-        Archivos modificados:
-        $FILES_INVOLVED 
-        EOF
-        )
-        echo $KAOS_ISSUE_BODY >> CHANGELOG
-    - id: upload-files
-      name: Upload Files
-      run: |
-        echo "Uploading files to the repository..."
-        git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
-        git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
-        git pull origin main
-        git add CHANGELOG
-        git commit -m "[Ka0S] Uploading resume files to version"
-        git push origin main
-
     - id: version
       run: |
-        echo "KAOS_VERSION=$(gh api repos/:owner/:repo/git/matching-refs/tags --jq '.[-1].ref' | sed 's|refs/tags/||')" >> $GITHUB_ENV
-        if [ ! -f ${{ env.KAOS_VERSION }} ]; then echo "${{ env.KAOS_VERSION }}"; else echo "KAOS_VERSION=0.0.0"; fi
-        IFS='.' read -r MAJOR MINOR PATCH <<< "${{ env.KAOS_VERSION }}"
+        if [ ! -n ${{ env.KAOS_VERSION }} ]; then echo "${{ env.KAOS_VERSION }}"; else echo "KAOS_VERSION='0.0.0'" >> GITHUB_ENV; fi
+        IFS='.' read -r MAJOR MINOR PATCH <<< "${{ env.KAOS_VERSION }}" 
         if [[ "${{ steps.information.outputs.RNBRANCH }}" =~ (H) ]]; then
           PATCH=$((PATCH + 1))
         elif [[ "${{ steps.information.outputs.RNBRANCH }}" =~ (F) ]]; then
@@ -107,7 +80,23 @@ jobs:
         fi
         NEW_VERSION="$MAJOR.$MINOR.$PATCH"
         echo "KAOS_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+    - id: write
+      name: Write Changelog
+      run: |
+        KAOS_ISSUE_BODY=$(cat <<'EOF'
+        Version: v${{ env.KAOS_VERSION }}
+        Autor del pull request: $AUTHOR_NAME
+        Fecha de creación: $(date +'%Y-%m-%d')   
+        Commits: 
+        $COMMIT_MESSAGE
+        Archivos modificados:
+        $FILES_INVOLVED 
+        EOF
+        )
+        echo $KAOS_ISSUE_BODY >> CHANGELOG
+
     - id: push-log-tag-index
+      if: ${{ success() && env.KAOS_VERSION != '' }}
       env:
         USER_NAME: ${{ secrets.KAOS_BOT_NAME }}
         USER_EMAIL: ${{ secrets.KAOS_BOT_EMAIL }}
@@ -122,12 +111,12 @@ jobs:
         git commit -m "${{ env.KAOS_MODULE }}  Upload: CHANGELOG.md, INDEX.md with version ${{ env.KAOS_VERSION }}"
         git push origin HEAD:${{ github.head_ref }}
     - id: failure-delete-tag
-      if: ${{ failure() }}
+      if: ${{ failure() && env.KAOS_VERSION != '' }}
       run: |
         # Antes de nada borramos el tag asignado en el paso anterior
         git push origin --delete "${{ env.KAOS_VERSION }}"
         KAOS_ISSUE_BODY="Sentimos comunicarle que no se cumplen los requerimientos, por favor revise los checks"
-        gh workflow run issue.yaml --ref main -f kaos-issue-id="${{ github.event.pull_request.number }}" -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=comment
+        #gh workflow run issue.yaml --ref main -f kaos-issue-id="${{ github.event.pull_request.number }}" -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=comment
   handle_failure:
     runs-on: 
       group: ka0s
