@@ -67,6 +67,7 @@ jobs:
   job-version:
     runs-on: 
       group: version
+    needs: job-core
     #outputs:
     #  KAOS_BRANCH: ${{ steps.information.outputs.RNBRANCH }}
     #  KAOS_NUMBER: ${{ steps.information.outputs.RNNUMBER }}
@@ -113,8 +114,6 @@ jobs:
         git config --global user.email '${{ env.USER_EMAIL}}'
         git tag -a "${{ env.KAOS_VERSION }}" -m "${{ env.KAOS_MODULE }} NEW Ka0S version ${{ env.KAOS_VERSION}}"
         git push origin "${{ env.KAOS_VERSION }}"
-        if [ ! -f INDEX.md ]; then echo "# Version Index" > INDEX.md; fi
-        echo "- **Version**: ${{ env.KAOS_VERSION }} - **Description**: ${{ env.COMMIT_MESSAGE }}" >> INDEX.md
         git add *
         git commit -m "${{ env.KAOS_MODULE }}  Upload: CHANGELOG.md, INDEX.md with version ${{ env.KAOS_VERSION }}"
         git push origin HEAD:${{ github.head_ref }}
