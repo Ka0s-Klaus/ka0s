@@ -48,6 +48,7 @@ jobs:
         VERSION=$(git describe --tags $(git rev-list --tags --max-count=1))
         echo $VERSION
         echo "KAOS_VERSION=$VERSION" >> $GITHUB_OUTPUT
+        echo $KAOS_VERSION
         echo "AUTHOR_NAME=$(git log -1 --pretty=format:'%an')" >> $GITHUB_OUTPUT
         echo "AUTHOR_EMAIL=$(git log -1 --pretty=format:'%ae')" >> $GITHUB_OUTPUT
         RNBRANCH=$(echo "${{ github.event.pull_request.title }}" | grep -o '^[A-Za-z]*')
