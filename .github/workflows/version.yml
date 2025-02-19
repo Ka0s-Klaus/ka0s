@@ -77,9 +77,10 @@ jobs:
         echo $KAOS_DATE
         COMMIT_MESSAGE=$(git log --pretty=format:'%h %s')
         echo $COMMIT_MESSAGE
-        VERSION1=$(git describe --tags $(git rev-list --tags --max-count=1))
-        echo "$VERSION1"
-        echo -e "Version: v${{ needs.job-core.outputs.KAOS_VERSION }}" >> CHANGELOG
+        VERSION=$(git describe --tags $(git rev-list --tags --max-count=1))
+        echo "$VERSION"
+        echo -e "Version: $VERSION" >> CHANGELOG
+        #echo -e "Version: v${{ needs.job-core.outputs.KAOS_VERSION }}" >> CHANGELOG
         echo "Version: v${{ needs.job-core.outputs.KAOS_VERSION }}"
         echo -e "Autor del pull request: ${{ env.AUTHOR_NAME }}" >> CHANGELOG
         echo -e "Fecha de creación: $KAOS_DATE" >> CHANGELOG
@@ -90,8 +91,11 @@ jobs:
       name: Version
       run: |
         echo "Version: v${{ needs.job-core.outputs.KAOS_VERSION }}"
-        IFS='.' read -r MAJOR MINOR PATCH <<< "${{ env.KAOS_VERSION }}" 
+        VERSION=$(git describe --tags $(git rev-list --tags --max-count=1))
+        echo "$VERSION"
+        #IFS='.' read -r MAJOR MINOR PATCH <<< "${{ env.KAOS_VERSION }}" 
         echo "KAOS_VERSION: $KAOS_VERSION"
+        IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION" 
         echo "PATCH: $PATCH"
         echo "MINOR: $MINOR"
         echo "MAJOR: $MAJOR"
