@@ -15,7 +15,7 @@ env:
   KAOS_REPO: "/actions-runner/_work/kaos/kaos"
   KAOS_STEP_MODULE: ""
   KAOS_CODE: ""
-  #KAOS_VERSION: ""
+  KAOS_VERSION: ""
   KAOS_RELEASE: ""
   KAOS_REPOSITORY: ${{ github.repository}}
   KAOS_REF: ${{ github.ref }}
@@ -70,6 +70,12 @@ jobs:
       group: version
     needs: job-core
     steps:
+    - id: repo
+      name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.KAOS_REPO_TOKEN }}
     - id: write
       name: Write Changelog
       run: |
@@ -111,28 +117,24 @@ jobs:
         fi
         NEW_VERSION="$MAJOR.$MINOR.$PATCH"
         echo "NEW VERSION: $NEW_VERSION"
-        echo "KAOS_VERSION=$NEW_VERSION" >> $GITHUB_OUTPUT
+        echo "KAOS_VERSION=$NEW_VERSION" >> $GITHUB_ENV
     
     - id: push-log-tag-index
       name: Push Log Tag
-      if: ${{ success() && needs.job-core.outputs.KAOS_VERSION != '' }}
-      env:
-        USER_NAME: ${{ secrets.KAOS_BOT_NAME }}
-        USER_EMAIL: ${{ secrets.KAOS_BOT_EMAIL }}
+      if: ${{ success() && env.KAOS_VERSION != '' }}
       run: |
-        git config --global user.name '${{ env.USER_NAME }}'
-        git config --global user.email '${{ env.USER_EMAIL}}'
-        echo "NVERSION: ${{ needs.job-core.outputs.KAOS_VERSION }}"
-        git tag -a "${{ needs.job-core.outputs.KAOS_VERSION }}" -m "${{ env.KAOS_MODULE }} NEW Ka0S version ${{ needs.job-core.outputs.KAOS_VERSION }}"
-        git push origin "${{ needs.job-core.outputs.KAOS_VERSION }}"
+        git config --global user.name ${{ secrets.KAOS_BOT_NAME }}
+        git config --global user.email ${{ secrets.KAOS_BOT_EMAIL }}
+        git tag -a "${{ env.KAOS_VERSION }}" -m "${{ env.KAOS_MODULE }} NEW Ka0S version ${{ env.KAOS_VERSION }}"
+        git push origin "${{ env.KAOS_VERSION }}"
         git add *
-        git commit -m "${{ env.KAOS_MODULE }}  Upload: CHANGELOG.md, INDEX.md with version ${{ needs.job-core.outputs.KAOS_VERSION }}"
+        git commit -m "${{ env.KAOS_MODULE }}  Upload: CHANGELOG.md, INDEX.md with version ${{ env.KAOS_VERSION }}"
         git push origin HEAD:${{ github.head_ref }}
     - id: failure-delete-tag
       if: ${{ failure() && env.KAOS_VERSION != '' }}
       run: |
         # Antes de nada borramos el tag asignado en el paso anterior
-        git push origin --delete "${{ needs.job-core.outputs.KAOS_VERSION }}"
+        git push origin --delete "${{ env.KAOS_VERSION }}"
         KAOS_ISSUE_BODY="Sentimos comunicarle que no se cumplen los requerimientos, por favor revise los checks"
         #gh workflow run issue.yaml --ref main -f kaos-issue-id="${{ github.event.pull_request.number }}" -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=comment
   handle_failure:
