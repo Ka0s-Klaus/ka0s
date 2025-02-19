@@ -122,6 +122,7 @@ jobs:
       run: |
         git config --global user.name '${{ env.USER_NAME }}'
         git config --global user.email '${{ env.USER_EMAIL}}'
+        echo "NVERSION: ${{ needs.job-core.outputs.KAOS_VERSION }}"
         git tag -a "${{ needs.job-core.outputs.KAOS_VERSION }}" -m "${{ env.KAOS_MODULE }} NEW Ka0S version ${{ needs.job-core.outputs.KAOS_VERSION }}"
         git push origin "${{ needs.job-core.outputs.KAOS_VERSION }}"
         git add *
