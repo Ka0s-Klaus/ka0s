@@ -135,6 +135,17 @@ jobs:
         git push origin --delete "${{ env.KAOS_VERSION }}"
         KAOS_ISSUE_BODY="Sentimos comunicarle que no se cumplen los requerimientos, por favor revise los checks"
         #gh workflow run issue.yaml --ref main -f kaos-issue-id="${{ github.event.pull_request.number }}" -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=comment
+  handle-success:
+    runs-on:
+        group: ka0s
+    needs: [job-version]
+    if: ${{ success() }}
+    steps:
+      - id: handle-success-execution
+        name: handle-success-execution
+        run: |
+          # Si todo ha ido correcto añadimos el contenido del fichero 
+          echo "Todo ha ido bien"
   handle_failure:
     runs-on: 
       group: ka0s
@@ -170,17 +181,6 @@ jobs:
           # Añadimos el comentario a la issue que dispara el proceso
           KAOS_ISSUE_BODY="OPS¡ se ha producido un error en el proceso (${{ env.KAOS_MODULE }})  lanzado desde (#${{ needs.kaos-version.outputs.KAOS_NUMBER }}) en la ejecución (${{ github.run_id }}) y esto ha generado una issue con el titulo ($KAOS_ISSUE_TITLE)"
           #gh workflow run issue.yaml --ref ${{ github.ref }} -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=comment -f kaos-issue-tag="bug" -f kaos-issue-id=${{ needs.kaos-version.outputs.KAOS_NUMBER }}
-  handle-success:
-    runs-on:
-        group: ka0s
-    needs: [job-core, job-version, handle_failure]
-    if: ${{ success() }}
-    steps:
-      - id: handle-success-execution
-        name: handle-success-execution
-        run: |
-          # Si todo ha ido correcto añadimos el contenido del fichero 
-          echo "Todo ha ido bien"
   end-workflow:
     runs-on:
         group: ka0s
