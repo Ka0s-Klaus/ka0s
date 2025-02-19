@@ -55,13 +55,9 @@ jobs:
         echo "RNBRANCH=$RNBRANCH" >> $GITHUB_OUTPUT
         echo "RNNUMBER=$RNNUMBER" >> $GITHUB_OUTPUT 
         #CHANGED_FILES=$(git diff --name-only origin/main..HEAD)
-        FICHEROS=$(git diff --name-only origin/main..HEAD)
-        echo "Ficheros: $FICHEROS"
-        FILES_INVOLVED="ESTO UN FICHERO DE PRUEBA"
-        #FILES_INVOLVED=$(git diff --name-only origin/main..HEAD)
+        FILES_INVOLVED=$(git diff --name-only origin/main..HEAD)
         echo "Ficheros modificados: $FILES_INVOLVED"
         echo "FILES_INVOLVED=$FILES_INVOLVED" >> $GITHUB_OUTPUT
-        #echo "KAOS_FILES=$FILES_INVOLVED" >> $GITHUB_OUTPUT
         echo "ESTA ES LA RAMA:${{ github.ref }}"
   job-version:
     runs-on: 
