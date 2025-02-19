@@ -19,6 +19,7 @@ env:
   KAOS_RELEASE: ""
   KAOS_REPOSITORY: ${{ github.repository}}
   KAOS_REF: ${{ github.ref }}
+  KAOS_FILES: ""
 jobs:
   job-core:
     if: github.event.pull_request.state == 'open'
@@ -57,7 +58,7 @@ jobs:
         #CHANGED_FILES=$(git diff --name-only origin/main..HEAD)
         FILES_INVOLVED=$(git diff --name-only origin/main..HEAD)
         echo "Ficheros modificados: $FILES_INVOLVED"
-        echo "FILES_INVOLVED=$FILES_INVOLVED" >> $GITHUB_OUTPUT
+        echo "KAOS_FILES=$FILES_INVOLVED" >> $GITHUB_ENV
         echo "ESTA ES LA RAMA:${{ github.ref }}"
   job-version:
     runs-on: 
@@ -86,7 +87,8 @@ jobs:
         echo -e "Autor del pull request: ${{ env.AUTHOR_NAME }}" >> CHANGELOG
         echo -e "Fecha de creación: $KAOS_DATE" >> CHANGELOG
         echo -e "# Commit Messages:\n\n$COMMIT_MESSAGE" >> CHANGELOG
-        echo -e "Archivos modificados:\n\n${{ env.FILES_INVOLVED }}" >> CHANGELOG
+        #echo -e "Archivos modificados:\n\n${{ env.FILES_INVOLVED }}" >> CHANGELOG
+        echo -e "Archivos modificados:\n\n${{ env.KAOS_FILES }}" >> CHANGELOG
     - id: version
       name: Version
       run: |
