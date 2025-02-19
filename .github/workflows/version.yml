@@ -56,10 +56,9 @@ jobs:
         echo "RNBRANCH=$RNBRANCH" >> $GITHUB_OUTPUT
         echo "RNNUMBER=$RNNUMBER" >> $GITHUB_OUTPUT 
         #CHANGED_FILES=$(git diff --name-only origin/main..HEAD)
-        FILES_INVOLVED=$(git diff --name-only origin/main..HEAD)
-        echo "Ficheros modificados: $FILES_INVOLVED"
-        echo "KAOS_FILES=$FILES_INVOLVED<<EOF" >> $GITHUB_ENV
-        echo "EOF" >> $GITHUB_ENV
+        FILES=$(git diff --name-only origin/main..HEAD)
+        echo "Ficheros modificados: $FILES"
+        echo -e "KAOS_FILES=$FILES" >> $GITHUB_ENV
         echo "ESTA ES LA RAMA:${{ github.ref }}"
   job-version:
     runs-on: 
@@ -83,9 +82,8 @@ jobs:
         VERSION=$(git describe --tags $(git rev-list --tags --max-count=1))
         echo "$VERSION"
         echo -e "Version: $VERSION" >> CHANGELOG
-        #echo -e "Version: v${{ needs.job-core.outputs.KAOS_VERSION }}" >> CHANGELOG
         echo "Version: v${{ needs.job-core.outputs.KAOS_VERSION }}"
-        echo -e "Autor del pull request: ${{ env.AUTHOR_NAME }}" >> CHANGELOG
+        echo -e "Autor del pull request: ${{ needs.job-core.outputs.AUTHOR_NAME }}" >> CHANGELOG
         echo -e "Fecha de creación: $KAOS_DATE" >> CHANGELOG
         echo -e "# Commit Messages:\n\n$COMMIT_MESSAGE" >> CHANGELOG
         #echo -e "Archivos modificados:\n\n${{ env.FILES_INVOLVED }}" >> CHANGELOG
