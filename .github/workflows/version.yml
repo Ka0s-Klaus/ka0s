@@ -70,6 +70,12 @@ jobs:
       group: version
     needs: job-core
     steps:
+    - id: repo
+      name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.KAOS_REPO_TOKEN }}
     - id: write
       name: Write Changelog
       run: |
