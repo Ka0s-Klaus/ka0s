@@ -15,7 +15,7 @@ env:
   KAOS_REPO: "/actions-runner/_work/kaos/kaos"
   KAOS_STEP_MODULE: ""
   KAOS_CODE: ""
-  KAOS_VERSION: ""
+  #KAOS_VERSION: ""
   KAOS_RELEASE: ""
   KAOS_REPOSITORY: ${{ github.repository}}
   KAOS_REF: ${{ github.ref }}
@@ -30,7 +30,7 @@ jobs:
       KAOS_FILES: ${{ steps.information.outputs.FILES_INVOLVED }}
       AUTHOR_NAME: ${{ steps.information.outputs.AUTHOR_NAME }}
       AUTHOR_EMAIL: ${{ steps.information.outputs.AUTHOR_EMAIL }}
-      #COMMIT_MESSAGE: ${{ steps.information.outputs.COMMIT_MESSAGE }}
+      KAOS_VERSION: ${{ steps.information.outputs.NVERSION }}
     steps:
     - id: repo
       name: Checkout code
@@ -44,14 +44,13 @@ jobs:
         GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN}}
       run: |
         #echo "KAOS_VERSION=$(gh api repos/:owner/:repo/git/matching-refs/tags --jq '.[-1].ref' | sed 's|refs/tags/||')" >> $GITHUB_ENV
-        VERSION=$(git describe --tags $(git rev-list --tags --max-count=1))
-        echo $VERSION
-        echo "KAOS_VERSION=$VERSION" >> $GITHUB_ENV
-        echo ${{ env.KAOS_VERSION 
+        NVERSION=$(git describe --tags $(git rev-list --tags --max-count=1))
+        echo "Extracted NVersion: $NVERSION"
+        echo "KAOS_VERSION=$NVERSION" >> $GITHUB_OUTPUT
         echo "AUTHOR_NAME=$(git log -1 --pretty=format:'%an')" >> $GITHUB_OUTPUT
-        echo $AUTHOR_NAME
+        echo "AUTOR: $AUTOR_NAME"
         echo "AUTHOR_EMAIL=$(git log -1 --pretty=format:'%ae')" >> $GITHUB_OUTPUT
-        echo $AUTHOR_EMAIL
+        echo "EMAIL: $AUTOR_EMAIL"
         RNBRANCH=$(echo "${{ github.event.pull_request.title }}" | grep -o '^[A-Za-z]*')
         RNNUMBER=$(echo "${{ github.event.pull_request.title }}" | grep -o '[0-9]*')
         echo "Extracted RN Branch: $RNBRANCH"
@@ -60,9 +59,7 @@ jobs:
         echo "RNNUMBER=$RNNUMBER" >> $GITHUB_OUTPUT 
         #CHANGED_FILES=$(git diff --name-only origin/main..HEAD)
         FILES_INVOLVED="ESTO UN FICHERO DE PRUEBA"
-        echo "KAOS_VERSION=$KAOS_VERSION" >> $GITHUB_OUTPUT
-        echo "AUTHOR_NAME=$AUTHOR_NAME" >> $GITHUB_OUTPUT
-        echo "AUTHOR_EMAIL=$AUTHOR_EMAIL" >> $GITHUB_OUTPUT
+        #echo "KAOS_VERSION=$KAOS_VERSION" >> $GITHUB_OUTPUT
         echo "Extracted RN Branch: $RNBRANCH"
         echo "Extracted RN Number: $RNNUMBER"
         echo "ESTA ES LA RAMA:${{ github.ref }}"
