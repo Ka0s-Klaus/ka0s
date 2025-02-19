@@ -115,14 +115,10 @@ jobs:
     
     - id: push-log-tag-index
       name: Push Log Tag
-      if: ${{ success() && needs.job-core.outputs.KAOS_VERSION != '' }}
-      env:
-        USER_NAME: ${{ secrets.KAOS_BOT_NAME }}
-        USER_EMAIL: ${{ secrets.KAOS_BOT_EMAIL }}
+      if: ${{ success() && env.KAOS_VERSION != '' }}
       run: |
-        git config --global user.name '${{ env.USER_NAME }}'
-        git config --global user.email '${{ env.USER_EMAIL}}'
-        echo "NVERSION: ${{ env.KAOS_VERSION }}"
+        git config --global user.name '${{ secrets.KAOS_BOT_NAME }}'
+        git config --global user.email '${{ secrets.KAOS_BOT_EMAIL }}'
         git tag -a "${{ env.KAOS_VERSION }}" -m "${{ env.KAOS_MODULE }} NEW Ka0S version ${{ env.KAOS_VERSION }}"
         git push origin "${{ env.KAOS_VERSION }}"
         git add *
