@@ -15,7 +15,7 @@ env:
   KAOS_REPO: "/actions-runner/_work/kaos/kaos"
   KAOS_STEP_MODULE: ""
   KAOS_CODE: ""
-  #KAOS_VERSION: ""
+  KAOS_VERSION: ""
   KAOS_RELEASE: ""
   KAOS_REPOSITORY: ${{ github.repository}}
   KAOS_REF: ${{ github.ref }}
@@ -31,7 +31,6 @@ jobs:
       AUTHOR_NAME: ${{ steps.information.outputs.AUTHOR_NAME }}
       AUTHOR_EMAIL: ${{ steps.information.outputs.AUTHOR_EMAIL }}
       #COMMIT_MESSAGE: ${{ steps.information.outputs.COMMIT_MESSAGE }}
-      KAOS_VERSION: ${{ steps.information.outputs.KAOS_VERSION }}
     steps:
     - id: repo
       name: Checkout code
@@ -47,10 +46,12 @@ jobs:
         #echo "KAOS_VERSION=$(gh api repos/:owner/:repo/git/matching-refs/tags --jq '.[-1].ref' | sed 's|refs/tags/||')" >> $GITHUB_ENV
         VERSION=$(git describe --tags $(git rev-list --tags --max-count=1))
         echo $VERSION
-        echo "KAOS_VERSION=$VERSION" >> $GITHUB_OUTPUT
-        echo $KAOS_VERSION
+        echo "KAOS_VERSION=$VERSION" >> $GITHUB_ENV
+        echo ${{ env.KAOS_VERSION 
         echo "AUTHOR_NAME=$(git log -1 --pretty=format:'%an')" >> $GITHUB_OUTPUT
+        echo $AUTHOR_NAME
         echo "AUTHOR_EMAIL=$(git log -1 --pretty=format:'%ae')" >> $GITHUB_OUTPUT
+        echo $AUTHOR_EMAIL
         RNBRANCH=$(echo "${{ github.event.pull_request.title }}" | grep -o '^[A-Za-z]*')
         RNNUMBER=$(echo "${{ github.event.pull_request.title }}" | grep -o '[0-9]*')
         echo "Extracted RN Branch: $RNBRANCH"
@@ -81,6 +82,8 @@ jobs:
         echo $KAOS_DATE
         COMMIT_MESSAGE=$(git log --pretty=format:'%h %s')
         echo $COMMIT_MESSAGE
+        VERSION1=$(git describe --tags $(git rev-list --tags --max-count=1))
+        echo $VERSION1
         echo -e "Version: v${{ needs.job-core.outputs.KAOS_VERSION }}" >> CHANGELOG
         echo "Version: v${{ needs.job-core.outputs.KAOS_VERSION }}"
         echo -e "Autor del pull request: ${{ env.AUTHOR_NAME }}" >> CHANGELOG
