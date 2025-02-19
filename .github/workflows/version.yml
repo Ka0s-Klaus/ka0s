@@ -46,7 +46,7 @@ jobs:
         #echo "KAOS_VERSION=$(gh api repos/:owner/:repo/git/matching-refs/tags --jq '.[-1].ref' | sed 's|refs/tags/||')" >> $GITHUB_ENV
         NVERSION=$(git describe --tags $(git rev-list --tags --max-count=1))
         echo "Extracted NVersion: $NVERSION"
-        echo "KAOS_VERSION=$NVERSION" >> $GITHUB_OUTPUT
+        echo "NVERSION=$NVERSION" >> $GITHUB_OUTPUT
         echo "AUTHOR_NAME=$(git log -1 --pretty=format:'%an')" >> $GITHUB_OUTPUT
         echo "AUTHOR_EMAIL=$(git log -1 --pretty=format:'%ae')" >> $GITHUB_OUTPUT
         RNBRANCH=$(echo "${{ github.event.pull_request.title }}" | grep -o '^[A-Za-z]*')
@@ -75,6 +75,7 @@ jobs:
       run: |
         KAOS_DATE=$(date +'%Y-%m-%d')
         echo $KAOS_DATE
+        echo "NVERSION: ${{ needs.job-core.outputs.KAOS_VERSION }}
         COMMIT_MESSAGE=$(git log --pretty=format:'%h %s')
         echo $COMMIT_MESSAGE
         VERSION=$(git describe --tags $(git rev-list --tags --max-count=1))
@@ -90,12 +91,8 @@ jobs:
     - id: version
       name: Version
       run: |
-        echo "Version: v${{ needs.job-core.outputs.KAOS_VERSION }}"
-        VERSION=$(git describe --tags $(git rev-list --tags --max-count=1))
-        echo "$VERSION"
-        #IFS='.' read -r MAJOR MINOR PATCH <<< "${{ env.KAOS_VERSION }}" 
-        echo "KAOS_VERSION: $KAOS_VERSION"
-        IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION" 
+        IFS='.' read -r MAJOR MINOR PATCH <<< "${{ needs.job-core.outputs.KAOS_VERSION }}" 
+        echo "KAOS_VERSION: ${{ needs.job-core.outputs.KAOS_VERSION }}"
         echo "PATCH: $PATCH"
         echo "MINOR: $MINOR"
         echo "MAJOR: $MAJOR"
@@ -119,23 +116,23 @@ jobs:
     
     - id: push-log-tag-index
       name: Push Log Tag
-      if: ${{ success() && env.KAOS_VERSION != '' }}
+      if: ${{ success() && needs.job-core.outputs.KAOS_VERSION != '' }}
       env:
         USER_NAME: ${{ secrets.KAOS_BOT_NAME }}
         USER_EMAIL: ${{ secrets.KAOS_BOT_EMAIL }}
       run: |
         git config --global user.name '${{ env.USER_NAME }}'
         git config --global user.email '${{ env.USER_EMAIL}}'
-        git tag -a "${{ env.KAOS_VERSION }}" -m "${{ env.KAOS_MODULE }} NEW Ka0S version ${{ env.KAOS_VERSION}}"
-        git push origin "${{ env.KAOS_VERSION }}"
+        git tag -a "${{ needs.job-core.outputs.KAOS_VERSION }}" -m "${{ env.KAOS_MODULE }} NEW Ka0S version ${{ needs.job-core.outputs.KAOS_VERSION }}"
+        git push origin "${{ needs.job-core.outputs.KAOS_VERSION }}"
         git add *
-        git commit -m "${{ env.KAOS_MODULE }}  Upload: CHANGELOG.md, INDEX.md with version ${{ env.KAOS_VERSION }}"
+        git commit -m "${{ env.KAOS_MODULE }}  Upload: CHANGELOG.md, INDEX.md with version ${{ needs.job-core.outputs.KAOS_VERSION }}"
         git push origin HEAD:${{ github.head_ref }}
     - id: failure-delete-tag
       if: ${{ failure() && env.KAOS_VERSION != '' }}
       run: |
         # Antes de nada borramos el tag asignado en el paso anterior
-        git push origin --delete "${{ env.KAOS_VERSION }}"
+        git push origin --delete "${{ needs.job-core.outputs.KAOS_VERSION }}"
         KAOS_ISSUE_BODY="Sentimos comunicarle que no se cumplen los requerimientos, por favor revise los checks"
         #gh workflow run issue.yaml --ref main -f kaos-issue-id="${{ github.event.pull_request.number }}" -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=comment
   handle_failure:
