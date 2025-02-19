@@ -15,7 +15,7 @@ env:
   KAOS_REPO: "/actions-runner/_work/kaos/kaos"
   KAOS_STEP_MODULE: ""
   KAOS_CODE: ""
-  KAOS_VERSION: ""
+  #KAOS_VERSION: ""
   KAOS_RELEASE: ""
   KAOS_REPOSITORY: ${{ github.repository}}
   KAOS_REF: ${{ github.ref }}
@@ -71,19 +71,14 @@ jobs:
     runs-on: 
       group: version
     needs: job-core
-    #outputs:
-    #  KAOS_BRANCH: ${{ steps.information.outputs.RNBRANCH }}
-    #  KAOS_NUMBER: ${{ steps.information.outputs.RNNUMBER }}
-    #  KAOS_FILES: ${{ steps.information.outputs.FILES_INVOLVED }}
-    #  AUTHOR_NAME: ${{ steps.information.outputs.AUTHOR_NAME }}
-    #  AUTHOR_EMAIL: ${{ steps.information.outputs.AUTHOR_EMAIL }}
-    #  COMMIT_MESSAGE: ${{ steps.information.outputs.COMMIT_MESSAGE }}
     steps:
     - id: write
       name: Write Changelog
       run: |
         KAOS_DATE=$(date +'%Y-%m-%d')
+        echo $KAOS_DATE
         COMMIT_MESSAGE=$(git log --pretty=format:'%h %s')
+        echo COMMIT_MESSAGE
         echo -e "Version: v${{ env.KAOS_VERSION }}" >> CHANGELOG
         echo -e "Autor del pull request: ${{ env.AUTHOR_NAME }}" >> CHANGELOG
         echo -e "Fecha de creación: $KAOS_DATE" >> CHANGELOG
