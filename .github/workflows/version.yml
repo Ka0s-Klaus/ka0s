@@ -31,6 +31,7 @@ jobs:
       AUTHOR_NAME: ${{ steps.information.outputs.AUTHOR_NAME }}
       AUTHOR_EMAIL: ${{ steps.information.outputs.AUTHOR_EMAIL }}
       #COMMIT_MESSAGE: ${{ steps.information.outputs.COMMIT_MESSAGE }}
+      KAOS_VERSION: ${{ steps.information.outputs.KAOS_VERSION }}
     steps:
     - id: repo
       name: Checkout code
@@ -78,7 +79,7 @@ jobs:
         KAOS_DATE=$(date +'%Y-%m-%d')
         echo $KAOS_DATE
         COMMIT_MESSAGE=$(git log --pretty=format:'%h %s')
-        echo COMMIT_MESSAGE
+        echo $COMMIT_MESSAGE
         echo -e "Version: v${{ env.KAOS_VERSION }}" >> CHANGELOG
         echo -e "Autor del pull request: ${{ env.AUTHOR_NAME }}" >> CHANGELOG
         echo -e "Fecha de creación: $KAOS_DATE" >> CHANGELOG
