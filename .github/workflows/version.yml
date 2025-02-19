@@ -43,7 +43,6 @@ jobs:
       env:
         GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN}}
       run: |
-        #echo "KAOS_VERSION=$(gh api repos/:owner/:repo/git/matching-refs/tags --jq '.[-1].ref' | sed 's|refs/tags/||')" >> $GITHUB_ENV
         NVERSION=$(git describe --tags $(git rev-list --tags --max-count=1))
         echo "Extracted NVersion: $NVERSION"
         echo "NVERSION=$NVERSION" >> $GITHUB_OUTPUT
@@ -55,16 +54,9 @@ jobs:
         echo "Extracted RN Number: $RNNUMBER"
         echo "RNBRANCH=$RNBRANCH" >> $GITHUB_OUTPUT
         echo "RNNUMBER=$RNNUMBER" >> $GITHUB_OUTPUT 
-        #CHANGED_FILES=$(git diff --name-only origin/main..HEAD)
-        FILES_INVOLVED="ESTO UN FICHERO DE PRUEBA"
-        #echo "KAOS_VERSION=$KAOS_VERSION" >> $GITHUB_OUTPUT
-        echo "Extracted RN Branch: $RNBRANCH"
-        echo "Extracted RN Number: $RNNUMBER"
+        FILES_INVOLVED=$(git diff --name-only origin/main..HEAD)
+        echo "KAOS_FILES=$FILES_INVOLVED" >> $GITHUB_OUTPUT
         echo "ESTA ES LA RAMA:${{ github.ref }}"
-        #echo -e "COMMIT_MESSAGE=$(git log --pretty=format:'%h %s')" >> $GITHUB_OUTPUT
-        echo "Ficheros modificados: $FILES_INVOLVED"
-        echo "FILES_INVOLVED=$FILES_INVOLVED" >> $GITHUB_OUTPUT
-        #echo "CHANGED_FILES=$(git diff --name-only origin/main..HEAD)" >>
   job-version:
     runs-on: 
       group: version
