@@ -75,7 +75,7 @@ jobs:
       run: |
         KAOS_DATE=$(date +'%Y-%m-%d')
         echo $KAOS_DATE
-        echo "NVERSION: ${{ needs.job-core.outputs.KAOS_VERSION }}
+        echo "NVERSION: ${{ needs.job-core.outputs.KAOS_VERSION }}"
         COMMIT_MESSAGE=$(git log --pretty=format:'%h %s')
         echo $COMMIT_MESSAGE
         VERSION=$(git describe --tags $(git rev-list --tags --max-count=1))
@@ -85,7 +85,6 @@ jobs:
         echo "Version: v${{ needs.job-core.outputs.KAOS_VERSION }}"
         echo -e "Autor del pull request: ${{ env.AUTHOR_NAME }}" >> CHANGELOG
         echo -e "Fecha de creación: $KAOS_DATE" >> CHANGELOG
-        echo -e $KAOS_ISSUE_BODY >> CHANGELOG
         echo -e "# Commit Messages:\n\n$COMMIT_MESSAGE" >> CHANGELOG
         echo -e "Archivos modificados:\n\n${{ env.FILES_INVOLVED }}" >> CHANGELOG
     - id: version
