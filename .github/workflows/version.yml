@@ -31,7 +31,7 @@ jobs:
       AUTHOR_NAME: ${{ steps.information.outputs.AUTHOR_NAME }}
       AUTHOR_EMAIL: ${{ steps.information.outputs.AUTHOR_EMAIL }}
       #COMMIT_MESSAGE: ${{ steps.information.outputs.COMMIT_MESSAGE }}
-      KAOS_VERSION: ${{ steps.information.outputs.KAOS_VERSION }}
+      KAOS_VERSION: ${{ steps.information.outputs.KAOS_VERSION }}
     steps:
     - id: repo
       name: Checkout code
@@ -47,7 +47,7 @@ jobs:
         #echo "KAOS_VERSION=$(gh api repos/:owner/:repo/git/matching-refs/tags --jq '.[-1].ref' | sed 's|refs/tags/||')" >> $GITHUB_ENV
         VERSION=$(git describe --tags $(git rev-list --tags --max-count=1))
         echo $VERSION
-        echo "KAOS_VERSION=${VERSION}" >> $GITHUB_ENV
+        echo "KAOS_VERSION=${VERSION}" >> $GITHUB_OUTPUT
         echo "AUTHOR_NAME=$(git log -1 --pretty=format:'%an')" >> $GITHUB_OUTPUT
         echo "AUTHOR_EMAIL=$(git log -1 --pretty=format:'%ae')" >> $GITHUB_OUTPUT
         RNBRANCH=$(echo "${{ github.event.pull_request.title }}" | grep -o '^[A-Za-z]*')
@@ -80,7 +80,8 @@ jobs:
         echo $KAOS_DATE
         COMMIT_MESSAGE=$(git log --pretty=format:'%h %s')
         echo $COMMIT_MESSAGE
-        echo -e "Version: v${{ env.KAOS_VERSION }}" >> CHANGELOG
+        echo -e "Version: v${{ needs.job-core.outputs.KAOS_VERSION }}" >> CHANGELOG
+        echo "Version: v${{ needs.job-core.outputs.KAOS_VERSION }}"
         echo -e "Autor del pull request: ${{ env.AUTHOR_NAME }}" >> CHANGELOG
         echo -e "Fecha de creación: $KAOS_DATE" >> CHANGELOG
         echo -e $KAOS_ISSUE_BODY >> CHANGELOG
@@ -89,7 +90,7 @@ jobs:
     - id: version
       name: Version
       run: |
-        echo "${{ env.KAOS_VERSION }}"
+        echo "Version: v${{ needs.job-core.outputs.KAOS_VERSION }}"
         IFS='.' read -r MAJOR MINOR PATCH <<< "${{ env.KAOS_VERSION }}" 
         echo "KAOS_VERSION: $KAOS_VERSION"
         echo "PATCH: $PATCH"
