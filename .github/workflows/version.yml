@@ -58,10 +58,10 @@ jobs:
         #CHANGED_FILES=$(git diff --name-only origin/main..HEAD)
         FILES=$(git diff --name-only origin/main..HEAD)
         echo "Ficheros modificados: $FILES"
-        echo "KAOS_FILES<<EOF" >> $GITHUB_ENV
-        echo "$FILES" >> $GITHUB_ENV
-        echo "EOF" >> $GITHUB_ENV
-        #echo -e "KAOS_FILES=$FILES" >> $GITHUB_ENV
+        #echo "KAOS_FILES<<EOF" >> $GITHUB_ENV
+        #echo "$FILES" >> $GITHUB_ENV
+        #echo "EOF" >> $GITHUB_ENV
+        echo -e "KAOS_FILES=$FILES" >> $GITHUB_ENV
         echo "ESTA ES LA RAMA:${{ github.ref }}"
         echo "Ficheros: ${{ env.KAOS_FILES }}"
   job-version:
