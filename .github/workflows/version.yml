@@ -61,7 +61,9 @@ jobs:
         #echo "KAOS_FILES<<EOF" >> $GITHUB_ENV
         #echo "$FILES" >> $GITHUB_ENV
         #echo "EOF" >> $GITHUB_ENV
-        echo -e "KAOS_FILES=$FILES" >> $GITHUB_ENV
+        #echo -e "KAOS_FILES=$FILES" >> $GITHUB_ENV
+        echo "KAOS_FILES=$FILES" >> temp_env_file
+        cat temp_env_file >> $GITHUB_ENV
         echo "ESTA ES LA RAMA:${{ github.ref }}"
         echo "Ficheros: ${{ env.KAOS_FILES }}"
   job-version:
