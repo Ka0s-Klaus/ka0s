@@ -41,7 +41,7 @@ jobs:
         token: ${{ secrets.KAOS_REPO_TOKEN }}
     - name: Set environment variable for ref
       id: ref
-      run: echo "GITHUB_REF=${{ github.ref }}" >> $GITHUB_ENV
+      run: echo "KAOS_REF=${{ github.ref }}" >> $GITHUB_ENV
     - id: information
       name: Gather pull request information
       env:
@@ -67,7 +67,7 @@ jobs:
         git add files-in-commit.txt
         git commit -m "[Ka0S] se genera el fichero files-in-commit"
         git push origin ${{ github.ref }}
-        git push origin $GITHUB_REF
+        git push origin $KAOS_REF
         echo "ESTA ES LA RAMA:${{ github.ref }}"
   job-version:
     runs-on: 
