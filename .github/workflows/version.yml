@@ -135,6 +135,7 @@ jobs:
         git push origin "${{ env.KAOS_VERSION }}"
         git add *
         git commit -m "${{ env.KAOS_MODULE }}  Upload: CHANGELOG.md, INDEX.md with version ${{ env.KAOS_VERSION }}"
+        git config pull.rebase false 
         git pull origin ${{ github.head_ref }}
         git push origin HEAD:${{ github.head_ref }}
     - id: failure-delete-tag
