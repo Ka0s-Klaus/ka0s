@@ -97,8 +97,11 @@ jobs:
         echo -e "Autor del pull request: ${{ needs.job-core.outputs.AUTHOR_NAME }}" >> CHANGELOG
         echo -e "Fecha de creación: $KAOS_DATE" >> CHANGELOG
         echo -e "# Commit Messages:\n\n$COMMIT_MESSAGE" >> CHANGELOG
-        #echo -e "Archivos modificados:\n\n${{ env.FILES_INVOLVED }}" >> CHANGELOG
-        echo -e "Archivos modificados:\n\n${{ env.KAOS_FILES }}" >> CHANGELOG
+        echo -e "\n# Commit Files:\n" >> CHANGELOG
+        while IFS= read -r line; do
+          echo "$line" >> CHANGELOG
+        done < commits-in-file.txt
+        echo -e "\nFin de la lista de commits.\n" >> CHANGELOG
     - id: version
       name: Version
       run: |
