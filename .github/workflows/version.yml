@@ -19,97 +19,125 @@ env:
   KAOS_RELEASE: ""
   KAOS_REPOSITORY: ${{ github.repository}}
   KAOS_REF: ${{ github.ref }}
+  KAOS_FILES: ""
 jobs:
-  kaos-version:
+  job-core:
     if: github.event.pull_request.state == 'open'
     runs-on: 
       group: version
     outputs:
       KAOS_BRANCH: ${{ steps.information.outputs.RNBRANCH }}
       KAOS_NUMBER: ${{ steps.information.outputs.RNNUMBER }}
-      KAOS_FILES: ${{ steps.information.outputs.FILES_INVOLVED }}
+      KAOS_INVOLVED: ${{ steps.information.outputs.INVOLVED }}
       AUTHOR_NAME: ${{ steps.information.outputs.AUTHOR_NAME }}
       AUTHOR_EMAIL: ${{ steps.information.outputs.AUTHOR_EMAIL }}
-      COMMIT_MESSAGE: ${{ steps.information.outputs.COMMIT_MESSAGE }}
+      KAOS_VERSION: ${{ steps.information.outputs.NVERSION }}
     steps:
     - id: repo
+      name: Checkout code
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
         token: ${{ secrets.KAOS_REPO_TOKEN }}
+    - name: Set environment variable for ref
+      id: ref
+      run: echo "KAOS_REF=${{ github.ref }}" >> $GITHUB_ENV
     - id: information
       name: Gather pull request information
       env:
         GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN}}
       run: |
-        echo "KAOS_VERSION=$(gh api repos/:owner/:repo/git/matching-refs/tags --jq '.[-1].ref' | sed 's|refs/tags/||')" >> $GITHUB_ENV
+        NVERSION=$(git describe --tags $(git rev-list --tags --max-count=1))
+        echo "Extracted NVersion: $NVERSION"
+        echo "NVERSION=$NVERSION" >> $GITHUB_OUTPUT
         echo "AUTHOR_NAME=$(git log -1 --pretty=format:'%an')" >> $GITHUB_OUTPUT
         echo "AUTHOR_EMAIL=$(git log -1 --pretty=format:'%ae')" >> $GITHUB_OUTPUT
-        git log origin/main..HEAD --pretty=format:'%s' | sed 's/[^a-zA-Z0-9 ]/\ /g' > commit.txt
-        COMMIT_MESSAGE=$(cat commit.txt)
         RNBRANCH=$(echo "${{ github.event.pull_request.title }}" | grep -o '^[A-Za-z]*')
         RNNUMBER=$(echo "${{ github.event.pull_request.title }}" | grep -o '[0-9]*')
         echo "Extracted RN Branch: $RNBRANCH"
         echo "Extracted RN Number: $RNNUMBER"
         echo "RNBRANCH=$RNBRANCH" >> $GITHUB_OUTPUT
         echo "RNNUMBER=$RNNUMBER" >> $GITHUB_OUTPUT 
-        #CHANGED_FILES=$(git diff --name-only origin/main..HEAD)
-        FILES_INVOLVED="ESTO UN FICHERO DE PRUEBA"
-        echo "KAOS_VERSION: $KAOS_VERSION"
-        echo "AUTHOR_NAME: $AUTHOR_NAME"
-        echo "AUTHOR_EMAIL: $AUTHOR_EMAIL"
-        echo "Extracted RN Branch: $RNBRANCH"
-        echo "Extracted RN Number: $RNNUMBER"
-        echo "Commit implicados: $COMMIT_MESSAGE"
-        echo "Ficheros modificados: $FILES_INVOLVED"
-        echo "FILES_INVOLVED=$FILES_INVOLVED" >> $GITHUB_OUTPUT
-        #echo "CHANGED_FILES=$(git diff --name-only origin/main..HEAD)" >> $GITHUB_OUTPUT
+        git diff --name-only origin/main..HEAD > files-in-commit.txt
+        INVOLVED="files-in-commit.txt"
+        echo "INVOLVED=$INVOLVED" >> $GITHUB_OUTPUT
+        git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
+        git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
+        git pull origin main
+        git add files-in-commit.txt
+        git commit -m "[Ka0S] se genera el fichero files-in-commit"
+        #git push origin ${{ github.ref }}
+        #git push origin $KAOS_REF
+        git push origin HEAD:main
+        echo "ESTA ES LA RAMA:${{ github.ref }}"
+  job-version:
+    runs-on: 
+      group: version
+    needs: job-core
+    steps:
+    - id: repo
+      name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.KAOS_REPO_TOKEN }}
     - id: version
+      name: Version
       run: |
-        if [ ! -n ${{ env.KAOS_VERSION }} ]; then echo "${{ env.KAOS_VERSION }}"; else echo "KAOS_VERSION='0.0.0'" >> GITHUB_ENV; fi
-        IFS='.' read -r MAJOR MINOR PATCH <<< "${{ env.KAOS_VERSION }}" 
-        if [[ "${{ steps.information.outputs.RNBRANCH }}" =~ (H) ]]; then
+        IFS='.' read -r MAJOR MINOR PATCH <<< "${{ needs.job-core.outputs.KAOS_VERSION }}" 
+        echo "KAOS_VERSION: ${{ needs.job-core.outputs.KAOS_VERSION }}"
+        echo "PATCH: $PATCH"
+        echo "MINOR: $MINOR"
+        echo "MAJOR: $MAJOR"
+        if [[ "${{ needs.job-core.outputs.KAOS_BRANCH }}" =~ (H) ]]; then
           PATCH=$((PATCH + 1))
-        elif [[ "${{ steps.information.outputs.RNBRANCH }}" =~ (F) ]]; then
+          echo "Entra en el if"
+          echo "PATCH: $PATCH"
+        elif [[ "${{ needs.job-core.outputs.KAOS_BRANCH }}" =~ (F) ]]; then
           MINOR=$((MINOR + 1))
           PATCH=0
-        elif [[ "${{ steps.information.outputs.RNBRANCH }}" =~ (RN) ]]; then
+          echo "Entra en el primer elif"
+        elif [[ "${{ needs.job-core.outputs.KAOS_BRANCH }}" =~ (RN) ]]; then
           MAJOR=$((MAJOR + 1))
           MINOR=0
           PATCH=0
+          echo "Entra en el segundo elif"
         fi
         NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+        echo "NEW VERSION: $NEW_VERSION"
         echo "KAOS_VERSION=$NEW_VERSION" >> $GITHUB_ENV
     - id: write
       name: Write Changelog
       run: |
-        KAOS_ISSUE_BODY=$(cat <<'EOF'
-        Version: v${{ env.KAOS_VERSION }}
-        Autor del pull request: $AUTHOR_NAME
-        Fecha de creación: $(date +'%Y-%m-%d')   
-        Commits: 
-        $COMMIT_MESSAGE
-        Archivos modificados:
-        $FILES_INVOLVED 
-        EOF
-        )
-        echo $KAOS_ISSUE_BODY >> CHANGELOG
-
+        echo "Escribo en el CHANGELOG" >> CHANGELOG
+        KAOS_DATE=$(date +'%Y-%m-%d.%H:%M:%S')
+        echo $KAOS_DATE
+        echo "NVERSION: $NEW_VERSION"
+        COMMIT_MESSAGE=$(git log --pretty=format:'%h %s')
+        echo $COMMIT_MESSAGE
+        VERSION=$(git describe --tags $(git rev-list --tags --max-count=1))
+        echo "$VERSION"
+        echo -e "Version: $NEW_VERSION" >> CHANGELOG
+        echo -e "Autor Pull Request: ${{ needs.job-core.outputs.AUTHOR_NAME }}" >> CHANGELOG
+        echo -e "Fecha Creación: $KAOS_DATE" >> CHANGELOG
+        echo -e "# Commit Messages:\n\n$COMMIT_MESSAGE" >> CHANGELOG
+        echo -e "\n# Commit Files:\n" >> CHANGELOG
+        while IFS= read -r line; do
+          echo "$line" >> CHANGELOG
+        done < ${{ needs.job-core.outputs.KAOS_INVOLVED }}
+        echo -e "\nFin de la lista de commits.\n" >> CHANGELOG 
     - id: push-log-tag-index
+      name: Push Log Tag
       if: ${{ success() && env.KAOS_VERSION != '' }}
-      env:
-        USER_NAME: ${{ secrets.KAOS_BOT_NAME }}
-        USER_EMAIL: ${{ secrets.KAOS_BOT_EMAIL }}
       run: |
-        git config --global user.name '${{ env.USER_NAME }}'
-        git config --global user.email '${{ env.USER_EMAIL}}'
-        git tag -a "${{ env.KAOS_VERSION }}" -m "${{ env.KAOS_MODULE }} NEW Ka0S version ${{ env.KAOS_VERSION}}"
+        git config --global user.name ${{ secrets.KAOS_BOT_NAME }}
+        git config --global user.email ${{ secrets.KAOS_BOT_EMAIL }}
+        git tag -a "${{ env.KAOS_VERSION }}" -m "${{ env.KAOS_MODULE }} NEW Ka0S version ${{ env.KAOS_VERSION }}"
         git push origin "${{ env.KAOS_VERSION }}"
-        if [ ! -f INDEX.md ]; then echo "# Version Index" > INDEX.md; fi
-        echo "- **Version**: ${{ env.KAOS_VERSION }} - **Description**: ${{ steps.information.outputs.COMMIT_MESSAGE }}" >> INDEX.md
         git add *
         git commit -m "${{ env.KAOS_MODULE }}  Upload: CHANGELOG.md, INDEX.md with version ${{ env.KAOS_VERSION }}"
-        git push origin HEAD:${{ github.head_ref }}
+        git pull origin main
+        git push origin HEAD:main
     - id: failure-delete-tag
       if: ${{ failure() && env.KAOS_VERSION != '' }}
       run: |
@@ -117,10 +145,21 @@ jobs:
         git push origin --delete "${{ env.KAOS_VERSION }}"
         KAOS_ISSUE_BODY="Sentimos comunicarle que no se cumplen los requerimientos, por favor revise los checks"
         #gh workflow run issue.yaml --ref main -f kaos-issue-id="${{ github.event.pull_request.number }}" -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=comment
+  handle-success:
+    runs-on:
+        group: ka0s
+    needs: [job-version]
+    if: ${{ success() }}
+    steps:
+      - id: handle-success-execution
+        name: handle-success-execution
+        run: |
+          # Si todo ha ido correcto añadimos el contenido del fichero 
+          echo "Todo ha ido bien"
   handle_failure:
     runs-on: 
       group: ka0s
-    needs: [kaos-version]
+    needs: [job-core, job-version]
     if: ${{ failure() }}
     steps:
       - id: check-execution
@@ -129,7 +168,7 @@ jobs:
           KAOS_ISSUE_TITLE="${{ env.KAOS_MODULE }} Module failed in ${{ github.run_id }}"
           KAOS_ISSUE_BODY=$(cat <<'EOF'
           An error occurred in the execution Action workflow RunID: **${{ github.run_id }}**.
-          Initiated by #${{ needs.kaos-version.outputs.AUTHOR_NAME}} from issue number #${{ needs.kaos-version.outputs.KAOS_NUMBER }}
+          Initiated by #${{ env.AUTHOR_NAME}} from issue number #${{ needs.kaos-version.outputs.KAOS_NUMBER }}
           **${{ env.KAOS_MODULE }}  Message:**
           El error ha sido en : ${{  github.run_id }}
           ejecute este comando en su consola y podrá consultar el fallo del trabajo
@@ -152,21 +191,10 @@ jobs:
           # Añadimos el comentario a la issue que dispara el proceso
           KAOS_ISSUE_BODY="OPS¡ se ha producido un error en el proceso (${{ env.KAOS_MODULE }})  lanzado desde (#${{ needs.kaos-version.outputs.KAOS_NUMBER }}) en la ejecución (${{ github.run_id }}) y esto ha generado una issue con el titulo ($KAOS_ISSUE_TITLE)"
           #gh workflow run issue.yaml --ref ${{ github.ref }} -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=comment -f kaos-issue-tag="bug" -f kaos-issue-id=${{ needs.kaos-version.outputs.KAOS_NUMBER }}
-  handle-success:
-    runs-on:
-        group: ka0s
-    needs: [kaos-version, handle_failure]
-    if: ${{ success() }}
-    steps:
-      - id: handle-success-execution
-        name: handle-success-execution
-        run: |
-          # Si todo ha ido correcto añadimos el contenido del fichero 
-          echo "Todo ha ido bien"
   end-workflow:
     runs-on:
         group: ka0s
-    needs: [kaos-version, handle-success, handle_failure]
+    needs: [job-core, job-version, handle-success, handle_failure]
     if: ${{ always() }} 
     env:
         GH_TOKEN: ${{ secrets.KAOS_ACTIONS_TOKEN }}
