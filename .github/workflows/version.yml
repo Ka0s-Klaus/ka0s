@@ -94,13 +94,13 @@ jobs:
         echo "$VERSION"
         echo -e "Version: $VERSION" >> CHANGELOG
         echo "Version: v${{ needs.job-core.outputs.KAOS_VERSION }}"
-        echo -e "Autor del pull request: ${{ needs.job-core.outputs.AUTHOR_NAME }}" >> CHANGELOG
-        echo -e "Fecha de creación: $KAOS_DATE" >> CHANGELOG
+        echo -e "Autor Pull Request: ${{ needs.job-core.outputs.AUTHOR_NAME }}" >> CHANGELOG
+        echo -e "Fecha Creación: $KAOS_DATE" >> CHANGELOG
         echo -e "# Commit Messages:\n\n$COMMIT_MESSAGE" >> CHANGELOG
         echo -e "\n# Commit Files:\n" >> CHANGELOG
         while IFS= read -r line; do
           echo "$line" >> CHANGELOG
-        done < files-in-commit.txt
+        done < ${{ needs.job-core.outputs.KAOS_INVOLVED }}
         echo -e "\nFin de la lista de commits.\n" >> CHANGELOG
     - id: version
       name: Version
