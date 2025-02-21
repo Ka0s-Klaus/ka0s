@@ -109,16 +109,15 @@ jobs:
     - id: write
       name: Write Changelog
       run: |
-        echo "Escribo en el CHANGELOG" > CHANGELOG
-        KAOS_DATE=$(date +'%Y-%m-%d')
+        echo "Escribo en el CHANGELOG" >> CHANGELOG
+        KAOS_DATE=$(date +'%Y-%m-%d.%H:%M:%S')
         echo $KAOS_DATE
-        echo "NVERSION: ${{ needs.job-core.outputs.KAOS_VERSION }}"
+        echo "NVERSION: $NEW_VERSION"
         COMMIT_MESSAGE=$(git log --pretty=format:'%h %s')
         echo $COMMIT_MESSAGE
         VERSION=$(git describe --tags $(git rev-list --tags --max-count=1))
         echo "$VERSION"
-        echo -e "Version: $VERSION" >> CHANGELOG
-        echo "Version: v${{ needs.job-core.outputs.KAOS_VERSION }}"
+        echo -e "Version: $NEW_VERSION" >> CHANGELOG
         echo -e "Autor Pull Request: ${{ needs.job-core.outputs.AUTHOR_NAME }}" >> CHANGELOG
         echo -e "Fecha Creación: $KAOS_DATE" >> CHANGELOG
         echo -e "# Commit Messages:\n\n$COMMIT_MESSAGE" >> CHANGELOG
