@@ -81,27 +81,6 @@ jobs:
       with:
         fetch-depth: 0
         token: ${{ secrets.KAOS_REPO_TOKEN }}
-    - id: write
-      name: Write Changelog
-      run: |
-        echo "Escribo en el CHANGELOG" > CHANGELOG
-        KAOS_DATE=$(date +'%Y-%m-%d')
-        echo $KAOS_DATE
-        echo "NVERSION: ${{ needs.job-core.outputs.KAOS_VERSION }}"
-        COMMIT_MESSAGE=$(git log --pretty=format:'%h %s')
-        echo $COMMIT_MESSAGE
-        VERSION=$(git describe --tags $(git rev-list --tags --max-count=1))
-        echo "$VERSION"
-        echo -e "Version: $VERSION" >> CHANGELOG
-        echo "Version: v${{ needs.job-core.outputs.KAOS_VERSION }}"
-        echo -e "Autor Pull Request: ${{ needs.job-core.outputs.AUTHOR_NAME }}" >> CHANGELOG
-        echo -e "Fecha Creación: $KAOS_DATE" >> CHANGELOG
-        echo -e "# Commit Messages:\n\n$COMMIT_MESSAGE" >> CHANGELOG
-        echo -e "\n# Commit Files:\n" >> CHANGELOG
-        while IFS= read -r line; do
-          echo "$line" >> CHANGELOG
-        done < ${{ needs.job-core.outputs.KAOS_INVOLVED }}
-        echo -e "\nFin de la lista de commits.\n" >> CHANGELOG
     - id: version
       name: Version
       run: |
@@ -127,7 +106,27 @@ jobs:
         NEW_VERSION="$MAJOR.$MINOR.$PATCH"
         echo "NEW VERSION: $NEW_VERSION"
         echo "KAOS_VERSION=$NEW_VERSION" >> $GITHUB_ENV
-    
+    - id: write
+      name: Write Changelog
+      run: |
+        echo "Escribo en el CHANGELOG" > CHANGELOG
+        KAOS_DATE=$(date +'%Y-%m-%d')
+        echo $KAOS_DATE
+        echo "NVERSION: ${{ needs.job-core.outputs.KAOS_VERSION }}"
+        COMMIT_MESSAGE=$(git log --pretty=format:'%h %s')
+        echo $COMMIT_MESSAGE
+        VERSION=$(git describe --tags $(git rev-list --tags --max-count=1))
+        echo "$VERSION"
+        echo -e "Version: $VERSION" >> CHANGELOG
+        echo "Version: v${{ needs.job-core.outputs.KAOS_VERSION }}"
+        echo -e "Autor Pull Request: ${{ needs.job-core.outputs.AUTHOR_NAME }}" >> CHANGELOG
+        echo -e "Fecha Creación: $KAOS_DATE" >> CHANGELOG
+        echo -e "# Commit Messages:\n\n$COMMIT_MESSAGE" >> CHANGELOG
+        echo -e "\n# Commit Files:\n" >> CHANGELOG
+        while IFS= read -r line; do
+          echo "$line" >> CHANGELOG
+        done < ${{ needs.job-core.outputs.KAOS_INVOLVED }}
+        echo -e "\nFin de la lista de commits.\n" >> CHANGELOG 
     - id: push-log-tag-index
       name: Push Log Tag
       if: ${{ success() && env.KAOS_VERSION != '' }}
