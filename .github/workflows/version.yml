@@ -28,7 +28,7 @@ jobs:
     outputs:
       KAOS_BRANCH: ${{ steps.information.outputs.RNBRANCH }}
       KAOS_NUMBER: ${{ steps.information.outputs.RNNUMBER }}
-      #KAOS_FILES: ${{ steps.information.outputs.FILES_INVOLVED }}
+      KAOS_INVOLVED: ${{ steps.information.outputs.INVOLVED }}
       AUTHOR_NAME: ${{ steps.information.outputs.AUTHOR_NAME }}
       AUTHOR_EMAIL: ${{ steps.information.outputs.AUTHOR_EMAIL }}
       KAOS_VERSION: ${{ steps.information.outputs.NVERSION }}
@@ -39,6 +39,9 @@ jobs:
       with:
         fetch-depth: 0
         token: ${{ secrets.KAOS_REPO_TOKEN }}
+    - name: Set environment variable for ref
+      id: ref
+      run: echo "KAOS_REF=${{ github.ref }}" >> $GITHUB_ENV
     - id: information
       name: Gather pull request information
       env:
@@ -55,15 +58,18 @@ jobs:
         echo "Extracted RN Number: $RNNUMBER"
         echo "RNBRANCH=$RNBRANCH" >> $GITHUB_OUTPUT
         echo "RNNUMBER=$RNNUMBER" >> $GITHUB_OUTPUT 
-        #CHANGED_FILES=$(git diff --name-only origin/main..HEAD)
-        FILES=$(git diff --name-only origin/main..HEAD)
-        echo "Ficheros modificados: $FILES"
-        echo "KAOS_FILES<<EOF" >> $GITHUB_ENV
-        echo "$FILES" >> $GITHUB_ENV
-        echo "EOF" >> $GITHUB_ENV
-        #echo -e "KAOS_FILES=$FILES" >> $GITHUB_ENV
+        git diff --name-only origin/main..HEAD > files-in-commit.txt
+        INVOLVED="files-in-commit.txt"
+        echo "INVOLVED=$INVOLVED" >> $GITHUB_OUTPUT
+        git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
+        git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
+        #git pull
+        git add files-in-commit.txt
+        git commit -m "[Ka0S] se genera el fichero files-in-commit"
+        #git push origin ${{ github.ref }}
+        #git push origin $KAOS_REF
+        git push origin HEAD:${{ github.head_ref }}
         echo "ESTA ES LA RAMA:${{ github.ref }}"
-        echo "Ficheros: ${{ env.KAOS_FILES }}"
   job-version:
     runs-on: 
       group: version
@@ -129,6 +135,7 @@ jobs:
         git push origin "${{ env.KAOS_VERSION }}"
         git add *
         git commit -m "${{ env.KAOS_MODULE }}  Upload: CHANGELOG.md, INDEX.md with version ${{ env.KAOS_VERSION }}"
+        git pull origin ${{ github.head_ref }}
         git push origin HEAD:${{ github.head_ref }}
     - id: failure-delete-tag
       if: ${{ failure() && env.KAOS_VERSION != '' }}

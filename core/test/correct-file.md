@@ -8,9 +8,7 @@
 
 #### Subtitulo 4
 
-##### Subtitulo 5
-
-###### Subtítulo 6
+##### Subtitulo
 
 - primera cita
 - segunda cita
