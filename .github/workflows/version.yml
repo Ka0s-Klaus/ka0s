@@ -66,10 +66,8 @@ jobs:
         git pull origin main
         git add files-in-commit.txt
         git commit -m "[Ka0S] se genera el fichero files-in-commit"
-        #git push origin ${{ github.ref }}
-        #git push origin $KAOS_REF
-        git push origin main
-        echo "ESTA ES LA RAMA:${{ github.ref }}"
+        git push origin HEAD:${{ github.head_ref }}
+        echo "ESTA ES LA RAMA:${{ github.head_ref }}"
   job-version:
     runs-on: 
       group: version
