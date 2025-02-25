@@ -10,3 +10,14 @@
   - core/test/correct-file.md
   - version.txt
 ---------------------------------
+## Version 0.0.2
+- **Branch**: refs/pull/208/merge
+- **Commit**: 60e12f2dd0da8817ab03d80d178fa10d0678b2f4
+- **Author**: yolabn (141480171+Yolabn@users.noreply.github.com)
+- **Date**: Tue Feb 25 10:35:10 UTC 2025
+- **Message**: H44 creación módulo versionado
+- **Files Changed**:
+  - core/results/event_data13519165884.json
+  - core/test/correct-file1.md
+  - version.txt
+---------------------------------
