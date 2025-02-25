@@ -32,3 +32,40 @@
   - core/test/correct-file.md
   - version.txt
 ---------------------------------
+## Version 0.0.4
+- **Branch**: refs/pull/210/merge
+- **Commit**: Test
+- **Author**: yolabn
+- **Date**: Tue Feb 25 11:14:24 UTC 2025
+- **Message**: H44 creación módulo versionado
+- **Files Changed**:
+  - core/test/correct-file.md
+  - core/test/correct-file2.yaml
+  - version.txt
+---------------------------------
+## Version 0.0.5
+- **Branch**: refs/pull/211/merge
+- **Commit**: [Ka0S] VERSION  Upload: CHANGELOG.md, INDEX.md with version 0.0.4
+- **Author**: yolabn
+- **Date**: Tue Feb 25 11:26:11 UTC 2025
+- **Message**: H44 creación módulo versionado
+- **Files Changed**:
+  - CHANGELOG.md
+  - INDEX.md
+  - core/test/correct-file.md
+  - core/test/correct-file2.yaml
+  - version.txt
+---------------------------------
+## Version 0.0.6
+- **Branch**: refs/pull/212/merge
+- **Commit**: [Ka0S] VERSION  Upload: CHANGELOG.md, INDEX.md with version 0.0.5
+- **Author**: yolabn
+- **Date**: Tue Feb 25 11:28:48 UTC 2025
+- **Message**: H44 creación módulo versionado
+- **Files Changed**:
+  - CHANGELOG.md
+  - INDEX.md
+  - core/test/correct-file.md
+  - core/test/correct-file2.yaml
+  - version.txt
+---------------------------------
