@@ -14,3 +14,23 @@
   - core/test/prueba.yaml
   - files-in-commit.txt
 ---------------------------------
+## Version 0.0.5
+- **Branch**: refs/pull/204/merge
+- **Commit**: 4280a98d748b8b04f1b7148379f8b46a5e4de5ab
+- **Author**: yolabn (141480171+Yolabn@users.noreply.github.com)
+- **Date**: Tue Feb 25 09:32:05 UTC 2025
+- **Message**: Merge 0a70c07c3c1abf1fb48dcdae2fbad80634f95734 into 051ad60deac0664caa4a4009c9f8ce591901bd7a
+- **Files Changed**:
+  - .github/workflows/version.yml
+  - CHANGELOG.md
+  - INDEX.md
+  - core/results/event_data13501903405.json
+  - core/results/event_data13502217285.json
+  - core/results/event_data13517725517.json
+  - core/results/event_data13517750322.json
+  - core/results/event_data13517954232.json
+  - core/test/correct-file1.md
+  - core/test/prueba.yaml
+  - files-in-commit.txt
+  - version.txt
+---------------------------------
