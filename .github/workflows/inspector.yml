@@ -80,4 +80,6 @@ jobs:
       - id: handle-failure-execution
         run: |
           echo "Error detected in ${{ env.KAOS_MODULE }}, creating issue..."
-         
+          # Creamos la issue dado que ha fallado el modulo principal
+          gh issue create  --title "[Ka0S] Error detected in ${{ env.KAOS_MODULE }}" --body "Error detected in ${{ env.KAOS_MODULE }}. Please check the logs for more information of ${{ github.run_id }}."
+          
