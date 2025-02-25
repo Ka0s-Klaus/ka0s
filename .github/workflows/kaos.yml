@@ -192,6 +192,8 @@ jobs:
         name: handle-success-execution
         run: |
           # Si todo ha ido correcto añadimos el contenido del fichero 
+          RNNUMBER=$(echo "${{ github.ref_name }}" | grep -o '[0-9]*')
+          gh issue comment $RNNUMBER --body-file ${{ env.KAOS_JSON }}${{ github.run_id }}.json
           echo "Todo ha ido bien"
   handle_failure:
     runs-on: ubuntu-latest
@@ -202,7 +204,10 @@ jobs:
       - id: handle-failure-execution
         name: handle-failure-execution
         run: |
-                echo "Error detected in process"
+          echo "Error detected in process"
+          RNNUMBER=$(echo "${{ github.ref_name }}" | grep -o '[0-9]*')
+          gh run view ${{ github.run_id }} --log-failed > failerror.log
+          gh issue comment $RNNUMBER --body-file failerror.log
   end-workflow:
     runs-on: ubuntu-latest
       #  group: ka0s
