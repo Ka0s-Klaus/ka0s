@@ -1,0 +1,16 @@
+## Version 0.0.4
+- **Branch**: refs/pull/202/merge
+- **Commit**: eb933e0cc0eb280503b7ccf01b357cfc24915f98
+- **Author**: yolabn (141480171+Yolabn@users.noreply.github.com)
+- **Date**: Tue Feb 25 09:21:36 UTC 2025
+- **Message**: Merge 0028f62fb3be06f0d9148a0931a9edcfba12dc10 into aea2caffc2b045e846c0ef681f6d340e0c49784b
+- **Files Changed**:
+  - .github/workflows/version.yml
+  - core/results/event_data13501903405.json
+  - core/results/event_data13502217285.json
+  - core/results/event_data13517725517.json
+  - core/results/event_data13517750322.json
+  - core/test/correct-file1.md
+  - core/test/prueba.yaml
+  - files-in-commit.txt
+---------------------------------
