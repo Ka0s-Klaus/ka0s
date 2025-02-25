@@ -43,7 +43,7 @@ jobs:
               echo "File $file has an invalid extension: $extension"
             fi
           done
-          RNNUMBER=$(echo "${{ github.event.pull_request.title }}" | grep -o '[0-9]*')
+          RNNUMBER=$(echo "${{ github.ref_name }}" | grep -o '[0-9]*')
           gh issue comment $RNNUMBER --body "Se inicia Ka0s"
       - name: Crear JSON
         id: crear_json
