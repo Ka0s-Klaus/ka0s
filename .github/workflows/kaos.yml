@@ -197,6 +197,8 @@ jobs:
           token: ${{ secrets.KAOS_REPO_TOKEN }}
       - id: handle-success-execution
         name: handle-success-execution
+        env:
+          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
         run: |
           # Si todo ha ido correcto añadimos el contenido del fichero 
           RNNUMBER=$(echo "${{ github.ref_name }}" | grep -o '[0-9]*')
@@ -216,6 +218,8 @@ jobs:
           token: ${{ secrets.KAOS_REPO_TOKEN }}
       - id: handle-failure-execution
         name: handle-failure-execution
+        env:
+          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
         run: |
           echo "Error detected in process"
           RNNUMBER=$(echo "${{ github.ref_name }}" | grep -o '[0-9]*')
