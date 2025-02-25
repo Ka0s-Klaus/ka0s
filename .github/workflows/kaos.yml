@@ -121,6 +121,7 @@ jobs:
         env:
             modules: ${{ secrets.KAOS_CORE_MODULES }}
             files: ${{ secrets.KAOS_CORE_FILES }}
+            GH_TOKEN: ${{ secrets.KAOS_ACTIONS_TOKEN}}
         run: |
           git diff --name-only ${{ github.event.before }} ${{ github.sha }} > files-in-commit.txt
           # Nuevo proceso de activacion de los modulos
