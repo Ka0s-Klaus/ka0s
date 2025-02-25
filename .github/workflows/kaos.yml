@@ -148,6 +148,7 @@ jobs:
                     # Si hemos llegado hasta aquí ejecutamos el módulo
                     # Lanzamos el lint del fichero
                     RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
+                    echo "El numero de la issue es: $RNNUMBER"
                     gh workflow run $file_module --ref ${{ github.ref }} -f kaos-origin=${{ github.run_id }} -f kaos-files=$line -f kaos-issue-id=$RNNUMBER -f kaos-user-start=${{ env.KAOS_ACTOR }}
                     module_failed=0
                     extension_failed=0
