@@ -43,7 +43,7 @@ jobs:
       name: Get commit details
       run: |
         RNNUMBER=$(echo "${{ github.event.pull_request.title }}" | grep -o '[0-9]*')
-        gh issue comment $RNNUMBER --body "Se inicia Version"
+        gh issue comment $RNNUMBER --body "Se inicia Version ${{ env.KAOS_CODE }}"
         echo "GH_VERSION=$(gh api repos/:owner/:repo/git/matching-refs/tags --jq '.[-1].ref' | sed 's|refs/tags/||')" >> $GITHUB_ENV
         echo "AUTHOR_NAME=$(git log -1 --pretty=format:'%an')" >> $GITHUB_OUTPUT
         echo "AUTHOR_EMAIL=$(git log -1 --pretty=format:'%ae')" >> $GITHUB_OUTPUT
@@ -166,4 +166,4 @@ jobs:
           echo "End process"
           gh workflow run inspector.yml --ref 'main' -f kaos-issue-id="" -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start=""
           RNNUMBER=$(echo "${{ github.event.pull_request.title }}" | grep -o '[0-9]*')
-          gh issue comment $RNNUMBER --body "Se finaliza Version: ${{ needs.job-core.outputs.KAOS_VERSION }}"
+          gh issue comment $RNNUMBER --body "Se finaliza Version ${{ env.KAOS_CODE }}: ${{ needs.job-core.outputs.KAOS_VERSION }}"
