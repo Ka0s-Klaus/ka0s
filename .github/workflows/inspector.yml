@@ -38,10 +38,14 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.KAOS_ACTIONS_TOKEN }}
         run: |
+          RNNUMBER=$(echo "${{ github.event.pull_request.title }}" | grep -o '[0-9]*')
+          gh issue comment $RNNUMBER --body "Se inicia Inspector"
           echo "Checking the execution of the workflow..."
           gh run view ${{ github.event.inputs.kaos-workflow-id }} --log > ${{ env.KAOS_OUTPUT_EXECUTION }}${{ github.event.inputs.kaos-workflow-id }}.log
+          gh issue comment $RNNUMBER --body "Se genera el fichero: ${{ env.KAOS_OUTPUT_EXECUTION }}${{ github.event.inputs.kaos-workflow-id }}.log"
           echo "Extract resume of execution code..."
           gh run view ${{ github.event.inputs.kaos-workflow-id }} --json ${{ env.KAOS_EXP_FULL_LOGS }} > ${{ env.KAOS_OUTPUT_EXECUTION }}${{ github.event.inputs.kaos-workflow-id }}.json
+          gh issue comment $RNNUMBER --body "Se genera el fichero: ${{ env.KAOS_OUTPUT_EXECUTION }}${{ github.event.inputs.kaos-workflow-id }}.json"
       - id: upload-files
         name: Upload Files
         run: |
@@ -52,6 +56,7 @@ jobs:
           git add ${{ env.KAOS_OUTPUT_EXECUTION }}
           git commit -m "[Ka0S] Uploading resume execution files to the repository..."
           git push origin ${{ github.ref }}
+          gh issue comment $RNNUMBER --body "Se finaliza Inspector"
   handle-success:
     runs-on: ubuntu-latest
     #  group: inspector
