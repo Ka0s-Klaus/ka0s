@@ -35,6 +35,8 @@ jobs:
           token: ${{ secrets.KAOS_REPO_TOKEN }}
       - id: validate
         name: Validate file extensions
+        env:
+          GH_TOKEN: ${{ secrets.KAOS_ISSUE_TOKEN }}
         run: |
           IFS=' ' read -r -a extensions <<< "${{ secrets.KAOS_CORE_FILES }}"
           for file in $(git diff --name-only HEAD~1 HEAD); do
