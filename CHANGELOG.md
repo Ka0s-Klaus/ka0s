@@ -82,3 +82,23 @@
   - core/test/correct-file2.yaml
   - version.txt
 ---------------------------------
+## Version 0.0.8
+- **Branch**: refs/pull/216/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: yolabn
+- **Date**: Tue Feb 25 12:46:24 UTC 2025
+- **Message**: H44 creación módulo versionado
+- **Files Changed**:
+  - core/results/event_data13520474822.json
+  - core/results/event_data13520616276.json
+  - core/results/event_data13520855067.json
+  - core/results/event_data13520973377.json
+  - core/results/event_data13521105293.json
+  - core/results/event_data13521303754.json
+  - core/results/event_data13521351557.json
+  - core/results/event_data13521426155.json
+  - core/results/event_data13521520039.json
+  - core/test/correct-file.md
+  - core/test/correct-file1.yaml
+  - version.txt
+---------------------------------
