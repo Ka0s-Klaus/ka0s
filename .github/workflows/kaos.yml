@@ -18,6 +18,7 @@ env:
     KAOS_MODULE: "[Ka0S] kaos"
     KAOS_PATH_RESUME: "core/results/"
     KAOS_JSON: "core/results/event_data"
+    KAOS_ACTOR: ${{ github.actor }}
 jobs: 
   job-core:
     runs-on: ubuntu-latest
@@ -121,9 +122,10 @@ jobs:
             modules: ${{ secrets.KAOS_CORE_MODULES }}
             files: ${{ secrets.KAOS_CORE_FILES }}
         run: |
+          git diff --name-only ${{ github.event.before }} ${{ github.sha }} > files-in-commit.txt
           # Nuevo proceso de activacion de los modulos
           while IFS= read -r line; do
-            echo "I Leemos el fichero ${{ github.event.inputs.kaos-involved-file }} y extraemos el fichero $line"
+            echo "I Leemos el fichero files-in-commit.txt y extraemos el fichero $line"
             module_failed=0
             extension_failed=0
             file_name=$(basename "$line")
@@ -143,12 +145,8 @@ jobs:
                   if [[ "$file_module" == *"$module"* ]]; then
                     echo "V Comprobamos que el $file_module es igual a $module y ejecutamos el flujo"
                     # Si hemos llegado hasta aquí ejecutamos el módulo
-                    # Añadimos los valores a las variables de la issue
-                    KAOS_ISSUE_BODY="${{ env.KAOS_MODULE }} has been initiated and Launch workflow $file_module to check file $line"
-                    # Añadimos el comentario a la issue
-                    #gh workflow run issue.yaml --ref ${{ github.ref }} -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-id=${{ github.event.inputs.kaos-issue-id }} -f kaos-issue-actions=comment
                     # Lanzamos el lint del fichero
-                    #gh workflow run $file_module --ref ${{ github.ref }} -f kaos-origin=${{ github.run_id }} -f kaos-files=$line -f kaos-issue-id=${{ github.event.inputs.kaos-issue-id }} -f kaos-user-start=${{ github.event.inputs.kaos-user-start }}
+                    gh workflow run $file_module --ref ${{ github.ref }} -f kaos-origin=${{ github.run_id }} -f kaos-files=$line -f kaos-issue-id=$RNNUMBER -f kaos-user-start=${{ env.KAOS_ACTOR }}
                     module_failed=0
                     extension_failed=0
                     break
@@ -171,7 +169,7 @@ jobs:
               # Añadimos los valores a las variables de la issue
               KAOS_ISSUE_BODY="${{ env.KAOS_MODULE }} ha detectado que la extensión ($file_extension) esta permitida dentro de KAOS_CORE_FILES, pero el módulo asociado ($file_module) no esta activo. Por favor compruebe que exista y esta activo."
               # Añadimos el comentario a la issue
-              #gh workflow run issue.yaml --ref ${{ github.ref }} -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-id=${{ github.event.inputs.kaos-issue-id }} -f kaos-issue-actions=comment
+              gh issue comment $RNNUMBER --body "$KAOS_ISSUE_BODY"
             fi
             if [[ $extension_failed == 1 ]]; then
               echo "X Si extension falla falla ($extension_failed) añadimos el comentario a la issue"
@@ -179,9 +177,9 @@ jobs:
               # Añadimos los valores a las variables de la issue
               KAOS_ISSUE_BODY="${{ env.KAOS_MODULE }} ha detectado que la extensión ($file_extension) NO esta permitida dentro de KAOS_CORE_FILES. Por favor compruebe que exista y esta activo."
               # Añadimos el comentario a la issue
-              #gh workflow run issue.yaml --ref ${{ github.ref }} -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-id=${{ github.event.inputs.kaos-issue-id }} -f kaos-issue-actions=comment
+              gh issue comment $RNNUMBER --body "$KAOS_ISSUE_BODY"
             fi  
-          done < $GITHUB_OUTPUT       
+          done < files-in-commit.txt      
   handle-success:
     runs-on: ubuntu-latest
       #  group: ka0s
