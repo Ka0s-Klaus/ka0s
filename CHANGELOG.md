@@ -1,0 +1,115 @@
+
+## Version 0.0.1
+- **Branch**: refs/pull/207/merge
+- **Commit**: fee19f00d2dc3a63f58659d724e3a383c6d8222d
+- **Author**: yolabn (141480171+Yolabn@users.noreply.github.com)
+- **Date**: Tue Feb 25 10:12:22 UTC 2025
+- **Message**: Merge 4c1a790fd4f9ee22d1e156bb74e3adff65482e1c into ba49003f680223934f48a8048fc51667860d3913
+- **Files Changed**:
+  - core/results/event_data13518721804.json
+  - core/test/correct-file.md
+  - version.txt
+---------------------------------
+## Version 0.0.2
+- **Branch**: refs/pull/208/merge
+- **Commit**: 60e12f2dd0da8817ab03d80d178fa10d0678b2f4
+- **Author**: yolabn (141480171+Yolabn@users.noreply.github.com)
+- **Date**: Tue Feb 25 10:35:10 UTC 2025
+- **Message**: H44 creación módulo versionado
+- **Files Changed**:
+  - core/results/event_data13519165884.json
+  - core/test/correct-file1.md
+  - version.txt
+---------------------------------
+## Version 0.0.3
+- **Branch**: refs/pull/209/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: yolabn
+- **Date**: Tue Feb 25 10:46:43 UTC 2025
+- **Message**: H44 creación módulo versionado
+- **Files Changed**:
+  - core/results/event_data13519384750.json
+  - core/test/correct-file.md
+  - version.txt
+---------------------------------
+## Version 0.0.4
+- **Branch**: refs/pull/210/merge
+- **Commit**: Test
+- **Author**: yolabn
+- **Date**: Tue Feb 25 11:14:24 UTC 2025
+- **Message**: H44 creación módulo versionado
+- **Files Changed**:
+  - core/test/correct-file.md
+  - core/test/correct-file2.yaml
+  - version.txt
+---------------------------------
+## Version 0.0.5
+- **Branch**: refs/pull/211/merge
+- **Commit**: [Ka0S] VERSION  Upload: CHANGELOG.md, INDEX.md with version 0.0.4
+- **Author**: yolabn
+- **Date**: Tue Feb 25 11:26:11 UTC 2025
+- **Message**: H44 creación módulo versionado
+- **Files Changed**:
+  - CHANGELOG.md
+  - INDEX.md
+  - core/test/correct-file.md
+  - core/test/correct-file2.yaml
+  - version.txt
+---------------------------------
+## Version 0.0.6
+- **Branch**: refs/pull/212/merge
+- **Commit**: [Ka0S] VERSION  Upload: CHANGELOG.md, INDEX.md with version 0.0.5
+- **Author**: yolabn
+- **Date**: Tue Feb 25 11:28:48 UTC 2025
+- **Message**: H44 creación módulo versionado
+- **Files Changed**:
+  - CHANGELOG.md
+  - INDEX.md
+  - core/test/correct-file.md
+  - core/test/correct-file2.yaml
+  - version.txt
+---------------------------------
+## Version 0.0.7
+- **Branch**: refs/pull/213/merge
+- **Commit**: [Ka0S] VERSION  Upload: CHANGELOG.md, INDEX.md with version 0.0.6
+- **Author**: yolabn
+- **Date**: Tue Feb 25 11:31:33 UTC 2025
+- **Message**: H44 creación módulo versionado
+- **Files Changed**:
+  - CHANGELOG.md
+  - INDEX.md
+  - core/test/correct-file.md
+  - core/test/correct-file2.yaml
+  - version.txt
+---------------------------------
+## Version 0.0.8
+- **Branch**: refs/pull/216/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: yolabn
+- **Date**: Tue Feb 25 12:46:24 UTC 2025
+- **Message**: H44 creación módulo versionado
+- **Files Changed**:
+  - core/results/event_data13520474822.json
+  - core/results/event_data13520616276.json
+  - core/results/event_data13520855067.json
+  - core/results/event_data13520973377.json
+  - core/results/event_data13521105293.json
+  - core/results/event_data13521303754.json
+  - core/results/event_data13521351557.json
+  - core/results/event_data13521426155.json
+  - core/results/event_data13521520039.json
+  - core/test/correct-file.md
+  - core/test/correct-file1.yaml
+  - version.txt
+---------------------------------
+## Version 0.0.9
+- **Branch**: refs/pull/217/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: yolabn
+- **Date**: Tue Feb 25 13:00:37 UTC 2025
+- **Message**: H44 creación módulo versionado
+- **Files Changed**:
+  - core/results/event_data13521796868.json
+  - core/test/correct-file1.md
+  - version.txt
+---------------------------------
