@@ -147,6 +147,7 @@ jobs:
                     echo "V Comprobamos que el $file_module es igual a $module y ejecutamos el flujo"
                     # Si hemos llegado hasta aquí ejecutamos el módulo
                     # Lanzamos el lint del fichero
+                    RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
                     gh workflow run $file_module --ref ${{ github.ref }} -f kaos-origin=${{ github.run_id }} -f kaos-files=$line -f kaos-issue-id=$RNNUMBER -f kaos-user-start=${{ env.KAOS_ACTOR }}
                     module_failed=0
                     extension_failed=0
