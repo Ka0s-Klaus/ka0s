@@ -169,6 +169,7 @@ jobs:
               # Añadimos los valores a las variables de la issue
               KAOS_ISSUE_BODY="${{ env.KAOS_MODULE }} ha detectado que la extensión ($file_extension) esta permitida dentro de KAOS_CORE_FILES, pero el módulo asociado ($file_module) no esta activo. Por favor compruebe que exista y esta activo."
               # Añadimos el comentario a la issue
+              RNNUMBER=$(echo "${{ github.ref_name }}" | grep -o '[0-9]*')
               gh issue comment $RNNUMBER --body "$KAOS_ISSUE_BODY"
             fi
             if [[ $extension_failed == 1 ]]; then
@@ -177,6 +178,7 @@ jobs:
               # Añadimos los valores a las variables de la issue
               KAOS_ISSUE_BODY="${{ env.KAOS_MODULE }} ha detectado que la extensión ($file_extension) NO esta permitida dentro de KAOS_CORE_FILES. Por favor compruebe que exista y esta activo."
               # Añadimos el comentario a la issue
+              RNNUMBER=$(echo "${{ github.ref_name }}" | grep -o '[0-9]*')
               gh issue comment $RNNUMBER --body "$KAOS_ISSUE_BODY"
             fi  
           done < files-in-commit.txt      
