@@ -46,7 +46,7 @@ jobs:
             fi
           done
           RNNUMBER=$(echo "${{ github.ref_name }}" | grep -o '[0-9]*')
-          gh issue comment $RNNUMBER --body "Se inicia Ka0s"
+          gh issue comment $RNNUMBER --body "Se inicia Ka0s ${{ env.KAOS_CODE }} "
       - name: Crear JSON
         id: crear_json
         run: |
@@ -223,5 +223,5 @@ jobs:
         run: |
           echo "End process"
           gh workflow run inspector.yml --ref 'main' -f kaos-issue-id="" -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start=""
-          RNNUMBER=$(echo "${{ github.event.pull_request.title }}" | grep -o '[0-9]*')
-          gh issue comment $RNNUMBER --body "Se finaliza Ka0s"
+          RNNUMBER=$(echo "${{ github.ref_name }}" | grep -o '[0-9]*')
+          gh issue comment $RNNUMBER --body "Se finaliza Ka0s ${{ env.KAOS_CODE }}"
