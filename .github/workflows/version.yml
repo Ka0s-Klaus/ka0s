@@ -21,7 +21,7 @@ jobs:
   job-core:
     if: github.event.pull_request.state == 'open'
     runs-on: ubuntu-latest
-      #group: version
+    #  group: version
     outputs:
       KAOS_BRANCH: ${{ steps.commit_details.outputs.RNBRANCH }}
       KAOS_NUMBER: ${{ steps.commit_details.outputs.RNNUMBER }}
@@ -133,7 +133,7 @@ jobs:
         gh workflow run issue.yaml --ref main -f kaos-issue-id="${{ github.event.pull_request.number }}" -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=comment  
   handle-success:
     runs-on: ubuntu-latest
-      # group: ka0s
+      #  group: ka0s
     needs: [job-core]
     if: ${{ success() }}
     steps:
@@ -144,7 +144,7 @@ jobs:
           echo "Todo ha ido bien"
   handle_failure:
     runs-on: ubuntu-latest
-      #group: ka0s
+    #  group: ka0s
     needs: [job-core]
     if: ${{ failure() }}
     steps:
@@ -179,7 +179,7 @@ jobs:
           #gh workflow run issue.yaml --ref ${{ github.ref }} -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=comment -f kaos-issue-tag="bug" -f kaos-issue-id=${{ needs.kaos-version.outputs.KAOS_NUMBER }}
   end-workflow:
     runs-on: ubuntu-latest
-      # group: ka0s
+      #  group: ka0s
     needs: [job-core, handle-success, handle_failure]
     if: ${{ always() }} 
     env:
