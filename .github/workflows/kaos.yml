@@ -195,7 +195,7 @@ jobs:
         run: |
           # Si todo ha ido correcto añadimos el contenido del fichero 
           RNNUMBER=$(echo "${{ github.ref_name }}" | grep -o '[0-9]*')
-          gh issue comment $RNNUMBER --body-file ${{ env.KAOS_JSON }}${{ github.run_id }}.json
+          gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}"
           echo "Todo ha ido bien"
   handle_failure:
     runs-on: ubuntu-latest
@@ -203,6 +203,13 @@ jobs:
     needs: [job-core, handle-success]
     if: ${{ failure() }} 
     steps:
+      - id: repo
+        name: Checkout code
+        if: ${{ always() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
       - id: handle-failure-execution
         name: handle-failure-execution
         env:
