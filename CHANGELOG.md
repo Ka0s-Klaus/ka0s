@@ -32,3 +32,14 @@
   - core/test/correct-file.md
   - version.txt
 ---------------------------------
+## Version 0.0.4
+- **Branch**: refs/pull/210/merge
+- **Commit**: Test
+- **Author**: yolabn
+- **Date**: Tue Feb 25 11:14:24 UTC 2025
+- **Message**: H44 creación módulo versionado
+- **Files Changed**:
+  - core/test/correct-file.md
+  - core/test/correct-file2.yaml
+  - version.txt
+---------------------------------
