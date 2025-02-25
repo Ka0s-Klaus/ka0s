@@ -91,8 +91,8 @@ jobs:
       run: |
         echo "## Version ${{ env.VERSION }}" >> CHANGELOG.md
         echo "- **Branch**: ${{ github.ref }}" >> CHANGELOG.md
-        echo "- **Commit**: ${{ github.sha }}" >> CHANGELOG.md
-        echo "- **Author**: ${{ env.NAME }} (${{ env.EMAIL }})" >> CHANGELOG.md
+        echo "- **Commit**: $(git log -1 --pretty=format:'%s' ${{ github.event.pull_request.head.sha }})" >> CHANGELOG.md
+        echo "- **Author**: ${{ env.NAME }}" >> CHANGELOG.md
         echo "- **Date**: $(date -u)" >> CHANGELOG.md
         echo "- **Message**: ${{ env.MESSAGE }}" >> CHANGELOG.md
         echo "- **Files Changed**:" >> CHANGELOG.md
@@ -143,32 +143,6 @@ jobs:
       - id: check-execution
         run: |
           echo "Error detected in ${{ env.KAOS_MODULE }}, creating issue..."
-          KAOS_ISSUE_TITLE="${{ env.KAOS_MODULE }} Module failed in ${{ github.run_id }}"
-          KAOS_ISSUE_BODY=$(cat <<'EOF'
-          An error occurred in the execution Action workflow RunID: **${{ github.run_id }}**.
-          Initiated by #${{ env.AUTHOR_NAME}} from issue number #${{ needs.kaos-version.outputs.KAOS_NUMBER }}
-          **${{ env.KAOS_MODULE }}  Message:**
-          El error ha sido en : ${{  github.run_id }}
-          ejecute este comando en su consola y podrá consultar el fallo del trabajo
-          gh run view ${{  github.run_id }} --log-failed
-          \`\`\`
-          **Please check the job logs for ${{ secrets.KAOS_ACTIONS_URL }}${{ github.run_id }}**
-          \`\`\`
-          **Workflow Name:** ${{ github.workflow }}
-          **Job Name:** ${{ github.job }}
-          **Run ID:** ${{ github.run_id }}
-          **Run Number:** ${{ github.run_number }}
-          **Repository:** ${{ github.repository }}
-          **Branch:** ${{ github.ref }}
-          **Commit:** ${{ github.sha }}
-          Please investigate the issue.
-          EOF
-          )
-          # Creamos la issue dado que ha fallado el modulo principal
-          # gh workflow run issue.yaml --ref ${{ github.ref }} -f kaos-issue-title="$KAOS_ISSUE_TITLE" -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=create -f kaos-issue-tag="bug"
-          # Añadimos el comentario a la issue que dispara el proceso
-          KAOS_ISSUE_BODY="OPS¡ se ha producido un error en el proceso (${{ env.KAOS_MODULE }})  lanzado desde (#${{ needs.kaos-version.outputs.KAOS_NUMBER }}) en la ejecución (${{ github.run_id }}) y esto ha generado una issue con el titulo ($KAOS_ISSUE_TITLE)"
-          # gh workflow run issue.yaml --ref ${{ github.ref }} -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=comment -f kaos-issue-tag="bug" -f kaos-issue-id=${{ needs.kaos-version.outputs.KAOS_NUMBER }}
   end-workflow:
     runs-on: ubuntu-latest
       #  group: ka0s
