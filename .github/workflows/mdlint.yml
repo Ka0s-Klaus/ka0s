@@ -34,7 +34,7 @@ env:
   KAOS_PATH_RESUME: "core/results/m/"
   KAOS_REPO: "/actions-runner/_work/kaos/kaos"
   KAOS_STEP_MODULE: ""
-  KAOS_CODE: ${{ github.ref }}
+  KAOS_CODE: ${{ github.run_id}}
   
 jobs:
   job-core:
@@ -133,4 +133,4 @@ jobs:
         name: Finaliza el workflow
         run: |
           echo "End process"
-          gh workflow run inspector.yml --ref 'main' -f kaos-issue-id="${{ github.event.inputs.kaos-issue-id }} -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start="${{ github.event.inputs.kaos-user-start }}"
+          gh workflow run inspector.yml --ref 'main' -f kaos-issue-id=${{ github.event.inputs.kaos-issue-id }} -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start="${{ github.event.inputs.kaos-user-start }}"

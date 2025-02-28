@@ -121,6 +121,7 @@ jobs:
         env:
             modules: ${{ secrets.KAOS_CORE_MODULES }}
             files: ${{ secrets.KAOS_CORE_FILES }}
+            GH_TOKEN: ${{ secrets.KAOS_ACTIONS_TOKEN}}
         run: |
           git diff --name-only ${{ github.event.before }} ${{ github.sha }} > files-in-commit.txt
           cat files-in-commit.txt
@@ -133,7 +134,7 @@ jobs:
             echo "I-1 Calculamos el nombre del fichero $file_name"
             file_extension="${file_name##*.}"
             echo "I-2 Calculamos la extension del fichero $file_extension"
-            file_module="$file_extension""lint.yaml"
+            file_module="$file_extension""lint.yml"
             echo "I-3 Calculamos el modulo $file_module"
             IFS=',' read -r -a file_array <<< "$files"
             for file in "${file_array[@]}"; do
@@ -147,6 +148,8 @@ jobs:
                     echo "V Comprobamos que el $file_module es igual a $module y ejecutamos el flujo"
                     # Si hemos llegado hasta aquí ejecutamos el módulo
                     # Lanzamos el lint del fichero
+                    RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
+                    echo "El numero de la issue es: $RNNUMBER"
                     gh workflow run $file_module --ref ${{ github.ref }} -f kaos-origin=${{ github.run_id }} -f kaos-files=$line -f kaos-issue-id=$RNNUMBER -f kaos-user-start=${{ env.KAOS_ACTOR }}
                     module_failed=0
                     extension_failed=0
@@ -170,6 +173,7 @@ jobs:
               # Añadimos los valores a las variables de la issue
               KAOS_ISSUE_BODY="${{ env.KAOS_MODULE }} ha detectado que la extensión ($file_extension) esta permitida dentro de KAOS_CORE_FILES, pero el módulo asociado ($file_module) no esta activo. Por favor compruebe que exista y esta activo."
               # Añadimos el comentario a la issue
+              RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
               gh issue comment $RNNUMBER --body "$KAOS_ISSUE_BODY"
             fi
             if [[ $extension_failed == 1 ]]; then
@@ -178,6 +182,7 @@ jobs:
               # Añadimos los valores a las variables de la issue
               KAOS_ISSUE_BODY="${{ env.KAOS_MODULE }} ha detectado que la extensión ($file_extension) NO esta permitida dentro de KAOS_CORE_FILES. Por favor compruebe que exista y esta activo."
               # Añadimos el comentario a la issue
+              RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
               gh issue comment $RNNUMBER --body "$KAOS_ISSUE_BODY"
             fi  
           done < files-in-commit.txt      
@@ -200,7 +205,7 @@ jobs:
           GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
         run: |
           # Si todo ha ido correcto añadimos el contenido del fichero 
-          RNNUMBER=$(echo "${{ github.ref_name }}" | grep -o '[0-9]*')
+          RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
           gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
   handle_failure:
     runs-on: ubuntu-latest
@@ -221,7 +226,7 @@ jobs:
           GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
         run: |
           echo "Error detected in process"
-          RNNUMBER=$(echo "${{ github.ref_name }}" | grep -o '[0-9]*')
+          RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
           gh issue comment $RNNUMBER --body ""El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
   end-workflow:
     runs-on: ubuntu-latest
@@ -242,6 +247,6 @@ jobs:
         name: Finaliza el workflow
         run: |
           echo "End process"
-          gh workflow run inspector.yml --ref 'main' -f kaos-issue-id="" -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start=""
-          RNNUMBER=$(echo "${{ github.ref_name }}" | grep -o '[0-9]*')
+          RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
           gh issue comment $RNNUMBER --body "Se finaliza Ka0s ${{ env.KAOS_CODE }}"
+          gh workflow run inspector.yml --ref 'main' -f kaos-issue-id=$RNNUMBER -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start=""
