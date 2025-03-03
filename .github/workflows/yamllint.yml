@@ -1,0 +1,161 @@
+name: Ka0s YAML Lint
+
+on:
+  workflow_dispatch:
+    inputs:
+      kaos-origin:
+        description: 'Dispatcher Workflow Run ID'
+        default: ""
+        required: true
+      kaos-files:
+        description: 'Files Involved'
+        default: ""
+        required: true
+      kaos-issue-id:
+        description: 'Issue ID'
+        default: "Kaos Issue ID"
+        required: true
+      kaos-user-start:
+        description: 'User initiated process'
+        default: ""
+        required: true
+  
+permissions:
+  contents: write
+  actions: write
+  issues: write
+  pull-requests: write
+
+env:
+  KAOS_MODULE: "[Ka0S] YAMLLINT"
+  GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+  KAOS_YAMLLINT_CONFIG: "core/config/.yamllint.json"
+  KAOS_PATH_RESUME: "core/results/y/"
+  KAOS_REPO: "/actions-runner/_work/kaos/kaos"
+  KAOS_STEP_MODULE: ""
+  KAOS_CODE: ${{ github.run_id}}
+
+jobs:
+  job-core:
+    runs-on: ubuntu-latest
+      #group: yamllint
+
+    steps:
+      - id: repo
+        name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+    
+      - id: python
+        name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+  
+      - id: install-yamllint
+        name: Install yamllint
+        run: |
+          python -m pip install yamllint
+
+      - id: check-yaml
+        name: Check YAML
+        run: |
+            # Invocamos la primera comprobación de base, sino se supera el proceso no continua
+            # Ejecutamos el comando
+            yamllint -c ${{ env.KAOS_YAMLLINT_CONFIG }} "${{ github.event.inputs.kaos-files }}" > ${{ env.KAOS_PATH_RESUME }}yaml-lint-results-${{ github.run_id }}.txt 2>&1 || true
+              # Check if exist errors in file
+              if [ ! -s ${{ env.KAOS_PATH_RESUME}}yaml-lint-results-${{ github.run_id }}.txt ]; then
+                # Todo ha salido bien, añadimos el comentario a la issue y saltamos al siguiente paso
+                # Añadimos la versión de yamllint con la que se realiza la comprobacion
+                yamllint --version >> ${{ env.KAOS_PATH_RESUME }}yaml-lint-results-${{ github.run_id }}.txt
+                # añadimos el nombre del fichero que vamos a comprobar
+                echo "Finding: ${{ github.event.inputs.kaos-files }}" >> ${{ env.KAOS_PATH_RESUME }}yaml-lint-results-${{ github.run_id }}.txt
+                KAOS_ISSUE_BODY="The ${{ env.KAOS_MODULE }} process (${{ github.event.inputs.kaos-origin }}) launch the check (${{ github.run_id }}) over file (${{ github.event.inputs.kaos-files }}) and its result has been SUCCESS. Please review all files implicated in pull request and approve to merge"
+                gh workflow run issue.yaml --ref ${{ github.ref }} -f kaos-issue-title="" -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=comment -f kaos-issue-tag="" -f kaos-issue-id=${{ github.event.inputs.kaos-issue-id }}
+                gh issue comment  ${{ github.event.inputs.kaos-issue-id }} -F ${{ env.KAOS_PATH_RESUME }}yaml-lint-results-${{ github.run_id }}.txt 
+                # una vez finalizado este proceso, en funcion del modulo donde esta ubicado el fichero que se ha comprobado ejecutara un jobs u otro                
+              else
+                # Algo no ha salido bien, añadimos el comentario a la issue y saltamos al siguiente paso
+                # Añadimos la versión de yamllint con la que se realiza la comprobacion
+                yamllint --version >> ${{ env.KAOS_PATH_RESUME }}yaml-lint-results-${{ github.run_id }}.txt
+                # añadimos el nombre del fichero que vamos a comprobar
+                echo "Finding: ${{ github.event.inputs.kaos-files }}" >> ${{ env.KAOS_PATH_RESUME }}yaml-lint-results-${{ github.run_id }}.txt
+                KAOS_ISSUE_BODY="The ${{ env.KAOS_MODULE }} process (${{ github.event.inputs.kaos-origin }}) launch the check (${{ github.run_id }}) over file (${{ github.event.inputs.kaos-files }}) and its result has been FAILED, please check and solved it"
+                gh workflow run issue.yaml --ref ${{ github.ref }} -f kaos-issue-title="" -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=comment -f kaos-issue-tag="" -f kaos-issue-id=${{ github.event.inputs.kaos-issue-id }}
+                gh issue comment  ${{ github.event.inputs.kaos-issue-id }} -F ${{ env.KAOS_PATH_RESUME }}yaml-lint-results-${{ github.run_id }}.txt
+                # una vez finalizado este proceso, en funcion del modulo donde esta ubicado el ficher que se ha comprobado ejecutara un jobs u otro 
+              fi
+  handle-success:
+    runs-on: ubuntu-latest
+    #  group: ka0s
+    needs: [job-core]
+    if: ${{ success() }}
+    steps:
+      - id: handle-success-execution
+        name: handle-success-execution
+        run: |
+          # Si todo ha ido correcto añadimos el contenido del fichero 
+          echo "Todo ha ido bien."
+  handle_failure:
+    runs-on: ubuntu-latest
+    #  group: ka0s
+    needs: [job-core, handle-success]
+    if: ${{ failure() }}
+    steps:
+      - id: check-execution
+        env:
+          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+        run: |
+          echo "Error detected in ${{ env.KAOS_MODULE }}, creating issue..."
+          KAOS_ISSUE_TITLE="${{ env.KAOS_MODULE }} Module failed in ${{ github.run_id }}"
+          KAOS_ISSUE_BODY=$(cat <<'EOF'
+          An error occurred in the execution Action workflow RunID: **${{ github.run_id }}**.
+          Initiated by #${{ github.event.inputs.kaos-user-start }} from issue number #${{ github.event.inputs.kaos-issue-id }}
+          **${{ env.KAOS_MODULE }}  Message:**
+          El error ha sido en : ${{  github.run_id }}
+          ejecute este comando en su consola y podrá consultar el fallo del trabajo
+          gh run view ${{  github.run_id }} --log-failed
+          \`\`\`
+          **Please check the job logs for ${{ secrets.KAOS_ACTIONS_URL }}${{ github.run_id }}**
+          \`\`\`
+          **Requested By:** ${{ github.event.inputs.kaos-user-start }}
+          **Workflow Name:** ${{ github.workflow }}
+          **Job Name:** ${{ github.job }}
+          **Run ID:** ${{ github.run_id }}
+          **Run Number:** ${{ github.run_number }}
+          **Repository:** ${{ github.repository }}
+          **Branch:** ${{ github.ref }}
+          **Launch by:** ${{ github.event.inputs.kaos-origin }}
+          **Files:** ${{ github.event.inputs.kaos-files }}
+          Please investigate the issue.
+          EOF
+          )
+          # Creamos la issue dado que ha fallado el modulo principal
+          gh workflow run issue.yaml --ref ${{ github.ref }} -f kaos-issue-title="$KAOS_ISSUE_TITLE" -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=create -f kaos-issue-tag="bug" -f kaos-user-start="${{ github.event.inputs.kaos-user-start }}"
+          # Buscamos el numero de la issue en funcion del titulo de la misma 
+          ISSUE_NUMBRE=$(gh issue list --limit 1 --state open --label bug --json number --jq '.[0].number')
+          # Añadimos el comentario a la issue que dispara el proceso
+          KAOS_ISSUE_BODY="Se ha generado la issue (#$ISSUE_NUMBRE) con el error detectado en el proceso ${{ env.KAOS_MODULE }} en el run ${{ github.run_id }}"
+          gh workflow run issue.yaml --ref ${{ github.ref }} -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=comment -f kaos-issue-tag="bug" -f kaos-issue-id=${{ github.event.inputs.kaos-issue-id }}
+  end-workflow:
+    runs-on: ubuntu-latest
+    #  group: ka0s
+    needs: [job-core, handle-success, handle_failure]
+    if: ${{ always() }} 
+    env:
+      GH_TOKEN: ${{ secrets.KAOS_ACTIONS_TOKEN }}
+    steps:
+      - id: repo
+        name: Checkout code
+        if: ${{ always() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+      - id: end-process
+        name: Finaliza el workflow
+        run: |
+          echo "End process"
+          gh workflow run inspector.yml --ref 'main' -f kaos-issue-id=${{ github.event.inputs.kaos-issue-id }} -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start="${{ github.event.inputs.kaos-user-start }}"
