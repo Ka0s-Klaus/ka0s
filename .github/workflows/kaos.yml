@@ -124,6 +124,7 @@ jobs:
             GH_TOKEN: ${{ secrets.KAOS_ACTIONS_TOKEN}}
         run: |
           git diff --name-only ${{ github.event.before }} ${{ github.sha }} > files-in-commit.txt
+          cat files-in-commit.txt
           # Nuevo proceso de activacion de los modulos
           while IFS= read -r line; do
             echo "I Leemos el fichero files-in-commit.txt y extraemos el fichero $line"
