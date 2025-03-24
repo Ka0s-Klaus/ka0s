@@ -21,8 +21,8 @@ env:
     KAOS_ACTOR: ${{ github.actor }}
 jobs: 
   job-core:
-    runs-on: ubuntu-latest
-    #  group: ka0s
+    runs-on:
+      group: ka0s
     env:
       GITHUB_OUTPUT: ""
     if: ${{ !contains(github.event.head_commit.message, '[Ka0S] ') }} 
@@ -124,6 +124,7 @@ jobs:
             GH_TOKEN: ${{ secrets.KAOS_ACTIONS_TOKEN}}
         run: |
           git diff --name-only ${{ github.event.before }} ${{ github.sha }} > files-in-commit.txt
+          cat files-in-commit.txt
           # Nuevo proceso de activacion de los modulos
           while IFS= read -r line; do
             echo "I Leemos el fichero files-in-commit.txt y extraemos el fichero $line"
@@ -186,8 +187,8 @@ jobs:
             fi  
           done < files-in-commit.txt      
   handle-success:
-    runs-on: ubuntu-latest
-      #  group: ka0s
+    runs-on:
+      group: ka0s
     needs: [job-core]
     if: ${{ success() }}
     steps:
@@ -207,8 +208,8 @@ jobs:
           RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
           gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
   handle_failure:
-    runs-on: ubuntu-latest
-      #  group: ka0s
+    runs-on:
+      group: ka0s
     needs: [job-core, handle-success]
     if: ${{ failure() }} 
     steps:
@@ -228,8 +229,8 @@ jobs:
           RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
           gh issue comment $RNNUMBER --body ""El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
   end-workflow:
-    runs-on: ubuntu-latest
-      #  group: ka0s
+    runs-on:
+      group: ka0s
     needs: [job-core, handle-success, handle_failure]
     if: ${{ always() && !contains(github.event.head_commit.message, '[Ka0S] ') }} 
     env:
