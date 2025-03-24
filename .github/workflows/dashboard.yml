@@ -21,8 +21,54 @@ env:
     KAOS_ACTOR: ${{ github.actor }}
 jobs: 
   job-core:
-    - id: ejecutar python
-      name: Ejecutar python
+    runs-on: ubuntu-latest
+    steps:
+      - id: repo
+        name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+      
+      - id: setup-node
+        name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+      
+      - id: setup-python
+        name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      
+      - id: install-dependencies
+        name: Install dependencies
+        run: |
+          npm ci
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - id: process-data
+        name: Process dashboard data
+        run: |
+          python core/dashboard/process_data.py --run-id ${{ env.KAOS_CODE }}
+      
+      - id: build-dashboard
+        name: Build dashboard
+        run: |
+          npm run build:dashboard
+      
+      - id: save-results
+        name: Save results
+        run: |
+          mkdir -p ${{ env.KAOS_PATH_RESUME }}
+          echo "Dashboard processing completed at $(date)" > ${{ env.KAOS_JSON }}${{ env.KAOS_CODE }}.log
+          
+      - id: ejecutar-python
+        name: Ejecutar python
+        run: |
+          python core/dashboard/generate_report.py --run-id ${{ env.KAOS_CODE }}
     
   handle-success:
     runs-on: ubuntu-latest
