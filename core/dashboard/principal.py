@@ -11,8 +11,8 @@ from pathlib import Path
 # Add the parent directory to sys.path to import local modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Import local modules
-from dashboard.comprobarActions import GitHubActionsChecker
+# Create logs directory before configuring logging
+os.makedirs(os.path.join('core', 'logs'), exist_ok=True)
 
 # Configure logging
 logging.basicConfig(
@@ -25,6 +25,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger('dashboard-principal')
 
+# Import local modules
+from dashboard.comprobarActions import GitHubActionsChecker
+
 class DashboardManager:
     def __init__(self, run_id=None):
         self.run_id = run_id or os.environ.get('KAOS_CODE')
@@ -35,7 +38,6 @@ class DashboardManager:
         
         # Create necessary directories
         os.makedirs(self.dashboard_dir, exist_ok=True)
-        os.makedirs(os.path.join('core', 'logs'), exist_ok=True)
         
         # Initialize GitHub Actions checker
         self.actions_checker = GitHubActionsChecker()
@@ -386,14 +388,14 @@ class DashboardManager:
         except Exception as e:
             logger.error(f"Error serving dashboard: {str(e)}")
 
-def parse_arguments():
-    parser = argparse.ArgumentParser(description='Ka0s Dashboard Manager')
-    parser.add_argument('--run-id', type=str, help='Run ID for the dashboard')
-    parser.add_argument('--generate', action='store_true', help='Generate the dashboard')
-    parser.add_argument('--serve', action='store_true', help='Serve the dashboard')
-    return parser.parse_args()
+    def parse_arguments():
+        parser = argparse.ArgumentParser(description='Ka0s Dashboard Manager')
+        parser.add_argument('--run-id', type=str, help='Run ID for the dashboard')
+        parser.add_argument('--generate', action='store_true', help='Generate the dashboard')
+        parser.add_argument('--serve', action='store_true', help='Serve the dashboard')
+        return parser.parse_args()
 
-            # Generate component HTML
+                # Generate component HTML
         components_html = []
         for component_name in data['metadata']['components']:
             component = data['components'][component_name]
