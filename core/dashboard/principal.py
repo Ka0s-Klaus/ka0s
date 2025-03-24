@@ -142,48 +142,26 @@ class DashboardManager:
         # Collect data
         data = self.collect_data()
         
+        # Load principal.json for hello world message
+        principal_json_path = os.path.join('core', 'dashboard', 'dashboard', 'principal.json')
+        hello_world_message = "Hello World"  # Default message
+        
+        try:
+            if os.path.exists(principal_json_path):
+                with open(principal_json_path, 'r') as f:
+                    principal_config = json.load(f)
+                    hello_world_message = principal_config.get('hello_world', hello_world_message)
+                    logger.info(f"Loaded hello world message from principal.json")
+            else:
+                logger.warning(f"principal.json not found at {principal_json_path}")
+        except Exception as e:
+            logger.error(f"Error loading principal.json: {str(e)}")
+        
         # Load HTML template
-        template_file = os.path.join(self.templates_dir, 'dashboard_template.html')
+        template_file = os.path.join(self.templates_dir, 'Index.html')
         if not os.path.exists(template_file):
-            # Create default template if not exists
-            os.makedirs(self.templates_dir, exist_ok=True)
-            default_template = """<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{TITLE}}</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5; }
-        .container { max-width: 1200px; margin: 0 auto; }
-        .header { background-color: #3498db; color: white; padding: 20px; border-radius: 5px 5px 0 0; }
-        .component { background-color: white; margin-bottom: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .component-header { padding: 15px; border-bottom: 1px solid #eee; }
-        .component-content { padding: 15px; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { text-align: left; padding: 8px; border-bottom: 1px solid #ddd; }
-        th { background-color: #f2f2f2; }
-        .footer { text-align: center; margin-top: 20px; color: #7f8c8d; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>{{TITLE}}</h1>
-            <p>Run ID: {{RUN_ID}} | Generated: {{GENERATED_AT}}</p>
-        </div>
-        
-        {{COMPONENTS}}
-        
-        <div class="footer">
-            <p>Ka0s Dashboard - Generated on {{GENERATED_AT}}</p>
-        </div>
-    </div>
-</body>
-</html>"""
-            with open(template_file, 'w') as f:
-                f.write(default_template)
-            logger.info(f"Created default template at {template_file}")
+            logger.error(f"Template file not found: {template_file}")
+            return None
         
         with open(template_file, 'r') as f:
             template = f.read()
@@ -206,8 +184,7 @@ class DashboardManager:
         
         # Replace placeholders in template
         html = template.replace('{{TITLE}}', config.get('title', 'Ka0s Dashboard'))
-        html = html.replace('{{RUN_ID}}', str(self.run_id))
-        html = html.replace('{{GENERATED_AT}}', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        html = html.replace('{{HELLO_WORLD}}', hello_world_message)
         html = html.replace('{{COMPONENTS}}', '\n'.join(components_html))
         
         # Save HTML file
@@ -217,6 +194,58 @@ class DashboardManager:
         
         logger.info(f"Dashboard generated: {output_file}")
         return output_file
+
+    def _generate_generic_component_html(self, component):
+        """Generate HTML for generic component"""
+        title = component.get('title', 'Component')
+        data = component.get('data', {})
+        
+        # Generate content based on data type
+        content = ""
+        if isinstance(data, dict):
+            # Generate table for dictionary data
+            rows = []
+            for key, value in data.items():
+                if isinstance(value, (dict, list)):
+                    value = json.dumps(value, indent=2)
+                rows.append(f"<tr><td>{key}</td><td><pre>{value}</pre></td></tr>")
+            
+            content = f"""
+            <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                <thead>
+                    <tr>
+                        <th style="text-align: left; padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2;">Key</th>
+                        <th style="text-align: left; padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2;">Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {''.join(rows)}
+                </tbody>
+            </table>
+            """
+        elif isinstance(data, list):
+            # Generate list for array data
+            items = []
+            for item in data:
+                if isinstance(item, (dict, list)):
+                    item = json.dumps(item, indent=2)
+                items.append(f"<li><pre>{item}</pre></li>")
+            
+            content = f"<ul>{''.join(items)}</ul>"
+        else:
+            # Simple text content
+            content = f"<pre>{data}</pre>"
+        
+        return f"""
+        <div style="background-color: white; margin-bottom: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+            <div style="padding: 15px; border-bottom: 1px solid #eee;">
+                <h2>{title}</h2>
+            </div>
+            <div style="padding: 15px;">
+                {content}
+            </div>
+        </div>
+        """
     
     def _generate_event_component_html(self, component):
         """Generate HTML for event component"""
@@ -226,21 +255,21 @@ class DashboardManager:
         # Generate table rows for event data
         rows = []
         for key, value in data.items():
-            if isinstance(value, dict):
+            if isinstance(value, (dict, list)):
                 value = json.dumps(value, indent=2)
             rows.append(f"<tr><td>{key}</td><td><pre>{value}</pre></td></tr>")
         
         return f"""
-        <div class="component">
-            <div class="component-header">
+        <div style="background-color: white; margin-bottom: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+            <div style="padding: 15px; border-bottom: 1px solid #eee;">
                 <h2>{title}</h2>
             </div>
-            <div class="component-content">
-                <table>
+            <div style="padding: 15px;">
+                <table style="width: 100%; border-collapse: collapse;">
                     <thead>
                         <tr>
-                            <th>Field</th>
-                            <th>Value</th>
+                            <th style="text-align: left; padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2;">Field</th>
+                            <th style="text-align: left; padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2;">Value</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -272,77 +301,25 @@ class DashboardManager:
             """)
         
         return f"""
-        <div class="component">
-            <div class="component-header">
+        <div style="background-color: white; margin-bottom: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+            <div style="padding: 15px; border-bottom: 1px solid #eee;">
                 <h2>{title}</h2>
             </div>
-            <div class="component-content">
-                <table>
+            <div style="padding: 15px;">
+                <table style="width: 100%; border-collapse: collapse;">
                     <thead>
                         <tr>
-                            <th>Workflow</th>
-                            <th>ID</th>
-                            <th>Status</th>
-                            <th>Created</th>
-                            <th>Actions</th>
+                            <th style="text-align: left; padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2;">Workflow</th>
+                            <th style="text-align: left; padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2;">ID</th>
+                            <th style="text-align: left; padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2;">Status</th>
+                            <th style="text-align: left; padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2;">Created</th>
+                            <th style="text-align: left; padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2;">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {''.join(rows) if rows else '<tr><td colspan="5">No workflow runs found</td></tr>'}
                     </tbody>
                 </table>
-            </div>
-        </div>
-        """
-    
-    def _generate_generic_component_html(self, component):
-        """Generate HTML for generic component"""
-        title = component.get('title', 'Component')
-        data = component.get('data', {})
-        
-        # Generate content based on data type
-        content = ""
-        if isinstance(data, dict):
-            # Generate table for dictionary data
-            rows = []
-            for key, value in data.items():
-                if isinstance(value, (dict, list)):
-                    value = json.dumps(value, indent=2)
-                rows.append(f"<tr><td>{key}</td><td><pre>{value}</pre></td></tr>")
-            
-            content = f"""
-            <table>
-                <thead>
-                    <tr>
-                        <th>Key</th>
-                        <th>Value</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {''.join(rows)}
-                </tbody>
-            </table>
-            """
-        elif isinstance(data, list):
-            # Generate list for array data
-            items = []
-            for item in data:
-                if isinstance(item, (dict, list)):
-                    item = json.dumps(item, indent=2)
-                items.append(f"<li><pre>{item}</pre></li>")
-            
-            content = f"<ul>{''.join(items)}</ul>"
-        else:
-            # Simple text content
-            content = f"<pre>{data}</pre>"
-        
-        return f"""
-        <div class="component">
-            <div class="component-header">
-                <h2>{title}</h2>
-            </div>
-            <div class="component-content">
-                {content}
             </div>
         </div>
         """
@@ -424,135 +401,6 @@ class DashboardManager:
         
         logger.info(f"Dashboard generated: {output_file}")
         return output_file
-    
-    def _generate_event_component_html(self, component):
-        """Generate HTML for event component"""
-        title = component.get('title', 'Event Data')
-        data = component.get('data', {})
-        
-        # Generate table rows for event data
-        rows = []
-        for key, value in data.items():
-            if isinstance(value, dict):
-                value = json.dumps(value, indent=2)
-            rows.append(f"<tr><td>{key}</td><td><pre>{value}</pre></td></tr>")
-        
-        return f"""
-        <div class="component">
-            <div class="component-header">
-                <h2>{title}</h2>
-            </div>
-            <div class="component-content">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Field</th>
-                            <th>Value</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {''.join(rows)}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        """
-    
-    def _generate_actions_component_html(self, component):
-        """Generate HTML for GitHub Actions component"""
-        title = component.get('title', 'GitHub Actions')
-        data = component.get('data', {})
-        runs = data.get('runs', [])
-        
-        # Generate table rows for runs
-        rows = []
-        for run in runs:
-            status_color = '#2ecc71' if run.get('conclusion') == 'success' else '#e74c3c'
-            rows.append(f"""
-            <tr>
-                <td>{run.get('name', 'Unknown')}</td>
-                <td>{run.get('workflow_id', 'Unknown')}</td>
-                <td><span style="color: {status_color};">{run.get('conclusion', 'Unknown')}</span></td>
-                <td>{run.get('created_at', 'Unknown')}</td>
-                <td><a href="{run.get('url', '#')}" target="_blank">View</a></td>
-            </tr>
-            """)
-        
-        return f"""
-        <div class="component">
-            <div class="component-header">
-                <h2>{title}</h2>
-            </div>
-            <div class="component-content">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Workflow</th>
-                            <th>ID</th>
-                            <th>Status</th>
-                            <th>Created</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {''.join(rows) if rows else '<tr><td colspan="5">No workflow runs found</td></tr>'}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        """
-    
-    def _generate_generic_component_html(self, component):
-        """Generate HTML for generic component"""
-        title = component.get('title', 'Component')
-        data = component.get('data', {})
-        
-        # Generate content based on data type
-        content = ""
-        if isinstance(data, dict):
-            # Generate table for dictionary data
-            rows = []
-            for key, value in data.items():
-                if isinstance(value, (dict, list)):
-                    value = json.dumps(value, indent=2)
-                rows.append(f"<tr><td>{key}</td><td><pre>{value}</pre></td></tr>")
-            
-            content = f"""
-            <table>
-                <thead>
-                    <tr>
-                        <th>Key</th>
-                        <th>Value</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {''.join(rows)}
-                </tbody>
-            </table>
-            """
-        elif isinstance(data, list):
-            # Generate list for array data
-            items = []
-            for item in data:
-                if isinstance(item, (dict, list)):
-                    item = json.dumps(item, indent=2)
-                items.append(f"<li><pre>{item}</pre></li>")
-            
-            content = f"<ul>{''.join(items)}</ul>"
-        else:
-            # Simple text content
-            content = f"<pre>{data}</pre>"
-        
-        return f"""
-        <div class="component">
-            <div class="component-header">
-                <h2>{title}</h2>
-            </div>
-            <div class="component-content">
-                {content}
-            </div>
-        </div>
-        """
     
     def serve_dashboard(self, port=8000):
         """Serve the dashboard using a simple HTTP server"""
