@@ -107,7 +107,8 @@ jobs:
               gh issue comment  ${{ github.event.inputs.kaos-issue-id }} -F ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt
             fi
   handle-success:
-    runs-on: apps-ubuntu
+    runs-on:
+      group: core
     needs: [job-core]
     if: ${{ success() }}
     steps:
@@ -117,7 +118,8 @@ jobs:
           # Si todo ha ido correcto añadimos el contenido del fichero 
           echo "Todo ha ido bien."
   handle_failure:
-    runs-on: apps-ubuntu
+    runs-on:
+      group: core
     needs: [job-core, handle-success]
     if: ${{ failure() }}
     steps:
@@ -166,7 +168,8 @@ jobs:
           KAOS_ISSUE_BODY="Se ha generado la issue (#$ISSUE_NUMBRE) con el error detectado en el proceso ${{ env.KAOS_MODULE }} en el run ${{ github.run_id }}"
           # gh workflow run issue.yaml --ref ${{ env.KAOS_REF_BRANCH }} -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=comment -f kaos-issue-tag="bug" -f kaos-issue-id=${{ github.event.inputs.kaos-issue-id }}
   end-workflow:
-    runs-on: apps-ubuntu
+    runs-on:
+      group: core
     needs: [job-core, handle-success, handle_failure]
     if: ${{ always() }} 
     env:
