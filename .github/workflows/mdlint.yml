@@ -39,7 +39,7 @@ env:
 jobs:
   job-core:
     runs-on:
-      group: core
+      group: ka0s
     steps:
       - id: repo
         uses: actions/checkout@v4
@@ -85,7 +85,7 @@ jobs:
                 fi
   handle-success:
     runs-on:
-      group: core
+      group: ka0s
     needs: [job-core]
     if: ${{ success() }}
     steps:
@@ -96,7 +96,7 @@ jobs:
           echo "Todo ha ido bien"
   handle_failure:
     runs-on:
-      group: core
+      group: ka0s
     needs: [job-core, handle-success]
     if: ${{ failure() }}
     steps:
@@ -116,7 +116,7 @@ jobs:
           gh issue comment ${{ github.event.inputs.kaos-issue-id }} --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero ${{ env.KAOS_PATH_RESUME }}mdlint-results-${{ github.run_id }}.txt"
   end-workflow:
     runs-on:
-      group: core
+      group: ka0s
     needs: [job-core, handle-success, handle_failure]
     if: ${{ always() }} 
     env:

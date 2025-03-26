@@ -39,7 +39,7 @@ env:
 jobs:
   job-core:
     runs-on: 
-      group: core
+      group: ka0s
     steps:
       - id: repo
         name: Checkout code
@@ -47,14 +47,6 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.KAOS_REPO_TOKEN }}
-      - id: install-gh
-        name: Install GitHub CLI
-        run: |
-            type -p curl >/dev/null || (sudo apt update && sudo apt install curl -y)
-            curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
-            && sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
-            && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
-            && sudo apt update && sudo apt install gh -y
       - id: install-node
         name: Install Node.js
         uses: actions/setup-node@v2
@@ -63,16 +55,16 @@ jobs:
       - id: install-jsonlint
         name: Install jsonlint
         run: |
-          npm install -g jsonlint
-          mkdir -p ${{ env.KAOS_PATH_RESUME }}
+            if ! command -v jsonlint &> /dev/null; then
+              echo "Installing jsonlint..."
+              npm install -g jsonlint
+            else
+              echo "jsonlint already installed, skipping installation"
+            fi
+            mkdir -p ${{ env.KAOS_PATH_RESUME }}
       - id: check-json
         name: Check JSON
         run: |
-            type -p curl >/dev/null || (sudo apt update && sudo apt install curl -y)
-            curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
-            && sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
-            && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
-            && sudo apt update \
             # Invocamos la primera comprobación de base, sino se supera el proceso no continua
             # Extraemos el nombre del fichero
             file_name=$(basename "${{ github.event.inputs.kaos-files }}")
@@ -108,7 +100,7 @@ jobs:
             fi
   handle-success:
     runs-on:
-      group: core
+      group: ka0s
     needs: [job-core]
     if: ${{ success() }}
     steps:
@@ -119,18 +111,10 @@ jobs:
           echo "Todo ha ido bien."
   handle_failure:
     runs-on:
-      group: core
+      group: ka0s
     needs: [job-core, handle-success]
     if: ${{ failure() }}
     steps:
-      - id: install-gh
-        name: Install GitHub CLI
-        run: |
-          type -p curl >/dev/null || (sudo apt update && sudo apt install curl -y)
-          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
-          && sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
-          && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
-          && sudo apt update && sudo apt install gh -y
       - id: check-execution
         name: check-execution
         env:
@@ -169,7 +153,7 @@ jobs:
           # gh workflow run issue.yaml --ref ${{ env.KAOS_REF_BRANCH }} -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=comment -f kaos-issue-tag="bug" -f kaos-issue-id=${{ github.event.inputs.kaos-issue-id }}
   end-workflow:
     runs-on:
-      group: core
+      group: ka0s
     needs: [job-core, handle-success, handle_failure]
     if: ${{ always() }} 
     env:
@@ -182,14 +166,6 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.KAOS_REPO_TOKEN }}
-      - id: install-gh
-        name: Install GitHub CLI
-        run: |
-            type -p curl >/dev/null || (sudo apt update && sudo apt install curl -y)
-            curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
-            && sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
-            && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
-            && sudo apt update && sudo apt install gh -y
       - id: end-process
         name: Finaliza el workflow
         run: |
