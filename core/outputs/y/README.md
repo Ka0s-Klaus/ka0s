@@ -1,1 +1,1 @@
-# Recoge ficheros de resultados de ejecución de los ficheros YAML
+# Recoge ficheros de resultados de ejecución de los ficheros YAML.
