@@ -11,3 +11,4 @@
 - **Version**: 0.0.10 - **Description**: H44 creación módulo versionado
 - **Version**: 0.0.11 - **Description**: H44 creación módulo versionado
 - **Version**: 0.0.12 - **Description**: H44 creación módulo versionado
+- **Version**: 0.0.13 - **Description**: H44 creación módulo versionado

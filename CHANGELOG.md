@@ -157,3 +157,17 @@
   - core/test/correct-file.md
   - version.txt
 ---------------------------------
+## Version 0.0.13
+- **Branch**: refs/pull/225/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: yolabn
+- **Date**: Wed Mar 26 12:09:16 UTC 2025
+- **Message**: H44 creación módulo versionado
+- **Files Changed**:
+  - .github/workflows/yamllint.yml
+  - core/results/event_data14082522310.json
+  - core/results/event_data14082616695.json
+  - core/test/correct-file.json
+  - core/test/correct-file.md
+  - version.txt
+---------------------------------
