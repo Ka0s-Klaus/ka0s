@@ -37,8 +37,8 @@ env:
 
 jobs:
   job-core:
-    runs-on: ubuntu-latest
-      #group: yamllint
+    runs-on:
+      group: core
 
     steps:
       - id: repo
@@ -88,8 +88,8 @@ jobs:
                 # una vez finalizado este proceso, en funcion del modulo donde esta ubicado el ficher que se ha comprobado ejecutara un jobs u otro 
               fi
   handle-success:
-    runs-on: ubuntu-latest
-    #  group: ka0s
+    runs-on:
+      group: core
     needs: [job-core]
     if: ${{ success() }}
     steps:
@@ -99,8 +99,8 @@ jobs:
           # Si todo ha ido correcto añadimos el contenido del fichero 
           echo "Todo ha ido bien"
   handle_failure:
-    runs-on: ubuntu-latest
-    #  group: ka0s
+    runs-on:
+      group: core
     needs: [job-core, handle-success]
     if: ${{ failure() }}
     steps:
@@ -140,8 +140,8 @@ jobs:
           KAOS_ISSUE_BODY="Se ha generado la issue (#$ISSUE_NUMBRE) con el error detectado en el proceso ${{ env.KAOS_MODULE }} en el run ${{ github.run_id }}"
           gh workflow run issue.yaml --ref ${{ github.ref }} -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=comment -f kaos-issue-tag="bug" -f kaos-issue-id=${{ github.event.inputs.kaos-issue-id }}
   end-workflow:
-    runs-on: ubuntu-latest
-    #  group: ka0s
+    runs-on:
+      group: core
     needs: [job-core, handle-success, handle_failure]
     if: ${{ always() }} 
     env:

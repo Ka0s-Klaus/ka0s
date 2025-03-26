@@ -38,8 +38,8 @@ env:
   
 jobs:
   job-core:
-    runs-on: ubuntu-latest
-    #  group: mdlint
+    runs-on:
+      group: core
     steps:
       - id: repo
         uses: actions/checkout@v4
@@ -84,8 +84,8 @@ jobs:
                   gh issue comment  ${{ github.event.inputs.kaos-issue-id }} -F ${{ env.KAOS_PATH_RESUME }}mdlint-results-${{ github.run_id }}.txt
                 fi
   handle-success:
-    runs-on: ubuntu-latest
-    #  group: ka0s
+    runs-on:
+      group: core
     needs: [job-core]
     if: ${{ success() }}
     steps:
@@ -95,8 +95,8 @@ jobs:
           # Si todo ha ido correcto añadimos el contenido del fichero 
           echo "Todo ha ido bien"
   handle_failure:
-    runs-on: ubuntu-latest
-    #  group: ka0s
+    runs-on:
+      group: core
     needs: [job-core, handle-success]
     if: ${{ failure() }}
     steps:
@@ -115,8 +115,8 @@ jobs:
           echo "Error detected in ${{ env.KAOS_MODULE }}, creating issue..."
           gh issue comment ${{ github.event.inputs.kaos-issue-id }} --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero ${{ env.KAOS_PATH_RESUME }}mdlint-results-${{ github.run_id }}.txt"
   end-workflow:
-    runs-on: ubuntu-latest
-    #  group: ka0s
+    runs-on:
+      group: core
     needs: [job-core, handle-success, handle_failure]
     if: ${{ always() }} 
     env:

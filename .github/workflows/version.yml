@@ -20,8 +20,8 @@ env:
 jobs:
   job-core:
     if: github.event.pull_request.state == 'open'
-    runs-on: ubuntu-latest
-    #  group: version
+    runs-on:
+      group: version
     outputs:
       KAOS_BRANCH: ${{ steps.commit_details.outputs.RNBRANCH }}
       KAOS_NUMBER: ${{ steps.commit_details.outputs.RNNUMBER }}
@@ -126,8 +126,8 @@ jobs:
         KAOS_ISSUE_BODY="Sentimos comunicarle que no se cumplen los requerimientos, por favor revise los checks"
         # gh workflow run issue.yaml --ref main -f kaos-issue-id="${{ github.event.pull_request.number }}" -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=comment
   handle-success:
-    runs-on: ubuntu-latest
-      #  group: ka0s
+    runs-on:
+      group: version
     needs: [job-core]
     if: ${{ success() }}
     steps:
@@ -137,8 +137,8 @@ jobs:
           # Si todo ha ido correcto añadimos el contenido del fichero 
           echo "Todo ha ido bien"
   handle_failure:
-    runs-on: ubuntu-latest
-    #  group: ka0s
+    runs-on:
+      group: version
     needs: [job-core]
     if: ${{ failure() }}
     steps:
@@ -146,8 +146,8 @@ jobs:
         run: |
           echo "Error detected in ${{ env.KAOS_MODULE }}, creating issue..."
   end-workflow:
-    runs-on: ubuntu-latest
-      #  group: ka0s
+    runs-on:
+      group: version
     needs: [job-core, handle-success, handle_failure]
     if: ${{ always() }} 
     env:
