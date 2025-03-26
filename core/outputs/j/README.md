@@ -1,0 +1,1 @@
+# Recoge ficheros de resultados de ejecución de los ficheros JSON
