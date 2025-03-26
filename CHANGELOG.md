@@ -171,3 +171,24 @@
   - core/test/correct-file.md
   - version.txt
 ---------------------------------
+## Version 0.0.14
+- **Branch**: refs/pull/226/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: yolabn
+- **Date**: Wed Mar 26 13:00:25 UTC 2025
+- **Message**: H44 creación módulo versionado
+- **Files Changed**:
+  - .github/workflows/kaos.yml
+  - .github/workflows/mdlint.yml
+  - core/outputs/j/README.md
+  - core/outputs/m/README.md
+  - core/outputs/p/README.md
+  - core/outputs/y/README.md
+  - core/results/event_data14083073763.json
+  - core/results/event_data14083415361.json
+  - core/results/event_data14083665015.json
+  - core/test/correct-file.json
+  - core/test/correct-file.md
+  - core/test/correct-file1.yaml
+  - version.txt
+---------------------------------
