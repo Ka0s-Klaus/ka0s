@@ -108,7 +108,7 @@ jobs:
             fi
   handle-success:
     runs-on:
-      group: core
+      group: ka0s
     needs: [job-core]
     if: ${{ success() }}
     steps:
@@ -119,7 +119,7 @@ jobs:
           echo "Todo ha ido bien."
   handle_failure:
     runs-on:
-      group: core
+      group: ka0s
     needs: [job-core, handle-success]
     if: ${{ failure() }}
     steps:
@@ -169,7 +169,7 @@ jobs:
           # gh workflow run issue.yaml --ref ${{ env.KAOS_REF_BRANCH }} -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=comment -f kaos-issue-tag="bug" -f kaos-issue-id=${{ github.event.inputs.kaos-issue-id }}
   end-workflow:
     runs-on:
-      group: core
+      group: ka0s
     needs: [job-core, handle-success, handle_failure]
     if: ${{ always() }} 
     env:
