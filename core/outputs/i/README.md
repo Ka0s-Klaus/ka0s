@@ -1,1 +1,1 @@
-# Ficheros de resultados de Inspector
+# Recoge ficheros de resultados de ejecución de los ficheros del INSPECTOR.
