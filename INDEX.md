@@ -15,3 +15,4 @@
 - **Version**: 0.0.14 - **Description**: H44 creación módulo versionado
 - **Version**: 0.0.15 - **Description**: H34 modulo iac kaos
 - **Version**: 0.0.16 - **Description**: H44 creación módulo versionado
+- **Version**: 0.0.17 - **Description**: H34 modulo iac kaos
