@@ -89,16 +89,26 @@ jobs:
     needs: [job-core]
     if: ${{ success() }}
     steps:
+      - id: repo
+        name: Checkout code
+        if: ${{ always() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
       - id: handle-success-execution
         name: handle-success-execution
+        env:
+          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
         run: |
           # Si todo ha ido correcto añadimos el contenido del fichero 
-          echo "Todo ha ido bien"
+          RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
+          gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
   handle_failure:
     runs-on:
       group: ka0s
     needs: [job-core, handle-success]
-    if: ${{ failure() }}
+    if: ${{ failure() }} 
     steps:
       - id: repo
         name: Checkout code
@@ -112,15 +122,16 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
         run: |
-          echo "Error detected in ${{ env.KAOS_MODULE }}, creating issue..."
-          gh issue comment ${{ github.event.inputs.kaos-issue-id }} --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero ${{ env.KAOS_PATH_RESUME }}mdlint-results-${{ github.run_id }}.txt"
+          echo "Error detected in process"
+          RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
+          gh issue comment $RNNUMBER --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
   end-workflow:
     runs-on:
       group: ka0s
     needs: [job-core, handle-success, handle_failure]
     if: ${{ always() }} 
     env:
-      GH_TOKEN: ${{ secrets.KAOS_ACTIONS_TOKEN }}
+        GH_TOKEN: ${{ secrets.KAOS_ACTIONS_TOKEN }}
     steps:
       - id: repo
         name: Checkout code
@@ -133,4 +144,6 @@ jobs:
         name: Finaliza el workflow
         run: |
           echo "End process"
-          gh workflow run inspector.yml --ref 'main' -f kaos-issue-id=${{ github.event.inputs.kaos-issue-id }} -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start="${{ github.event.inputs.kaos-user-start }}"
+          RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
+          gh issue comment $RNNUMBER --body "Se finaliza Ka0s ${{ env.KAOS_CODE }}"
+          gh workflow run inspector.yml --ref 'main' -f kaos-issue-id=$RNNUMBER -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start=""
