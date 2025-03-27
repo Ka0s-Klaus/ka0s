@@ -133,7 +133,7 @@ jobs:
     runs-on:
       group: ka0s
     needs: [job-core, handle-success, handle_failure]
-    if: ${{ always() && !contains(github.event.head_commit.message, '[Ka0S] ') }} 
+    if: ${{ always() }} 
     env:
         GH_TOKEN: ${{ secrets.KAOS_ACTIONS_TOKEN }}
     steps:
