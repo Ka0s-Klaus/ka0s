@@ -4,9 +4,7 @@ on:
     paths:
       - '**.yaml'
       - '**.yml'
-      - '*.json'
-      - '!core/outputs/**/*.json'
-      - '!core/results/**/*.json'
+      - '**.json'
       - '**.md'
       - '**.py'
     branches:
@@ -115,11 +113,7 @@ jobs:
           git add ${{ env.KAOS_JSON }}*
           git commit -m "[Ka0S] Uploading resume execution files to the repository..."
           git push origin ${{ github.ref }}
-          git push origin $GITHUB_REF
-      - id: view
-        name: Ver JSON
-        #run: cat event_data.json
-        run: cat ${{ env.KAOS_JSON }}${{ github.run_id }}.json      
+          git push origin $GITHUB_REF     
       - id: module
         env:
             modules: ${{ secrets.KAOS_CORE_MODULES }}
@@ -130,6 +124,11 @@ jobs:
           cat files-in-commit.txt
           # Nuevo proceso de activacion de los modulos
           while IFS= read -r line; do
+            # Skip files in core/outputs directory
+            if [[ "$line" == core/outputs/* ]]; then
+              echo "Skipping file in outputs directory: $line"
+              continue
+            fi
             echo "I Leemos el fichero files-in-commit.txt y extraemos el fichero $line"
             module_failed=0
             extension_failed=0
