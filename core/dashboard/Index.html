@@ -6,28 +6,44 @@
     <title>{{TITLE}}</title>
     <!-- Referencia a FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Configuración de Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e293b',
+                        secondary: '#4287f5',
+                        light: '#e6f0ff'
+                    }
+                }
+            }
+        }
+    </script>
     <!-- Referencia al archivo JavaScript externo -->
     <script src="js/dashboard.js"></script>
 </head>
-<body>
-    <div id="navbar">
+<body class="bg-gradient-to-br from-gray-100 to-gray-300 min-h-screen m-0">
+    <div id="navbar" class="sticky top-0 z-50">
         {{NAVBAR}}
     </div>
-    <div>
-        <div>
-            <h1>{{TITLE}}</h1>
+    <div class="container mx-auto px-4 py-8">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">{{TITLE}}</h1>
         </div>
-        <div id="hello-world">
+        <div id="hello-world" class="text-xl text-gray-600 italic text-center mb-10">
             {{HELLO_WORLD}}
         </div>
     </div>
-    <div id="seccion1" style="display: none;">
+    <div id="seccion1" class="container mx-auto px-4 py-4 mb-8 hidden">
         {{SECCION1}}
     </div>
-    <div id="seccion2" style="display: none;">
+    <div id="seccion2" class="container mx-auto px-4 py-4 mb-8 hidden">
         {{SECCION2}}
     </div>
-    <div id="footer">
+    <div id="footer" class="mt-auto">
         {{FOOTER}}
     </div>
 </body>
