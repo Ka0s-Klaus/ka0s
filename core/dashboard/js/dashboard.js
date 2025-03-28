@@ -16,10 +16,19 @@ async function updateDashboard() {
     const seccion2 = await loadJsonData('dashboard/sections/seccion2.json');
     const footer = await loadJsonData('dashboard/sections/footer.json');
 
+    // Apply body styles from principal.json
+    if (principal && principal.styles && principal.styles.body) {
+        const bodyStyles = principal.styles.body;
+        for (const [property, value] of Object.entries(bodyStyles)) {
+            document.body.style[property] = value;
+        }
+    }
+
     // Update title
     document.title = principal?.title || 'Ka0s Dashboard';
     document.querySelector('h1').textContent = principal?.title || 'Ka0s Dashboard';
 
+    // Rest of the function remains unchanged
     // Update hello world
     document.querySelector('#hello-world').textContent = principal?.hello_world || 'Hello World';
 
@@ -48,14 +57,13 @@ async function updateDashboard() {
     }
 }
 
+// Update the createNavbarHtml function to add event handlers for navigation
 function createNavbarHtml(data) {
     const styles = data.styles || {};
     const sectionStyle = Object.entries(styles.section || {})
         .map(([k, v]) => `${k}: ${v}`).join(';') + '; display: flex; justify-content: center; width: 100%;';
     const containerStyle = Object.entries(styles.container || {})
         .map(([k, v]) => `${k}: ${v}`).join(';') + '; max-width: 1200px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px;';
-    const brandStyle = Object.entries(styles.brand || {})
-        .map(([k, v]) => `${k}: ${v}`).join(';');
     const menuStyle = Object.entries(styles.menu || {})
         .map(([k, v]) => `${k}: ${v}`).join(';') + '; display: flex; gap: 20px; margin: 0; padding: 0; list-style: none; align-items: center;';
     const menuItemStyle = Object.entries(styles.menuItem || {})
@@ -63,11 +71,23 @@ function createNavbarHtml(data) {
     const linkStyle = Object.entries(styles.link || {})
         .map(([k, v]) => `${k}: ${v}`).join(';');
 
-    // Create links HTML
+    // Create links HTML with navigation functionality
     const linksHtml = data.links.map(link => {
+        let onClick = '';
+        
+        // Add special handling for Dashboard link
+        if (link.text === 'Seccion 1') {
+            onClick = 'onclick="showSection(\'seccion1\'); return false;"';
+        }
+        else if (link.text === 'Seccion 2') {
+                onClick = 'onclick="showSection(\'seccion2\'); return false;"';
+        } else if (link.text === 'Inicio') {
+            onClick = 'onclick="hideAllSections(); return false;"';
+        }
+        
         return `
             <li style="${menuItemStyle}">
-                <a href="${link.url}" style="${linkStyle}; border-radius: 25px;" 
+                <a href="${link.url}" ${onClick} style="${linkStyle}; border-radius: 25px;" 
                    onmouseover="this.style.backgroundColor='#e6f0ff'; this.style.color='#4287f5'; this.querySelector('i').style.color='#4287f5';" 
                    onmouseout="this.style.backgroundColor='#ffffff'; this.style.color='#000000'; this.querySelector('i').style.color='#000000';">
                     <i class="fas ${link.icon}" style="${Object.entries(styles.icon || {}).map(([k, v]) => `${k}: ${v}`).join(';')}"></i>
@@ -80,10 +100,6 @@ function createNavbarHtml(data) {
     return `
         <nav style="${sectionStyle}">
             <div style="${containerStyle}">
-                <a href="#" style="${brandStyle}">
-                    <i class="fas fa-code-branch" style="margin-right: 10px;"></i>
-                    ${data.title}
-                </a>
                 <ul style="${menuStyle}">
                     ${linksHtml}
                 </ul>
@@ -91,6 +107,49 @@ function createNavbarHtml(data) {
         </nav>
     `;
 }
+
+// Add these functions at the end of the file
+function showSection(sectionId) {
+    // Hide all sections first
+    hideAllSections();
+    
+    // Show the requested section
+    const section = document.getElementById(sectionId);
+    if (section) {
+        section.style.display = 'block';
+    }
+}
+
+function hideAllSections() {
+    // Hide all content sections
+    document.getElementById('seccion1').style.display = 'none';
+    document.getElementById('seccion2').style.display = 'none';
+}
+
+// Update on page load
+window.onload = function() {
+    updateDashboard();
+    // Make sure sections are hidden on initial load
+    hideAllSections();
+};
+
+// Refresh every 5 seconds but keep the current view state
+const originalSetInterval = setInterval;
+setInterval = function(callback, timeout) {
+    return originalSetInterval(function() {
+        const seccion1Visible = document.getElementById('seccion1').style.display === 'block';
+        const seccion2Visible = document.getElementById('seccion2').style.display === 'block';
+        
+        callback();
+        
+        // Restore visibility state
+        if (seccion1Visible) showSection('seccion1');
+        if (seccion2Visible) showSection('seccion2');
+    }, timeout);
+};
+
+// Refresh every 5 seconds
+setInterval(updateDashboard, 5000);
 
 function createSectionHtml(data, className) {
     const styles = data.styles || {};
@@ -117,8 +176,6 @@ function createFooterHtml(data) {
     // Create style strings for each element
     const sectionStyle = Object.entries(styles.section || {})
         .map(([k, v]) => `${k}: ${v}`).join(';');
-    const titleStyle = Object.entries(styles.title || {})
-        .map(([k, v]) => `${k}: ${v}`).join(';');
     const descStyle = Object.entries(styles.description || {})
         .map(([k, v]) => `${k}: ${v}`).join(';');
     const copyrightStyle = Object.entries(styles.copyright || {})
@@ -131,16 +188,10 @@ function createFooterHtml(data) {
     return `
         <footer style="${sectionStyle}">
             <div style="${layoutStyle}">
-                <h3 style="${titleStyle}">${data.title || 'Footer'}</h3>
                 <p style="${descStyle}">${data.description || ''}</p>
                 <p style="${copyrightStyle}">${data.copyright || ''}</p>
             </div>
         </footer>
-    `;
+    `
+
 }
-
-// Update on page load
-window.onload = updateDashboard;
-
-// Refresh every 5 seconds
-setInterval(updateDashboard, 5000);
