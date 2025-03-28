@@ -67,6 +67,19 @@ async function updateDashboard() {
         const footerHtml = await createFooterHtml(footer);
         document.querySelector('#footer').innerHTML = footerHtml;
     }
+
+    // Add this inside the updateDashboard function after the title update
+    // Update dashboard image
+    if (principal && principal.dashboard_image) {
+        const imgElement = document.getElementById('dashboard-logo');
+        if (imgElement) {
+            imgElement.src = principal.dashboard_image;
+            imgElement.onerror = function() {
+                console.error(`Failed to load image: ${principal.dashboard_image}`);
+                this.src = 'core/imgs/kaos.jpeg'; // Fallback to a known image
+            };
+        }
+    }
 }
 
 function setupNavigation() {
