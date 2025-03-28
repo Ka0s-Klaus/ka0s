@@ -20,8 +20,8 @@ env:
 jobs:
   job-core:
     if: github.event.pull_request.state == 'open'
-    runs-on: ubuntu-latest
-    #  group: version
+    runs-on:
+      group: version
     outputs:
       KAOS_BRANCH: ${{ steps.commit_details.outputs.RNBRANCH }}
       KAOS_NUMBER: ${{ steps.commit_details.outputs.RNNUMBER }}
@@ -126,28 +126,50 @@ jobs:
         KAOS_ISSUE_BODY="Sentimos comunicarle que no se cumplen los requerimientos, por favor revise los checks"
         # gh workflow run issue.yaml --ref main -f kaos-issue-id="${{ github.event.pull_request.number }}" -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=comment
   handle-success:
-    runs-on: ubuntu-latest
-      #  group: ka0s
+    runs-on:
+      group: ka0s
     needs: [job-core]
     if: ${{ success() }}
     steps:
+      - id: repo
+        name: Checkout code
+        if: ${{ always() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
       - id: handle-success-execution
         name: handle-success-execution
+        env:
+          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
         run: |
           # Si todo ha ido correcto añadimos el contenido del fichero 
-          echo "Todo ha ido bien"
+          RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
+          gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
   handle_failure:
-    runs-on: ubuntu-latest
-    #  group: ka0s
-    needs: [job-core]
-    if: ${{ failure() }}
+    runs-on:
+      group: ka0s
+    needs: [job-core, handle-success]
+    if: ${{ failure() }} 
     steps:
-      - id: check-execution
+      - id: repo
+        name: Checkout code
+        if: ${{ always() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+      - id: handle-failure-execution
+        name: handle-failure-execution
+        env:
+          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
         run: |
-          echo "Error detected in ${{ env.KAOS_MODULE }}, creating issue..."
+          echo "Error detected in process"
+          RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
+          gh issue comment $RNNUMBER --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
   end-workflow:
-    runs-on: ubuntu-latest
-      #  group: ka0s
+    runs-on:
+      group: ka0s
     needs: [job-core, handle-success, handle_failure]
     if: ${{ always() }} 
     env:
@@ -164,6 +186,6 @@ jobs:
         name: Finaliza el workflow
         run: |
           echo "End process"
-          gh workflow run inspector.yml --ref 'main' -f kaos-issue-id="" -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start=""
-          RNNUMBER=$(echo "${{ github.event.pull_request.title }}" | grep -o '[0-9]*')
-          gh issue comment $RNNUMBER --body "Se finaliza Version ${{ env.KAOS_CODE }}: ${{ needs.job-core.outputs.KAOS_VERSION }}"
+          RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
+          gh issue comment $RNNUMBER --body "Se finaliza Ka0s ${{ env.KAOS_CODE }}"
+          gh workflow run inspector.yml --ref 'main' -f kaos-issue-id=$RNNUMBER -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start=""

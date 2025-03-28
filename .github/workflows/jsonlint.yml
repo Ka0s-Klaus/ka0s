@@ -1,0 +1,164 @@
+name: Ka0s JSON Lint
+
+on:
+  workflow_dispatch:
+    inputs:
+      kaos-origin:
+        description: 'Dispatcher Workflow Run ID'
+        default: ""
+        required: true
+      kaos-files:
+        description: 'Files Involved'
+        default: ""
+        required: true
+      kaos-issue-id:
+        description: 'Issue ID'
+        default: "Kaos Issue ID"
+        required: true
+      kaos-user-start:
+        description: 'User initiated process'
+        default: ""
+        required: true
+  
+permissions:
+  contents: write
+  actions: write
+  issues: write
+  pull-requests: write
+
+env:
+  KAOS_MODULE: "[Ka0S] JSONLINT"
+  GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+  KAOS_JSONLINT_CONFIG: "core/config/.jsonlint.json"
+  KAOS_PATH_RESUME: "core/outputs/j/"
+  KAOS_REPO: "/actions-runner/_work/kaos/kaos"
+  KAOS_STEP_MODULE: ""
+  KAOS_CODE: ${{ github.run_id}}
+  KAOS_REF_BRANCH: "main"
+
+jobs:
+  job-core:
+    runs-on: 
+      group: ka0s
+    steps:
+      - id: repo
+        name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+      - id: install-node
+        name: Install Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      - id: install-jsonlint
+        name: Install jsonlint
+        run: |
+            if ! command -v jsonlint &> /dev/null; then
+              echo "Installing jsonlint..."
+              npm install -g jsonlint
+            else
+              echo "jsonlint already installed, skipping installation"
+            fi
+            mkdir -p ${{ env.KAOS_PATH_RESUME }}
+      - id: check-json
+        name: Check JSON
+        run: |
+            # Invocamos la primera comprobación de base, sino se supera el proceso no continua
+            # Extraemos el nombre del fichero
+            file_name=$(basename "${{ github.event.inputs.kaos-files }}")
+            # Generamos el fichero de resultados vacio
+            touch ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt
+            # Realizamos el check del documento json 
+            jsonlint ${{ github.event.inputs.kaos-files }} > ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt
+            # esto es un workarround importante que hay que retirar
+            #rm -rf ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt
+            # a retirar
+            # Check if exist errors in file
+            echo "Mostramos fichero"
+            cat ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt
+            if [ ! -s ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt ]; then
+              echo "File ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt is empty and is content correct"
+              KAOS_ISSUE_BODY="The ${{ env.KAOS_MODULE }} process (${{ github.event.inputs.kaos-origin }}) launch the check (${{ github.run_id }}) over file (${{ github.event.inputs.kaos-files }}) and its result has been SUCCESS. Please review all files implicated in pull request and approve to merge"
+              # Añadimos la versión de jsonlint con la que se realiza la comprobacion
+              jsonlint --version >> ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt
+              # añadimos el nombre del fichero que vamos a comprobar
+              echo "Finding: ${{ github.event.inputs.kaos-files }}" >> ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt
+              # gh workflow run issue.yaml --ref ${{ env.KAOS_REF_BRANCH }} -f kaos-issue-title="" -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=comment -f kaos-issue-tag="" -f kaos-issue-id=${{ github.event.inputs.kaos-issue-id }}
+              gh issue comment  ${{ github.event.inputs.kaos-issue-id }} -F ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt
+            else
+              cat ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt
+              echo "File ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt is not empty and is content not correct and write commit info"
+              KAOS_ISSUE_BODY="The ${{ env.KAOS_MODULE }} process (${{ github.event.inputs.kaos-origin }}) launch the check (${{ github.run_id }}) over file (${{ github.event.inputs.kaos-files }}) and its result has been FAILED, please check and solved it"
+              # Añadimos la versión de jsonlint con la que se realiza la comprobacion
+              # jsonlint --version || true >> ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt
+              # añadimos el nombre del fichero que vamos a comprobar
+              echo "Finding: ${{ github.event.inputs.kaos-files }}" >> ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt
+              # gh workflow run issue.yaml --ref ${{ env.KAOS_REF_BRANCH }} -f kaos-issue-title="" -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=comment -f kaos-issue-tag="" -f kaos-issue-id=${{ github.event.inputs.kaos-issue-id }} 
+              gh issue comment  ${{ github.event.inputs.kaos-issue-id }} -F ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt
+            fi
+  handle-success:
+     runs-on:
+       group: ka0s
+     needs: [job-core]
+     if: ${{ success() }}
+     steps:
+       - id: repo
+         name: Checkout code
+         if: ${{ always() }}
+         uses: actions/checkout@v4
+         with:
+           fetch-depth: 0
+           token: ${{ secrets.KAOS_REPO_TOKEN }}
+       - id: handle-success-execution
+         name: handle-success-execution
+         env:
+           GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+         run: |
+           # Si todo ha ido correcto añadimos el contenido del fichero 
+           RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
+           gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
+  handle_failure:
+    runs-on:
+      group: ka0s
+    needs: [job-core, handle-success]
+    if: ${{ failure() }} 
+    steps:
+      - id: repo
+        name: Checkout code
+        if: ${{ always() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+      - id: handle-failure-execution
+        name: handle-failure-execution
+        env:
+          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+        run: |
+          echo "Error detected in process"
+          RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
+          gh issue comment $RNNUMBER --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
+  end-workflow:
+    runs-on:
+      group: ka0s
+    needs: [job-core, handle-success, handle_failure]
+    if: ${{ always() }} 
+    env:
+        GH_TOKEN: ${{ secrets.KAOS_ACTIONS_TOKEN }}
+    steps:
+      - id: repo
+        name: Checkout code
+        if: ${{ always() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+      - id: end-process
+        name: Finaliza el workflow
+        run: |
+          echo "End process"
+          RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
+          gh issue comment $RNNUMBER --body "Se finaliza Ka0s ${{ env.KAOS_CODE }}"
+          gh workflow run inspector.yml --ref 'main' -f kaos-issue-id=$RNNUMBER -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start=""
