@@ -107,18 +107,20 @@ async function createNavbarHtml(data) {
     const linksHtml = data.links.map(link => {
         return `
             <li class="inline-block">
-                <a href="#${link.text.toLowerCase().replace(' ', '-')}" class="flex items-center gap-2 px-4 py-2 bg-white text-black rounded-full border border-gray-200 transition-all duration-300 hover:bg-light hover:text-secondary"
-                   onmouseover="this.querySelector('i').style.color='#4287f5';" 
-                   onmouseout="this.querySelector('i').style.color='#000000';">
-                    <i class="fas ${link.icon} text-black"></i>
+                <a href="#${link.text.toLowerCase().replace(' ', '-')}" 
+                   class="flex items-center gap-2 px-4 py-2 bg-white text-black rounded-full border border-gray-200 transition-all duration-300 hover:bg-gray-100"
+                   onclick="showSection('${link.text === 'Dashboard' ? 'seccion1' : 'principal'}'); return false;">
+                    <i class="fas ${link.icon} text-gray-600"></i>
                     ${link.text}
                 </a>
             </li>
         `;
     }).join('');
     
-    // Replace the placeholder in the template with the actual links
-    return navbarTemplate.replace('{{NAVBAR_LINKS}}', linksHtml);
+    // Replace the placeholders in the template
+    return navbarTemplate
+        .replace('{{NAVBAR_TITLE}}', data.title)
+        .replace(/{{NAVBAR_LINKS}}/g, linksHtml);
 }
 
 // Update createSectionHtml to use the external template
