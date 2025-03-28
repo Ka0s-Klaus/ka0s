@@ -28,7 +28,6 @@ async function updateDashboard() {
     document.title = principal?.title || 'Ka0s Dashboard';
     document.querySelector('h1').textContent = principal?.title || 'Ka0s Dashboard';
 
-    // Rest of the function remains unchanged
     // Update hello world
     document.querySelector('#hello-world').textContent = principal?.hello_world || 'Hello World';
 
@@ -36,15 +35,17 @@ async function updateDashboard() {
     if (navbar) {
         const navbarHtml = createNavbarHtml(navbar);
         document.querySelector('#navbar').innerHTML = navbarHtml;
+        
+        // Add event listeners to navigation links after navbar is created
+        setupNavigation();
     }
 
-    // Update section 1
+    // Prepare sections but keep them hidden initially
     if (seccion1) {
         const section1Html = createSectionHtml(seccion1, 'seccion1');
         document.querySelector('#seccion1').innerHTML = section1Html;
     }
 
-    // Update section 2
     if (seccion2) {
         const section2Html = createSectionHtml(seccion2, 'seccion2');
         document.querySelector('#seccion2').innerHTML = section2Html;
@@ -57,40 +58,39 @@ async function updateDashboard() {
     }
 }
 
-// Update the createNavbarHtml function to add event handlers for navigation
-function createNavbarHtml(data) {
-    const styles = data.styles || {};
-    const sectionStyle = Object.entries(styles.section || {})
-        .map(([k, v]) => `${k}: ${v}`).join(';') + '; display: flex; justify-content: center; width: 100%;';
-    const containerStyle = Object.entries(styles.container || {})
-        .map(([k, v]) => `${k}: ${v}`).join(';') + '; max-width: 1200px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px;';
-    const menuStyle = Object.entries(styles.menu || {})
-        .map(([k, v]) => `${k}: ${v}`).join(';') + '; display: flex; gap: 20px; margin: 0; padding: 0; list-style: none; align-items: center;';
-    const menuItemStyle = Object.entries(styles.menuItem || {})
-        .map(([k, v]) => `${k}: ${v}`).join(';');
-    const linkStyle = Object.entries(styles.link || {})
-        .map(([k, v]) => `${k}: ${v}`).join(';');
+function setupNavigation() {
+    // Get all navigation links
+    const navLinks = document.querySelectorAll('#navbar a');
+    
+    navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const linkText = this.textContent.trim();
+            
+            // Hide all sections first
+            document.querySelector('#seccion1').classList.add('hidden');
+            document.querySelector('#seccion2').classList.add('hidden');
+            
+            // Show the appropriate section based on the link clicked
+            if (linkText.includes('Seccion 1') || linkText.includes('Sección 1')) {
+                document.querySelector('#seccion1').classList.remove('hidden');
+            } else if (linkText.includes('Seccion 2') || linkText.includes('Sección 2')) {
+                document.querySelector('#seccion2').classList.remove('hidden');
+            }
+        });
+    });
+}
 
-    // Create links HTML with navigation functionality
+function createNavbarHtml(data) {
+    // Create links HTML
     const linksHtml = data.links.map(link => {
-        let onClick = '';
-        
-        // Add special handling for Dashboard link
-        if (link.text === 'Seccion 1') {
-            onClick = 'onclick="showSection(\'seccion1\'); return false;"';
-        }
-        else if (link.text === 'Seccion 2') {
-                onClick = 'onclick="showSection(\'seccion2\'); return false;"';
-        } else if (link.text === 'Inicio') {
-            onClick = 'onclick="hideAllSections(); return false;"';
-        }
-        
         return `
-            <li style="${menuItemStyle}">
-                <a href="${link.url}" ${onClick} style="${linkStyle}; border-radius: 25px;" 
-                   onmouseover="this.style.backgroundColor='#e6f0ff'; this.style.color='#4287f5'; this.querySelector('i').style.color='#4287f5';" 
-                   onmouseout="this.style.backgroundColor='#ffffff'; this.style.color='#000000'; this.querySelector('i').style.color='#000000';">
-                    <i class="fas ${link.icon}" style="${Object.entries(styles.icon || {}).map(([k, v]) => `${k}: ${v}`).join(';')}"></i>
+            <li class="inline-block">
+                <a href="#${link.text.toLowerCase().replace(' ', '-')}" class="flex items-center gap-2 px-4 py-2 bg-white text-black rounded-full border border-gray-200 transition-all duration-300 hover:bg-light hover:text-secondary"
+                   onmouseover="this.querySelector('i').style.color='#4287f5';" 
+                   onmouseout="this.querySelector('i').style.color='#000000';">
+                    <i class="fas ${link.icon} text-black"></i>
                     ${link.text}
                 </a>
             </li>
@@ -98,9 +98,9 @@ function createNavbarHtml(data) {
     }).join('');
 
     return `
-        <nav style="${sectionStyle}">
-            <div style="${containerStyle}">
-                <ul style="${menuStyle}">
+        <nav class="bg-primary py-4 px-5 shadow-md w-full flex justify-center">
+            <div class="container mx-auto flex justify-center items-center">
+                <ul class="flex gap-5 items-center m-0 p-0 list-none">
                     ${linksHtml}
                 </ul>
             </div>
@@ -108,90 +108,29 @@ function createNavbarHtml(data) {
     `;
 }
 
-// Add these functions at the end of the file
-function showSection(sectionId) {
-    // Hide all sections first
-    hideAllSections();
-    
-    // Show the requested section
-    const section = document.getElementById(sectionId);
-    if (section) {
-        section.style.display = 'block';
-    }
-}
-
-function hideAllSections() {
-    // Hide all content sections
-    document.getElementById('seccion1').style.display = 'none';
-    document.getElementById('seccion2').style.display = 'none';
-}
-
-// Update on page load
-window.onload = function() {
-    updateDashboard();
-    // Make sure sections are hidden on initial load
-    hideAllSections();
-};
-
-// Refresh every 5 seconds but keep the current view state
-const originalSetInterval = setInterval;
-setInterval = function(callback, timeout) {
-    return originalSetInterval(function() {
-        const seccion1Visible = document.getElementById('seccion1').style.display === 'block';
-        const seccion2Visible = document.getElementById('seccion2').style.display === 'block';
-        
-        callback();
-        
-        // Restore visibility state
-        if (seccion1Visible) showSection('seccion1');
-        if (seccion2Visible) showSection('seccion2');
-    }, timeout);
-};
-
-// Refresh every 5 seconds
-setInterval(updateDashboard, 5000);
-
 function createSectionHtml(data, className) {
-    const styles = data.styles || {};
-    const sectionStyle = Object.entries(styles.section || {})
-        .map(([k, v]) => `${k}: ${v}`).join(';');
-    
-    // Style for titles and descriptions
-    const titleStyle = 'color: #2196F3; font-size: 24px;';
-    const descriptionStyle = 'font-style: italic;';
-
     return `
-        <div class="${className}" style="${sectionStyle}">
-            <h2 style="${titleStyle}">${data.title || ''}</h2>
-            <p style="${descriptionStyle}">${data.description || ''}</p>
-            <p class="hola-${className}">${data.hola_seccion1 || ''}</p>
+        <div class="${className} bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-2xl font-semibold text-blue-500 mb-3">${data.title || ''}</h2>
+            <p class="text-gray-600 italic mb-4">${data.description || ''}</p>
+            <p class="hola-${className} text-gray-700">${data.hola_seccion1 || ''}</p>
         </div>
     `;
 }
 
 function createFooterHtml(data) {
-    const styles = data.styles || {};
-    const layout = data.layout || {};
-   
-    // Create style strings for each element
-    const sectionStyle = Object.entries(styles.section || {})
-        .map(([k, v]) => `${k}: ${v}`).join(';');
-    const descStyle = Object.entries(styles.description || {})
-        .map(([k, v]) => `${k}: ${v}`).join(';');
-    const copyrightStyle = Object.entries(styles.copyright || {})
-        .map(([k, v]) => `${k}: ${v}`).join(';');
- 
-    // Create layout style
-    const layoutStyle = Object.entries(layout || {})
-        .map(([k, v]) => `${k}: ${v}`).join(';');
- 
     return `
-        <footer style="${sectionStyle}">
-            <div style="${layoutStyle}">
-                <p style="${descStyle}">${data.description || ''}</p>
-                <p style="${copyrightStyle}">${data.copyright || ''}</p>
+        <footer class="bg-gray-800 text-white py-8 px-4 mt-10">
+            <div class="container mx-auto flex flex-col items-center">
+                <p class="text-gray-300 mb-2">${data.description || ''}</p>
+                <p class="text-sm text-gray-400">${data.copyright || ''}</p>
             </div>
         </footer>
-    `
-
+    `;
 }
+
+// Update on page load
+window.onload = updateDashboard;
+
+// Refresh every 5 seconds
+setInterval(updateDashboard, 5000);
