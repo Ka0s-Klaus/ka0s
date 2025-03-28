@@ -11,6 +11,7 @@ async function loadJsonData(path) {
 async function updateDashboard() {
     // Load all JSON files
     const principal = await loadJsonData('dashboard/principal.json');
+    const navbar = await loadJsonData('dashboard/sections/navbar.json');
     const seccion1 = await loadJsonData('dashboard/sections/seccion1.json');
     const seccion2 = await loadJsonData('dashboard/sections/seccion2.json');
     const footer = await loadJsonData('dashboard/sections/footer.json');
@@ -21,6 +22,12 @@ async function updateDashboard() {
 
     // Update hello world
     document.querySelector('#hello-world').textContent = principal?.hello_world || 'Hello World';
+
+    // Update navbar
+    if (navbar) {
+        const navbarHtml = createNavbarHtml(navbar);
+        document.querySelector('#navbar').innerHTML = navbarHtml;
+    }
 
     // Update section 1
     if (seccion1) {
@@ -41,6 +48,48 @@ async function updateDashboard() {
     }
 }
 
+function createNavbarHtml(data) {
+    const styles = data.styles || {};
+    const sectionStyle = Object.entries(styles.section || {})
+        .map(([k, v]) => `${k}: ${v}`).join(';');
+    const containerStyle = Object.entries(styles.container || {})
+        .map(([k, v]) => `${k}: ${v}`).join(';');
+    const brandStyle = Object.entries(styles.brand || {})
+        .map(([k, v]) => `${k}: ${v}`).join(';');
+    const menuStyle = Object.entries(styles.menu || {})
+        .map(([k, v]) => `${k}: ${v}`).join(';');
+    const menuItemStyle = Object.entries(styles.menuItem || {})
+        .map(([k, v]) => `${k}: ${v}`).join(';');
+    const linkStyle = Object.entries(styles.link || {})
+        .map(([k, v]) => `${k}: ${v}`).join(';');
+
+    // Create links HTML
+    const linksHtml = data.links.map(link => {
+        return `
+            <li style="${menuItemStyle}">
+                <a href="${link.url}" style="${linkStyle}" onmouseover="this.style.backgroundColor='rgba(255, 255, 255, 0.1)'" onmouseout="this.style.backgroundColor='transparent'">
+                    <i class="fas ${link.icon}" style="${Object.entries(styles.icon || {}).map(([k, v]) => `${k}: ${v}`).join(';')}"></i>
+                    ${link.text}
+                </a>
+            </li>
+        `;
+    }).join('');
+
+    return `
+        <nav style="${sectionStyle}">
+            <div style="${containerStyle}">
+                <a href="#" style="${brandStyle}">
+                    <i class="fas fa-code-branch" style="margin-right: 10px;"></i>
+                    ${data.title}
+                </a>
+                <ul style="${menuStyle}">
+                    ${linksHtml}
+                </ul>
+            </div>
+        </nav>
+    `;
+}
+
 function createSectionHtml(data, className) {
     const styles = data.styles || {};
     const sectionStyle = Object.entries(styles.section || {})
@@ -57,14 +106,29 @@ function createSectionHtml(data, className) {
 
 function createFooterHtml(data) {
     const styles = data.styles || {};
-    const footerStyle = Object.entries(styles.section || {})
+    const layout = data.layout || {};
+   
+    // Create style strings for each element
+    const sectionStyle = Object.entries(styles.section || {})
         .map(([k, v]) => `${k}: ${v}`).join(';');
-
+    const titleStyle = Object.entries(styles.title || {})
+        .map(([k, v]) => `${k}: ${v}`).join(';');
+    const descStyle = Object.entries(styles.description || {})
+        .map(([k, v]) => `${k}: ${v}`).join(';');
+    const copyrightStyle = Object.entries(styles.copyright || {})
+        .map(([k, v]) => `${k}: ${v}`).join(';');
+ 
+    // Create layout style
+    const layoutStyle = Object.entries(layout || {})
+        .map(([k, v]) => `${k}: ${v}`).join(';');
+ 
     return `
-        <footer style="${footerStyle}">
-            <h3>${data.title || 'Footer'}</h3>
-            <p>${data.description || ''}</p>
-            <p>${data.copyright || ''}</p>
+        <footer style="${sectionStyle}">
+            <div style="${layoutStyle}">
+                <h3 style="${titleStyle}">${data.title || 'Footer'}</h3>
+                <p style="${descStyle}">${data.description || ''}</p>
+                <p style="${copyrightStyle}">${data.copyright || ''}</p>
+            </div>
         </footer>
     `;
 }
