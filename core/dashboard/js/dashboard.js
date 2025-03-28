@@ -208,20 +208,14 @@ async function createNavbarHtml(data) {
 
 // Update createSectionHtml to use the external template
 async function createSectionHtml(data, className) {
-    // Load the section template
     const sectionTemplate = await loadHtmlTemplate('templates/section.html');
     
-    if (!sectionTemplate) {
-        console.error('Failed to load section template');
-        return '';
-    }
-    
-    // Replace the placeholders in the template with the actual data
     return sectionTemplate
         .replace(/{{CLASS_NAME}}/g, className)
         .replace('{{SECTION_TITLE}}', data.title || '')
         .replace('{{SECTION_DESCRIPTION}}', data.description || '')
-        .replace('{{SECTION_MESSAGE}}', data.hola_seccion1 || '');
+        .replace('{{SECTION_MESSAGE}}', data.hola_seccion1 || '')
+        .replace('{{#if_seccion1}}', className === 'seccion1' ? '' : 'hidden');
 }
 
 // Update createFooterHtml to use the external template
