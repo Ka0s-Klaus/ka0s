@@ -51,13 +51,13 @@ async function updateDashboard() {
 function createNavbarHtml(data) {
     const styles = data.styles || {};
     const sectionStyle = Object.entries(styles.section || {})
-        .map(([k, v]) => `${k}: ${v}`).join(';');
+        .map(([k, v]) => `${k}: ${v}`).join(';') + '; display: flex; justify-content: center; width: 100%;';
     const containerStyle = Object.entries(styles.container || {})
-        .map(([k, v]) => `${k}: ${v}`).join(';');
+        .map(([k, v]) => `${k}: ${v}`).join(';') + '; max-width: 1200px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px;';
     const brandStyle = Object.entries(styles.brand || {})
         .map(([k, v]) => `${k}: ${v}`).join(';');
     const menuStyle = Object.entries(styles.menu || {})
-        .map(([k, v]) => `${k}: ${v}`).join(';');
+        .map(([k, v]) => `${k}: ${v}`).join(';') + '; display: flex; gap: 20px; margin: 0; padding: 0; list-style: none; align-items: center;';
     const menuItemStyle = Object.entries(styles.menuItem || {})
         .map(([k, v]) => `${k}: ${v}`).join(';');
     const linkStyle = Object.entries(styles.link || {})
