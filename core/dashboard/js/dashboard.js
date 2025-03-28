@@ -8,6 +8,17 @@ async function loadJsonData(path) {
     }
 }
 
+// New function to load HTML templates
+async function loadHtmlTemplate(path) {
+    try {
+        const response = await fetch(path);
+        return await response.text();
+    } catch (error) {
+        console.error(`Error loading template ${path}:`, error);
+        return null;
+    }
+}
+
 async function updateDashboard() {
     // Load all JSON files
     const principal = await loadJsonData('dashboard/principal.json');
@@ -33,7 +44,7 @@ async function updateDashboard() {
 
     // Update navbar
     if (navbar) {
-        const navbarHtml = createNavbarHtml(navbar);
+        const navbarHtml = await createNavbarHtml(navbar);
         document.querySelector('#navbar').innerHTML = navbarHtml;
         
         // Add event listeners to navigation links after navbar is created
@@ -42,18 +53,18 @@ async function updateDashboard() {
 
     // Prepare sections but keep them hidden initially
     if (seccion1) {
-        const section1Html = createSectionHtml(seccion1, 'seccion1');
+        const section1Html = await createSectionHtml(seccion1, 'seccion1');
         document.querySelector('#seccion1').innerHTML = section1Html;
     }
 
     if (seccion2) {
-        const section2Html = createSectionHtml(seccion2, 'seccion2');
+        const section2Html = await createSectionHtml(seccion2, 'seccion2');
         document.querySelector('#seccion2').innerHTML = section2Html;
     }
 
     // Update footer
     if (footer) {
-        const footerHtml = createFooterHtml(footer);
+        const footerHtml = await createFooterHtml(footer);
         document.querySelector('#footer').innerHTML = footerHtml;
     }
 }
@@ -82,7 +93,16 @@ function setupNavigation() {
     });
 }
 
-function createNavbarHtml(data) {
+// Update createNavbarHtml to use the external template
+async function createNavbarHtml(data) {
+    // Load the navbar template
+    const navbarTemplate = await loadHtmlTemplate('templates/navbar.html');
+    
+    if (!navbarTemplate) {
+        console.error('Failed to load navbar template');
+        return '';
+    }
+    
     // Create links HTML
     const linksHtml = data.links.map(link => {
         return `
@@ -96,41 +116,51 @@ function createNavbarHtml(data) {
             </li>
         `;
     }).join('');
-
-    return `
-        <nav class="bg-primary py-4 px-5 shadow-md w-full flex justify-center">
-            <div class="container mx-auto flex justify-center items-center">
-                <ul class="flex gap-5 items-center m-0 p-0 list-none">
-                    ${linksHtml}
-                </ul>
-            </div>
-        </nav>
-    `;
+    
+    // Replace the placeholder in the template with the actual links
+    return navbarTemplate.replace('{{NAVBAR_LINKS}}', linksHtml);
 }
 
-function createSectionHtml(data, className) {
-    return `
-        <div class="${className} bg-white rounded-lg shadow-md p-6">
-            <h2 class="text-2xl font-semibold text-blue-500 mb-3">${data.title || ''}</h2>
-            <p class="text-gray-600 italic mb-4">${data.description || ''}</p>
-            <p class="hola-${className} text-gray-700">${data.hola_seccion1 || ''}</p>
-        </div>
-    `;
+// Update createSectionHtml to use the external template
+async function createSectionHtml(data, className) {
+    // Load the section template
+    const sectionTemplate = await loadHtmlTemplate('templates/section.html');
+    
+    if (!sectionTemplate) {
+        console.error('Failed to load section template');
+        return '';
+    }
+    
+    // Replace the placeholders in the template with the actual data
+    return sectionTemplate
+        .replace(/{{CLASS_NAME}}/g, className)
+        .replace('{{SECTION_TITLE}}', data.title || '')
+        .replace('{{SECTION_DESCRIPTION}}', data.description || '')
+        .replace('{{SECTION_MESSAGE}}', data.hola_seccion1 || '');
 }
 
-function createFooterHtml(data) {
-    return `
-        <footer class="bg-gray-800 text-white py-8 px-4 mt-10">
-            <div class="container mx-auto flex flex-col items-center">
-                <p class="text-gray-300 mb-2">${data.description || ''}</p>
-                <p class="text-sm text-gray-400">${data.copyright || ''}</p>
-            </div>
-        </footer>
-    `;
+// Update createFooterHtml to use the external template
+async function createFooterHtml(data) {
+    // Load the footer template
+    const footerTemplate = await loadHtmlTemplate('templates/footer.html');
+    
+    if (!footerTemplate) {
+        console.error('Failed to load footer template');
+        return '';
+    }
+    
+    // Replace the placeholders in the template with the actual data
+    return footerTemplate
+        .replace('{{FOOTER_DESCRIPTION}}', data.description || '')
+        .replace('{{FOOTER_COPYRIGHT}}', data.copyright || '');
 }
 
-// Update on page load
-window.onload = updateDashboard;
+// Update on page load - modified to handle async
+window.onload = () => {
+    updateDashboard();
+};
 
-// Refresh every 5 seconds
-setInterval(updateDashboard, 5000);
+// Refresh every 5 seconds - modified to handle async
+setInterval(() => {
+    updateDashboard();
+}, 5000);
