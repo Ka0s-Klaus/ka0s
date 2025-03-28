@@ -67,7 +67,9 @@ function createNavbarHtml(data) {
     const linksHtml = data.links.map(link => {
         return `
             <li style="${menuItemStyle}">
-                <a href="${link.url}" style="${linkStyle}" onmouseover="this.style.backgroundColor='rgba(255, 255, 255, 0.1)'" onmouseout="this.style.backgroundColor='transparent'">
+                <a href="${link.url}" style="${linkStyle}; border-radius: 25px;" 
+                   onmouseover="this.style.backgroundColor='#e6f0ff'; this.style.color='#4287f5'; this.querySelector('i').style.color='#4287f5';" 
+                   onmouseout="this.style.backgroundColor='#ffffff'; this.style.color='#000000'; this.querySelector('i').style.color='#000000';">
                     <i class="fas ${link.icon}" style="${Object.entries(styles.icon || {}).map(([k, v]) => `${k}: ${v}`).join(';')}"></i>
                     ${link.text}
                 </a>
