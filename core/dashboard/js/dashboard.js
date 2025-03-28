@@ -45,11 +45,15 @@ function createSectionHtml(data, className) {
     const styles = data.styles || {};
     const sectionStyle = Object.entries(styles.section || {})
         .map(([k, v]) => `${k}: ${v}`).join(';');
+    
+    // Style for titles and descriptions
+    const titleStyle = 'color: #2196F3; font-size: 24px;';
+    const descriptionStyle = 'font-style: italic;';
 
     return `
         <div class="${className}" style="${sectionStyle}">
-            <h2>${data.title || ''}</h2>
-            <p>${data.description || ''}</p>
+            <h2 style="${titleStyle}">${data.title || ''}</h2>
+            <p style="${descriptionStyle}">${data.description || ''}</p>
             <p class="hola-${className}">${data.hola_seccion1 || ''}</p>
         </div>
     `;
