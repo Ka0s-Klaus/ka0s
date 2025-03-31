@@ -33,24 +33,24 @@ jobs:
           delete_remote_files: false
           only_newer: true  # Only transfer files that are different from destination
           
-    handle-success:
-      runs-on: 
-        group: ka0s
-      needs: [end-execution]
-      if: ${{ success() }}
-      steps: 
-        - id: handle-success-execution
-          run: |
-            # Si todo ha iso correctamente pasamos la tarjeta a done
-            # Añadimos a cada paso el mensaje de éxito incluido en la issue original
-            echo "${{ env.KAOS_MODULE }} Success in runid ${{ github.run_id }} initiated by $KAOS_ISSUE_USER trouhg issue number $KAOS_ISSUE_NUMBER."
-            echo "La ejecución solicitada en el issue #$KAOS_ISSUE_NUMBER ha sido completada con éxito."
-            echo "El log de la ejecucion se envuentra en ${{ secrets.KAOS_ACTIONS_URL }}${{ github.run_id }}"
-            echo "Se añade el log de la ejecución al issue #$KAOS_ISSUE_NUMBER"
-            echo "Se procede a cerrar la issue #$KAOS_ISSUE_NUMBER"
-            # gh issue comment $KAOS_ISSUE_NUMBER --body "La ejecución ha sido SUCCESS #${{ env.KAOS_ISSUE_NUMBER }} el siguiente mensaje muestra el resultado de las operaciones"
-            # gh issue comment $KAOS_ISSUE_NUMBER --body-file "${{ env.KAOS_PATH_OUTPUT}}${{ env.KAOS_CODE}}-${{ env.KAOS_ISSUE_NUMBER}}.txt"
-            # gh issue close $KAOS_ISSUE_NUMBER --comment "Puede proceder a cerrar la tarjeta." --reason completed
+  handle-success:
+    runs-on: 
+      group: ka0s
+    needs: [end-execution]
+    if: ${{ success() }}
+    steps: 
+      - id: handle-success-execution
+        run: |
+          # Si todo ha iso correctamente pasamos la tarjeta a done
+          # Añadimos a cada paso el mensaje de éxito incluido en la issue original
+          echo "${{ env.KAOS_MODULE }} Success in runid ${{ github.run_id }} initiated by $KAOS_ISSUE_USER trouhg issue number $KAOS_ISSUE_NUMBER."
+          echo "La ejecución solicitada en el issue #$KAOS_ISSUE_NUMBER ha sido completada con éxito."
+          echo "El log de la ejecucion se envuentra en ${{ secrets.KAOS_ACTIONS_URL }}${{ github.run_id }}"
+          echo "Se añade el log de la ejecución al issue #$KAOS_ISSUE_NUMBER"
+          echo "Se procede a cerrar la issue #$KAOS_ISSUE_NUMBER"
+          # gh issue comment $KAOS_ISSUE_NUMBER --body "La ejecución ha sido SUCCESS #${{ env.KAOS_ISSUE_NUMBER }} el siguiente mensaje muestra el resultado de las operaciones"
+          # gh issue comment $KAOS_ISSUE_NUMBER --body-file "${{ env.KAOS_PATH_OUTPUT}}${{ env.KAOS_CODE}}-${{ env.KAOS_ISSUE_NUMBER}}.txt"
+          # gh issue close $KAOS_ISSUE_NUMBER --comment "Puede proceder a cerrar la tarjeta." --reason completed
  
   handle_failure:
       runs-on: 
