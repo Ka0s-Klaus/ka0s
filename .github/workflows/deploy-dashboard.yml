@@ -8,14 +8,19 @@ on:
   workflow_dispatch:  # Permite ejecutar el workflow manualmente desde la interfaz de GitHub
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
+  job-repo:
+    runs-on: 
+      group: ka0s
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
+      - id: repo
+        name: Checkout repository
+        if: ${{ success() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
       - name: Deploy to Web Server via SFTP
-        id: deploy
+        id: sftp
         uses: wlixcc/SFTP-Deploy-Action@v1.2.4
         with:
           username: ${{ secrets.KAOS_WEB_USER }}
@@ -28,26 +33,63 @@ jobs:
           delete_remote_files: false
           only_newer: true  # Only transfer files that are different from destination
           
-      - name: handler_success
-        if: success()
+    handle-success:
+      runs-on: 
+        group: ka0s
+      needs: [end-execution]
+      if: ${{ success() }}
+      steps: 
+        - id: handle-success-execution
+          run: |
+            # Si todo ha iso correctamente pasamos la tarjeta a done
+            # Añadimos a cada paso el mensaje de éxito incluido en la issue original
+            echo "${{ env.KAOS_MODULE }} Success in runid ${{ github.run_id }} initiated by $KAOS_ISSUE_USER trouhg issue number $KAOS_ISSUE_NUMBER."
+            echo "La ejecución solicitada en el issue #$KAOS_ISSUE_NUMBER ha sido completada con éxito."
+            echo "El log de la ejecucion se envuentra en ${{ secrets.KAOS_ACTIONS_URL }}${{ github.run_id }}"
+            echo "Se añade el log de la ejecución al issue #$KAOS_ISSUE_NUMBER"
+            echo "Se procede a cerrar la issue #$KAOS_ISSUE_NUMBER"
+            # gh issue comment $KAOS_ISSUE_NUMBER --body "La ejecución ha sido SUCCESS #${{ env.KAOS_ISSUE_NUMBER }} el siguiente mensaje muestra el resultado de las operaciones"
+            # gh issue comment $KAOS_ISSUE_NUMBER --body-file "${{ env.KAOS_PATH_OUTPUT}}${{ env.KAOS_CODE}}-${{ env.KAOS_ISSUE_NUMBER}}.txt"
+            # gh issue close $KAOS_ISSUE_NUMBER --comment "Puede proceder a cerrar la tarjeta." --reason completed
+ 
+  handle_failure:
+      runs-on: 
+        group: ka0s
+      needs: [job-repo, check-issue, check-data, show-data, start-execution, end-execution]
+      if: ${{ failure() }} 
+      steps: 
+        - id: check-execution
+          run: |
+            # si ha existido un error dejamos la tarjeta In Review
+            echo "Error detected in ${{ env.KAOS_MODULE }}, creating issue..."
+            KAOS_TITLE="${{ env.KAOS_MODULE }} Module failed in ${{ env.KAOS_CODE }}"
+            KAOS_BODY=$(cat <<'EOF'
+            **${{ env.KAOS_MODULE }}  Message:**
+            El error ha sido en: ${{ env.KAOS_CODE }}
+            si dispòne de los permisos necesarios 
+            ejecute este comando en su consola y podrá consultar el fallo del trabajo
+            gh run view ${{ env.KAOS_CODE }} --log-failed
+            \`\`\`
+            **La información de la ejecución ${{ secrets.KAOS_ACTIONS_URL }}${{ env.KAOS_CODE }}**
+            \`\`\`
+            Please investigate the issue.
+            EOF
+            )
+            # Añadimos a la tarjeta de ejecución cual es la issue que se crea
+            # Creamos la issue dado que ha fallado el modulo principal
+            # gh workflow run issue.yaml --ref ${{ github.ref }} -f kaos-issue-title="$KAOS_TITLE" -f kaos-issue-body="$KAOS_BODY" -f kaos-issue-actions=create -f kaos-issue-tag="bug" -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start="${{ env.KAOS_ISSUE_USER }}"
+            # Añadimos el comentario a la issue que dispara el proceso
+            KAOS_ISSUE_BODY="OPS¡ se ha producido un error en el proceso (${{ env.KAOS_MODULE }}) lanzado desde (#$KAOS_ISSUE_NUMBER) en la ejecución (${{ env.KAOS_CODE }}) y esto ha generado una issue con el titulo ($KAOS_TITLE)"
+            # gh workflow run issue.yaml --ref ${{ github.ref }} -f kaos-issue-body="$KAOS_BODY" -f kaos-issue-actions=comment -f kaos-issue-tag="bug" -f kaos-issue-id=$KAOS_ISSUE_NUMBER -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start="${{ env.KAOS_ISSUE_USER }}"
+            # gh workflow run issue.yaml --ref ${{ github.ref }}-f kaos-issue-actions=comment -f kaos-issue-id=$KAOS_ISSUE_NUMBER -f kaos-issue-body-file="${{ env.KAOS_PATH_OUTPUT}}${{ env.KAOS_CODE}}-${{ env.KAOS_ISSUE_NUMBER}}.txt" -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start="${{ env.KAOS_ISSUE_USER }}"
+  end-workflow:
+    runs-on: 
+      group: ka0s
+    needs: [job-repo, check-issue, check-data, show-data, start-execution, end-execution, handle-success, handle_failure]
+    if: ${{ always() }}
+    steps:
+      - id: end-process
+        name: Finaliza el workflow
         run: |
-          echo "✅ Dashboard deployed successfully to ${{ secrets.KAOS_WEB_SERVER }}/dashboard"
-          
-      - name: handler_failure
-        if: failure()
-        run: |
-          echo "❌ Dashboard deployment failed"
-          
-      - name: end_workflow
-        if: always()
-        run: |
-          echo "Dashboard deployment workflow completed with status: ${{ job.status }}"
-          
-      - name: Deployment status
-        if: always()
-        run: |
-          if [ ${{ job.status }} == 'success' ]; then
-            echo "✅ Dashboard deployed successfully to ${{ secrets.KAOS_WEB_SERVER }}/dashboard"
-          else
-            echo "❌ Dashboard deployment failed"
-          fi
+          echo "End process"
+          gh workflow run inspector.yaml --ref ${{ github.ref }} -f kaos-issue-id="$KAOS_ISSUE_NUMBER" -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start="${{ env.KAOS_ISSUE_USER }}"
