@@ -291,3 +291,19 @@
   - core/test/correct-file.md
   - version.txt
 ---------------------------------
+## Version 0.0.20
+- **Branch**: refs/pull/235/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Mon Mar 31 08:54:48 UTC 2025
+- **Message**: H214 salidas de cada uno de los diferentes modulos a output
+- **Files Changed**:
+  - core/outputs/c/README.md
+  - core/outputs/k/README.md
+  - core/outputs/o/README.md
+  - core/outputs/v/README.md
+  - core/results/event_data_14166973606.json
+  - core/results/event_data_14167696469.json
+  - core/test/correct-file.json
+  - version.txt
+---------------------------------
