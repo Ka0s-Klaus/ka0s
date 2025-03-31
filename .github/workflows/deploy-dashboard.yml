@@ -1,0 +1,27 @@
+name: Deploy Dashboard to Web Server
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'core/dashboard/**'
+  workflow_dispatch:  # Permite ejecutar el workflow manualmente desde la interfaz de GitHub
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy to Web Server via SFTP
+        uses: wlixcc/SFTP-Deploy-Action@v1.2.4
+        with:
+          username: ${{ secrets.KAOS_WEB_USER }}
+          server: ${{ secrets.KAOS_WEB_SERVER }}
+          port: 22
+          password: ${{ secrets.KAOS_WEB_TOKEN }}
+          local_path: './core/dashboard/*'
+          remote_path: '/dashboard'
+          sftp_only: true
+          delete_remote_files: false
