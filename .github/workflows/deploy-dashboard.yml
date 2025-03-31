@@ -21,7 +21,7 @@ jobs:
           token: ${{ secrets.KAOS_REPO_TOKEN }}
       - name: Deploy to Web Server via SFTP
         id: sftp
-        uses: wlixcc/SFTP-Deploy-Action@v1.2.4
+        uses: wlixcc/SFTP-Deploy-Action@v1.2.5
         with:
           username: ${{ secrets.KAOS_WEB_USER }}
           server: ${{ secrets.KAOS_WEB_SERVER }}
@@ -29,7 +29,7 @@ jobs:
           password: ${{ secrets.KAOS_WEB_TOKEN }}
           local_path: './core/dashboard/**'  # Using ** to include all subdirectories and files
           remote_path: '/dashboard'
-          sftp_only: true
+          sftp_only: false
           delete_remote_files: false
           only_newer: true  # Only transfer files that are different from destination
           
