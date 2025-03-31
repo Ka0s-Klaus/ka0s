@@ -37,8 +37,9 @@ async function updateDashboard() {
     // Load and update dashboard template
     const dashboardTemplate = await loadHtmlTemplate('templates/index.html');
     if (dashboardTemplate) {
+        // Direct insertion of template content without the container wrapper
         document.querySelector('#dashboard-container').innerHTML = dashboardTemplate;
-        initializeCharts(); // This will now also initialize the calendar
+        initializeCharts(); // Initialize charts after content is loaded
     }
 
     // Update sections
