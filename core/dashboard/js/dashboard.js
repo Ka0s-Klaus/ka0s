@@ -270,10 +270,6 @@ window.onload = () => {
     }, 1000);
 };
 
-// Refresh every 5 seconds - modified to handle async
-setInterval(() => {
-    updateDashboard();
-}, 5000);
 
 // Update the initializeCalendar function to use the new template
 async function initializeCalendar() {
