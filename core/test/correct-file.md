@@ -8,11 +8,7 @@
 
 #### Subtitulo 4
 
-<<<<<<< HEAD
-##### Subtitulo 555
-=======
-##### Subtitulo
->>>>>>> origin
+##### Subtitulo 5
 
 - primera cita
 - segunda cita
