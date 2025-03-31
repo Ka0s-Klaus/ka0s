@@ -8,7 +8,7 @@ on:
   workflow_dispatch:  # Permite ejecutar el workflow manualmente desde la interfaz de GitHub
 
 jobs:
-  job-repo:
+  job-core:
     runs-on: 
       group: ka0s
     steps:
@@ -34,62 +34,66 @@ jobs:
           only_newer: true  # Only transfer files that are different from destination
           
   handle-success:
-    runs-on: 
+    runs-on:
       group: ka0s
-    needs: [end-execution]
+    needs: [job-core]
     if: ${{ success() }}
-    steps: 
-      - id: handle-success-execution
-        run: |
-          # Si todo ha iso correctamente pasamos la tarjeta a done
-          # Añadimos a cada paso el mensaje de éxito incluido en la issue original
-          echo "${{ env.KAOS_MODULE }} Success in runid ${{ github.run_id }} initiated by $KAOS_ISSUE_USER trouhg issue number $KAOS_ISSUE_NUMBER."
-          echo "La ejecución solicitada en el issue #$KAOS_ISSUE_NUMBER ha sido completada con éxito."
-          echo "El log de la ejecucion se envuentra en ${{ secrets.KAOS_ACTIONS_URL }}${{ github.run_id }}"
-          echo "Se añade el log de la ejecución al issue #$KAOS_ISSUE_NUMBER"
-          echo "Se procede a cerrar la issue #$KAOS_ISSUE_NUMBER"
-          # gh issue comment $KAOS_ISSUE_NUMBER --body "La ejecución ha sido SUCCESS #${{ env.KAOS_ISSUE_NUMBER }} el siguiente mensaje muestra el resultado de las operaciones"
-          # gh issue comment $KAOS_ISSUE_NUMBER --body-file "${{ env.KAOS_PATH_OUTPUT}}${{ env.KAOS_CODE}}-${{ env.KAOS_ISSUE_NUMBER}}.txt"
-          # gh issue close $KAOS_ISSUE_NUMBER --comment "Puede proceder a cerrar la tarjeta." --reason completed
- 
-  handle_failure:
-      runs-on: 
-        group: ka0s
-      needs: [job-repo, check-issue, check-data, show-data, start-execution, end-execution]
-      if: ${{ failure() }} 
-      steps: 
-        - id: check-execution
-          run: |
-            # si ha existido un error dejamos la tarjeta In Review
-            echo "Error detected in ${{ env.KAOS_MODULE }}, creating issue..."
-            KAOS_TITLE="${{ env.KAOS_MODULE }} Module failed in ${{ env.KAOS_CODE }}"
-            KAOS_BODY=$(cat <<'EOF'
-            **${{ env.KAOS_MODULE }}  Message:**
-            El error ha sido en: ${{ env.KAOS_CODE }}
-            si dispòne de los permisos necesarios 
-            ejecute este comando en su consola y podrá consultar el fallo del trabajo
-            gh run view ${{ env.KAOS_CODE }} --log-failed
-            \`\`\`
-            **La información de la ejecución ${{ secrets.KAOS_ACTIONS_URL }}${{ env.KAOS_CODE }}**
-            \`\`\`
-            Please investigate the issue.
-            EOF
-            )
-            # Añadimos a la tarjeta de ejecución cual es la issue que se crea
-            # Creamos la issue dado que ha fallado el modulo principal
-            # gh workflow run issue.yaml --ref ${{ github.ref }} -f kaos-issue-title="$KAOS_TITLE" -f kaos-issue-body="$KAOS_BODY" -f kaos-issue-actions=create -f kaos-issue-tag="bug" -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start="${{ env.KAOS_ISSUE_USER }}"
-            # Añadimos el comentario a la issue que dispara el proceso
-            KAOS_ISSUE_BODY="OPS¡ se ha producido un error en el proceso (${{ env.KAOS_MODULE }}) lanzado desde (#$KAOS_ISSUE_NUMBER) en la ejecución (${{ env.KAOS_CODE }}) y esto ha generado una issue con el titulo ($KAOS_TITLE)"
-            # gh workflow run issue.yaml --ref ${{ github.ref }} -f kaos-issue-body="$KAOS_BODY" -f kaos-issue-actions=comment -f kaos-issue-tag="bug" -f kaos-issue-id=$KAOS_ISSUE_NUMBER -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start="${{ env.KAOS_ISSUE_USER }}"
-            # gh workflow run issue.yaml --ref ${{ github.ref }}-f kaos-issue-actions=comment -f kaos-issue-id=$KAOS_ISSUE_NUMBER -f kaos-issue-body-file="${{ env.KAOS_PATH_OUTPUT}}${{ env.KAOS_CODE}}-${{ env.KAOS_ISSUE_NUMBER}}.txt" -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start="${{ env.KAOS_ISSUE_USER }}"
-  end-workflow:
-    runs-on: 
-      group: ka0s
-    needs: [job-repo, check-issue, check-data, show-data, start-execution, end-execution, handle-success, handle_failure]
-    if: ${{ always() }}
     steps:
+      - id: repo
+        name: Checkout code
+        if: ${{ always() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+      - id: handle-success-execution
+        name: handle-success-execution
+        env:
+          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+        run: |
+          # Si todo ha ido correcto añadimos el contenido del fichero 
+          RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
+          gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
+  handle_failure:
+    runs-on:
+      group: ka0s
+    needs: [job-core, handle-success]
+    if: ${{ failure() }} 
+    steps:
+      - id: repo
+        name: Checkout code
+        if: ${{ always() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+      - id: handle-failure-execution
+        name: handle-failure-execution
+        env:
+          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+        run: |
+          echo "Error detected in process"
+          RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
+          gh issue comment $RNNUMBER --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
+  end-workflow:
+    runs-on:
+      group: ka0s
+    needs: [job-core, handle-success, handle_failure]
+    if: ${{ always() && !contains(github.event.head_commit.message, '[Ka0S] ') }} 
+    env:
+        GH_TOKEN: ${{ secrets.KAOS_ACTIONS_TOKEN }}
+    steps:
+      - id: repo
+        name: Checkout code
+        if: ${{ always() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
       - id: end-process
         name: Finaliza el workflow
         run: |
           echo "End process"
-          gh workflow run inspector.yaml --ref ${{ github.ref }} -f kaos-issue-id="$KAOS_ISSUE_NUMBER" -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start="${{ env.KAOS_ISSUE_USER }}"
+          RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
+          gh issue comment $RNNUMBER --body "Se finaliza Ka0s ${{ env.KAOS_CODE }}"
+          gh workflow run inspector.yml --ref 'main' -f kaos-issue-id=$RNNUMBER -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start=""
