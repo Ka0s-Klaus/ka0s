@@ -21,7 +21,16 @@ jobs:
           server: ${{ secrets.KAOS_WEB_SERVER }}
           port: 22
           password: ${{ secrets.KAOS_WEB_TOKEN }}
-          local_path: './core/dashboard/*'
+          local_path: './core/dashboard/**'  # Using ** to include all subdirectories and files
           remote_path: '/dashboard'
           sftp_only: true
           delete_remote_files: false
+          
+      - name: Deployment status
+        if: always()
+        run: |
+          if [ ${{ job.status }} == 'success' ]; then
+            echo "✅ Dashboard deployed successfully to ${{ secrets.KAOS_WEB_SERVER }}/dashboard"
+          else
+            echo "❌ Dashboard deployment failed"
+          fi
