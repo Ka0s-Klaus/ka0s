@@ -194,14 +194,12 @@ async function createNavbarHtml(data) {
     // Create links HTML
     const linksHtml = data.links.map(link => {
         return `
-            <li class="inline-block">
-                <a href="#${link.text.toLowerCase().replace(' ', '-')}" 
-                   class="flex items-center gap-2 px-4 py-2 bg-white text-black rounded-full border border-gray-200 transition-all duration-300 hover:bg-gray-100"
-                   onclick="showSection('${link.text === 'Dashboard' ? 'seccion1' : 'principal'}'); return false;">
-                    <i class="fas ${link.icon} text-gray-600"></i>
-                    ${link.text}
-                </a>
-            </li>
+            <a href="#${link.text.toLowerCase().replace(' ', '-')}" 
+               class="flex items-center px-4 py-2 rounded-lg text-gray-700 transition-all duration-300 ml hover:bg-blue-700 hover:text-white group"
+               onclick="showSection('${link.text === 'Dashboard' ? 'seccion1' : 'principal'}'); return false;">
+                <i class="fas ${link.icon} text-gray-600 w-5 text-center transition-colors group-hover:text-white"></i>
+                <span class="ml-2 sidebar-text">${link.text}</span>
+            </a>
         `;
     }).join('');
     
