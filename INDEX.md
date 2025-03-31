@@ -20,3 +20,4 @@
 - **Version**: 0.0.19 - **Description**: H214 salidas de cada uno de los diferentes modulos a output
 - **Version**: 0.0.20 - **Description**: H214 salidas de cada uno de los diferentes modulos a output
 - **Version**: 0.0.21 - **Description**: H220 web de resultados
+- **Version**: 0.0.22 - **Description**: H220 web de resultados
