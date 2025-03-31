@@ -307,3 +307,50 @@
   - core/test/correct-file.json
   - version.txt
 ---------------------------------
+## Version 0.0.21
+- **Branch**: refs/pull/236/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: jorgecg646
+- **Date**: Mon Mar 31 14:25:29 UTC 2025
+- **Message**: H220 web de resultados
+- **Files Changed**:
+  - .github/workflows/deploy-dashboard.yml
+  - core/dashboard/Index.html
+  - core/dashboard/comprobarActions.py
+  - core/dashboard/config/dashboard_config.json
+  - core/dashboard/dashboard/principal.json
+  - core/dashboard/dashboard/sections/footer.json
+  - core/dashboard/dashboard/sections/index.json
+  - core/dashboard/dashboard/sections/navbar.json
+  - core/dashboard/dashboard/sections/seccion1.json
+  - core/dashboard/dashboard/sections/seccion2.json
+  - core/dashboard/generarReport.py
+  - core/dashboard/images/kaos-summary.png
+  - core/dashboard/js/dashboard.js
+  - core/dashboard/limpiarCache.py
+  - core/dashboard/principal.py
+  - core/dashboard/procesarData.py
+  - core/dashboard/templates/Index.html
+  - core/dashboard/templates/calendar.html
+  - core/dashboard/templates/footer.html
+  - core/dashboard/templates/index.html
+  - core/dashboard/templates/navbar.html
+  - core/dashboard/templates/section.html
+  - core/logs/dashboard.log
+  - core/results/event_data14038714142.json
+  - core/results/event_data14079442629.json
+  - core/results/event_data14104656814.json
+  - core/results/event_data14104912407.json
+  - core/results/event_data14124198527.json
+  - core/results/event_data14124664270.json
+  - core/results/event_data_14125357755.json
+  - core/results/event_data_14127143604.json
+  - core/results/event_data_14128342788.json
+  - core/results/event_data_14166768315.json
+  - core/results/event_data_14169638590.json
+  - core/results/event_data_14169783228.json
+  - core/results/event_data_14170317764.json
+  - core/results/event_data_14173454264.json
+  - core/results/event_data_14173684316.json
+  - version.txt
+---------------------------------
