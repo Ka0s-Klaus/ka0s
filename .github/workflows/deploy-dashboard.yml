@@ -54,8 +54,9 @@ jobs:
           GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
         run: |
           # Si todo ha ido correcto añadimos el contenido del fichero
-          RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
-          # gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
+          # RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
+          RNNUMBER=220
+          gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
   handle_failure:
     runs-on:
       group: ka0s
