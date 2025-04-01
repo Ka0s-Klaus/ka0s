@@ -195,7 +195,7 @@ async function createNavbarHtml(data) {
     const linksHtml = data.links.map(link => {
         return `
             <a href="#${link.text.toLowerCase().replace(' ', '-')}" 
-               class="flex items-center px-4 py-2 rounded-lg text-gray-700 transition-all duration-300 ml hover:bg-blue-700 hover:text-white group"
+               class="flex items-center px-4 py-3 rounded-lg text-gray-700 transition-all duration-300 ml hover:bg-blue-700 hover:text-white group"
                onclick="showSection('${link.text === 'Dashboard' ? 'seccion1' : 'principal'}'); return false;">
                 <i class="fas ${link.icon} text-gray-600 w-5 text-center transition-colors group-hover:text-white"></i>
                 <span class="ml-2 sidebar-text">${link.text}</span>
@@ -206,6 +206,7 @@ async function createNavbarHtml(data) {
     // Replace the placeholders in the template
     return navbarTemplate
         .replace('{{NAVBAR_TITLE}}', data.title)
+        .replace('{{NAVBAR_LOGO}}', data.logo || 'images/kaos-summary.png')
         .replace(/{{NAVBAR_LINKS}}/g, linksHtml);
 }
 
