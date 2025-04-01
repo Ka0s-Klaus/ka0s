@@ -42,7 +42,7 @@
         </div>
         
         <!-- Contenido principal a la derecha -->
-        <div class="flex-1  ml-[250px] transition-all duration-300" id="main-content">
+        <div class="flex-1 ml-[250px] transition-all duration-300" id="main-content">
             <div class="mx-[3%] py-4">
                 <div id="dashboard-container">
                 </div>
@@ -53,7 +53,7 @@
             <div id="seccion2" class="hidden">
                 {{SECCION2}}
             </div>
-            <div id="footer" class="ml-[9%] md:ml-[4%]">
+            <div id="footer" class="ml-[9%] md:ml-[4%] transition-all duration-300">
                 {{FOOTER}}
             </div>
         </div>
@@ -64,31 +64,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
     <script src="js/dashboard.js" defer></script>
     
-    <!-- Script para ajustar el contenido principal cuando el navbar cambia de tamaño -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('main-content');
-            
-            // Función para actualizar el margen del contenido principal
-            function updateMainContentMargin() {
-                if (sidebar && mainContent) {
-                    if (sidebar.classList.contains('w-[60px]')) {
-                        mainContent.classList.remove('ml-[250px]');
-                        mainContent.classList.add('ml-[60px]');
-                    } else {
-                        mainContent.classList.remove('ml-[60px]');
-                        mainContent.classList.add('ml-[250px]');
-                    }
-                }
-            }
-            
-            // Observar cambios en las clases del sidebar
-            const observer = new MutationObserver(updateMainContentMargin);
-            if (sidebar) {
-                observer.observe(sidebar, { attributes: true, attributeFilter: ['class'] });
-            }
-        });
-    </script>
+    <!-- Remove the existing script that conflicts with our navbar toggle -->
+    <!-- The toggle functionality is now handled directly in the navbar.html template -->
 </body>
 </html>
