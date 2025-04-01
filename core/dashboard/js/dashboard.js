@@ -206,6 +206,7 @@ async function createNavbarHtml(data) {
     // Replace the placeholders in the template
     return navbarTemplate
         .replace('{{NAVBAR_TITLE}}', data.title)
+        .replace('{{NAVBAR_LOGO}}', data.logo || 'images/kaos-summary.png')
         .replace(/{{NAVBAR_LINKS}}/g, linksHtml);
 }
 
