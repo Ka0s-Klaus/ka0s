@@ -1,55 +1,40 @@
 name: Deploy Dashboard to Web Server
-
+ 
 on:
   push:
     branches: [ main ]
     paths:
       - 'core/dashboard/**'
   workflow_dispatch:  # Permite ejecutar el workflow manualmente desde la interfaz de GitHub
-
+ 
 jobs:
   job-core:
-    runs-on: 
+    runs-on:
       group: ka0s
     steps:
-      - name: Checkout repository
+      - id: repo
+        name: Checkout repository
         if: ${{ success() }}
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.KAOS_REPO_TOKEN }}
-      
-      - name: Install rsync
-        run: |
-          if ! command -v rsync &> /dev/null; then
-            echo "Installing rsync..."
-            apt-get update && apt-get install -y rsync
-          else
-            echo "rsync is already installed"
-          fi
-          
-      - name: Setup SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.KAOS_WEB_SSH_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.KAOS_WEB_SERVER }} > ~/.ssh/known_hosts
-          
-      - name: Deploy to Web Server via rsync
-        run: |
-          echo "Starting deployment with rsync..."
-          rsync -avz --delete ./core/dashboard/ ${{ secrets.KAOS_WEB_USER }}@${{ secrets.KAOS_WEB_SERVER }}:/dashboard/ || {
-            echo "rsync failed with exit code $?"
-            exit 1
-          }
-          echo "Deployment completed successfully"
-          
-      - name: Cleanup SSH
-        if: always()
-        run: |
-          rm -f ~/.ssh/id_rsa
-          rm -f ~/.ssh/known_hosts
-          
+      - name: Deploy to Web Server via SFTP
+        id: sftp
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.KAOS_WEB_SERVER }}
+          username: ${{ secrets.KAOS_WEB_USER }}
+          password: ${{ secrets.KAOS_WEB_TOKEN }}
+          port: ${{ secrets.KAOS_WEB_PORT }}
+          local-dir: ./core/dashboard/
+          server-dir: /dashboard/
+          dangerous-clean-slate: false
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+         
   handle-success:
     runs-on:
       group: ka0s
@@ -68,14 +53,14 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
         run: |
-          # Si todo ha ido correcto añadimos el contenido del fichero 
+          # Si todo ha ido correcto añadimos el contenido del fichero
           RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
           gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
   handle_failure:
     runs-on:
       group: ka0s
     needs: [job-core, handle-success]
-    if: ${{ failure() }} 
+    if: ${{ failure() }}
     steps:
       - id: repo
         name: Checkout code
@@ -96,7 +81,7 @@ jobs:
     runs-on:
       group: ka0s
     needs: [job-core, handle-success, handle_failure]
-    if: ${{ always() && !contains(github.event.head_commit.message, '[Ka0S] ') }} 
+    if: ${{ always() && !contains(github.event.head_commit.message, '[Ka0S] ') }}
     env:
         GH_TOKEN: ${{ secrets.KAOS_ACTIONS_TOKEN }}
     steps:
