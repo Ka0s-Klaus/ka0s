@@ -145,7 +145,7 @@ async function updateDashboard() {
     // Update other sections
     const sections = [
         { id: 'actionsPerformance', data: actionsPerformance },
-        { id: 'backLogs', data: backLogs },
+        { id: 'backLogs', data: backLogs, template: 'backLogs.html' },
         { id: 'handlerFailure', data: handlerFailure },
         { id: 'handlerSuccess', data: handlerSuccess },
         { id: 'endWorkflow', data: endWorkflow }
@@ -153,9 +153,21 @@ async function updateDashboard() {
     
     for (const section of sections) {
         if (section.data) {
+            // If this section has a specific template, load it
+            if (section.template) {
+                const templateContent = await loadHtmlTemplate(`templates/${section.template}`);
+                if (templateContent) {
+                    const sectionElement = document.querySelector(`#${section.id}Content`);
+                    if (sectionElement) {
+                        sectionElement.innerHTML = templateContent;
+                    }
+                }
+            }
+            
+            // Also load any dynamic content from the JSON
             const sectionHtml = await createSectionHtml(section.data, section.id);
             const sectionElement = document.querySelector(`#${section.id}`);
-            if (sectionElement) {
+            if (sectionElement && !section.template) {
                 sectionElement.innerHTML = sectionHtml;
             }
         }
@@ -165,6 +177,16 @@ async function updateDashboard() {
     if (footer) {
         const footerHtml = await createFooterHtml(footer);
         document.querySelector('#footer').innerHTML = footerHtml;
+    }
+    // In the updateDashboard function, add this code after loading other sections:
+    
+    // Load backLogs template directly
+    const backLogsTemplate = await loadHtmlTemplate('templates/backLogs.html');
+    if (backLogsTemplate) {
+        const backLogsElement = document.querySelector('#backLogs');
+        if (backLogsElement) {
+            backLogsElement.innerHTML = backLogsTemplate;
+        }
     }
 }
 
