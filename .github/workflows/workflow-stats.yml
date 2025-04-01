@@ -1,0 +1,188 @@
+name: Ka0s Workflow Statistics Summary
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Run daily at midnight
+  workflow_dispatch:  # Allow manual trigger
+
+env:
+    KAOS_CODE: ${{ github.run_id }}
+    KAOS_EVENT_NAME: ${{ github.event_name }}
+    KAOS_ACTION: ${{ github.action }}
+    KAOS_REF: ${{ github.ref }}
+    KAOS_MODULE: "[Ka0S] Workflow Statistics Summary"
+    KAOS_PATH_RESUME: "core/outputs/w/"
+    KAOS_JSON: "core/results/event_data_"
+    KAOS_ACTOR: ${{ github.actor }}
+
+jobs:
+  job-core:
+    runs-on:
+      group: ka0s
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install PyGithub
+
+      - name: Collect workflow statistics
+        env:
+          GITHUB_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+        run: |
+          python - <<EOF
+          from github import Github
+          from datetime import datetime
+          import json
+          import os
+          from collections import defaultdict
+
+          # Initialize GitHub client
+          g = Github(os.environ['GITHUB_TOKEN'])
+          repo = g.get_repo(os.environ['GITHUB_REPOSITORY'])
+
+          # Get all workflows
+          workflows = repo.get_workflows()
+          stats = []
+
+          for workflow in workflows:
+              runs = workflow.get_runs()
+              if runs.totalCount == 0:
+                  continue
+
+              module_stats = {
+                  "module_name": workflow.name,
+                  "total_success": 0,
+                  "total_failures": 0,
+                  "total_cancelled": 0,
+                  "lead_time": 0,
+                  "total_runs": 0
+              }
+
+              total_duration = 0
+              for run in runs:
+                  if run.status == "completed":
+                      module_stats["total_runs"] += 1
+                      if run.conclusion == "success":
+                          module_stats["total_success"] += 1
+                      elif run.conclusion == "failure":
+                          module_stats["total_failures"] += 1
+                      elif run.conclusion == "cancelled":
+                          module_stats["total_cancelled"] += 1
+
+                      if run.updated_at and run.created_at:
+                          duration = (run.updated_at - run.created_at).total_seconds()
+                          total_duration += duration
+
+              if module_stats["total_runs"] > 0:
+                  module_stats["lead_time"] = total_duration / module_stats["total_runs"]
+              stats.append(module_stats)
+
+          # Create summary data
+          summary = {
+              "metadata": {
+                  "run_id": os.environ.get('GITHUB_RUN_ID'),
+                  "collected_at": datetime.utcnow().isoformat(),
+                  "components": ["workflow_stats"]
+              },
+              "components": {
+                  "workflow_stats": {
+                      "type": "workflow_stats",
+                      "title": "Workflow Statistics",
+                      "data": {
+                          "generated_at": datetime.utcnow().isoformat(),
+                          "repository": os.environ['GITHUB_REPOSITORY'],
+                          "modules": stats
+                      }
+                  }
+              }
+          }
+
+          # Save to file
+          output_path = 'core/results/dashboard/workflow_stats.json'
+          os.makedirs(os.path.dirname(output_path), exist_ok=True)
+          with open(output_path, 'w') as f:
+              json.dump(summary, f, indent=2)
+          EOF
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
+          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
+          git add core/results/dashboard/workflow_stats.json
+          git commit -m "Update workflow statistics" || exit 0
+          git push
+  handle-success:
+    runs-on:
+      group: ka0s
+    needs: [job-core]
+    if: ${{ success() }}
+    steps:
+      - id: repo
+        name: Checkout code
+        if: ${{ always() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+      - id: handle-success-execution
+        name: handle-success-execution
+        env:
+          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+        run: |
+          # Si todo ha ido correcto añadimos el contenido del fichero 
+          RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
+          gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
+  handle_failure:
+    runs-on:
+      group: ka0s
+    needs: [job-core, handle-success]
+    if: ${{ failure() }} 
+    steps:
+      - id: repo
+        name: Checkout code
+        if: ${{ always() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+      - id: handle-failure-execution
+        name: handle-failure-execution
+        env:
+          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+        run: |
+          echo "Error detected in process"
+          RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
+          gh issue comment $RNNUMBER --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
+  end-workflow:
+    runs-on:
+      group: ka0s
+    needs: [job-core, handle-success, handle_failure]
+    if: ${{ always() && !contains(github.event.head_commit.message, '[Ka0S] ') }} 
+    env:
+        GH_TOKEN: ${{ secrets.KAOS_ACTIONS_TOKEN }}
+    steps:
+      - id: repo
+        name: Checkout code
+        if: ${{ always() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+      - id: end-process
+        name: Finaliza el workflow
+        run: |
+          echo "End process"
+          RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
+          gh issue comment $RNNUMBER --body "Se finaliza Ka0s ${{ env.KAOS_CODE }}"
+          gh workflow run inspector.yml --ref 'main' -f kaos-issue-id=$RNNUMBER -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start=""
