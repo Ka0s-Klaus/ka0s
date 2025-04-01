@@ -1,27 +1,101 @@
 name: Deploy Dashboard to Web Server
-
+ 
 on:
   push:
     branches: [ main ]
     paths:
       - 'core/dashboard/**'
   workflow_dispatch:  # Permite ejecutar el workflow manualmente desde la interfaz de GitHub
-
+ 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
+  job-core:
+    runs-on:
+      group: ka0s
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Deploy to Web Server via SFTP
-        uses: wlixcc/SFTP-Deploy-Action@v1.2.4
+      - id: repo
+        name: Checkout repository
+        if: ${{ success() }}
+        uses: actions/checkout@v4
         with:
-          username: ${{ secrets.KAOS_WEB_USER }}
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+      - name: Deploy to Web Server via SFTP
+        id: sftp
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
           server: ${{ secrets.KAOS_WEB_SERVER }}
-          port: 22
+          username: ${{ secrets.KAOS_WEB_USER }}
           password: ${{ secrets.KAOS_WEB_TOKEN }}
-          local_path: './core/dashboard/*'
-          remote_path: '/dashboard'
-          sftp_only: true
-          delete_remote_files: false
+          port: ${{ secrets.KAOS_WEB_PORT }}
+          local-dir: ./core/dashboard/
+          server-dir: /dashboard/
+          dangerous-clean-slate: false
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+         
+  handle-success:
+    runs-on:
+      group: ka0s
+    needs: [job-core]
+    if: ${{ success() }}
+    steps:
+      - id: repo
+        name: Checkout code
+        if: ${{ always() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+      - id: handle-success-execution
+        name: handle-success-execution
+        env:
+          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+        run: |
+          # Si todo ha ido correcto añadimos el contenido del fichero
+          RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
+          gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
+  handle_failure:
+    runs-on:
+      group: ka0s
+    needs: [job-core, handle-success]
+    if: ${{ failure() }}
+    steps:
+      - id: repo
+        name: Checkout code
+        if: ${{ always() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+      - id: handle-failure-execution
+        name: handle-failure-execution
+        env:
+          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+        run: |
+          echo "Error detected in process"
+          RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
+          gh issue comment $RNNUMBER --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
+  end-workflow:
+    runs-on:
+      group: ka0s
+    needs: [job-core, handle-success, handle_failure]
+    if: ${{ always() && !contains(github.event.head_commit.message, '[Ka0S] ') }}
+    env:
+        GH_TOKEN: ${{ secrets.KAOS_ACTIONS_TOKEN }}
+    steps:
+      - id: repo
+        name: Checkout code
+        if: ${{ always() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+      - id: end-process
+        name: Finaliza el workflow
+        run: |
+          echo "End process"
+          RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
+          gh issue comment $RNNUMBER --body "Se finaliza Ka0s ${{ env.KAOS_CODE }}"
+          gh workflow run inspector.yml --ref 'main' -f kaos-issue-id=$RNNUMBER -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start=""
