@@ -18,3 +18,10 @@
 - **Version**: 0.0.17 - **Description**: H34 modulo iac kaos
 - **Version**: 0.0.18 - **Description**: H34 modulo iac kaos
 - **Version**: 0.0.19 - **Description**: H214 salidas de cada uno de los diferentes modulos a output
+- **Version**: 0.0.20 - **Description**: H214 salidas de cada uno de los diferentes modulos a output
+- **Version**: 0.0.21 - **Description**: H220 web de resultados
+- **Version**: 0.0.22 - **Description**: H220 web de resultados
+- **Version**: 0.0.23 - **Description**: H220 web de resultados
+- **Version**: 0.0.24 - **Description**: H220 web de resultados
+- **Version**: 0.0.25 - **Description**: H220 web de resultados
+- **Version**: 0.0.26 - **Description**: H220 web de resultados
