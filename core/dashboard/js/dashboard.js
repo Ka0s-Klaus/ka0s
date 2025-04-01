@@ -25,6 +25,12 @@ async function updateDashboard() {
     const navbar = await loadJsonData('dashboard/sections/navbar.json');
     const seccion1 = await loadJsonData('dashboard/sections/seccion1.json');
     const seccion2 = await loadJsonData('dashboard/sections/seccion2.json');
+    const leadTime = await loadJsonData('dashboard/sections/leadTime.json');
+    const actionsPerformance = await loadJsonData('dashboard/sections/actionsPerformance.json');
+    const backLogs = await loadJsonData('dashboard/sections/backLogs.json');
+    const handlerFailure = await loadJsonData('dashboard/sections/handlerFailure.json');
+    const handlerSuccess = await loadJsonData('dashboard/sections/handlerSuccess.json');
+    const endWorkflow = await loadJsonData('dashboard/sections/endWorkflow.json');
     const footer = await loadJsonData('dashboard/sections/footer.json');
     
     // Update navbar first
@@ -37,7 +43,6 @@ async function updateDashboard() {
     // Load and update dashboard template
     const dashboardTemplate = await loadHtmlTemplate('templates/index.html');
     if (dashboardTemplate) {
-        // Direct insertion of template content without the container wrapper
         document.querySelector('#dashboard-container').innerHTML = dashboardTemplate;
         initializeCharts(); // Initialize charts after content is loaded
     }
@@ -51,6 +56,34 @@ async function updateDashboard() {
     if (seccion2) {
         const section2Html = await createSectionHtml(seccion2, 'seccion2');
         document.querySelector('#seccion2').innerHTML = section2Html;
+    }
+    
+    // Update Lead Time section
+    if (leadTime) {
+        const leadTimeHtml = await createSectionHtml(leadTime, 'leadTime');
+        const leadTimeElement = document.querySelector('#leadTime');
+        if (leadTimeElement) {
+            leadTimeElement.innerHTML = leadTimeHtml;
+        }
+    }
+    
+    // Update other sections
+    const sections = [
+        { id: 'actionsPerformance', data: actionsPerformance },
+        { id: 'backLogs', data: backLogs },
+        { id: 'handlerFailure', data: handlerFailure },
+        { id: 'handlerSuccess', data: handlerSuccess },
+        { id: 'endWorkflow', data: endWorkflow }
+    ];
+    
+    for (const section of sections) {
+        if (section.data) {
+            const sectionHtml = await createSectionHtml(section.data, section.id);
+            const sectionElement = document.querySelector(`#${section.id}`);
+            if (sectionElement) {
+                sectionElement.innerHTML = sectionHtml;
+            }
+        }
     }
 
     // Update footer last
@@ -161,24 +194,84 @@ function setupNavigation() {
         link.addEventListener('click', function(e) {
             e.preventDefault();
             
-            const linkText = this.textContent.trim();
-            const dashboardContainer = document.querySelector('#dashboard-container');
+            // Get the section ID from the data attribute
+            const sectionId = this.getAttribute('data-section');
             
-            // Hide all sections first
-            document.querySelector('#seccion1').classList.add('hidden');
-            document.querySelector('#seccion2').classList.add('hidden');
-            dashboardContainer.classList.add('hidden');
-            
-            // Show the appropriate section based on the link clicked
-            if (linkText.includes('Seccion 1') || linkText.includes('Sección 1')) {
-                document.querySelector('#seccion1').classList.remove('hidden');
-            } else if (linkText.includes('Seccion 2') || linkText.includes('Sección 2')) {
-                document.querySelector('#seccion2').classList.remove('hidden');
-            } else if (linkText.includes('Inicio') || linkText.includes('Home')) {
-                dashboardContainer.classList.remove('hidden');
-            }
+            // Call the showSection function
+            showSection(sectionId);
         });
     });
+    
+    // Set the default section (dashboard) as active on page load
+    setTimeout(() => {
+        showSection('dashboard');
+    }, 100);
+}
+
+// Add the showSection function to handle section switching
+function showSection(sectionId) {
+    // Get all section elements
+    const dashboardContainer = document.querySelector('#dashboard-container');
+    const seccion1 = document.querySelector('#seccion1');
+    const seccion2 = document.querySelector('#seccion2');
+    const leadTime = document.querySelector('#leadTime');
+    const actionsPerformance = document.querySelector('#actionsPerformance');
+    const backLogs = document.querySelector('#backLogs');
+    const handlerFailure = document.querySelector('#handlerFailure');
+    const handlerSuccess = document.querySelector('#handlerSuccess');
+    const endWorkflow = document.querySelector('#endWorkflow');
+    
+    // Hide all sections first
+    [dashboardContainer, seccion1, seccion2, leadTime, actionsPerformance, 
+     backLogs, handlerFailure, handlerSuccess, endWorkflow].forEach(section => {
+        if (section) section.classList.add('hidden');
+    });
+    
+    // Show the selected section
+    if (sectionId === 'dashboard') {
+        if (dashboardContainer) dashboardContainer.classList.remove('hidden');
+    } else if (sectionId === 'seccion1') {
+        if (seccion1) seccion1.classList.remove('hidden');
+    } else if (sectionId === 'leadTime') {
+        if (leadTime) leadTime.classList.remove('hidden');
+    } else if (sectionId === 'seccion2') {
+        if (seccion2) seccion2.classList.remove('hidden');
+    } else if (sectionId === 'actionsPerformance') {
+        if (actionsPerformance) actionsPerformance.classList.remove('hidden');
+    } else if (sectionId === 'backLogs') {
+        if (backLogs) backLogs.classList.remove('hidden');
+    } else if (sectionId === 'handlerFailure') {
+        if (handlerFailure) handlerFailure.classList.remove('hidden');
+    } else if (sectionId === 'handlerSuccess') {
+        if (handlerSuccess) handlerSuccess.classList.remove('hidden');
+    } else if (sectionId === 'endWorkflow') {
+        if (endWorkflow) endWorkflow.classList.remove('hidden');
+    }
+    
+    // Update active state in navbar
+    const navLinks = document.querySelectorAll('#navbar .mt-6 a');
+    navLinks.forEach(link => {
+        // Remove active class from all links
+        link.classList.remove('bg-blue-700', 'text-white');
+        const icon = link.querySelector('i');
+        if (icon) {
+            icon.classList.remove('text-white');
+            icon.classList.add('text-gray-600');
+        }
+    });
+    
+    // Add active class to clicked link
+    const activeLink = document.querySelector(`a[data-section="${sectionId}"]`);
+    if (activeLink) {
+        activeLink.classList.add('bg-blue-700', 'text-white');
+        const icon = activeLink.querySelector('i');
+        if (icon) {
+            icon.classList.remove('text-gray-600');
+            icon.classList.add('text-white');
+        }
+    }
+    
+    console.log(`Switched to section: ${sectionId}`);
 }
 
 // Update createNavbarHtml to use the external template
@@ -191,12 +284,36 @@ async function createNavbarHtml(data) {
         return '';
     }
     
-    // Create links HTML
+    // Create links HTML with data-section attributes
     const linksHtml = data.links.map(link => {
+        // Determine which section to show based on link text
+        let sectionId = 'dashboard';
+        
+        // Map the link text to the corresponding section ID
+        if (link.text === 'Inicio' || link.text === 'Home') {
+            sectionId = 'dashboard';
+        } else if (link.text === 'Lead Time') {
+            sectionId = 'leadTime';
+        } else if (link.text === 'Actions Performance') {
+            sectionId = 'actionsPerformance';
+        } else if (link.text === 'Backlogs') {
+            sectionId = 'backLogs';
+        } else if (link.text === 'Handler Failure') {
+            sectionId = 'handlerFailure';
+        } else if (link.text === 'Handler Success') {
+            sectionId = 'handlerSuccess';
+        } else if (link.text === 'End Workflow') {
+            sectionId = 'endWorkflow';
+        } else {
+            // For any other sections, convert to camelCase
+            sectionId = link.text.replace(/\s+(.)/g, (match, group) => group.toUpperCase());
+            sectionId = sectionId.charAt(0).toLowerCase() + sectionId.slice(1);
+        }
+        
         return `
-            <a href="#${link.text.toLowerCase().replace(' ', '-')}" 
-               class="flex items-center px-4 py-3 rounded-lg text-gray-700 transition-all duration-300 ml hover:bg-blue-700 hover:text-white group"
-               onclick="showSection('${link.text === 'Dashboard' ? 'seccion1' : 'principal'}'); return false;">
+            <a href="#${link.text.toLowerCase().replace(/\s+/g, '-')}" 
+               class="flex items-center px-4 py-3 rounded-lg text-gray-700 transition-all duration-300 hover:bg-blue-700 hover:text-white group"
+               data-section="${sectionId}">
                 <i class="fas ${link.icon} text-gray-600 w-5 text-center transition-colors group-hover:text-white"></i>
                 <span class="ml-2 sidebar-text">${link.text}</span>
             </a>
