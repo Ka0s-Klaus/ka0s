@@ -26,94 +26,112 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.KAOS_REPO_TOKEN }}
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install dependencies
-        run: |
-          python3 --version
-          python3 -m pip install PyGithub
-
       - name: Collect workflow statistics
         env:
-          GITHUB_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
         run: |
-          python - <<EOF
-          from github import Github
-          from datetime import datetime
-          import json
-          import os
-          from collections import defaultdict
+          # Create output directory
+          mkdir -p core/results/dashboard
 
-          # Initialize GitHub client
-          g = Github(os.environ['GITHUB_TOKEN'])
-          repo = g.get_repo(os.environ['GITHUB_REPOSITORY'])
+          # Initialize JSON structure
+          echo '{
+            "metadata": {
+              "run_id": "'$GITHUB_RUN_ID'",
+              "collected_at": "'$(date -u +"%Y-%m-%dT%H:%M:%SZ")'",
+              "components": ["workflow_stats"],
+              "repository": "'$GITHUB_REPOSITORY'"
+            },
+            "components": {
+              "workflow_stats": {
+                "type": "workflow_stats",
+                "title": "Workflow Statistics",
+                "data": {
+                  "generated_at": "'$(date -u +"%Y-%m-%dT%H:%M:%SZ")'",
+                  "repository": "'$GITHUB_REPOSITORY'",
+                  "modules": [' > core/results/dashboard/workflow_stats.json
 
           # Get all workflows
-          workflows = repo.get_workflows()
-          stats = []
+          workflows=$(gh api repos/$GITHUB_REPOSITORY/actions/workflows)
+          total_workflows=$(echo "$workflows" | jq '.total_count')
+          active_workflows=$(echo "$workflows" | jq '[.workflows[] | select(.state=="active")] | length')
+          total_success=0
+          total_runs=0
 
-          for workflow in workflows:
-              runs = workflow.get_runs()
-              if runs.totalCount == 0:
-                  continue
+          # Process each workflow
+          echo "$workflows" | jq -c '.workflows[]' | while read -r workflow; do
+            workflow_id=$(echo "$workflow" | jq -r '.id')
+            workflow_name=$(echo "$workflow" | jq -r '.name')
+            workflow_state=$(echo "$workflow" | jq -r '.state')
+            workflow_path=$(echo "$workflow" | jq -r '.path')
+            workflow_created_at=$(echo "$workflow" | jq -r '.created_at')
 
-              module_stats = {
-                  "module_name": workflow.name,
-                  "total_success": 0,
-                  "total_failures": 0,
-                  "total_cancelled": 0,
-                  "lead_time": 0,
-                  "total_runs": 0
-              }
+            # Get workflow runs
+            runs=$(gh api repos/$GITHUB_REPOSITORY/actions/workflows/$workflow_id/runs --paginate)
+            
+            # Calculate metrics
+            success_count=$(echo "$runs" | jq '[.workflow_runs[] | select(.conclusion=="success")] | length')
+            failure_count=$(echo "$runs" | jq '[.workflow_runs[] | select(.conclusion=="failure")] | length')
+            cancelled_count=$(echo "$runs" | jq '[.workflow_runs[] | select(.conclusion=="cancelled")] | length')
+            total_count=$(echo "$runs" | jq '[.workflow_runs[]] | length')
 
-              total_duration = 0
-              for run in runs:
-                  if run.status == "completed":
-                      module_stats["total_runs"] += 1
-                      if run.conclusion == "success":
-                          module_stats["total_success"] += 1
-                      elif run.conclusion == "failure":
-                          module_stats["total_failures"] += 1
-                      elif run.conclusion == "cancelled":
-                          module_stats["total_cancelled"] += 1
+            # Calculate lead time
+            lead_time=$(echo "$runs" | jq -r '[.workflow_runs[] | select(.status=="completed") | (if .updated_at and .created_at then (strptime(.updated_at) - strptime(.created_at)) else 0 end)] | add / length')
 
-                      if run.updated_at and run.created_at:
-                          duration = (run.updated_at - run.created_at).total_seconds()
-                          total_duration += duration
+            # Calculate success rate
+            success_rate=0
+            if [ "$total_count" -gt 0 ]; then
+              success_rate=$(echo "scale=2; $success_count * 100 / $total_count" | bc)
+            fi
 
-              if module_stats["total_runs"] > 0:
-                  module_stats["lead_time"] = total_duration / module_stats["total_runs"]
-              stats.append(module_stats)
+            # Calculate last 30 days metrics
+            thirty_days_ago=$(date -v-30d +%s)
+            last_30_days_metrics=$(echo "$runs" | jq --arg date "$thirty_days_ago" '
+              [.workflow_runs[] | select((.created_at | fromdateiso8601) >= ($date | tonumber))] | {
+                "runs": length,
+                "success": map(select(.conclusion == "success")) | length,
+                "failures": map(select(.conclusion == "failure")) | length
+              }')
 
-          # Create summary data
-          summary = {
-              "metadata": {
-                  "run_id": os.environ.get('GITHUB_RUN_ID'),
-                  "collected_at": datetime.utcnow().isoformat(),
-                  "components": ["workflow_stats"]
-              },
-              "components": {
-                  "workflow_stats": {
-                      "type": "workflow_stats",
-                      "title": "Workflow Statistics",
-                      "data": {
-                          "generated_at": datetime.utcnow().isoformat(),
-                          "repository": os.environ['GITHUB_REPOSITORY'],
-                          "modules": stats
-                      }
+            # Add to total counts
+            total_success=$((total_success + success_count))
+            total_runs=$((total_runs + total_count))
+
+            # Write workflow stats
+            echo "{
+              \"module_name\": \"$workflow_name\",
+              \"total_success\": $success_count,
+              \"total_failures\": $failure_count,
+              \"total_cancelled\": $cancelled_count,
+              \"total_runs\": $total_count,
+              \"lead_time\": $lead_time,
+              \"success_rate\": $success_rate,
+              \"last_30_days\": $last_30_days_metrics,
+              \"workflow_id\": $workflow_id,
+              \"state\": \"$workflow_state\",
+              \"path\": \"$workflow_path\",
+              \"created_at\": \"$workflow_created_at\"
+            }," >> core/results/dashboard/workflow_stats.json
+          done
+
+          # Calculate global metrics
+          overall_success_rate=0
+          if [ "$total_runs" -gt 0 ]; then
+            overall_success_rate=$(echo "scale=2; $total_success * 100 / $total_runs" | bc)
+          fi
+
+          # Complete the JSON structure
+          sed -i '' '$ s/,$//' core/results/dashboard/workflow_stats.json
+          echo "],
+                  \"global_metrics\": {
+                    \"total_workflows\": $total_workflows,
+                    \"active_workflows\": $active_workflows,
+                    \"total_runs_all_workflows\": $total_runs,
+                    \"overall_success_rate\": $overall_success_rate
                   }
+                }
               }
-          }
-
-          # Save to file
-          output_path = 'core/results/dashboard/workflow_stats.json'
-          os.makedirs(os.path.dirname(output_path), exist_ok=True)
-          with open(output_path, 'w') as f:
-              json.dump(summary, f, indent=2)
-          EOF
+            }
+          }" >> core/results/dashboard/workflow_stats.json
 
       - name: Commit and push changes
         run: |
@@ -122,6 +140,7 @@ jobs:
           git add core/results/dashboard/workflow_stats.json
           git commit -m "Update workflow statistics" || exit 0
           git push
+
   handle-success:
     runs-on:
       group: ka0s
@@ -140,14 +159,14 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
         run: |
-          # Si todo ha ido correcto añadimos el contenido del fichero 
           RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
           gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
+
   handle_failure:
     runs-on:
       group: ka0s
     needs: [job-core, handle-success]
-    if: ${{ failure() }} 
+    if: ${{ failure() }}
     steps:
       - id: repo
         name: Checkout code
@@ -164,11 +183,12 @@ jobs:
           echo "Error detected in process"
           RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
           gh issue comment $RNNUMBER --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
+
   end-workflow:
     runs-on:
       group: ka0s
     needs: [job-core, handle-success, handle_failure]
-    if: ${{ always() && !contains(github.event.head_commit.message, '[Ka0S] ') }} 
+    if: ${{ always() && !contains(github.event.head_commit.message, '[Ka0S] ') }}
     env:
         GH_TOKEN: ${{ secrets.KAOS_ACTIONS_TOKEN }}
     steps:
