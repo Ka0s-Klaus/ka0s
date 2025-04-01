@@ -12,26 +12,29 @@ jobs:
     runs-on: 
       group: ka0s
     steps:
-      - id: repo
-        name: Checkout repository
+      - name: Checkout repository
         if: ${{ success() }}
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.KAOS_REPO_TOKEN }}
-      - name: Deploy to Web Server via SFTP
-        id: sftp
-        uses: wlixcc/SFTP-Deploy-Action@v1.2.5
-        with:
-          username: ${{ secrets.KAOS_WEB_USER }}
-          server: ${{ secrets.KAOS_WEB_SERVER }}
-          port: ${{ secrets.KAOS_WEB_PORT }}
-          password: ${{ secrets.KAOS_WEB_TOKEN }}
-          local_path: './core/dashboard/**'  # Using ** to include all subdirectories and files
-          remote_path: '/dashboard'
-          sftp_only: false
-          delete_remote_files: false
-          only_newer: true  # Only transfer files that are different from destination
+          
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.KAOS_WEB_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          echo "${{ secrets.KAOS_WEB_SERVER_FINGERPRINT }}" > ~/.ssh/known_hosts
+          
+      - name: Deploy to Web Server via rsync
+        run: |
+          rsync -avz --delete ./core/dashboard/ ${{ secrets.KAOS_WEB_USER }}@${{ secrets.KAOS_WEB_SERVER }}:/dashboard/
+          
+      - name: Cleanup SSH
+        if: always()
+        run: |
+          rm -f ~/.ssh/id_rsa
+          rm -f ~/.ssh/known_hosts
           
   handle-success:
     runs-on:
