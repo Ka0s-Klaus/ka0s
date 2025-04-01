@@ -409,3 +409,50 @@
   - core/results/event_data_14188971812.json
   - version.txt
 ---------------------------------
+## Version 0.0.27
+- **Branch**: refs/pull/243/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Tue Apr  1 08:45:55 UTC 2025
+- **Message**: H215 modulo de summary
+- **Files Changed**:
+  - .github/workflows/workflow-stats.yml
+  - core/outputs/w/README.md
+  - core/results/event_data_14191001478.json
+  - version.txt
+---------------------------------
+## Version 0.0.28
+- **Branch**: refs/pull/244/merge
+- **Commit**: Cambios en login del action
+- **Author**: jorgecg646
+- **Date**: Tue Apr  1 09:48:48 UTC 2025
+- **Message**: H220 web de resultados
+- **Files Changed**:
+  - .github/workflows/deploy-dashboard.yml
+  - core/dashboard/Index.html
+  - core/dashboard/dashboard/principal.json
+  - core/dashboard/dashboard/sections/actionsPerformance.json
+  - core/dashboard/dashboard/sections/backLogs.json
+  - core/dashboard/dashboard/sections/endWorkflow.json
+  - core/dashboard/dashboard/sections/handlerFailure.json
+  - core/dashboard/dashboard/sections/handlerSuccess.json
+  - core/dashboard/dashboard/sections/leadTime.json
+  - core/dashboard/dashboard/sections/navbar.json
+  - core/dashboard/dashboard/sections/seccion1.json
+  - core/dashboard/dashboard/sections/seccion2.json
+  - core/dashboard/js/dashboard.js
+  - core/dashboard/templates/actionsPerformance.html
+  - core/dashboard/templates/backLogs.html
+  - core/dashboard/templates/endWorkflow.html
+  - core/dashboard/templates/footer.html
+  - core/dashboard/templates/handlerFailure.html
+  - core/dashboard/templates/handlerSuccess.html
+  - core/dashboard/templates/index.html
+  - core/dashboard/templates/leadTime.html
+  - core/dashboard/templates/navbar.html
+  - core/dashboard/templates/section.html
+  - core/results/event_data_14189358506.json
+  - core/results/event_data_14191135516.json
+  - core/results/event_data_14192495207.json
+  - version.txt
+---------------------------------
