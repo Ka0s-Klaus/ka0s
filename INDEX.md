@@ -23,3 +23,4 @@
 - **Version**: 0.0.22 - **Description**: H220 web de resultados
 - **Version**: 0.0.23 - **Description**: H220 web de resultados
 - **Version**: 0.0.24 - **Description**: H220 web de resultados
+- **Version**: 0.0.25 - **Description**: H220 web de resultados

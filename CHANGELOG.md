@@ -387,3 +387,14 @@
   - core/results/event_data_14188707037.json
   - version.txt
 ---------------------------------
+## Version 0.0.25
+- **Branch**: refs/pull/241/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: jorgecg646
+- **Date**: Tue Apr  1 06:32:51 UTC 2025
+- **Message**: H220 web de resultados
+- **Files Changed**:
+  - .github/workflows/deploy-dashboard.yml
+  - core/results/event_data_14188829039.json
+  - version.txt
+---------------------------------

@@ -18,17 +18,31 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.KAOS_REPO_TOKEN }}
+      
+      - name: Install rsync
+        run: |
+          if ! command -v rsync &> /dev/null; then
+            echo "Installing rsync..."
+            apt-get update && apt-get install -y rsync
+          else
+            echo "rsync is already installed"
+          fi
           
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.KAOS_WEB_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          echo "${{ secrets.KAOS_WEB_SERVER_FINGERPRINT }}" > ~/.ssh/known_hosts
+          ssh-keyscan -H ${{ secrets.KAOS_WEB_SERVER }} > ~/.ssh/known_hosts
           
       - name: Deploy to Web Server via rsync
         run: |
-          rsync -avz --delete ./core/dashboard/ ${{ secrets.KAOS_WEB_USER }}@${{ secrets.KAOS_WEB_SERVER }}:/dashboard/
+          echo "Starting deployment with rsync..."
+          rsync -avz --delete ./core/dashboard/ ${{ secrets.KAOS_WEB_USER }}@${{ secrets.KAOS_WEB_SERVER }}:/dashboard/ || {
+            echo "rsync failed with exit code $?"
+            exit 1
+          }
+          echo "Deployment completed successfully"
           
       - name: Cleanup SSH
         if: always()
