@@ -339,49 +339,67 @@ function setupNavigation() {
             e.preventDefault();
             const linkText = this.textContent.trim();
             
-            // Hide all sections
-            document.querySelectorAll('[id$="container"], [id^="actions"], [id^="lead"], [id^="back"], [id^="handler"], [id^="end"]').forEach(section => {
-                section.classList.add('hidden');
+            // Hide all sections first
+            const allSections = document.querySelectorAll('#dashboard-container, #leadTime, #actionsPerformance, #backLogs, #handlerFailure, #handlerSuccess, #endWorkflow');
+            allSections.forEach(section => {
+                if (section) section.classList.add('hidden');
             });
             
-            if (linkText.includes('Actions Performance')) {
-                const actionsSection = document.querySelector('#actionsPerformance');
-                if (actionsSection) {
-                    actionsSection.classList.remove('hidden');
-                    const renderedTemplate = await loadActionsPerformance();
-                    if (renderedTemplate) {
-                        actionsSection.innerHTML = renderedTemplate;
+            // Show the appropriate section
+            switch(linkText) {
+                case 'Inicio':
+                    document.querySelector('#dashboard-container')?.classList.remove('hidden');
+                    break;
+                case 'Actions Performance':
+                    const actionsSection = document.querySelector('#actionsPerformance');
+                    if (actionsSection) {
+                        actionsSection.classList.remove('hidden');
+                        const renderedTemplate = await loadActionsPerformance();
+                        if (renderedTemplate) {
+                            actionsSection.innerHTML = renderedTemplate;
+                        }
                     }
-                }
-            } else if (linkText.includes('Dashboard') || linkText.includes('Home')) {
-                document.querySelector('#dashboard-container')?.classList.remove('hidden');
-            } else {
-                const sectionId = linkText.toLowerCase().replace(/\s+/g, '-');
-                document.querySelector(`#${sectionId}`)?.classList.remove('hidden');
+                    break;
+                case 'Lead Time':
+                    document.querySelector('#leadTime')?.classList.remove('hidden');
+                    break;
+                case 'Backlogs':
+                    document.querySelector('#backLogs')?.classList.remove('hidden');
+                    break;
+                case 'Handler Failure':
+                    document.querySelector('#handlerFailure')?.classList.remove('hidden');
+                    break;
+                case 'Handler Success':
+                    document.querySelector('#handlerSuccess')?.classList.remove('hidden');
+                    break;
+                case 'End Workflow':
+                    document.querySelector('#endWorkflow')?.classList.remove('hidden');
+                    break;
             }
 
             // Update active state in navbar
-            updateActiveNavLink(this);
+            navLinks.forEach(link => {
+                link.classList.remove('bg-blue-700', 'text-white');
+                const icon = link.querySelector('i');
+                if (icon) {
+                    icon.classList.remove('text-white');
+                    icon.classList.add('text-gray-600');
+                }
+            });
+
+            this.classList.add('bg-blue-700', 'text-white');
+            const icon = this.querySelector('i');
+            if (icon) {
+                icon.classList.remove('text-gray-600');
+                icon.classList.add('text-white');
+            }
         });
     });
-}
 
-function updateActiveNavLink(activeLink) {
-    const navLinks = document.querySelectorAll('#navbar a');
-    navLinks.forEach(link => {
-        link.classList.remove('bg-blue-700', 'text-white');
-        const icon = link.querySelector('i');
-        if (icon) {
-            icon.classList.remove('text-white');
-            icon.classList.add('text-gray-600');
-        }
-    });
-
-    activeLink.classList.add('bg-blue-700', 'text-white');
-    const icon = activeLink.querySelector('i');
-    if (icon) {
-        icon.classList.remove('text-gray-600');
-        icon.classList.add('text-white');
+    // Show dashboard by default on page load
+    const defaultSection = document.querySelector('#dashboard-container');
+    if (defaultSection) {
+        defaultSection.classList.remove('hidden');
     }
 }
 
