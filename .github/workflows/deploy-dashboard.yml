@@ -76,7 +76,8 @@ jobs:
           GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
         run: |
           echo "Error detected in process"
-          RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
+          # RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
+          RNNUMBER=220
           gh issue comment $RNNUMBER --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
   end-workflow:
     runs-on:
@@ -97,6 +98,7 @@ jobs:
         name: Finaliza el workflow
         run: |
           echo "End process"
-          RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
+          # RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
+          RNNUMBER=220
           gh issue comment $RNNUMBER --body "Se finaliza Ka0s ${{ env.KAOS_CODE }}"
           gh workflow run inspector.yml --ref 'main' -f kaos-issue-id=$RNNUMBER -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start=""
