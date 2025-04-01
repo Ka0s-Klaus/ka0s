@@ -75,7 +75,7 @@ jobs:
             total_count=$(echo "$runs" | jq '[.workflow_runs[]] | length')
 
             # Calculate lead time
-            lead_time=$(echo "$runs" | jq -r '[.workflow_runs[] | select(.status=="completed" and .updated_at != null and .created_at != null) | (fromdateiso8601(if .updated_at then .updated_at else "null" end) - fromdateiso8601(if .created_at then .created_at else "null" end))] | if length > 0 then (add / length) else 0 end')
+            lead_time=$(echo "$runs" | jq -r '[.workflow_runs[] | select(.status=="completed" and .updated_at != null and .created_at != null) | (if .updated_at and .created_at then ((fromdateiso8601(.updated_at) - fromdateiso8601(.created_at)) / 60) else 0 end)] | if length > 0 then (add / length) else 0 end')
 
             # Calculate success rate
             success_rate=0
@@ -84,9 +84,9 @@ jobs:
             fi
 
             # Calculate last 30 days metrics
-            thirty_days_ago=$(date -v-30d +%s)
+            thirty_days_ago=$(date -v-30d -u +"%Y-%m-%dT%H:%M:%SZ")
             last_30_days_metrics=$(echo "$runs" | jq --arg date "$thirty_days_ago" '
-              [.workflow_runs[] | select((.created_at | fromdateiso8601) >= ($date | tonumber))] | {
+              [.workflow_runs[] | select((.created_at | fromdateiso8601) >= ($date | fromdateiso8601))] | {
                 "runs": length,
                 "success": map(select(.conclusion == "success")) | length,
                 "failures": map(select(.conclusion == "failure")) | length
