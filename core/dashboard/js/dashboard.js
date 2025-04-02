@@ -331,6 +331,40 @@ async function loadActionsPerformance() {
     return null;
 }
 
+async function loadHandlerFailure() {
+    const failureData = await loadJsonData('dashboard/sections/handlerFailure.json');
+    if (!failureData) return null;
+
+    const template = await loadHtmlTemplate('templates/handlerFailure.html');
+    if (template) {
+        // Replace all template variables with actual data
+        let renderedTemplate = template;
+        
+        // Replace metrics
+        for (const [key, value] of Object.entries(failureData.metrics)) {
+            renderedTemplate = renderedTemplate.replace(`{{metrics.${key}}}`, value);
+        }
+        
+        // Handle the failures loop
+        const failuresMatch = renderedTemplate.match(/{{#each failures}}([\s\S]*?){{\/each}}/);
+        if (failuresMatch) {
+            const failureTemplate = failuresMatch[1];
+            const failuresHtml = failureData.failures.map(failure => {
+                let row = failureTemplate;
+                for (const [key, value] of Object.entries(failure)) {
+                    row = row.replace(new RegExp(`{{${key}}}`, 'g'), value);
+                }
+                return row;
+            }).join('');
+            renderedTemplate = renderedTemplate.replace(/{{#each failures}}[\s\S]*?{{\/each}}/, failuresHtml);
+        }
+        
+        return renderedTemplate;
+    }
+    return null;
+}
+
+// Update the setupNavigation function to use our new loadHandlerFailure function
 function setupNavigation() {
     const navLinks = document.querySelectorAll('#navbar a');
     
@@ -367,7 +401,14 @@ function setupNavigation() {
                     document.querySelector('#backLogs')?.classList.remove('hidden');
                     break;
                 case 'Handler Failure':
-                    document.querySelector('#handlerFailure')?.classList.remove('hidden');
+                    const failureSection = document.querySelector('#handlerFailure');
+                    if (failureSection) {
+                        failureSection.classList.remove('hidden');
+                        const renderedTemplate = await loadHandlerFailure();
+                        if (renderedTemplate) {
+                            failureSection.innerHTML = renderedTemplate;
+                        }
+                    }
                     break;
                 case 'Handler Success':
                     document.querySelector('#handlerSuccess')?.classList.remove('hidden');
