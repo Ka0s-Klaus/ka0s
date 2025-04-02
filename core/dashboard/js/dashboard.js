@@ -122,17 +122,6 @@ async function updateDashboard() {
         initializeCharts(); // Initialize charts after content is loaded
     }
 
-    // Update sections
-    if (seccion1) {
-        const section1Html = await createSectionHtml(seccion1, 'seccion1');
-        document.querySelector('#seccion1').innerHTML = section1Html;
-    }
-
-    if (seccion2) {
-        const section2Html = await createSectionHtml(seccion2, 'seccion2');
-        document.querySelector('#seccion2').innerHTML = section2Html;
-    }
-    
     // Update Lead Time section
     if (leadTime) {
         const leadTimeHtml = await createSectionHtml(leadTime, 'leadTime');
@@ -142,10 +131,38 @@ async function updateDashboard() {
         }
     }
     
+    // Update backLogs section directly in updateDashboard
+    if (backLogs) {
+        try {
+            const backLogsTemplate = await loadHtmlTemplate('templates/backLogs.html');
+            if (backLogsTemplate) {
+                // Replace placeholders with actual data
+                let content = backLogsTemplate
+                    .replace(/\{\{TITLE\}\}/g, backLogs.title)
+                    .replace(/\{\{DESCRIPTION\}\}/g, backLogs.description)
+                    .replace(/\{\{TARGET1\}\}/g, backLogs.target.target1)
+                    .replace(/\{\{TARGET2\}\}/g, backLogs.target.target2)
+                    .replace(/\{\{TARGET3\}\}/g, backLogs.target.target3);
+                
+                const backLogsElement = document.querySelector('#backLogs');
+                if (backLogsElement) {
+                    backLogsElement.innerHTML = content;
+                    console.log('BackLogs content loaded successfully');
+                } else {
+                    console.error('BackLogs element not found in the DOM');
+                }
+            } else {
+                console.error('Failed to load backLogs template');
+            }
+        } catch (error) {
+            console.error('Error loading backLogs:', error);
+            console.error('Error details:', error.stack);
+        }
+    }
+    
     // Update other sections
     const sections = [
         { id: 'actionsPerformance', data: actionsPerformance },
-        { id: 'backLogs', data: backLogs, template: 'backLogs.html' },
         { id: 'handlerFailure', data: handlerFailure },
         { id: 'handlerSuccess', data: handlerSuccess },
         { id: 'endWorkflow', data: endWorkflow }
@@ -177,16 +194,6 @@ async function updateDashboard() {
     if (footer) {
         const footerHtml = await createFooterHtml(footer);
         document.querySelector('#footer').innerHTML = footerHtml;
-    }
-    // In the updateDashboard function, add this code after loading other sections:
-    
-    // Load backLogs template directly
-    const backLogsTemplate = await loadHtmlTemplate('templates/backLogs.html');
-    if (backLogsTemplate) {
-        const backLogsElement = document.querySelector('#backLogs');
-        if (backLogsElement) {
-            backLogsElement.innerHTML = backLogsTemplate;
-        }
     }
 }
 
@@ -278,262 +285,93 @@ async function initializeCharts() {
         statsSection.querySelector('h4:last-of-type').textContent = metrics[1].value;
         statsSection.querySelector('p:last-of-type').textContent = metrics[1].label;
     }
-    
-    // Initialize the calendar
-    initializeCalendar();
-    console.log('Calendar initialization called');
 }
 
-async function loadActionsPerformance() {
-    const actionsData = await loadJsonData('dashboard/sections/actionsPerformance.json');
-    if (!actionsData) return null;
-
-    const template = await loadHtmlTemplate('templates/actionsPerformance.html');
-    if (template) {
-        // Replace all template variables with actual data
-        let renderedTemplate = template;
-        for (const [key, value] of Object.entries(actionsData)) {
-            if (typeof value === 'object') {
-                for (const [subKey, subValue] of Object.entries(value)) {
-                    renderedTemplate = renderedTemplate.replace(
-                        `{{${key}.${subKey}}}`, 
-                        subValue
-                    );
-                }
-            } else {
-                renderedTemplate = renderedTemplate.replace(`{{${key}}}`, value);
-            }
-        }
-        
-        // Handle the workflows loop
-        const workflowsMatch = renderedTemplate.match(/{{#each workflows}}([\s\S]*?){{\/each}}/);
-        if (workflowsMatch) {
-            const workflowTemplate = workflowsMatch[1];
-            const workflowsHtml = actionsData.workflows.map(workflow => {
-                let row = workflowTemplate;
-                for (const [key, value] of Object.entries(workflow)) {
-                    row = row.replace(new RegExp(`{{${key}}}`, 'g'), value);
-                }
-                // Handle status-based styling
-                row = row.replace(/{{#if \(eq status 'success'\)}}(.*?){{\/if}}/g, 
-                    workflow.status === 'success' ? '$1' : '');
-                row = row.replace(/{{#if \(eq status 'running'\)}}(.*?){{\/if}}/g, 
-                    workflow.status === 'running' ? '$1' : '');
-                row = row.replace(/{{#if \(eq status 'failure'\)}}(.*?){{\/if}}/g, 
-                    workflow.status === 'failure' ? '$1' : '');
-                return row;
-            }).join('');
-            renderedTemplate = renderedTemplate.replace(/{{#each workflows}}[\s\S]*?{{\/each}}/, workflowsHtml);
-        }
-        
-        return renderedTemplate;
-    }
-    return null;
-}
-
-async function loadHandlerSuccess() {
-    const successData = await loadJsonData('dashboard/sections/handlerSuccess.json');
-    if (!successData) return null;
-
-    const template = await loadHtmlTemplate('templates/handlerSuccess.html');
-    if (template) {
-        let renderedTemplate = template
-            .replace('{{title}}', successData.title)
-            .replace('{{description}}', successData.description)
-            .replace('{{summary.total_successful}}', successData.summary.total_successful)
-            .replace('{{summary.success_rate}}', successData.summary.success_rate)
-            .replace('{{summary.avg_duration}}', successData.summary.avg_duration)
-            .replace('{{summary.last_success}}', successData.summary.last_success);
-
-        // Handle the processes loop
-        const processesMatch = renderedTemplate.match(/{{#each processes}}([\s\S]*?){{\/each}}/);
-        if (processesMatch) {
-            const processTemplate = processesMatch[1];
-            const processesHtml = successData.processes.map(process => {
-                let row = processTemplate;
-                for (const [key, value] of Object.entries(process)) {
-                    row = row.replace(new RegExp(`{{${key}}}`, 'g'), value);
-                }
-                return row;
-            }).join('');
-            renderedTemplate = renderedTemplate.replace(/{{#each processes}}[\s\S]*?{{\/each}}/, processesHtml);
-        }
-
-        return renderedTemplate;
-    }
-    return null;
-}
-
-async function loadHandlerFailure() {
-    const failureData = await loadJsonData('dashboard/sections/handlerFailure.json');
-    if (!failureData) return null;
-
-    const template = await loadHtmlTemplate('templates/handlerFailure.html');
-    if (template) {
-        // Replace all template variables with actual data
-        let renderedTemplate = template;
-        
-        // Replace metrics
-        for (const [key, value] of Object.entries(failureData.metrics)) {
-            renderedTemplate = renderedTemplate.replace(`{{metrics.${key}}}`, value);
-        }
-        
-        // Handle the failures loop
-        const failuresMatch = renderedTemplate.match(/{{#each failures}}([\s\S]*?){{\/each}}/);
-        if (failuresMatch) {
-            const failureTemplate = failuresMatch[1];
-            const failuresHtml = failureData.failures.map(failure => {
-                let row = failureTemplate;
-                for (const [key, value] of Object.entries(failure)) {
-                    row = row.replace(new RegExp(`{{${key}}}`, 'g'), value);
-                }
-                return row;
-            }).join('');
-            renderedTemplate = renderedTemplate.replace(/{{#each failures}}[\s\S]*?{{\/each}}/, failuresHtml);
-        }
-        
-        return renderedTemplate;
-    }
-    return null;
-}
-
-async function loadLeadTime() {
-    const leadTimeData = await loadJsonData('dashboard/sections/leadTime.json');
-    if (!leadTimeData) return null;
-
-    const template = await loadHtmlTemplate('templates/leadTime.html');
-    if (template) {
-        // Replace all template variables with actual data
-        let renderedTemplate = template;
-        
-        // Replace metrics
-        for (const [key, value] of Object.entries(leadTimeData.metrics)) {
-            renderedTemplate = renderedTemplate.replace(`{{metrics.${key}.title}}`, value.title);
-            renderedTemplate = renderedTemplate.replace(`{{metrics.${key}.value}}`, value.value);
-        }
-        
-        // Handle the executions loop
-        const executionsMatch = renderedTemplate.match(/{{#each recentExecutions}}([\s\S]*?){{\/each}}/);
-        if (executionsMatch) {
-            const executionTemplate = executionsMatch[1];
-            const executionsHtml = leadTimeData.recentExecutions.map(execution => {
-                let row = executionTemplate;
-                for (const [key, value] of Object.entries(execution)) {
-                    row = row.replace(new RegExp(`{{${key}}}`, 'g'), value);
-                }
-                // Handle status-based styling
-                const statusClass = execution.status === 'Success' ? 
-                    'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
-                row = row.replace('{{statusClass}}', statusClass);
-                return row;
-            }).join('');
-            renderedTemplate = renderedTemplate.replace(/{{#each recentExecutions}}[\s\S]*?{{\/each}}/, executionsHtml);
-        }
-        
-        return renderedTemplate;
-    }
-    return null;
-}
-
-// Update the setupNavigation function to use our new loadLeadTime function
 function setupNavigation() {
     const navLinks = document.querySelectorAll('#navbar a');
     
     navLinks.forEach(link => {
-        link.addEventListener('click', async function(e) {
+        link.addEventListener('click', function(e) {
             e.preventDefault();
-            const linkText = this.textContent.trim();
             
-            // Hide all sections first
-            const allSections = document.querySelectorAll('#dashboard-container, #leadTime, #actionsPerformance, #backLogs, #handlerFailure, #handlerSuccess, #endWorkflow');
-            allSections.forEach(section => {
-                if (section) section.classList.add('hidden');
-            });
+            // Get the section ID from the data attribute
+            const sectionId = this.getAttribute('data-section');
             
-            // Show the appropriate section
-            switch(linkText) {
-                case 'Inicio':
-                    document.querySelector('#dashboard-container')?.classList.remove('hidden');
-                    break;
-                case 'Actions Performance':
-                    const actionsSection = document.querySelector('#actionsPerformance');
-                    if (actionsSection) {
-                        actionsSection.classList.remove('hidden');
-                        const renderedTemplate = await loadActionsPerformance();
-                        if (renderedTemplate) {
-                            actionsSection.innerHTML = renderedTemplate;
-                        }
-                    }
-                    break;
-                case 'Lead Time':
-                    const leadTimeSection = document.querySelector('#leadTime');
-                    if (leadTimeSection) {
-                        leadTimeSection.classList.remove('hidden');
-                        const renderedTemplate = await loadLeadTime();
-                        if (renderedTemplate) {
-                            leadTimeSection.innerHTML = renderedTemplate;
-                        }
-                    }
-                    break;
-                case 'Backlogs':
-                    document.querySelector('#backLogs')?.classList.remove('hidden');
-                    break;
-                case 'Handler Failure':
-                    const failureSection = document.querySelector('#handlerFailure');
-                    if (failureSection) {
-                        failureSection.classList.remove('hidden');
-                        const renderedTemplate = await loadHandlerFailure();
-                        if (renderedTemplate) {
-                            failureSection.innerHTML = renderedTemplate;
-                        }
-                    }
-                    break;
-                case 'Handler Success':
-                    const successSection = document.querySelector('#handlerSuccess');
-                    if (successSection) {
-                        successSection.classList.remove('hidden');
-                        const renderedTemplate = await loadHandlerSuccess();
-                        if (renderedTemplate) {
-                            successSection.innerHTML = renderedTemplate;
-                        }
-                    }
-                    break;
-                case 'End Workflow':
-                    const workflowSection = document.querySelector('#endWorkflow');
-                    if (workflowSection) {
-                        workflowSection.classList.remove('hidden');
-                        const renderedTemplate = await loadEndWorkflow();
-                        if (renderedTemplate) {
-                            workflowSection.innerHTML = renderedTemplate;
-                        }
-                    }
-                    break;
-            }
-
-            // Update active state in navbar
-            navLinks.forEach(link => {
-                link.classList.remove('bg-blue-700', 'text-white');
-                const icon = link.querySelector('i');
-                if (icon) {
-                    icon.classList.remove('text-white');
-                    icon.classList.add('text-gray-600');
-                }
-            });
-
-            this.classList.add('bg-blue-700', 'text-white');
-            const icon = this.querySelector('i');
-            if (icon) {
-                icon.classList.remove('text-gray-600');
-                icon.classList.add('text-white');
-            }
+            // Call the showSection function
+            showSection(sectionId);
         });
     });
+    
+    // Set the default section (dashboard) as active on page load
+    setTimeout(() => {
+        showSection('dashboard');
+    }, 100);
+}
 
-    // Show dashboard by default on page load
-    const defaultSection = document.querySelector('#dashboard-container');
-    if (defaultSection) {
-        defaultSection.classList.remove('hidden');
+// Add the showSection function to handle section switching
+function showSection(sectionId) {
+    // Get all section elements
+    const dashboardContainer = document.querySelector('#dashboard-container');
+    const seccion1 = document.querySelector('#seccion1');
+    const seccion2 = document.querySelector('#seccion2');
+    const leadTime = document.querySelector('#leadTime');
+    const actionsPerformance = document.querySelector('#actionsPerformance');
+    const backLogs = document.querySelector('#backLogs');
+    const handlerFailure = document.querySelector('#handlerFailure');
+    const handlerSuccess = document.querySelector('#handlerSuccess');
+    const endWorkflow = document.querySelector('#endWorkflow');
+    
+    // Hide all sections first
+    [dashboardContainer, seccion1, seccion2, leadTime, actionsPerformance, 
+     backLogs, handlerFailure, handlerSuccess, endWorkflow].forEach(section => {
+        if (section) section.classList.add('hidden');
+    });
+    
+    // Show the selected section
+    if (sectionId === 'dashboard') {
+        if (dashboardContainer) dashboardContainer.classList.remove('hidden');
+    } else if (sectionId === 'seccion1') {
+        if (seccion1) seccion1.classList.remove('hidden');
+    } else if (sectionId === 'leadTime') {
+        if (leadTime) leadTime.classList.remove('hidden');
+    } else if (sectionId === 'seccion2') {
+        if (seccion2) seccion2.classList.remove('hidden');
+    } else if (sectionId === 'actionsPerformance') {
+        if (actionsPerformance) actionsPerformance.classList.remove('hidden');
+    } else if (sectionId === 'backLogs') {
+        if (backLogs) backLogs.classList.remove('hidden');
+    } else if (sectionId === 'handlerFailure') {
+        if (handlerFailure) handlerFailure.classList.remove('hidden');
+    } else if (sectionId === 'handlerSuccess') {
+        if (handlerSuccess) handlerSuccess.classList.remove('hidden');
+    } else if (sectionId === 'endWorkflow') {
+        if (endWorkflow) endWorkflow.classList.remove('hidden');
     }
+    
+    // Update active state in navbar
+    const navLinks = document.querySelectorAll('#navbar .mt-6 a');
+    navLinks.forEach(link => {
+        // Remove active class from all links
+        link.classList.remove('bg-blue-700', 'text-white');
+        const icon = link.querySelector('i');
+        if (icon) {
+            icon.classList.remove('text-white');
+            icon.classList.add('text-gray-600');
+        }
+    });
+    
+    // Add active class to clicked link
+    const activeLink = document.querySelector(`a[data-section="${sectionId}"]`);
+    if (activeLink) {
+        activeLink.classList.add('bg-blue-700', 'text-white');
+        const icon = activeLink.querySelector('i');
+        if (icon) {
+            icon.classList.remove('text-gray-600');
+            icon.classList.add('text-white');
+        }
+    }
+    
+    console.log(`Switched to section: ${sectionId}`);
 }
 
 // Update createNavbarHtml to use the external template
@@ -623,44 +461,38 @@ async function createFooterHtml(data) {
 // Update the window.onload function to include debugging
 window.onload = () => {
     updateDashboard();
+    
 };
 
-async function loadEndWorkflow() {
-    const workflowData = await loadJsonData('dashboard/sections/endWorkflow.json');
-    if (!workflowData) return null;
 
-    const template = await loadHtmlTemplate('templates/endWorkflow.html');
-    if (template) {
-        let renderedTemplate = template
-            .replace('{{title}}', workflowData.title)
-            .replace('{{description}}', workflowData.description)
-            .replace('{{summary.total_projects}}', workflowData.summary.total_projects)
-            .replace('{{summary.completion_rate}}', workflowData.summary.completion_rate)
-            .replace('{{summary.avg_time}}', workflowData.summary.avg_time)
-            .replace('{{summary.last_completion}}', workflowData.summary.last_completion);
-
-        // Handle the projects loop
-        const projectsMatch = renderedTemplate.match(/{{#each projects}}([\s\S]*?){{\/each}}/);
-        if (projectsMatch) {
-            const projectTemplate = projectsMatch[1];
-            const projectsHtml = workflowData.projects.map(project => {
-                let row = projectTemplate;
-                for (const [key, value] of Object.entries(project)) {
-                    row = row.replace(new RegExp(`{{${key}}}`, 'g'), value);
-                }
-                // Handle status-based styling
-                row = row.replace(/{{#if \(eq finalStatus 'Completed Successfully'\)}}(.*?){{\/if}}/g, 
-                    project.finalStatus === 'Completed Successfully' ? '$1' : '');
-                row = row.replace(/{{#if \(eq finalStatus 'Completed with Issues'\)}}(.*?){{\/if}}/g, 
-                    project.finalStatus === 'Completed with Issues' ? '$1' : '');
-                row = row.replace(/{{#if \(eq finalStatus 'Terminated'\)}}(.*?){{\/if}}/g, 
-                    project.finalStatus === 'Terminated' ? '$1' : '');
-                return row;
-            }).join('');
-            renderedTemplate = renderedTemplate.replace(/{{#each projects}}[\s\S]*?{{\/each}}/, projectsHtml);
+// Function to load and process the backLogs section
+async function loadBackLogs() {
+    try {
+        // Fetch the backLogs template
+        const templateResponse = await loadHtmlTemplate('templates/backLogs.html');
+        const template = await templateResponse.text();
+        
+        // Fetch the backLogs data
+        const dataResponse = await fetch('dashboard/sections/backLogs.json');
+        const data = await dataResponse.json();
+        
+        // Replace placeholders with actual data
+        let content = template
+            .replace(/{{TITLE}}/g, data.title)
+            .replace(/{{DESCRIPTION}}/g, data.description)
+            .replace(/{{TARGET1}}/g, data.target.target1)
+            .replace(/{{TARGET2}}/g, data.target.target2)
+            .replace(/{{TARGET3}}/g, data.target.target3);
+        
+        // Insert the content into the backLogs div
+        const backLogsElement = document.getElementById('backLogs');
+        if (backLogsElement) {
+            backLogsElement.innerHTML = content;
+            console.log('BackLogs content loaded successfully');
+        } else {
+            console.error('BackLogs element not found in the DOM');
         }
-
-        return renderedTemplate;
+    } catch (error) {
+        console.error('Error loadizng backLogs:', error);
     }
-    return null;
 }
