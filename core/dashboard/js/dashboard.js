@@ -489,7 +489,14 @@ function setupNavigation() {
                     }
                     break;
                 case 'Handler Success':
-                    document.querySelector('#handlerSuccess')?.classList.remove('hidden');
+                    const successSection = document.querySelector('#handlerSuccess');
+                    if (successSection) {
+                        successSection.classList.remove('hidden');
+                        const renderedTemplate = await loadHandlerSuccess();
+                        if (renderedTemplate) {
+                            successSection.innerHTML = renderedTemplate;
+                        }
+                    }
                     break;
                 case 'End Workflow':
                     const workflowSection = document.querySelector('#endWorkflow');
