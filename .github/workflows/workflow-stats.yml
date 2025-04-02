@@ -111,23 +111,14 @@ jobs:
           git pull
           
           # Read the workflow runs data
-          jq -r '.[] as $run |
+          jq -r '.[] | select(.run_started_at != null and .updated_at != null) as $run |
             ($run.updated_at | fromdateiso8601) as $end_time |
             ($run.run_started_at | fromdateiso8601) as $start_time |
             ($end_time - $start_time) as $duration |
-            {duration: $duration, conclusion: $run.conclusion}
-          | reduce .[] as $run ({
-              "total_runs": 0,
-              "successful_runs": 0,
-              "failed_runs": 0,
-              "cancelled_runs": 0,
-              "total_duration": 0,
-              "success_duration": 0,
-              "failed_duration": 0,
-              "cancelled_duration": 0,
-              "workflow_stats": {},
-              "events": {}
-            };
+            {name: $run.name, event: $run.event, conclusion: $run.conclusion, duration: $duration}
+          | reduce .[] as $run ({"total_runs": 0, "successful_runs": 0, "failed_runs": 0, "cancelled_runs": 0,
+              "total_duration": 0, "success_duration": 0, "failed_duration": 0, "cancelled_duration": 0,
+              "workflow_stats": {}, "events": {}};
             .total_runs += 1
             | .total_duration += $run.duration
             | if $run.conclusion == "success" then
@@ -148,9 +139,9 @@ jobs:
               "successful_runs": .successful_runs,
               "failed_runs": .failed_runs,
               "cancelled_runs": .cancelled_runs,
-              "success_rate": ((.successful_runs / .total_runs) * 100 | floor),
-              "failure_rate": ((.failed_runs / .total_runs) * 100 | floor),
-              "average_duration": (.total_duration / .total_runs),
+              "success_rate": (if .total_runs > 0 then (.successful_runs / .total_runs) * 100 | floor else 0 end),
+              "failure_rate": (if .total_runs > 0 then (.failed_runs / .total_runs) * 100 | floor else 0 end),
+              "average_duration": (if .total_runs > 0 then .total_duration / .total_runs else 0 end),
               "average_success_duration": (if .successful_runs > 0 then .success_duration / .successful_runs else 0 end),
               "average_failed_duration": (if .failed_runs > 0 then .failed_duration / .failed_runs else 0 end),
               "average_cancelled_duration": (if .cancelled_runs > 0 then .cancelled_duration / .cancelled_runs else 0 end)
