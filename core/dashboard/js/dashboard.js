@@ -19,12 +19,92 @@ async function loadHtmlTemplate(path) {
     }
 }
 
+// Add this function to handle sidebar toggling
+function initializeSidebar() {
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', toggleSidebar);
+        
+        // Auto-collapse on small screens
+        if (window.innerWidth < 640) {
+            toggleSidebar();
+        }
+        
+        // Listen for window resize
+        window.addEventListener('resize', function() {
+            if (window.innerWidth < 640) {
+                const sidebar = document.getElementById('sidebar');
+                if (sidebar && sidebar.classList.contains('w-[250px]')) {
+                    toggleSidebar();
+                }
+            }
+        });
+    }
+}
+
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const toggleIcon = document.getElementById('toggleIcon');
+    const sidebarTexts = document.querySelectorAll('.sidebar-text');
+    const mainContent = document.getElementById('main-content');
+    const logoImage = document.querySelector('#sidebar .logo-image');
+    
+    if (sidebar.classList.contains('w-[250px]')) {
+        // Collapse sidebar
+        sidebar.classList.remove('w-[250px]');
+        sidebar.classList.add('w-[60px]');
+        toggleIcon.style.transform = 'rotate(180deg)';
+        sidebarTexts.forEach(text => {
+            text.style.opacity = '0';
+            text.classList.add('hidden');
+        });
+        
+        // Keep logo visible but centered
+        if (logoImage) {
+            logoImage.classList.add('mx-auto');
+        }
+        
+        if (mainContent) {
+            mainContent.classList.remove('ml-[250px]');
+            mainContent.classList.add('ml-[60px]');
+        }
+    } else {
+        // Expand sidebar
+        sidebar.classList.remove('w-[60px]');
+        sidebar.classList.add('w-[250px]');
+        toggleIcon.style.transform = 'rotate(0deg)';
+        sidebarTexts.forEach(text => {
+            text.classList.remove('hidden');
+            setTimeout(() => {
+                text.style.opacity = '1';
+            }, 150);
+        });
+        
+        // Restore logo position
+        if (logoImage) {
+            logoImage.classList.remove('mx-auto');
+        }
+        
+        if (mainContent) {
+            mainContent.classList.remove('ml-[60px]');
+            mainContent.classList.add('ml-[250px]');
+        }
+    }
+}
+
+// Update the updateDashboard function to call initializeSidebar
 async function updateDashboard() {
     // Load all JSON files
     const principal = await loadJsonData('dashboard/principal.json');
     const navbar = await loadJsonData('dashboard/sections/navbar.json');
     const seccion1 = await loadJsonData('dashboard/sections/seccion1.json');
     const seccion2 = await loadJsonData('dashboard/sections/seccion2.json');
+    const leadTime = await loadJsonData('dashboard/sections/leadTime.json');
+    const actionsPerformance = await loadJsonData('dashboard/sections/actionsPerformance.json');
+    const backLogs = await loadJsonData('dashboard/sections/backLogs.json');
+    const handlerFailure = await loadJsonData('dashboard/sections/handlerFailure.json');
+    const handlerSuccess = await loadJsonData('dashboard/sections/handlerSuccess.json');
+    const endWorkflow = await loadJsonData('dashboard/sections/endWorkflow.json');
     const footer = await loadJsonData('dashboard/sections/footer.json');
     
     // Update navbar first
@@ -32,25 +112,82 @@ async function updateDashboard() {
         const navbarHtml = await createNavbarHtml(navbar);
         document.querySelector('#navbar').innerHTML = navbarHtml;
         setupNavigation();
+        initializeSidebar(); // Initialize sidebar toggle functionality
     }
-
+    
     // Load and update dashboard template
     const dashboardTemplate = await loadHtmlTemplate('templates/index.html');
     if (dashboardTemplate) {
-        // Direct insertion of template content without the container wrapper
         document.querySelector('#dashboard-container').innerHTML = dashboardTemplate;
         initializeCharts(); // Initialize charts after content is loaded
     }
 
-    // Update sections
-    if (seccion1) {
-        const section1Html = await createSectionHtml(seccion1, 'seccion1');
-        document.querySelector('#seccion1').innerHTML = section1Html;
+    // Update Lead Time section
+    if (leadTime) {
+        const leadTimeHtml = await createSectionHtml(leadTime, 'leadTime');
+        const leadTimeElement = document.querySelector('#leadTime');
+        if (leadTimeElement) {
+            leadTimeElement.innerHTML = leadTimeHtml;
+        }
     }
-
-    if (seccion2) {
-        const section2Html = await createSectionHtml(seccion2, 'seccion2');
-        document.querySelector('#seccion2').innerHTML = section2Html;
+    
+    // Update backLogs section directly in updateDashboard
+    if (backLogs) {
+        try {
+            const backLogsTemplate = await loadHtmlTemplate('templates/backLogs.html');
+            if (backLogsTemplate) {
+                // Replace placeholders with actual data
+                let content = backLogsTemplate
+                    .replace(/\{\{TITLE\}\}/g, backLogs.title)
+                    .replace(/\{\{DESCRIPTION\}\}/g, backLogs.description)
+                    .replace(/\{\{TARGET1\}\}/g, backLogs.target.target1)
+                    .replace(/\{\{TARGET2\}\}/g, backLogs.target.target2)
+                    .replace(/\{\{TARGET3\}\}/g, backLogs.target.target3);
+                
+                const backLogsElement = document.querySelector('#backLogs');
+                if (backLogsElement) {
+                    backLogsElement.innerHTML = content;
+                    console.log('BackLogs content loaded successfully');
+                } else {
+                    console.error('BackLogs element not found in the DOM');
+                }
+            } else {
+                console.error('Failed to load backLogs template');
+            }
+        } catch (error) {
+            console.error('Error loading backLogs:', error);
+            console.error('Error details:', error.stack);
+        }
+    }
+    
+    // Update other sections
+    const sections = [
+        { id: 'actionsPerformance', data: actionsPerformance },
+        { id: 'handlerFailure', data: handlerFailure },
+        { id: 'handlerSuccess', data: handlerSuccess },
+        { id: 'endWorkflow', data: endWorkflow }
+    ];
+    
+    for (const section of sections) {
+        if (section.data) {
+            // If this section has a specific template, load it
+            if (section.template) {
+                const templateContent = await loadHtmlTemplate(`templates/${section.template}`);
+                if (templateContent) {
+                    const sectionElement = document.querySelector(`#${section.id}Content`);
+                    if (sectionElement) {
+                        sectionElement.innerHTML = templateContent;
+                    }
+                }
+            }
+            
+            // Also load any dynamic content from the JSON
+            const sectionHtml = await createSectionHtml(section.data, section.id);
+            const sectionElement = document.querySelector(`#${section.id}`);
+            if (sectionElement && !section.template) {
+                sectionElement.innerHTML = sectionHtml;
+            }
+        }
     }
 
     // Update footer last
@@ -148,10 +285,6 @@ async function initializeCharts() {
         statsSection.querySelector('h4:last-of-type').textContent = metrics[1].value;
         statsSection.querySelector('p:last-of-type').textContent = metrics[1].label;
     }
-    
-    // Initialize the calendar
-    initializeCalendar();
-    console.log('Calendar initialization called');
 }
 
 function setupNavigation() {
@@ -161,24 +294,84 @@ function setupNavigation() {
         link.addEventListener('click', function(e) {
             e.preventDefault();
             
-            const linkText = this.textContent.trim();
-            const dashboardContainer = document.querySelector('#dashboard-container');
+            // Get the section ID from the data attribute
+            const sectionId = this.getAttribute('data-section');
             
-            // Hide all sections first
-            document.querySelector('#seccion1').classList.add('hidden');
-            document.querySelector('#seccion2').classList.add('hidden');
-            dashboardContainer.classList.add('hidden');
-            
-            // Show the appropriate section based on the link clicked
-            if (linkText.includes('Seccion 1') || linkText.includes('Sección 1')) {
-                document.querySelector('#seccion1').classList.remove('hidden');
-            } else if (linkText.includes('Seccion 2') || linkText.includes('Sección 2')) {
-                document.querySelector('#seccion2').classList.remove('hidden');
-            } else if (linkText.includes('Inicio') || linkText.includes('Home')) {
-                dashboardContainer.classList.remove('hidden');
-            }
+            // Call the showSection function
+            showSection(sectionId);
         });
     });
+    
+    // Set the default section (dashboard) as active on page load
+    setTimeout(() => {
+        showSection('dashboard');
+    }, 100);
+}
+
+// Add the showSection function to handle section switching
+function showSection(sectionId) {
+    // Get all section elements
+    const dashboardContainer = document.querySelector('#dashboard-container');
+    const seccion1 = document.querySelector('#seccion1');
+    const seccion2 = document.querySelector('#seccion2');
+    const leadTime = document.querySelector('#leadTime');
+    const actionsPerformance = document.querySelector('#actionsPerformance');
+    const backLogs = document.querySelector('#backLogs');
+    const handlerFailure = document.querySelector('#handlerFailure');
+    const handlerSuccess = document.querySelector('#handlerSuccess');
+    const endWorkflow = document.querySelector('#endWorkflow');
+    
+    // Hide all sections first
+    [dashboardContainer, seccion1, seccion2, leadTime, actionsPerformance, 
+     backLogs, handlerFailure, handlerSuccess, endWorkflow].forEach(section => {
+        if (section) section.classList.add('hidden');
+    });
+    
+    // Show the selected section
+    if (sectionId === 'dashboard') {
+        if (dashboardContainer) dashboardContainer.classList.remove('hidden');
+    } else if (sectionId === 'seccion1') {
+        if (seccion1) seccion1.classList.remove('hidden');
+    } else if (sectionId === 'leadTime') {
+        if (leadTime) leadTime.classList.remove('hidden');
+    } else if (sectionId === 'seccion2') {
+        if (seccion2) seccion2.classList.remove('hidden');
+    } else if (sectionId === 'actionsPerformance') {
+        if (actionsPerformance) actionsPerformance.classList.remove('hidden');
+    } else if (sectionId === 'backLogs') {
+        if (backLogs) backLogs.classList.remove('hidden');
+    } else if (sectionId === 'handlerFailure') {
+        if (handlerFailure) handlerFailure.classList.remove('hidden');
+    } else if (sectionId === 'handlerSuccess') {
+        if (handlerSuccess) handlerSuccess.classList.remove('hidden');
+    } else if (sectionId === 'endWorkflow') {
+        if (endWorkflow) endWorkflow.classList.remove('hidden');
+    }
+    
+    // Update active state in navbar
+    const navLinks = document.querySelectorAll('#navbar .mt-6 a');
+    navLinks.forEach(link => {
+        // Remove active class from all links
+        link.classList.remove('bg-blue-700', 'text-white');
+        const icon = link.querySelector('i');
+        if (icon) {
+            icon.classList.remove('text-white');
+            icon.classList.add('text-gray-600');
+        }
+    });
+    
+    // Add active class to clicked link
+    const activeLink = document.querySelector(`a[data-section="${sectionId}"]`);
+    if (activeLink) {
+        activeLink.classList.add('bg-blue-700', 'text-white');
+        const icon = activeLink.querySelector('i');
+        if (icon) {
+            icon.classList.remove('text-gray-600');
+            icon.classList.add('text-white');
+        }
+    }
+    
+    console.log(`Switched to section: ${sectionId}`);
 }
 
 // Update createNavbarHtml to use the external template
@@ -191,22 +384,48 @@ async function createNavbarHtml(data) {
         return '';
     }
     
-    // Create links HTML
+    // Create links HTML with data-section attributes
     const linksHtml = data.links.map(link => {
+        // Determine which section to show based on link text
+        let sectionId = 'dashboard';
+        
+        // Map the link text to the corresponding section ID
+        if (link.text === 'Inicio' || link.text === 'Home') {
+            sectionId = 'dashboard';
+        } else if (link.text === 'Lead Time') {
+            sectionId = 'leadTime';
+        } else if (link.text === 'Actions Performance') {
+            sectionId = 'actionsPerformance';
+        } else if (link.text === 'Backlogs') {
+            sectionId = 'backLogs';
+        } else if (link.text === 'Handler Failure') {
+            sectionId = 'handlerFailure';
+        } else if (link.text === 'Handler Success') {
+            sectionId = 'handlerSuccess';
+        } else if (link.text === 'End Workflow') {
+            sectionId = 'endWorkflow';
+        } else {
+            // For any other sections, convert to camelCase
+            sectionId = link.text.replace(/\s+(.)/g, (match, group) => group.toUpperCase());
+            sectionId = sectionId.charAt(0).toLowerCase() + sectionId.slice(1);
+        }
+        
         return `
-            <a href="#${link.text.toLowerCase().replace(' ', '-')}" 
-               class="flex items-center px-4 py-2 rounded-lg text-gray-700 transition-all duration-300 ml hover:bg-blue-700 hover:text-white group"
-               onclick="showSection('${link.text === 'Dashboard' ? 'seccion1' : 'principal'}'); return false;">
+            <a href="#${link.text.toLowerCase().replace(/\s+/g, '-')}" 
+               class="flex items-center px-4 py-3 rounded-lg text-gray-700 transition-all duration-300 hover:bg-blue-700 hover:text-white group"
+               data-section="${sectionId}">
                 <i class="fas ${link.icon} text-gray-600 w-5 text-center transition-colors group-hover:text-white"></i>
                 <span class="ml-2 sidebar-text">${link.text}</span>
             </a>
         `;
     }).join('');
     
-    // Replace the placeholders in the template
+    // Replace the placeholders in the template with modified logo class
     return navbarTemplate
         .replace('{{NAVBAR_TITLE}}', data.title)
-        .replace(/{{NAVBAR_LINKS}}/g, linksHtml);
+        .replace('{{NAVBAR_LOGO}}', data.logo || 'images/kaos-summary.png')
+        .replace(/{{NAVBAR_LINKS}}/g, linksHtml)
+        .replace('class="h-10 w-10 rounded-xl', 'class="h-10 w-10 rounded-xl logo-image');
 }
 
 // Update createSectionHtml to use the external template
@@ -237,213 +456,43 @@ async function createFooterHtml(data) {
         .replace('{{FOOTER_COPYRIGHT}}', data.copyright || '');
 }
 
-// Update on page load - modified to handle async
-// Add this function after showDayEvents
-function debugCalendar() {
-    const calendarElement = document.getElementById('calendar');
-    if (calendarElement) {
-        console.log('Calendar element found:', calendarElement);
-        return true;
-    } else {
-        console.error('Calendar element not found in the DOM');
-        // Let's check if the dashboard container is loaded
-        const dashboardContainer = document.querySelector('#dashboard-container');
-        if (dashboardContainer) {
-            console.log('Dashboard container found:', dashboardContainer);
-            console.log('Dashboard container HTML:', dashboardContainer.innerHTML);
-        } else {
-            console.error('Dashboard container not found');
-        }
-        return false;
-    }
-}
+
 
 // Update the window.onload function to include debugging
 window.onload = () => {
     updateDashboard();
     
-    // Add a slight delay to ensure the DOM is fully loaded
-    setTimeout(() => {
-        debugCalendar();
-    }, 1000);
 };
 
 
-// Update the initializeCalendar function to use the new template
-async function initializeCalendar() {
-    const calendarContainer = document.getElementById('calendar');
-    if (!calendarContainer) {
-        console.error('Calendar container not found');
-        return;
-    }
-    
-    // Load the calendar template
-    const calendarTemplate = await loadHtmlTemplate('templates/calendar.html');
-    if (!calendarTemplate) {
-        console.error('Failed to load calendar template');
-        return;
-    }
-    
-    // Insert the template into the container
-    calendarContainer.innerHTML = calendarTemplate;
-    
-    // Get current date
-    const currentDate = new Date();
-    const currentMonth = currentDate.getMonth();
-    const currentYear = currentDate.getFullYear();
-    
-    // Set the calendar title
-    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
-                        'July', 'August', 'September', 'October', 'November', 'December'];
-    const calendarTitle = document.getElementById('calendar-title');
-    if (calendarTitle) {
-        calendarTitle.textContent = `${monthNames[currentMonth]} ${currentYear}`;
-    }
-    
-    // Generate the calendar days
-    generateCalendarDays(currentYear, currentMonth);
-    
-    // Add event listeners for month navigation
-    document.getElementById('prev-month')?.addEventListener('click', () => {
-        navigateMonth(-1);
-    });
-    
-    document.getElementById('next-month')?.addEventListener('click', () => {
-        navigateMonth(1);
-    });
-    
-    console.log('Material UI style calendar initialized');
-}
-
-// Update the function to generate calendar days
-function generateCalendarDays(year, month) {
-    const daysContainer = document.getElementById('calendar-days');
-    if (!daysContainer) return;
-    
-    // Clear existing days
-    daysContainer.innerHTML = '';
-    
-    // Get first day of month and total days
-    const firstDay = new Date(year, month, 1).getDay();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    
-    // Get current date to highlight current day
-    const currentDate = new Date();
-    const isCurrentMonth = currentDate.getMonth() === month && currentDate.getFullYear() === year;
-    const currentDay = currentDate.getDate();
-    
-    // Add empty cells for days before the first day of month
-    for (let i = 0; i < firstDay; i++) {
-        const emptyDay = document.createElement('div');
-        emptyDay.className = 'h-10 text-center';
-        daysContainer.appendChild(emptyDay);
-    }
-    
-    // Add days of the month
-    for (let day = 1; day <= daysInMonth; day++) {
-        const dayElement = document.createElement('div');
+// Function to load and process the backLogs section
+async function loadBackLogs() {
+    try {
+        // Fetch the backLogs template
+        const templateResponse = await loadHtmlTemplate('templates/backLogs.html');
+        const template = await templateResponse.text();
         
-        // Base styles for all days
-        let dayClass = 'h-10 flex items-center justify-center rounded-full cursor-pointer transition-colors';
+        // Fetch the backLogs data
+        const dataResponse = await fetch('dashboard/sections/backLogs.json');
+        const data = await dataResponse.json();
         
-        // Highlight current day
-        if (isCurrentMonth && day === currentDay) {
-            dayClass += ' bg-blue-600 text-white font-medium';
+        // Replace placeholders with actual data
+        let content = template
+            .replace(/{{TITLE}}/g, data.title)
+            .replace(/{{DESCRIPTION}}/g, data.description)
+            .replace(/{{TARGET1}}/g, data.target.target1)
+            .replace(/{{TARGET2}}/g, data.target.target2)
+            .replace(/{{TARGET3}}/g, data.target.target3);
+        
+        // Insert the content into the backLogs div
+        const backLogsElement = document.getElementById('backLogs');
+        if (backLogsElement) {
+            backLogsElement.innerHTML = content;
+            console.log('BackLogs content loaded successfully');
         } else {
-            dayClass += ' text-gray-700 hover:bg-gray-100';
+            console.error('BackLogs element not found in the DOM');
         }
-        
-        dayElement.className = dayClass;
-        dayElement.textContent = day;
-        daysContainer.appendChild(dayElement);
-        
-        // Add click event to show events for this day
-        dayElement.addEventListener('click', () => {
-            // Remove selected class from all days
-            document.querySelectorAll('#calendar-days > div').forEach(el => {
-                if (el.classList.contains('bg-blue-600') && !el.classList.contains('font-medium')) {
-                    el.classList.remove('bg-blue-600', 'text-white');
-                    el.classList.add('text-gray-700', 'hover:bg-gray-100');
-                }
-            });
-            
-            // Add selected class to clicked day (if not current day)
-            if (!(isCurrentMonth && day === currentDay)) {
-                dayElement.classList.remove('text-gray-700', 'hover:bg-gray-100');
-                dayElement.classList.add('bg-blue-600', 'text-white');
-            }
-            
-            showDayEvents(year, month, day);
-        });
-    }
-}
-
-// Update the navigateMonth function
-function navigateMonth(direction) {
-    const calendarTitle = document.getElementById('calendar-title');
-    if (!calendarTitle) return;
-    
-    const [month, year] = calendarTitle.textContent.split(' ');
-    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
-                        'July', 'August', 'September', 'October', 'November', 'December'];
-    
-    let monthIndex = monthNames.indexOf(month);
-    let yearNum = parseInt(year);
-    
-    monthIndex += direction;
-    
-    if (monthIndex < 0) {
-        monthIndex = 11;
-        yearNum--;
-    } else if (monthIndex > 11) {
-        monthIndex = 0;
-        yearNum++;
-    }
-    
-    // Update calendar title
-    calendarTitle.textContent = `${monthNames[monthIndex]} ${yearNum}`;
-    
-    // Regenerate calendar days
-    generateCalendarDays(yearNum, monthIndex);
-}
-
-// Update the showDayEvents function
-function showDayEvents(year, month, day) {
-    const eventsContainer = document.getElementById('calendar-events');
-    if (!eventsContainer) return;
-    
-    const formattedDate = `${month + 1}/${day}/${year}`;
-    console.log(`Showing events for ${formattedDate}`);
-    
-    // For demonstration, let's create some sample events for specific dates
-    const events = [];
-    
-    // Add some sample events
-    if (day === 15) {
-        events.push({ title: 'Team Meeting', time: '10:00 AM', type: 'work' });
-        events.push({ title: 'Project Deadline', time: '5:00 PM', type: 'important' });
-    } else if (day === 20) {
-        events.push({ title: 'Doctor Appointment', time: '2:30 PM', type: 'personal' });
-    } else if (day % 7 === 0) {
-        events.push({ title: 'Weekly Review', time: '9:00 AM', type: 'work' });
-    }
-    
-    // Display events
-    if (events.length > 0) {
-        eventsContainer.innerHTML = events.map(event => {
-            let typeClass = '';
-            if (event.type === 'work') typeClass = 'border-blue-500';
-            else if (event.type === 'important') typeClass = 'border-red-500';
-            else if (event.type === 'personal') typeClass = 'border-green-500';
-            
-            return `
-                <div class="p-2 border-l-4 ${typeClass} bg-gray-50 rounded">
-                    <div class="font-medium">${event.title}</div>
-                    <div class="text-xs text-gray-500">${event.time}</div>
-                </div>
-            `;
-        }).join('');
-    } else {
-        eventsContainer.innerHTML = '<div class="text-sm text-gray-500 italic">No events for selected date</div>';
+    } catch (error) {
+        console.error('Error loadizng backLogs:', error);
     }
 }
