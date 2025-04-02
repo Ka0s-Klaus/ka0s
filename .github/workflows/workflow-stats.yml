@@ -32,14 +32,14 @@ jobs:
         run: |
           # Añadimos la información de todos los workflows y sus datos
           # Generamos el fichero con los workflows disponibles en el repo
-          gh workflow list --all --limit 999 --json id,name,path,state > ${{ env.PATH_RESUME }}workflows-available-${{ env.KAOS_CODE }}.json
+          gh workflow list --all --limit 999 --json id,name,path,state > ${{ env.KAOS_PATH_RESUME }}workflows-available-${{ env.KAOS_CODE }}.json
           # Formatear el archivo JSON final
-          cat ${{ env.PATH_RESUME }}workflows-available-${{ env.KAOS_CODE }}.json | jq -s '.' > ${{ env.PATH_RESUME }}kaos-workflows-available.json
+          cat ${{ env.KAOS_PATH_RESUME }}workflows-available-${{ env.KAOS_CODE }}.json | jq -s '.' > ${{ env.KAOS_PATH_RESUME }}kaos-workflows-available.json
           # A continuación extraemos el fichero con todas las ejecuciones de cada uno de los workflows anteriores
           # Leer el archivo de workflows
-          workflows=$(cat ${{ env.PATH_RESUME }}kaos-workflows-available.json | jq -r '.[] | .[] | .id')  
+          workflows=$(cat ${{ env.KAOS_PATH_RESUME }}kaos-workflows-available.json | jq -r '.[] | .[] | .id')  
           # Crear un archivo para guardar los detalles de las ejecuciones
-          echo "[]" > ${{ env.PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json
+          touch ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json
           # Iterar sobre cada workflow y obtener sus ejecuciones
           for workflow_id in $workflows; do
            gh api repos/:owner/:repo/actions/workflows/$workflow_id/runs --paginate --jq '.workflow_runs[]' | jq '{
@@ -56,16 +56,16 @@ jobs:
              created_at: .created_at,
              updated_at: .updated_at,
              run_started_at: .run_started_at
-           }' >> ${{ env.PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json
+           },' >> ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json
           done
           # Formatear el archivo JSON final
-          cat ${{ env.PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json | jq -s '.' > ${{ env.PATH_RESUME }}kaos-workflows-runs.json
+          cat ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json | jq -s '.' > ${{ env.KAOS_PATH_RESUME }}kaos-workflows-runs.json
       
       - name: Commit and push changes
         run: |
           git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
           git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
-          git add ${{ env.PATH_RESUME }}workflows-*.json
+          git add ${{ env.KAOS_PATH_RESUME }}workflows-*.json
           git commit -m "Update workflow resume" || exit 0
           # git add core/results/dashboard/workflow_stats.json
           # git commit -m "Update workflow statistics" || exit 0
