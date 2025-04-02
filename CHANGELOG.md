@@ -595,3 +595,16 @@
   - core/results/event_data_14217290943.json
   - version.txt
 ---------------------------------
+## Version 0.0.37
+- **Branch**: refs/pull/256/merge
+- **Commit**: Cambios en footer
+- **Author**: jorgecg646
+- **Date**: Wed Apr  2 10:28:47 UTC 2025
+- **Message**: H220 web de resultados
+- **Files Changed**:
+  - .github/workflows/deploy-dashboard.yml
+  - core/dashboard/dashboard/sections/footer.json
+  - core/dashboard/templates/footer.html
+  - core/results/event_data_14217103667.json
+  - version.txt
+---------------------------------
