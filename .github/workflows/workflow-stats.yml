@@ -45,10 +45,14 @@ jobs:
           # Get workflows and process their runs
           workflows=$(jq -r '.[].id' ${{ env.KAOS_PATH_RESUME }}kaos-workflows-available.json)
           
+          # Initialize an empty array in the temporary file
+          echo '[]' > ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json
+          
           # Iterate over each workflow and get runs with proper formatting
           for workflow_id in $workflows; do
             gh api repos/:owner/:repo/actions/workflows/$workflow_id/runs --paginate | \
-              jq -r '.workflow_runs[] | select(.id != null) | {
+              jq -r '.workflow_runs[] | select(.id != null)' | \
+              jq -s '[ .[] | {
                 id,
                 name,
                 head_branch,
@@ -62,11 +66,21 @@ jobs:
                 created_at,
                 updated_at,
                 run_started_at
-              }' >> ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json
+              }]' >> ${{ env.KAOS_PATH_RESUME }}workflows-runs-temp-${{ env.KAOS_CODE }}.json
+            
+            # Merge the temporary results into the main file
+            jq -s 'add' \
+              ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json \
+              ${{ env.KAOS_PATH_RESUME }}workflows-runs-temp-${{ env.KAOS_CODE }}.json > \
+              ${{ env.KAOS_PATH_RESUME }}workflows-runs-merged-${{ env.KAOS_CODE }}.json
+            
+            mv ${{ env.KAOS_PATH_RESUME }}workflows-runs-merged-${{ env.KAOS_CODE }}.json \
+               ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json
+            rm -f ${{ env.KAOS_PATH_RESUME }}workflows-runs-temp-${{ env.KAOS_CODE }}.json
           done
           
           # Format the final runs file as a proper JSON array
-          jq -s 'sort_by(.created_at) | reverse' \
+          jq 'sort_by(.created_at) | reverse' \
             ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json > \
             ${{ env.KAOS_PATH_RESUME }}kaos-workflows-runs.json
       
