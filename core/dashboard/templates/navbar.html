@@ -1,23 +1,17 @@
-<nav class="fixed m-4 p-2 rounded-xl h-[92%] bg-white shadow-2xl w-[250px] transition-all duration-300" id=
-    "sidebar">
+<nav class="fixed m-4 p-2 bg-gradient-to-r from-blue-50 to-white rounded-xl h-[96%] shadow-2xl w-[250px] transition-all duration-300 z-50" id="sidebar">
     <!-- Header with toggle -->
     <div class="flex items-center justify-between p-4 border-b">
         <div class="flex items-center gap-3">
-            <img src="images/kaos-summary.png" 
-                 alt="Ka0s Logo" 
-                 class="h-8 w-8 rounded-xl"
-                 width="32" 
-                 height="32" 
-                 loading="lazy">
-            <span class="text-lg font-semibold text-gray-800 sidebar-text">{{NAVBAR_TITLE}}</span>
+            <img src="{{NAVBAR_LOGO}}" alt="Ka0s Logo" class="h-10 w-10 rounded-xl logo-image transition-all duration-300" width="32" height="32" loading="lazy">
+            <span class="text-lg font-semibold text-gray-800 sidebar-text transition-opacity duration-300">{{NAVBAR_TITLE}}</span>
         </div>
-        <button onclick="toggleSidebar()" class="text-gray-500 hover:text-gray-700 p-1 rounded-lg">
-            <i class="fas fa-chevron-left" id="toggleIcon"></i>
+        <button id="sidebarToggle" class="text-gray-500 hover:text-gray-700 rounded-lg transition-all duration-300">
+            <i class="fas fa-chevron-left text-xl transition-transform duration-300" id="toggleIcon"></i>
         </button>
     </div>
 
     <!-- Navigation Links -->
-    <div class="mt-10 flex flex-col gap-5">
+    <div class="mt-6 flex flex-col gap-2">
         {{NAVBAR_LINKS}}
     </div>
 </nav>
@@ -27,21 +21,50 @@ function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     const toggleIcon = document.getElementById('toggleIcon');
     const sidebarTexts = document.querySelectorAll('.sidebar-text');
+    const mainContent = document.getElementById('main-content');
     
     if (sidebar.classList.contains('w-[250px]')) {
+        // Collapse sidebar
         sidebar.classList.remove('w-[250px]');
         sidebar.classList.add('w-[60px]');
-        toggleIcon.classList.remove('fa-chevron-left');
-        toggleIcon.classList.add('fa-chevron-right');
-        sidebarTexts.forEach(text => text.classList.add('hidden'));
+        toggleIcon.style.transform = 'rotate(180deg)';
+        sidebarTexts.forEach(text => {
+            text.style.opacity = '0';
+            text.classList.add('hidden');
+        });
+        
+        if (mainContent) {
+            mainContent.classList.remove('ml-[250px]');
+            mainContent.classList.add('ml-[60px]');
+        }
     } else {
+        // Expand sidebar
         sidebar.classList.remove('w-[60px]');
         sidebar.classList.add('w-[250px]');
-        toggleIcon.classList.remove('fa-chevron-right');
-        toggleIcon.classList.add('fa-chevron-left');
-        sidebarTexts.forEach(text => text.classList.remove('hidden'));
+        toggleIcon.style.transform = 'rotate(0deg)';
+        sidebarTexts.forEach(text => {
+            text.classList.remove('hidden');
+            setTimeout(() => {
+                text.style.opacity = '1';
+            }, 150);
+        });
+        
+        if (mainContent) {
+            mainContent.classList.remove('ml-[60px]');
+            mainContent.classList.add('ml-[250px]');
+        }
     }
 }
+
+// Auto-collapse sidebar on small screens
+function handleResponsiveLayout() {
+    const sidebar = document.getElementById('sidebar');
+    if (window.innerWidth < 640 && sidebar.classList.contains('w-[250px]')) {
+        toggleSidebar(); // Collapse sidebar on small screens
+    }
+}
+
+// Run on page load and when window is resized
+window.addEventListener('load', handleResponsiveLayout);
+window.addEventListener('resize', handleResponsiveLayout);
 </script>
-
-

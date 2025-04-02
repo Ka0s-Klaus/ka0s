@@ -75,7 +75,7 @@ jobs:
             total_count=$(echo "$runs" | jq '[.workflow_runs[]] | length')
 
             # Calculate lead time
-            lead_time=$(echo "$runs" | jq -r '[.workflow_runs[] | select(.status=="completed" and .updated_at != null and .created_at != null) | (if .updated_at and .created_at then ((fromdateiso8601(.updated_at) - fromdateiso8601(.created_at)) / 60) else 0 end)] | if length > 0 then (add / length) else 0 end')
+            # lead_time=$(echo "$runs" | jq -r '[.workflow_runs[] | select(.status=="completed" and .updated_at != null and .created_at != null) | (if .updated_at and .created_at then ((fromdateiso8601(.updated_at) - fromdateiso8601(.created_at)) / 60) else 0 end)] | if length > 0 then (add / length) else 0 end')
 
             # Calculate success rate
             success_rate=0

@@ -421,3 +421,105 @@
   - core/results/event_data_14191001478.json
   - version.txt
 ---------------------------------
+## Version 0.0.28
+- **Branch**: refs/pull/244/merge
+- **Commit**: Cambios en login del action
+- **Author**: jorgecg646
+- **Date**: Tue Apr  1 09:48:48 UTC 2025
+- **Message**: H220 web de resultados
+- **Files Changed**:
+  - .github/workflows/deploy-dashboard.yml
+  - core/dashboard/Index.html
+  - core/dashboard/dashboard/principal.json
+  - core/dashboard/dashboard/sections/actionsPerformance.json
+  - core/dashboard/dashboard/sections/backLogs.json
+  - core/dashboard/dashboard/sections/endWorkflow.json
+  - core/dashboard/dashboard/sections/handlerFailure.json
+  - core/dashboard/dashboard/sections/handlerSuccess.json
+  - core/dashboard/dashboard/sections/leadTime.json
+  - core/dashboard/dashboard/sections/navbar.json
+  - core/dashboard/dashboard/sections/seccion1.json
+  - core/dashboard/dashboard/sections/seccion2.json
+  - core/dashboard/js/dashboard.js
+  - core/dashboard/templates/actionsPerformance.html
+  - core/dashboard/templates/backLogs.html
+  - core/dashboard/templates/endWorkflow.html
+  - core/dashboard/templates/footer.html
+  - core/dashboard/templates/handlerFailure.html
+  - core/dashboard/templates/handlerSuccess.html
+  - core/dashboard/templates/index.html
+  - core/dashboard/templates/leadTime.html
+  - core/dashboard/templates/navbar.html
+  - core/dashboard/templates/section.html
+  - core/results/event_data_14189358506.json
+  - core/results/event_data_14191135516.json
+  - core/results/event_data_14192495207.json
+  - version.txt
+---------------------------------
+## Version 0.0.29
+- **Branch**: refs/pull/247/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: jorgecg646
+- **Date**: Wed Apr  2 07:34:32 UTC 2025
+- **Message**: H220 web de resultados
+- **Files Changed**:
+  - CHANGELOG.md
+  - INDEX.md
+  - core/dashboard/Index.html
+  - core/dashboard/dashboard/principal.json
+  - core/dashboard/dashboard/sections/actionsPerformance.json
+  - core/dashboard/dashboard/sections/backLogs.json
+  - core/dashboard/dashboard/sections/endWorkflow.json
+  - core/dashboard/dashboard/sections/handlerFailure.json
+  - core/dashboard/dashboard/sections/handlerSuccess.json
+  - core/dashboard/dashboard/sections/leadTime.json
+  - core/dashboard/dashboard/sections/navbar.json
+  - core/dashboard/dashboard/sections/seccion1.json
+  - core/dashboard/dashboard/sections/seccion2.json
+  - core/dashboard/js/dashboard.js
+  - core/dashboard/templates/actionsPerformance.html
+  - core/dashboard/templates/backLogs.html
+  - core/dashboard/templates/endWorkflow.html
+  - core/dashboard/templates/footer.html
+  - core/dashboard/templates/handlerFailure.html
+  - core/dashboard/templates/handlerSuccess.html
+  - core/dashboard/templates/index.html
+  - core/dashboard/templates/leadTime.html
+  - core/dashboard/templates/navbar.html
+  - core/dashboard/templates/section.html
+  - core/results/event_data_14189358506.json
+  - core/results/event_data_14191135516.json
+  - core/results/event_data_14192495207.json
+  - core/results/event_data_14192530220.json
+  - core/results/event_data_14192632862.json
+  - core/results/event_data_14213662479.json
+  - core/results/event_data_14213762520.json
+  - core/results/event_data_14213852846.json
+  - version.txt
+---------------------------------
+## Version 0.0.30
+- **Branch**: refs/pull/248/merge
+- **Commit**: Codigo recuperado
+- **Author**: jorgecg646
+- **Date**: Wed Apr  2 07:59:07 UTC 2025
+- **Message**: H220 web de resultados
+- **Files Changed**:
+  - core/dashboard/Index.html
+  - core/dashboard/dashboard/sections/actionsPerformance.json
+  - core/dashboard/dashboard/sections/backLogs.json
+  - core/dashboard/dashboard/sections/endWorkflow.json
+  - core/dashboard/dashboard/sections/handlerFailure.json
+  - core/dashboard/dashboard/sections/handlerSuccess.json
+  - core/dashboard/dashboard/sections/index.json
+  - core/dashboard/dashboard/sections/leadTime.json
+  - core/dashboard/dashboard/sections/navbar.json
+  - core/dashboard/js/dashboard.js
+  - core/dashboard/templates/actionsPerformance.html
+  - core/dashboard/templates/backLogs.html
+  - core/dashboard/templates/endWorkflow.html
+  - core/dashboard/templates/handlerFailure.html
+  - core/dashboard/templates/handlerSuccess.html
+  - core/dashboard/templates/index.html
+  - core/dashboard/templates/leadTime.html
+  - version.txt
+---------------------------------

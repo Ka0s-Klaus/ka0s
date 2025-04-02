@@ -16,7 +16,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Tailwind Config -->
+    <!-- Tailwind Configuration -->
     <script>
         tailwind.config = {
             theme: {
@@ -42,19 +42,37 @@
         </div>
         
         <!-- Contenido principal a la derecha -->
+        <!-- Update the main content div structure -->
         <div class="flex-1 ml-[250px] transition-all duration-300" id="main-content">
-            <div class="container mx-auto px-4 py-8">
-                <div id="dashboard-container">
+            <div class="flex flex-col min-h-screen">
+                <!-- Content sections -->
+                <div class="flex-grow">
+                    <div class="mx-[3%] py-4">
+                        <div id="dashboard-container" class="section"></div>
+                    </div>
+                    <div id="leadTime" class="hidden mx-[3%] py-4">
+                        HOLA leadTime
+                    </div>
+                    <div id="actionsPerformance" class="hidden mx-[3%] py-4">
+                        <!-- Actions Performance content will be loaded dynamically -->
+                    </div>
+                    <div id="backLogs" class="hidden mx-[3%] py-4">
+                        HOLA backLogs
+                    </div>
+                    <div id="handlerFailure" class="hidden mx-[3%] py-4">
+                        <!-- Handler Failure content will be loaded dynamically -->
+                    </div>
+                    <div id="handlerSuccess" class="hidden mx-[3%] py-4">
+                        HOLA handlerSuccess
+                    </div>
+                    <div id="endWorkflow" class="hidden mx-[3%] py-4">
+                        HOLA endWorkflow
+                    </div>
                 </div>
-            </div>
-            <div id="seccion1" class="container mx-auto px-4 py-4 mb-8 hidden">
-                {{SECCION1}}
-            </div>
-            <div id="seccion2" class="container mx-auto px-4 py-4 mb-8 hidden">
-                {{SECCION2}}
-            </div>
-            <div id="footer" class="mt-auto">
-                {{FOOTER}}
+                <!-- Footer -->
+                <div id="footer" class="mt-auto ml-[9%] md:ml-[4%] transition-all duration-300 pb-2.5">
+                    {{FOOTER}}
+                </div>
             </div>
         </div>
     </div>
@@ -64,31 +82,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
     <script src="js/dashboard.js" defer></script>
     
-    <!-- Script para ajustar el contenido principal cuando el navbar cambia de tamaño -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('main-content');
-            
-            // Función para actualizar el margen del contenido principal
-            function updateMainContentMargin() {
-                if (sidebar && mainContent) {
-                    if (sidebar.classList.contains('w-[60px]')) {
-                        mainContent.classList.remove('ml-[250px]');
-                        mainContent.classList.add('ml-[60px]');
-                    } else {
-                        mainContent.classList.remove('ml-[60px]');
-                        mainContent.classList.add('ml-[250px]');
-                    }
-                }
-            }
-            
-            // Observar cambios en las clases del sidebar
-            const observer = new MutationObserver(updateMainContentMargin);
-            if (sidebar) {
-                observer.observe(sidebar, { attributes: true, attributeFilter: ['class'] });
-            }
-        });
-    </script>
+    <!-- Remove the existing script that conflicts with our navbar toggle -->
+    <!-- The toggle functionality is now handled directly in the navbar.html template -->
 </body>
 </html>
