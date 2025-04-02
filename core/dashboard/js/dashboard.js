@@ -331,6 +331,39 @@ async function loadActionsPerformance() {
     return null;
 }
 
+async function loadHandlerSuccess() {
+    const successData = await loadJsonData('dashboard/sections/handlerSuccess.json');
+    if (!successData) return null;
+
+    const template = await loadHtmlTemplate('templates/handlerSuccess.html');
+    if (template) {
+        let renderedTemplate = template
+            .replace('{{title}}', successData.title)
+            .replace('{{description}}', successData.description)
+            .replace('{{summary.total_successful}}', successData.summary.total_successful)
+            .replace('{{summary.success_rate}}', successData.summary.success_rate)
+            .replace('{{summary.avg_duration}}', successData.summary.avg_duration)
+            .replace('{{summary.last_success}}', successData.summary.last_success);
+
+        // Handle the processes loop
+        const processesMatch = renderedTemplate.match(/{{#each processes}}([\s\S]*?){{\/each}}/);
+        if (processesMatch) {
+            const processTemplate = processesMatch[1];
+            const processesHtml = successData.processes.map(process => {
+                let row = processTemplate;
+                for (const [key, value] of Object.entries(process)) {
+                    row = row.replace(new RegExp(`{{${key}}}`, 'g'), value);
+                }
+                return row;
+            }).join('');
+            renderedTemplate = renderedTemplate.replace(/{{#each processes}}[\s\S]*?{{\/each}}/, processesHtml);
+        }
+
+        return renderedTemplate;
+    }
+    return null;
+}
+
 function setupNavigation() {
     const navLinks = document.querySelectorAll('#navbar a');
     
@@ -370,7 +403,14 @@ function setupNavigation() {
                     document.querySelector('#handlerFailure')?.classList.remove('hidden');
                     break;
                 case 'Handler Success':
-                    document.querySelector('#handlerSuccess')?.classList.remove('hidden');
+                    const successSection = document.querySelector('#handlerSuccess');
+                    if (successSection) {
+                        successSection.classList.remove('hidden');
+                        const renderedTemplate = await loadHandlerSuccess();
+                        if (renderedTemplate) {
+                            successSection.innerHTML = renderedTemplate;
+                        }
+                    }
                     break;
                 case 'End Workflow':
                     document.querySelector('#endWorkflow')?.classList.remove('hidden');
