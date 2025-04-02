@@ -122,17 +122,6 @@ async function updateDashboard() {
         initializeCharts(); // Initialize charts after content is loaded
     }
 
-    // Update sections
-    if (seccion1) {
-        const section1Html = await createSectionHtml(seccion1, 'seccion1');
-        document.querySelector('#seccion1').innerHTML = section1Html;
-    }
-
-    if (seccion2) {
-        const section2Html = await createSectionHtml(seccion2, 'seccion2');
-        document.querySelector('#seccion2').innerHTML = section2Html;
-    }
-    
     // Update Lead Time section
     if (leadTime) {
         const leadTimeHtml = await createSectionHtml(leadTime, 'leadTime');
@@ -142,10 +131,38 @@ async function updateDashboard() {
         }
     }
     
+    // Update backLogs section directly in updateDashboard
+    if (backLogs) {
+        try {
+            const backLogsTemplate = await loadHtmlTemplate('templates/backLogs.html');
+            if (backLogsTemplate) {
+                // Replace placeholders with actual data
+                let content = backLogsTemplate
+                    .replace(/\{\{TITLE\}\}/g, backLogs.title)
+                    .replace(/\{\{DESCRIPTION\}\}/g, backLogs.description)
+                    .replace(/\{\{TARGET1\}\}/g, backLogs.target.target1)
+                    .replace(/\{\{TARGET2\}\}/g, backLogs.target.target2)
+                    .replace(/\{\{TARGET3\}\}/g, backLogs.target.target3);
+                
+                const backLogsElement = document.querySelector('#backLogs');
+                if (backLogsElement) {
+                    backLogsElement.innerHTML = content;
+                    console.log('BackLogs content loaded successfully');
+                } else {
+                    console.error('BackLogs element not found in the DOM');
+                }
+            } else {
+                console.error('Failed to load backLogs template');
+            }
+        } catch (error) {
+            console.error('Error loading backLogs:', error);
+            console.error('Error details:', error.stack);
+        }
+    }
+    
     // Update other sections
     const sections = [
         { id: 'actionsPerformance', data: actionsPerformance },
-        { id: 'backLogs', data: backLogs, template: 'backLogs.html' },
         { id: 'handlerFailure', data: handlerFailure },
         { id: 'handlerSuccess', data: handlerSuccess },
         { id: 'endWorkflow', data: endWorkflow }
@@ -177,16 +194,6 @@ async function updateDashboard() {
     if (footer) {
         const footerHtml = await createFooterHtml(footer);
         document.querySelector('#footer').innerHTML = footerHtml;
-    }
-    // In the updateDashboard function, add this code after loading other sections:
-    
-    // Load backLogs template directly
-    const backLogsTemplate = await loadHtmlTemplate('templates/backLogs.html');
-    if (backLogsTemplate) {
-        const backLogsElement = document.querySelector('#backLogs');
-        if (backLogsElement) {
-            backLogsElement.innerHTML = backLogsTemplate;
-        }
     }
 }
 
@@ -278,10 +285,6 @@ async function initializeCharts() {
         statsSection.querySelector('h4:last-of-type').textContent = metrics[1].value;
         statsSection.querySelector('p:last-of-type').textContent = metrics[1].label;
     }
-    
-    // Initialize the calendar
-    initializeCalendar();
-    console.log('Calendar initialization called');
 }
 
 function setupNavigation() {
@@ -458,4 +461,38 @@ async function createFooterHtml(data) {
 // Update the window.onload function to include debugging
 window.onload = () => {
     updateDashboard();
+    
 };
+
+
+// Function to load and process the backLogs section
+async function loadBackLogs() {
+    try {
+        // Fetch the backLogs template
+        const templateResponse = await loadHtmlTemplate('templates/backLogs.html');
+        const template = await templateResponse.text();
+        
+        // Fetch the backLogs data
+        const dataResponse = await fetch('dashboard/sections/backLogs.json');
+        const data = await dataResponse.json();
+        
+        // Replace placeholders with actual data
+        let content = template
+            .replace(/{{TITLE}}/g, data.title)
+            .replace(/{{DESCRIPTION}}/g, data.description)
+            .replace(/{{TARGET1}}/g, data.target.target1)
+            .replace(/{{TARGET2}}/g, data.target.target2)
+            .replace(/{{TARGET3}}/g, data.target.target3);
+        
+        // Insert the content into the backLogs div
+        const backLogsElement = document.getElementById('backLogs');
+        if (backLogsElement) {
+            backLogsElement.innerHTML = content;
+            console.log('BackLogs content loaded successfully');
+        } else {
+            console.error('BackLogs element not found in the DOM');
+        }
+    } catch (error) {
+        console.error('Error loadizng backLogs:', error);
+    }
+}
