@@ -492,7 +492,14 @@ function setupNavigation() {
                     document.querySelector('#handlerSuccess')?.classList.remove('hidden');
                     break;
                 case 'End Workflow':
-                    document.querySelector('#endWorkflow')?.classList.remove('hidden');
+                    const workflowSection = document.querySelector('#endWorkflow');
+                    if (workflowSection) {
+                        workflowSection.classList.remove('hidden');
+                        const renderedTemplate = await loadEndWorkflow();
+                        if (renderedTemplate) {
+                            workflowSection.innerHTML = renderedTemplate;
+                        }
+                    }
                     break;
             }
 
@@ -610,3 +617,43 @@ async function createFooterHtml(data) {
 window.onload = () => {
     updateDashboard();
 };
+
+async function loadEndWorkflow() {
+    const workflowData = await loadJsonData('dashboard/sections/endWorkflow.json');
+    if (!workflowData) return null;
+
+    const template = await loadHtmlTemplate('templates/endWorkflow.html');
+    if (template) {
+        let renderedTemplate = template
+            .replace('{{title}}', workflowData.title)
+            .replace('{{description}}', workflowData.description)
+            .replace('{{summary.total_projects}}', workflowData.summary.total_projects)
+            .replace('{{summary.completion_rate}}', workflowData.summary.completion_rate)
+            .replace('{{summary.avg_time}}', workflowData.summary.avg_time)
+            .replace('{{summary.last_completion}}', workflowData.summary.last_completion);
+
+        // Handle the projects loop
+        const projectsMatch = renderedTemplate.match(/{{#each projects}}([\s\S]*?){{\/each}}/);
+        if (projectsMatch) {
+            const projectTemplate = projectsMatch[1];
+            const projectsHtml = workflowData.projects.map(project => {
+                let row = projectTemplate;
+                for (const [key, value] of Object.entries(project)) {
+                    row = row.replace(new RegExp(`{{${key}}}`, 'g'), value);
+                }
+                // Handle status-based styling
+                row = row.replace(/{{#if \(eq finalStatus 'Completed Successfully'\)}}(.*?){{\/if}}/g, 
+                    project.finalStatus === 'Completed Successfully' ? '$1' : '');
+                row = row.replace(/{{#if \(eq finalStatus 'Completed with Issues'\)}}(.*?){{\/if}}/g, 
+                    project.finalStatus === 'Completed with Issues' ? '$1' : '');
+                row = row.replace(/{{#if \(eq finalStatus 'Terminated'\)}}(.*?){{\/if}}/g, 
+                    project.finalStatus === 'Terminated' ? '$1' : '');
+                return row;
+            }).join('');
+            renderedTemplate = renderedTemplate.replace(/{{#each projects}}[\s\S]*?{{\/each}}/, projectsHtml);
+        }
+
+        return renderedTemplate;
+    }
+    return null;
+}
