@@ -284,91 +284,71 @@ async function initializeCharts() {
     console.log('Calendar initialization called');
 }
 
-async function loadActionsPerformance() {
-    const actionsData = await loadJsonData('dashboard/sections/actionsPerformance.json');
-    if (!actionsData) return null;
-
-    const template = await loadHtmlTemplate('templates/actionsPerformance.html');
-    if (template) {
-        // Replace all template variables with actual data
-        let renderedTemplate = template;
-        for (const [key, value] of Object.entries(actionsData)) {
-            if (typeof value === 'object') {
-                for (const [subKey, subValue] of Object.entries(value)) {
-                    renderedTemplate = renderedTemplate.replace(
-                        `{{${key}.${subKey}}}`, 
-                        subValue
-                    );
-                }
-            } else {
-                renderedTemplate = renderedTemplate.replace(`{{${key}}}`, value);
-            }
-        }
-        
-        // Handle the workflows loop
-        const workflowsMatch = renderedTemplate.match(/{{#each workflows}}([\s\S]*?){{\/each}}/);
-        if (workflowsMatch) {
-            const workflowTemplate = workflowsMatch[1];
-            const workflowsHtml = actionsData.workflows.map(workflow => {
-                let row = workflowTemplate;
-                for (const [key, value] of Object.entries(workflow)) {
-                    row = row.replace(new RegExp(`{{${key}}}`, 'g'), value);
-                }
-                // Handle status-based styling
-                row = row.replace(/{{#if \(eq status 'success'\)}}(.*?){{\/if}}/g, 
-                    workflow.status === 'success' ? '$1' : '');
-                row = row.replace(/{{#if \(eq status 'running'\)}}(.*?){{\/if}}/g, 
-                    workflow.status === 'running' ? '$1' : '');
-                row = row.replace(/{{#if \(eq status 'failure'\)}}(.*?){{\/if}}/g, 
-                    workflow.status === 'failure' ? '$1' : '');
-                return row;
-            }).join('');
-            renderedTemplate = renderedTemplate.replace(/{{#each workflows}}[\s\S]*?{{\/each}}/, workflowsHtml);
-        }
-        
-        return renderedTemplate;
-    }
-    return null;
-}
-
 function setupNavigation() {
     const navLinks = document.querySelectorAll('#navbar a');
     
     navLinks.forEach(link => {
-        link.addEventListener('click', async function(e) {
+        link.addEventListener('click', function(e) {
             e.preventDefault();
-            const linkText = this.textContent.trim();
             
-            // Hide all sections
-            document.querySelectorAll('[id$="container"], [id^="actions"], [id^="lead"], [id^="back"], [id^="handler"], [id^="end"]').forEach(section => {
-                section.classList.add('hidden');
-            });
+            // Get the section ID from the data attribute
+            const sectionId = this.getAttribute('data-section');
             
-            if (linkText.includes('Actions Performance')) {
-                const actionsSection = document.querySelector('#actionsPerformance');
-                if (actionsSection) {
-                    actionsSection.classList.remove('hidden');
-                    const renderedTemplate = await loadActionsPerformance();
-                    if (renderedTemplate) {
-                        actionsSection.innerHTML = renderedTemplate;
-                    }
-                }
-            } else if (linkText.includes('Dashboard') || linkText.includes('Home')) {
-                document.querySelector('#dashboard-container')?.classList.remove('hidden');
-            } else {
-                const sectionId = linkText.toLowerCase().replace(/\s+/g, '-');
-                document.querySelector(`#${sectionId}`)?.classList.remove('hidden');
-            }
-
-            // Update active state in navbar
-            updateActiveNavLink(this);
+            // Call the showSection function
+            showSection(sectionId);
         });
     });
+    
+    // Set the default section (dashboard) as active on page load
+    setTimeout(() => {
+        showSection('dashboard');
+    }, 100);
 }
 
-function updateActiveNavLink(activeLink) {
-    const navLinks = document.querySelectorAll('#navbar a');
+// Add the showSection function to handle section switching
+function showSection(sectionId) {
+    // Get all section elements
+    const dashboardContainer = document.querySelector('#dashboard-container');
+    const seccion1 = document.querySelector('#seccion1');
+    const seccion2 = document.querySelector('#seccion2');
+    const leadTime = document.querySelector('#leadTime');
+    const actionsPerformance = document.querySelector('#actionsPerformance');
+    const backLogs = document.querySelector('#backLogs');
+    const handlerFailure = document.querySelector('#handlerFailure');
+    const handlerSuccess = document.querySelector('#handlerSuccess');
+    const endWorkflow = document.querySelector('#endWorkflow');
+    
+    // Hide all sections first
+    [dashboardContainer, seccion1, seccion2, leadTime, actionsPerformance, 
+     backLogs, handlerFailure, handlerSuccess, endWorkflow].forEach(section => {
+        if (section) section.classList.add('hidden');
+    });
+    
+    // Show the selected section
+    if (sectionId === 'dashboard') {
+        if (dashboardContainer) dashboardContainer.classList.remove('hidden');
+    } else if (sectionId === 'seccion1') {
+        if (seccion1) seccion1.classList.remove('hidden');
+    } else if (sectionId === 'leadTime') {
+        if (leadTime) leadTime.classList.remove('hidden');
+    } else if (sectionId === 'seccion2') {
+        if (seccion2) seccion2.classList.remove('hidden');
+    } else if (sectionId === 'actionsPerformance') {
+        if (actionsPerformance) actionsPerformance.classList.remove('hidden');
+    } else if (sectionId === 'backLogs') {
+        if (backLogs) backLogs.classList.remove('hidden');
+    } else if (sectionId === 'handlerFailure') {
+        if (handlerFailure) handlerFailure.classList.remove('hidden');
+    } else if (sectionId === 'handlerSuccess') {
+        if (handlerSuccess) handlerSuccess.classList.remove('hidden');
+    } else if (sectionId === 'endWorkflow') {
+        if (endWorkflow) endWorkflow.classList.remove('hidden');
+    }
+    
+    // Update active state in navbar
+    const navLinks = document.querySelectorAll('#navbar .mt-6 a');
     navLinks.forEach(link => {
+        // Remove active class from all links
         link.classList.remove('bg-blue-700', 'text-white');
         const icon = link.querySelector('i');
         if (icon) {
@@ -376,13 +356,19 @@ function updateActiveNavLink(activeLink) {
             icon.classList.add('text-gray-600');
         }
     });
-
-    activeLink.classList.add('bg-blue-700', 'text-white');
-    const icon = activeLink.querySelector('i');
-    if (icon) {
-        icon.classList.remove('text-gray-600');
-        icon.classList.add('text-white');
+    
+    // Add active class to clicked link
+    const activeLink = document.querySelector(`a[data-section="${sectionId}"]`);
+    if (activeLink) {
+        activeLink.classList.add('bg-blue-700', 'text-white');
+        const icon = activeLink.querySelector('i');
+        if (icon) {
+            icon.classList.remove('text-gray-600');
+            icon.classList.add('text-white');
+        }
     }
+    
+    console.log(`Switched to section: ${sectionId}`);
 }
 
 // Update createNavbarHtml to use the external template
