@@ -608,3 +608,14 @@
   - core/results/event_data_14217103667.json
   - version.txt
 ---------------------------------
+## Version 0.0.38
+- **Branch**: refs/pull/258/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: AlejandroPB5
+- **Date**: Wed Apr  2 10:38:00 UTC 2025
+- **Message**: H220 web de resultados
+- **Files Changed**:
+  - .github/workflows/deploy-dashboard.yml
+  - core/results/event_data_14217519973.json
+  - version.txt
+---------------------------------
