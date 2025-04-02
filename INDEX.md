@@ -38,3 +38,4 @@
 - **Version**: 0.0.37 - **Description**: H220 web de resultados
 - **Version**: 0.0.38 - **Description**: H220 web de resultados
 - **Version**: 0.0.39 - **Description**: H215 modulo de summary
+- **Version**: 0.0.40 - **Description**: H215 modulo de summary

@@ -90,14 +90,83 @@ jobs:
           git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
           git add ${{ env.KAOS_PATH_RESUME }}workflows-*.json
           git commit -m "Update workflow resume" || exit 0
-          # git add core/results/dashboard/workflow_stats.json
-          # git commit -m "Update workflow statistics" || exit 0
+          git push
+
+  job-stats:
+    needs: job-core
+    runs-on:
+      group: ka0s
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+
+      - name: Generate workflow statistics
+        run: |
+          # Read the workflow runs data
+          jq -r '.[] as $run |
+            ($run.updated_at | fromdateiso8601) as $end_time |
+            ($run.run_started_at | fromdateiso8601) as $start_time |
+            ($end_time - $start_time) as $duration |
+            {duration: $duration, conclusion: $run.conclusion}
+          | reduce .[] as $run ({
+              "total_runs": 0,
+              "successful_runs": 0,
+              "failed_runs": 0,
+              "cancelled_runs": 0,
+              "total_duration": 0,
+              "success_duration": 0,
+              "failed_duration": 0,
+              "cancelled_duration": 0,
+              "workflow_stats": {},
+              "events": {}
+            };
+            .total_runs += 1
+            | .total_duration += $run.duration
+            | if $run.conclusion == "success" then
+                .successful_runs += 1
+                | .success_duration += $run.duration
+              elif $run.conclusion == "failure" then
+                .failed_runs += 1
+                | .failed_duration += $run.duration
+              elif $run.conclusion == "cancelled" then
+                .cancelled_runs += 1
+                | .cancelled_duration += $run.duration
+              else . end
+            | .workflow_stats[$run.name] += 1
+            | .events[$run.event] += 1
+          ) | {
+            "summary": {
+              "total_runs": .total_runs,
+              "successful_runs": .successful_runs,
+              "failed_runs": .failed_runs,
+              "cancelled_runs": .cancelled_runs,
+              "success_rate": ((.successful_runs / .total_runs) * 100 | floor),
+              "failure_rate": ((.failed_runs / .total_runs) * 100 | floor),
+              "average_duration": (.total_duration / .total_runs),
+              "average_success_duration": (if .successful_runs > 0 then .success_duration / .successful_runs else 0 end),
+              "average_failed_duration": (if .failed_runs > 0 then .failed_duration / .failed_runs else 0 end),
+              "average_cancelled_duration": (if .cancelled_runs > 0 then .cancelled_duration / .cancelled_runs else 0 end)
+            },
+            "workflow_distribution": .workflow_stats,
+            "event_distribution": .events
+          }' ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json > \
+          ${{ env.KAOS_PATH_RESUME }}workflow-statistics.json
+
+      - name: Commit statistics
+        run: |
+          git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
+          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
+          git add ${{ env.KAOS_PATH_RESUME }}workflow-statistics.json
+          git commit -m "Update workflow statistics" || exit 0
           git push
 
   handle-success:
     runs-on:
       group: ka0s
-    needs: [job-core]
+    needs: [job-core, job-stats]
     if: ${{ success() }}
     steps:
       - id: repo
