@@ -397,7 +397,45 @@ async function loadHandlerFailure() {
     return null;
 }
 
-// Update the setupNavigation function to use our new loadHandlerFailure function
+async function loadLeadTime() {
+    const leadTimeData = await loadJsonData('dashboard/sections/leadTime.json');
+    if (!leadTimeData) return null;
+
+    const template = await loadHtmlTemplate('templates/leadTime.html');
+    if (template) {
+        // Replace all template variables with actual data
+        let renderedTemplate = template;
+        
+        // Replace metrics
+        for (const [key, value] of Object.entries(leadTimeData.metrics)) {
+            renderedTemplate = renderedTemplate.replace(`{{metrics.${key}.title}}`, value.title);
+            renderedTemplate = renderedTemplate.replace(`{{metrics.${key}.value}}`, value.value);
+        }
+        
+        // Handle the executions loop
+        const executionsMatch = renderedTemplate.match(/{{#each recentExecutions}}([\s\S]*?){{\/each}}/);
+        if (executionsMatch) {
+            const executionTemplate = executionsMatch[1];
+            const executionsHtml = leadTimeData.recentExecutions.map(execution => {
+                let row = executionTemplate;
+                for (const [key, value] of Object.entries(execution)) {
+                    row = row.replace(new RegExp(`{{${key}}}`, 'g'), value);
+                }
+                // Handle status-based styling
+                const statusClass = execution.status === 'Success' ? 
+                    'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+                row = row.replace('{{statusClass}}', statusClass);
+                return row;
+            }).join('');
+            renderedTemplate = renderedTemplate.replace(/{{#each recentExecutions}}[\s\S]*?{{\/each}}/, executionsHtml);
+        }
+        
+        return renderedTemplate;
+    }
+    return null;
+}
+
+// Update the setupNavigation function to use our new loadLeadTime function
 function setupNavigation() {
     const navLinks = document.querySelectorAll('#navbar a');
     
@@ -428,7 +466,14 @@ function setupNavigation() {
                     }
                     break;
                 case 'Lead Time':
-                    document.querySelector('#leadTime')?.classList.remove('hidden');
+                    const leadTimeSection = document.querySelector('#leadTime');
+                    if (leadTimeSection) {
+                        leadTimeSection.classList.remove('hidden');
+                        const renderedTemplate = await loadLeadTime();
+                        if (renderedTemplate) {
+                            leadTimeSection.innerHTML = renderedTemplate;
+                        }
+                    }
                     break;
                 case 'Backlogs':
                     document.querySelector('#backLogs')?.classList.remove('hidden');
@@ -444,14 +489,7 @@ function setupNavigation() {
                     }
                     break;
                 case 'Handler Success':
-                    const successSection = document.querySelector('#handlerSuccess');
-                    if (successSection) {
-                        successSection.classList.remove('hidden');
-                        const renderedTemplate = await loadHandlerSuccess();
-                        if (renderedTemplate) {
-                            successSection.innerHTML = renderedTemplate;
-                        }
-                    }
+                    document.querySelector('#handlerSuccess')?.classList.remove('hidden');
                     break;
                 case 'End Workflow':
                     document.querySelector('#endWorkflow')?.classList.remove('hidden');
