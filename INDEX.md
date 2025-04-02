@@ -32,3 +32,4 @@
 - **Version**: 0.0.31 - **Description**: H215 modulo de summary
 - **Version**: 0.0.32 - **Description**: H215 modulo de summary
 - **Version**: 0.0.33 - **Description**: H215 modulo de summary
+- **Version**: 0.0.34 - **Description**: H215 modulo de summary
