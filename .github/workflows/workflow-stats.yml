@@ -111,14 +111,28 @@ jobs:
           git pull
           
           # Read the workflow runs data
-          jq -r '.[] | select(.run_started_at != null and .updated_at != null) as $run |
-            ($run.updated_at | fromdateiso8601) as $end_time |
-            ($run.run_started_at | fromdateiso8601) as $start_time |
-            ($end_time - $start_time) as $duration |
-            {name: $run.name, event: $run.event, conclusion: $run.conclusion, duration: $duration}
-          | reduce .[] as $run ({"total_runs": 0, "successful_runs": 0, "failed_runs": 0, "cancelled_runs": 0,
-              "total_duration": 0, "success_duration": 0, "failed_duration": 0, "cancelled_duration": 0,
-              "workflow_stats": {}, "events": {}};
+          # Generate workflow statistics
+          jq -r '[.[] | select(.run_started_at != null and .updated_at != null) | {
+            name,
+            event,
+            conclusion,
+            duration: (if (.run_started_at != null and .updated_at != null) then
+              ((.updated_at | fromdateiso8601) - (.run_started_at | fromdateiso8601))
+            else
+              0
+            end)
+          }] | reduce .[] as $run ({
+            "total_runs": 0,
+            "successful_runs": 0,
+            "failed_runs": 0,
+            "cancelled_runs": 0,
+            "total_duration": 0,
+            "success_duration": 0,
+            "failed_duration": 0,
+            "cancelled_duration": 0,
+            "workflow_stats": {},
+            "events": {}
+          };
             .total_runs += 1
             | .total_duration += $run.duration
             | if $run.conclusion == "success" then
@@ -148,7 +162,8 @@ jobs:
             },
             "workflow_distribution": .workflow_stats,
             "event_distribution": .events
-          }' ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json > \
+          }
+          ' ${{ env.KAOS_PATH_RESUME }}kaos-workflows-runs.json > \
           ${{ env.KAOS_PATH_RESUME }}workflow-statistics.json
 
       - name: Commit statistics
