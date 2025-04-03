@@ -32,8 +32,38 @@ window.sectionUtils.createNavbarHtml = async function(data) {
 
 // Create footer HTML
 window.sectionUtils.createFooterHtml = async function(data) {
-    const footerTemplate = await window.dashboardUtils.loadHtmlTemplate('templates/footer.html');
-    if (!footerTemplate) return '';
+    // Try multiple possible paths for the footer template
+    let footerTemplate = await window.dashboardUtils.loadHtmlTemplate('templates/footer.html');
+    
+    // If the first path fails, try alternative paths
+    if (!footerTemplate) {
+        console.log('Failed to load footer from templates/footer.html, trying alternative paths...');
+        footerTemplate = await window.dashboardUtils.loadHtmlTemplate('/templates/footer.html');
+    }
+    
+    if (!footerTemplate) {
+        console.log('Failed to load footer from /templates/footer.html, trying with full path...');
+        footerTemplate = await window.dashboardUtils.loadHtmlTemplate('/core/dashboard/templates/footer.html');
+    }
+    
+    // Last resort - use a hardcoded footer template
+    if (!footerTemplate) {
+        console.log('Using hardcoded footer template as fallback');
+        footerTemplate = `
+<footer class="bg-white shadow-2xl rounded-xl py-6 md:py-6 px-2 w-[97%] sm:w-[97%] mt-auto">
+    <div class="flex flex-col items-center">
+        <div class="flex flex-wrap justify-center gap-3">
+            <a href="https://app.codacy.com/gh/SantaKa0S/kaos/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade" target="_blank" rel="noopener noreferrer">
+                <img src="https://app.codacy.com/project/badge/Grade/203720c203a84af7a9d888680a047df4" alt="Codacy Badge" class="h-6">
+            </a>
+            <a href="https://www.gnu.org/licenses/gpl-3.0" target="_blank" rel="noopener noreferrer">
+                <img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="License: GPL v3" class="h-6">
+            </a>
+        </div>
+        <p class="text-dark text-xs mt-2">{{COPYRIGHT}}</p>
+    </div>
+</footer>`;
+    }
     
     // Replace placeholders with actual data
     let html = footerTemplate;
