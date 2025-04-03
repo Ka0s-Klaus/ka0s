@@ -180,15 +180,7 @@ jobs:
           recent_commits=$(git rev-list --count HEAD --since="30 days ago")
 
           # Get author statistics
-          author_stats=$(git shortlog -sn --no-merges | awk '{
-              name=""
-              for (i=2; i<=NF; i++) name = name (i>2?" ":"")$i
-              commits=$1
-              if (NR==1) printf "{"
-              printf "%s{\"name\": \"%s\", \"commits\": %d}", 
-                     (NR==1?"":","), name, commits
-              if (NR==1) printf "]"
-          }')
+          author_stats=$(git shortlog -sn --no-merges)
 
           # Generate JSON output
           cat << EOF > ${{ env.KAOS_PATH_RESUME }}kaos-repository-statistics.json
@@ -259,7 +251,7 @@ jobs:
   end-workflow:
     runs-on:
       group: ka0s
-    needs: [job-core, handle-success, handle_failure]
+    needs: [job-core, job-stats, handle-success, handle_failure]
     if: ${{ always() && !contains(github.event.head_commit.message, '[Ka0S] ') }}
     env:
         GH_TOKEN: ${{ secrets.KAOS_ACTIONS_TOKEN }}
