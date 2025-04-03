@@ -50,7 +50,7 @@ jobs:
           
           # Iterate over each workflow and get runs with proper formatting
           for workflow_id in $workflows; do
-            gh api repos/:owner/:repo/actions/workflows/$workflow_id/runs --paginate | \
+            gh api repos/:owner/:repo/actions/workflows/$workflow_id/runs --paginate --jq '.workflow_runs[] | select(.created_at >= (now - 2592000 | strftime("%Y-%m-%dT%H:%M:%SZ")))' | \
               jq -r '.workflow_runs[] | select(.id != null)' | \
               jq -s '[ .[] | {
                 id,
@@ -180,7 +180,10 @@ jobs:
           recent_commits=$(git rev-list --count HEAD --since="30 days ago")
 
           # Get author statistics
-          author_stats=$(git shortlog -sn --no-merges)
+          author_stats=$(git shortlog -sn --no-merges | while read commits author; do
+            echo "{\"commits\": $commits, \"author\": \"$author\"}";
+          done | paste -sd "," -)
+          echo "Author statistics: $author_stats"
 
           # Generate JSON output
           cat << EOF > ${{ env.KAOS_PATH_RESUME }}kaos-repository-statistics.json
