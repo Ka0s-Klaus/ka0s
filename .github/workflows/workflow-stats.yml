@@ -50,8 +50,8 @@ jobs:
           
           # Iterate over each workflow and get runs with proper formatting
           for workflow_id in $workflows; do
-            gh api repos/:owner/:repo/actions/workflows/$workflow_id/runs --paginate --jq '.workflow_runs[] | \
-              jq -r '.workflow_runs[] | select(.id != null)' | \
+            gh api repos/:owner/:repo/actions/workflows/$workflow_id/runs --paginate | \
+              jq '.workflow_runs[] | select(.id != null)' | \
               jq -s '[ .[] | {
                 id,
                 name,
