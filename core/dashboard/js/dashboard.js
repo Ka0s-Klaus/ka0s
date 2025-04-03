@@ -38,6 +38,8 @@ document.addEventListener('DOMContentLoaded', async function() {
         
         // Initialize dashboard
         await updateDashboard();
+        // Cargar las métricas después de que el dashboard esté listo
+        await updateDashboardMetrics();
     } catch (error) {
         console.error('Error initializing dashboard:', error);
     }
@@ -106,3 +108,57 @@ async function updateDashboard() {
 
 // Export the updateDashboard function for use in other modules
 window.updateDashboard = updateDashboard;
+
+
+// Función para cargar los datos
+async function updateDashboardMetrics() {
+    try {
+        console.log('Loading dashboard metrics...');
+        const response = await fetch('../outputs/w/workflow-statistics.json');
+        const data = await response.json();
+        
+        if (!data || !data.summary) {
+            console.error('Invalid data format');
+            return;
+        }
+
+        console.log('Updating metrics with:', data.summary);
+        // Actualizar las métricas con los datos del summary
+        const elements = {
+            'total-runs': data.summary.total_runs,
+            'success-rate': `${data.summary.success_rate}%`,
+            'avg-duration': formatDuration(data.summary.average_duration * 1000),
+            'failure-rate': `${data.summary.failure_rate}%`
+        };
+
+        // Actualizar cada elemento
+        Object.entries(elements).forEach(([id, value]) => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = value;
+                console.log(`Updated ${id} with ${value}`);
+            } else {
+                console.error(`Element with id ${id} not found`);
+            }
+        });
+
+    } catch (error) {
+        console.error('Error loading dashboard metrics:', error);
+    }
+}
+
+// Función auxiliar para formatear la duración
+function formatDuration(ms) {
+    if (!ms || isNaN(ms)) return 'N/A';
+    const seconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    
+    if (hours > 0) {
+        return `${hours}h ${minutes % 60}m`;
+    } else if (minutes > 0) {
+        return `${minutes}m ${seconds % 60}s`;
+    } else {
+        return `${seconds}s`;
+    }
+}
