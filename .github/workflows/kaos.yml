@@ -52,54 +52,52 @@ jobs:
       - name: Crear JSON
         id: crear_json
         run: |
-          echo "{}" >> ${{ env.KAOS_JSON }}${{ github.run_id }}.json
-          case "${{ env.KAOS_EVENT_NAME }}" in
-            "push")
-              echo "{\"event\": \"push\", \"ref\": \"${{ github.ref }}\", \"sha\": \"${{ github.sha }}\"}" >> ${{ env.KAOS_JSON }}${{ github.run_id }}.json # Ejemplo: {"event": "push", "ref": "refs/heads/main", "sha": "abc123"}
-              echo "Variable github.action=${{ github.action }}" >> ${{ env.KAOS_JSON }}${{ github.run_id }}.json
-              echo "Variable github.event.action=${{ github.event.action }}"
-              echo "Variable github.event.pusher.name=${{ github.event.pusher.name }}" >> ${{ env.KAOS_JSON }}${{ github.run_id }}.json
-              echo "variable github.event.pusher.email=${{ github.event.pusher.email }}" >> ${{ env.KAOS_JSON }}${{ github.run_id }}.json
-              echo "Variable github.event.issue.number=${{ github.event.issue.number }}" >> ${{ env.KAOS_JSON }}${{ github.run_id }}.json
-              #Crear un fichero de resumen con todos los datos de los commits asociados, esta información es usada en todo el ciclo de vida del workflow
-              git log ${{ github.event.before }}..${{ github.sha }} --pretty=format:'%H%n%an%n%ae%n%ad%n%s' > ${{ env.KAOS_PATH_RESUME }}commit-summary-$KAOS_CODE_FILES.txt
-              # Crear un fichero con la ruta completa y el nombre ficheros implicados en el commit
-              git diff --name-only ${{ github.event.before }} ${{ github.sha }} > ${{ env.KAOS_PATH_RESUME }}files-in-commit-$KAOS_CODE_FILES.txt
-              INVOLVED=${{ env.KAOS_PATH_RESUME }}files-in-commit-$KAOS_CODE_FILES.txt
-              #echo "INVOLVED=$INVOLVED" >> $GITHUB_OUTPUT
-              echo "INVOLVED=$INVOLVED" >> ${{ env.KAOS_JSON }}${{ github.run_id }}.json
-              ;;
-            "pull_request")
-              echo "{\"event\": \"pull_request\", \"action\": \"${{ github.event.action }}\", \"number\": \"${{ github.event.number }}\"}" > event_data.json # Ejemplo: {"event": "pull_request", "action": "opened", "number": "42"}
-              ;;
-            "issues")
-              echo "{\"event\": \"issues\", \"action\": \"${{ github.event.action }}\", \"issue\": \"${{ github.event.issue.number }}\"}" > event_data.json # Ejemplo: {"event": "issues", "action": "opened", "issue": "99"}
-              ;;
-            "issue_comment")
-              echo "{\"event\": \"issue_comment\", \"action\": \"${{ github.event.action }}\", \"comment\": \"${{ github.event.comment.id }}\"}" > event_data.json # Ejemplo: {"event": "issue_comment", "action": "created", "comment": "123456"}
-              ;;
-            "create")
-              echo "{\"event\": \"create\", \"ref\": \"${{ github.ref }}\", \"ref_type\": \"${{ github.event.ref }}\"}" > event_data.json # Ejemplo: {"event": "create", "ref": "refs/tags/v1.0", "ref_type": "tag"}
-              ;;
-            "delete")
-              echo "{\"event\": \"delete\", \"ref\": \"${{ github.ref }}\", \"ref_type\": \"${{ github.event.ref }}\"}" > event_data.json # Ejemplo: {"event": "delete", "ref": "refs/heads/feature-branch", "ref_type": "branch"}
-              ;;
-            "release")
-              echo "{\"event\": \"release\", \"action\": \"${{ github.event.action }}\", \"release\": \"${{ github.event.release.tag_name }}\"}" > event_data.json # Ejemplo: {"event": "release", "action": "published", "release": "v1.0"}
-              ;;
-            "watch")
-              echo "{\"event\": \"watch\", \"action\": \"${{ github.event.action }}\"}" > event_data.json # Ejemplo: {"event": "watch", "action": "started"}
-              ;;
-            "repository_dispatch")
-              echo "{\"event\": \"repository_dispatch\", \"action\": \"${{ github.event.action }}\"}" > event_data.json # Ejemplo: {"event": "repository_dispatch", "action": "custom-event"}
-              ;;
-            "workflow_dispatch")
-              echo "{\"event\": \"workflow_dispatch\"}" > event_data.json # Ejemplo: {"event": "workflow_dispatch"}
-              ;;
-            *)
-              echo "{\"event\": \"unknown\"}" > event_data.json # Ejemplo: {"event": "unknown"}
-              ;;
-          esac      
+        
+          # Initialize JSON file with proper structure
+          event_data={
+            "event_type": "${{ env.KAOS_EVENT_NAME }}",
+            "trigger_branch": "${{ github.ref }}",
+            "timestamp": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+            "author": {
+              "name": "${{ github.event.pusher.name }}",
+              "email": "${{ github.event.pusher.email }}"
+            },
+            "commits": [],
+            "files": []
+          }
+
+          # Get commit information
+          if [[ "${{ env.KAOS_EVENT_NAME }}" == "push" ]]; then
+            while IFS= read -r line; do
+              commit_data=$(git log -1 --pretty=format:'{"sha":"%H","author":"%an","email":"%ae","date":"%aI","message":"%s"}' "$line")
+              event_data["commits"]+=($commit_data)
+            done < <(git rev-list ${{ github.event.before }}..${{ github.sha }})
+
+            # Get affected files
+            while IFS= read -r file; do
+              event_data["files"]+=($file)
+            done < <(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+          elif [[ "${{ env.KAOS_EVENT_NAME }}" == "pull_request" ]]; then
+            event_data["pull_request"]={
+              "action": "${{ github.event.action }}",
+              "number": "${{ github.event.number }}",
+              "title": "${{ github.event.pull_request.title }}"
+            }
+          elif [[ "${{ env.KAOS_EVENT_NAME }}" == "issues" ]]; then
+            event_data["issue"]={
+              "action": "${{ github.event.action }}",
+              "number": "${{ github.event.issue.number }}",
+              "title": "${{ github.event.issue.title }}"
+            }
+          fi
+
+          # Write formatted JSON to file
+          echo "$event_data" | jq '.' > ${{ env.KAOS_JSON }}${{ github.run_id }}.json
+
+          # Store the file path for later use
+          INVOLVED=${{ env.KAOS_PATH_RESUME }}files-in-commit-$KAOS_CODE_FILES.txt
+          echo "INVOLVED=$INVOLVED" >> ${{ env.KAOS_JSON }}${{ github.run_id }}.json
+          
       - name: Set environment variable for ref
         id: ref
         run: echo "GITHUB_REF=${{ github.ref }}" >> $GITHUB_ENV
