@@ -209,7 +209,68 @@ window.navigationUtils.setupNavigation = function() {
                     }
                     break;
                 case 'Backlogs':
-                    document.querySelector('#backLogs')?.classList.remove('hidden');
+                    const backLogsSection = document.querySelector('#backLogs');
+                    if (backLogsSection) {
+                        backLogsSection.classList.remove('hidden');
+                        // Load and process the Backlogs data
+                        const backLogsData = await window.dashboardUtils.loadJsonData('dashboard/sections/backLogs.json');
+                        if (backLogsData) {
+                            const template = await window.dashboardUtils.loadHtmlTemplate('templates/backLogs.html');
+                            if (template) {
+                                // Replace all template variables with actual data
+                                let renderedTemplate = template;
+                                
+                                renderedTemplate = renderedTemplate.replace(/{{ backLogs.title }}/g, backLogsData.title);
+                                renderedTemplate = renderedTemplate.replace(/{{ backLogs.description }}/g, backLogsData.description);
+
+                                renderedTemplate = renderedTemplate.replace(/{{ backLogs.target1 }}/g, backLogsData.target.target1.title);
+                                renderedTemplate = renderedTemplate.replace(/{{ backLogs.target1.description }}/g, backLogsData.target.target1.description);
+                                renderedTemplate = renderedTemplate.replace(/{{ backLogs.target2 }}/g, backLogsData.target.target2.title);
+                                renderedTemplate = renderedTemplate.replace(/{{ backLogs.target2.description }}/g, backLogsData.target.target2.description);
+                                renderedTemplate = renderedTemplate.replace(/{{ backLogs.target3 }}/g, backLogsData.target.target3.title);
+                                renderedTemplate = renderedTemplate.replace(/{{ backLogs.target3.description }}/g, backLogsData.target.target3.description);
+
+
+                                
+                                // Replace title and description if they exist in the template
+                                if (backLogsData.title) {
+                                    renderedTemplate = renderedTemplate.replace(/{{title}}/g, backLogsData.title);
+                                }
+                                
+                                // Replace target data
+                                if (backLogsData.target) {
+                                    for (const [key, value] of Object.entries(backLogsData.target)) {
+                                        renderedTemplate = renderedTemplate.replace(new RegExp(`{{target1.${key}.title}}`, 'g'), value.title);
+                                        renderedTemplate = renderedTemplate.replace(new RegExp(`{{target1.${key}.description}}`, 'g'), value.description);
+                                    }
+                                }
+                                
+                                // Handle the mainContent loop if it exists in the template
+                                const contentMatch = renderedTemplate.match(/{{#each mainContent}}([\s\S]*?){{\/each}}/);
+                                if (contentMatch && backLogsData.mainContent) {
+                                    const itemTemplate = contentMatch[1];
+                                    const itemsHtml = backLogsData.mainContent.map(item => {
+                                        let row = itemTemplate;
+                                        for (const [key, value] of Object.entries(item)) {
+                                            if (key === 'tags' && Array.isArray(value)) {
+                                                // Handle tags array
+                                                const tagsHtml = value.map(tag => 
+                                                    `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 mr-1">${tag}</span>`
+                                                ).join('');
+                                                row = row.replace(/{{tagsHtml}}/g, tagsHtml);
+                                            } else {
+                                                row = row.replace(new RegExp(`{{${key}}}`, 'g'), value);
+                                            }
+                                        }
+                                        return row;
+                                    }).join('');
+                                    renderedTemplate = renderedTemplate.replace(/{{#each mainContent}}[\s\S]*?{{\/each}}/, itemsHtml);
+                                }
+                                
+                                backLogsSection.innerHTML = renderedTemplate;
+                            }
+                        }
+                    }
                     break;
                 case 'Handler Failure':
                     const failureSection = document.querySelector('#handlerFailure');
