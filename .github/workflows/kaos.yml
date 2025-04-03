@@ -52,9 +52,9 @@ jobs:
       - name: Crear JSON
         id: crear_json
         run: |
-        
-          # Initialize JSON file with proper structure
-          event_data={
+          # Create JSON structure using proper bash syntax
+          cat > ${{ env.KAOS_JSON }}${{ github.run_id }}.json << EOF
+          {
             "event_type": "${{ env.KAOS_EVENT_NAME }}",
             "trigger_branch": "${{ github.ref }}",
             "timestamp": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
@@ -65,39 +65,76 @@ jobs:
             "commits": [],
             "files": []
           }
+          EOF
 
-          # Get commit information
+          # Add commits if this is a push event
           if [[ "${{ env.KAOS_EVENT_NAME }}" == "push" ]]; then
-            while IFS= read -r line; do
-              commit_data=$(git log -1 --pretty=format:'{"sha":"%H","author":"%an","email":"%ae","date":"%aI","message":"%s"}' "$line")
-              event_data["commits"]+=($commit_data)
+            # Create a temporary file for commits
+            TEMP_COMMITS=$(mktemp)
+            echo "[" > "$TEMP_COMMITS"
+            
+            # Process each commit
+            FIRST=true
+            while IFS= read -r commit; do
+              if [ "$FIRST" = true ]; then
+                FIRST=false
+              else
+                echo "," >> "$TEMP_COMMITS"
+              fi
+              git log -1 --pretty=format:'{"sha":"%H","author":"%an","email":"%ae","date":"%aI","message":"%s"}' "$commit" >> "$TEMP_COMMITS"
             done < <(git rev-list ${{ github.event.before }}..${{ github.sha }})
+            echo "]" >> "$TEMP_COMMITS"
+            
+            # Insert commits into main JSON
+            sed -i.bak -e '/"commits": \[/r '$TEMP_COMMITS'' -e '/"commits": \[/d' ${{ env.KAOS_JSON }}${{ github.run_id }}.json
+            rm "$TEMP_COMMITS"
 
-            # Get affected files
+            # Add changed files
+            TEMP_FILES=$(mktemp)
+            echo "[" > "$TEMP_FILES"
+            FIRST=true
             while IFS= read -r file; do
-              event_data["files"]+=($file)
+              if [ "$FIRST" = true ]; then
+                FIRST=false
+              else
+                echo "," >> "$TEMP_FILES"
+              fi
+              echo "\"$file\"" >> "$TEMP_FILES"
             done < <(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+            echo "]" >> "$TEMP_FILES"
+            
+            # Insert files into main JSON
+            sed -i.bak -e '/"files": \[/r '$TEMP_FILES'' -e '/"files": \[/d' ${{ env.KAOS_JSON }}${{ github.run_id }}.json
+            rm "$TEMP_FILES"
           elif [[ "${{ env.KAOS_EVENT_NAME }}" == "pull_request" ]]; then
-            event_data["pull_request"]={
+            # Add pull request information
+            TEMP_PR=$(mktemp)
+            cat > "$TEMP_PR" << EOF
+            ,"pull_request": {
               "action": "${{ github.event.action }}",
               "number": "${{ github.event.number }}",
               "title": "${{ github.event.pull_request.title }}"
             }
+          EOF
+            sed -i.bak -e '/}$/r '$TEMP_PR'' ${{ env.KAOS_JSON }}${{ github.run_id }}.json
+            rm "$TEMP_PR"
           elif [[ "${{ env.KAOS_EVENT_NAME }}" == "issues" ]]; then
-            event_data["issue"]={
+            # Add issue information
+            TEMP_ISSUE=$(mktemp)
+            cat > "$TEMP_ISSUE" << EOF
+            ,"issue": {
               "action": "${{ github.event.action }}",
               "number": "${{ github.event.issue.number }}",
               "title": "${{ github.event.issue.title }}"
             }
+          EOF
+            sed -i.bak -e '/}$/r '$TEMP_ISSUE'' ${{ env.KAOS_JSON }}${{ github.run_id }}.json
+            rm "$TEMP_ISSUE"
           fi
-
-          # Write formatted JSON to file
-          echo "$event_data" | jq '.' > ${{ env.KAOS_JSON }}${{ github.run_id }}.json
 
           # Store the file path for later use
           INVOLVED=${{ env.KAOS_PATH_RESUME }}files-in-commit-$KAOS_CODE_FILES.txt
-          echo "INVOLVED=$INVOLVED" >> ${{ env.KAOS_JSON }}${{ github.run_id }}.json
-          
+          echo "INVOLVED=$INVOLVED" >> $GITHUB_ENV
       - name: Set environment variable for ref
         id: ref
         run: echo "GITHUB_REF=${{ github.ref }}" >> $GITHUB_ENV
