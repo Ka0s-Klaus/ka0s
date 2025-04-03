@@ -114,8 +114,8 @@ jobs:
           workflows=$(jq -r '.[].id' ${{ env.KAOS_PATH_RESUME }}kaos-workflows-available.json)
 
           # Generate workflow statistics
-          for workflow_id in $workflows; do
-              jq -r '[.[] | select(.run_started_at != null and .updated_at != null) | {
+          for work_id in $workflows; do
+              jq -r '[.[] | select(.workflow_id = $work_id and .run_started_at != null and .updated_at != null) | {
                 name,
                 event,
                 conclusion,
