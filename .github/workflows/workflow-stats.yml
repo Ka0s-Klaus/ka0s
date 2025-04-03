@@ -183,8 +183,11 @@ jobs:
           author_stats=$(git shortlog -sn --no-merges | awk '{
               name=""
               for (i=2; i<=NF; i++) name = name (i>2?" ":"")$i
+              commits=$1
+              if (NR==1) printf "{"
               printf "%s{\"name\": \"%s\", \"commits\": %d}", 
-                     (NR==1?"":","), name, $1
+                     (NR==1?"":","), name, commits
+              if (NR==1) printf "]"
           }')
 
           # Generate JSON output
