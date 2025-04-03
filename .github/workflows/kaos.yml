@@ -18,7 +18,7 @@ env:
     KAOS_REF: ${{ github.ref }}
     KAOS_MODULE: "[Ka0S] kaos"
     KAOS_PATH_RESUME: "core/results/k/"
-    KAOS_JSON: "core/results/event_data_"
+    KAOS_JSON: "core/results/k/event_data_"
     KAOS_ACTOR: ${{ github.actor }}
 jobs: 
   job-core:
@@ -160,7 +160,7 @@ jobs:
           # Nuevo proceso de activacion de los modulos
           while IFS= read -r line; do
             # Skip files in core/outputs directory
-            if [[ "$line" == core/outputs/* or "$line" == core/results/* ]]; then
+            if [[ "$line" == core/outputs/* || "$line" == core/results/* ]]; then
               echo "Skipping file in outputs directory: $line"
               continue
             fi
