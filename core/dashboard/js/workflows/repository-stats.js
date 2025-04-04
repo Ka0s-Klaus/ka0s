@@ -6,33 +6,24 @@
 // Load repository statistics from JSON file
 async function loadRepositoryStats() {
     try {
-        // Try multiple possible paths to find the JSON file
-        const possiblePaths = [
-            '../../../outputs/w/kaos-repository-statistics.json',
-            '../../outputs/w/kaos-repository-statistics.json',
-            '../outputs/w/kaos-repository-statistics.json',
-            '/outputs/w/kaos-repository-statistics.json',
-            '/core/outputs/w/kaos-repository-statistics.json',
-            './core/outputs/w/kaos-repository-statistics.json'
-        ];
+        // Use the known working path
+        const path = '/core/outputs/w/kaos-repository-statistics.json';
         
-        let data = null;
-        
-        for (const path of possiblePaths) {
-            try {
-                console.log(`Attempting to fetch from: ${path}`);
-                const response = await fetch(path);
-                if (response.ok) {
-                    data = await response.json();
-                    console.log(`Successfully loaded data from: ${path}`);
-                    break;
-                }
-            } catch (e) {
-                console.log(`Failed to fetch from ${path}: ${e.message}`);
+        try {
+            console.log(`Attempting to fetch from: ${path}`);
+            const response = await fetch(path);
+            if (response.ok) {
+                const data = await response.json();
+                console.log(`Successfully loaded data from: ${path}`);
+                return data;
+            } else {
+                console.error(`Failed to load data: ${response.status} ${response.statusText}`);
+                return null;
             }
+        } catch (e) {
+            console.log(`Failed to fetch from ${path}: ${e.message}`);
+            return null;
         }
-        
-        return data;
     } catch (error) {
         console.error('Error loading repository statistics:', error);
         return null;
