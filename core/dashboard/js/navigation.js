@@ -151,37 +151,55 @@ window.navigationUtils.setupNavigation = function() {
                 case 'Inicio':
                     document.querySelector('#dashboard-container')?.classList.remove('hidden');
                     break;
+                // En la función setupNavigation, dentro del case 'Actions Performance':
                 case 'Actions Performance':
                     const actionsSection = document.querySelector('#actionsPerformance');
                     if (actionsSection) {
                         actionsSection.classList.remove('hidden');
-                        // Load and process the Actions Performance data
-                        const actionsData = await window.dashboardUtils.loadJsonData('dashboard/sections/actionsPerformance.json');
-                        if (actionsData) {
-                            const template = await window.dashboardUtils.loadHtmlTemplate('templates/actionsPerformance.html');
+                        
+                        // Cargar datos de kaos-workflows-runs.json en lugar de actionsPerformance.json
+                        const workflowsData = await fetch('../outputs/w/kaos-workflows-runs.json')
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error(`Error HTTP: ${response.status}`);
+                                }
+                                return response.json();
+                            })
+                            .catch(error => {
+                                console.error('Error loading workflow runs:', error);
+                                return [];
+                            });
+                            
+                        console.log('Workflow data loaded:', workflowsData.length, 'workflows');
+                        
+                        if (workflowsData && workflowsData.length > 0) {
+                            // Procesar los datos para el formato que espera el template
+                            const processedData = processWorkflowData(workflowsData);
+                            
+                            const template = await window.dashboardUtils.loadHtmlTemplate('templates/actionsperformance.html');
                             if (template) {
-                                // Replace all template variables with actual data
+                                // Aplicar los datos al template
                                 let renderedTemplate = template;
                                 
-                                // Replace summary data
-                                for (const [key, value] of Object.entries(actionsData.summary)) {
+                                // Reemplazar summary data
+                                for (const [key, value] of Object.entries(processedData.summary)) {
                                     renderedTemplate = renderedTemplate.replace(`{{summary.${key}}}`, value);
                                 }
                                 
-                                // Replace title and description
-                                renderedTemplate = renderedTemplate.replace('{{title}}', actionsData.title);
-                                renderedTemplate = renderedTemplate.replace('{{description}}', actionsData.description);
+                                // Reemplazar title y description
+                                renderedTemplate = renderedTemplate.replace('{{title}}', processedData.title);
+                                renderedTemplate = renderedTemplate.replace('{{description}}', processedData.description);
                                 
-                                // Handle the workflows loop
+                                // Manejar el bucle de workflows
                                 const workflowsMatch = renderedTemplate.match(/{{#each workflows}}([\s\S]*?){{\/each}}/);
                                 if (workflowsMatch) {
                                     const workflowTemplate = workflowsMatch[1];
-                                    const workflowsHtml = actionsData.workflows.map(workflow => {
+                                    const workflowsHtml = processedData.workflows.map(workflow => {
                                         let row = workflowTemplate;
                                         for (const [key, value] of Object.entries(workflow)) {
                                             row = row.replace(new RegExp(`{{${key}}}`, 'g'), value);
                                         }
-                                        // Handle status-based styling
+                                        // Manejar estilos basados en el estado
                                         row = row.replace(/{{#if \(eq status 'success'\)}}(.*?){{\/if}}/g, 
                                             workflow.status === 'success' ? '$1' : '');
                                         row = row.replace(/{{#if \(eq status 'running'\)}}(.*?){{\/if}}/g, 
@@ -195,6 +213,8 @@ window.navigationUtils.setupNavigation = function() {
                                 
                                 actionsSection.innerHTML = renderedTemplate;
                             }
+                        } else {
+                            actionsSection.innerHTML = `<div class="bg-red-100 p-4 rounded-lg text-red-700">No se pudieron cargar los datos de workflows</div>`;
                         }
                     }
                     break;
@@ -407,3 +427,107 @@ window.navigationUtils.setupNavigation = function() {
         defaultSection.classList.remove('hidden');
     }
 };
+
+// Add this function to process workflow data
+function processWorkflowData(runs) {
+    // Group by workflow name
+    const workflowMap = {};
+    let totalRuns = 0;
+    let successfulRuns = 0;
+    let totalDuration = 0;
+    
+    runs.forEach(run => {
+        totalRuns++;
+        if (run.conclusion === 'success') {
+            successfulRuns++;
+        }
+        
+        const duration = calculateDurationInSeconds(run.created_at, run.updated_at);
+        totalDuration += duration;
+        
+        if (!workflowMap[run.name]) {
+            workflowMap[run.name] = {
+                name: run.name,
+                status: getStatusText(run.status, run.conclusion),
+                runs: [],
+                success_count: 0,
+                total_runs: 0,
+                last_run: run.created_at
+            };
+        }
+        
+        workflowMap[run.name].total_runs++;
+        if (run.conclusion === 'success') {
+            workflowMap[run.name].success_count++;
+        }
+        
+        // Update last status if more recent
+        if (new Date(run.created_at) > new Date(workflowMap[run.name].last_run)) {
+            workflowMap[run.name].last_run = run.created_at;
+            workflowMap[run.name].status = getStatusText(run.status, run.conclusion);
+            workflowMap[run.name].duration = formatDuration(duration);
+        }
+    });
+    
+    // Calculate statistics
+    const workflows = Object.values(workflowMap).map(workflow => {
+        const successRate = workflow.total_runs > 0 
+            ? Math.round((workflow.success_count / workflow.total_runs) * 100) 
+            : 0;
+            
+        return {
+            name: workflow.name,
+            status: workflow.status,
+            duration: workflow.duration || 'N/A',
+            success_rate: `${successRate}%`,
+            last_run: formatDate(workflow.last_run),
+            total_runs: workflow.total_runs
+        };
+    });
+    
+    // Summary data
+    const successRate = totalRuns > 0 ? Math.round((successfulRuns / totalRuns) * 100) : 0;
+    
+    return {
+        title: "GitHub Actions Performance",
+        description: "Recent Workflow Executions",
+        summary: {
+            total_workflows: workflows.length,
+            success_rate: `${successRate}%`,
+            total_runs: totalRuns,
+            avg_duration: formatDuration(totalDuration / totalRuns)
+        },
+        workflows: workflows
+    };
+}
+
+function calculateDurationInSeconds(start, end) {
+    const startTime = new Date(start);
+    const endTime = new Date(end);
+    return (endTime - startTime) / 1000; // in seconds
+}
+
+function formatDuration(seconds) {
+    if (isNaN(seconds) || seconds <= 0) return 'N/A';
+    
+    if (seconds < 60) return `${Math.round(seconds)}s`;
+    if (seconds < 3600) return `${Math.round(seconds / 60)}m`;
+    return `${Math.round(seconds / 3600)}h`;
+}
+
+function formatDate(dateString) {
+    return new Date(dateString).toLocaleString('en-GB', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+function getStatusText(status, conclusion) {
+    if (status === 'in_progress') return 'running';
+    if (conclusion === 'success') return 'success';
+    if (conclusion === 'failure') return 'failure';
+    return status || conclusion || 'unknown';
+}

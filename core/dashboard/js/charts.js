@@ -1,4 +1,3 @@
-// charts.js - Handles chart initialization and rendering
 
 // Initialize the chart utilities namespace
 window.chartUtils = {};
