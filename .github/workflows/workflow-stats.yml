@@ -14,7 +14,7 @@ env:
     KAOS_PATH_RESUME: "core/outputs/w/"
     KAOS_JSON: "core/results/event_data_"
     KAOS_ACTOR: ${{ github.actor }}
-    GH_REPO: ${{ secrets.KAOS_REPO }}
+    GH_REPO: "github.com/Ka0s-Klaus/ka0s"
 
 jobs:
   job-core:
@@ -208,6 +208,8 @@ jobs:
           EOF
 
       - name: Generate Issues Summary
+        env:
+          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
         run: |
             #  Extraemos toda la información de las issues hasta el momento
             touch ${{ env.KAOS_PATH_RESUME }}issue-log-${{ env.KAOS_CODE }}.json
