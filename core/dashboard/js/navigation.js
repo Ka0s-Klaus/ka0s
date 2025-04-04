@@ -296,71 +296,215 @@ window.navigationUtils.setupNavigation = function() {
                     const failureSection = document.querySelector('#handlerFailure');
                     if (failureSection) {
                         failureSection.classList.remove('hidden');
-                        // Load and process the Handler Failure data
-                        const failureData = await window.dashboardUtils.loadJsonData('dashboard/sections/handlerFailure.json');
-                        if (failureData) {
-                            const template = await window.dashboardUtils.loadHtmlTemplate('templates/handlerFailure.html');
+                        
+                        // Load data from kaos-workflows-runs.json
+                        const failureWorkflowsData = await fetch('../outputs/w/kaos-workflows-runs.json')
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error(`HTTP Error: ${response.status}`);
+                                }
+                                return response.json();
+                            })
+                            .catch(error => {
+                                console.error('Error loading workflow runs:', error);
+                                return [];
+                            });
+                            
+                        console.log('Workflow data loaded:', failureWorkflowsData.length, 'total workflows');
+                        
+                        if (failureWorkflowsData && failureWorkflowsData.length > 0) {
+                            // Filter only failed workflows
+                            const filteredFailureData = failureWorkflowsData.filter(run => run.conclusion === 'failure');
+                            console.log('Filtered failed workflows:', filteredFailureData.length);
+                            
+                            // Calculate additional failure metrics
+                            const totalWorkflows = failureWorkflowsData.length;
+                            const failureCount = filteredFailureData.length;
+                            const failureRatio = totalWorkflows > 0 ? (failureCount / totalWorkflows * 100).toFixed(1) : 0;
+                            
+                            // Calculate average time to failure
+                            let totalFailureDuration = 0;
+                            filteredFailureData.forEach(run => {
+                                totalFailureDuration += calculateDurationInSeconds(run.created_at, run.updated_at);
+                            });
+                            const avgFailureTime = failureCount > 0 ? formatDuration(totalFailureDuration / failureCount) : 'N/A';
+                            
+                            // Analyze common errors (using workflow names as proxy for error types)
+                            const errorTypes = {};
+                            filteredFailureData.forEach(run => {
+                                const errorType = run.name;
+                                if (!errorTypes[errorType]) {
+                                    errorTypes[errorType] = 0;
+                                }
+                                errorTypes[errorType]++;
+                            });
+                            
+                            // Find most common error
+                            let mostCommonError = 'None';
+                            let maxCount = 0;
+                            for (const [errorType, count] of Object.entries(errorTypes)) {
+                                if (count > maxCount) {
+                                    mostCommonError = errorType;
+                                    maxCount = count;
+                                }
+                            }
+                            
+                            const template = await window.dashboardUtils.loadHtmlTemplate('templates/handlerfailure.html');
                             if (template) {
-                                // Replace all template variables with actual data
+                                // Check the template variables and log them for debugging
+                                console.log('Template loaded:', template.includes('{{metrics.total_failed}}'), 
+                                            'total_failed:', template.includes('{{metrics.total_failed}}'),
+                                            'avg_fail_time:', template.includes('{{metrics.avg_fail_time}}')
+                                            );
+                                
+                                // Apply data to the template
                                 let renderedTemplate = template;
                                 
-                                // Replace metrics
-                                for (const [key, value] of Object.entries(failureData.metrics)) {
-                                    renderedTemplate = renderedTemplate.replace(`{{metrics.${key}}}`, value);
+                                // Log the actual template content to see the variable names
+                                console.log('Template content sample:', template.substring(0, 500));
+                                
+                                // Extract the actual variable names from the template
+                                const totalFailedMatch = template.match(/{{(metrics\.[^}]+)}}/);
+                                if (totalFailedMatch) {
+                                    console.log('Found metric variable:', totalFailedMatch[1]);
                                 }
+                                
+                                // Replace metrics data with the correct variable names from the template
+                                renderedTemplate = renderedTemplate.replace(/{{metrics\.total_failed}}/g, failureCount);
+                                renderedTemplate = renderedTemplate.replace(/{{metrics\.failure_rate}}/g, `${failureRatio}%`);
+                                renderedTemplate = renderedTemplate.replace(/{{metrics\.common_error}}/g, mostCommonError);
+                                renderedTemplate = renderedTemplate.replace(/{{metrics\.avg_fail_time}}/g, avgFailureTime);
+                                
+                                // Try alternative variable formats that might be in the template
+                                renderedTemplate = renderedTemplate.replace(/\{\{metrics\.total_workflows\}\}/g, failureCount);
+                                renderedTemplate = renderedTemplate.replace(/\{\{metrics\.avg_failure_time\}\}/g, avgFailureTime);
+                                renderedTemplate = renderedTemplate.replace(/{{title}}/g, "GitHub Actions Failure Metrics");
+                                renderedTemplate = renderedTemplate.replace(/{{description}}/g, "Real-time workflow failure analysis");
+                                
+                                // Process workflow failures for the table
+                                const failures = filteredFailureData.map(run => {
+                                    return {
+                                        workflow_name: run.name,
+                                        error_type: run.event || 'Unknown',
+                                        time: formatDate(run.created_at)
+                                    };
+                                });
                                 
                                 // Handle the failures loop
                                 const failuresMatch = renderedTemplate.match(/{{#each failures}}([\s\S]*?){{\/each}}/);
                                 if (failuresMatch) {
                                     const failureTemplate = failuresMatch[1];
-                                    const failuresHtml = failureData.failures.map(failure => {
+                                    const failuresHtml = failures.map(failure => {
                                         let row = failureTemplate;
-                                        for (const [key, value] of Object.entries(failure)) {
-                                            row = row.replace(new RegExp(`{{${key}}}`, 'g'), value);
-                                        }
+                                        row = row.replace(/{{workflow_name}}/g, failure.workflow_name);
+                                        row = row.replace(/{{error_type}}/g, failure.error_type);
+                                        row = row.replace(/{{time}}/g, failure.time);
                                         return row;
                                     }).join('');
                                     renderedTemplate = renderedTemplate.replace(/{{#each failures}}[\s\S]*?{{\/each}}/, failuresHtml);
                                 }
                                 
+                                // After rendering the template, try to find and update the specific elements
                                 failureSection.innerHTML = renderedTemplate;
+                                
+                                // Solución directa para el problema de {{metrics.total_failed}}
+                                setTimeout(() => {
+                                    // Buscar directamente en el HTML y reemplazar la cadena exacta
+                                    const htmlContent = failureSection.innerHTML;
+                                    if (htmlContent.includes('{{metrics.total_failed}}')) {
+                                        failureSection.innerHTML = htmlContent.replace(/\{\{metrics\.total_failed\}\}/g, failureCount);
+                                    }
+                                    
+                                    // También intentar con un enfoque más específico para elementos individuales
+                                    const elements = failureSection.querySelectorAll('div, span, p, h1, h2, h3, h4, h5, h6');
+                                    elements.forEach(el => {
+                                        if (el.innerHTML === '{{metrics.total_failed}}') {
+                                            el.innerHTML = failureCount;
+                                        }
+                                    });
+                                    
+                                    // Verificar si se realizó el reemplazo
+                                    console.log('After direct HTML replacement:', 
+                                        failureSection.innerHTML.includes('{{metrics.total_failed}}'),
+                                        'Failure count:', failureCount);
+                                }, 100);
+                            } else {
+                                failureSection.innerHTML = `<div class="bg-red-100 p-4 rounded-lg text-red-700">Could not load failure template</div>`;
                             }
+                        } else {
+                            failureSection.innerHTML = `<div class="bg-red-100 p-4 rounded-lg text-red-700">Could not load workflow data</div>`;
                         }
                     }
                     break;
                 case 'Handler Success':
-                    const successSection = document.querySelector('#handlerSuccess');
-                    if (successSection) {
-                        successSection.classList.remove('hidden');
-                        // Load and process the Handler Success data
-                        const successData = await window.dashboardUtils.loadJsonData('dashboard/sections/handlerSuccess.json');
-                        if (successData) {
-                            const template = await window.dashboardUtils.loadHtmlTemplate('templates/handlerSuccess.html');
+                    const handlerSuccessSection = document.querySelector('#handlerSuccess');
+                    if (handlerSuccessSection) {
+                        handlerSuccessSection.classList.remove('hidden');
+                        
+                        // Load data from kaos-workflows-runs.json
+                        const successWorkflowsData = await fetch('../outputs/w/kaos-workflows-runs.json')
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error(`HTTP Error: ${response.status}`);
+                                }
+                                return response.json();
+                            })
+                            .catch(error => {
+                                console.error('Error loading workflow runs:', error);
+                                return [];
+                            });
+                            
+                        console.log('Workflow data loaded:', successWorkflowsData.length, 'total workflows');
+                        
+                        if (successWorkflowsData && successWorkflowsData.length > 0) {
+                            // Filter only successful workflows
+                            const filteredSuccessData = successWorkflowsData.filter(run => run.conclusion === 'success');
+                            console.log('Filtered successful workflows:', filteredSuccessData.length);
+                            
+                            // Process data for the template format
+                            const processedSuccessData = processWorkflowData(filteredSuccessData);
+                            processedSuccessData.title = "Successful Workflows";
+                            processedSuccessData.description = "Workflows that completed successfully";
+                            
+                            const template = await window.dashboardUtils.loadHtmlTemplate('templates/actionsperformance.html');
                             if (template) {
-                                let renderedTemplate = template
-                                    .replace('{{title}}', successData.title)
-                                    .replace('{{description}}', successData.description)
-                                    .replace('{{summary.total_successful}}', successData.summary.total_successful)
-                                    .replace('{{summary.success_rate}}', successData.summary.success_rate)
-                                    .replace('{{summary.avg_duration}}', successData.summary.avg_duration)
-                                    .replace('{{summary.last_success}}', successData.summary.last_success);
-
-                                // Handle the processes loop
-                                const processesMatch = renderedTemplate.match(/{{#each processes}}([\s\S]*?){{\/each}}/);
-                                if (processesMatch) {
-                                    const processTemplate = processesMatch[1];
-                                    const processesHtml = successData.processes.map(process => {
-                                        let row = processTemplate;
-                                        for (const [key, value] of Object.entries(process)) {
+                                // Apply data to the template
+                                let renderedTemplate = template;
+                                
+                                // Replace summary data
+                                for (const [key, value] of Object.entries(processedSuccessData.summary)) {
+                                    renderedTemplate = renderedTemplate.replace(`{{summary.${key}}}`, value);
+                                }
+                                
+                                // Replace title and description
+                                renderedTemplate = renderedTemplate.replace('{{title}}', processedSuccessData.title);
+                                renderedTemplate = renderedTemplate.replace('{{description}}', processedSuccessData.description);
+                                
+                                // Handle workflows loop
+                                const workflowsMatch = renderedTemplate.match(/{{#each workflows}}([\s\S]*?){{\/each}}/);
+                                if (workflowsMatch) {
+                                    const workflowTemplate = workflowsMatch[1];
+                                    const workflowsHtml = processedSuccessData.workflows.map(workflow => {
+                                        let row = workflowTemplate;
+                                        for (const [key, value] of Object.entries(workflow)) {
                                             row = row.replace(new RegExp(`{{${key}}}`, 'g'), value);
                                         }
+                                        // Handle status-based styles
+                                        row = row.replace(/{{#if \(eq status 'success'\)}}(.*?){{\/if}}/g, 
+                                            workflow.status === 'success' ? '$1' : '');
+                                        row = row.replace(/{{#if \(eq status 'running'\)}}(.*?){{\/if}}/g, 
+                                            workflow.status === 'running' ? '$1' : '');
+                                        row = row.replace(/{{#if \(eq status 'failure'\)}}(.*?){{\/if}}/g, 
+                                            workflow.status === 'failure' ? '$1' : '');
                                         return row;
                                     }).join('');
-                                    renderedTemplate = renderedTemplate.replace(/{{#each processes}}[\s\S]*?{{\/each}}/, processesHtml);
+                                    renderedTemplate = renderedTemplate.replace(/{{#each workflows}}[\s\S]*?{{\/each}}/, workflowsHtml);
                                 }
-
-                                successSection.innerHTML = renderedTemplate;
+                                
+                                handlerSuccessSection.innerHTML = renderedTemplate;
                             }
+                        } else {
+                            handlerSuccessSection.innerHTML = `<div class="bg-red-100 p-4 rounded-lg text-red-700">Could not load workflow data</div>`;
                         }
                     }
                     break;
@@ -529,5 +673,4 @@ function getStatusText(status, conclusion) {
     if (status === 'in_progress') return 'running';
     if (conclusion === 'success') return 'success';
     if (conclusion === 'failure') return 'failure';
-    return status || conclusion || 'unknown';
-}
+    return status || conclusion || 'unknown';}
