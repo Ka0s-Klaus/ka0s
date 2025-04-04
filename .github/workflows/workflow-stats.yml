@@ -14,6 +14,7 @@ env:
     KAOS_PATH_RESUME: "core/outputs/w/"
     KAOS_JSON: "core/results/event_data_"
     KAOS_ACTOR: ${{ github.actor }}
+    GH_REPO: ${{ secrets.KAOS_REPO }}
 
 jobs:
   job-core:
@@ -103,7 +104,7 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.KAOS_REPO_TOKEN }}
 
-      - name: Generate workflow statistics
+      - name: Generate workflow names
         run: |
           # Pull the latest changes
           git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
@@ -205,6 +206,14 @@ jobs:
             }
           }
           EOF
+
+      - name: Generate Issues Summary
+        run: |
+            #  Extraemos toda la información de las issues hasta el momento
+            touch ${{ env.KAOS_PATH_RESUME }}issue-log-${{ env.KAOS_CODE }}.json
+            gh issue list --repo ${{ env.GH_REPO }} --state all --limit 999 --json assignees,author,body,closed,closedAt,comments,createdAt,id,labels,milestone,number,projectCards,projectItems,reactionGroups,state,title,updatedAt,url > ${{ env.KAOS_PATH_RESUME }}issue-log-${{ env.KAOS_CODE }}.json
+            # Formatear el archivo JSON final
+            cat ${{ env.KAOS_PATH_RESUME }}issue-log-${{ env.KAOS_CODE }}.json | jq -s '.' > ${{ env.KAOS_PATH_RESUME }}kaos-issue.json
 
       - name: Commit statistics
         run: |
