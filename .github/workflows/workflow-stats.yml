@@ -208,6 +208,8 @@ jobs:
           EOF
 
       - name: Generate Issues Summary
+        env:
+          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
         run: |
             #  Extraemos toda la información de las issues hasta el momento
             touch ${{ env.KAOS_PATH_RESUME }}issue-log-${{ env.KAOS_CODE }}.json
