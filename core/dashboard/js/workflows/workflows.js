@@ -83,9 +83,7 @@ async function displayWorkflowStats() {
             </td>
             
             <td class="px-6 py-4 whitespace-nowrap">
-                <a href="${workflowUrl}" target="_blank" class="text-blue-600 hover:text-blue-800">
                     ${name}
-                </a>
             </td>
             
             <td class="px-6 py-4 whitespace-nowrap">
