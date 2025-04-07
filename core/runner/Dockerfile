@@ -5,7 +5,7 @@ ENV TZ=Europe/Madrid
 RUN apt-get update && \
     export DEBIAN_FRONTEND=noninteractive && \
     ln -fs /usr/share/zoneinfo/$TZ /etc/localtime && \
-    apt-get install -y --no-install-recommends tzdata apt-utils apt-transport-https curl wget git jq gnupg gh && \
+    apt-get install -y --no-install-recommends python3 pip libc6 libgcc-s1 libicu74 liblttng-ust1 libssl3 libstdc++6 libunwind8 zlib1g ca-certificates tzdata apt-utils apt-transport-https curl wget git jq gnupg gh && \
     dpkg-reconfigure --frontend noninteractive tzdata && \
     apt-get upgrade -y
 
