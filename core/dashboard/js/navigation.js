@@ -377,7 +377,7 @@ window.navigationUtils.setupNavigation = function() {
                             
                             // Load and process the Backlogs data
                             const backLogsData = await window.dashboardUtils.loadJsonData('dashboard/sections/backLogs.json');
-                            const backLogsDataReal = await window.dashboardUtils.loadJsonData('../outputs/w/kaos-issue.json');
+                            const backLogsDataReal = await window.dashboardUtils.loadJsonData('dashboard/data/kaos-issue.json');
 
                             if (backLogsData && backLogsDataReal) {
                                 const template = await window.dashboardUtils.loadHtmlTemplate('templates/backLogs.html');

@@ -8,9 +8,33 @@ on:
   workflow_dispatch:
   
 jobs:
+  copy-kaos-files:
+    runs-on:
+      group: ka0s
+    steps:
+      - id: repo
+        name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+      
+      - name: Copy kaos- files from w to data folder
+        run: |
+          # Create data directory if it doesn't exist
+          mkdir -p ./dashboard/data
+          
+          # Copy all kaos- files from w folder to data folder
+          find ./outputs/w -type f -name "kaos-*" -exec cp {} ./dashboard/data/ \;
+          
+          # List the copied files for verification
+          echo "Files copied to data folder:"
+          ls -la ./dashboard/data/
+
   job-core:
     runs-on:
       group: ka0s
+    needs: [copy-kaos-files]
     steps:
       - id: repo
         name: Checkout repository
