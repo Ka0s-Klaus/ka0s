@@ -599,311 +599,111 @@ window.navigationUtils.setupNavigation = function() {
                         }
                         break;
 
-                case 'Handler Failure':
-                    const failureSection = document.querySelector('#handlerFailure');
-                    if (failureSection) {
-                        failureSection.classList.remove('hidden');
-                        
-                        // Load data from kaos-workflows-runs.json
-                        const failureWorkflowsData = await fetch('../outputs/w/kaos-workflows-runs.json')
-                            .then(response => {
-                                if (!response.ok) {
-                                    throw new Error(`HTTP Error: ${response.status}`);
-                                }
-                                return response.json();
-                            })
-                            .catch(error => {
-                                console.error('Error loading workflow runs:', error);
-                                return [];
-                            });
-                            
-                        console.log('Workflow data loaded:', failureWorkflowsData.length, 'total workflows');
-                        
-                        if (failureWorkflowsData && failureWorkflowsData.length > 0) {
-                            // Filter only failed workflows
-                            const filteredFailureData = failureWorkflowsData.filter(run => run.conclusion === 'failure');
-                            console.log('Filtered failed workflows:', filteredFailureData.length);
-                            
-                            // Calculate additional failure metrics
-                            const totalWorkflows = failureWorkflowsData.length;
-                            const failureCount = filteredFailureData.length;
-                            const failureRatio = totalWorkflows > 0 ? (failureCount / totalWorkflows * 100).toFixed(1) : 0;
-                            
-                            // Calculate average time to failure
-                            let totalFailureDuration = 0;
-                            filteredFailureData.forEach(run => {
-                                totalFailureDuration += calculateDurationInSeconds(run.created_at, run.updated_at);
-                            });
-                            const avgFailureTime = failureCount > 0 ? formatDuration(totalFailureDuration / failureCount) : 'N/A';
-                            
-                            // Analyze common errors (using workflow names as proxy for error types)
-                            const errorTypes = {};
-                            filteredFailureData.forEach(run => {
-                                // Use event type as the error type instead of workflow name
-                                const errorType = run.event || 'Unknown';
-                                if (!errorTypes[errorType]) {
-                                    errorTypes[errorType] = 0;
-                                }
-                                errorTypes[errorType]++;
-                            });
-                            
-                            // Find most common error
-                            let mostCommonError = 'None';
-                            let maxCount = 0;
-                            for (const [errorType, count] of Object.entries(errorTypes)) {
-                                if (count > maxCount) {
-                                    mostCommonError = errorType;
-                                    maxCount = count;
-                                }
-                            }
-                            
-                            const template = await window.dashboardUtils.loadHtmlTemplate('templates/handlerfailure.html');
-                            if (template) {
-                                // Check the template variables and log them for debugging
-                                console.log('Template loaded:', template.includes('{{metrics.total_failed}}'), 
-                                            'total_failed:', template.includes('{{metrics.total_failed}}'),
-                                            'avg_fail_time:', template.includes('{{metrics.avg_fail_time}}')
-                                            );
-                                
-                                // Apply data to the template
-                                let renderedTemplate = template;
-                                
-                                // Log the actual template content to see the variable names
-                                console.log('Template content sample:', template.substring(0, 500));
-                                
-                                // Extract the actual variable names from the template
-                                const totalFailedMatch = template.match(/{{(metrics\.[^}]+)}}/);
-                                if (totalFailedMatch) {
-                                    console.log('Found metric variable:', totalFailedMatch[1]);
-                                }
-                                
-                                // Replace metrics data with the correct variable names from the template
-                                renderedTemplate = renderedTemplate.replace(/{{metrics\.total_failed}}/g, failureCount);
-                                renderedTemplate = renderedTemplate.replace(/{{metrics\.total_failures}}/g, failureCount); // Add support for alternative variable name
-                                renderedTemplate = renderedTemplate.replace(/{{metrics\.failure_rate}}/g, `${failureRatio}%`);
-                                renderedTemplate = renderedTemplate.replace(/{{metrics\.common_error}}/g, mostCommonError);
-                                renderedTemplate = renderedTemplate.replace(/{{metrics\.avg_fail_time}}/g, avgFailureTime);
-                                
-                                // Try alternative variable formats that might be in the template
-                                renderedTemplate = renderedTemplate.replace(/\{\{metrics\.total_workflows\}\}/g, failureCount);
-                                renderedTemplate = renderedTemplate.replace(/\{\{metrics\.avg_failure_time\}\}/g, avgFailureTime);
-                                renderedTemplate = renderedTemplate.replace(/{{title}}/g, "GitHub Actions Failure Metrics");
-                                renderedTemplate = renderedTemplate.replace(/{{description}}/g, "Real-time workflow failure analysis");
-                                
-                                // Process workflow failures for the table
-                                const failures = filteredFailureData.map(run => {
-                                    return {
-                                        workflow_name: run.name,
-                                        error_type: run.event || 'Unknown',
-                                        time: formatDate(run.created_at)
-                                    };
-                                });
-                                
-                                // Handle the failures loop
-                                const failuresMatch = renderedTemplate.match(/{{#each failures}}([\s\S]*?){{\/each}}/);
-                                if (failuresMatch) {
-                                    const failureTemplate = failuresMatch[1];
-                                    const failuresHtml = failures.map(failure => {
-                                        let row = failureTemplate;
-                                        row = row.replace(/{{workflow_name}}/g, failure.workflow_name);
-                                        row = row.replace(/{{error_type}}/g, failure.error_type);
-                                        row = row.replace(/{{time}}/g, failure.time);
-                                        return row;
-                                    }).join('');
-                                    renderedTemplate = renderedTemplate.replace(/{{#each failures}}[\s\S]*?{{\/each}}/, failuresHtml);
-                                }
-                                
-                                // Final check for any remaining template variables before rendering
-                                const remainingVariables = renderedTemplate.match(/\{\{metrics\.[^}]+\}\}/g);
-                                if (remainingVariables) {
-                                    console.log('Found remaining variables:', remainingVariables);
-                                    remainingVariables.forEach(variable => {
-                                        // Replace any remaining metrics variables with appropriate values
-                                        if (variable.includes('total_failed') || variable.includes('total_failures')) {
-                                            renderedTemplate = renderedTemplate.replace(new RegExp(variable.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), failureCount);
-                                        }
-                                    });
-                                }
-                                
-                                // After rendering the template, update the DOM
-                                failureSection.innerHTML = renderedTemplate;
-                                
-                                // No need for setTimeout as we've already handled all replacements
-                                setTimeout(() => {
-                                    // Search directly in the HTML and replace the exact string
-                                    let htmlContent = failureSection.innerHTML;
-                                    if (htmlContent.includes('{{metrics.total_failed}}')) {
-                                        htmlContent = htmlContent.replace(/\{\{metrics\.total_failed\}\}/g, failureCount);
-                                        failureSection.innerHTML = htmlContent;
-                                    }
-                                    
-                                    // Also check for the alternative variable name
-                                    htmlContent = failureSection.innerHTML;
-                                    if (htmlContent.includes('{{metrics\.total_failures}}')) {
-                                        htmlContent = htmlContent.replace(/\{\{metrics\.total_failures\}\}/g, failureCount);
-                                        failureSection.innerHTML = htmlContent;
-                                    }
-                                    
-                                    // Also try with a more specific approach for individual elements
-                                    const elements = failureSection.querySelectorAll('*');
-                                    elements.forEach(el => {
-                                        // Check for both variable names
-                                        if (el.textContent && (
-                                            el.textContent.trim() === '{{metrics.total_failed}}' ||
-                                            el.textContent.trim() === '{{metrics.total_failed}}' ||
-                                            el.textContent.trim() === '{{metrics.total_failures}}')) {
-                                            el.textContent = failureCount;
-                                        }
-                                        // Also check for partial matches
-                                        else if (el.textContent) {
-                                            if (el.textContent.includes('{{metrics.total_failed}}')) {
-                                                el.textContent = el.textContent.replace('{{metrics.total_failed}}', failureCount);
-                                            }
-                                            if (el.textContent.includes('{{metrics.total_failures}}')) {
-                                                el.textContent = el.textContent.replace('{{metrics.total_failures}}', failureCount);
-                                            }
-                                        }
-                                    });
-                                    
-                                    // Verify if the replacement was successful
-                                    console.log('After direct HTML replacement:', 
-                                        failureSection.innerHTML.includes('{{metrics.total_failed}}') || 
-                                        failureSection.innerHTML.includes('{{metrics.total_failures}}'),
-                                        'Failure count:', failureCount);
-                                }, 100);
-                            } else {
-                                failureSection.innerHTML = `<div class="bg-red-100 p-4 rounded-lg text-red-700">Could not load failure template</div>`;
-                            }
-                        } else {
-                            failureSection.innerHTML = `<div class="bg-red-100 p-4 rounded-lg text-red-700">Could not load workflow data</div>`;
-                        }
-                    }
-                    break;
                 // ... existing code ...
-case 'Handler Success':
-    const successSection = document.querySelector('#handlerSuccess');
-    if (successSection) {
-        successSection.classList.remove('hidden');
+
+case 'Handler Failure':
+    const failureSection = document.querySelector('#handlerFailure');
+    if (failureSection) {
+        failureSection.classList.remove('hidden');
         
         // Show loading indicator
-        successSection.innerHTML = `
+        failureSection.innerHTML = `
             <div class="flex justify-center items-center h-64">
-                <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-green-500"></div>
-                <p class="ml-4 text-lg text-gray-600">Loading success data...</p>
+                <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-red-500"></div>
+                <p class="ml-4 text-lg text-gray-600">Loading failure data...</p>
             </div>
         `;
-        
+
         try {
-            // Load data from kaos-workflows-runs.json
-            const successWorkflowsData = await fetch('../outputs/w/kaos-workflows-runs.json')
+            const failureWorkflowsData = await fetch('../outputs/w/kaos-workflows-runs.json')
                 .then(response => {
                     if (!response.ok) {
                         throw new Error(`HTTP Error: ${response.status}`);
                     }
                     return response.json();
                 });
-                
-            console.log('Workflow data loaded:', successWorkflowsData.length, 'total workflows');
-            
-            if (successWorkflowsData && successWorkflowsData.length > 0) {
-                // Filter only successful workflows
-                const filteredSuccessData = successWorkflowsData.filter(run => run.conclusion === 'success');
-                console.log('Filtered successful workflows:', filteredSuccessData.length);
-                
-                // Calculate success metrics
-                const totalWorkflows = successWorkflowsData.length;
-                const successCount = filteredSuccessData.length;
-                const successRate = totalWorkflows > 0 ? (successCount / totalWorkflows * 100).toFixed(1) + '%' : '0%';
-                
-                // Calculate average execution time
-                let totalSuccessDuration = 0;
-                filteredSuccessData.forEach(run => {
-                    const duration = calculateDurationInSeconds(run.created_at, run.updated_at);
-                    totalSuccessDuration += duration;
-                });
-                const avgExecutionTime = successCount > 0 ? formatDuration(totalSuccessDuration / successCount) : 'N/A';
-                
-                // Find most common successful workflow
-                const workflowCounts = {};
-                filteredSuccessData.forEach(run => {
-                    const workflowName = run.name;
-                    workflowCounts[workflowName] = (workflowCounts[workflowName] || 0) + 1;
-                });
-                
-                let mostCommonWorkflow = 'None';
-                let maxCount = 0;
-                for (const [workflow, count] of Object.entries(workflowCounts)) {
-                    if (count > maxCount) {
-                        mostCommonWorkflow = workflow;
-                        maxCount = count;
-                    }
-                }
 
+            if (failureWorkflowsData && failureWorkflowsData.length > 0) {
+                const filteredFailureData = failureWorkflowsData.filter(run => run.conclusion === 'failure');
+                
                 // Set up pagination
-                const pageSize = 10; // Set items per page to 10
-                const totalPages = Math.ceil(filteredSuccessData.length / pageSize);
+                const pageSize = 10;
+                const totalPages = Math.ceil(filteredFailureData.length / pageSize);
                 let currentPage = 1;
 
                 // Function to render a specific page
-                async function renderSuccessPage(page) {
+                async function renderFailurePage(page) {
                     const start = (page - 1) * pageSize;
                     const end = start + pageSize;
-                    const paginatedSuccesses = filteredSuccessData.slice(start, end);
+                    const paginatedFailures = filteredFailureData.slice(start, end);
 
-                    const template = await window.dashboardUtils.loadHtmlTemplate('templates/handlerSuccess.html');
+                    // Calculate metrics
+                    const totalWorkflows = failureWorkflowsData.length;
+                    const failureCount = filteredFailureData.length;
+                    const failureRatio = totalWorkflows > 0 ? (failureCount / totalWorkflows * 100).toFixed(1) : 0;
+                    
+                    let totalFailureDuration = 0;
+                    filteredFailureData.forEach(run => {
+                        totalFailureDuration += calculateDurationInSeconds(run.created_at, run.updated_at);
+                    });
+                    const avgFailureTime = failureCount > 0 ? formatDuration(totalFailureDuration / failureCount) : 'N/A';
+
+                    const template = await window.dashboardUtils.loadHtmlTemplate('templates/handlerFailure.html');
                     if (template) {
                         let renderedTemplate = template;
                         
                         // Replace metrics data
-                        renderedTemplate = renderedTemplate.replace(/{{metrics\.total_successful}}/g, successCount);
-                        renderedTemplate = renderedTemplate.replace(/{{metrics\.success_rate}}/g, successRate);
-                        renderedTemplate = renderedTemplate.replace(/{{metrics\.common_workflow}}/g, mostCommonWorkflow);
-                        renderedTemplate = renderedTemplate.replace(/{{metrics\.avg_execution_time}}/g, avgExecutionTime);
+                        renderedTemplate = renderedTemplate.replace(/{{metrics\.total_failed}}/g, failureCount);
+                        renderedTemplate = renderedTemplate.replace(/{{metrics\.total_failures}}/g, failureCount);
+                        renderedTemplate = renderedTemplate.replace(/{{metrics\.failure_rate}}/g, `${failureRatio}%`);
+                        renderedTemplate = renderedTemplate.replace(/{{metrics\.avg_failure_time}}/g, avgFailureTime);
                         
-                        // Handle the successes loop
-                        const successesMatch = renderedTemplate.match(/{{#each successes}}([\s\S]*?){{\/each}}/);
-                        if (successesMatch) {
-                            const successTemplate = successesMatch[1];
-                            const successesHtml = paginatedSuccesses.map(success => {
-                                let row = successTemplate;
-                                row = row.replace(/{{name}}/g, success.name);
-                                row = row.replace(/{{duration}}/g, formatDuration(calculateDurationInSeconds(success.created_at, success.updated_at)));
-                                row = row.replace(/{{created_at}}/g, new Date(success.created_at).toLocaleString());
+                        // Handle the failures loop
+                        const failuresMatch = renderedTemplate.match(/{{#each failures}}([\s\S]*?){{\/each}}/);
+                        if (failuresMatch) {
+                            const failureTemplate = failuresMatch[1];
+                            const failuresHtml = paginatedFailures.map(failure => {
+                                let row = failureTemplate;
+                                row = row.replace(/{{workflow_name}}/g, failure.name);
+                                row = row.replace(/{{error_type}}/g, failure.event || 'Unknown');
+                                row = row.replace(/{{time}}/g, formatDate(failure.created_at));
                                 return row;
                             }).join('');
                             
-                            renderedTemplate = renderedTemplate.replace(/{{#each successes}}[\s\S]*?{{\/each}}/, successesHtml);
+                            renderedTemplate = renderedTemplate.replace(/{{#each failures}}[\s\S]*?{{\/each}}/, failuresHtml);
                         }
 
                         // Update pagination data
                         renderedTemplate = renderedTemplate.replace(/{{pagination\.current_page}}/g, currentPage);
                         renderedTemplate = renderedTemplate.replace(/{{pagination\.total_pages}}/g, totalPages);
                         renderedTemplate = renderedTemplate.replace(/{{pagination\.start}}/g, start + 1);
-                        renderedTemplate = renderedTemplate.replace(/{{pagination\.end}}/g, Math.min(end, filteredSuccessData.length));
-                        renderedTemplate = renderedTemplate.replace(/{{pagination\.total}}/g, filteredSuccessData.length);
+                        renderedTemplate = renderedTemplate.replace(/{{pagination\.end}}/g, Math.min(end, filteredFailureData.length));
+                        renderedTemplate = renderedTemplate.replace(/{{pagination\.total}}/g, filteredFailureData.length);
                         renderedTemplate = renderedTemplate.replace(/{{pagination\.is_first_page}}/g, currentPage === 1);
                         renderedTemplate = renderedTemplate.replace(/{{pagination\.is_last_page}}/g, currentPage === totalPages);
 
-                        successSection.innerHTML = renderedTemplate;
+                        failureSection.innerHTML = renderedTemplate;
 
                         // Add pagination event listeners
-                        const prevButton = successSection.querySelector('#prevPage');
-                        const nextButton = successSection.querySelector('#nextPage');
+                        const prevButton = failureSection.querySelector('#prevPage');
+                        const nextButton = failureSection.querySelector('#nextPage');
 
                         if (prevButton) {
+                            prevButton.disabled = currentPage === 1;
                             prevButton.addEventListener('click', () => {
                                 if (currentPage > 1) {
                                     currentPage--;
-                                    renderSuccessPage(currentPage);
+                                    renderFailurePage(currentPage);
                                 }
                             });
                         }
 
                         if (nextButton) {
+                            nextButton.disabled = currentPage === totalPages;
                             nextButton.addEventListener('click', () => {
                                 if (currentPage < totalPages) {
                                     currentPage++;
-                                    renderSuccessPage(currentPage);
+                                    renderFailurePage(currentPage);
                                 }
                             });
                         }
@@ -911,19 +711,163 @@ case 'Handler Success':
                 }
 
                 // Initial render of the first page
-                renderSuccessPage(1);
+                renderFailurePage(1);
             }
         } catch (error) {
-            console.error('Error processing success data:', error);
-            successSection.innerHTML = `
+            console.error('Error processing failure data:', error);
+            failureSection.innerHTML = `
                 <div class="bg-red-100 p-4 rounded-lg text-red-700">
-                    Error processing success data: ${error.message}
+                    Error processing failure data: ${error.message}
                 </div>
             `;
         }
     }
     break;
-// ... existing code ...
+
+    case 'Handler Success':
+        const successSection = document.querySelector('#handlerSuccess');
+        if (successSection) {
+            successSection.classList.remove('hidden');
+            
+            // Show loading indicator
+            successSection.innerHTML = `
+                <div class="flex justify-center items-center h-64">
+                    <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-green-500"></div>
+                    <p class="ml-4 text-lg text-gray-600">Loading success data...</p>
+                </div>
+            `;
+            
+            try {
+                // Load data from kaos-workflows-runs.json
+                const successWorkflowsData = await fetch('../outputs/w/kaos-workflows-runs.json')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP Error: ${response.status}`);
+                        }
+                        return response.json();
+                    });
+                    
+                console.log('Workflow data loaded:', successWorkflowsData.length, 'total workflows');
+                
+                if (successWorkflowsData && successWorkflowsData.length > 0) {
+                    // Filter only successful workflows
+                    const filteredSuccessData = successWorkflowsData.filter(run => run.conclusion === 'success');
+                    console.log('Filtered successful workflows:', filteredSuccessData.length);
+                    
+                    // Calculate success metrics
+                    const totalWorkflows = successWorkflowsData.length;
+                    const successCount = filteredSuccessData.length;
+                    const successRate = totalWorkflows > 0 ? (successCount / totalWorkflows * 100).toFixed(1) + '%' : '0%';
+                    
+                    // Calculate average execution time
+                    let totalSuccessDuration = 0;
+                    filteredSuccessData.forEach(run => {
+                        const duration = calculateDurationInSeconds(run.created_at, run.updated_at);
+                        totalSuccessDuration += duration;
+                    });
+                    const avgExecutionTime = successCount > 0 ? formatDuration(totalSuccessDuration / successCount) : 'N/A';
+                    
+                    // Find most common successful workflow
+                    const workflowCounts = {};
+                    filteredSuccessData.forEach(run => {
+                        const workflowName = run.name;
+                        workflowCounts[workflowName] = (workflowCounts[workflowName] || 0) + 1;
+                    });
+                    
+                    let mostCommonWorkflow = 'None';
+                    let maxCount = 0;
+                    for (const [workflow, count] of Object.entries(workflowCounts)) {
+                        if (count > maxCount) {
+                            mostCommonWorkflow = workflow;
+                            maxCount = count;
+                        }
+                    }
+
+                    // Set up pagination
+                    const pageSize = 10; // Set items per page to 10
+                    const totalPages = Math.ceil(filteredSuccessData.length / pageSize);
+                    let currentPage = 1;
+
+                    // Function to render a specific page
+                    async function renderSuccessPage(page) {
+                        const start = (page - 1) * pageSize;
+                        const end = start + pageSize;
+                        const paginatedSuccesses = filteredSuccessData.slice(start, end);
+
+                        const template = await window.dashboardUtils.loadHtmlTemplate('templates/handlerSuccess.html');
+                        if (template) {
+                            let renderedTemplate = template;
+                            
+                            // Replace metrics data
+                            renderedTemplate = renderedTemplate.replace(/{{metrics\.total_successful}}/g, successCount);
+                            renderedTemplate = renderedTemplate.replace(/{{metrics\.success_rate}}/g, successRate);
+                            renderedTemplate = renderedTemplate.replace(/{{metrics\.common_workflow}}/g, mostCommonWorkflow);
+                            renderedTemplate = renderedTemplate.replace(/{{metrics\.avg_execution_time}}/g, avgExecutionTime);
+                            
+                            // Handle the successes loop
+                            const successesMatch = renderedTemplate.match(/{{#each successes}}([\s\S]*?){{\/each}}/);
+                            if (successesMatch) {
+                                const successTemplate = successesMatch[1];
+                                const successesHtml = paginatedSuccesses.map(success => {
+                                    let row = successTemplate;
+                                    row = row.replace(/{{name}}/g, success.name);
+                                    row = row.replace(/{{duration}}/g, formatDuration(calculateDurationInSeconds(success.created_at, success.updated_at)));
+                                    row = row.replace(/{{created_at}}/g, new Date(success.created_at).toLocaleString());
+                                    return row;
+                                }).join('');
+                                
+                                renderedTemplate = renderedTemplate.replace(/{{#each successes}}[\s\S]*?{{\/each}}/, successesHtml);
+                            }
+
+                            // Update pagination data
+                            renderedTemplate = renderedTemplate.replace(/{{pagination\.current_page}}/g, currentPage);
+                            renderedTemplate = renderedTemplate.replace(/{{pagination\.total_pages}}/g, totalPages);
+                            renderedTemplate = renderedTemplate.replace(/{{pagination\.start}}/g, start + 1);
+                            renderedTemplate = renderedTemplate.replace(/{{pagination\.end}}/g, Math.min(end, filteredSuccessData.length));
+                            renderedTemplate = renderedTemplate.replace(/{{pagination\.total}}/g, filteredSuccessData.length);
+                            renderedTemplate = renderedTemplate.replace(/{{pagination\.is_first_page}}/g, currentPage === 1);
+                            renderedTemplate = renderedTemplate.replace(/{{pagination\.is_last_page}}/g, currentPage === totalPages);
+
+                            successSection.innerHTML = renderedTemplate;
+
+                            // Add pagination event listeners
+                            const prevButton = successSection.querySelector('#prevPage');
+                            const nextButton = successSection.querySelector('#nextPage');
+
+                            if (prevButton) {
+                                prevButton.addEventListener('click', () => {
+                                    if (currentPage > 1) {
+                                        currentPage--;
+                                        renderSuccessPage(currentPage);
+                                    }
+                                });
+                            }
+
+                            if (nextButton) {
+                                nextButton.addEventListener('click', () => {
+                                    if (currentPage < totalPages) {
+                                        currentPage++;
+                                        renderSuccessPage(currentPage);
+                                    }
+                                });
+                            }
+                        }
+                    }
+
+                    // Initial render of the first page
+                    renderSuccessPage(1);
+                }
+            } catch (error) {
+                console.error('Error processing success data:', error);
+                successSection.innerHTML = `
+                    <div class="bg-red-100 p-4 rounded-lg text-red-700">
+                        Error processing success data: ${error.message}
+                    </div>
+                `;
+            }
+        }
+        break;
+
                     
                     case 'End Workflow':
                         const workflowSection = document.querySelector('#endWorkflow');
