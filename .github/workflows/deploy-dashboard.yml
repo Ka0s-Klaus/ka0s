@@ -8,29 +8,6 @@ on:
   workflow_dispatch:
   
 jobs:
-  copy-kaos-files:
-    runs-on:
-      group: ka0s
-    steps:
-      - id: repo
-        name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
-      
-      - name: Copy kaos- files from w to data folder
-        run: |
-          # Create data directory if it doesn't exist
-          mkdir -p core/dashboard/dashboard/data
-          
-          # Copy all kaos- files from w folder to data folder
-          find core/outputs/w -type f -name "kaos-*" -exec cp {} core/dashboard/dashboard/data/ \;
-          
-          # List the copied files for verification
-          echo "Files copied to data folder:"
-          ls -la core/dashboard/dashboard/data/
-
   job-core:
     runs-on:
       group: ka0s
@@ -43,6 +20,19 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.KAOS_REPO_TOKEN }}
+
+      - name: Copy kaos- files from w to data folder
+        run: |
+          # Create data directory if it doesn't exist
+          mkdir -p core/dashboard/dashboard/data
+          
+          # Copy all kaos- files from w folder to data folder
+          find core/outputs/w -type f -name "kaos-*" -exec cp {} core/dashboard/dashboard/data/ \;
+          
+          # List the copied files for verification
+          echo "Files copied to data folder:"
+          ls -la core/dashboard/dashboard/data/
+
       - name: Deploy to Web Server via SFTP
         id: sftp
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4

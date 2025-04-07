@@ -69,3 +69,4 @@
 - **Version**: 0.0.68 - **Description**: H220 web de resultados
 - **Version**: 0.0.69 - **Description**: H220 web de resultados
 - **Version**: 0.0.70 - **Description**: H220 web de resultados
+- **Version**: 0.0.71 - **Description**: H220 web de resultados
