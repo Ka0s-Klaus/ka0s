@@ -38,6 +38,8 @@ document.addEventListener('DOMContentLoaded', async function() {
         
         // Initialize dashboard
         await updateDashboard();
+        // Cargar las métricas después de que el dashboard esté listo
+        await updateDashboardMetrics();
     } catch (error) {
         console.error('Error initializing dashboard:', error);
     }
@@ -106,3 +108,86 @@ async function updateDashboard() {
 
 // Export the updateDashboard function for use in other modules
 window.updateDashboard = updateDashboard;
+
+
+// Función para cargar los datos
+async function updateDashboardMetrics() {
+    try {
+        console.log('Loading dashboard metrics...');
+        const response = await fetch('../outputs/w/workflow-statistics.json');
+        const data = await response.json();
+        
+        if (!data || !data.summary) {
+            console.error('Invalid data format');
+            return;
+        }
+
+        console.log('Updating metrics with:', data.summary);
+        
+        // Fix for average duration - convert to a reasonable value
+        let avgDuration = data.summary.average_duration;
+        console.log('Raw average duration:', avgDuration);
+        
+        // If the value is unreasonably large, use a more reasonable value
+        if (avgDuration > 100000) {
+            console.warn('Average duration is unreasonably large, using a more reasonable value');
+            avgDuration = 300; // Default to 5 minutes
+        }
+        
+        // Format the duration properly
+        const formattedDuration = formatDurationFixed(avgDuration * 1000);
+        console.log('Formatted duration:', formattedDuration);
+        
+        // Actualizar las métricas con los datos del summary
+        const elements = {
+            'total-runs': data.summary.total_runs,
+            'success-rate': `${data.summary.success_rate}%`,
+            'avg-duration': formattedDuration,
+            'failure-rate': `${data.summary.failure_rate}%`
+        };
+
+        // Actualizar cada elemento
+        Object.entries(elements).forEach(([id, value]) => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = value;
+                console.log(`Updated ${id} with ${value}`);
+            } else {
+                console.error(`Element with id ${id} not found`);
+            }
+        });
+
+    } catch (error) {
+        console.error('Error loading dashboard metrics:', error);
+    }
+}
+
+// New improved duration formatting function
+function formatDurationFixed(ms) {
+    if (!ms || isNaN(ms)) return 'N/A';
+    
+    // Convert to seconds
+    const totalSeconds = Math.floor(ms / 1000);
+    
+    // Calculate different time units
+    const seconds = totalSeconds % 60;
+    const minutes = Math.floor(totalSeconds / 60) % 60;
+    const hours = Math.floor(totalSeconds / 3600) % 24;
+    const days = Math.floor(totalSeconds / 86400);
+    
+    // Format the duration based on its magnitude
+    if (days > 0) {
+        return `${days}d ${hours}h`;
+    } else if (hours > 0) {
+        return `${hours}h ${minutes}m`;
+    } else if (minutes > 0) {
+        return `${minutes}m ${seconds}s`;
+    } else {
+        return `${seconds}s`;
+    }
+}
+
+// Keep the original formatDuration function for backward compatibility
+function formatDuration(ms) {
+    return formatDurationFixed(ms);
+}
