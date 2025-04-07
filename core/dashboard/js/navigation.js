@@ -762,43 +762,132 @@ window.navigationUtils.setupNavigation = function() {
                         }
                     }
                     break;
-                case 'End Workflow':
-                    const workflowSection = document.querySelector('#endWorkflow');
-                    if (workflowSection) {
-                        workflowSection.classList.remove('hidden');
-                        // Load and process the End Workflow data
-                        const endWorkflowData = await window.dashboardUtils.loadJsonData('dashboard/sections/endWorkflow.json');
-                        if (endWorkflowData) {
-                            const template = await window.dashboardUtils.loadHtmlTemplate('templates/endWorkflow.html');
-                            if (template) {
-                                let renderedTemplate = template
-                                    .replace('{{title}}', endWorkflowData.title)
-                                    .replace('{{description}}', endWorkflowData.description)
-                                    .replace('{{summary.total_projects}}', endWorkflowData.summary.total_projects)
-                                    .replace('{{summary.completion_rate}}', endWorkflowData.summary.completion_rate)
-                                    .replace('{{summary.avg_time}}', endWorkflowData.summary.avg_time)
-                                    .replace('{{summary.last_completion}}', endWorkflowData.summary.last_completion);
-
-                                // Handle the projects loop
-                                const projectsMatch = renderedTemplate.match(/{{#each projects}}([\s\S]*?){{\/each}}/);
-                                if (projectsMatch) {
-                                    const projectTemplate = projectsMatch[1];
-                                    const projectsHtml = endWorkflowData.projects.map(project => {
-                                        let row = projectTemplate;
-                                        for (const [key, value] of Object.entries(project)) {
-                                            row = row.replace(new RegExp(`{{${key}}}`, 'g'), value);
-                                        }
-                                        return row;
-                                    }).join('');
-                                    renderedTemplate = renderedTemplate.replace(/{{#each projects}}[\s\S]*?{{\/each}}/, projectsHtml);
+                    case 'End Workflow':
+                        const workflowSection = document.querySelector('#endWorkflow');
+                        if (workflowSection) {
+                            workflowSection.classList.remove('hidden');
+                            try {
+                                const response = await fetch('../outputs/w/kaos-workflows-runs.json');
+                                if (!response.ok) {
+                                    throw new Error(`HTTP error! status: ${response.status}`);
                                 }
-
-                                workflowSection.innerHTML = renderedTemplate;
+                                const runsData = await response.json();
+    
+                                // Calculate total and completed workflows correctly
+                                const totalRuns = runsData.length;
+                                const completedWorkflows = runsData.filter(run => run.status === 'completed');
+                                const totalProjects = completedWorkflows.length;
+                                const successfulWorkflows = completedWorkflows.filter(run => run.conclusion === 'success');
+                                const percentajeCompleted = Math.round((successfulWorkflows.length / totalRuns) * 100);
+                                
+                                // Calculate average time
+                                const avgTime = calculateAverageTime(completedWorkflows);
+                                
+                                // Get last completion
+                                const lastCompletion = completedWorkflows.length > 0 ? 
+                                    formatTimeAgo(new Date(completedWorkflows[0].updated_at)) : 'N/A';
+    
+                                const template = await window.dashboardUtils.loadHtmlTemplate('templates/endWorkflow.html');
+                                if (template) {
+                                    let renderedTemplate = template
+                                        .replace('{{title}}', 'Workflow Executions')
+                                        .replace('{{description}}', 'Overview of workflow executions')
+                                        .replace('{{summary.total_projects}}', totalProjects)
+                                        .replace('{{summary.completion_rate}}', `${percentajeCompleted}%`)
+                                        .replace('{{summary.avg_time}}', avgTime)
+                                        .replace('{{summary.last_completion}}', lastCompletion);
+    
+                                    // Process workflow data for projects table
+                                   
+                        const projectsData = completedWorkflows.map(workflow => ({
+                            projectId: workflow.run_number,
+                            name: workflow.name,
+                            startDate: new Date(workflow.created_at).toLocaleDateString(),
+                            endDate: new Date(workflow.updated_at).toLocaleDateString(),
+                            duration: calculateDuration(workflow.created_at, workflow.updated_at),
+                            finalStatus: `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                workflow.conclusion === 'success' 
+                                    ? 'bg-green-100 text-green-800' 
+                                    : workflow.conclusion === 'failure'
+                                        ? 'bg-red-100 text-red-800'
+                                        : 'bg-gray-100 text-gray-800'
+                            }">${workflow.conclusion.charAt(0).toUpperCase() + workflow.conclusion.slice(1)}</span>`
+                        }));
+    
+                        // Handle the projects loop
+                        const projectsMatch = renderedTemplate.match(/{{#each projects}}([\s\S]*?){{\/each}}/);
+                        if (projectsMatch && projectsData.length > 0) {
+                            const projectTemplate = projectsMatch[1];
+                            const projectsHtml = projectsData.map(project => {
+                                let row = projectTemplate;
+                                for (const [key, value] of Object.entries(project)) {
+                                    row = row.replace(new RegExp(`{{${key}}}`, 'g'), value);
+                                }
+                                return row;
+                            }).join('');
+                            renderedTemplate = renderedTemplate.replace(/{{#each projects}}[\s\S]*?{{\/each}}/, projectsHtml);
+                        }
+    
+                                    workflowSection.innerHTML = renderedTemplate;
+                                } else {
+                                    throw new Error('Could not load template');
+                                }
+                            } catch (error) {
+                                console.error('Error loading workflow data:', error);
+                                workflowSection.innerHTML = `
+                                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                                        Failed to load workflow data: ${error.message}
+                                    </div>`;
                             }
                         }
-                    }
-                    break;
-            }
+                        break;
+    
+                        function calculateDuration(startTime, endTime) {
+                            const start = new Date(startTime);
+                            const end = new Date(endTime);
+                            const diffInSeconds = Math.floor((end - start) / 1000);
+                            
+                            const hours = Math.floor(diffInSeconds / 3600);
+                            const minutes = Math.floor((diffInSeconds % 3600) / 60);
+                            const seconds = diffInSeconds % 60;
+                            
+                            if (hours > 0) {
+                                return `${hours}h ${minutes}m ${seconds}s`;
+                            } else {
+                                return `${minutes}m ${seconds}s`;
+                            }
+                        }
+    
+                        function calculateAverageTime(workflows) {
+                            if (!workflows || workflows.length === 0) return 'N/A';
+                            
+                            const totalSeconds = workflows.reduce((acc, workflow) => {
+                                const duration = (new Date(workflow.updated_at) - new Date(workflow.created_at)) / 1000;
+                                return acc + duration;
+                            }, 0);
+                            
+                            const avgSeconds = totalSeconds / workflows.length;
+                            const hours = Math.floor(avgSeconds / 3600);
+                            const minutes = Math.floor((avgSeconds % 3600) / 60);
+                            const seconds = Math.floor(avgSeconds % 60);
+                            
+                            if (hours > 0) {
+                                return `${hours}h ${minutes}m ${seconds}s`;
+                            } else {
+                                return `${minutes}m ${seconds}s`;
+                            }
+                        }
+    
+                        function formatTimeAgo(date) {
+                            const now = new Date();
+                            const diffMs = now - date;
+                            const diffMins = Math.floor(diffMs / 60000);
+                            
+                            if (diffMins < 60) return `${diffMins}m ago`;
+                            if (diffMins < 1440) return `${Math.floor(diffMins / 60)}h ago`;
+                            return `${Math.floor(diffMins / 1440)}d ago`;
+                        }
+                }
 
             // Update active state in navbar
             navLinks.forEach(link => {
