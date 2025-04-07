@@ -182,32 +182,65 @@ class DashboardManager:
      
     # Add footer data if available
         footer_html = ""
-        if footer_data:
-            styles = footer_data.get('styles', {})
-            layout = footer_data.get('layout', {})
-            
-            section_style = '; '.join([f'{k}: {v}' for k, v in styles.get('section', {}).items()])
-            title_style = '; '.join([f'{k}: {v}' for k, v in styles.get('title', {}).items()])
-            desc_style = '; '.join([f'{k}: {v}' for k, v in styles.get('description', {}).items()])
-            copyright_style = '; '.join([f'{k}: {v}' for k, v in styles.get('copyright', {}).items()])
-            
-            layout_style = f"""
-                display: {layout.get('type', 'block')};
-                flex-direction: {layout.get('direction', 'row')};
-                align-items: {layout.get('alignment', 'flex-start')};
-                gap: {layout.get('spacing', '0')};
-                max-width: {layout.get('maxWidth', 'none')};
-                margin: {layout.get('margin', '0')};
-            """
-            
-            footer_html = f"""
-                <footer style='{section_style}'>
-                    <div style='{layout_style}'>
-                        <h3 style='{title_style}'>{footer_data.get('title', 'Footer')}</h3>
-                        <p style='{desc_style}'>{footer_data.get('description', '')}</p>
-                        <p style='{copyright_style}'>{footer_data.get('copyright', '')}</p>
+        footer_json_path = os.path.join(self.dashboard_dir, 'sections', 'footer.json')
+        
+        try:
+            if os.path.exists(footer_json_path):
+                with open(footer_json_path, 'r', encoding='utf-8') as f:
+                    footer_data = json.load(f)
+                    logger.info(f"Loaded data from footer.json")
+                    
+                    # Create a simple footer that will work in any environment
+                    footer_html = f"""
+                    <footer class="bg-white shadow-2xl rounded-xl py-6 md:py-6 px-2 w-[97%] sm:w-[97%] mt-auto">
+                        <div class="flex flex-col items-center">
+                            <div class="flex flex-wrap justify-center gap-3">
+                                <a href="https://app.codacy.com/gh/SantaKa0S/kaos/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade" target="_blank" rel="noopener noreferrer">
+                                    <img src="https://app.codacy.com/project/badge/Grade/203720c203a84af7a9d888680a047df4" alt="Codacy Badge" class="h-6">
+                                </a>
+                                <a href="https://www.gnu.org/licenses/gpl-3.0" target="_blank" rel="noopener noreferrer">
+                                    <img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="License: GPL v3" class="h-6">
+                                </a>
+                            </div>
+                            <p class="text-dark text-xs mt-2">{footer_data.get('copyright', 'Ka0s Project - GitHub')}</p>
+                        </div>
+                    </footer>
+                    """
+            else:
+                logger.warning(f"footer.json not found at {footer_json_path}")
+                # Provide a default footer
+                footer_html = """
+                <footer class="bg-white shadow-2xl rounded-xl py-6 md:py-6 px-2 w-[97%] sm:w-[97%] mt-auto">
+                    <div class="flex flex-col items-center">
+                        <div class="flex flex-wrap justify-center gap-3">
+                            <a href="https://app.codacy.com/gh/SantaKa0S/kaos/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade" target="_blank" rel="noopener noreferrer">
+                                <img src="https://app.codacy.com/project/badge/Grade/203720c203a84af7a9d888680a047df4" alt="Codacy Badge" class="h-6">
+                            </a>
+                            <a href="https://www.gnu.org/licenses/gpl-3.0" target="_blank" rel="noopener noreferrer">
+                                <img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="License: GPL v3" class="h-6">
+                            </a>
+                        </div>
+                        <p class="text-dark text-xs mt-2">Ka0s Project - GitHub</p>
                     </div>
                 </footer>
+                """
+        except Exception as e:
+            logger.error(f"Error loading footer.json: {str(e)}")
+            # Provide a default footer in case of error
+            footer_html = """
+            <footer class="bg-white shadow-2xl rounded-xl py-6 md:py-6 px-2 w-[97%] sm:w-[97%] mt-auto">
+                <div class="flex flex-col items-center">
+                    <div class="flex flex-wrap justify-center gap-3">
+                        <a href="https://app.codacy.com/gh/SantaKa0S/kaos/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade" target="_blank" rel="noopener noreferrer">
+                            <img src="https://app.codacy.com/project/badge/Grade/203720c203a84af7a9d888680a047df4" alt="Codacy Badge" class="h-6">
+                        </a>
+                        <a href="https://www.gnu.org/licenses/gpl-3.0" target="_blank" rel="noopener noreferrer">
+                            <img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="License: GPL v3" class="h-6">
+                        </a>
+                    </div>
+                    <p class="text-dark text-xs mt-2">Ka0s Project - GitHub</p>
+                </div>
+            </footer>
             """
         
         html = html.replace('{{FOOTER}}', footer_html)
