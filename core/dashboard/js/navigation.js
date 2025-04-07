@@ -180,7 +180,7 @@ window.navigationUtils.setupNavigation = function() {
                                 
                                 if (workflowsData && workflowsData.length > 0) {
                                     // Process data with pagination
-                                    const pageSize = 50; // Show 50 items per page
+                                    const pageSize = 10; // Show 50 items per page
                                     const totalItems = workflowsData.length;
                                     const totalPages = Math.ceil(totalItems / pageSize);
                                     let currentPage = 1;
