@@ -371,6 +371,7 @@ window.navigationUtils.setupNavigation = function() {
                                 
                                 // Replace metrics data with the correct variable names from the template
                                 renderedTemplate = renderedTemplate.replace(/{{metrics\.total_failed}}/g, failureCount);
+                                renderedTemplate = renderedTemplate.replace(/{{metrics\.total_failures}}/g, failureCount); // Add support for alternative variable name
                                 renderedTemplate = renderedTemplate.replace(/{{metrics\.failure_rate}}/g, `${failureRatio}%`);
                                 renderedTemplate = renderedTemplate.replace(/{{metrics\.common_error}}/g, mostCommonError);
                                 renderedTemplate = renderedTemplate.replace(/{{metrics\.avg_fail_time}}/g, avgFailureTime);
@@ -404,28 +405,61 @@ window.navigationUtils.setupNavigation = function() {
                                     renderedTemplate = renderedTemplate.replace(/{{#each failures}}[\s\S]*?{{\/each}}/, failuresHtml);
                                 }
                                 
-                                // After rendering the template, try to find and update the specific elements
+                                // Final check for any remaining template variables before rendering
+                                const remainingVariables = renderedTemplate.match(/\{\{metrics\.[^}]+\}\}/g);
+                                if (remainingVariables) {
+                                    console.log('Found remaining variables:', remainingVariables);
+                                    remainingVariables.forEach(variable => {
+                                        // Replace any remaining metrics variables with appropriate values
+                                        if (variable.includes('total_failed') || variable.includes('total_failures')) {
+                                            renderedTemplate = renderedTemplate.replace(new RegExp(variable.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), failureCount);
+                                        }
+                                    });
+                                }
+                                
+                                // After rendering the template, update the DOM
                                 failureSection.innerHTML = renderedTemplate;
                                 
-                                // Solución directa para el problema de {{metrics.total_failed}}
+                                // No need for setTimeout as we've already handled all replacements
                                 setTimeout(() => {
-                                    // Buscar directamente en el HTML y reemplazar la cadena exacta
-                                    const htmlContent = failureSection.innerHTML;
+                                    // Search directly in the HTML and replace the exact string
+                                    let htmlContent = failureSection.innerHTML;
                                     if (htmlContent.includes('{{metrics.total_failed}}')) {
-                                        failureSection.innerHTML = htmlContent.replace(/\{\{metrics\.total_failed\}\}/g, failureCount);
+                                        htmlContent = htmlContent.replace(/\{\{metrics\.total_failed\}\}/g, failureCount);
+                                        failureSection.innerHTML = htmlContent;
                                     }
                                     
-                                    // También intentar con un enfoque más específico para elementos individuales
-                                    const elements = failureSection.querySelectorAll('div, span, p, h1, h2, h3, h4, h5, h6');
+                                    // Also check for the alternative variable name
+                                    htmlContent = failureSection.innerHTML;
+                                    if (htmlContent.includes('{{metrics.total_failures}}')) {
+                                        htmlContent = htmlContent.replace(/\{\{metrics\.total_failures\}\}/g, failureCount);
+                                        failureSection.innerHTML = htmlContent;
+                                    }
+                                    
+                                    // Also try with a more specific approach for individual elements
+                                    const elements = failureSection.querySelectorAll('*');
                                     elements.forEach(el => {
-                                        if (el.innerHTML === '{{metrics.total_failed}}') {
-                                            el.innerHTML = failureCount;
+                                        // Check for both variable names
+                                        if (el.textContent && (
+                                            el.textContent.trim() === '{{metrics.total_failed}}' || 
+                                            el.textContent.trim() === '{{metrics.total_failures}}')) {
+                                            el.textContent = failureCount;
+                                        }
+                                        // Also check for partial matches
+                                        else if (el.textContent) {
+                                            if (el.textContent.includes('{{metrics.total_failed}}')) {
+                                                el.textContent = el.textContent.replace('{{metrics.total_failed}}', failureCount);
+                                            }
+                                            if (el.textContent.includes('{{metrics.total_failures}}')) {
+                                                el.textContent = el.textContent.replace('{{metrics.total_failures}}', failureCount);
+                                            }
                                         }
                                     });
                                     
-                                    // Verificar si se realizó el reemplazo
+                                    // Verify if the replacement was successful
                                     console.log('After direct HTML replacement:', 
-                                        failureSection.innerHTML.includes('{{metrics.total_failed}}'),
+                                        failureSection.innerHTML.includes('{{metrics.total_failed}}') || 
+                                        failureSection.innerHTML.includes('{{metrics.total_failures}}'),
                                         'Failure count:', failureCount);
                                 }, 100);
                             } else {
