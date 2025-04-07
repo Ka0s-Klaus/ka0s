@@ -1,0 +1,297 @@
+name: Ka0s Workflow Statistics Summary
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Run daily at midnight
+  workflow_dispatch:  # Allow manual trigger
+
+env:
+    KAOS_CODE: ${{ github.run_id }}
+    KAOS_EVENT_NAME: ${{ github.event_name }}
+    KAOS_ACTION: ${{ github.action }}
+    KAOS_REF: ${{ github.ref }}
+    KAOS_MODULE: "[Ka0S] Workflow Statistics Summary"
+    KAOS_PATH_RESUME: "core/outputs/w/"
+    KAOS_JSON: "core/results/event_data_"
+    KAOS_ACTOR: ${{ github.actor }}
+    GH_REPO: "github.com/Ka0s-Klaus/ka0s"
+
+jobs:
+  job-core:
+    runs-on:
+      group: ka0s
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+
+      - name: Collect workflow statistics
+        env:
+          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+        run: |
+          # Generate file with available workflows in repo with proper formatting
+          gh workflow list --all --limit 999 --json id,name,path,state | \
+            jq -r '[ .[] | {id,name,path,state} ] | sort_by(.name)' > \
+            ${{ env.KAOS_PATH_RESUME }}workflows-available-${{ env.KAOS_CODE }}.json
+          
+          # Create the final formatted workflows file
+          jq '.' ${{ env.KAOS_PATH_RESUME }}workflows-available-${{ env.KAOS_CODE }}.json > \
+            ${{ env.KAOS_PATH_RESUME }}kaos-workflows-available.json
+          
+          # Create a temporary file for workflow runs
+          touch ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json
+          
+          # Get workflows and process their runs
+          workflows=$(jq -r '.[].id' ${{ env.KAOS_PATH_RESUME }}kaos-workflows-available.json)
+          
+          # Initialize an empty array in the temporary file
+          echo '[]' > ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json
+          
+          # Iterate over each workflow and get runs with proper formatting
+          for workflow_id in $workflows; do
+            gh api repos/:owner/:repo/actions/workflows/$workflow_id/runs --paginate | \
+              jq '.workflow_runs[] | select(.id != null)' | \
+              jq -s '[ .[] | {
+                id,
+                name,
+                head_branch,
+                head_sha,
+                run_number,
+                event,
+                status,
+                conclusion,
+                workflow_id,
+                url,
+                created_at,
+                updated_at,
+                run_started_at
+              }]' >> ${{ env.KAOS_PATH_RESUME }}workflows-runs-temp-${{ env.KAOS_CODE }}.json
+            
+            # Merge the temporary results into the main file
+            jq -s 'add' \
+              ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json \
+              ${{ env.KAOS_PATH_RESUME }}workflows-runs-temp-${{ env.KAOS_CODE }}.json > \
+              ${{ env.KAOS_PATH_RESUME }}workflows-runs-merged-${{ env.KAOS_CODE }}.json
+            
+            mv ${{ env.KAOS_PATH_RESUME }}workflows-runs-merged-${{ env.KAOS_CODE }}.json \
+               ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json
+            rm -f ${{ env.KAOS_PATH_RESUME }}workflows-runs-temp-${{ env.KAOS_CODE }}.json
+          done
+          
+          # Format the final runs file as a proper JSON array
+          jq 'sort_by(.created_at) | reverse' \
+            ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json > \
+            ${{ env.KAOS_PATH_RESUME }}kaos-workflows-runs.json
+      
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
+          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
+          git add ${{ env.KAOS_PATH_RESUME }}*.json
+          git commit -m "[Ka0S] Update workflow resume files" || exit 0
+          git push
+
+  job-stats:
+    needs: job-core
+    runs-on:
+      group: ka0s
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+
+      - name: Generate workflow names
+        run: |
+          # Pull the latest changes
+          git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
+          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
+          git pull
+          
+          # Get workflows and process their runs
+          workflows=$(jq -r '.[].id' ${{ env.KAOS_PATH_RESUME }}kaos-workflows-available.json)
+
+          # Generate workflow statistics
+          for work_id in $workflows; do
+              jq -r '[.[] | select(.run_started_at != null and .updated_at != null and .workflow_id == '$work_id') | {
+                name,
+                event,
+                conclusion,
+                duration: (if (.run_started_at != null and .updated_at != null) then
+                  ((.updated_at | fromdateiso8601) - (.run_started_at | fromdateiso8601))
+                else
+                  0
+                end)
+              }] | reduce .[] as $run ({
+                "total_runs": 0,
+                "successful_runs": 0,
+                "failed_runs": 0,
+                "cancelled_runs": 0,
+                "total_duration": 0,
+                "success_duration": 0,
+                "failed_duration": 0,
+                "cancelled_duration": 0,
+                "workflow_stats": {},
+                "events": {}
+              };
+                .total_runs += 1
+                | .total_duration += $run.duration
+                | if $run.conclusion == "success" then
+                    .successful_runs += 1
+                    | .success_duration += $run.duration
+                  elif $run.conclusion == "failure" then
+                    .failed_runs += 1
+                    | .failed_duration += $run.duration
+                  elif $run.conclusion == "cancelled" then
+                    .cancelled_runs += 1
+                    | .cancelled_duration += $run.duration
+                  else . end
+                | .workflow_stats[$run.name] += 1
+                | .events[$run.event] += 1
+              ) | {
+                "summary": {
+                  "total_runs": .total_runs,
+                  "successful_runs": .successful_runs,
+                  "failed_runs": .failed_runs,
+                  "cancelled_runs": .cancelled_runs,
+                  "success_rate": (if .total_runs > 0 then (.successful_runs / .total_runs) * 100 | floor else 0 end),
+                  "failure_rate": (if .total_runs > 0 then (.failed_runs / .total_runs) * 100 | floor else 0 end),
+                  "average_duration": (if .total_runs > 0 then .total_duration / .total_runs else 0 end),
+                  "average_success_duration": (if .successful_runs > 0 then .success_duration / .successful_runs else 0 end),
+                  "average_failed_duration": (if .failed_runs > 0 then .failed_duration / .failed_runs else 0 end),
+                  "average_cancelled_duration": (if .cancelled_runs > 0 then .cancelled_duration / .cancelled_runs else 0 end)
+                },
+                "workflow_distribution": .workflow_stats,
+                "event_distribution": .events
+              }
+              ' ${{ env.KAOS_PATH_RESUME }}kaos-workflows-runs.json > \
+              ${{ env.KAOS_PATH_RESUME }}kaos-$work_id-statistics.json
+          done
+
+      - name: Generate repository statistics
+        run: |
+          # Function to escape JSON strings
+          escape_json() {
+              echo "$1" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | sed 's/\n/\\n/g'
+          }
+
+          # Get total number of commits
+          total_commits=$(git rev-list --count HEAD)
+
+          # Get commits in last 30 days
+          recent_commits=$(git rev-list --count HEAD --since="30 days ago")
+
+          # Get author statistics          
+          author_stats=$(git shortlog -sn --no-merges | while read commits author; do
+            echo "{\"commits\": $commits, \"author\": \"$author\"}"
+          done | paste -sd "," -)
+          echo "Author statistics: $author_stats"
+
+          # Save author statistics to separate file
+          cat << EOF > ${{ env.KAOS_PATH_RESUME }}kaos-repository-author-statistics.json
+          $author_stats
+          EOF
+
+          # Generate JSON output
+          cat << EOF > ${{ env.KAOS_PATH_RESUME }}kaos-repository-global-statistics.json
+          {
+            "generated_at": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+            "repository": "$(git config --get remote.origin.url)",
+            "statistics": {
+              "total_commits": $total_commits,
+              "recent_commits": $recent_commits
+            }
+          }
+          EOF
+
+      - name: Generate Issues Summary
+        env:
+          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+        run: |
+            #  Extraemos toda la información de las issues hasta el momento
+            touch ${{ env.KAOS_PATH_RESUME }}issue-log-${{ env.KAOS_CODE }}.json
+            gh issue list --repo ${{ env.GH_REPO }} --state all --limit 999 --json assignees,author,body,closed,closedAt,comments,createdAt,id,labels,milestone,number,projectCards,projectItems,reactionGroups,state,title,updatedAt,url > ${{ env.KAOS_PATH_RESUME }}issue-log-${{ env.KAOS_CODE }}.json
+            # Formatear el archivo JSON final
+            cat ${{ env.KAOS_PATH_RESUME }}issue-log-${{ env.KAOS_CODE }}.json | jq -s '.' > ${{ env.KAOS_PATH_RESUME }}kaos-issue.json
+
+      - name: Commit statistics
+        run: |
+          git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
+          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
+          git add ${{ env.KAOS_PATH_RESUME }}kaos-*.json
+          git commit -m "[Ka0S] Update workflow statistics" || exit 0
+          git push
+
+  handle-success:
+    runs-on:
+      group: ka0s
+    needs: [job-core, job-stats]
+    if: ${{ success() }}
+    steps:
+      - id: repo
+        name: Checkout code
+        if: ${{ always() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+      - id: handle-success-execution
+        name: handle-success-execution
+        env:
+          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+        run: |
+          # RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
+          # gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data_${{ env.KAOS_CODE }}.log"
+          echo "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data_${{ env.KAOS_CODE }}.log"
+
+  handle_failure:
+    runs-on:
+      group: ka0s
+    needs: [job-core, handle-success]
+    if: ${{ failure() }}
+    steps:
+      - id: repo
+        name: Checkout code
+        if: ${{ always() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+      - id: handle-failure-execution
+        name: handle-failure-execution
+        env:
+          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+        run: |
+          echo "Error detected in process"
+          # RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
+          # gh issue comment $RNNUMBER --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
+          # Creamos la issue dado que ha fallado el modulo principal
+          gh issue create  --title "[Ka0S] Error detected in ${{ env.KAOS_MODULE }}" --body "Error detected in ${{ env.KAOS_MODULE }}. Please check the logs for ${{ github.run_id }} more information of error."
+          
+
+  end-workflow:
+    runs-on:
+      group: ka0s
+    needs: [job-core, job-stats, handle-success, handle_failure]
+    if: ${{ always() && !contains(github.event.head_commit.message, '[Ka0S] ') }}
+    env:
+        GH_TOKEN: ${{ secrets.KAOS_ACTIONS_TOKEN }}
+    steps:
+      - id: repo
+        name: Checkout code
+        if: ${{ always() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+      - id: end-process
+        name: Finaliza el workflow
+        run: |
+          echo "End process"
+          # RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
+          # gh issue comment $RNNUMBER --body "Se finaliza Ka0s ${{ env.KAOS_CODE }}"
+          echo "Se finaliza Ka0s ${{ env.KAOS_CODE }}"
+          gh workflow run inspector.yml --ref 'main' -f kaos-issue-id=$RNNUMBER -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start=""

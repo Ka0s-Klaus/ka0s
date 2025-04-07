@@ -1,1 +1,1 @@
-# Titulo 1
+# Recoge ficheros de resultados de ejecución de los ficheros del EXECUTION.

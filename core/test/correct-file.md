@@ -8,8 +8,6 @@
 
 #### Subtitulo 4
 
-##### Subtitulo 
-
 - primera cita
 - segunda cita
 - tercera cita
