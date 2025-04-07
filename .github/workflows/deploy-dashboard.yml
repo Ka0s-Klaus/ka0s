@@ -22,14 +22,14 @@ jobs:
       - name: Copy kaos- files from w to data folder
         run: |
           # Create data directory if it doesn't exist
-          mkdir -p dashboard/data
+          mkdir -p core/dashboard/dashboard/data
           
           # Copy all kaos- files from w folder to data folder
-          find core/outputs/w -type f -name "kaos-*" -exec cp {} dashboard/data/ \;
+          find core/outputs/w -type f -name "kaos-*" -exec cp {} core/dashboard/dashboard/data/ \;
           
           # List the copied files for verification
           echo "Files copied to data folder:"
-          ls -la dashboard/data/
+          ls -la core/dashboard/dashboard/data/
 
   job-core:
     runs-on:
