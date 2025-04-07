@@ -6,12 +6,11 @@ on:
     paths:
       - 'core/dashboard/**'
   workflow_dispatch:
-  
+ 
 jobs:
   job-core:
     runs-on:
       group: ka0s
-    needs: [copy-kaos-files]
     steps:
       - id: repo
         name: Checkout repository
@@ -32,7 +31,7 @@ jobs:
           # List the copied files for verification
           echo "Files copied to data folder:"
           ls -la core/dashboard/dashboard/data/
-
+          
       - name: Deploy to Web Server via SFTP
         id: sftp
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
