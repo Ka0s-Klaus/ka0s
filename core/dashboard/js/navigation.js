@@ -936,84 +936,125 @@ window.navigationUtils.setupNavigation = function() {
                     }
                     break;
                     case 'End Workflow':
-                        const workflowSection = document.querySelector('#endWorkflow');
-                        if (workflowSection) {
-                            workflowSection.classList.remove('hidden');
-                            try {
-                                const response = await fetch('../outputs/w/kaos-workflows-runs.json');
-                                if (!response.ok) {
-                                    throw new Error(`HTTP error! status: ${response.status}`);
-                                }
-                                const runsData = await response.json();
-    
-                                // Calculate total and completed workflows correctly
-                                const totalRuns = runsData.length;
-                                const completedWorkflows = runsData.filter(run => run.status === 'completed');
-                                const totalProjects = completedWorkflows.length;
-                                const successfulWorkflows = completedWorkflows.filter(run => run.conclusion === 'success');
-                                const percentajeCompleted = Math.round((successfulWorkflows.length / totalRuns) * 100);
-                                
-                                // Calculate average time
-                                const avgTime = calculateAverageTime(completedWorkflows);
-                                
-                                // Get last completion
-                                const lastCompletion = completedWorkflows.length > 0 ? 
-                                    formatTimeAgo(new Date(completedWorkflows[0].updated_at)) : 'N/A';
-    
-                                const template = await window.dashboardUtils.loadHtmlTemplate('templates/endWorkflow.html');
-                                if (template) {
-                                    let renderedTemplate = template
-                                        .replace('{{title}}', 'Workflow Executions')
-                                        .replace('{{description}}', 'Overview of workflow executions')
-                                        .replace('{{summary.total_projects}}', totalProjects)
-                                        .replace('{{summary.completion_rate}}', `${percentajeCompleted}%`)
-                                        .replace('{{summary.avg_time}}', avgTime)
-                                        .replace('{{summary.last_completion}}', lastCompletion);
-    
-                                    // Process workflow data for projects table
-                                   
-                        const projectsData = completedWorkflows.map(workflow => ({
-                            projectId: workflow.run_number,
-                            name: workflow.name,
-                            startDate: new Date(workflow.created_at).toLocaleDateString(),
-                            endDate: new Date(workflow.updated_at).toLocaleDateString(),
-                            duration: calculateDuration(workflow.created_at, workflow.updated_at),
-                            finalStatus: `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                workflow.conclusion === 'success' 
-                                    ? 'bg-green-100 text-green-800' 
-                                    : workflow.conclusion === 'failure'
-                                        ? 'bg-red-100 text-red-800'
-                                        : 'bg-gray-100 text-gray-800'
-                            }">${workflow.conclusion.charAt(0).toUpperCase() + workflow.conclusion.slice(1)}</span>`
-                        }));
-    
-                        // Handle the projects loop
-                        const projectsMatch = renderedTemplate.match(/{{#each projects}}([\s\S]*?){{\/each}}/);
-                        if (projectsMatch && projectsData.length > 0) {
-                            const projectTemplate = projectsMatch[1];
-                            const projectsHtml = projectsData.map(project => {
-                                let row = projectTemplate;
-                                for (const [key, value] of Object.entries(project)) {
-                                    row = row.replace(new RegExp(`{{${key}}}`, 'g'), value);
-                                }
-                                return row;
-                            }).join('');
-                            renderedTemplate = renderedTemplate.replace(/{{#each projects}}[\s\S]*?{{\/each}}/, projectsHtml);
-                        }
-    
-                                    workflowSection.innerHTML = renderedTemplate;
-                                } else {
-                                    throw new Error('Could not load template');
-                                }
-                            } catch (error) {
-                                console.error('Error loading workflow data:', error);
-                                workflowSection.innerHTML = `
-                                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                                        Failed to load workflow data: ${error.message}
-                                    </div>`;
+    const workflowSection = document.querySelector('#endWorkflow');
+    if (workflowSection) {
+        workflowSection.classList.remove('hidden');
+        try {
+            const response = await fetch('../outputs/w/kaos-workflows-runs.json');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const runsData = await response.json();
+
+            // Calculate total and completed workflows correctly
+            const totalRuns = runsData.length;
+            const completedWorkflows = runsData.filter(run => run.status === 'completed');
+            const totalProjects = completedWorkflows.length;
+            const successfulWorkflows = completedWorkflows.filter(run => run.conclusion === 'success');
+            const percentajeCompleted = Math.round((successfulWorkflows.length / totalRuns) * 100);
+            
+            // Set up pagination
+            const pageSize = 10;
+            const totalPages = Math.ceil(completedWorkflows.length / pageSize);
+            let currentPage = 1;
+            
+            // Calculate average time
+            const avgTime = calculateAverageTime(completedWorkflows);
+            
+            // Get last completion
+            const lastCompletion = completedWorkflows.length > 0 ? 
+                formatTimeAgo(new Date(completedWorkflows[0].updated_at)) : 'N/A';
+
+            const template = await window.dashboardUtils.loadHtmlTemplate('templates/endWorkflow.html');
+            if (template) {
+                function renderWorkflowPage(page) {
+                    const start = (page - 1) * pageSize;
+                    const end = start + pageSize;
+                    const paginatedWorkflows = completedWorkflows.slice(start, end);
+
+                    const projectsData = paginatedWorkflows.map(workflow => ({
+                        projectId: workflow.run_number,
+                        name: workflow.name,
+                        startDate: new Date(workflow.created_at).toLocaleDateString(),
+                        endDate: new Date(workflow.updated_at).toLocaleDateString(),
+                        duration: calculateDuration(workflow.created_at, workflow.updated_at),
+                        finalStatus: `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            workflow.conclusion === 'success' 
+                                ? 'bg-green-100 text-green-800' 
+                                : workflow.conclusion === 'failure'
+                                    ? 'bg-red-100 text-red-800'
+                                    : 'bg-gray-100 text-gray-800'
+                        }">${workflow.conclusion.charAt(0).toUpperCase() + workflow.conclusion.slice(1)}</span>`
+                    }));
+
+                    let renderedTemplate = template
+                        .replace('{{title}}', 'Workflow Executions')
+                        .replace('{{description}}', 'Overview of workflow executions')
+                        .replace('{{summary.total_projects}}', totalProjects)
+                        .replace('{{summary.completion_rate}}', `${percentajeCompleted}%`)
+                        .replace('{{summary.avg_time}}', avgTime)
+                        .replace('{{summary.last_completion}}', lastCompletion)
+                        .replace('{{pagination.current_page}}', currentPage)
+                        .replace('{{pagination.total_pages}}', totalPages)
+                        .replace('{{pagination.start}}', start + 1)
+                        .replace('{{pagination.end}}', Math.min(end, completedWorkflows.length))
+                        .replace('{{pagination.total}}', completedWorkflows.length);
+
+                    // Handle the projects loop
+                    const projectsMatch = renderedTemplate.match(/{{#each projects}}([\s\S]*?){{\/each}}/);
+                    if (projectsMatch && projectsData.length > 0) {
+                        const projectTemplate = projectsMatch[1];
+                        const projectsHtml = projectsData.map(project => {
+                            let row = projectTemplate;
+                            for (const [key, value] of Object.entries(project)) {
+                                row = row.replace(new RegExp(`{{${key}}}`, 'g'), value);
                             }
-                        }
-                        break;
+                            return row;
+                        }).join('');
+                        renderedTemplate = renderedTemplate.replace(/{{#each projects}}[\s\S]*?{{\/each}}/, projectsHtml);
+                    }
+
+                    workflowSection.innerHTML = renderedTemplate;
+
+                    // Add pagination event listeners
+                    const prevButton = workflowSection.querySelector('#prevPage');
+                    const nextButton = workflowSection.querySelector('#nextPage');
+
+                    if (prevButton) {
+                        prevButton.disabled = currentPage === 1;
+                        prevButton.addEventListener('click', () => {
+                            if (currentPage > 1) {
+                                currentPage--;
+                                renderWorkflowPage(currentPage);
+                            }
+                        });
+                    }
+
+                    if (nextButton) {
+                        nextButton.disabled = currentPage === totalPages;
+                        nextButton.addEventListener('click', () => {
+                            if (currentPage < totalPages) {
+                                currentPage++;
+                                renderWorkflowPage(currentPage);
+                            }
+                        });
+                    }
+                }
+
+                // Initial render
+                renderWorkflowPage(1);
+            } else {
+                throw new Error('Could not load template');
+            }
+        } catch (error) {
+            console.error('Error loading workflow data:', error);
+            workflowSection.innerHTML = `
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                    Failed to load workflow data: ${error.message}
+                </div>`;
+        }
+    }
+    break;
     
                         function calculateDuration(startTime, endTime) {
                             const start = new Date(startTime);
