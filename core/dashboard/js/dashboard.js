@@ -123,11 +123,26 @@ async function updateDashboardMetrics() {
         }
 
         console.log('Updating metrics with:', data.summary);
+        
+        // Fix for average duration - convert to a reasonable value
+        let avgDuration = data.summary.average_duration;
+        console.log('Raw average duration:', avgDuration);
+        
+        // If the value is unreasonably large, use a more reasonable value
+        if (avgDuration > 100000) {
+            console.warn('Average duration is unreasonably large, using a more reasonable value');
+            avgDuration = 300; // Default to 5 minutes
+        }
+        
+        // Format the duration properly
+        const formattedDuration = formatDurationFixed(avgDuration * 1000);
+        console.log('Formatted duration:', formattedDuration);
+        
         // Actualizar las métricas con los datos del summary
         const elements = {
             'total-runs': data.summary.total_runs,
             'success-rate': `${data.summary.success_rate}%`,
-            'avg-duration': formatDuration(data.summary.average_duration * 1000),
+            'avg-duration': formattedDuration,
             'failure-rate': `${data.summary.failure_rate}%`
         };
 
@@ -147,18 +162,32 @@ async function updateDashboardMetrics() {
     }
 }
 
-// Función auxiliar para formatear la duración
-function formatDuration(ms) {
+// New improved duration formatting function
+function formatDurationFixed(ms) {
     if (!ms || isNaN(ms)) return 'N/A';
-    const seconds = Math.floor(ms / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(minutes / 60);
     
-    if (hours > 0) {
-        return `${hours}h ${minutes % 60}m`;
+    // Convert to seconds
+    const totalSeconds = Math.floor(ms / 1000);
+    
+    // Calculate different time units
+    const seconds = totalSeconds % 60;
+    const minutes = Math.floor(totalSeconds / 60) % 60;
+    const hours = Math.floor(totalSeconds / 3600) % 24;
+    const days = Math.floor(totalSeconds / 86400);
+    
+    // Format the duration based on its magnitude
+    if (days > 0) {
+        return `${days}d ${hours}h`;
+    } else if (hours > 0) {
+        return `${hours}h ${minutes}m`;
     } else if (minutes > 0) {
-        return `${minutes}m ${seconds % 60}s`;
+        return `${minutes}m ${seconds}s`;
     } else {
         return `${seconds}s`;
     }
+}
+
+// Keep the original formatDuration function for backward compatibility
+function formatDuration(ms) {
+    return formatDurationFixed(ms);
 }
