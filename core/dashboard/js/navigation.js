@@ -151,71 +151,145 @@ window.navigationUtils.setupNavigation = function() {
                 case 'Inicio':
                     document.querySelector('#dashboard-container')?.classList.remove('hidden');
                     break;
-                // En la función setupNavigation, dentro del case 'Actions Performance':
                 case 'Actions Performance':
                     const actionsSection = document.querySelector('#actionsPerformance');
                     if (actionsSection) {
                         actionsSection.classList.remove('hidden');
                         
-                        // Cargar datos de kaos-workflows-runs.json en lugar de actionsPerformance.json
-                        const workflowsData = await fetch('../outputs/w/kaos-workflows-runs.json')
-                            .then(response => {
-                                if (!response.ok) {
-                                    throw new Error(`Error HTTP: ${response.status}`);
-                                }
-                                return response.json();
-                            })
-                            .catch(error => {
-                                console.error('Error loading workflow runs:', error);
-                                return [];
-                            });
-                            
-                        console.log('Workflow data loaded:', workflowsData.length, 'workflows');
+                        // Show loading indicator
+                        actionsSection.innerHTML = `
+                            <div class="flex justify-center items-center h-64">
+                                <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
+                                <p class="ml-4 text-lg text-gray-600">Loading workflow data...</p>
+                            </div>
+                        `;
                         
-                        if (workflowsData && workflowsData.length > 0) {
-                            // Procesar los datos para el formato que espera el template
-                            const processedData = processWorkflowData(workflowsData);
-                            
-                            const template = await window.dashboardUtils.loadHtmlTemplate('templates/actionsperformance.html');
-                            if (template) {
-                                // Aplicar los datos al template
-                                let renderedTemplate = template;
-                                
-                                // Reemplazar summary data
-                                for (const [key, value] of Object.entries(processedData.summary)) {
-                                    renderedTemplate = renderedTemplate.replace(`{{summary.${key}}}`, value);
-                                }
-                                
-                                // Reemplazar title y description
-                                renderedTemplate = renderedTemplate.replace('{{title}}', processedData.title);
-                                renderedTemplate = renderedTemplate.replace('{{description}}', processedData.description);
-                                
-                                // Manejar el bucle de workflows
-                                const workflowsMatch = renderedTemplate.match(/{{#each workflows}}([\s\S]*?){{\/each}}/);
-                                if (workflowsMatch) {
-                                    const workflowTemplate = workflowsMatch[1];
-                                    const workflowsHtml = processedData.workflows.map(workflow => {
-                                        let row = workflowTemplate;
-                                        for (const [key, value] of Object.entries(workflow)) {
-                                            row = row.replace(new RegExp(`{{${key}}}`, 'g'), value);
+                        // Load data asynchronously
+                        setTimeout(async () => {
+                            try {
+                                // Cargar datos de kaos-workflows-runs.json
+                                const workflowsData = await fetch('../outputs/w/kaos-workflows-runs.json')
+                                    .then(response => {
+                                        if (!response.ok) {
+                                            throw new Error(`Error HTTP: ${response.status}`);
                                         }
-                                        // Manejar estilos basados en el estado
-                                        row = row.replace(/{{#if \(eq status 'success'\)}}(.*?){{\/if}}/g, 
-                                            workflow.status === 'success' ? '$1' : '');
-                                        row = row.replace(/{{#if \(eq status 'running'\)}}(.*?){{\/if}}/g, 
-                                            workflow.status === 'running' ? '$1' : '');
-                                        row = row.replace(/{{#if \(eq status 'failure'\)}}(.*?){{\/if}}/g, 
-                                            workflow.status === 'failure' ? '$1' : '');
-                                        return row;
-                                    }).join('');
-                                    renderedTemplate = renderedTemplate.replace(/{{#each workflows}}[\s\S]*?{{\/each}}/, workflowsHtml);
-                                }
+                                        return response.json();
+                                    });
                                 
-                                actionsSection.innerHTML = renderedTemplate;
+                                console.log('Workflow data loaded:', workflowsData.length, 'workflows');
+                                
+                                if (workflowsData && workflowsData.length > 0) {
+                                    // Process data with pagination
+                                    const pageSize = 50; // Show 50 items per page
+                                    const totalItems = workflowsData.length;
+                                    const totalPages = Math.ceil(totalItems / pageSize);
+                                    let currentPage = 1;
+                                    
+                                    // Process only the first page initially
+                                    const paginatedData = workflowsData.slice(0, pageSize);
+                                    const processedData = processWorkflowDataOptimized(paginatedData, workflowsData);
+                                    
+                                    const template = await window.dashboardUtils.loadHtmlTemplate('templates/actionsperformance.html');
+                                    if (template) {
+                                        // Apply data to the template
+                                        let renderedTemplate = template;
+                                        
+                                        // Replace summary data (calculated from all data)
+                                        for (const [key, value] of Object.entries(processedData.summary)) {
+                                            renderedTemplate = renderedTemplate.replace(new RegExp(`{{summary\\.${key}}}`, 'g'), value);
+                                        }
+                                        
+                                        // Replace title and description
+                                        renderedTemplate = renderedTemplate.replace(/{{title}}/g, processedData.title);
+                                        renderedTemplate = renderedTemplate.replace(/{{description}}/g, processedData.description);
+                                        
+                                        // Handle the workflows loop with additional fields
+                                        const workflowsMatch = renderedTemplate.match(/{{#each workflows}}([\s\S]*?){{\/each}}/);
+                                        if (workflowsMatch) {
+                                            const workflowTemplate = workflowsMatch[1];
+                                            const workflowsHtml = processedData.workflows.map(workflow => {
+                                                let row = workflowTemplate;
+                                                
+                                                // Replace all workflow properties
+                                                for (const [key, value] of Object.entries(workflow)) {
+                                                    row = row.replace(new RegExp(`{{${key}}}`, 'g'), value);
+                                                }
+                                                
+                                                // Handle conditional formatting for status and conclusion
+                                                row = row.replace(/{{#if \(eq status 'completed'\)}}([\s\S]*?){{\/if}}/g, 
+                                                    workflow.status === 'completed' ? '$1' : '');
+                                                row = row.replace(/{{#if \(eq status 'in_progress'\)}}([\s\S]*?){{\/if}}/g, 
+                                                    workflow.status === 'in_progress' ? '$1' : '');
+                                                row = row.replace(/{{#if \(eq status 'queued'\)}}([\s\S]*?){{\/if}}/g, 
+                                                    workflow.status === 'queued' ? '$1' : '');
+                                                    
+                                                row = row.replace(/{{#if \(eq conclusion 'success'\)}}([\s\S]*?){{\/if}}/g, 
+                                                    workflow.conclusion === 'success' ? '$1' : '');
+                                                row = row.replace(/{{#if \(eq conclusion 'failure'\)}}([\s\S]*?){{\/if}}/g, 
+                                                    workflow.conclusion === 'failure' ? '$1' : '');
+                                                row = row.replace(/{{#if \(eq conclusion 'skipped'\)}}([\s\S]*?){{\/if}}/g, 
+                                                    workflow.conclusion === 'skipped' ? '$1' : '');
+                                                row = row.replace(/{{#if \(eq conclusion null\)}}([\s\S]*?){{\/if}}/g, 
+                                                    workflow.conclusion === 'pending' ? '$1' : '');
+                                                
+                                                return row;
+                                            }).join('');
+                                            
+                                            renderedTemplate = renderedTemplate.replace(/{{#each workflows}}[\s\S]*?{{\/each}}/, workflowsHtml);
+                                        }
+                                        
+                                        // Add pagination controls
+                                        const paginationHtml = `
+                                            <div class="mt-6 flex justify-between items-center">
+                                                <div>
+                                                    <span class="text-sm text-gray-700">
+                                                        Showing <span class="font-medium">1</span> to <span class="font-medium">${Math.min(pageSize, totalItems)}</span> of <span class="font-medium">${totalItems}</span> results
+                                                    </span>
+                                                </div>
+                                                <div class="flex space-x-2">
+                                                    <button id="prevPage" class="px-3 py-1 rounded bg-gray-200 text-gray-700 disabled:opacity-50" disabled>Previous</button>
+                                                    <span class="px-3 py-1">Page ${currentPage} of ${totalPages}</span>
+                                                    <button id="nextPage" class="px-3 py-1 rounded bg-blue-500 text-white ${totalPages <= 1 ? 'disabled:opacity-50' : ''}" ${totalPages <= 1 ? 'disabled' : ''}>Next</button>
+                                                </div>
+                                            </div>
+                                        `;
+                                        
+                                        // Add pagination to the template
+                                        renderedTemplate += paginationHtml;
+                                        
+                                        actionsSection.innerHTML = renderedTemplate;
+                                        
+                                        // Store the full data in a variable for pagination
+                                        actionsSection.dataset.fullData = JSON.stringify(workflowsData);
+                                        
+                                        // Add event listeners for pagination
+                                        const prevButton = document.getElementById('prevPage');
+                                        const nextButton = document.getElementById('nextPage');
+                                        
+                                        if (prevButton && nextButton) {
+                                            prevButton.addEventListener('click', () => {
+                                                if (currentPage > 1) {
+                                                    currentPage--;
+                                                    updateWorkflowsTable(workflowsData, currentPage, pageSize, totalPages);
+                                                }
+                                            });
+                                            
+                                            nextButton.addEventListener('click', () => {
+                                                if (currentPage < totalPages) {
+                                                    currentPage++;
+                                                    updateWorkflowsTable(workflowsData, currentPage, pageSize, totalPages);
+                                                }
+                                            });
+                                        }
+                                    }
+                                } else {
+                                    actionsSection.innerHTML = `<div class="bg-red-100 p-4 rounded-lg text-red-700">No se pudieron cargar los datos de workflows</div>`;
+                                }
+                            } catch (error) {
+                                console.error('Error processing workflow data:', error);
+                                actionsSection.innerHTML = `<div class="bg-red-100 p-4 rounded-lg text-red-700">Error processing workflow data: ${error.message}</div>`;
                             }
-                        } else {
-                            actionsSection.innerHTML = `<div class="bg-red-100 p-4 rounded-lg text-red-700">No se pudieron cargar los datos de workflows</div>`;
-                        }
+                        }, 10); // Small delay to allow the UI to update with the loading indicator
                     }
                     break;
                 case 'Lead Time':
@@ -332,7 +406,8 @@ window.navigationUtils.setupNavigation = function() {
                             // Analyze common errors (using workflow names as proxy for error types)
                             const errorTypes = {};
                             filteredFailureData.forEach(run => {
-                                const errorType = run.name;
+                                // Use event type as the error type instead of workflow name
+                                const errorType = run.event || 'Unknown';
                                 if (!errorTypes[errorType]) {
                                     errorTypes[errorType] = 0;
                                 }
@@ -431,7 +506,7 @@ window.navigationUtils.setupNavigation = function() {
                                     
                                     // Also check for the alternative variable name
                                     htmlContent = failureSection.innerHTML;
-                                    if (htmlContent.includes('{{metrics.total_failures}}')) {
+                                    if (htmlContent.includes('{{metrics\.total_failures}}')) {
                                         htmlContent = htmlContent.replace(/\{\{metrics\.total_failures\}\}/g, failureCount);
                                         failureSection.innerHTML = htmlContent;
                                     }
@@ -441,7 +516,7 @@ window.navigationUtils.setupNavigation = function() {
                                     elements.forEach(el => {
                                         // Check for both variable names
                                         if (el.textContent && (
-                                            el.textContent.trim() === '{{metrics.total_failed}}' || 
+                                            el.textContent.trim() === '{{metrics.total_failed}}' ||
                                             el.textContent.trim() === '{{metrics.total_failures}}')) {
                                             el.textContent = failureCount;
                                         }
@@ -471,74 +546,158 @@ window.navigationUtils.setupNavigation = function() {
                     }
                     break;
                 case 'Handler Success':
-                    const handlerSuccessSection = document.querySelector('#handlerSuccess');
-                    if (handlerSuccessSection) {
-                        handlerSuccessSection.classList.remove('hidden');
+                    const successSection = document.querySelector('#handlerSuccess');
+                    if (successSection) {
+                        successSection.classList.remove('hidden');
                         
-                        // Load data from kaos-workflows-runs.json
-                        const successWorkflowsData = await fetch('../outputs/w/kaos-workflows-runs.json')
-                            .then(response => {
-                                if (!response.ok) {
-                                    throw new Error(`HTTP Error: ${response.status}`);
-                                }
-                                return response.json();
-                            })
-                            .catch(error => {
-                                console.error('Error loading workflow runs:', error);
-                                return [];
-                            });
-                            
-                        console.log('Workflow data loaded:', successWorkflowsData.length, 'total workflows');
+                        // Show loading indicator
+                        successSection.innerHTML = `
+                            <div class="flex justify-center items-center h-64">
+                                <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-green-500"></div>
+                                <p class="ml-4 text-lg text-gray-600">Loading success data...</p>
+                            </div>
+                        `;
                         
-                        if (successWorkflowsData && successWorkflowsData.length > 0) {
-                            // Filter only successful workflows
-                            const filteredSuccessData = successWorkflowsData.filter(run => run.conclusion === 'success');
-                            console.log('Filtered successful workflows:', filteredSuccessData.length);
-                            
-                            // Process data for the template format
-                            const processedSuccessData = processWorkflowData(filteredSuccessData);
-                            processedSuccessData.title = "Successful Workflows";
-                            processedSuccessData.description = "Workflows that completed successfully";
-                            
-                            const template = await window.dashboardUtils.loadHtmlTemplate('templates/actionsperformance.html');
-                            if (template) {
-                                // Apply data to the template
-                                let renderedTemplate = template;
+                        try {
+                            // Load data from kaos-workflows-runs.json
+                            const successWorkflowsData = await fetch('../outputs/w/kaos-workflows-runs.json')
+                                .then(response => {
+                                    if (!response.ok) {
+                                        throw new Error(`HTTP Error: ${response.status}`);
+                                    }
+                                    return response.json();
+                                });
                                 
-                                // Replace summary data
-                                for (const [key, value] of Object.entries(processedSuccessData.summary)) {
-                                    renderedTemplate = renderedTemplate.replace(`{{summary.${key}}}`, value);
+                            console.log('Workflow data loaded:', successWorkflowsData.length, 'total workflows');
+                            
+                            if (successWorkflowsData && successWorkflowsData.length > 0) {
+                                // Filter only successful workflows
+                                const filteredSuccessData = successWorkflowsData.filter(run => run.conclusion === 'success');
+                                console.log('Filtered successful workflows:', filteredSuccessData.length);
+                                
+                                // Calculate success metrics
+                                const totalWorkflows = successWorkflowsData.length;
+                                const successCount = filteredSuccessData.length;
+                                const successRate = totalWorkflows > 0 ? (successCount / totalWorkflows * 100).toFixed(1) + '%' : '0%';
+                                
+                                // Calculate average execution time
+                                let totalSuccessDuration = 0;
+                                filteredSuccessData.forEach(run => {
+                                    const duration = calculateDurationInSeconds(run.created_at, run.updated_at);
+                                    totalSuccessDuration += duration;
+                                });
+                                const avgExecutionTime = successCount > 0 ? formatDuration(totalSuccessDuration / successCount) : 'N/A';
+                                
+                                // Find most common successful workflow
+                                const workflowCounts = {};
+                                filteredSuccessData.forEach(run => {
+                                    const workflowName = run.name;
+                                    if (!workflowCounts[workflowName]) {
+                                        workflowCounts[workflowName] = 0;
+                                    }
+                                    workflowCounts[workflowName]++;
+                                });
+                                
+                                let mostCommonWorkflow = 'None';
+                                let maxCount = 0;
+                                for (const [workflow, count] of Object.entries(workflowCounts)) {
+                                    if (count > maxCount) {
+                                        mostCommonWorkflow = workflow;
+                                        maxCount = count;
+                                    }
                                 }
                                 
-                                // Replace title and description
-                                renderedTemplate = renderedTemplate.replace('{{title}}', processedSuccessData.title);
-                                renderedTemplate = renderedTemplate.replace('{{description}}', processedSuccessData.description);
+                                // Process workflow data for display
+                                const successes = filteredSuccessData.slice(0, 50).map(run => {
+                                    return {
+                                        name: run.name,
+                                        duration: formatDuration(calculateDurationInSeconds(run.created_at, run.updated_at)),
+                                        created_at: new Date(run.created_at).toLocaleString()
+                                    };
+                                });
                                 
-                                // Handle workflows loop
-                                const workflowsMatch = renderedTemplate.match(/{{#each workflows}}([\s\S]*?){{\/each}}/);
-                                if (workflowsMatch) {
-                                    const workflowTemplate = workflowsMatch[1];
-                                    const workflowsHtml = processedSuccessData.workflows.map(workflow => {
-                                        let row = workflowTemplate;
-                                        for (const [key, value] of Object.entries(workflow)) {
-                                            row = row.replace(new RegExp(`{{${key}}}`, 'g'), value);
-                                        }
-                                        // Handle status-based styles
-                                        row = row.replace(/{{#if \(eq status 'success'\)}}(.*?){{\/if}}/g, 
-                                            workflow.status === 'success' ? '$1' : '');
-                                        row = row.replace(/{{#if \(eq status 'running'\)}}(.*?){{\/if}}/g, 
-                                            workflow.status === 'running' ? '$1' : '');
-                                        row = row.replace(/{{#if \(eq status 'failure'\)}}(.*?){{\/if}}/g, 
-                                            workflow.status === 'failure' ? '$1' : '');
-                                        return row;
-                                    }).join('');
-                                    renderedTemplate = renderedTemplate.replace(/{{#each workflows}}[\s\S]*?{{\/each}}/, workflowsHtml);
+                                // Set up pagination
+                                const pageSize = 50;
+                                const totalItems = filteredSuccessData.length;
+                                const totalPages = Math.ceil(totalItems / pageSize);
+                                const currentPage = 1;
+                                
+                                const pagination = {
+                                    start: 1,
+                                    end: Math.min(pageSize, totalItems),
+                                    total: totalItems,
+                                    current_page: currentPage,
+                                    total_pages: totalPages,
+                                    is_first_page: true,
+                                    is_last_page: totalPages <= 1
+                                };
+                                
+                                // Load and render the template
+                                const template = await window.dashboardUtils.loadHtmlTemplate('templates/handlersuccess.html');
+                                if (template) {
+                                    let renderedTemplate = template;
+                                    
+                                    // Replace metrics data
+                                    renderedTemplate = renderedTemplate.replace(/{{metrics\.total_successful}}/g, successCount);
+                                    renderedTemplate = renderedTemplate.replace(/{{metrics\.success_rate}}/g, successRate);
+                                    renderedTemplate = renderedTemplate.replace(/{{metrics\.common_workflow}}/g, mostCommonWorkflow);
+                                    renderedTemplate = renderedTemplate.replace(/{{metrics\.avg_execution_time}}/g, avgExecutionTime);
+                                    
+                                    // Handle the successes loop
+                                    const successesMatch = renderedTemplate.match(/{{#each successes}}([\s\S]*?){{\/each}}/);
+                                    if (successesMatch) {
+                                        const successTemplate = successesMatch[1];
+                                        const successesHtml = successes.map(success => {
+                                            let row = successTemplate;
+                                            for (const [key, value] of Object.entries(success)) {
+                                                row = row.replace(new RegExp(`{{${key}}}`, 'g'), value);
+                                            }
+                                            return row;
+                                        }).join('');
+                                        
+                                        renderedTemplate = renderedTemplate.replace(/{{#each successes}}[\s\S]*?{{\/each}}/, successesHtml);
+                                    }
+                                    
+                                    // Replace pagination data
+                                    for (const [key, value] of Object.entries(pagination)) {
+                                        renderedTemplate = renderedTemplate.replace(new RegExp(`{{pagination\\.${key}}}`, 'g'), value);
+                                    }
+                                    
+                                    // Handle conditional pagination buttons
+                                    renderedTemplate = renderedTemplate.replace(/{{#if pagination\.is_first_page}}disabled{{\/if}}/g, 
+                                        pagination.is_first_page ? 'disabled' : '');
+                                    renderedTemplate = renderedTemplate.replace(/{{#if pagination\.is_last_page}}disabled{{\/if}}/g, 
+                                        pagination.is_last_page ? 'disabled' : '');
+                                    
+                                    successSection.innerHTML = renderedTemplate;
+                                    
+                                    // Add event listeners for pagination
+                                    const prevButton = document.getElementById('prevPage');
+                                    const nextButton = document.getElementById('nextPage');
+                                    
+                                    if (prevButton && nextButton) {
+                                        // Store the full data for pagination
+                                        successSection.dataset.fullData = JSON.stringify(filteredSuccessData);
+                                        
+                                        prevButton.addEventListener('click', () => {
+                                            if (currentPage > 1) {
+                                                updateSuccessTable(filteredSuccessData, currentPage - 1, pageSize, totalPages);
+                                            }
+                                        });
+                                        
+                                        nextButton.addEventListener('click', () => {
+                                            if (currentPage < totalPages) {
+                                                updateSuccessTable(filteredSuccessData, currentPage + 1, pageSize, totalPages);
+                                            }
+                                        });
+                                    }
                                 }
-                                
-                                handlerSuccessSection.innerHTML = renderedTemplate;
+                            } else {
+                                successSection.innerHTML = `<div class="bg-red-100 p-4 rounded-lg text-red-700">No workflow data available</div>`;
                             }
-                        } else {
-                            handlerSuccessSection.innerHTML = `<div class="bg-red-100 p-4 rounded-lg text-red-700">Could not load workflow data</div>`;
+                        } catch (error) {
+                            console.error('Error processing success data:', error);
+                            successSection.innerHTML = `<div class="bg-red-100 p-4 rounded-lg text-red-700">Error processing success data: ${error.message}</div>`;
                         }
                     }
                     break;
@@ -608,99 +767,80 @@ window.navigationUtils.setupNavigation = function() {
 
 // Add this function to process workflow data
 function processWorkflowData(runs) {
-    // Group by workflow name
-    const workflowMap = {};
-    let totalRuns = 0;
-    let successfulRuns = 0;
+    // Calculate summary statistics
+    let totalRuns = runs.length;
+    let successfulRuns = runs.filter(run => run.conclusion === 'success').length;
     let totalDuration = 0;
     
-    runs.forEach(run => {
-        totalRuns++;
-        if (run.conclusion === 'success') {
-            successfulRuns++;
-        }
-        
+    // Process each individual workflow run
+    const workflows = runs.map(run => {
         const duration = calculateDurationInSeconds(run.created_at, run.updated_at);
         totalDuration += duration;
         
-        if (!workflowMap[run.name]) {
-            workflowMap[run.name] = {
-                name: run.name,
-                status: getStatusText(run.status, run.conclusion),
-                runs: [],
-                success_count: 0,
-                total_runs: 0,
-                last_run: run.created_at
-            };
-        }
-        
-        workflowMap[run.name].total_runs++;
-        if (run.conclusion === 'success') {
-            workflowMap[run.name].success_count++;
-        }
-        
-        // Update last status if more recent
-        if (new Date(run.created_at) > new Date(workflowMap[run.name].last_run)) {
-            workflowMap[run.name].last_run = run.created_at;
-            workflowMap[run.name].status = getStatusText(run.status, run.conclusion);
-            workflowMap[run.name].duration = formatDuration(duration);
-        }
-    });
-    
-    // Calculate statistics
-    const workflows = Object.values(workflowMap).map(workflow => {
-        const successRate = workflow.total_runs > 0 
-            ? Math.round((workflow.success_count / workflow.total_runs) * 100) 
-            : 0;
-            
         return {
-            name: workflow.name,
-            status: workflow.status,
-            duration: workflow.duration || 'N/A',
-            success_rate: `${successRate}%`,
-            last_run: formatDate(workflow.last_run),
-            total_runs: workflow.total_runs
+            id: run.id,
+            name: run.name,
+            run_number: run.run_number,
+            head_branch: run.head_branch || 'N/A',
+            head_sha: run.head_sha ? run.head_sha.substring(0, 7) : 'N/A',
+            event: run.event || 'N/A',
+            status: run.status || 'N/A',
+            conclusion: run.conclusion || 'pending',
+            created_at: formatDate(run.created_at),
+            updated_at: formatDate(run.updated_at),
+            duration: formatDuration(duration)
         };
     });
     
+    // Sort workflows by creation date (newest first)
+    workflows.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    
     // Summary data
     const successRate = totalRuns > 0 ? Math.round((successfulRuns / totalRuns) * 100) : 0;
+    const avgDuration = totalRuns > 0 ? formatDuration(totalDuration / totalRuns) : 'N/A';
     
     return {
         title: "GitHub Actions Performance",
-        description: "Recent Workflow Executions",
+        description: "All Workflow Executions",
         summary: {
             total_workflows: workflows.length,
             success_rate: `${successRate}%`,
             total_runs: totalRuns,
-            avg_duration: formatDuration(totalDuration / totalRuns)
+            avg_duration: avgDuration
         },
         workflows: workflows
     };
 }
 
-function calculateDurationInSeconds(start, end) {
-    const startTime = new Date(start);
-    const endTime = new Date(end);
-    return (endTime - startTime) / 1000; // in seconds
-}
-
-function formatDuration(seconds) {
-    if (isNaN(seconds) || seconds <= 0) return 'N/A';
+// Helper function to calculate duration in seconds
+function calculateDurationInSeconds(startTime, endTime) {
+    if (!startTime || !endTime) return 0;
     
-    if (seconds < 60) return `${Math.round(seconds)}s`;
-    if (seconds < 3600) return `${Math.round(seconds / 60)}m`;
-    return `${Math.round(seconds / 3600)}h`;
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+    return Math.floor((end - start) / 1000);
 }
 
+// Helper function to format duration
+function formatDuration(seconds) {
+    if (!seconds || isNaN(seconds)) return 'N/A';
+    
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    
+    if (minutes < 1) {
+        return `${remainingSeconds}s`;
+    } else {
+        return `${minutes}m ${remainingSeconds}s`;
+    }
+}
+
+// Helper function to format date
 function formatDate(dateString) {
-    return new Date(dateString).toLocaleString('en-GB', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
+    if (!dateString) return 'N/A';
+    
+    const date = new Date(dateString);
+    return date.toLocaleString();
 }
 
 function getStatusText(status, conclusion) {
@@ -708,3 +848,136 @@ function getStatusText(status, conclusion) {
     if (conclusion === 'success') return 'success';
     if (conclusion === 'failure') return 'failure';
     return status || conclusion || 'unknown';}
+
+// Optimized function to process workflow data
+function processWorkflowDataOptimized(paginatedRuns, allRuns) {
+    // Calculate summary statistics from all runs
+    let totalRuns = allRuns.length;
+    let successfulRuns = allRuns.filter(run => run.conclusion === 'success').length;
+    let totalDuration = 0;
+    
+    // Calculate total duration more efficiently
+    for (let i = 0; i < Math.min(100, allRuns.length); i++) {
+        const run = allRuns[i];
+        totalDuration += calculateDurationInSeconds(run.created_at, run.updated_at);
+    }
+    
+    // Extrapolate average if we have more than 100 runs
+    if (allRuns.length > 100) {
+        totalDuration = (totalDuration / 100) * allRuns.length;
+    }
+    
+    // Process only the paginated runs for display
+    const workflows = paginatedRuns.map(run => {
+        const duration = calculateDurationInSeconds(run.created_at, run.updated_at);
+        
+        return {
+            id: run.id,
+            name: run.name,
+            run_number: run.run_number,
+            head_branch: run.head_branch || 'N/A',
+            head_sha: run.head_sha ? run.head_sha.substring(0, 7) : 'N/A',
+            event: run.event || 'N/A',
+            status: run.status || 'N/A',
+            conclusion: run.conclusion || 'pending',
+            created_at: formatDate(run.created_at),
+            updated_at: formatDate(run.updated_at),
+            duration: formatDuration(duration)
+        };
+    });
+    
+    // Summary data
+    const successRate = totalRuns > 0 ? Math.round((successfulRuns / totalRuns) * 100) : 0;
+    const avgDuration = totalRuns > 0 ? formatDuration(totalDuration / totalRuns) : 'N/A';
+    
+    return {
+        title: "GitHub Actions Performance",
+        description: "All Workflow Executions",
+        summary: {
+            total_workflows: allRuns.length,
+            success_rate: `${successRate}%`,
+            total_runs: totalRuns,
+            avg_duration: avgDuration
+        },
+        workflows: workflows
+    };
+}
+
+// Function to update the workflows table with paginated data
+function updateWorkflowsTable(allData, page, pageSize, totalPages) {
+    const actionsSection = document.querySelector('#actionsPerformance');
+    if (!actionsSection) return;
+    
+    const start = (page - 1) * pageSize;
+    const end = start + pageSize;
+    const paginatedData = allData.slice(start, end);
+    
+    // Process only the current page of data
+    const processedData = processWorkflowDataOptimized(paginatedData, allData);
+    
+    // Find the table body
+    const tableBody = actionsSection.querySelector('tbody');
+    if (!tableBody) return;
+    
+    // Update the table rows
+    const workflowTemplate = actionsSection.querySelector('template') || 
+                            tableBody.innerHTML.match(/<tr[^>]*>([\s\S]*?)<\/tr>/)[0];
+    
+    const workflowsHtml = processedData.workflows.map(workflow => {
+        let row = workflowTemplate.toString();
+        
+        // Replace all workflow properties
+        for (const [key, value] of Object.entries(workflow)) {
+            row = row.replace(new RegExp(`{{${key}}}`, 'g'), value);
+        }
+        
+        // Handle conditional formatting for status and conclusion
+        row = row.replace(/{{#if \(eq status 'completed'\)}}([\s\S]*?){{\/if}}/g, 
+            workflow.status === 'completed' ? '$1' : '');
+        row = row.replace(/{{#if \(eq status 'in_progress'\)}}([\s\S]*?){{\/if}}/g, 
+            workflow.status === 'in_progress' ? '$1' : '');
+        row = row.replace(/{{#if \(eq status 'queued'\)}}([\s\S]*?){{\/if}}/g, 
+            workflow.status === 'queued' ? '$1' : '');
+            
+        row = row.replace(/{{#if \(eq conclusion 'success'\)}}([\s\S]*?){{\/if}}/g, 
+            workflow.conclusion === 'success' ? '$1' : '');
+        row = row.replace(/{{#if \(eq conclusion 'failure'\)}}([\s\S]*?){{\/if}}/g, 
+            workflow.conclusion === 'failure' ? '$1' : '');
+        row = row.replace(/{{#if \(eq conclusion 'skipped'\)}}([\s\S]*?){{\/if}}/g, 
+            workflow.conclusion === 'skipped' ? '$1' : '');
+        row = row.replace(/{{#if \(eq conclusion null\)}}([\s\S]*?){{\/if}}/g, 
+            workflow.conclusion === 'pending' ? '$1' : '');
+        
+        return row;
+    }).join('');
+    
+    tableBody.innerHTML = workflowsHtml;
+    
+    // Update pagination UI
+    const prevButton = document.getElementById('prevPage');
+    const nextButton = document.getElementById('nextPage');
+    
+    if (prevButton) {
+        prevButton.disabled = page <= 1;
+    }
+    
+    if (nextButton) {
+        nextButton.disabled = page >= totalPages;
+    }
+    
+    // Update pagination text
+    const paginationText = actionsSection.querySelector('.text-sm.text-gray-700');
+    if (paginationText) {
+        const startItem = (page - 1) * pageSize + 1;
+        const endItem = Math.min(page * pageSize, allData.length);
+        paginationText.innerHTML = `
+            Showing <span class="font-medium">${startItem}</span> to <span class="font-medium">${endItem}</span> of <span class="font-medium">${allData.length}</span> results
+        `;
+    }
+    
+    // Update page counter
+    const pageCounter = actionsSection.querySelector('.px-3.py-1:not(button)');
+    if (pageCounter) {
+        pageCounter.textContent = `Page ${page} of ${totalPages}`;
+    }
+}

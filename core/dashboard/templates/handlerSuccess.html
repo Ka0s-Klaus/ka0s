@@ -1,55 +1,75 @@
-<div class="bg-white p-6 rounded-lg shadow-lg">
+<div class="p-6 bg-white rounded-xl shadow-lg">
     <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold text-gray-800">{{title}}</h2>
-        <p class="text-gray-600">{{description}}</p>
+        <h2 class="text-2xl font-bold text-gray-800">GitHub Actions Success Metrics</h2>
+        <span class="text-sm text-gray-500">Real-time workflow success analysis</span>
     </div>
 
-    <!-- Summary Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <!-- Total Successful Workflows -->
         <div class="bg-green-50 p-4 rounded-lg">
-            <h3 class="text-sm font-medium text-green-800">Total Successful</h3>
-            <p class="text-2xl font-bold text-green-600">{{summary.total_successful}}</p>
+            <h3 class="text-sm font-medium text-green-700 mb-2">Total Successful Workflows</h3>
+            <p class="text-3xl font-bold text-green-600">{{metrics.total_successful}}</p>
         </div>
+
+        <!-- Success Rate -->
         <div class="bg-blue-50 p-4 rounded-lg">
-            <h3 class="text-sm font-medium text-blue-800">Success Rate</h3>
-            <p class="text-2xl font-bold text-blue-600">{{summary.success_rate}}</p>
+            <h3 class="text-sm font-medium text-blue-700 mb-2">Success Rate</h3>
+            <p class="text-3xl font-bold text-blue-600">{{metrics.success_rate}}</p>
         </div>
+
+        <!-- Most Common Workflow -->
         <div class="bg-purple-50 p-4 rounded-lg">
-            <h3 class="text-sm font-medium text-purple-800">Average Duration</h3>
-            <p class="text-2xl font-bold text-purple-600">{{summary.avg_duration}}</p>
+            <h3 class="text-sm font-medium text-purple-700 mb-2">Most Common Workflow</h3>
+            <p class="text-3xl font-bold text-purple-600">{{metrics.common_workflow}}</p>
         </div>
+
+        <!-- Avg Execution Time -->
         <div class="bg-orange-50 p-4 rounded-lg">
-            <h3 class="text-sm font-medium text-orange-800">Last Success</h3>
-            <p class="text-2xl font-bold text-orange-600">{{summary.last_success}}</p>
+            <h3 class="text-sm font-medium text-orange-700 mb-2">Avg Execution Time</h3>
+            <p class="text-3xl font-bold text-orange-600">{{metrics.avg_execution_time}}</p>
         </div>
     </div>
 
+    <!-- Recent Successes Table -->
     <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
+        <h3 class="text-xl font-semibold text-gray-700 mb-4">Recent Successes</h3>
+        <table class="min-w-full bg-white rounded-lg overflow-hidden">
+            <thead class="bg-gray-100">
                 <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Process ID</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Completion Time</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Workflow</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Execution Time</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                {{#each processes}}
+            <tbody class="divide-y divide-gray-200">
+                {{#each successes}}
                 <tr class="hover:bg-gray-50">
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{processId}}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{name}}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{completionTime}}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{name}}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{duration}}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{created_at}}</td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                            {{status}}
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                            Success
                         </span>
                     </td>
                 </tr>
                 {{/each}}
             </tbody>
         </table>
+    </div>
+
+    <!-- Pagination Controls -->
+    <div class="mt-6 flex justify-between items-center">
+        <div>
+            <span class="text-sm text-gray-700">
+                Showing <span class="font-medium">{{pagination.start}}</span> to <span class="font-medium">{{pagination.end}}</span> of <span class="font-medium">{{pagination.total}}</span> successful workflows
+            </span>
+        </div>
+        <div class="flex space-x-2">
+            <button id="prevPage" class="px-3 py-1 rounded bg-gray-200 text-gray-700 disabled:opacity-50" {{#if pagination.is_first_page}}disabled{{/if}}>Previous</button>
+            <span class="px-3 py-1">Page {{pagination.current_page}} of {{pagination.total_pages}}</span>
+            <button id="nextPage" class="px-3 py-1 rounded bg-green-500 text-white disabled:opacity-50" {{#if pagination.is_last_page}}disabled{{/if}}>Next</button>
+        </div>
     </div>
 </div>
