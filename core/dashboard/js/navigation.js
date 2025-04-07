@@ -292,14 +292,96 @@ window.navigationUtils.setupNavigation = function() {
                         }, 10); // Small delay to allow the UI to update with the loading indicator
                     }
                     break;
+                // In the setupNavigation function, find the case for 'Lead Time'
                 case 'Lead Time':
                     const leadTimeSection = document.querySelector('#leadTime');
                     if (leadTimeSection) {
                         leadTimeSection.classList.remove('hidden');
-                        const renderedTemplate = await window.sectionUtils.loadLeadTime();
-                        if (renderedTemplate) {
-                            leadTimeSection.innerHTML = renderedTemplate;
-                        }
+                        
+                        // Fetch real workflow data from kaos-workflows-runs.json
+                        fetch('../outputs/w/kaos-workflows-runs.json')
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error(`Error HTTP: ${response.status}`);
+                                }
+                                return response.json();
+                            })
+                            .then(workflowsData => {
+                                console.log('Workflow data loaded for lead time:', workflowsData.length, 'workflows');
+                                
+                                // Process the data for lead time metrics
+                                const processedData = processLeadTimeData(workflowsData);
+                                
+                                // Render the lead time section with the processed data
+                                const html = `
+                                    <div class="bg-white rounded-lg shadow-md p-6">
+                                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Lead Time Analysis</h2>
+                                        <p class="text-gray-600 mb-6">Análisis del tiempo transcurrido desde el commit hasta el despliegue</p>
+                                        
+                                        <!-- Metrics -->
+                                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                                            <div class="bg-blue-100 p-4 rounded-lg">
+                                                <h3 class="font-bold text-blue-800">Total Workflows</h3>
+                                                <p class="text-3xl font-bold text-blue-600">${processedData.metrics.totalWorkflows}</p>
+                                            </div>
+                                            <div class="bg-green-100 p-4 rounded-lg">
+                                                <h3 class="font-bold text-green-800">Avg Lead Time</h3>
+                                                <p class="text-3xl font-bold text-green-600">${processedData.metrics.avgLeadTime}</p>
+                                            </div>
+                                            <div class="bg-yellow-100 p-4 rounded-lg">
+                                                <h3 class="font-bold text-yellow-800">Max Lead Time</h3>
+                                                <p class="text-3xl font-bold text-yellow-600">${processedData.metrics.maxLeadTime}</p>
+                                            </div>
+                                            <div class="bg-purple-100 p-4 rounded-lg">
+                                                <h3 class="font-bold text-purple-800">Min Lead Time</h3>
+                                                <p class="text-3xl font-bold text-purple-600">${processedData.metrics.minLeadTime}</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Recent Executions Table -->
+                                        <h3 class="text-xl font-semibold text-gray-700 mb-4">Recent Executions</h3>
+                                        <div class="overflow-x-auto">
+                                            <table class="min-w-full bg-white">
+                                                <thead class="bg-gray-50">
+                                                    <tr>
+                                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Workflow</th>
+                                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lead Time</th>
+                                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+                                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="bg-white divide-y divide-gray-200">
+                                                    ${processedData.recentExecutions.map(execution => `
+                                                        <tr class="hover:bg-gray-50">
+                                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${execution.workflow}</td>
+                                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600 font-medium">${execution.leadTime}</td>
+                                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${execution.time}</td>
+                                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${execution.status === 'Success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                                                                    ${execution.status}
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                    `).join('')}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                `;
+                                
+                                leadTimeSection.innerHTML = html;
+                            })
+                            .catch(error => {
+                                console.error('Error loading workflow runs for lead time:', error);
+                                leadTimeSection.innerHTML = `
+                                    <div class="bg-white rounded-lg shadow-md p-6">
+                                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Lead Time Analysis</h2>
+                                        <div class="bg-red-100 p-4 rounded-lg text-red-700">
+                                            Error loading workflow data: ${error.message}
+                                        </div>
+                                    </div>
+                                `;
+                            });
                     }
                     break;
                 case 'Backlogs':
@@ -516,6 +598,7 @@ window.navigationUtils.setupNavigation = function() {
                                     elements.forEach(el => {
                                         // Check for both variable names
                                         if (el.textContent && (
+                                            el.textContent.trim() === '{{metrics.total_failed}}' ||
                                             el.textContent.trim() === '{{metrics.total_failed}}' ||
                                             el.textContent.trim() === '{{metrics.total_failures}}')) {
                                             el.textContent = failureCount;
