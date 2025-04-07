@@ -362,70 +362,243 @@ window.navigationUtils.setupNavigation = function() {
                             });
                     }
                     break;
-                case 'Backlogs':
-                    const backLogsSection = document.querySelector('#backLogs');
-                    if (backLogsSection) {
-                        backLogsSection.classList.remove('hidden');
-                        // Load and process the Backlogs data
-                        const backLogsData = await window.dashboardUtils.loadJsonData('dashboard/sections/backLogs.json');
-                        if (backLogsData) {
-                            const template = await window.dashboardUtils.loadHtmlTemplate('templates/backLogs.html');
-                            if (template) {
-                                // Replace all template variables with actual data
-                                let renderedTemplate = template;
-                                
-                                renderedTemplate = renderedTemplate.replace(/{{ backLogs.title }}/g, backLogsData.title);
-                                renderedTemplate = renderedTemplate.replace(/{{ backLogs.description }}/g, backLogsData.description);
+                    case 'Backlogs':
+                        const backLogsSection = document.querySelector('#backLogs');
+                        if (backLogsSection) {
+                            backLogsSection.classList.remove('hidden');
+                            
+                            // Show loading indicator
+                            backLogsSection.innerHTML = `
+                                <div class="flex justify-center items-center h-64">
+                                    <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
+                                    <p class="ml-4 text-lg text-gray-600">Loading issues data...</p>
+                                </div>
+                            `;
+                            
+                            // Load and process the Backlogs data
+                            const backLogsData = await window.dashboardUtils.loadJsonData('dashboard/sections/backLogs.json');
+                            const backLogsDataReal = await window.dashboardUtils.loadJsonData('../outputs/w/kaos-issue.json');
 
-                                renderedTemplate = renderedTemplate.replace(/{{ backLogs.target1 }}/g, backLogsData.target.target1.title);
-                                renderedTemplate = renderedTemplate.replace(/{{ backLogs.target1.description }}/g, backLogsData.target.target1.description);
-                                renderedTemplate = renderedTemplate.replace(/{{ backLogs.target2 }}/g, backLogsData.target.target2.title);
-                                renderedTemplate = renderedTemplate.replace(/{{ backLogs.target2.description }}/g, backLogsData.target.target2.description);
-                                renderedTemplate = renderedTemplate.replace(/{{ backLogs.target3 }}/g, backLogsData.target.target3.title);
-                                renderedTemplate = renderedTemplate.replace(/{{ backLogs.target3.description }}/g, backLogsData.target.target3.description);
-
-
+                            if (backLogsData && backLogsDataReal) {
+                                const template = await window.dashboardUtils.loadHtmlTemplate('templates/backLogs.html');
                                 
-                                // Replace title and description if they exist in the template
-                                if (backLogsData.title) {
-                                    renderedTemplate = renderedTemplate.replace(/{{title}}/g, backLogsData.title);
-                                }
-                                
-                                // Replace target data
-                                if (backLogsData.target) {
-                                    for (const [key, value] of Object.entries(backLogsData.target)) {
-                                        renderedTemplate = renderedTemplate.replace(new RegExp(`{{target1.${key}.title}}`, 'g'), value.title);
-                                        renderedTemplate = renderedTemplate.replace(new RegExp(`{{target1.${key}.description}}`, 'g'), value.description);
-                                    }
-                                }
-                                
-                                // Handle the mainContent loop if it exists in the template
-                                const contentMatch = renderedTemplate.match(/{{#each mainContent}}([\s\S]*?){{\/each}}/);
-                                if (contentMatch && backLogsData.mainContent) {
-                                    const itemTemplate = contentMatch[1];
-                                    const itemsHtml = backLogsData.mainContent.map(item => {
-                                        let row = itemTemplate;
-                                        for (const [key, value] of Object.entries(item)) {
-                                            if (key === 'tags' && Array.isArray(value)) {
-                                                // Handle tags array
-                                                const tagsHtml = value.map(tag => 
-                                                    `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 mr-1">${tag}</span>`
-                                                ).join('');
-                                                row = row.replace(/{{tagsHtml}}/g, tagsHtml);
+                                if (template) {
+                                    // Replace all template variables with actual data
+                                    let renderedTemplate = template;
+                                    
+                                    // Replace basic template variables
+                                    renderedTemplate = renderedTemplate.replace(/{{ backLogs.title }}/g, backLogsData.title);
+                                    renderedTemplate = renderedTemplate.replace(/{{ backLogs.description }}/g, backLogsData.description);
+                                    renderedTemplate = renderedTemplate.replace(/{{ backLogs.target1 }}/g, backLogsData.target.target1.title);
+                                    renderedTemplate = renderedTemplate.replace(/{{ backLogs.target1.description }}/g, backLogsData.target.target1.description);
+                                    renderedTemplate = renderedTemplate.replace(/{{ backLogs.target2 }}/g, backLogsData.target.target2.title);
+                                    renderedTemplate = renderedTemplate.replace(/{{ backLogs.target2.description }}/g, backLogsData.target.target2.description);
+                                    renderedTemplate = renderedTemplate.replace(/{{ backLogs.target3 }}/g, backLogsData.target.target3.title);
+                                    renderedTemplate = renderedTemplate.replace(/{{ backLogs.target3.description }}/g, backLogsData.target.target3.description);
+                                    
+                                    // Render the template first
+                                    backLogsSection.innerHTML = renderedTemplate;
+                                    
+                                    // Now populate the columns with actual issue data
+                                    const issues = Array.isArray(backLogsDataReal[0]) ? backLogsDataReal[0] : backLogsDataReal;
+                                    
+                                    // Filter out issues with the error title
+                                    const filteredIssues = issues.filter(issue => 
+                                        !issue.title.includes("[Ka0S] Error detected in [Ka0S] Workflow Statistics Summary")
+                                    );
+                                    
+                                    // Get the columns
+                                    const todoColumn = document.getElementById('todo-column');
+                                    const inProgressColumn = document.getElementById('in-progress-column');
+                                    const doneColumn = document.getElementById('done-column');
+                                    
+                                    // Counters for each column
+                                    let todoCount = 0;
+                                    let inProgressCount = 0;
+                                    let doneCount = 0;
+                                    
+                                    // Process each issue and add it to the appropriate column
+                                    filteredIssues.forEach(issue => {
+                                        // Determine which column to place the issue in based on projectItems status
+                                        let targetColumn;
+                                        let columnType;
+                                        let columnColor;
+                                        
+                                        // Check if the issue has projectItems with status
+                                        if (issue.projectItems && issue.projectItems.length > 0 && issue.projectItems[0].status) {
+                                            const status = issue.projectItems[0].status.name;
+                                            
+                                            if (status === "Done") {
+                                                targetColumn = doneColumn;
+                                                columnType = 'done';
+                                                columnColor = 'purple';
+                                                doneCount++;
+                                            } else if (status === "In Progress") {
+                                                targetColumn = inProgressColumn;
+                                                columnType = 'in-progress';
+                                                columnColor = 'yellow';
+                                                inProgressCount++;
                                             } else {
-                                                row = row.replace(new RegExp(`{{${key}}}`, 'g'), value);
+                                                targetColumn = todoColumn;
+                                                columnType = 'todo';
+                                                columnColor = 'blue';
+                                                todoCount++;
                                             }
+                                        } else {
+                                            // Default to todo if no status is found
+                                            targetColumn = todoColumn;
+                                            columnType = 'todo';
+                                            columnColor = 'blue';
+                                            todoCount++;
                                         }
-                                        return row;
-                                    }).join('');
-                                    renderedTemplate = renderedTemplate.replace(/{{#each mainContent}}[\s\S]*?{{\/each}}/, itemsHtml);
+                                        
+                                        // Create the card element
+                                        const card = document.createElement('div');
+                                        card.className = `bg-${columnColor}-50 border rounded-lg p-3 mb-2 border-l-4 border-${columnColor}-500 hover:bg-gray-50 cursor-pointer`;
+                                        card.dataset.issueId = issue.number;
+                                        
+                                        // Format date
+                                        const createdDate = new Date(issue.createdAt);
+                                        const formattedDate = createdDate.toLocaleDateString('en-US', {
+                                            year: 'numeric',
+                                            month: 'short',
+                                            day: 'numeric'
+                                        });
+                                        
+                                        // Create card content
+                                        card.innerHTML = `
+                                            <div class="flex items-center mb-2">
+                                                <div class="w-4 h-4 rounded-full bg-${columnColor}-500 flex items-center justify-center mr-2">
+                                                    <div class="w-2 h-2 rounded-full bg-white"></div>
+                                                </div>
+                                                <span class="text-blue-600 text-sm">ka0s #${issue.number}</span>
+                                            </div>
+                                            <h3 class="font-medium text-gray-800 mb-2">${issue.title}</h3>
+                                            <div class="flex flex-wrap gap-1 mb-2">
+                                                ${issue.labels && issue.labels.map ? issue.labels.map(label => 
+                                                    `<span class="px-2 py-1 bg-orange-100 text-orange-600 rounded-full text-xs">${label.name}</span>`
+                                                ).join('') : ''}
+                                                <span class="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs flex items-center">
+                                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                                    </svg>
+                                                    ${formattedDate}
+                                                </span>
+                                            </div>
+                                            <div class="flex justify-end">
+                                                <div class="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center">
+                                                    <span class="text-xs text-gray-600">${issue.author ? (issue.author.name ? issue.author.name.substring(0, 2) : issue.author.login.substring(0, 2)) : 'NA'}</span>
+                                                </div>
+                                            </div>
+                                        `;
+                                        
+                                        // Add click event to show issue details
+                                        card.addEventListener('click', () => {
+                                            // Get modal elements
+                                            const taskModal = document.getElementById('taskModal');
+                                            const modalTaskTitle = document.getElementById('modalTaskTitle');
+                                            const modalTaskId = document.getElementById('modalTaskId');
+                                            const modalTaskDescription = document.getElementById('modalTaskDescription');
+                                            const modalTaskTags = document.getElementById('modalTaskTags');
+                                            const commentsList = document.getElementById('commentsList');
+                                            
+                                            // Update modal content
+                                            modalTaskTitle.textContent = issue.title;
+                                            modalTaskId.textContent = `ka0s #${issue.number}`;
+                                            modalTaskDescription.textContent = issue.body || 'No description provided.';
+                                            
+                                            // Clear previous tags and add new ones
+                                            modalTaskTags.innerHTML = '';
+                                            if (issue.labels && issue.labels.map) {
+                                                issue.labels.forEach(label => {
+                                                    const tagSpan = document.createElement('span');
+                                                    tagSpan.className = 'px-2 py-1 bg-orange-100 text-orange-600 rounded-full text-xs';
+                                                    tagSpan.textContent = label.name;
+                                                    modalTaskTags.appendChild(tagSpan);
+                                                });
+                                            }
+                                            
+                                            // Clear previous comments and add new ones
+                                            commentsList.innerHTML = '';
+                                            if (issue.comments && issue.comments.length > 0) {
+                                                issue.comments.forEach(comment => {
+                                                    const commentDiv = document.createElement('div');
+                                                    commentDiv.className = 'bg-gray-50 p-3 rounded-lg';
+                                                    
+                                                    const commentHeader = document.createElement('div');
+                                                    commentHeader.className = 'flex items-center mb-2';
+                                                    
+                                                    const authorSpan = document.createElement('span');
+                                                    authorSpan.className = 'font-medium text-gray-800';
+                                                    authorSpan.textContent = comment.author ? (comment.author.name || comment.author.login) : 'Unknown';
+                                                    
+                                                    const dateSpan = document.createElement('span');
+                                                    dateSpan.className = 'text-xs text-gray-500 ml-2';
+                                                    const commentDate = new Date(comment.createdAt);
+                                                    dateSpan.textContent = commentDate.toLocaleDateString('en-US', {
+                                                        year: 'numeric',
+                                                        month: 'short',
+                                                        day: 'numeric'
+                                                    });
+                                                    
+                                                    commentHeader.appendChild(authorSpan);
+                                                    commentHeader.appendChild(dateSpan);
+                                                    
+                                                    const commentBody = document.createElement('p');
+                                                    commentBody.className = 'text-gray-700';
+                                                    commentBody.textContent = comment.body;
+                                                    
+                                                    commentDiv.appendChild(commentHeader);
+                                                    commentDiv.appendChild(commentBody);
+                                                    
+                                                    commentsList.appendChild(commentDiv);
+                                                });
+                                            } else {
+                                                commentsList.innerHTML = '<p class="text-gray-500">No comments yet.</p>';
+                                            }
+                                            
+                                            // Show the modal
+                                            taskModal.classList.remove('hidden');
+                                            
+                                            // Add event listener to close modal
+                                            const closeModal = document.getElementById('closeModal');
+                                            closeModal.addEventListener('click', () => {
+                                                taskModal.classList.add('hidden');
+                                            });
+                                            
+                                            // Close modal when clicking outside
+                                            taskModal.addEventListener('click', (e) => {
+                                                if (e.target === taskModal) {
+                                                    taskModal.classList.add('hidden');
+                                                }
+                                            });
+                                        });
+                                        
+                                        // Add the card to the appropriate column
+                                        targetColumn.appendChild(card);
+                                    });
+                                    
+                                    // Update the counters
+                                    document.getElementById('todo-count').textContent = todoCount;
+                                    document.getElementById('in-progress-count').textContent = inProgressCount;
+                                    document.getElementById('done-count').textContent = doneCount;
+                                } else {
+                                    backLogsSection.innerHTML = `
+                                        <div class="bg-red-100 p-4 rounded-lg text-red-700">
+                                            Error: Could not load backLogs template
+                                        </div>
+                                    `;
                                 }
-                                
-                                backLogsSection.innerHTML = renderedTemplate;
+                            } else {
+                                backLogsSection.innerHTML = `
+                                    <div class="bg-red-100 p-4 rounded-lg text-red-700">
+                                        Error: Could not load backLogs data
+                                    </div>
+                                `;
                             }
                         }
-                    }
-                    break;
+                        break;
+
                 case 'Handler Failure':
                     const failureSection = document.querySelector('#handlerFailure');
                     if (failureSection) {
