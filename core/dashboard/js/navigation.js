@@ -168,7 +168,7 @@ window.navigationUtils.setupNavigation = function() {
                         setTimeout(async () => {
                             try {
                                 // Cargar datos de kaos-workflows-runs.json
-                                const workflowsData = await fetch('../outputs/w/kaos-workflows-runs.json')
+                                const workflowsData = await fetch('dashboard/data/kaos-workflows-runs.json')
                                     .then(response => {
                                         if (!response.ok) {
                                             throw new Error(`Error HTTP: ${response.status}`);
@@ -299,7 +299,7 @@ window.navigationUtils.setupNavigation = function() {
                         leadTimeSection.classList.remove('hidden');
                         
                         // Fetch real workflow data from kaos-workflows-runs.json
-                        fetch('../outputs/w/kaos-workflows-runs.json')
+                        fetch('dashboard/data/kaos-workflows-runs.json')
                             .then(response => {
                                 if (!response.ok) {
                                     throw new Error(`Error HTTP: ${response.status}`);
@@ -615,7 +615,7 @@ case 'Handler Failure':
         `;
 
         try {
-            const failureWorkflowsData = await fetch('../outputs/w/kaos-workflows-runs.json')
+            const failureWorkflowsData = await fetch('dashboard/data/kaos-workflows-runs.json')
                 .then(response => {
                     if (!response.ok) {
                         throw new Error(`HTTP Error: ${response.status}`);
@@ -739,7 +739,7 @@ case 'Handler Failure':
             
             try {
                 // Load data from kaos-workflows-runs.json
-                const successWorkflowsData = await fetch('../outputs/w/kaos-workflows-runs.json')
+                const successWorkflowsData = await fetch('dashboard/data/kaos-workflows-runs.json')
                     .then(response => {
                         if (!response.ok) {
                             throw new Error(`HTTP Error: ${response.status}`);
@@ -874,7 +874,7 @@ case 'Handler Failure':
                         if (workflowSection) {
                             workflowSection.classList.remove('hidden');
                             try {
-                                const response = await fetch('../outputs/w/kaos-workflows-runs.json');
+                                const response = await fetch('dashboard/data/kaos-workflows-runs.json');
                                 if (!response.ok) {
                                     throw new Error(`HTTP error! status: ${response.status}`);
                                 }
