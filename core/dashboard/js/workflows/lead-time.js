@@ -12,7 +12,7 @@ async function initLeadTimeSection() {
 
     try {
         // Fetch real workflow data from kaos-workflows-runs.json
-        const response = await fetch('../outputs/w/kaos-workflows-runs.json');
+        const response = await fetch('dashboard/data/kaos-workflows-runs.json');
         if (!response.ok) {
             throw new Error(`Error HTTP: ${response.status}`);
         }
