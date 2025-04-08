@@ -167,8 +167,16 @@ window.navigationUtils.setupNavigation = function() {
                         // Load data asynchronously
                         setTimeout(async () => {
                             try {
-                                // Cargar datos de kaos-workflows-runs.json
+                                // Cargar datos de kaos-workflows-runs.json with fallback path
                                 const workflowsData = await fetch('dashboard/data/kaos-workflows-runs.json')
+                                    .then(response => {
+                                        if (!response.ok) {
+                                            console.log('Primary workflow data file not found for actions performance, trying fallback location...');
+                                            // Try the fallback location
+                                            return fetch('../outputs/w/kaos-workflows-runs.json');
+                                        }
+                                        return response;
+                                    })
                                     .then(response => {
                                         if (!response.ok) {
                                             throw new Error(`Error HTTP: ${response.status}`);
@@ -298,8 +306,16 @@ window.navigationUtils.setupNavigation = function() {
                     if (leadTimeSection) {
                         leadTimeSection.classList.remove('hidden');
                         
-                        // Fetch real workflow data from kaos-workflows-runs.json
+                        // Try to fetch workflow data with fallback path
                         fetch('dashboard/data/kaos-workflows-runs.json')
+                            .then(response => {
+                                if (!response.ok) {
+                                    console.log('Primary workflow data file not found, trying fallback location...');
+                                    // Try the fallback location
+                                    return fetch('../outputs/w/kaos-workflows-runs.json');
+                                }
+                                return response;
+                            })
                             .then(response => {
                                 if (!response.ok) {
                                     throw new Error(`Error HTTP: ${response.status}`);
@@ -376,11 +392,33 @@ window.navigationUtils.setupNavigation = function() {
                             `;
                             
                             // Load and process the Backlogs data
-                            const backLogsData = await window.dashboardUtils.loadJsonData('dashboard/sections/backLogs.json');
-                            const backLogsDataReal = await window.dashboardUtils.loadJsonData('dashboard/data/kaos-issue.json');
-
-                            if (backLogsData && backLogsDataReal) {
-                                const template = await window.dashboardUtils.loadHtmlTemplate('templates/backLogs.html');
+                                                        // Load and process the Backlogs data with fallback paths
+                                                        let backLogsData;
+                                                        try {
+                                                            backLogsData = await window.dashboardUtils.loadJsonData('dashboard/sections/backLogs.json');
+                                                            if (!backLogsData) {
+                                                                console.log('Primary backLogs config file not found, trying fallback location...');
+                                                                backLogsData = await fetch('../sections/backLogs.json')
+                                                                    .then(response => response.ok ? response.json() : null);
+                                                            }
+                                                        } catch (error) {
+                                                            console.error('Error loading backLogs config:', error);
+                                                        }
+                                                        
+                                                        let backLogsDataReal;
+                                                        try {
+                                                            backLogsDataReal = await window.dashboardUtils.loadJsonData('dashboard/data/kaos-issue.json');
+                                                            if (!backLogsDataReal) {
+                                                                console.log('Primary issues data file not found, trying fallback location...');
+                                                                backLogsDataReal = await fetch('../outputs/w/kaos-issue.json')
+                                                                    .then(response => response.ok ? response.json() : null);
+                                                            }
+                                                        } catch (error) {
+                                                            console.error('Error loading issues data:', error);
+                                                        }
+                            
+                                                        if (backLogsData && backLogsDataReal) {
+                                                            const template = await window.dashboardUtils.loadHtmlTemplate('templates/backLogs.html');
                                 
                                 if (template) {
                                     // Replace all template variables with actual data
@@ -615,7 +653,16 @@ case 'Handler Failure':
         `;
 
         try {
+            // Try to fetch workflow data with fallback path
             const failureWorkflowsData = await fetch('dashboard/data/kaos-workflows-runs.json')
+                .then(response => {
+                    if (!response.ok) {
+                        console.log('Primary workflow data file not found for failure handler, trying fallback location...');
+                        // Try the fallback location
+                        return fetch('../outputs/w/kaos-workflows-runs.json');
+                    }
+                    return response;
+                })
                 .then(response => {
                     if (!response.ok) {
                         throw new Error(`HTTP Error: ${response.status}`);
@@ -738,8 +785,16 @@ case 'Handler Failure':
             `;
             
             try {
-                // Load data from kaos-workflows-runs.json
+                // Load data from kaos-workflows-runs.json with fallback path
                 const successWorkflowsData = await fetch('dashboard/data/kaos-workflows-runs.json')
+                    .then(response => {
+                        if (!response.ok) {
+                            console.log('Primary workflow data file not found for success handler, trying fallback location...');
+                            // Try the fallback location
+                            return fetch('../outputs/w/kaos-workflows-runs.json');
+                        }
+                        return response;
+                    })
                     .then(response => {
                         if (!response.ok) {
                             throw new Error(`HTTP Error: ${response.status}`);
@@ -869,12 +924,21 @@ case 'Handler Failure':
         break;
 
                     
-                    case 'End Workflow':
-                        const workflowSection = document.querySelector('#endWorkflow');
-                        if (workflowSection) {
-                            workflowSection.classList.remove('hidden');
-                            try {
-                                const response = await fetch('dashboard/data/kaos-workflows-runs.json');
+                        case 'End Workflow':
+                            const workflowSection = document.querySelector('#endWorkflow');
+                            if (workflowSection) {
+                                workflowSection.classList.remove('hidden');
+                                try {
+                                    const response = await fetch('dashboard/data/kaos-workflows-runs.json')
+                                    .then(response => {
+                                        if (!response.ok) {
+                                            console.log('Primary workflow data file not found for end workflow, trying fallback location...');
+                                            // Try the fallback location
+                                            return fetch('../outputs/w/kaos-workflows-runs.json');
+                                        }
+                                        return response;
+                                    });
+                                    
                                 if (!response.ok) {
                                     throw new Error(`HTTP error! status: ${response.status}`);
                                 }

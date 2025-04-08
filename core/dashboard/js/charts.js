@@ -5,8 +5,20 @@ window.chartUtils = {};
 // Initialize charts
 window.chartUtils.initializeCharts = async function() {
     try {
-        // Load workflow statistics data
-        const response = await fetch('dashboard/data/workflow-statistics.json');
+        // Load workflow statistics data with fallback path
+        const response = await fetch('dashboard/data/workflow-statistics.json')
+            .then(response => {
+                if (!response.ok) {
+                    console.log('Primary workflow statistics file not found, trying fallback location...');
+                    // Try the fallback location
+                    return fetch('../outputs/w/workflow-statistics.json');
+                }
+                return response;
+            });
+
+        if (!response.ok) {
+            throw new Error(`Failed to load workflow statistics: ${response.status}`);
+        }
         const workflowData = await response.json();
 
         // Doughnut Chart - Workflow Statistics

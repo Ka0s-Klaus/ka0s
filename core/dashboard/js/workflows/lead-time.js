@@ -11,8 +11,17 @@ async function initLeadTimeSection() {
     if (!leadTimeSection) return;
 
     try {
-        // Fetch real workflow data from kaos-workflows-runs.json
-        const response = await fetch('dashboard/data/kaos-workflows-runs.json');
+        // Fetch real workflow data with fallback path
+        const response = await fetch('dashboard/data/kaos-workflows-runs.json')
+            .then(response => {
+                if (!response.ok) {
+                    console.log('Primary workflow data file not found for lead time, trying fallback location...');
+                    // Try the fallback location
+                    return fetch('../outputs/w/kaos-workflows-runs.json');
+                }
+                return response;
+            });
+
         if (!response.ok) {
             throw new Error(`Error HTTP: ${response.status}`);
         }

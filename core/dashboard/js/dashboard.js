@@ -114,7 +114,20 @@ window.updateDashboard = updateDashboard;
 async function updateDashboardMetrics() {
     try {
         console.log('Loading dashboard metrics...');
-        const response = await fetch('dashboard/data/workflow-statistics.json');
+        let response = await fetch('dashboard/data/workflow-statistics.json')
+            .then(response => {
+                if (!response.ok) {
+                    console.log('Primary metrics file not found, trying fallback location...');
+                    // Try the fallback location
+                    return fetch('../outputs/w/workflow-statistics.json');
+                }
+                return response;
+            });
+
+        if (!response.ok) {
+            throw new Error(`Failed to load metrics data: ${response.status}`);
+        }
+        
         const data = await response.json();
         
         if (!data || !data.summary) {
