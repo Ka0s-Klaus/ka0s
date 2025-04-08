@@ -5,12 +5,107 @@ window.chartUtils = {};
 // Initialize charts
 window.chartUtils.initializeCharts = async function() {
     try {
+        // Load workflow runs data with fallback path
+        const runsResponse = await fetch('dashboard/data/kaos-workflows-runs.json')
+            .then(response => {
+                if (!response.ok) {
+                    console.log('Primary workflow runs file not found, trying fallback location...');
+                    return fetch('../outputs/w/kaos-workflows-runs.json');
+                }
+                return response;
+            });
+
+        if (!runsResponse.ok) {
+            throw new Error(`Failed to load workflow runs: ${runsResponse.status}`);
+        }
+        const workflowRuns = await runsResponse.json();
+
+        // Calculate monthly success ratios
+        const monthlyStats = {};
+        workflowRuns.forEach(run => {
+            const date = new Date(run.created_at);
+            const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            
+            if (!monthlyStats[monthKey]) {
+                monthlyStats[monthKey] = {
+                    total: 0,
+                    successful: 0
+                };
+            }
+            
+            if (run.status === 'completed') {
+                monthlyStats[monthKey].total++;
+                if (run.conclusion === 'success') {
+                    monthlyStats[monthKey].successful++;
+                }
+            }
+        });
+
+        // Convert to arrays for chart
+        const months = Object.keys(monthlyStats).sort();
+        const successRates = months.map(month => 
+            (monthlyStats[month].successful / monthlyStats[month].total * 100).toFixed(2)
+        );
+
+        // Create Monthly Success Rate Chart
+        const monthlyChartCtx = document.getElementById('monthlySuccessChart')?.getContext('2d');
+        if (monthlyChartCtx) {
+            new Chart(monthlyChartCtx, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'Monthly Success Rate (%)',
+                        data: successRates,
+                        borderColor: 'rgb(34, 197, 94)',
+                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointBackgroundColor: 'rgb(34, 197, 94)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Monthly Workflow Success Rate',
+                            padding: {
+                                top: 10,
+                                bottom: 10
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: 'Success Rate (%)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Month'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Continue with existing charts...
         // Load workflow statistics data with fallback path
         const response = await fetch('dashboard/data/workflow-statistics.json')
             .then(response => {
                 if (!response.ok) {
-                    console.log('Primary workflow statistics file not found, trying fallback location...');
-                    // Try the fallback location
                     return fetch('../outputs/w/workflow-statistics.json');
                 }
                 return response;
