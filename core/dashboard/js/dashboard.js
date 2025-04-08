@@ -114,7 +114,7 @@ window.updateDashboard = updateDashboard;
 async function updateDashboardMetrics() {
     try {
         console.log('Loading dashboard metrics...');
-        const response = await fetch('../outputs/w/workflow-statistics.json');
+        const response = await fetch('dashboard/data/workflow-statistics.json');
         const data = await response.json();
         
         if (!data || !data.summary) {
