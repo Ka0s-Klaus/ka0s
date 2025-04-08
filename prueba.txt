@@ -1,0 +1,64 @@
+case 'Handler Failure':
+    const failureSection = document.querySelector('#handlerFailure');
+    if (failureSection) {
+        failureSection.classList.remove('hidden');
+        
+        // Show loading indicator
+        failureSection.innerHTML = `
+            <div class="flex justify-center items-center h-64">
+                <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-red-500"></div>
+                <p class="ml-4 text-lg text-gray-600">Loading failure data...</p>
+            </div>
+        `;
+
+        try {
+            // Try to fetch workflow data with fallback path
+            const failureWorkflowsData = await fetch('dashboard/data/kaos-workflows-runs.json')
+                .then(response => {
+                    if (!response.ok) {
+                        console.log('Primary workflow data file not found for failure handler, trying fallback location...');
+                        return fetch('../outputs/w/kaos-workflows-runs.json');
+                    }
+                    return response;
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP Error: ${response.status}`);
+                    }
+                    return response.json();
+                });
+
+            if (failureWorkflowsData && failureWorkflowsData.length > 0) {
+                const filteredFailureData = failureWorkflowsData.filter(run => run.conclusion === 'failure');
+                
+                // Calculate most common error
+                const errorCounts = {};
+                filteredFailureData.forEach(run => {
+                    const errorType = run.event || 'Unknown';
+                    errorCounts[errorType] = (errorCounts[errorType] || 0) + 1;
+                });
+                
+                let mostCommonError = 'None';
+                let maxErrorCount = 0;
+                for (const [error, count] of Object.entries(errorCounts)) {
+                    if (count > maxErrorCount) {
+                        mostCommonError = error;
+                        maxErrorCount = count;
+                    }
+                }
+
+                // Set up pagination
+                const pageSize = 10;
+                // ... rest of the existing code ...
+
+                if (template) {
+                    let renderedTemplate = template;
+                    
+                    // Replace metrics data including most common error
+                    renderedTemplate = renderedTemplate.replace(/{{metrics\.total_failed}}/g, failureCount);
+                    renderedTemplate = renderedTemplate.replace(/{{metrics\.total_failures}}/g, failureCount);
+                    renderedTemplate = renderedTemplate.replace(/{{metrics\.failure_rate}}/g, `${failureRatio}%`);
+                    renderedTemplate = renderedTemplate.replace(/{{metrics\.avg_failure_time}}/g, avgFailureTime);
+                    renderedTemplate = renderedTemplate.replace(/{{metrics\.most_common_error}}/g, mostCommonError);
+                    
+                    // ... rest of the existing code ...

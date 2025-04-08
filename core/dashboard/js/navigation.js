@@ -673,6 +673,22 @@ case 'Handler Failure':
             if (failureWorkflowsData && failureWorkflowsData.length > 0) {
                 const filteredFailureData = failureWorkflowsData.filter(run => run.conclusion === 'failure');
                 
+                // Calculate most common error
+                const errorCounts = {};
+                filteredFailureData.forEach(run => {
+                    // Extract error message from the run data
+                    const errorType = run.error_message || run.conclusion_message || run.event || 'Unknown';
+                    errorCounts[errorType] = (errorCounts[errorType] || 0) + 1;
+                });
+                
+                let mostCommonError = 'None';
+                let maxErrorCount = 0;
+                for (const [error, count] of Object.entries(errorCounts)) {
+                    if (count > maxErrorCount) {
+                        mostCommonError = error;
+                        maxErrorCount = count;
+                    }
+                }
                 // Set up pagination
                 const pageSize = 10;
                 const totalPages = Math.ceil(filteredFailureData.length / pageSize);
@@ -704,7 +720,7 @@ case 'Handler Failure':
                         renderedTemplate = renderedTemplate.replace(/{{metrics\.total_failures}}/g, failureCount);
                         renderedTemplate = renderedTemplate.replace(/{{metrics\.failure_rate}}/g, `${failureRatio}%`);
                         renderedTemplate = renderedTemplate.replace(/{{metrics\.avg_failure_time}}/g, avgFailureTime);
-                        
+                        renderedTemplate = renderedTemplate.replace(/{{metrics\.most_common_error}}/g, mostCommonError);
                         // Handle the failures loop
                         const failuresMatch = renderedTemplate.match(/{{#each failures}}([\s\S]*?){{\/each}}/);
                         if (failuresMatch) {
