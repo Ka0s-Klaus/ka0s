@@ -1537,3 +1537,16 @@
   - core/results/k/event_data_14327036818.json.bak
   - version.txt
 ---------------------------------
+## Version 0.0.74
+- **Branch**: refs/pull/307/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Tue Apr  8 10:09:43 UTC 2025
+- **Message**: H306 ficheros de estadisticas
+- **Files Changed**:
+  - .github/workflows/kaos.yml
+  - core/results/k/event_data_14330819851.json
+  - core/results/k/event_data_14330819851.json.bak
+  - core/test/correct-file1.yaml
+  - version.txt
+---------------------------------
