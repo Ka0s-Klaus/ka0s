@@ -6,7 +6,7 @@ window.chartUtils = {};
 window.chartUtils.initializeCharts = async function() {
     try {
         // Load workflow statistics data
-        const response = await fetch('../outputs/w/workflow-statistics.json');
+        const response = await fetch('dashboard/data/workflow-statistics.json');
         const workflowData = await response.json();
 
         // Doughnut Chart - Workflow Statistics
