@@ -65,6 +65,8 @@ jobs:
       - id: check-html
         name: Check HTML
         run: |
+            htmllint --version
+            htmllint --help
             file_name=$(basename "${{ github.event.inputs.kaos-files }}")
             touch ${{ env.KAOS_PATH_RESUME }}htmllint-results-${{ github.run_id }}.txt
             htmllint ${{ github.event.inputs.kaos-files }} > ${{ env.KAOS_PATH_RESUME }}htmllint-results-${{ github.run_id }}.txt || true
