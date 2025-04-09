@@ -174,7 +174,18 @@ window.navigationUtils.setupNavigation = function() {
                         
                         const processedData = processWorkflowDataOptimized(paginatedData, paginationState.workflowsData);
                         let renderedTemplate = paginationState.template;
-
+                    
+                        // Add pagination data to the template context
+                        processedData.pagination = {
+                            start: start + 1,
+                            end: Math.min(end, paginationState.workflowsData.length),
+                            total: paginationState.workflowsData.length,
+                            currentPage: paginationState.currentPage,
+                            totalPages: paginationState.totalPages,
+                            isFirstPage: paginationState.currentPage <= 1,
+                            isLastPage: paginationState.currentPage >= paginationState.totalPages
+                        };
+                    
                         // Replace summary data
                         for (const [key, value] of Object.entries(processedData.summary)) {
                             renderedTemplate = renderedTemplate.replace(new RegExp(`{{summary\\.${key}}}`, 'g'), value);
@@ -219,32 +230,20 @@ window.navigationUtils.setupNavigation = function() {
                         }
 
                         // Add pagination controls
-                        const paginationHtml = `
-                            <div class="mt-6 flex justify-between items-center">
-                                <div>
-                                    <span class="text-sm text-gray-700">
-                                        Showing <span class="font-medium">${start + 1}</span> to <span class="font-medium">${Math.min(end, paginationState.workflowsData.length)}</span> of <span class="font-medium">${paginationState.workflowsData.length}</span> results
-                                    </span>
-                                </div>
-                                <div class="flex space-x-2">
-                                    <button id="prevPage" class="px-3 py-1 rounded bg-gray-200 text-gray-700 disabled:opacity-50" ${paginationState.currentPage <= 1 ? 'disabled' : ''}>Previous</button>
-                                    <span class="px-3 py-1">Page ${paginationState.currentPage} of ${paginationState.totalPages}</span>
-                                    <button id="nextPage" class="px-3 py-1 rounded bg-green-500 text-white disabled:opacity-50" ${paginationState.currentPage >= paginationState.totalPages ? 'disabled' : ''}>Next</button>
-                                </div>
-                            </div>
-                        `;
-
-                        renderedTemplate += paginationHtml;
+                        for (const [key, value] of Object.entries(processedData.pagination)) {
+                            renderedTemplate = renderedTemplate.replace(new RegExp(`{{pagination\\.${key}}}`, 'g'), value);
+                        }
+                    
                         actionsSection.innerHTML = renderedTemplate;
-
-                        // Add event listeners
+                    
+                        // Add event listeners for pagination
                         document.getElementById('prevPage')?.addEventListener('click', () => {
                             if (paginationState.currentPage > 1) {
                                 paginationState.currentPage--;
                                 renderPage();
                             }
                         });
-
+                    
                         document.getElementById('nextPage')?.addEventListener('click', () => {
                             if (paginationState.currentPage < paginationState.totalPages) {
                                 paginationState.currentPage++;
