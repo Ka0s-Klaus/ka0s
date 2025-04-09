@@ -1,18 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ka0s Dashboard</title>
-    
+
     <!-- Preconnect and preload resources -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" as="style">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap"
+        as="style">
     <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style">
 
     <!-- Styles -->
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Tailwind Configuration -->
@@ -33,98 +36,106 @@
         }
     </script>
 </head>
+
 <body class="bg-gradient-to-br from-gray-100 to-gray-300 min-h-screen m-0 font-montserrat">
-    <div class="flex">
-        <!-- Navbar a la izquierda -->
-        <div id="navbar" class="h-screen">
+    <div class="flex flex-col md:flex-row">
+        <!-- Navbar - responsive for mobile -->
+        <div id="navbar" class="w-full md:h-screen md:w-auto">
             {{NAVBAR}}
         </div>
-        
-        <!-- Contenido principal a la derecha -->
-        <!-- Update the main content div structure -->
-        <div class="flex-1 ml-[250px] transition-all duration-300" id="main-content">
+
+        <!-- Contenido principal - responsive layout -->
+        <div class="flex-1 md:ml-[250px] transition-all duration-300" id="main-content">
             <div class="flex flex-col min-h-screen">
                 <!-- Content sections -->
                 <div class="flex-grow">
                     <div class="mx-[3%] py-4">
                         <div id="dashboard-container" class="section">
                             <!-- Repository Statistics Section -->
-                            <div class="bg-white rounded-2xl p-6 shadow-md mt-6 mb-6">
-                                <div class="flex justify-between items-center mb-4">
-                                    <h3 class="text-xl font-semibold text-gray-700">Repository Statistics</h3>
+                            <div class="bg-white rounded-2xl p-4 md:p-6 shadow-md mt-4 md:mt-6 mb-4 md:mb-6">
+                                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
+                                    <h3 class="text-xl font-semibold text-gray-700 mb-2 sm:mb-0">Repository Statistics
+                                    </h3>
                                     <span id="stats-last-updated" class="text-sm text-gray-500">Last updated: -</span>
                                 </div>
-                                
-                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 mb-4 md:mb-6">
                                     <!-- Total Commits Card -->
-                                    <div class="bg-blue-50 p-4 rounded-lg">
+                                    <div class="bg-blue-50 p-3 md:p-4 rounded-lg">
                                         <div class="flex items-center">
-                                            <div class="bg-blue-100 p-3 rounded-full mr-4">
+                                            <div class="bg-blue-100 p-2 md:p-3 rounded-full mr-3 md:mr-4">
                                                 <i class="fas fa-code-commit text-blue-600"></i>
                                             </div>
                                             <div>
-                                                <p class="text-sm text-blue-700">Total Commits</p>
-                                                <p id="total-commits" class="text-2xl font-bold text-blue-600">-</p>
+                                                <p class="text-xs md:text-sm text-blue-700">Total Commits</p>
+                                                <p id="total-commits"
+                                                    class="text-xl md:text-2xl font-bold text-blue-600">-</p>
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     <!-- Recent Commits Card -->
-                                    <div class="bg-green-50 p-4 rounded-lg">
+                                    <div class="bg-green-50 p-3 md:p-4 rounded-lg">
                                         <div class="flex items-center">
-                                            <div class="bg-green-100 p-3 rounded-full mr-4">
+                                            <div class="bg-green-100 p-2 md:p-3 rounded-full mr-3 md:mr-4">
                                                 <i class="fas fa-clock text-green-600"></i>
                                             </div>
                                             <div>
-                                                <p class="text-sm text-green-700">Recent Commits</p>
-                                                <p id="recent-commits" class="text-2xl font-bold text-green-600">-</p>
+                                                <p class="text-xs md:text-sm text-green-700">Recent Commits</p>
+                                                <p id="recent-commits"
+                                                    class="text-xl md:text-2xl font-bold text-green-600">-</p>
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     <!-- Commit Frequency Card -->
-                                    <div class="bg-purple-50 p-4 rounded-lg">
+                                    <div class="bg-purple-50 p-3 md:p-4 rounded-lg">
                                         <div class="flex items-center">
-                                            <div class="bg-purple-100 p-3 rounded-full mr-4">
+                                            <div class="bg-purple-100 p-2 md:p-3 rounded-full mr-3 md:mr-4">
                                                 <i class="fas fa-chart-line text-purple-600"></i>
                                             </div>
                                             <div>
-                                                <p class="text-sm text-purple-700">Commit Frequency</p>
-                                                <p id="commit-frequency" class="text-2xl font-bold text-purple-600">-</p>
+                                                <p class="text-xs md:text-sm text-purple-700">Commit Frequency</p>
+                                                <p id="commit-frequency"
+                                                    class="text-xl md:text-2xl font-bold text-purple-600">-</p>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                
-                                <!-- Top Contributors Section -->
+
+                                <!-- Top Contributors Section - Responsive table -->
                                 <div id="top-contributors-section" class="hidden">
                                     <h4 class="text-lg font-medium text-gray-700 mb-3">Top Contributors</h4>
-                                    <div class="overflow-x-auto">
+                                    <div class="overflow-x-auto -mx-4 sm:mx-0">
                                         <table class="min-w-full divide-y divide-gray-200">
                                             <thead class="bg-gray-50">
                                                 <tr>
-                                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    <th scope="col"
+                                                        class="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                         Author
                                                     </th>
-                                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    <th scope="col"
+                                                        class="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                         Commits
                                                     </th>
-                                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    <th scope="col"
+                                                        class="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                         Contribution %
                                                     </th>
                                                 </tr>
                                             </thead>
-                                            <tbody id="contributors-table-body" class="bg-white divide-y divide-gray-200">
+                                            <tbody id="contributors-table-body"
+                                                class="bg-white divide-y divide-gray-200">
                                                 <!-- Contributors will be loaded here dynamically -->
                                             </tbody>
                                         </table>
                                     </div>
                                 </div>
-                                
+
                                 <!-- Repository Link -->
-                                <div class="mt-6 text-center">
-                                    <a id="repo-link" href="https://github.com/Ka0s-Klaus/ka0s" target="_blank" 
-                                    class="inline-flex items-center px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition">
+                                <div class="mt-4 md:mt-6 text-center">
+                                    <a id="repo-link" href="https://github.com/Ka0s-Klaus/ka0s" target="_blank"
+                                        class="inline-flex items-center px-3 sm:px-4 py-1.5 sm:py-2 bg-gray-800 text-white text-sm md:text-base rounded-lg hover:bg-gray-700 transition">
                                         <i class="fab fa-github mr-2"></i>
                                         View Repository
                                     </a>
@@ -151,8 +162,8 @@
                         HOLA endWorkflow
                     </div>
                 </div>
-                <!-- Footer -->
-                <div id="footer" class="mt-auto ml-[9%] md:ml-[4%] transition-all duration-300 pb-2.5">
+                <!-- Footer - responsive -->
+                <div id="footer" class="mt-auto mx-[3%] md:ml-[4%] transition-all duration-300 pl-3 pb-2.5">
                     {{FOOTER}}
                 </div>
             </div>
@@ -168,4 +179,5 @@
     <script src="js/workflows/workflows.js" defer></script>
     <script src="js/workflows/lead-time.js" defer></script>
 </body>
+
 </html>
