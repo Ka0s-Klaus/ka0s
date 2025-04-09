@@ -6,22 +6,29 @@
 // Load repository statistics from JSON file
 async function loadRepositoryStats() {
     try {
-        // Use the known working path
-        const path = '/core/outputs/w/kaos-repository-statistics.json';
+        // Try primary and fallback paths
+        const primaryPath = 'dashboard/data/kaos-repository-statistics.json';
+        const fallbackPath = '../outputs/w/kaos-repository-statistics.json';
         
         try {
-            console.log(`Attempting to fetch from: ${path}`);
-            const response = await fetch(path);
+            console.log(`Attempting to fetch from primary path: ${primaryPath}`);
+            let response = await fetch(primaryPath);
+            
+            if (!response.ok) {
+                console.log('Primary path failed, trying fallback location...');
+                response = await fetch(fallbackPath);
+            }
+            
             if (response.ok) {
                 const data = await response.json();
-                console.log(`Successfully loaded data from: ${path}`);
+                console.log(`Successfully loaded data from: ${response.url}`);
                 return data;
             } else {
-                console.error(`Failed to load data: ${response.status} ${response.statusText}`);
+                console.error(`Failed to load data from both locations: ${response.status} ${response.statusText}`);
                 return null;
             }
         } catch (e) {
-            console.log(`Failed to fetch from ${path}: ${e.message}`);
+            console.log(`Failed to fetch repository statistics: ${e.message}`);
             return null;
         }
     } catch (error) {
