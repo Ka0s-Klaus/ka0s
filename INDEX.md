@@ -77,3 +77,4 @@
 - **Version**: 0.0.76 - **Description**: H306 ficheros de estadisticas
 - **Version**: 0.0.77 - **Description**: H220 web de resultados
 - **Version**: 0.0.78 - **Description**: H220 web de resultados
+- **Version**: 0.0.79 - **Description**: H306 ficheros de estadisticas
