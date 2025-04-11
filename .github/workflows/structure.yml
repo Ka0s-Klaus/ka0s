@@ -26,32 +26,47 @@ jobs:
       
       - name: Copy web folder structure
         run: |
-          # leer el fichero JSON esto es para grabarlo
-          que_voya_crear=valos que pide el cliente
-
+          # Read the structure.json file to get folder names
+          echo "Reading structure.json file..."
+          STRUCTURE_FILE="core/web/structure/*.json"
+          
+          # Extract title for main folder name
+          TITLE=$(cat $STRUCTURE_FILE | grep -o '"title": *"[^"]*"' | cut -d'"' -f4)
+          echo "Main folder will be named: $TITLE"
+          
+          # Create main directory
+          mkdir -p "${{ env.KAOS_JSON }}$TITLE"
+          
+          # Extract section names and create subfolders
+          cat $STRUCTURE_FILE | grep -o '"section[^"]*": *"[^"]*"' | while read -r section; do
+            SECTION_NAME=$(echo $section | cut -d'"' -f4)
+            echo "Creating subfolder: $SECTION_NAME"
+            mkdir -p "${{ env.KAOS_JSON }}$TITLE/$SECTION_NAME"
+          done
+          
           echo "Copying web folder structure to dashboard..."
           # Create destination directory if it doesn't exist
-          mkdir -p ${{ env.KAOS_JSON }}$nombre_de_variable
+          mkdir -p ${{ env.KAOS_JSON }}$TITLE
           
           # Copy the directory structure (without files)
           find core/web -type d | while read dir; do
             if [ "$dir" != "core/web" ]; then
-              target_dir="/${dir#core/web/}"
+              target_dir="/${{ env.KAOS_JSON }}$TITLE/${dir#core/web/}"
               mkdir -p "$target_dir"
               echo "Created directory: $target_dir"
             fi
           done
           
           # Create a JSON file with the structure information
-          echo "[" > ${{ env.KAOS_JSON }}$nombre_de_variable/structure.json
+          echo "[" > ${{ env.KAOS_JSON }}$TITLE/structure.json
           find core/web -type d | sort | while read dir; do
             if [ "$dir" != "core/web" ]; then
-              echo "  {\"FullName\": \"$dir\"}," >> ${{ env.KAOS_JSON }}$nombre_de_variable/structure.json
+              echo "  {\"FullName\": \"$dir\"}," >> ${{ env.KAOS_JSON }}$TITLE/structure.json
             fi
           done
           # Remove the last comma and close the JSON array
-          sed -i '$ s/,$//' ${{ env.KAOS_JSON }}$nombre_de_variable/structure.json
-          echo "]" >> ${{ env.KAOS_JSON }}$nombre_de_variable/structure.json
+          sed -i '$ s/,$//' ${{ env.KAOS_JSON }}$TITLE/*.json
+          echo "]" >> ${{ env.KAOS_JSON }}$TITLE/*.json
           
           echo "Web folder structure copied successfully!"
 
@@ -69,7 +84,7 @@ jobs:
             echo "No hay cambios para hacer commit"
           else
             git commit -m "[Ka0S] Uploading resume execution files and web structure to the repository..."
-            git push ${{ env.KAOS_REF }}
+            git push origin ${{ env.KAOS_REF }}
           fi
        
   handle-success:
