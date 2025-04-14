@@ -51,7 +51,8 @@ jobs:
             if [ "$dir" != "core/web" ]; then
               # Remove core/web prefix from directory path
               clean_dir=${dir#core/web/}
-              target_dir="/${{ env.KAOS_WEB_STRUCTURE }}$TITLE/$clean_dir"
+              echo "III - Created directory: $clean_dir"
+              target_dir="${{ env.KAOS_WEB_STRUCTURE }}$TITLE/$clean_dir"
               mkdir -p "$target_dir"
               echo "III - Created directory: $target_dir"
             fi
