@@ -11,7 +11,9 @@ env:
     KAOS_ACTION: ${{ github.action }}
     KAOS_REF: ${{ github.ref }}
     KAOS_MODULE: "[Ka0S] Deploy Web Structure"
-    KAOS_JSON: "core/results/webs/"
+    KAOS_JSON: "core/outputs/webs/" # directorio que aloja los json de resultados de la operación 
+    KAOS_WEB_STRUCTURE: "core/results/webs/" # directorio donde se alojan las diferentes estructura de webs
+    KAOS_WEB_REQUEST: "core/web/structure/*.json" # esta variable indica el fichero de estructura que hay que crear
     KAOS_ACTOR: ${{ github.actor }}
 jobs:
   job-core:
@@ -34,39 +36,41 @@ jobs:
           TITLE=$(cat $STRUCTURE_FILE | grep -o '"title": *"[^"]*"' | cut -d'"' -f4)
           echo "Main folder will be named: $TITLE"
           
+          # Nos situamos dentro del contenedor de las estructuras web
+          cd ${{ env.KAOS_WEB_STRUCTURE }}
           # Create main directory
-          mkdir -p "${{ env.KAOS_JSON }}$TITLE"
+          mkdir -p "$TITLE"
           
           # Extract section names and create subfolders
           cat $STRUCTURE_FILE | grep -o '"section[^"]*": *"[^"]*"' | while read -r section; do
             SECTION_NAME=$(echo $section | cut -d'"' -f4)
             echo "Creating subfolder: $SECTION_NAME"
-            mkdir -p "${{ env.KAOS_JSON }}$TITLE/$SECTION_NAME"
+            mkdir -p "$TITLE/$SECTION_NAME"
           done
           
-          echo "Copying web folder structure to dashboard..."
+          # echo "Copying web folder structure to dashboard..."
           # Create destination directory if it doesn't exist
-          mkdir -p ${{ env.KAOS_JSON }}$TITLE
+          # mkdir -p ${{ env.KAOS_JSON }}$TITLE
           
           # Copy the directory structure (without files)
           find core/web -type d | while read dir; do
             if [ "$dir" != "core/web" ]; then
-              target_dir="/${{ env.KAOS_JSON }}$TITLE/${dir#core/web/}"
+              target_dir="/${{ env.KAOS_WEB_STRUCTURE }}$TITLE/${dir#core/web/}"
               mkdir -p "$target_dir"
               echo "Created directory: $target_dir"
             fi
           done
           
           # Create a JSON file with the structure information
-          echo "[" > ${{ env.KAOS_JSON }}$TITLE/structure.json
+          echo "[" > ${{ env.KAOS_WEB_STRUCTURE }}$TITLE/structure.json
           find core/web -type d | sort | while read dir; do
             if [ "$dir" != "core/web" ]; then
-              echo "  {\"FullName\": \"$dir\"}," >> ${{ env.KAOS_JSON }}$TITLE/structure.json
+              echo "  {\"FullName\": \"$dir\"}," >> ${{ env.KAOS_WEB_STRUCTURE }}$TITLE/structure.json
             fi
           done
           # Remove the last comma and close the JSON array
-          sed -i '$ s/,$//' ${{ env.KAOS_JSON }}$TITLE/*.json
-          echo "]" >> ${{ env.KAOS_JSON }}$TITLE/*.json
+          sed -i '$ s/,$//' ${{ env.KAOS_WEB_STRUCTURE }}$TITLE/*.json
+          echo "]" >> ${{ env.KAOS_WEB_STRUCTURE }}$TITLE/*.json
           
           echo "Web folder structure copied successfully!"
 
@@ -78,7 +82,7 @@ jobs:
           git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
           git pull
           # Asegurarse de que la carpeta web_structure se añade explicitamente
-          git add ${{ env.KAOS_JSON }}*
+          git add ${{ env.KAOS_WEB_STRUCTURE }}*
           # Verificar si hay cambios para hacer commit
           if git diff --staged --quiet; then
             echo "No hay cambios para hacer commit"
