@@ -12,7 +12,7 @@ env:
     KAOS_REF: ${{ github.ref }}
     KAOS_MODULE: "[Ka0S] Deploy Web Structure"
     KAOS_JSON: "core/outputs/webs/" # directorio que aloja los json de resultados de la operación 
-    KAOS_WEB_STRUCTURE: "core/results/webs" # directorio donde se alojan las diferentes estructura de webs
+    KAOS_WEB_STRUCTURE: "core/results/webs/" # directorio donde se alojan las diferentes estructura de webs
     KAOS_WEB_REQUEST: "core/web/structure/*.json" # esta variable indica el fichero de estructura que hay que crear
     KAOS_ACTOR: ${{ github.actor }}
 jobs:
@@ -39,8 +39,8 @@ jobs:
           # Comprobamos donde estamos en el repo
           echo "Estamos aquí ......" && pwd
           echo "Esta es la estructura que vemos ..." && ls -la
-          echo "Esta es la estructura web ....." %% ls -la core/results/webs
-          
+          echo "Esta es la estructura web ....." && ls -la core/results/webs
+
           # Create main directory
           mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TITLE"
           
