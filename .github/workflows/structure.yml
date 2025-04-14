@@ -69,8 +69,8 @@ jobs:
           # Create a JSON file with the structure information
           echo "[" > ${{ env.KAOS_JSON_RESUME }}$TITLE/$TITLE"_resume.json"
           # Find all files and directories
-          find core/web -type f -o -type d | sort | while read path; do
-            if [ "$path" != "core/web" ]; then
+          find ${{ env.KAOS_WEB_STRUCTURE }} -type f -o -type d | sort | while read path; do
+            if [ "$path" != "${{ env.KAOS_WEB_STRUCTURE }}" ]; then
               # Get the type (file or directory)
               if [ -d "$path" ]; then
                 TYPE="directory"
