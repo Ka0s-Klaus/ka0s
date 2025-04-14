@@ -82,3 +82,5 @@
 - **Version**: 0.0.81 - **Description**: H220 web de resultados
 - **Version**: 0.0.82 - **Description**: H220 web de resultados
 - **Version**: 0.0.83 - **Description**: H220 web de resultados
+- **Version**: 0.0.84 - **Description**: H306 ficheros de estadisticas
+- **Version**: 0.0.85 - **Description**: H306 ficheros de estadisticas
