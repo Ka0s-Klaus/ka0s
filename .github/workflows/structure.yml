@@ -39,12 +39,10 @@ jobs:
           # Comprobamos donde estamos en el repo
           echo "Estamos aquí ......" && pwd
           echo "Esta es la estructura que vemos ..." && ls -la
-
-          # Nos situamos dentro del contenedor de las estructuras web
-          cd core && cd results && cd webs
-          cd ${{ env.KAOS_WEB_STRUCTURE }}
+          echo "Esta es la estructura web ....." %% ls -la core/results/webs
+          
           # Create main directory
-          mkdir -p "$TITLE"
+          mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TITLE"
           
           # Extract section names and create subfolders
           cat $STRUCTURE_FILE | grep -o '"section[^"]*": *"[^"]*"' | while read -r section; do
