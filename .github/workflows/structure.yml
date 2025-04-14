@@ -38,12 +38,14 @@ jobs:
 
           # Create main directory
           mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TITLE"
+          touch ${{ env.KAOS_WEB_STRUCTURE }}$TITLE/readme.txt
 
           # Extract section names and create subfolders
           cat $STRUCTURE_FILE | grep -o '"section[^"]*": *"[^"]*"' | while read -r section; do
             SECTION_NAME=$(echo $section | cut -d'"' -f4)
             echo "II - Creating subfolder: $SECTION_NAME"
             mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/$SECTION_NAME"
+            touch ${{ env.KAOS_WEB_STRUCTURE }}$TITLE/$SECTION_NAME/readme.txt
           done
           
           # Copy the directory structure (without files)
@@ -54,6 +56,7 @@ jobs:
               echo "III - Created directory: $clean_dir"
               target_dir="${{ env.KAOS_WEB_STRUCTURE }}$TITLE/$clean_dir"
               mkdir -p "$target_dir"
+              touch $target_dir/readme.txt
               echo "III - Created directory: $target_dir"
             fi
           done
