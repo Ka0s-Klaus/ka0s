@@ -42,7 +42,7 @@ jobs:
 
           # Create main directory
           mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TITLE"
-          touch ${{ env.KAOS_WEB_STRUCTURE }}$TITLE/$TITLE.html
+          touch ${{ env.KAOS_WEB_STRUCTURE }}$TITLE/$TITLE".html"
           mkdir -p "${{ env.KAOS_JSON_RESUME }}$TITLE"
           touch ${{ env.KAOS_JSON_RESUME }}$TITLE/readme.txt
 
@@ -54,7 +54,7 @@ jobs:
               echo "II - Created directory: $clean_dir"
               target_dir="${{ env.KAOS_WEB_STRUCTURE }}$TITLE/$clean_dir"
               mkdir -p "$target_dir"
-              touch $target_dir/$clean_dir.html
+              touch $target_dir/$clean_dir".html"
               echo "II - Created directory: $target_dir"
             fi
           done
@@ -64,11 +64,11 @@ jobs:
             SECTION_NAME=$(echo $section | cut -d'"' -f4)
             echo "III - Creating subfolder: $SECTION_NAME"
             mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/structure/$SECTION_NAME"
-            touch ${{ env.KAOS_WEB_STRUCTURE }}$TITLE/structure/$SECTION_NAME/$SECTION_NAME.html
+            touch ${{ env.KAOS_WEB_STRUCTURE }}$TITLE/structure/$SECTION_NAME/$SECTION_NAME".html"
           done
           
           # Create a JSON file with the structure information
-          echo "[" > ${{ env.KAOS_JSON_RESUME }}$TITLE/$TITLE_resume.json
+          echo "[" > ${{ env.KAOS_JSON_RESUME }}$TITLE/$TITLE"_resume.json"
           # Find all files and directories
           find core/web -type f -o -type d | sort | while read path; do
             if [ "$path" != "core/web" ]; then
@@ -81,12 +81,12 @@ jobs:
               # Get the name of the item (last part of path)
               NAME=$(basename "$path")
               # Create the JSON entry
-              echo "  {\"path\": \"$path\", \"name\": \"$NAME\", \"type\": \"$TYPE\"}," >> ${{ env.KAOS_JSON_RESUME }}$TITLE/$TITLE_resume.json
+              echo "  {\"path\": \"$path\", \"name\": \"$NAME\", \"type\": \"$TYPE\"}," >> ${{ env.KAOS_JSON_RESUME }}$TITLE/$TITLE"_resume.json"
             fi
           done
           # Remove the last comma and close the JSON array
-          sed -i '$ s/,$//' ${{ env.KAOS_JSON_RESUME }}$TITLE/$TITLE_resume.json
-          echo "]" >> ${{ env.KAOS_JSON_RESUME }}$TITLE/$TITLE_resume.json
+          sed -i '$ s/,$//' ${{ env.KAOS_JSON_RESUME }}$TITLE/$TITLE"_resume.json"
+          echo "]" >> ${{ env.KAOS_JSON_RESUME }}$TITLE/$TITLE"_resume.json"
           echo "IV - Web folder structure copied successfully!"
 
       - id: upload-files
