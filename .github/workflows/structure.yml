@@ -68,7 +68,7 @@ jobs:
           done
           
           # Create a JSON file with the structure information
-          echo "[" > ${{ env.KAOS_JSON_RESUME }}$TITLE/structure.json
+          echo "[" > ${{ env.KAOS_JSON_RESUME }}$TITLE/$TITLE_resume.json
           # Find all files and directories
           find core/web -type f -o -type d | sort | while read path; do
             if [ "$path" != "core/web" ]; then
@@ -81,12 +81,12 @@ jobs:
               # Get the name of the item (last part of path)
               NAME=$(basename "$path")
               # Create the JSON entry
-              echo "  {\"path\": \"$path\", \"name\": \"$NAME\", \"type\": \"$TYPE\"}," >> ${{ env.KAOS_JSON_RESUME }}$TITLE/structure.json
+              echo "  {\"path\": \"$path\", \"name\": \"$NAME\", \"type\": \"$TYPE\"}," >> ${{ env.KAOS_JSON_RESUME }}$TITLE/$TITLE_resume.json
             fi
           done
           # Remove the last comma and close the JSON array
-          sed -i '$ s/,$//' ${{ env.KAOS_JSON_RESUME }}$TITLE/structure.json
-          echo "]" >> ${{ env.KAOS_JSON_RESUME }}$TITLE/structure.json
+          sed -i '$ s/,$//' ${{ env.KAOS_JSON_RESUME }}$TITLE/$TITLE_resume.json
+          echo "]" >> ${{ env.KAOS_JSON_RESUME }}$TITLE/$TITLE_resume.json
           echo "IV - Web folder structure copied successfully!"
 
       - id: upload-files
