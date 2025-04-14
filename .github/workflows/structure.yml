@@ -43,12 +43,14 @@ jobs:
 
           # Create main directory
           mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TITLE"
-          
+          ls -la core/results/webs
+
           # Extract section names and create subfolders
           cat $STRUCTURE_FILE | grep -o '"section[^"]*": *"[^"]*"' | while read -r section; do
             SECTION_NAME=$(echo $section | cut -d'"' -f4)
             echo "Creating subfolder: $SECTION_NAME"
             mkdir -p "$TITLE/$SECTION_NAME"
+            ls -la core/results/webs
           done
           
           # echo "Copying web folder structure to dashboard..."
@@ -58,8 +60,9 @@ jobs:
           # Copy the directory structure (without files)
           find core/web -type d | while read dir; do
             if [ "$dir" != "core/web" ]; then
-              target_dir="/${{ env.KAOS_WEB_STRUCTURE }}$TITLE/${dir#core/web/}"
+              target_dir="/${{ env.KAOS_WEB_STRUCTURE }}$TITLE/${dir}"
               mkdir -p "$target_dir"
+              ls -la core/results/webs
               echo "Created directory: $target_dir"
             fi
           done
