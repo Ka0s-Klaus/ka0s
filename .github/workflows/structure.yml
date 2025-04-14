@@ -36,6 +36,10 @@ jobs:
           TITLE=$(cat $STRUCTURE_FILE | grep -o '"title": *"[^"]*"' | cut -d'"' -f4)
           echo "Main folder will be named: $TITLE"
           
+          # Comprobamos donde estamos en el repo
+          echo "Estamos aquí ......" && pwd
+          echo "Esta es la estructura que vemos ..." && ls -la
+          
           # Nos situamos dentro del contenedor de las estructuras web
           cd ${{ env.KAOS_WEB_STRUCTURE }}
           # Create main directory
