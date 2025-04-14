@@ -49,7 +49,9 @@ jobs:
           # Copy the directory structure (without files)
           find core/web -type d | while read dir; do
             if [ "$dir" != "core/web" ]; then
-              target_dir="/${{ env.KAOS_WEB_STRUCTURE }}$TITLE/${dir}"
+              # Remove core/web prefix from directory path
+              clean_dir=${dir#core/web/}
+              target_dir="/${{ env.KAOS_WEB_STRUCTURE }}$TITLE/$clean_dir"
               # mkdir -p "$target_dir"
               echo "III - Created directory: $target_dir"
             fi
