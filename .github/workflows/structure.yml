@@ -31,7 +31,7 @@ jobs:
         run: |
           # Tenemos que añadir al proceso que sea capaz de leer + de un json de creación de webs
           # si web esta creada la actualiza, sino la crea desde cero
-          
+
           # Read the structure.json file to get folder names
           echo "0 - Reading structure.json file..."
           STRUCTURE_FILE="${{ env.KAOS_JSON_WEB }}"
@@ -42,7 +42,7 @@ jobs:
 
           # Create main directory
           mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TITLE"
-          touch ${{ env.KAOS_WEB_STRUCTURE }}$TITLE/readme.txt
+          touch ${{ env.KAOS_WEB_STRUCTURE }}$TITLE/$TITLE.html
           mkdir -p "${{ env.KAOS_JSON_RESUME }}$TITLE"
           touch ${{ env.KAOS_JSON_RESUME }}$TITLE/readme.txt
 
@@ -54,7 +54,6 @@ jobs:
               echo "II - Created directory: $clean_dir"
               target_dir="${{ env.KAOS_WEB_STRUCTURE }}$TITLE/$clean_dir"
               mkdir -p "$target_dir"
-              touch $target_dir/readme.txt
               echo "II - Created directory: $target_dir"
             fi
           done
@@ -64,7 +63,7 @@ jobs:
             SECTION_NAME=$(echo $section | cut -d'"' -f4)
             echo "III - Creating subfolder: $SECTION_NAME"
             mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/structure/$SECTION_NAME"
-            touch ${{ env.KAOS_WEB_STRUCTURE }}$TITLE/structure/$SECTION_NAME/readme.txt
+            touch ${{ env.KAOS_WEB_STRUCTURE }}$TITLE/structure/$SECTION_NAME/$SECTION_NAME.html
           done
           
           # Create a JSON file with the structure information
