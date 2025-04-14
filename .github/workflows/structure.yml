@@ -40,14 +40,6 @@ jobs:
           mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TITLE"
           touch ${{ env.KAOS_WEB_STRUCTURE }}$TITLE/readme.txt
 
-          # Extract section names and create subfolders
-          cat $STRUCTURE_FILE | grep -o '"section[^"]*": *"[^"]*"' | while read -r section; do
-            SECTION_NAME=$(echo $section | cut -d'"' -f4)
-            echo "II - Creating subfolder: $SECTION_NAME"
-            mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/$SECTION_NAME"
-            touch ${{ env.KAOS_WEB_STRUCTURE }}$TITLE/$SECTION_NAME/readme.txt
-          done
-          
           # Copy the directory structure (without files)
           find core/web -type d | while read dir; do
             if [ "$dir" != "core/web" ]; then
@@ -59,6 +51,14 @@ jobs:
               touch $target_dir/readme.txt
               echo "III - Created directory: $target_dir"
             fi
+          done
+
+          # Extract section names and create subfolders
+          cat $STRUCTURE_FILE | grep -o '"section[^"]*": *"[^"]*"' | while read -r section; do
+            SECTION_NAME=$(echo $section | cut -d'"' -f4)
+            echo "II - Creating subfolder: $SECTION_NAME"
+            mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/structure/$SECTION_NAME"
+            touch ${{ env.KAOS_WEB_STRUCTURE }}$TITLE/structure/$SECTION_NAME/readme.txt
           done
           
           # Create a JSON file with the structure information
