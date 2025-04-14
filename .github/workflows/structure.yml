@@ -49,20 +49,16 @@ jobs:
           cat $STRUCTURE_FILE | grep -o '"section[^"]*": *"[^"]*"' | while read -r section; do
             SECTION_NAME=$(echo $section | cut -d'"' -f4)
             echo "Creating subfolder: $SECTION_NAME"
-            mkdir -p "$TITLE/$SECTION_NAME"
-            ls -la core/results/webs
+            mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/$SECTION_NAME"
+            ls -la core/results/webs/"$TITLE/"
           done
-          
-          # echo "Copying web folder structure to dashboard..."
-          # Create destination directory if it doesn't exist
-          # mkdir -p ${{ env.KAOS_JSON }}$TITLE
           
           # Copy the directory structure (without files)
           find core/web -type d | while read dir; do
             if [ "$dir" != "core/web" ]; then
               target_dir="/${{ env.KAOS_WEB_STRUCTURE }}$TITLE/${dir}"
               mkdir -p "$target_dir"
-              ls -la core/results/webs
+              ls -la core/results/webs/"$TITLE/"
               echo "Created directory: $target_dir"
             fi
           done
