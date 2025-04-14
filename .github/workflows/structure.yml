@@ -11,6 +11,7 @@ env:
     KAOS_ACTION: ${{ github.action }}
     KAOS_REF: ${{ github.ref }}
     KAOS_MODULE: "[Ka0S] Deploy Web Structure"
+    KAOS_JSON_WEB: "core/config/webs/*.json"
     KAOS_JSON_RESUME: "core/outputs/webs/" # directorio que aloja los json de resultados de la operación 
     KAOS_WEB_STRUCTURE: "core/results/webs/" # directorio donde se alojan las diferentes estructura de webs
     KAOS_WEB_REQUEST: "core/web/structure/*.json" # esta variable indica el fichero de estructura que hay que crear
@@ -30,7 +31,7 @@ jobs:
         run: |
           # Read the structure.json file to get folder names
           echo "0 - Reading structure.json file..."
-          STRUCTURE_FILE="core/web/structure/*.json"
+          STRUCTURE_FILE="${{ env.KAOS_JSON_WEB }}"
           
           # Extract title for main folder name
           TITLE=$(cat $STRUCTURE_FILE | grep -o '"title": *"[^"]*"' | cut -d'"' -f4)
@@ -39,6 +40,8 @@ jobs:
           # Create main directory
           mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TITLE"
           touch ${{ env.KAOS_WEB_STRUCTURE }}$TITLE/readme.txt
+          mkdir -p "${{ env.KAOS_JSON_RESUME }}$TITLE"
+          touch ${{ env.KAOS_JSON_RESUME }}$TITLE/readme.txt
 
           # Copy the directory structure (without files)
           find core/web -type d | while read dir; do
