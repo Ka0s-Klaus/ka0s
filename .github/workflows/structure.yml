@@ -29,37 +29,29 @@ jobs:
       - name: Copy web folder structure
         run: |
           # Read the structure.json file to get folder names
-          echo "Reading structure.json file..."
+          echo "0 - Reading structure.json file..."
           STRUCTURE_FILE="core/web/structure/*.json"
           
           # Extract title for main folder name
           TITLE=$(cat $STRUCTURE_FILE | grep -o '"title": *"[^"]*"' | cut -d'"' -f4)
-          echo "Main folder will be named: $TITLE"
-          
-          # Comprobamos donde estamos en el repo
-          echo "Estamos aquí ......" && pwd
-          echo "Esta es la estructura que vemos ..." && ls -la
-          echo "Esta es la estructura web ....." && ls -la core/results/webs
+          echo "I - Main folder will be named: $TITLE"
 
           # Create main directory
           mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TITLE"
-          ls -la core/results/webs
 
           # Extract section names and create subfolders
           cat $STRUCTURE_FILE | grep -o '"section[^"]*": *"[^"]*"' | while read -r section; do
             SECTION_NAME=$(echo $section | cut -d'"' -f4)
-            echo "Creating subfolder: $SECTION_NAME"
+            echo "II - Creating subfolder: $SECTION_NAME"
             mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/$SECTION_NAME"
-            ls -la core/results/webs/"$TITLE/"
           done
           
           # Copy the directory structure (without files)
           find core/web -type d | while read dir; do
             if [ "$dir" != "core/web" ]; then
               target_dir="/${{ env.KAOS_WEB_STRUCTURE }}$TITLE/${dir}"
-              mkdir -p "$target_dir"
-              ls -la core/results/webs/"$TITLE/"
-              echo "Created directory: $target_dir"
+              # mkdir -p "$target_dir"
+              echo "III - Created directory: $target_dir"
             fi
           done
           
@@ -74,7 +66,7 @@ jobs:
           sed -i '$ s/,$//' ${{ env.KAOS_WEB_STRUCTURE }}$TITLE/*.json
           echo "]" >> ${{ env.KAOS_WEB_STRUCTURE }}$TITLE/*.json
           
-          echo "Web folder structure copied successfully!"
+          echo "IV - Web folder structure copied successfully!"
 
       - id: upload-files
         name: Upload Files
