@@ -10,7 +10,7 @@
 
 ### Módulos
 
-- Definición: Componentes individuales del sistema que realizan funciones específicas.
+- Definición: Compo nentes individuales del sistema que realizan funciones específicas.
 - Ejemplo: Módulo de autenticación, módulo de gestión de usuarios.
 
 ### Relaciones entre módulos
