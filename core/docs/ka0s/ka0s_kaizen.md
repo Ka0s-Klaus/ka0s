@@ -63,7 +63,7 @@ Se basa en 3 reglas de oro: 1. Sencillez 2. Eficiencia 3. Capacidad de adaptaci�
 
 Ka0s es un sistema que se adapta a cualquier entorno y que permite la evolución y mejora constante. Ka0s es un sistema que te permite mantener todos los sistemas. Y sí, es cierto con el tiempo descubrimos que Ka0s se integra de una manera 100% natural con el concepto de "DevSecOps". Nos permite poder conectar los actuales sistemas, tener conectados los futuros sistemas y poder "diseñar"" los sistemas que aún no hemos pensado sin tener que salirnos del entorno de "Producción" (y aquí 1 pequeño secreto, no es necesario tener 1 entorno de "Desarrollo" para poder hacerlo).
 
->-Venga, va¡ Otra flipada¡ ¿sin entorno de desarrollo? ¿y de test? ¿y de preproducción? ¿y de qué...? ¿de qué hablas?.
+>-Venga, va¡ Otra flipada¡ ¿sin entorno de desarrollo? ¿y de test? ¿y de preproducción? ¿y de qué ...? ¿de qué hablas?.
 
 >-No te preocupes, ya lo verás. Ya lo verás. Lo que si puedo anticiparte, para que no sigas escandalizandote, es que Ka0s antes de nada revisa la Seguridad y el Cumplimiento de la normativa. Y lo hace en cada una de las fases del ciclo de vida de la aplicación. Y lo hace de manera automática. Y lo hace de manera sencilla, eficiente y eficaz. Y lo hace de manera Ka0s.
 
