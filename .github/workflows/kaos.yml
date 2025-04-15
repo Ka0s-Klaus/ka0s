@@ -45,6 +45,8 @@ jobs:
           IFS=' ' read -r -a extensions <<< "${{ secrets.KAOS_CORE_FILES }}"
           for file in $(git diff --name-only HEAD~1 HEAD); do
             extension="${file##*.}"
+            echo "File: $file"
+            echo "Extension: $extension"
             if [[ ! " ${extensions[@]} " =~ " ${extension} " ]]; then
               echo "File $file has an invalid extension: $extension"
             fi
