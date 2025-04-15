@@ -1,25 +1,5 @@
 # Nuestra propia adaptación de Kaizen
 
-## ¿Cómo funciona Ka0s?
-
-El sistema se implementa mediante:
-- **Ciclos de mejora continua**: Revisiones semanales de procesos clave
-- **Automatización inteligente**: Scripts reutilizables para tareas repetitivas
-- **Monitoreo activo**: Dashboard unificado con métricas esenciales
-
-Ejemplo práctico de aplicación:
-```python
-# Script de optimización de despliegue
-def aplicar_kaizen(config):
-    # 1. Análisis de la configuración actual
-    # 2. Identificación de puntos de mejora
-    # 3. Implementación incremental
-    # 4. Validación con tests automáticos
-    return config_optimizada
-```
-
-[◀ Volver a Metodología](/core/docs/ka0s/ka0s_metodologia.md)
-
 ## ¿Porqué Kaizen?
 
 >*"Por su sencillez, eficiencia y capacidad de adaptación."*
