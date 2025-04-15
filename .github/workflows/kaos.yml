@@ -18,6 +18,7 @@ env:
     KAOS_EVENT_NAME: ${{ github.event_name }}
     KAOS_ACTION: ${{ github.action }}
     KAOS_REF: ${{ github.ref }}
+    KAOS_CORE_FILES: "md,yaml,json,html,py,js"
     KAOS_MODULE: "[Ka0S] kaos"
     KAOS_PATH_RESUME: "core/results/k/"
     KAOS_JSON: "core/results/k/event_data_"
@@ -42,7 +43,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
         run: |
-          IFS=' ' read -r -a extensions <<< "${{ secrets.KAOS_CORE_FILES }}"
+          IFS=',' read -r -a extensions <<< "${{ env.KAOS_CORE_FILES }}"
           for file in $(git diff --name-only HEAD~1 HEAD); do
             extension="${file##*.}"
             echo "File: $file"
