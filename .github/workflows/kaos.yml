@@ -43,7 +43,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
         run: |
-          IFS=',' read -r -a extensions <<< "${{ env.KAOS_CORE_FILES }}"
+          IFS=',' read -r -a extensions <<< "md,yaml,json,html,py,js"
           for file in $(git diff --name-only HEAD~1 HEAD); do
             extension="${file##*.}"
             echo "File: $file"
