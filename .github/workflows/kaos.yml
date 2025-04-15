@@ -42,15 +42,33 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
         run: |
-          IFS=' ' read -r -a extensions <<< "${{ secrets.KAOS_CORE_FILES }}"
+          # Nueva version
+          JSON_FILE="core/config/core/ka0s_c0re_files.json"
+          # Validar existencia del archivo JSON
+          if [ ! -f "$JSON_FILE" ]; then
+              echo "Error: Archivo JSON no encontrado en $JSON_FILE"
+              exit 1
+          fi
+
+          # Leer extensiones usando jq y almacenar en array
+          extensions=()
+          while IFS= read -r line; do
+              extensions+=("$line")
+          done < <(jq -r '.extension[]' "$JSON_FILE")
+                
+          # Imprimir resultados para verificación
+          echo "Extensiones cargadas:"
+          for ext in "${extensions[@]}"; do
+              echo "- $ext"
+          done
           files=$(git diff --name-only HEAD~1 HEAD)
           for file in $files; do
             extension="${file##*.}"
             echo "File: $file"
             echo "Extensiones: ${extensions[@]}"
-            echo "Extension: $extension"
-            if [[ ! " ${extensions[@]} " =~ " ${extension} " ]]; then
-              echo "File $file has an invalid extension: $extension"
+            echo "Extension: $ext"
+            if [[ ! " ${extensions[@]} " =~ " ${ext} " ]]; then
+              echo "File $file has an invalid extension: $ext"
             fi
           done
           RNNUMBER=$(echo "${{ github.ref_name }}" | grep -o '[0-9]*')
