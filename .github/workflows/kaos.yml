@@ -61,6 +61,7 @@ jobs:
           for ext in "${extensions[@]}"; do
               echo "- $ext"
           done
+
           files=$(git diff --name-only HEAD~1 HEAD)
           for file in $files; do
             extension="${file##*.}"
@@ -71,8 +72,10 @@ jobs:
               echo "File $file has an invalid extension: $ext"
             fi
           done
+
           RNNUMBER=$(echo "${{ github.ref_name }}" | grep -o '[0-9]*')
           gh issue comment $RNNUMBER --body "Se inicia Ka0s ${{ env.KAOS_CODE }} "
+          
       - name: Crear JSON
         id: crear_json
         run: |
