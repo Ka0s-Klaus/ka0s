@@ -42,7 +42,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
         run: |
-          IFS=' ' read -r -a extensions <<< "${{ secrets.KAOS_CORE_FILES }}"
+          IFS=',' read -r -a extensions <<< "${{ secrets.KAOS_CORE_FILES }}"
           for file in $(git diff --name-only HEAD~1 HEAD); do
             extension="${file##*.}"
             if [[ ! " ${extensions[@]} " =~ " ${extension} " ]]; then
