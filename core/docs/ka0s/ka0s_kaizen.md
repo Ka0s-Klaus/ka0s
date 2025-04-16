@@ -39,7 +39,7 @@ Pues acabamos de descubir el primer *concepto de oro* dentro de Ka0s, "Sucesión
 En un mundo en constante cambio y evolución, *la capacida de adaptación* (tercera regla de oro) se convierte en una de las habilidades más importantes que puede tener un sistema. La capacidad de adaptación es la habilidad de un sistema para ajustarse a los cambios en su entorno y en su interior. La capacidad de adaptación es la habilidad de un sistema para cambiar, para evolucionar, para mejorar. La capacidad de adaptación es la habilidad de un sistema para ser sencillo, para ser eficiente, para ser eficaz.**La capacidad de adaptación es la habilidad de un sistema para ser Ka0s.**
 
 >-!A ver flipado, estamos hablando de tecnología, no de biología!
->-!Por eso mismo¡. La adaptación y cambio y/o modernización (o esa palabra que tan poco gusta, transformación) es uno de esos procesos en las compañias que no dejan de ser *un dolor* (a veces de cabeza, a veces no¡). Es costo, supone 1 cambio, supone 1 riesgo, supone 1 tiempo, supone 1 dinero, supone 1 esfuerzo, supone 1 todo.
+>-!Por eso mismo¡. La adaptación y cambio y/o modernización (o esa palabra que tan poco gusta, transformación) es uno de esos procesos en las compañias que no dejan de ser *un dolor* (a veces de cabeza, a veces no¡). Es **"coste"**, supone 1 cambio, 1 riesgo, 1 tiempo, 1 dinero, 1 esfuerzo, 1 todo.
 
 >-Pero, ¿y si te digo que con Ka0s, no es así? ¿Y si te digo que con Ka0s, la adaptación es sencilla, eficiente y eficaz? ¿Y si te digo que con Ka0s, la adaptación es Ka0s?
 
