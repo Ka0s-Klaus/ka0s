@@ -3,9 +3,7 @@
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/203720c203a84af7a9d888680a047df4)](https://app.codacy.com/gh/SantaKa0S/kaos/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade) 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-<p align="center">
-  <img src="core/imgs/kaos.jpeg" alt="All is Code">
-</p>
+![Ka0s](/core/imgs/kaos.jpeg)
 
 Albert Einstein dijo una vez: "... si tu intención es describir la verdad, hazlo con sencillez y la elegancia déjasela al sastre."
 
