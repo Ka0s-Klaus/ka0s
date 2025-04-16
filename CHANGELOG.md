@@ -1836,3 +1836,22 @@
   - core/results/webs/dashboard/templates/templates.html
   - version.txt
 ---------------------------------
+## Version 0.0.87
+- **Branch**: refs/pull/324/merge
+- **Commit**: Añadimos ka0s_metodologia
+- **Author**: Ka0s
+- **Date**: Wed Apr 16 07:49:27 UTC 2025
+- **Message**: H323 documentacion kaos
+- **Files Changed**:
+  - core/config/core/ka0s_c0re_files.json
+  - core/docs/ka0s/ka0s.md
+  - core/docs/ka0s/ka0s_kaizen.md
+  - core/docs/ka0s/ka0s_metodologia.md
+  - core/docs/ka0s/ka0s_release_klaus.md
+  - core/imgs/adaptacion.png
+  - core/imgs/centralizacion.jpeg
+  - core/imgs/eficacia.jpeg
+  - core/imgs/eficiencia.jpeg
+  - core/imgs/golden_rule.jpeg
+  - version.txt
+---------------------------------
