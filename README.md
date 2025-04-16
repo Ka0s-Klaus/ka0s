@@ -1,6 +1,6 @@
 # Ka0S "Keep All 0f Systems"
 
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/203720c203a84af7a9d888680a047df4)](https://app.codacy.com/gh/SantaKa0S/kaos/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade) 
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/203720c203a84af7a9d888680a047df4)](https://app.codacy.com/gh/SantaKa0S/kaos/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 ![Ka0s](/core/imgs/kaos.jpeg)
