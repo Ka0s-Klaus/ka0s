@@ -1,4 +1,4 @@
-# Ka0S
+# Ka0S "Keep All 0f Systems"
 
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/203720c203a84af7a9d888680a047df4)](https://app.codacy.com/gh/SantaKa0S/kaos/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade) 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
@@ -21,7 +21,7 @@ Albert Einstein dijo una vez: "... si tu intención es describir la verdad, hazl
 
 ## Nuestra filosofía
 
-El método **KAIZEN** engloba el concepto de la mejora contínua basada en pequeñas acciones concretas, simples y poco onerosas, donde se ven implicados todos los miembros de una empresa.
+El método **KAIZEN** engloba el concepto de la mejora contínua basada en pequeñas acciones concretas, simples y poco onerosas, donde se ven implicados todos los miembros de una empresa. Nosotros hemos adaptado este método a [nuestra filosofía de trabajo](/core/docs/ka0s/ka0s.md).
 
 ## ¿Qué es Ka0S?
 
@@ -40,6 +40,8 @@ Ventajas de utilizar Ka0S
 Si quieres saber más a cerca de [Ka0s](./core/docs/README.md).
 
 ## ¿Y cómo me lo puedo instalar?
+
+Antes de nada te recomendamos que le eches un vistazo a la [documentación](./core/docs/README.md) para saber más acerca de Ka0S.
 
 A fecha de hoy es tan secillo como seguir los pasos de:
 
