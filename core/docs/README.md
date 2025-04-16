@@ -30,7 +30,7 @@ Si, parece increible pero hemos decidido en el equipo usar una terminología "es
 
 ## Módulos de Ka0s
 
-- ka0s.yml:
+- [ka0s.yml:](./core/docs/ka0s_core/ka0s_core.md)
 - inspector.yml
 - version.yml
 - execution.yml
@@ -38,6 +38,7 @@ Si, parece increible pero hemos decidido en el equipo usar una terminología "es
 - jsonlint.yml
 - yamllint.yml
 - pylint.yml
+- jslint.yml
 - core.yml
 - docker.yml
 - release.yml
