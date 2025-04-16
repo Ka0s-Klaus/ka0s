@@ -85,3 +85,4 @@
 - **Version**: 0.0.84 - **Description**: H306 ficheros de estadisticas
 - **Version**: 0.0.85 - **Description**: H306 ficheros de estadisticas
 - **Version**: 0.0.86 - **Description**: H306 ficheros de estadisticas
+- **Version**: 0.0.87 - **Description**: H323 documentacion kaos
