@@ -42,37 +42,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
         run: |
-          # Nueva version
-          JSON_FILE="core/config/core/ka0s_c0re_files.json"
-          # Validar existencia del archivo JSON
-          if [ ! -f "$JSON_FILE" ]; then
-              echo "Error: Archivo JSON no encontrado en $JSON_FILE"
-              exit 1
-          fi
-
-          # Leer extensiones usando jq y almacenar en array
-          extensions=()
-          while IFS= read -r line; do
-              extensions+=("$line")
-          done < <(jq -r '.extension[]' "$JSON_FILE")
-                
-          # Imprimir resultados para verificación
-          echo "Extensiones cargadas:"
-          for ext in "${extensions[@]}"; do
-              echo "- $ext"
-          done
-
-          files=$(git diff --name-only HEAD~1 HEAD)
-          for file in $files; do
-            extension="${file##*.}"
-            echo "File: $file"
-            echo "Extensiones: ${extensions[@]}"
-            echo "Extension: $ext"
-            if [[ ! " ${extensions[@]} " =~ " ${ext} " ]]; then
-              echo "File $file has an invalid extension: $ext"
-            fi
-          done
-
+          # Nueva ejecución
           RNNUMBER=$(echo "${{ github.ref_name }}" | grep -o '[0-9]*')
           gh issue comment $RNNUMBER --body "Se inicia Ka0s ${{ env.KAOS_CODE }} "
           
@@ -162,9 +132,7 @@ jobs:
           # Store the file path for later use
           INVOLVED=${{ env.KAOS_PATH_RESUME }}files-in-commit-$KAOS_CODE_FILES.txt
           echo "INVOLVED=$INVOLVED" >> $GITHUB_ENV
-      - name: Set environment variable for ref
-        id: ref
-        run: echo "GITHUB_REF=${{ github.ref }}" >> $GITHUB_ENV
+
       - id: upload-files
         name: Upload Files
         run: |
@@ -174,8 +142,8 @@ jobs:
           git pull
           git add ${{ env.KAOS_JSON }}*
           git commit -m "[Ka0S] Uploading resume execution files to the repository..."
-          git push origin ${{ github.ref }}
-          git push origin $GITHUB_REF     
+          git push origin ${{ github.ref }} 
+
       - id: module
         env:
             modules: ${{ secrets.KAOS_CORE_MODULES }}
@@ -270,7 +238,7 @@ jobs:
         run: |
           # Si todo ha ido correcto añadimos el contenido del fichero 
           RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
-          gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
+          gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data_${{ env.KAOS_CODE }}.log"
   handle_failure:
     runs-on:
       group: ka0s
@@ -291,7 +259,7 @@ jobs:
         run: |
           echo "Error detected in process"
           RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
-          gh issue comment $RNNUMBER --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
+          gh issue comment $RNNUMBER --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data_${{ env.KAOS_CODE }}.log"
   end-workflow:
     runs-on:
       group: ka0s
