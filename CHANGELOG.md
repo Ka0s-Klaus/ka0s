@@ -1855,3 +1855,23 @@
   - core/imgs/golden_rule.jpeg
   - version.txt
 ---------------------------------
+## Version 0.0.88
+- **Branch**: refs/pull/326/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Wed Apr 16 08:47:50 UTC 2025
+- **Message**: H325 documentacion readmemd
+- **Files Changed**:
+  - README.md
+  - core/docs/README.md
+  - core/docs/ka0s/ka0s_kaizen.md
+  - core/docs/ka0s/ka0s_metodologia.md
+  - core/docs/ka0s_core/ka0s_core.md
+  - core/results/k/event_data_14487931864.json
+  - core/results/k/event_data_14487931864.json.bak
+  - core/results/k/event_data_14488189190.json
+  - core/results/k/event_data_14488189190.json.bak
+  - core/results/k/event_data_14488445722.json
+  - core/results/k/event_data_14488445722.json.bak
+  - version.txt
+---------------------------------
