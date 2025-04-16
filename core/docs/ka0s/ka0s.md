@@ -1,6 +1,6 @@
-# Documentación del módulo
+# Documentación del módulo principal de Ka0s
 
-![Ka0S](/core/imgs/kaos.png)
+![Ka0S](/core/imgs/kaos.jpeg)
 
 ```shell
 - Albert Einstein dijo una vez: "... si tu intención es describir la verdad, hazlo con sencillez, y la elegancia dejasela al sastre."
@@ -10,7 +10,7 @@
 
 ### Módulos
 
-- Definición: Componentes individuales del sistema que realizan funciones específicas.
+- Definición: Compo nentes individuales del sistema que realizan funciones específicas.
 - Ejemplo: Módulo de autenticación, módulo de gestión de usuarios.
 
 ### Relaciones entre módulos
