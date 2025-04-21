@@ -61,4 +61,4 @@ Y..... tachán, ¿os acordais de la "sucesión"? Pues inspector solamente se pen
 
 Pues al finalizar este módulo y conectarlo a la obsevabilidad nos dimos cuenta de que además le hemos añadido la funcionalidad de saber cuanto tiempo tarda cada ejecución, cada solicitud, casa job, cada step dentro del job y lo más importante, todos los recursos asociados a la ejecución que han solicitados y por cuanto tiempo (esto nos permite extraer hasta el tiempo de computo "CPU + Memoria + Tranferencia de información"). La caña, pensamos en guardar un JSON y un LOG en plan de ..... "por saber lo que ha pasado" y nos dimos cueta de que la "sucessión" entro en juego y al mismoa tiempo añadimos la funcionalidad a la propia plataforma de manejar sus ejecuciones y costes.
 
-... continuará.
+...continuará.
