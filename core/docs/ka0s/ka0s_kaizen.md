@@ -76,3 +76,5 @@ Ka0s es un sistema que se adapta a cualquier entorno y que permite la evolución
 >-!Vale¡ ¿Y cómo lo hace? ¿Cómo se consigue eso? ¿Cómo se consigue la simplicidad, la eficiencia y la eficacia? ¿Cómo se consigue la adaptación y la evolución constante? ¿Cómo se consigue mantener todos los sistemas?
 
 Para esto te recomiendo que des el siguiente paso y leas en detalle ["Metodología Ka0s" y "Estructura de Ka0s"](/core/docs/ka0s/ka0s_metodologia.md)
+
+![Roadmap 2025](../imgs/ka0s-dashboard.png)
