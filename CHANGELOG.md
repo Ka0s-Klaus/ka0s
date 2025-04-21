@@ -1963,3 +1963,25 @@
   - core/results/webs/dashboard/templates/templates.html
   - version.txt
 ---------------------------------
+## Version 0.0.93
+- **Branch**: refs/pull/337/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Mon Apr 21 15:30:49 UTC 2025
+- **Message**: H329 documentacion metodologia de kaos
+- **Files Changed**:
+  - core/docs/ka0s/ka0s_metodologia.md
+  - core/imgs/ka0s-branch.png
+  - core/imgs/ka0s-info.png
+  - core/imgs/ka0s-inspector-human.png
+  - core/imgs/ka0s-inspector.png
+  - core/imgs/kaos-core.jpeg
+  - core/imgs/kaos-core.png
+  - core/results/k/event_data_14571498648.json
+  - core/results/k/event_data_14571498648.json.bak
+  - core/results/k/event_data_14572636601.json
+  - core/results/k/event_data_14572636601.json.bak
+  - core/results/k/event_data_14575963319.json
+  - core/results/k/event_data_14575963319.json.bak
+  - version.txt
+---------------------------------
