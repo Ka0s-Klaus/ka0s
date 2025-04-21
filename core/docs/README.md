@@ -44,6 +44,11 @@ Si, parece increible pero hemos decidido en el equipo usar una terminología "es
 - release.yml
 - summary.yml
 
+## Releases
+
+>-[Ka0s - Klaus](/core/docs/ka0s/ka0s_release_klaus.md)
+>-Ka0s - Proyecto D
+
 ## Nuestra metodología
 
 La mejor manera de explicarla esta [aquí](/core/docs/ka0s/ka0s_metodologia.md)
