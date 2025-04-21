@@ -13,7 +13,7 @@ env:
     KAOS_MODULE: "[Ka0S] Deploy Web Structure"
     KAOS_JSON_WEB: "core/config/webs/webs.json"
     KAOS_JSON_RESUME: "core/outputs/webs/" # directorio que aloja los json de resultados de la operación 
-    KAOS_JSON_DATA: "core/web/data/" # directorio que aloja los json de datos de la operación
+    KAOS_JSON_DATA: "core/web/data/data.json" # directorio que aloja los json de datos de la operación
     KAOS_WEB_STRUCTURE: "core/results/webs/" # directorio donde se alojan las diferentes estructura de webs
     KAOS_ACTOR: ${{ github.actor }}
 jobs:
@@ -120,15 +120,20 @@ jobs:
       - name: Copy data files to web structure
         run: |
           echo "Reading data.json file..."
-          DATA_FILE="${{ env.KAOS_JSON_DATA }}data.json"
+          DATA_FILE="${{ env.KAOS_JSON_DATA }}"
           
           # Extract title for main folder name from structure file
-          STRUCTURE_FILE="core/web/structure/*.json"
+          STRUCTURE_FILE="${{ env.KAOS_JSON_WEB }}"
           TITLE=$(cat $STRUCTURE_FILE | grep -o '"title": *"[^"]*"' | cut -d'"' -f4)
-          echo "Main folder is named: $TITLE"
+          if [ -z "$TITLE" ]; then
+            TITLE="dashboard"
+            echo "Title not found in JSON file, using default: $TITLE"
+          else
+            echo "Main folder is named: $TITLE"
+          fi
           
           # Create data directory if it doesn't exist
-          mkdir -p "core/results/webs/$TITLE/data"
+          mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/data"
           
           # Read data.json and copy files
           if [ -f "$DATA_FILE" ]; then
@@ -140,13 +145,13 @@ jobs:
               DEST=$(echo $file | jq -r '.destination')
               
               # Ensure destination directory exists
-              DEST_DIR=$(dirname "core/results/webs/$TITLE/$DEST")
+              DEST_DIR=$(dirname "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/$DEST")
               mkdir -p "$DEST_DIR"
               
               # Copy the file
               if [ -f "$SOURCE" ]; then
-                echo "Copying $SOURCE to core/results/webs/$TITLE/$DEST"
-                cp "$SOURCE" "core/results/webs/$TITLE/$DEST"
+                echo "Copying $SOURCE to ${{ env.KAOS_WEB_STRUCTURE }}$TITLE/$DEST"
+                cp "$SOURCE" "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/$DEST"
               else
                 echo "Warning: Source file $SOURCE not found"
               fi
@@ -159,15 +164,15 @@ jobs:
           
           # Generate a summary of copied files
           echo "Generating data files summary..."
-          echo "{" > "core/outputs/webs/data-files-summary.json"
-          echo "  \"generated_at\": \"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\"," >> "core/outputs/webs/data-files-summary.json"
-          echo "  \"title\": \"$TITLE\"," >> "core/outputs/webs/data-files-summary.json"
-          echo "  \"files\": [" >> "core/outputs/webs/data-files-summary.json"
+          echo "{" > "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
+          echo "  \"generated_at\": \"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\"," >> "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
+          echo "  \"title\": \"$TITLE\"," >> "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
+          echo "  \"files\": [" >> "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
           
           # List all copied files
-          find "core/results/webs/$TITLE/data" -type f | sort | while read -r file; do
-            RELATIVE_PATH="${file#core/results/webs/$TITLE/}"
-            echo "    {\"path\": \"$RELATIVE_PATH\"}," >> "core/outputs/webs/data-files-summary.json"
+          find "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/data" -type f | sort | while read -r file; do
+            RELATIVE_PATH="${file#${{ env.KAOS_WEB_STRUCTURE }}$TITLE/}"
+            echo "    {\"path\": \"$RELATIVE_PATH\"}," >> "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
           done
           
           # Remove the last comma and close the JSON
