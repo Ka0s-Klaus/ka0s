@@ -13,6 +13,7 @@ env:
     KAOS_MODULE: "[Ka0S] Deploy Web Structure"
     KAOS_JSON_WEB: "core/config/webs/webs.json"
     KAOS_JSON_RESUME: "core/outputs/webs/" # directorio que aloja los json de resultados de la operación 
+    KAOS_JSON_DATA: "core/web/data/data.json" # directorio que aloja los json de datos de la operación
     KAOS_WEB_STRUCTURE: "core/results/webs/" # directorio donde se alojan las diferentes estructura de webs
     KAOS_ACTOR: ${{ github.actor }}
 jobs:
@@ -105,7 +106,100 @@ jobs:
             git commit -m "[Ka0S] Uploading resume execution files and web structure to the repository..."
             git push origin ${{ env.KAOS_REF }}
           fi
-       
+  job-data:
+    runs-on:
+      group: ka0s
+    needs: [job-core]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+      
+      - name: Copy data files to web structure
+        run: |
+          echo "Reading data.json file..."
+          DATA_FILE="${{ env.KAOS_JSON_DATA }}"
+          
+          # Extract title for main folder name from structure file
+          STRUCTURE_FILE="${{ env.KAOS_JSON_WEB }}"
+          TITLE=$(cat $STRUCTURE_FILE | grep -o '"title": *"[^"]*"' | cut -d'"' -f4)
+          if [ -z "$TITLE" ]; then
+            TITLE="dashboard"
+            echo "Title not found in JSON file, using default: $TITLE"
+          else
+            echo "Main folder is named: $TITLE"
+          fi
+          
+          # Create data directory if it doesn't exist
+          mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/data"
+          
+          # Read data.json and copy files
+          if [ -f "$DATA_FILE" ]; then
+            echo "Processing data files from data.json..."
+            
+            # Extract source and destination paths
+            jq -c '.dataFiles[]' "$DATA_FILE" | while read -r file; do
+              SOURCE=$(echo $file | jq -r '.source')
+              DEST=$(echo $file | jq -r '.destination')
+              
+              # Ensure destination directory exists
+              DEST_DIR=$(dirname "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/$DEST")
+              mkdir -p "$DEST_DIR"
+              
+              # Copy the file
+              if [ -f "$SOURCE" ]; then
+                echo "Copying $SOURCE to ${{ env.KAOS_WEB_STRUCTURE }}$TITLE/$DEST"
+                cp "$SOURCE" "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/$DEST"
+              else
+                echo "Warning: Source file $SOURCE not found"
+              fi
+            done
+            
+            echo "Data files copied successfully!"
+          else
+            echo "Warning: data.json file not found at $DATA_FILE"
+          fi
+          
+          # Generate a summary of copied files
+          echo "Generating data files summary..."
+          echo "{" > "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
+          echo "  \"generated_at\": \"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\"," >> "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
+          echo "  \"title\": \"$TITLE\"," >> "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
+          echo "  \"files\": [" >> "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
+          
+          # List all copied files
+          find "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/data" -type f | sort | while read -r file; do
+            RELATIVE_PATH="${file#${{ env.KAOS_WEB_STRUCTURE }}$TITLE/}"
+            echo "    {\"path\": \"$RELATIVE_PATH\"}," >> "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
+          done
+          
+          # Remove the last comma and close the JSON
+          sed -i '$ s/,$//' "core/outputs/webs/data-files-summary.json"
+          echo "  ]" >> "core/outputs/webs/data-files-summary.json"
+          echo "}" >> "core/outputs/webs/data-files-summary.json"
+          
+          echo "Data files summary generated at core/outputs/webs/data-files-summary.json"
+
+      - id: upload-files
+        name: Upload Files
+        run: |
+          echo "Uploading data files to the repository..."
+          git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
+          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
+          git pull
+          # Add the data files and summary
+          git add core/results/webs/**/data/*
+          git add core/outputs/webs/data-files-summary.json
+          # Verify if there are changes to commit
+          if git diff --staged --quiet; then
+            echo "No hay cambios para hacer commit"
+          else
+            git commit -m "[Ka0S] Uploading data files to web structure..."
+            git push origin ${{ env.KAOS_REF }}
+          fi
+     
   handle-success:
     runs-on:
       group: ka0s
@@ -174,5 +268,7 @@ jobs:
           RNNUMBER=220
           gh issue comment $RNNUMBER --body "Se finaliza Ka0s ${{ env.KAOS_CODE }}"
           gh workflow run inspector.yml --ref 'main' -f kaos-issue-id=$RNNUMBER -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start=""
+
+
 
   
