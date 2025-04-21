@@ -88,3 +88,4 @@
 - **Version**: 0.0.87 - **Description**: H323 documentacion kaos
 - **Version**: 0.0.88 - **Description**: H325 documentacion readmemd
 - **Version**: 0.0.89 - **Description**: H325 documentacion readmemd
+- **Version**: 0.0.90 - **Description**: H328 documentacion modulo principal de kaos
