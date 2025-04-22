@@ -94,3 +94,4 @@
 - **Version**: 0.0.93 - **Description**: H329 documentacion metodologia de kaos
 - **Version**: 0.0.94 - **Description**: H220 web de resultados
 - **Version**: 0.0.95 - **Description**: H220 web de resultados
+- **Version**: 0.0.96 - **Description**: H338 relanzador de jobs en caso de pattern
