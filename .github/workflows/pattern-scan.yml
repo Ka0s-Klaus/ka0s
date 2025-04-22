@@ -15,7 +15,8 @@ env:
 
 jobs:
   scan-files:
-    runs-on: ka0s
+    runs-on:
+      group: ka0s
     steps:
       - name: Checkout code
         id: repo
@@ -47,6 +48,8 @@ jobs:
       - name: Use matched files with gh CLI
         if: steps.pattern-scan.outputs.matched_files != ''
         continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
         run: |
           for file in ${{ steps.pattern-scan.outputs.matched_files }}; do
             if ! gh issue create --title "Pattern found in $file" --body "File $file contains specified patterns and re run job number $file. Please check result if and correct, close issue."; then
