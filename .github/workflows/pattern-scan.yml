@@ -33,10 +33,10 @@ jobs:
           PATTERNS=('connection lost' 'timeout' 'error' 'TLS handshake timeout')
           MATCHED_FILES=()
           
-          for file in $(find ./core/outputs/i/ -type f -name "*.json"); do
+          for file in $(find ./core/outputs/i/ -type f -name "*.log"); do
             for pattern in "${PATTERNS[@]}"; do
               if grep -q "$pattern" "$file"; then
-                filename=$(basename "$file" .json)
+                filename=$(basename "$file" .log)
                 MATCHED_FILES+=("$filename")
                 break
               fi
