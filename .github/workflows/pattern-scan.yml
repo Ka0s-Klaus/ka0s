@@ -27,6 +27,7 @@ jobs:
 
       - name: Find files with patterns
         id: pattern-scan
+        continue-on-error: true
         run: |
           PATTERNS=('connection lost' 'timeout' 'error')
           MATCHED_FILES=()
@@ -45,10 +46,15 @@ jobs:
 
       - name: Use matched files with gh CLI
         if: steps.pattern-scan.outputs.matched_files != ''
+        continue-on-error: true
         run: |
           for file in ${{ steps.pattern-scan.outputs.matched_files }}; do
-            gh issue create --title "Pattern found in $file" --body "File $file contains specified patterns and re run job number $file. Please check result if and correct, close issue."
-            gh run rerun $file --failed
+            if ! gh issue create --title "Pattern found in $file" --body "File $file contains specified patterns and re run job number $file. Please check result if and correct, close issue."; then
+              echo "Failed to create issue for $file"
+            fi
+            if ! gh run rerun $file --failed; then
+              echo "Failed to rerun job $file"
+            fi
           done
 
   handle-success:
