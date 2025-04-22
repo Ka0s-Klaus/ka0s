@@ -52,11 +52,11 @@ jobs:
           GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
         run: |
           for file in ${{ steps.pattern-scan.outputs.matched_files }}; do
-            if ! gh issue create --title "Pattern found in $file" --body "File $file contains specified patterns and re run job number $file. Please check result if and correct, close issue."; then
-              echo "Failed to create issue for $file"
-            fi
             if ! gh run rerun $file --failed; then
               echo "Failed to rerun job $file"
+              gh issue create --title "Failed to rerun job $file" --body "Failed to automatically rerun job $file which contained error patterns. Please investigate manually."
+            else
+              gh issue create --title "Successfully rerun job $file" --body "Job $file was successfully rerun after detecting error patterns."
             fi
           done
 
