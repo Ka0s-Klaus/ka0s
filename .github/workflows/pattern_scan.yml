@@ -1,0 +1,37 @@
+name: Ka0s Pattern Scan Re Runs Jobs
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  scan-files:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Find files with patterns
+        id: pattern-scan
+        run: |
+          PATTERNS=('connection lost' 'timeout' 'error')
+          MATCHED_FILES=()
+          
+          for file in $(find ./ -type f -name "*.json"); do
+            for pattern in "${PATTERNS[@]}"; do
+              if grep -q "$pattern" "$file"; then
+                filename=$(basename "$file" .json)
+                MATCHED_FILES+=("$filename")
+                break
+              fi
+            done
+          done
+          
+          echo "::set-output name=matched_files::${MATCHED_FILES[*]}"
+
+      - name: Use matched files with gh CLI
+        if: steps.pattern-scan.outputs.matched_files != ''
+        run: |
+          for file in ${{ steps.pattern-scan.outputs.matched_files }}; do
+            gh issue create --title "Pattern found in $file" --body "File $file contains specified patterns"
+          done
