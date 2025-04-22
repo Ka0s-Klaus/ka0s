@@ -93,3 +93,4 @@
 - **Version**: 0.0.92 - **Description**: H220 web de resultados
 - **Version**: 0.0.93 - **Description**: H329 documentacion metodologia de kaos
 - **Version**: 0.0.94 - **Description**: H220 web de resultados
+- **Version**: 0.0.95 - **Description**: H220 web de resultados
