@@ -223,74 +223,74 @@ jobs:
           RNNUMBER=220
           gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
   
-    handle_failure:
-      runs-on:
-        group: ka0s
-      needs: [job-core, handle-success]
-      if: ${{ failure() }}
-      steps:
-        - id: repo
-          name: Checkout code
-          if: ${{ always() }}
-          uses: actions/checkout@v4
-          with:
-            fetch-depth: 0
-            token: ${{ secrets.KAOS_REPO_TOKEN }}
-        - id: handle-failure-execution
-          name: handle-failure-execution
-          env:
-            GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
-          run: |
-            echo "Error detected in process"
-            # RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
-            RNNUMBER=220
-            gh issue comment $RNNUMBER --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
-            
-        - id: revert-changes
-          name: Revert changes made by workflow
-          run: |
-            echo "Reverting changes made by the workflow..."
-            
-            # Extract title to know which folders to remove
-            STRUCTURE_FILE="${{ env.KAOS_JSON_WEB }}"
-            if [ -f "$STRUCTURE_FILE" ]; then
-              TITLE=$(cat $STRUCTURE_FILE | grep -o '"title": *"[^"]*"' | cut -d'"' -f4)
-              if [ -z "$TITLE" ]; then
-                TITLE="dashboard"
-                echo "Title not found in JSON file, using default: $TITLE"
-              else
-                echo "Reverting changes for: $TITLE"
-              fi
-              
-              # Remove created directories and files
-              if [ -d "${{ env.KAOS_WEB_STRUCTURE }}$TITLE" ]; then
-                echo "Removing web structure directory: ${{ env.KAOS_WEB_STRUCTURE }}$TITLE"
-                rm -rf "${{ env.KAOS_WEB_STRUCTURE }}$TITLE"
-              fi
-              
-              if [ -d "${{ env.KAOS_JSON_RESUME }}$TITLE" ]; then
-                echo "Removing resume directory: ${{ env.KAOS_JSON_RESUME }}$TITLE"
-                rm -rf "${{ env.KAOS_JSON_RESUME }}$TITLE"
-              fi
-              
-              # Commit the removal
-              git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
-              git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
-              git pull
-              git add "${{ env.KAOS_WEB_STRUCTURE }}"
-              git add "${{ env.KAOS_JSON_RESUME }}"
-              
-              # Check if there are changes to commit
-              if git diff --staged --quiet; then
-                echo "No changes to revert"
-              else
-                git commit -m "[Ka0S] Reverting changes due to workflow failure"
-                git push origin ${{ env.KAOS_REF }}
-                echo "Changes successfully reverted"
-              fi
+  handle_failure:
+    runs-on:
+      group: ka0s
+    needs: [job-core, handle-success]
+    if: ${{ failure() }}
+    steps:
+      - id: repo
+        name: Checkout code
+        if: ${{ always() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+      - id: handle-failure-execution
+        name: handle-failure-execution
+        env:
+          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+        run: |
+          echo "Error detected in process"
+          # RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
+          RNNUMBER=220
+          gh issue comment $RNNUMBER --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
+          
+      - id: revert-changes
+        name: Revert changes made by workflow
+        run: |
+          echo "Reverting changes made by the workflow..."
+          
+          # Extract title to know which folders to remove
+          STRUCTURE_FILE="${{ env.KAOS_JSON_WEB }}"
+          if [ -f "$STRUCTURE_FILE" ]; then
+            TITLE=$(cat $STRUCTURE_FILE | grep -o '"title": *"[^"]*"' | cut -d'"' -f4)
+            if [ -z "$TITLE" ]; then
+              TITLE="dashboard"
+              echo "Title not found in JSON file, using default: $TITLE"
             else
-              echo "Structure file not found, cannot determine what to revert"
+              echo "Reverting changes for: $TITLE"
             fi
+            
+            # Remove created directories and files
+            if [ -d "${{ env.KAOS_WEB_STRUCTURE }}$TITLE" ]; then
+              echo "Removing web structure directory: ${{ env.KAOS_WEB_STRUCTURE }}$TITLE"
+              rm -rf "${{ env.KAOS_WEB_STRUCTURE }}$TITLE"
+            fi
+            
+            if [ -d "${{ env.KAOS_JSON_RESUME }}$TITLE" ]; then
+              echo "Removing resume directory: ${{ env.KAOS_JSON_RESUME }}$TITLE"
+              rm -rf "${{ env.KAOS_JSON_RESUME }}$TITLE"
+            fi
+            
+            # Commit the removal
+            git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
+            git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
+            git pull
+            git add "${{ env.KAOS_WEB_STRUCTURE }}"
+            git add "${{ env.KAOS_JSON_RESUME }}"
+            
+            # Check if there are changes to commit
+            if git diff --staged --quiet; then
+              echo "No changes to revert"
+            else
+              git commit -m "[Ka0S] Reverting changes due to workflow failure"
+              git push origin ${{ env.KAOS_REF }}
+              echo "Changes successfully reverted"
+            fi
+          else
+            echo "Structure file not found, cannot determine what to revert"
+          fi
   end-workflow:
     runs-on:
       group: ka0s
