@@ -1,0 +1,38 @@
+name: Ka0s Re-run Failed Inspector Workflows
+
+on:
+  workflow_dispatch:
+
+permissions:
+  actions: write
+
+jobs:
+  job-core:
+    runs-on:
+      group: ka0s
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+
+      - name: Get failed workflow runs for inspector.yml
+        id: get-failed-runs
+        env:
+          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+        run: |
+          failed_runs=$(gh api repos/${{ github.repository }}/actions/runs \
+            --jq '.workflow_runs[] | select(.name == "Ka0s Inspector" and .status == "completed" and .conclusion == "failure") | .id')
+          echo "Failed runs: $failed_runs"
+          echo "::set-output name=failed_runs::${failed_runs}"
+
+      - name: Re-run failed workflows
+        if: steps.get-failed-runs.outputs.failed_runs != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          for run_id in ${{ steps.get-failed-runs.outputs.failed_runs }}; do
+            echo "Re-running workflow $run_id"
+            gh api repos/${{ github.repository }}/actions/runs/$run_id/rerun -X POST
+          done
