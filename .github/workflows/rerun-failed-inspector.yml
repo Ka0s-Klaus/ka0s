@@ -3,6 +3,15 @@ name: Ka0s Re-run Failed Inspector Workflows
 on:
   workflow_dispatch:
 
+env:
+    KAOS_CODE: ${{ github.run_id }}
+    KAOS_EVENT_NAME: ${{ github.event_name }}
+    KAOS_ACTION: ${{ github.action }}
+    KAOS_REF: ${{ github.ref }}
+    KAOS_MODULE: "[Ka0S] Re-Run Failed Inspector Workflows"
+    KAOS_PATH_RESUME: "core/results/rr/"
+    KAOS_ACTOR: ${{ github.actor }}
+
 permissions:
   actions: write
 
@@ -22,8 +31,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
         run: |
-          failed_runs=$(gh api repos/${{ github.repository }}/actions/runs \
-            --jq '.workflow_runs[] | select(.name == "Ka0s Inspector" and .status == "completed" and .conclusion == "failure") | .id')
+          failed_runs=$(jq -r '.[] | select(.name == "Ka0s Inspector" and .status == "failure") | .id' core/outputs/w/kaos-workflows-runs.json | tr '\n' ' ')
           echo "Failed runs: $failed_runs"
           echo "::set-output name=failed_runs::${failed_runs}"
 
