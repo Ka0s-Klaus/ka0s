@@ -54,9 +54,10 @@ jobs:
           for file in ${{ steps.pattern-scan.outputs.matched_files }}; do
             if ! gh run rerun $file --failed; then
               echo "Failed to rerun job $file"
-              gh issue create --title "Failed to rerun job $file" --body "Failed to automatically rerun job $file which contained error patterns. Please investigate manually."
+              # gh issue create --title "Failed to rerun job $file" --body "Failed to automatically rerun job $file which contained error patterns. Please investigate manually."
             else
-              gh issue create --title "Successfully rerun job $file" --body "Job $file was successfully rerun after detecting error patterns."
+              echo "Successfully rerun job $file"
+              # gh issue create --title "Successfully rerun job $file" --body "Job $file was successfully rerun after detecting error patterns."
             fi
           done
 
