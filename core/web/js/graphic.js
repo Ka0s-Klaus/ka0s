@@ -1,7 +1,7 @@
 // Función para cargar el archivo data.json que contiene las rutas
 async function loadDataConfig() {
     try {
-        const response = await fetch('../data/data.json');
+        const response = await fetch('/core/web/data/data.json');
         const config = await response.json();
         return config;
     } catch (error) {
@@ -58,48 +58,65 @@ async function initializeDataSourceSelector() {
     });
 }
 
+// Función para cargar los datos directamente desde el archivo específico
+async function loadData() {
+    try {
+        // Ruta directa al archivo de estadísticas del repositorio HARCODEADA
+        const dataPath = '/core/results/webs/dashboard/data/kaos-repository-statistics.json';
+        console.log('Intentando cargar datos desde:', dataPath);
+        
+        const response = await fetch(dataPath);
+        if (!response.ok) {
+            throw new Error(`Error HTTP: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Datos cargados correctamente:', data);
+        
+        // Crear el gráfico con los datos cargados
+        createChart(data);
+        
+        // Ocultar mensaje de carga si existe
+        const loadingMessage = document.getElementById('loadingMessage');
+        if (loadingMessage) {
+            loadingMessage.style.display = 'none';
+        }
+        
+    } catch (error) {
+        console.error('Error al cargar los datos:', error);
+        const loadingMessage = document.getElementById('loadingMessage');
+        if (loadingMessage) {
+            loadingMessage.textContent = `Error al cargar los datos: ${error.message}`;
+        }
+    }
+}
+
 // Función para crear el gráfico con los datos cargados
 function createChart(data) {
     // Limpiar el gráfico anterior si existe
     const chartContainer = document.getElementById('dataChart');
+    if (!chartContainer) {
+        console.error('No se encontró el elemento canvas para el gráfico');
+        return;
+    }
+    
     if (window.currentChart) {
         window.currentChart.destroy();
     }
     
     // Preparar los datos para el gráfico
-    // Esto dependerá de la estructura de tus datos JSON
-    // Aquí hay un ejemplo genérico que puedes adaptar
-    
     let labels = [];
     let values = [];
     
-    // Intentar extraer datos en diferentes formatos comunes
-    if (Array.isArray(data)) {
-        // Si es un array, usar índices como etiquetas
-        labels = data.map((_, index) => `Ítem ${index + 1}`);
-        
-        // Intentar extraer valores numéricos
-        if (typeof data[0] === 'number') {
-            values = data;
-        } else if (typeof data[0] === 'object') {
-            // Buscar la primera propiedad numérica en cada objeto
-            const firstKey = Object.keys(data[0])[0];
-            values = data.map(item => {
-                for (const key in item) {
-                    if (typeof item[key] === 'number') return item[key];
-                }
-                return 0; // Valor por defecto
-            });
-            
-            // Intentar usar una propiedad como etiqueta
-            if (data[0].name || data[0].label || data[0].id) {
-                labels = data.map(item => item.name || item.label || item.id || '');
-            }
-        }
+    // Extraer datos específicos para estadísticas del repositorio
+    if (data.statistics) {
+        // Usar las estadísticas del repositorio
+        labels = Object.keys(data.statistics).filter(key => typeof data.statistics[key] === 'number');
+        values = labels.map(key => data.statistics[key]);
     } else if (typeof data === 'object') {
-        // Si es un objeto, usar claves como etiquetas
-        labels = Object.keys(data);
-        values = Object.values(data).map(val => typeof val === 'number' ? val : 0);
+        // Fallback: usar todas las propiedades numéricas
+        labels = Object.keys(data).filter(key => typeof data[key] === 'number');
+        values = labels.map(key => data[key]);
     }
     
     // Crear el gráfico
@@ -109,7 +126,7 @@ function createChart(data) {
         data: {
             labels: labels,
             datasets: [{
-                label: 'Datos del archivo',
+                label: 'Estadísticas del Repositorio',
                 data: values,
                 backgroundColor: 'rgba(54, 162, 235, 0.5)',
                 borderColor: 'rgba(54, 162, 235, 1)',
@@ -121,7 +138,7 @@ function createChart(data) {
             plugins: {
                 title: {
                     display: true,
-                    text: 'Visualización de datos'
+                    text: 'Estadísticas del Repositorio Ka0s'
                 },
                 legend: {
                     position: 'top',
@@ -137,4 +154,5 @@ function createChart(data) {
 }
 
 // Iniciar la aplicación cuando se cargue la página
+window.addEventListener('load', loadData);
 window.addEventListener('load', initializeDataSourceSelector);
