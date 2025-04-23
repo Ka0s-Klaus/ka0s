@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ka0s Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        .chart-container {
+            width: 80%;
+            margin: 20px auto;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            background-color: white;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .data-selector {
+            margin: 20px auto;
+            width: 80%;
+            text-align: center;
+        }
+        select {
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .loading {
+            text-align: center;
+            font-style: italic;
+            color: #666;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <h1 class="text-xl font-semibold text-gray-800 p-4">Ka0s Dashboard</h1>
+    <!-- <div class="data-selector" id="grafico">
+        <label for="dataSource">Seleccionar fuente de datos:</label>
+        <select id="dataSource">
+            <option value="">Seleccione una fuente</option>
+        </select>
+    </div> -->
+    
+    <div class="loading" id="loadingMessage">Cargando fuentes de datos...</div>
+    
+    <div class="chart-container">
+        <canvas id="dataChart"></canvas>
+    </div>
+    <div id="listado" class="container mx-auto px-4 py-4">
+        <header class="py-3 mb-4 border-b border-gray-200">
+            <div class="flex items-center">
+                <h2 class="text-xl font-semibold text-gray-800">Lista de Datos</h2>
+            </div>
+        </header>
+
+        <div class="my-6">
+            <div class="bg-gray-100 p-3 rounded-md mb-3">
+                <div id="data-headers" class="grid grid-cols-12 gap-4">
+                    <!-- Los encabezados se generarán dinámicamente basados en el JSON -->
+                </div>
+            </div>
+            <div id="data-list">
+                <!-- Los elementos de datos se cargarán dinámicamente -->
+                <div class="text-center py-10">
+                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                    <p class="mt-2 text-gray-600">Cargando datos...</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="pagination" class="flex justify-center my-6">
+            <!-- La paginación se generará dinámicamente -->
+        </div>
+    </div>
+    
+  
+    
+    <script src="/core/web/js/data-list.js" defer></script>
+    <script src="/core/web/js/graphic.js" defer></script>
+</body>
+</html>
