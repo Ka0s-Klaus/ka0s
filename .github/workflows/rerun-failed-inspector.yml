@@ -31,7 +31,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
         run: |
-          failed_runs=$(jq -r '.[] | select(.name == "Ka0s Inspector" and .status == "failure") | .id' core/outputs/w/kaos-workflows-runs.json | tr '\n' ' ')
+          failed_runs=$(jq -r '.[] | select(.name == "Ka0s Inspector" and .conclusion == "failure") | .id' core/outputs/w/kaos-workflows-runs.json | tr '\n' ' ')
           echo "Failed runs: $failed_runs"
           echo "::set-output name=failed_runs::${failed_runs}"
 
@@ -43,4 +43,5 @@ jobs:
           for run_id in ${{ steps.get-failed-runs.outputs.failed_runs }}; do
             echo "Re-running workflow $run_id"
             # gh api repos/${{ github.repository }}/actions/runs/$run_id/rerun -X POST
+            # gh run rerun $run_id --failed
           done
