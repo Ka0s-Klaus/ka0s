@@ -23,7 +23,7 @@ jobs:
           GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
         run: |
           failed_runs=$(gh api repos/${{ github.repository }}/actions/runs \
-            --jq '.workflow_runs[] | select(.name == "Ka0s Inspector" and .status == "failed") | .id')
+            --jq '.workflow_runs[] | select(.name == "Ka0s Inspector" and .status == "failure") | .id')
           echo "Failed runs: $failed_runs"
           echo "::set-output name=failed_runs::${failed_runs}"
 
