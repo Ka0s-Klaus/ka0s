@@ -14,7 +14,9 @@ async function loadDataConfig() {
 // Función para cargar los datos desde una ruta específica
 async function loadDataFromSource(sourcePath) {
     try {
-        const response = await fetch(`../${sourcePath}`);
+        // Ajustar la ruta relativa para que no duplique 'core/'
+        const adjustedPath = sourcePath.replace(/^core\//, '../../');
+        const response = await fetch(adjustedPath);
         const data = await response.json();
         return data;
     } catch (error) {
