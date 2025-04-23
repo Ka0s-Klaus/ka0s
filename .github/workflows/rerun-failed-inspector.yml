@@ -42,6 +42,11 @@ jobs:
         run: |
           for run_id in ${{ steps.get-failed-runs.outputs.failed_runs }}; do
             echo "Re-running workflow $run_id"
-            # gh api repos/${{ github.repository }}/actions/runs/$run_id/rerun -X POST
-            # gh run rerun $run_id --failed
+            if ! gh run rerun $run_id --failed; then
+              echo "Failed to rerun job $run_id"
+              # gh issue create --title "Failed to rerun job $file" --body "Failed to automatically rerun job $file which contained error patterns. Please investigate manually."
+            else
+              echo "Successfully rerun job $run_id"
+              # gh issue create --title "Successfully rerun job $file" --body "Job $file was successfully rerun after detecting error patterns."
+            fi
           done
