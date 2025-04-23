@@ -97,3 +97,4 @@
 - **Version**: 0.0.96 - **Description**: H338 relanzador de jobs en caso de pattern
 - **Version**: 0.0.97 - **Description**: H338 relanzador de jobs en caso de pattern
 - **Version**: 0.0.98 - **Description**: H338 relanzador de jobs en caso de pattern
+- **Version**: 0.0.99 - **Description**: H338 relanzador de jobs en caso de pattern
