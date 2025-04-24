@@ -342,16 +342,17 @@ jobs:
               # Extraer título de la sección
               SECTION_TITLE=$(jq -r '.title' "$SECTION_JSON")
               # Inicializar HTML
-              echo "<!DOCTYPE html>
-<html lang=\"es\">
-<head>
-  <meta charset=\"UTF-8\">
-  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
-  <title>$SECTION_TITLE</title>
-</head>
-<body>
-  <h1>$SECTION_TITLE</h1>
-" > "$SECTION_HTML"
+              cat << EOF > "$SECTION_HTML"
+          <!DOCTYPE html>
+          <html lang="es">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>$SECTION_TITLE</title>
+          </head>
+          <body>
+            <h1>$SECTION_TITLE</h1>
+          EOF
               # Procesar templates
               jq -c '.templates[]' "$SECTION_JSON" | while read -r template; do
                 TYPE=$(echo $template | jq -r '.type')
