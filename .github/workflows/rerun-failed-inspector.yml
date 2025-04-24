@@ -1,0 +1,52 @@
+name: Ka0s Re-run Failed Inspector Workflows
+
+on:
+  workflow_dispatch:
+
+env:
+    KAOS_CODE: ${{ github.run_id }}
+    KAOS_EVENT_NAME: ${{ github.event_name }}
+    KAOS_ACTION: ${{ github.action }}
+    KAOS_REF: ${{ github.ref }}
+    KAOS_MODULE: "[Ka0S] Re-Run Failed Inspector Workflows"
+    KAOS_PATH_RESUME: "core/results/rr/"
+    KAOS_ACTOR: ${{ github.actor }}
+
+permissions:
+  actions: write
+
+jobs:
+  job-core:
+    runs-on:
+      group: ka0s
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+
+      - name: Get failed workflow runs for inspector.yml
+        id: get-failed-runs
+        env:
+          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+        run: |
+          failed_runs=$(jq -r '.[] | select(.name == "Ka0s Inspector" and .conclusion == "failure") | .id' core/outputs/w/kaos-workflows-runs.json | tr '\n' ' ')
+          echo "Failed runs: $failed_runs"
+          echo "::set-output name=failed_runs::${failed_runs}"
+
+      - name: Re-run failed workflows
+        if: steps.get-failed-runs.outputs.failed_runs != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          for run_id in ${{ steps.get-failed-runs.outputs.failed_runs }}; do
+            echo "Re-running workflow $run_id"
+            if ! gh run rerun $run_id --failed; then
+              echo "Failed to rerun job $run_id"
+              # gh issue create --title "Failed to rerun job $file" --body "Failed to automatically rerun job $file which contained error patterns. Please investigate manually."
+            else
+              echo "Successfully rerun job $run_id"
+              # gh issue create --title "Successfully rerun job $file" --body "Job $file was successfully rerun after detecting error patterns."
+            fi
+          done
