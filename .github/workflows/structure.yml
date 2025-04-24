@@ -238,6 +238,10 @@ jobs:
                 
                 # Procesar templates y reemplazar el placeholder de templates
                 TEMPLATES_HTML=""
+                # Usar un archivo temporal para almacenar el HTML de los templates
+                TEMP_FILE=$(mktemp)
+                
+                # Procesar cada template y añadirlo al archivo temporal
                 jq -c '.templates[]' "$SECTION_JSON" | while read -r template; do
                   TYPE=$(echo $template | jq -r '.type')
                   TITLE=$(echo $template | jq -r '.title')
@@ -246,26 +250,33 @@ jobs:
                   if [ "$TYPE" = "graphic" ]; then
                     # Leer la plantilla de gráfico
                     GRAPHIC_TEMPLATE=$(cat core/web/templates/graphic.html)
-                    # Reemplazar placeholders en la plantilla
+                    # Reemplazar placeholders en la plantilla.
                     GRAPHIC_TEMPLATE=$(echo "$GRAPHIC_TEMPLATE" | sed "s/GRAPHIC_TITLE_PLACEHOLDER/$TITLE/g")
                     GRAPHIC_TEMPLATE=$(echo "$GRAPHIC_TEMPLATE" | sed "s|DATA_SOURCE_PLACEHOLDER|$DATA_SOURCE|g")
-                    TEMPLATES_HTML+="$GRAPHIC_TEMPLATE"
-                    TEMPLATES_HTML+="<script src=\"../../js/graphic.js\" data-source=\"$DATA_SOURCE\"></script>"
+                    # Añadir al archivo temporal
+                    echo "$GRAPHIC_TEMPLATE" >> "$TEMP_FILE"
+                    echo "<script src=\"../../js/graphic.js\" data-source=\"$DATA_SOURCE\"></script>" >> "$TEMP_FILE"
                   elif [ "$TYPE" = "list" ]; then
                     # Leer la plantilla de lista
                     LIST_TEMPLATE=$(cat core/web/templates/data-list.html)
                     # Reemplazar placeholders en la plantilla
                     LIST_TEMPLATE=$(echo "$LIST_TEMPLATE" | sed "s/LIST_TITLE_PLACEHOLDER/$TITLE/g")
                     LIST_TEMPLATE=$(echo "$LIST_TEMPLATE" | sed "s|DATA_SOURCE_PLACEHOLDER|$DATA_SOURCE|g")
-                    TEMPLATES_HTML+="$LIST_TEMPLATE"
-                    TEMPLATES_HTML+="<script src=\"../../js/data-list.js\" data-source=\"$DATA_SOURCE\"></script>"
+                    # Añadir al archivo temporal
+                    echo "$LIST_TEMPLATE" >> "$TEMP_FILE"
+                    echo "<script src=\"../../js/data-list.js\" data-source=\"$DATA_SOURCE\"></script>" >> "$TEMP_FILE"
                   fi
                 done
                 
+                # Leer todo el contenido del archivo temporal
+                TEMPLATES_HTML=$(cat "$TEMP_FILE")
+                rm "$TEMP_FILE"
+                
                 # Reemplazar el placeholder de templates con el HTML generado
+                # Usar delimitador diferente para evitar problemas con barras en las rutas
                 sed -i "s|<!-- TEMPLATES_PLACEHOLDER -->|$TEMPLATES_HTML|g" "$SECTION_HTML"
                 
-                echo "Generado $SECTION_HTML"
+                echo "Generado $SECTION_HTML con $(echo "$TEMPLATES_HTML" | wc -l) líneas de templates"
               else
                 echo "Error: No se encontró la plantilla HTML en $TEMPLATE_HTML"
               fi
