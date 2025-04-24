@@ -1,17 +1,20 @@
-<div class="bg-white p-6 rounded-lg shadow-lg">
-    <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold text-gray-800">{{title}}</h2>
-        <p class="text-gray-600">{{description}}</p>
+<div class="h-full w-full flex flex-col gap-4 pl-4 sm:pl-6 md:pl-8">
+    <!-- Top container - Header section -->
+    <div class="bg-white rounded-lg p-4 sm:p-6 shadow-md">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">{{title}}</h2>
+            <p class="text-gray-600">{{description}}</p>
+        </div>
     </div>
 
     <!-- Summary Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+    <div class="flex-grow grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div class="bg-blue-50 p-4 rounded-lg">
             <h3 class="text-sm font-medium text-blue-800">Total Projects</h3>
             <p class="text-2xl font-bold text-blue-600">{{summary.total_projects}}</p>
         </div>
         <div class="bg-green-50 p-4 rounded-lg">
-            <h3 class="text-sm font-medium text-green-800">Completion Rate</h3>
+            <h3 class="text-sm font-medium text-green-800">Success Completion Rate</h3>
             <p class="text-2xl font-bold text-green-600">{{summary.completion_rate}}</p>
         </div>
         <div class="bg-purple-50 p-4 rounded-lg">
@@ -24,7 +27,8 @@
         </div>
     </div>
 
-    <div class="overflow-x-auto">
+    <!-- Table and Pagination -->
+    <div class="bg-white rounded-lg shadow-md p-4 sm:p-6 overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
@@ -44,17 +48,24 @@
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{startDate}}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{endDate}}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{duration}}</td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-2 py-1 text-xs font-semibold rounded-full 
-                            {{#if (eq finalStatus 'Completed Successfully')}}bg-green-100 text-green-800{{/if}}
-                            {{#if (eq finalStatus 'Completed with Issues')}}bg-yellow-100 text-yellow-800{{/if}}
-                            {{#if (eq finalStatus 'Terminated')}}bg-red-100 text-red-800{{/if}}">
-                            {{finalStatus}}
-                        </span>
-                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">{{finalStatus}}</td>
                 </tr>
                 {{/each}}
             </tbody>
         </table>
+
+        <!-- Pagination -->
+        <div class="mt-6 flex justify-between items-center">
+            <div>
+                <span class="text-sm text-gray-700">
+                    Showing <span class="font-medium">{{pagination.start}}</span> to <span class="font-medium">{{pagination.end}}</span> of <span class="font-medium">{{pagination.total}}</span> successful workflows
+                </span>
+            </div>
+            <div class="flex space-x-2">
+                <button id="prevPage" class="px-3 py-1 rounded bg-gray-200 text-gray-700 disabled:opacity-50" {{#if pagination.is_first_page}}disabled{{/if}}>Previous</button>
+                <span class="px-3 py-1">Page {{pagination.current_page}} of {{pagination.total_pages}}</span>
+                <button id="nextPage" class="px-3 py-1 rounded bg-green-500 text-white disabled:opacity-50" {{#if pagination.is_last_page}}disabled{{/if}}>Next</button>
+            </div>
+        </div>
     </div>
 </div>

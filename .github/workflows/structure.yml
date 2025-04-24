@@ -1,0 +1,396 @@
+name: Ka0s structure for dashboard
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'core/config/webs/**'
+  workflow_dispatch:
+env:
+    KAOS_CODE: ${{ github.run_id }}
+    KAOS_EVENT_NAME: ${{ github.event_name }}
+    KAOS_ACTION: ${{ github.action }}
+    KAOS_REF: ${{ github.ref }}
+    KAOS_MODULE: "[Ka0S] Deploy Web Structure"
+    KAOS_JSON_WEB: "core/config/webs/webs.json"
+    KAOS_JSON_RESUME: "core/outputs/webs/" # directorio que aloja los json de resultados de la operación 
+    KAOS_JSON_DATA: "core/web/data/data.json" # directorio que aloja los json de datos de la operación
+    KAOS_WEB_STRUCTURE: "core/results/webs/" # directorio donde se alojan las diferentes estructura de webs
+    KAOS_ACTOR: ${{ github.actor }}
+jobs:
+  job-core:
+    runs-on:
+      group: ka0s
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+      
+      - name: Copy web folder structure
+        run: |
+          # Tenemos que añadir al proceso que sea capaz de leer + de un json de creación de webs
+          # si web esta creada la actualiza, sino la crea desde cero
+
+          # Read the structure.json file to get folder names
+          echo "0 - Reading structure.json file..."
+          STRUCTURE_FILE="${{ env.KAOS_JSON_WEB }}"
+          
+          # Extract title for main folder name
+          TITLE=$(cat $STRUCTURE_FILE | grep -o '"title": *"[^"]*"' | cut -d'"' -f4)
+          echo "I - Main folder will be named: $TITLE"
+
+          # Create main directory
+          mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TITLE"
+          touch ${{ env.KAOS_WEB_STRUCTURE }}$TITLE/$TITLE".html"
+          mkdir -p "${{ env.KAOS_JSON_RESUME }}$TITLE"
+          touch ${{ env.KAOS_JSON_RESUME }}$TITLE/readme.txt
+
+          # Copy the directory structure (without files)
+          find core/web -type d | while read dir; do
+            if [ "$dir" != "core/web" ]; then
+              # Remove core/web prefix from directory path
+              clean_dir=${dir#core/web/}
+              echo "II - Created directory: $clean_dir"
+              target_dir="${{ env.KAOS_WEB_STRUCTURE }}$TITLE/$clean_dir"
+              mkdir -p "$target_dir"
+              touch $target_dir/$clean_dir".html"
+              echo "II - Created directory: $target_dir"
+            fi
+          done
+
+          # Extract section names and create subfolders
+          cat $STRUCTURE_FILE | grep -o '"section[^"]*": *"[^"]*"' | while read -r section; do
+            SECTION_NAME=$(echo $section | cut -d'"' -f4)
+            echo "III - Creating subfolder: $SECTION_NAME"
+            mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/structure/$SECTION_NAME"
+            touch ${{ env.KAOS_WEB_STRUCTURE }}$TITLE/structure/$SECTION_NAME/$SECTION_NAME".html"
+          done
+          
+          # Create a JSON file with the structure information
+          echo "[" > ${{ env.KAOS_JSON_RESUME }}$TITLE/$TITLE"_resume.json"
+          # Find all files and directories
+          find ${{ env.KAOS_WEB_STRUCTURE }} -type f -o -type d | sort | while read path; do
+            if [ "$path" != "${{ env.KAOS_WEB_STRUCTURE }}" ]; then
+              # Get the type (file or directory)
+              if [ -d "$path" ]; then
+                TYPE="directory"
+              else
+                TYPE="file"
+              fi
+              # Get the name of the item (last part of path)
+              NAME=$(basename "$path")
+              # Create the JSON entry
+              echo "  {\"path\": \"$path\", \"name\": \"$NAME\", \"type\": \"$TYPE\"}," >> ${{ env.KAOS_JSON_RESUME }}$TITLE/$TITLE"_resume.json"
+            fi
+          done
+          # Remove the last comma and close the JSON array
+          sed -i '$ s/,$//' ${{ env.KAOS_JSON_RESUME }}$TITLE/$TITLE"_resume.json"
+          echo "]" >> ${{ env.KAOS_JSON_RESUME }}$TITLE/$TITLE"_resume.json"
+          echo "IV - Web folder structure copied successfully!"
+
+      - id: upload-files
+        name: Upload Files
+        run: |
+          echo "Uploading files to the repository..."
+          git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
+          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
+          git pull
+          # Asegurarse de que la carpeta web_structure se añade explicitamente
+          git add ${{ env.KAOS_WEB_STRUCTURE }}*
+          git add ${{ env.KAOS_JSON_RESUME }}*
+          # Verificar si hay cambios para hacer commit
+          if git diff --staged --quiet; then
+            echo "No hay cambios para hacer commit"
+          else
+            git commit -m "[Ka0S] Uploading resume execution files and web structure to the repository..."
+            git push origin ${{ env.KAOS_REF }}
+          fi
+  job-data:
+    runs-on:
+      group: ka0s
+    needs: [job-core]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+      
+      - name: Copy data files to web structure
+        run: |
+          echo "Reading data.json file..."
+          DATA_FILE="${{ env.KAOS_JSON_DATA }}"
+          
+          # Extract title for main folder name from structure file
+          STRUCTURE_FILE="${{ env.KAOS_JSON_WEB }}"
+          TITLE=$(cat $STRUCTURE_FILE | grep -o '"title": *"[^"]*"' | cut -d'"' -f4)
+          if [ -z "$TITLE" ]; then
+            TITLE="dashboard"
+            echo "Title not found in JSON file, using default: $TITLE"
+          else
+            echo "Main folder is named: $TITLE"
+          fi
+          
+          # Create data directory if it doesn't exist
+          mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/data"
+          
+          # Read data.json and copy files
+          if [ -f "$DATA_FILE" ]; then
+            echo "Processing data files from data.json..."
+            
+            # Extract source and destination paths
+            jq -c '.dataFiles[]' "$DATA_FILE" | while read -r file; do
+              SOURCE=$(echo $file | jq -r '.source')
+              DEST=$(echo $file | jq -r '.destination')
+              
+              # Ensure destination directory exists
+              DEST_DIR=$(dirname "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/$DEST")
+              mkdir -p "$DEST_DIR"
+              
+              # Copy the file
+              if [ -f "$SOURCE" ]; then
+                echo "Copying $SOURCE to ${{ env.KAOS_WEB_STRUCTURE }}$TITLE/$DEST"
+                cp "$SOURCE" "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/$DEST"
+              else
+                echo "Warning: Source file $SOURCE not found"
+              fi
+            done
+            
+            echo "Data files copied successfully!"
+          else
+            echo "Warning: data.json file not found at $DATA_FILE"
+          fi
+          
+          # Generate a summary of copied files
+          echo "Generating data files summary..."
+          echo "{" > "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
+          echo "  \"generated_at\": \"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\"," >> "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
+          echo "  \"title\": \"$TITLE\"," >> "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
+          echo "  \"files\": [" >> "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
+          
+          # List all copied files
+          find "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/data" -type f | sort | while read -r file; do
+            RELATIVE_PATH="${file#${{ env.KAOS_WEB_STRUCTURE }}$TITLE/}"
+            echo "    {\"path\": \"$RELATIVE_PATH\"}," >> "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
+          done
+          
+          # Remove the last comma and close the JSON
+          sed -i '$ s/,$//' "core/outputs/webs/data-files-summary.json"
+          echo "  ]" >> "core/outputs/webs/data-files-summary.json"
+          echo "}" >> "core/outputs/webs/data-files-summary.json"
+          
+          echo "Data files summary generated at core/outputs/webs/data-files-summary.json"
+
+      - id: upload-files
+        name: Upload Files
+        run: |
+          echo "Uploading data files to the repository..."
+          git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
+          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
+          git pull
+          # Add the data files and summary
+          git add core/results/webs/**/data/*
+          git add core/outputs/webs/data-files-summary.json
+          # Verify if there are changes to commit
+          if git diff --staged --quiet; then
+            echo "No hay cambios para hacer commit"
+          else
+            git commit -m "[Ka0S] Uploading data files to web structure..."
+            git push origin ${{ env.KAOS_REF }}
+          fi
+  job-design:
+    runs-on:
+      group: ka0s
+    needs: [job-core, job-data]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+  
+      - name: Generar HTML de secciones según JSON
+        run: |
+          echo "Generando HTML de secciones según su JSON..."
+          STRUCTURE_FILE="core/config/webs/webs.json"
+          TITLE=$(cat $STRUCTURE_FILE | grep -o '"title": *"[^"]*"' | cut -d'"' -f4)
+          SECTIONS=$(cat $STRUCTURE_FILE | grep -o '"section[0-9]*": *"[^"]*"' | cut -d'"' -f2,4 | tr '\n' ' ')
+          for entry in $SECTIONS; do
+            SECTION_KEY=$(echo $entry | cut -d':' -f1 | tr -d '"')
+            SECTION_NAME=$(echo $entry | cut -d':' -f2 | tr -d '"')
+            SECTION_JSON="core/config/webs/${SECTION_NAME}.json"
+            SECTION_HTML="core/results/webs/${TITLE}/structure/${SECTION_NAME}/${SECTION_NAME}.html"
+            if [ -f "$SECTION_JSON" ]; then
+              echo "Procesando $SECTION_JSON para $SECTION_HTML"
+              # Extraer título de la sección
+              SECTION_TITLE=$(jq -r '.title' "$SECTION_JSON")
+              
+              # Leer la plantilla HTML
+              TEMPLATE_HTML="core/web/templates/section-template.html"
+              if [ -f "$TEMPLATE_HTML" ]; then
+                # Copiar la plantilla al destino
+                mkdir -p "$(dirname "$SECTION_HTML")"
+                cp "$TEMPLATE_HTML" "$SECTION_HTML"
+                
+                # Reemplazar los placeholders con los valores reales
+                sed -i "s/SECTION_TITLE_PLACEHOLDER/$SECTION_TITLE/g" "$SECTION_HTML"
+                
+                # Procesar templates y reemplazar el placeholder de templates
+                TEMPLATES_HTML=""
+                jq -c '.templates[]' "$SECTION_JSON" | while read -r template; do
+                  TYPE=$(echo $template | jq -r '.type')
+                  if [ "$TYPE" = "graphic" ]; then
+                    TEMPLATES_HTML+=$(cat core/web/templates/graphic.html)
+                    TEMPLATES_HTML+="<script src=\"../../js/graphic.js\"></script>"
+                  elif [ "$TYPE" = "list" ]; then
+                    TEMPLATES_HTML+=$(cat core/web/templates/data-list.html)
+                    TEMPLATES_HTML+="<script src=\"../../js/data-list.js\"></script>"
+                  fi
+                done
+                
+                # Reemplazar el placeholder de templates con el HTML generado
+                sed -i "s|<!-- TEMPLATES_PLACEHOLDER -->|$TEMPLATES_HTML|g" "$SECTION_HTML"
+                
+                echo "Generado $SECTION_HTML"
+              else
+                echo "Error: No se encontró la plantilla HTML en $TEMPLATE_HTML"
+              fi
+            else
+              echo "No se encontró $SECTION_JSON"
+            fi
+          done
+  
+      - name: Subir HTMLs generados
+        run: |
+          git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
+          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
+          git pull
+          git add core/results/webs/**/structure/**/*.html
+          if git diff --staged --quiet; then
+            echo "No hay cambios para hacer commit"
+          else
+            git commit -m "[Ka0S] Generados HTML de secciones según JSON"
+            git push origin ${{ env.KAOS_REF }}
+          fi
+     
+  handle-success:
+    runs-on:
+      group: ka0s
+    needs: [job-core]
+    if: ${{ success() }}
+    steps:
+      - id: repo
+        name: Checkout code
+        if: ${{ always() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+      - id: handle-success-execution
+        name: handle-success-execution
+        env:
+          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+        run: |
+          # Si todo ha ido correcto añadimos el contenido del fichero
+          # RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
+          RNNUMBER=220
+          gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
+  
+  handle_failure:
+    runs-on:
+      group: ka0s
+    needs: [job-core, handle-success]
+    if: ${{ failure() }}
+    steps:
+      - id: repo
+        name: Checkout code
+        if: ${{ always() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+      - id: handle-failure-execution
+        name: handle-failure-execution
+        env:
+          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+        run: |
+          echo "Error detected in process"
+          # RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
+          RNNUMBER=220
+          gh issue comment $RNNUMBER --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
+          
+      - id: revert-changes
+        name: Revert changes made by workflow
+        run: |
+          echo "Reverting changes made by the workflow..."
+          
+          # Extract title to know which folders to remove
+          STRUCTURE_FILE="${{ env.KAOS_JSON_WEB }}"
+          if [ -f "$STRUCTURE_FILE" ]; then
+            TITLE=$(cat $STRUCTURE_FILE | grep -o '"title": *"[^"]*"' | cut -d'"' -f4)
+            if [ -z "$TITLE" ]; then
+              TITLE="dashboard"
+              echo "Title not found in JSON file, using default: $TITLE"
+            else
+              echo "Reverting changes for: $TITLE"
+            fi
+            
+            # Remove created directories and files
+            if [ -d "${{ env.KAOS_WEB_STRUCTURE }}$TITLE" ]; then
+              echo "Removing web structure directory: ${{ env.KAOS_WEB_STRUCTURE }}$TITLE"
+              rm -rf "${{ env.KAOS_WEB_STRUCTURE }}$TITLE"
+            fi
+            
+            if [ -d "${{ env.KAOS_JSON_RESUME }}$TITLE" ]; then
+              echo "Removing resume directory: ${{ env.KAOS_JSON_RESUME }}$TITLE"
+              rm -rf "${{ env.KAOS_JSON_RESUME }}$TITLE"
+            fi
+            
+            # Commit the removal
+            git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
+            git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
+            git pull
+            git add "${{ env.KAOS_WEB_STRUCTURE }}"
+            git add "${{ env.KAOS_JSON_RESUME }}"
+            
+            # Check if there are changes to commit
+            if git diff --staged --quiet; then
+              echo "No changes to revert"
+            else
+              git commit -m "[Ka0S] Reverting changes due to workflow failure"
+              git push origin ${{ env.KAOS_REF }}
+              echo "Changes successfully reverted"
+            fi
+          else
+            echo "Structure file not found, cannot determine what to revert"
+          fi
+  end-workflow:
+    runs-on:
+      group: ka0s
+    needs: [job-core, handle-success, handle_failure]
+    if: ${{ always() && !contains(github.event.head_commit.message, '[Ka0S] ') }}
+    env:
+        GH_TOKEN: ${{ secrets.KAOS_ACTIONS_TOKEN }}
+    steps:
+      - id: repo
+        name: Checkout code
+        if: ${{ always() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+      - id: end-process
+        name: Finaliza el workflow
+        run: |
+          echo "End process"
+          # RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
+          RNNUMBER=220
+          gh issue comment $RNNUMBER --body "Se finaliza Ka0s ${{ env.KAOS_CODE }}"
+          gh workflow run inspector.yml --ref 'main' -f kaos-issue-id=$RNNUMBER -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start=""
+
+  
+
+
+
+  

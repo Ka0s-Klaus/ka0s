@@ -1355,3 +1355,911 @@
   - core/test/correct-file1.yaml
   - version.txt
 ---------------------------------
+## Version 0.0.65
+- **Branch**: refs/pull/295/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Jhony Chaves
+- **Date**: Mon Apr  7 10:36:42 UTC 2025
+- **Message**: H220 web de resultados
+- **Files Changed**:
+  - core/dashboard/Index.html
+  - core/dashboard/dashboard/sections/actionsPerformance.json
+  - core/dashboard/dashboard/sections/endWorkflow.json
+  - core/dashboard/js/charts.js
+  - core/dashboard/js/dashboard.js
+  - core/dashboard/js/navigation.js
+  - core/dashboard/js/workflows.js
+  - core/dashboard/js/workflows/lead-time.js
+  - core/dashboard/js/workflows/repository-stats.js
+  - core/dashboard/js/workflows/workflows.js
+  - core/dashboard/templates/actionsPerformance.html
+  - core/dashboard/templates/backLogs.html
+  - core/dashboard/templates/endWorkflow.html
+  - core/dashboard/templates/handlerFailure.html
+  - core/dashboard/templates/handlerSuccess.html
+  - core/dashboard/templates/index.html
+  - core/dashboard/templates/leadTime.html
+  - core/outputs/i/14260967021.json
+  - core/outputs/i/14260967021.log
+  - core/outputs/i/14261137732.json
+  - core/outputs/i/14261137732.log
+  - core/outputs/i/14261197622.json
+  - core/outputs/i/14261197622.log
+  - core/outputs/i/14261280385.json
+  - core/outputs/i/14261280385.log
+  - core/outputs/i/14261390947.json
+  - core/outputs/i/14261390947.log
+  - core/outputs/w/kaos-142215142-statistics.json
+  - core/outputs/w/kaos-143918826-statistics.json
+  - core/outputs/w/kaos-152110813-statistics.json
+  - core/outputs/w/workflows-available-14260433590.json
+  - core/outputs/w/workflows-available-14261390947.json
+  - core/outputs/w/workflows-available-14261624488.json
+  - core/outputs/w/workflows-runs-14260433590.json
+  - core/outputs/w/workflows-runs-14261390947.json
+  - core/outputs/w/workflows-runs-14261624488.json
+  - core/results/event_data_14245371771.json
+  - core/results/k/event_data_14247172425.json
+  - core/results/k/event_data_14247172425.json.bak
+  - core/results/k/event_data_14259225922.json
+  - core/results/k/event_data_14259225922.json.bak
+  - core/results/k/event_data_14260967021.json
+  - core/results/k/event_data_14260967021.json.bak
+  - core/results/k/event_data_14261137732.json
+  - core/results/k/event_data_14261137732.json.bak
+  - core/results/k/event_data_14261197622.json
+  - core/results/k/event_data_14261197622.json.bak
+  - core/results/k/event_data_14262935743.json
+  - core/results/k/event_data_14262935743.json.bak
+  - core/results/k/event_data_14263039679.json
+  - core/results/k/event_data_14263039679.json.bak
+  - core/results/k/event_data_14263854906.json
+  - core/results/k/event_data_14263854906.json.bak
+  - core/results/k/event_data_14305935521.json
+  - core/results/k/event_data_14305935521.json.bak
+  - core/results/k/event_data_14306998320.json
+  - core/results/k/event_data_14306998320.json.bak
+  - core/test/correct-file.json
+  - core/test/correct-file.md
+  - core/test/correct-file1.yaml
+  - version.txt
+---------------------------------
+## Version 0.0.66
+- **Branch**: refs/pull/298/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Jhony Chaves
+- **Date**: Mon Apr  7 10:51:52 UTC 2025
+- **Message**: H220 web de resultados
+- **Files Changed**:
+  - core/results/k/event_data_14307153158.json
+  - core/results/k/event_data_14307153158.json.bak
+  - core/results/k/event_data_14307313225.json
+  - core/results/k/event_data_14307313225.json.bak
+  - version.txt
+---------------------------------
+## Version 0.0.67
+- **Branch**: refs/pull/299/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: jorgecg646
+- **Date**: Mon Apr  7 11:03:17 UTC 2025
+- **Message**: H220 web de resultados
+- **Files Changed**:
+  - core/dashboard/js/navigation.js
+  - core/dashboard/templates/endWorkflow.html
+  - core/dashboard/templates/index.html
+  - core/results/k/event_data_14307481683.json
+  - core/results/k/event_data_14307481683.json.bak
+  - version.txt
+---------------------------------
+## Version 0.0.68
+- **Branch**: refs/pull/300/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Jhony Chaves
+- **Date**: Mon Apr  7 14:15:51 UTC 2025
+- **Message**: H220 web de resultados
+- **Files Changed**:
+  - .github/workflows/deploy-dashboard.yml
+  - core/dashboard/js/charts.js
+  - core/dashboard/js/navigation.js
+  - core/dashboard/templates/backLogs.html
+  - core/dashboard/templates/handlerFailure.html
+  - core/dashboard/templates/index.html
+  - core/results/k/event_data_14310557966.json
+  - core/results/k/event_data_14310557966.json.bak
+  - core/results/k/event_data_14311525576.json
+  - core/results/k/event_data_14311525576.json.bak
+  - core/results/k/event_data_14311553337.json
+  - core/results/k/event_data_14311553337.json.bak
+  - version.txt
+---------------------------------
+## Version 0.0.69
+- **Branch**: refs/pull/301/merge
+- **Commit**: Merge remote-tracking branch 'origin' into H220-web-de-resultados
+- **Author**: Jhony Chaves
+- **Date**: Mon Apr  7 14:26:51 UTC 2025
+- **Message**: H220 web de resultados
+- **Files Changed**:
+  - .github/workflows/deploy-dashboard.yml
+  - core/results/k/event_data_14311757241.json
+  - core/results/k/event_data_14311757241.json.bak
+  - version.txt
+---------------------------------
+## Version 0.0.70
+- **Branch**: refs/pull/302/merge
+- **Commit**: Merge remote-tracking branch 'origin' into H220-web-de-resultados
+- **Author**: Jhony Chaves
+- **Date**: Mon Apr  7 14:40:45 UTC 2025
+- **Message**: H220 web de resultados
+- **Files Changed**:
+  - .github/workflows/deploy-dashboard.yml
+  - core/results/k/event_data_14312040660.json
+  - core/results/k/event_data_14312040660.json.bak
+  - version.txt
+---------------------------------
+## Version 0.0.71
+- **Branch**: refs/pull/303/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Jhony Chaves
+- **Date**: Mon Apr  7 14:55:09 UTC 2025
+- **Message**: H220 web de resultados
+- **Files Changed**:
+  - .github/workflows/deploy-dashboard.yml
+  - core/results/k/event_data_14312440504.json
+  - core/results/k/event_data_14312440504.json.bak
+  - core/results/k/event_data_14312458099.json
+  - core/results/k/event_data_14312458099.json.bak
+  - version.txt
+---------------------------------
+## Version 0.0.72
+- **Branch**: refs/pull/304/merge
+- **Commit**: Merge remote-tracking branch 'origin' into H220-web-de-resultados
+- **Author**: Jhony Chaves
+- **Date**: Mon Apr  7 15:05:15 UTC 2025
+- **Message**: H220 web de resultados
+- **Files Changed**:
+  - .github/workflows/deploy-dashboard.yml
+  - core/results/k/event_data_14312639079.json
+  - core/results/k/event_data_14312639079.json.bak
+  - version.txt
+---------------------------------
+## Version 0.0.73
+- **Branch**: refs/pull/305/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Daniel-NS10
+- **Date**: Tue Apr  8 06:53:05 UTC 2025
+- **Message**: H220 web de resultados
+- **Files Changed**:
+  - core/dashboard/js/charts.js
+  - core/dashboard/js/dashboard.js
+  - core/dashboard/js/navigation.js
+  - core/dashboard/js/workflows/lead-time.js
+  - core/results/k/event_data_14327036818.json
+  - core/results/k/event_data_14327036818.json.bak
+  - version.txt
+---------------------------------
+## Version 0.0.74
+- **Branch**: refs/pull/307/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Tue Apr  8 10:09:43 UTC 2025
+- **Message**: H306 ficheros de estadisticas
+- **Files Changed**:
+  - .github/workflows/kaos.yml
+  - core/results/k/event_data_14330819851.json
+  - core/results/k/event_data_14330819851.json.bak
+  - core/test/correct-file1.yaml
+  - version.txt
+---------------------------------
+## Version 0.0.75
+- **Branch**: refs/pull/308/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: jorgecg646
+- **Date**: Wed Apr  9 06:00:33 UTC 2025
+- **Message**: H220 web de resultados
+- **Files Changed**:
+  - core/dashboard/js/charts.js
+  - core/dashboard/js/dashboard.js
+  - core/dashboard/js/navigation.js
+  - core/dashboard/js/workflows/lead-time.js
+  - core/dashboard/js/workflows/repository-stats.js
+  - core/dashboard/js/workflows/workflows.js
+  - core/dashboard/templates/actionsPerformance.html
+  - core/dashboard/templates/handlerFailure.html
+  - core/dashboard/templates/index.html
+  - core/results/k/event_data_14327868324.json
+  - core/results/k/event_data_14327868324.json.bak
+  - core/results/k/event_data_14350069872.json
+  - core/results/k/event_data_14350069872.json.bak
+  - version.txt
+---------------------------------
+## Version 0.0.76
+- **Branch**: refs/pull/309/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Wed Apr  9 14:36:24 UTC 2025
+- **Message**: H306 ficheros de estadisticas
+- **Files Changed**:
+  - .github/workflows/jslint.yml
+  - core/outputs/js/README.md
+  - core/outputs/w/kaos-142022472-statistics.json
+  - core/outputs/w/kaos-142065355-statistics.json
+  - core/outputs/w/kaos-142215142-statistics.json
+  - core/outputs/w/kaos-143170239-statistics.json
+  - core/outputs/w/kaos-143179877-statistics.json
+  - core/outputs/w/kaos-143918826-statistics.json
+  - core/outputs/w/kaos-147346817-statistics.json
+  - core/outputs/w/kaos-151629566-statistics.json
+  - core/outputs/w/kaos-152110813-statistics.json
+  - core/outputs/w/kaos-152390405-statistics.json
+  - core/outputs/w/kaos-153100219-statistics.json
+  - core/outputs/w/kaos-153261529-statistics.json
+  - core/outputs/w/kaos-issue.json
+  - core/outputs/w/kaos-repository-global-statistics.json
+  - core/outputs/w/kaos-workflows-runs.json
+  - core/outputs/w/workflows-available-14358607267.json
+  - core/outputs/w/workflows-runs-14358607267.json
+  - core/results/k/event_data_14331131854.json
+  - core/results/k/event_data_14331131854.json.bak
+  - core/results/k/event_data_14335512568.json
+  - core/results/k/event_data_14335512568.json.bak
+  - core/results/k/event_data_14335659252.json
+  - core/results/k/event_data_14335659252.json.bak
+  - core/results/k/event_data_14335694292.json
+  - core/results/k/event_data_14335694292.json.bak
+  - core/results/k/event_data_14335781625.json
+  - core/results/k/event_data_14335781625.json.bak
+  - core/results/k/event_data_14335975720.json
+  - core/results/k/event_data_14335975720.json.bak
+  - core/results/k/event_data_14336064662.json
+  - core/results/k/event_data_14336064662.json.bak
+  - core/results/k/event_data_14336565612.json
+  - core/results/k/event_data_14336565612.json.bak
+  - core/results/k/event_data_14336736043.json
+  - core/results/k/event_data_14336736043.json.bak
+  - core/results/k/event_data_14359667353.json
+  - core/results/k/event_data_14359667353.json.bak
+  - core/results/k/event_data_14359843363.json
+  - core/results/k/event_data_14359843363.json.bak
+  - core/test/Index.html
+  - core/test/correct-file.json
+  - core/test/correct-file.md
+  - core/test/correct-file1.yaml
+  - version.txt
+---------------------------------
+## Version 0.0.77
+- **Branch**: refs/pull/310/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: jorgecg646
+- **Date**: Wed Apr  9 14:45:36 UTC 2025
+- **Message**: H220 web de resultados
+- **Files Changed**:
+  - .vscode/settings.json
+  - core/dashboard/Index.html
+  - core/dashboard/dashboard/sections/handlerFailure.json
+  - core/dashboard/dashboard/sections/handlerSuccess.json
+  - core/dashboard/dashboard/sections/index.json
+  - core/dashboard/dashboard/sections/leadTime.json
+  - core/dashboard/js/navigation.js
+  - core/dashboard/templates/actionsPerformance.html
+  - core/dashboard/templates/backLogs.html
+  - core/dashboard/templates/calendar.html
+  - core/dashboard/templates/endWorkflow.html
+  - core/dashboard/templates/handlerFailure.html
+  - core/dashboard/templates/handlerSuccess.html
+  - core/dashboard/templates/index.html
+  - core/dashboard/templates/leadTime.html
+  - core/results/k/event_data_14350441352.json
+  - core/results/k/event_data_14350441352.json.bak
+  - core/results/k/event_data_14350739742.json
+  - core/results/k/event_data_14350739742.json.bak
+  - core/results/k/event_data_14352142585.json
+  - core/results/k/event_data_14352142585.json.bak
+  - core/results/k/event_data_14352342833.json
+  - core/results/k/event_data_14352342833.json.bak
+  - core/results/k/event_data_14352632982.json
+  - core/results/k/event_data_14352632982.json.bak
+  - core/results/k/event_data_14352836990.json
+  - core/results/k/event_data_14352836990.json.bak
+  - core/results/k/event_data_14353033036.json
+  - core/results/k/event_data_14353033036.json.bak
+  - core/results/k/event_data_14353070830.json
+  - core/results/k/event_data_14353070830.json.bak
+  - core/results/k/event_data_14354748432.json
+  - core/results/k/event_data_14354748432.json.bak
+  - core/results/k/event_data_14358810226.json
+  - core/results/k/event_data_14358810226.json.bak
+  - core/results/k/event_data_14359169174.json
+  - core/results/k/event_data_14359169174.json.bak
+  - core/results/k/event_data_14360021322.json
+  - core/results/k/event_data_14360021322.json.bak
+  - core/web/custom/prueba.html
+  - core/web/data/prueba.json
+  - core/web/estructura/estructura.json
+  - core/web/index.html
+  - core/web/js/dato.js
+  - core/web/js/estructura.js
+  - core/web/js/orquestador.js
+  - core/web/templates/prueba.html
+  - version.txt
+---------------------------------
+## Version 0.0.78
+- **Branch**: refs/pull/311/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: jorgecg646
+- **Date**: Thu Apr 10 07:34:46 UTC 2025
+- **Message**: H220 web de resultados
+- **Files Changed**:
+  - .github/workflows/deploy-dashboard.yml
+  - core/results/k/event_data_14374866546.json
+  - core/results/k/event_data_14374866546.json.bak
+  - core/results/k/event_data_14374878144.json
+  - core/results/k/event_data_14374878144.json.bak
+  - version.txt
+---------------------------------
+## Version 0.0.79
+- **Branch**: refs/pull/312/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Thu Apr 10 13:38:22 UTC 2025
+- **Message**: H306 ficheros de estadisticas
+- **Files Changed**:
+  - core/dashboard/templates/navbar.html
+  - core/results/k/event_data_14377557583.json
+  - core/results/k/event_data_14377557583.json.bak
+  - core/test/correct-file.json
+  - version.txt
+---------------------------------
+## Version 0.0.80
+- **Branch**: refs/pull/313/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: jorgecg646
+- **Date**: Fri Apr 11 09:01:17 UTC 2025
+- **Message**: H220 web de resultados
+- **Files Changed**:
+  - .github/workflows/structure.yml
+  - core/results/k/event_data_14397624740.json
+  - core/results/k/event_data_14397624740.json.bak
+  - core/results/k/event_data_14397721964.json
+  - core/results/k/event_data_14397721964.json.bak
+  - core/results/k/event_data_14398778488.json
+  - core/results/k/event_data_14398778488.json.bak
+  - core/results/k/event_data_14398898287.json
+  - core/results/k/event_data_14398898287.json.bak
+  - core/results/k/event_data_14399053670.json
+  - core/results/k/event_data_14399053670.json.bak
+  - core/web/js/data.js
+  - core/web/js/orchestrator.js
+  - core/web/js/orquestador.js
+  - core/web/js/structure.js
+  - core/web/structure/structure.json
+  - core/web/structure/structure1/structure1.html
+  - core/web/structure/structure1/structure1.json
+  - version.txt
+---------------------------------
+## Version 0.0.81
+- **Branch**: refs/pull/314/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: jorgecg646
+- **Date**: Fri Apr 11 09:17:06 UTC 2025
+- **Message**: H220 web de resultados
+- **Files Changed**:
+  - .github/workflows/structure.yml
+  - core/results/k/event_data_14399724507.json
+  - core/results/k/event_data_14399724507.json.bak
+  - core/results/k/event_data_14399757350.json
+  - core/results/k/event_data_14399757350.json.bak
+  - version.txt
+---------------------------------
+## Version 0.0.82
+- **Branch**: refs/pull/315/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: jorgecg646
+- **Date**: Fri Apr 11 11:57:06 UTC 2025
+- **Message**: H220 web de resultados
+- **Files Changed**:
+  - .github/workflows/structure.yml
+  - core/results/k/event_data_14401005311.json
+  - core/results/k/event_data_14401005311.json.bak
+  - core/results/k/event_data_14401559640.json
+  - core/results/k/event_data_14401559640.json.bak
+  - core/results/k/event_data_14401796913.json
+  - core/results/k/event_data_14401796913.json.bak
+  - core/results/k/event_data_14402375856.json
+  - core/results/k/event_data_14402375856.json.bak
+  - core/results/k/event_data_14402528354.json
+  - core/results/k/event_data_14402528354.json.bak
+  - core/web/structure/structure.json
+  - version.txt
+---------------------------------
+## Version 0.0.83
+- **Branch**: refs/pull/317/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Mon Apr 14 10:46:38 UTC 2025
+- **Message**: H220 web de resultados
+- **Files Changed**:
+  - core/results/k/event_data_14443447914.json
+  - core/results/k/event_data_14443447914.json.bak
+  - core/results/k/event_data_14443645242.json
+  - core/results/k/event_data_14443645242.json.bak
+  - core/web/structure/structure.json
+  - version.txt
+---------------------------------
+## Version 0.0.84
+- **Branch**: refs/pull/318/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Mon Apr 14 14:20:25 UTC 2025
+- **Message**: H306 ficheros de estadisticas
+- **Files Changed**:
+  - core/config/webs/webs.json
+  - core/results/k/event_data_14447778286.json
+  - core/results/k/event_data_14447778286.json.bak
+  - version.txt
+---------------------------------
+## Version 0.0.85
+- **Branch**: refs/pull/319/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Mon Apr 14 14:43:48 UTC 2025
+- **Message**: H306 ficheros de estadisticas
+- **Files Changed**:
+  - core/config/webs/webs.json
+  - core/results/k/event_data_14448499304.json
+  - core/results/k/event_data_14448499304.json.bak
+  - version.txt
+---------------------------------
+## Version 0.0.86
+- **Branch**: refs/pull/320/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Mon Apr 14 15:03:25 UTC 2025
+- **Message**: H306 ficheros de estadisticas
+- **Files Changed**:
+  - .github/workflows/structure.yml
+  - core/outputs/webs/dashboard/dashboard_resume.json
+  - core/outputs/webs/dashboard/readme.txt
+  - core/results/k/event_data_14448759036.json
+  - core/results/k/event_data_14448759036.json.bak
+  - core/results/k/event_data_14448961146.json
+  - core/results/k/event_data_14448961146.json.bak
+  - core/results/webs/dashboard/custom/custom.html
+  - core/results/webs/dashboard/dashboard.html
+  - core/results/webs/dashboard/data/data.html
+  - core/results/webs/dashboard/js/js.html
+  - core/results/webs/dashboard/structure/inicio/inicio.html
+  - core/results/webs/dashboard/structure/issues/issues.html
+  - core/results/webs/dashboard/structure/leadtime/leadtime.html
+  - core/results/webs/dashboard/structure/status/status.html
+  - core/results/webs/dashboard/structure/structure.html
+  - core/results/webs/dashboard/structure/workflows/workflows.html
+  - core/results/webs/dashboard/templates/templates.html
+  - version.txt
+---------------------------------
+## Version 0.0.87
+- **Branch**: refs/pull/324/merge
+- **Commit**: Añadimos ka0s_metodologia
+- **Author**: Ka0s
+- **Date**: Wed Apr 16 07:49:27 UTC 2025
+- **Message**: H323 documentacion kaos
+- **Files Changed**:
+  - core/config/core/ka0s_c0re_files.json
+  - core/docs/ka0s/ka0s.md
+  - core/docs/ka0s/ka0s_kaizen.md
+  - core/docs/ka0s/ka0s_metodologia.md
+  - core/docs/ka0s/ka0s_release_klaus.md
+  - core/imgs/adaptacion.png
+  - core/imgs/centralizacion.jpeg
+  - core/imgs/eficacia.jpeg
+  - core/imgs/eficiencia.jpeg
+  - core/imgs/golden_rule.jpeg
+  - version.txt
+---------------------------------
+## Version 0.0.88
+- **Branch**: refs/pull/326/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Wed Apr 16 08:47:50 UTC 2025
+- **Message**: H325 documentacion readmemd
+- **Files Changed**:
+  - README.md
+  - core/docs/README.md
+  - core/docs/ka0s/ka0s_kaizen.md
+  - core/docs/ka0s/ka0s_metodologia.md
+  - core/docs/ka0s_core/ka0s_core.md
+  - core/results/k/event_data_14487931864.json
+  - core/results/k/event_data_14487931864.json.bak
+  - core/results/k/event_data_14488189190.json
+  - core/results/k/event_data_14488189190.json.bak
+  - core/results/k/event_data_14488445722.json
+  - core/results/k/event_data_14488445722.json.bak
+  - version.txt
+---------------------------------
+## Version 0.0.89
+- **Branch**: refs/pull/327/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Wed Apr 16 10:38:28 UTC 2025
+- **Message**: H325 documentacion readmemd
+- **Files Changed**:
+  - core/docs/README.md
+  - core/results/k/event_data_14490570531.json
+  - core/results/k/event_data_14490570531.json.bak
+  - core/results/k/event_data_14490582102.json
+  - core/results/k/event_data_14490582102.json.bak
+  - version.txt
+---------------------------------
+## Version 0.0.90
+- **Branch**: refs/pull/334/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Mon Apr 21 08:16:18 UTC 2025
+- **Message**: H328 documentacion modulo principal de kaos
+- **Files Changed**:
+  - core/docs/README.md
+  - core/docs/ka0s/ka0s.md
+  - core/docs/ka0s/ka0s_kaizen.md
+  - core/docs/ka0s/ka0s_metodologia.md
+  - core/docs/ka0s_core/ka0s_core.md
+  - core/imgs/workflow-ka0s.png
+  - core/results/k/event_data_14492647831.json
+  - core/results/k/event_data_14492647831.json.bak
+  - core/results/k/event_data_14569307196.json
+  - core/results/k/event_data_14569307196.json.bak
+  - core/results/k/event_data_14569971265.json
+  - core/results/k/event_data_14569971265.json.bak
+  - version.txt
+---------------------------------
+## Version 0.0.91
+- **Branch**: refs/pull/335/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: AlejandroPB5
+- **Date**: Mon Apr 21 09:07:06 UTC 2025
+- **Message**: H220 web de resultados
+- **Files Changed**:
+  - .github/workflows/structure.yml
+  - core/results/k/event_data_14570255403.json
+  - core/results/k/event_data_14570255403.json.bak
+  - core/results/k/event_data_14570269563.json
+  - core/results/k/event_data_14570269563.json.bak
+  - core/results/k/event_data_14570740951.json
+  - core/results/k/event_data_14570740951.json.bak
+  - core/results/webs/dashboard/custom/custom.html
+  - core/results/webs/dashboard/dashboard.html
+  - core/results/webs/dashboard/data/data.html
+  - core/results/webs/dashboard/js/js.html
+  - core/results/webs/dashboard/structure/inicio/inicio.html
+  - core/results/webs/dashboard/structure/issues/issues.html
+  - core/results/webs/dashboard/structure/leadtime/leadtime.html
+  - core/results/webs/dashboard/structure/structure.html
+  - core/results/webs/dashboard/structure/workflows/workflows.html
+  - core/results/webs/dashboard/templates/templates.html
+  - core/web/data/data.json
+  - version.txt
+---------------------------------
+## Version 0.0.92
+- **Branch**: refs/pull/336/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: jorgecg646
+- **Date**: Mon Apr 21 09:57:14 UTC 2025
+- **Message**: H220 web de resultados
+- **Files Changed**:
+  - .github/workflows/structure.yml
+  - core/results/k/event_data_14571191586.json
+  - core/results/k/event_data_14571191586.json.bak
+  - core/results/k/event_data_14571207861.json
+  - core/results/k/event_data_14571207861.json.bak
+  - core/results/k/event_data_14571304792.json
+  - core/results/k/event_data_14571304792.json.bak
+  - core/results/webs/dashboard/custom/custom.html
+  - core/results/webs/dashboard/dashboard.html
+  - core/results/webs/dashboard/data/data.html
+  - core/results/webs/dashboard/js/js.html
+  - core/results/webs/dashboard/structure/inicio/inicio.html
+  - core/results/webs/dashboard/structure/issues/issues.html
+  - core/results/webs/dashboard/structure/leadtime/leadtime.html
+  - core/results/webs/dashboard/structure/structure.html
+  - core/results/webs/dashboard/structure/workflows/workflows.html
+  - core/results/webs/dashboard/templates/templates.html
+  - version.txt
+---------------------------------
+## Version 0.0.93
+- **Branch**: refs/pull/337/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Mon Apr 21 15:30:49 UTC 2025
+- **Message**: H329 documentacion metodologia de kaos
+- **Files Changed**:
+  - core/docs/ka0s/ka0s_metodologia.md
+  - core/imgs/ka0s-branch.png
+  - core/imgs/ka0s-info.png
+  - core/imgs/ka0s-inspector-human.png
+  - core/imgs/ka0s-inspector.png
+  - core/imgs/kaos-core.jpeg
+  - core/imgs/kaos-core.png
+  - core/results/k/event_data_14571498648.json
+  - core/results/k/event_data_14571498648.json.bak
+  - core/results/k/event_data_14572636601.json
+  - core/results/k/event_data_14572636601.json.bak
+  - core/results/k/event_data_14575963319.json
+  - core/results/k/event_data_14575963319.json.bak
+  - version.txt
+---------------------------------
+## Version 0.0.94
+- **Branch**: refs/pull/339/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: AlejandroPB5
+- **Date**: Tue Apr 22 08:31:46 UTC 2025
+- **Message**: H220 web de resultados
+- **Files Changed**:
+  - .github/workflows/structure.yml
+  - core/config/webs/webs.json
+  - core/results/k/event_data_14572372111.json
+  - core/results/k/event_data_14572372111.json.bak
+  - core/results/k/event_data_14588263585.json
+  - core/results/k/event_data_14588263585.json.bak
+  - core/results/k/event_data_14590234720.json
+  - core/results/k/event_data_14590234720.json.bak
+  - core/results/k/event_data_14590305034.json
+  - core/results/k/event_data_14590305034.json.bak
+  - core/results/webs/dashboard/custom/custom.html
+  - core/results/webs/dashboard/dashboard.html
+  - core/results/webs/dashboard/data/data.html
+  - core/results/webs/dashboard/data/kaos-issue.json
+  - core/results/webs/dashboard/data/kaos-repository-global-statistics.json
+  - core/results/webs/dashboard/data/kaos-repository-statistics.json
+  - core/results/webs/dashboard/data/kaos-workflows-available.json
+  - core/results/webs/dashboard/data/kaos-workflows-runs.json
+  - core/results/webs/dashboard/js/js.html
+  - core/results/webs/dashboard/structure/inicio/inicio.html
+  - core/results/webs/dashboard/structure/issues/issues.html
+  - core/results/webs/dashboard/structure/leadtime/leadtime.html
+  - core/results/webs/dashboard/structure/structure.html
+  - core/results/webs/dashboard/structure/workflows/workflows.html
+  - core/results/webs/dashboard/templates/templates.html
+  - version.txt
+---------------------------------
+## Version 0.0.95
+- **Branch**: refs/pull/340/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: AlejandroPB5
+- **Date**: Tue Apr 22 08:41:25 UTC 2025
+- **Message**: H220 web de resultados
+- **Files Changed**:
+  - .github/workflows/structure.yml
+  - core/results/k/event_data_14590478563.json
+  - core/results/k/event_data_14590478563.json.bak
+  - version.txt
+---------------------------------
+## Version 0.0.96
+- **Branch**: refs/pull/341/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Tue Apr 22 11:46:50 UTC 2025
+- **Message**: H338 relanzador de jobs en caso de pattern
+- **Files Changed**:
+  - .github/workflows/pattern-scan.yml
+  - core/outputs/s/README.md
+  - core/results/k/event_data_14590445603.json
+  - core/results/k/event_data_14590445603.json.bak
+  - core/results/k/event_data_14593759211.json
+  - core/results/k/event_data_14593759211.json.bak
+  - core/results/s/README.md
+  - version.txt
+---------------------------------
+## Version 0.0.97
+- **Branch**: refs/pull/380/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Tue Apr 22 14:06:44 UTC 2025
+- **Message**: H338 relanzador de jobs en caso de pattern
+- **Files Changed**:
+  - .github/workflows/pattern-scan.yml
+  - core/results/k/event_data_14596361639.json
+  - core/results/k/event_data_14596361639.json.bak
+  - core/results/k/event_data_14596712510.json
+  - core/results/k/event_data_14596712510.json.bak
+  - version.txt
+---------------------------------
+## Version 0.0.98
+- **Branch**: refs/pull/415/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Tue Apr 22 14:34:15 UTC 2025
+- **Message**: H338 relanzador de jobs en caso de pattern
+- **Files Changed**:
+  - .github/workflows/pattern-scan.yml
+  - core/results/k/event_data_14596917687.json
+  - core/results/k/event_data_14596917687.json.bak
+  - core/results/k/event_data_14597140426.json
+  - core/results/k/event_data_14597140426.json.bak
+  - core/results/k/event_data_14597409920.json
+  - core/results/k/event_data_14597409920.json.bak
+  - version.txt
+---------------------------------
+## Version 0.0.99
+- **Branch**: refs/pull/1103/merge
+- **Commit**: Añadimos una vesion totalmente funcional y lista para produccion
+- **Author**: Ka0s
+- **Date**: Wed Apr 23 07:41:38 UTC 2025
+- **Message**: H338 relanzador de jobs en caso de pattern
+- **Files Changed**:
+  - .github/workflows/pattern-scan.yml
+  - core/results/k/event_data_14597513948.json
+  - core/results/k/event_data_14597513948.json.bak
+  - version.txt
+---------------------------------
+## Version 0.0.100
+- **Branch**: refs/pull/1104/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: jorgecg646
+- **Date**: Wed Apr 23 10:25:35 UTC 2025
+- **Message**: H220 web de resultados
+- **Files Changed**:
+  - core/config/webs/SectionsTemplates.json
+  - core/results/event_data14038714142.json
+  - core/results/event_data14104656814.json
+  - core/results/event_data14104912407.json
+  - core/results/event_data_14125357755.json
+  - core/results/k/event_data_14311819998.json
+  - core/results/k/event_data_14311819998.json.bak
+  - core/results/k/event_data_14592341537.json
+  - core/results/k/event_data_14592341537.json.bak
+  - core/results/k/event_data_14592392696.json
+  - core/results/k/event_data_14592392696.json.bak
+  - core/results/k/event_data_14592816416.json
+  - core/results/k/event_data_14592816416.json.bak
+  - core/results/k/event_data_14593113042.json
+  - core/results/k/event_data_14593113042.json.bak
+  - core/results/k/event_data_14611592162.json
+  - core/results/k/event_data_14611592162.json.bak
+  - core/results/k/event_data_14611611664.json
+  - core/results/k/event_data_14611611664.json.bak
+  - core/results/k/event_data_14613557229.json
+  - core/results/k/event_data_14613557229.json.bak
+  - core/results/k/event_data_14615723519.json
+  - core/results/k/event_data_14615723519.json.bak
+  - core/results/webs/dashboard/dashboard.html
+  - core/web/js/data-list.js
+  - core/web/js/graphic.js
+  - core/web/templates/data-list.html
+  - core/web/templates/graphic.html
+  - version.txt
+---------------------------------
+## Version 0.0.101
+- **Branch**: refs/pull/1112/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Wed Apr 23 14:26:41 UTC 2025
+- **Message**: H338 relanzador de jobs en caso de pattern
+- **Files Changed**:
+  - .github/workflows/deploy-dashboard.yml
+  - core/results/k/event_data_14613237735.json
+  - core/results/k/event_data_14613237735.json.bak
+  - core/results/k/event_data_14616504579.json
+  - core/results/k/event_data_14616504579.json.bak
+  - core/results/k/event_data_14620607773.json
+  - core/results/k/event_data_14620607773.json.bak
+  - version.txt
+---------------------------------
+## Version 0.0.102
+- **Branch**: refs/pull/1113/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: jorgecg646
+- **Date**: Thu Apr 24 06:30:37 UTC 2025
+- **Message**: H220 web de resultados
+- **Files Changed**:
+  - core/config/webs/SectionsTemplates.json
+  - core/config/webs/section1.json
+  - core/config/webs/section2.json
+  - core/config/webs/section3.json
+  - core/config/webs/webs.json
+  - core/results/event_data14079442629.json
+  - core/results/event_data14124198527.json
+  - core/results/event_data14124664270.json
+  - core/results/k/event_data_14617325523.json
+  - core/results/k/event_data_14617325523.json.bak
+  - core/results/k/event_data_14634936255.json
+  - core/results/k/event_data_14634936255.json.bak
+  - core/results/webs/dashboard/custom/custom.html
+  - core/results/webs/dashboard/dashboard.html
+  - core/results/webs/dashboard/data/data.html
+  - core/results/webs/dashboard/data/kaos-issue.json
+  - core/results/webs/dashboard/data/kaos-repository-global-statistics.json
+  - core/results/webs/dashboard/data/kaos-repository-statistics.json
+  - core/results/webs/dashboard/data/kaos-workflows-available.json
+  - core/results/webs/dashboard/data/kaos-workflows-runs.json
+  - core/results/webs/dashboard/js/js.html
+  - core/results/webs/dashboard/structure/inicio/inicio.html
+  - core/results/webs/dashboard/structure/issues/issues.html
+  - core/results/webs/dashboard/structure/resultados/resultados.html
+  - core/results/webs/dashboard/structure/resumen/resumen.html
+  - core/results/webs/dashboard/structure/structure.html
+  - core/results/webs/dashboard/structure/workflows/workflows.html
+  - core/results/webs/dashboard/templates/templates.html
+  - version.txt
+---------------------------------
+## Version 0.0.103
+- **Branch**: refs/pull/1114/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: jorgecg646
+- **Date**: Thu Apr 24 06:32:22 UTC 2025
+- **Message**: H220 web de resultados
+- **Files Changed**:
+  - CHANGELOG.md
+  - INDEX.md
+  - core/config/webs/SectionsTemplates.json
+  - core/config/webs/section1.json
+  - core/config/webs/section2.json
+  - core/config/webs/section3.json
+  - core/config/webs/webs.json
+  - core/results/event_data14079442629.json
+  - core/results/event_data14124198527.json
+  - core/results/event_data14124664270.json
+  - core/results/k/event_data_14617325523.json
+  - core/results/k/event_data_14617325523.json.bak
+  - core/results/k/event_data_14634936255.json
+  - core/results/k/event_data_14634936255.json.bak
+  - core/results/k/event_data_14634986264.json
+  - core/results/k/event_data_14634986264.json.bak
+  - core/results/webs/dashboard/custom/custom.html
+  - core/results/webs/dashboard/dashboard.html
+  - core/results/webs/dashboard/data/data.html
+  - core/results/webs/dashboard/data/kaos-issue.json
+  - core/results/webs/dashboard/data/kaos-repository-global-statistics.json
+  - core/results/webs/dashboard/data/kaos-repository-statistics.json
+  - core/results/webs/dashboard/data/kaos-workflows-available.json
+  - core/results/webs/dashboard/data/kaos-workflows-runs.json
+  - core/results/webs/dashboard/js/js.html
+  - core/results/webs/dashboard/structure/inicio/inicio.html
+  - core/results/webs/dashboard/structure/issues/issues.html
+  - core/results/webs/dashboard/structure/resultados/resultados.html
+  - core/results/webs/dashboard/structure/resumen/resumen.html
+  - core/results/webs/dashboard/structure/structure.html
+  - core/results/webs/dashboard/structure/workflows/workflows.html
+  - core/results/webs/dashboard/templates/templates.html
+  - version.txt
+---------------------------------
+## Version 0.0.104
+- **Branch**: refs/pull/1115/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: AlejandroPB5
+- **Date**: Thu Apr 24 07:02:28 UTC 2025
+- **Message**: H220 web de resultados
+- **Files Changed**:
+  - .github/workflows/structure.yml
+  - core/results/k/event_data_14635426951.json
+  - core/results/k/event_data_14635426951.json.bak
+  - version.txt
+---------------------------------
+## Version 0.0.105
+- **Branch**: refs/pull/1118/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: jorgecg646
+- **Date**: Thu Apr 24 08:05:29 UTC 2025
+- **Message**: H220 web de resultados
+- **Files Changed**:
+  - .github/workflows/structure.yml
+  - core/results/k/event_data_14635662574.json
+  - core/results/k/event_data_14635662574.json.bak
+  - core/results/k/event_data_14636527223.json
+  - core/results/k/event_data_14636527223.json.bak
+  - core/results/k/event_data_14636541316.json
+  - core/results/k/event_data_14636541316.json.bak
+  - core/web/templates/section-template.html
+  - version.txt
+---------------------------------
+## Version 0.0.106
+- **Branch**: refs/pull/1119/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: jorgecg646
+- **Date**: Thu Apr 24 08:15:04 UTC 2025
+- **Message**: H220 web de resultados
+- **Files Changed**:
+  - core/config/webs/section1inicio.json
+  - core/config/webs/section2workflows.json
+  - core/config/webs/section3issues.json
+  - core/results/k/event_data_14636748078.json
+  - core/results/k/event_data_14636748078.json.bak
+  - version.txt
+---------------------------------

@@ -26,11 +26,11 @@ Si, parece increible pero hemos decidido en el equipo usar una terminología "es
 
 - **Simple y Sencillo**: pues si, dos conceptos en uno que engloban la filosofía que permite que dentro de Ka0s (a fecha de hoy) se puedan utilizar más de [XX](https://keepcoding.io/blog/cuantos-lenguajes-de-programacion-existen/) lenguajes de programación diferentes, permitiendo a la herramienta un *flexibilidad* completa.
 
-- **Agnóstico**: pues sí, Ka0s es muy suyo y le es indistinto para quien trabaje o a donde debe conectarse. Est diseádo a traves de variables y secretos los cuales le permiten una modularidad y una reunsabilidad muy alta (+ del 75% del código core de Ka0s en totalmente reusable), lo cual nos permite facilitar una agilidad a los equipos de desarollo que les permite reducir las líneas de código reiterativo y disminuir su tiemnpo de operación hasta en un 65%.
+- **Agnóstico**: pues sí, Ka0s es muy suyo y le es indistinto para quien trabaje o a donde debe conectarse. Est diseñádo a través de variables y secretos los cuales le permiten una modularidad y una reusabilidad muy alta (+ del 75% del código core de Ka0s en totalmente reusable), lo cual nos permite facilitar una agilidad a los equipos de desarrollo que les permite reducir las líneas de código reiterativo y disminuir su tiempo de operación hasta en un 65%.
 
 ## Módulos de Ka0s
 
-- ka0s.yml:
+- [ka0s.yml:](./core/docs/ka0s_core/ka0s_core.md)
 - inspector.yml
 - version.yml
 - execution.yml
@@ -38,27 +38,17 @@ Si, parece increible pero hemos decidido en el equipo usar una terminología "es
 - jsonlint.yml
 - yamllint.yml
 - pylint.yml
+- jslint.yml
 - core.yml
 - docker.yml
 - release.yml
 - summary.yml
 
+## Releases
+
+>-[Ka0s - Klaus](/core/docs/ka0s/ka0s_release_klaus.md)
+>-Ka0s - Proyecto D
+
 ## Nuestra metodología
 
-Nuestra metodología de desarrallo, que no quiere decir que tenga que ser la tuya por obligación 'se explicara mas en detalle', por ende nuestra manera de trabajar se basa en que Ka0s única y exclusivamente se diseño para trabajar en "origin/main".
-
-Explicado de manera sencilla sería algo así como " ... Ka0s dispone de una unica rama y un único "iniciador" que através del cual podemos discriminar los entornos de ejecución de las diferentes solicitudes.
-
-¿cómo difencia Ka0s los entornos? Pues tiene un "compliance" específico definido en un fichero json que le indica para cada cambio en el número de versión cual es el entorno de ejecución. (nota: tenga en cuenta que el core de Ka0s, donde se desarrolla la solución, cuenta con varios módulos que gestiona los diferentes entornos y runners donde se ejecuta el código)
-
-¿Ka0s v1.0.38 rc unnamed? La característica del versiona de Ka0s es la siguiente: la version de compone de un MAYOR "." un MINOR "." y un PATCH que en la equivalencia de nuestro equipo de desarrollo es algo así como:
-
-- Un PATCH (H) hace referencia a una correccción y/o modificación de alguno de los módulos de Ka0s.
-- Un MINOR (F) hace referencia a una nueva "funcionalidad" dentro del propio core de Ka0s, ya sea con un ampliación de funcionalidades de algo existente como una mejora completa o diseño un nuevo módulo.
-- Un MAYOR (RN) hace referencia a que se añaden funcionalidades no existentes en "releases" anteriores.
-
-¿Y 'rc unnamed'? Esta es la manera en la que hacemos que las diferentes versiones de Ka0s vean la luz. Cuando una versión queda completada (una v1.0.38) dentro de Ka0s hay un mecanismo automatizado para que se genere una nueva release cuyo nombre se elije aleatoriamente por el equipo de desarrollo.
-
-Llegados a este punto nos dimos cuenta que con los mínimos recursos y variaciones disponiamos de más opciones de adaptabilidad de Ka0s a cualquiera ecosistema tecnológico y nos surgio la duda de añadir un frontal a través del cual puediesemos estar informados en todo momento de lo que ocurre dentro de Ka0s. Para lo cual decidimos diseñar un módulo que nos permitiese gestionar tanto las solicitudes de ejecución, como registrar cualquier cambio dentro de la plataforma de manera que nos permitiese usar el dashboard más sencillo que se pueda diseñar. El core de Ka0s de maneja y controla a través de la funcionalidad de gestión de Proyectos de GitHub usando un template sencillo basado en Kanban que solamente dispone de tres columnas (backlog - in progress - done).
-
-![Roadmap 2025](../imgs/ka0s-dashboard.png)
+La mejor manera de explicarla esta [aquí](/core/docs/ka0s/ka0s_metodologia.md)

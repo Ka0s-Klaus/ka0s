@@ -63,3 +63,45 @@
 - **Version**: 0.0.62 - **Description**: H215 modulo de summary
 - **Version**: 0.0.63 - **Description**: H215 modulo de summary
 - **Version**: 0.0.64 - **Description**: H215 modulo de summary
+- **Version**: 0.0.65 - **Description**: H220 web de resultados
+- **Version**: 0.0.66 - **Description**: H220 web de resultados
+- **Version**: 0.0.67 - **Description**: H220 web de resultados
+- **Version**: 0.0.68 - **Description**: H220 web de resultados
+- **Version**: 0.0.69 - **Description**: H220 web de resultados
+- **Version**: 0.0.70 - **Description**: H220 web de resultados
+- **Version**: 0.0.71 - **Description**: H220 web de resultados
+- **Version**: 0.0.72 - **Description**: H220 web de resultados
+- **Version**: 0.0.73 - **Description**: H220 web de resultados
+- **Version**: 0.0.74 - **Description**: H306 ficheros de estadisticas
+- **Version**: 0.0.75 - **Description**: H220 web de resultados
+- **Version**: 0.0.76 - **Description**: H306 ficheros de estadisticas
+- **Version**: 0.0.77 - **Description**: H220 web de resultados
+- **Version**: 0.0.78 - **Description**: H220 web de resultados
+- **Version**: 0.0.79 - **Description**: H306 ficheros de estadisticas
+- **Version**: 0.0.80 - **Description**: H220 web de resultados
+- **Version**: 0.0.81 - **Description**: H220 web de resultados
+- **Version**: 0.0.82 - **Description**: H220 web de resultados
+- **Version**: 0.0.83 - **Description**: H220 web de resultados
+- **Version**: 0.0.84 - **Description**: H306 ficheros de estadisticas
+- **Version**: 0.0.85 - **Description**: H306 ficheros de estadisticas
+- **Version**: 0.0.86 - **Description**: H306 ficheros de estadisticas
+- **Version**: 0.0.87 - **Description**: H323 documentacion kaos
+- **Version**: 0.0.88 - **Description**: H325 documentacion readmemd
+- **Version**: 0.0.89 - **Description**: H325 documentacion readmemd
+- **Version**: 0.0.90 - **Description**: H328 documentacion modulo principal de kaos
+- **Version**: 0.0.91 - **Description**: H220 web de resultados
+- **Version**: 0.0.92 - **Description**: H220 web de resultados
+- **Version**: 0.0.93 - **Description**: H329 documentacion metodologia de kaos
+- **Version**: 0.0.94 - **Description**: H220 web de resultados
+- **Version**: 0.0.95 - **Description**: H220 web de resultados
+- **Version**: 0.0.96 - **Description**: H338 relanzador de jobs en caso de pattern
+- **Version**: 0.0.97 - **Description**: H338 relanzador de jobs en caso de pattern
+- **Version**: 0.0.98 - **Description**: H338 relanzador de jobs en caso de pattern
+- **Version**: 0.0.99 - **Description**: H338 relanzador de jobs en caso de pattern
+- **Version**: 0.0.100 - **Description**: H220 web de resultados
+- **Version**: 0.0.101 - **Description**: H338 relanzador de jobs en caso de pattern
+- **Version**: 0.0.102 - **Description**: H220 web de resultados
+- **Version**: 0.0.103 - **Description**: H220 web de resultados
+- **Version**: 0.0.104 - **Description**: H220 web de resultados
+- **Version**: 0.0.105 - **Description**: H220 web de resultados
+- **Version**: 0.0.106 - **Description**: H220 web de resultados
