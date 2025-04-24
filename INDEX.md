@@ -100,3 +100,4 @@
 - **Version**: 0.0.99 - **Description**: H338 relanzador de jobs en caso de pattern
 - **Version**: 0.0.100 - **Description**: H220 web de resultados
 - **Version**: 0.0.101 - **Description**: H338 relanzador de jobs en caso de pattern
+- **Version**: 0.0.102 - **Description**: H220 web de resultados
