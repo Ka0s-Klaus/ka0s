@@ -273,6 +273,190 @@ jobs:
               echo "No se encontró $SECTION_JSON"
             fi
           done
+      
+      - name: Actualizar dashboard.html con secciones
+        run: |
+          echo "Actualizando dashboard.html para incluir todas las secciones..."
+          STRUCTURE_FILE="core/config/webs/webs.json"
+          TITLE=$(cat $STRUCTURE_FILE | grep -o '"title": *"[^"]*"' | cut -d'"' -f4)
+          DASHBOARD_HTML="core/results/webs/${TITLE}/dashboard.html"
+          
+          # Verificar si existe el archivo dashboard.html
+          if [ -f "$DASHBOARD_HTML" ]; then
+            echo "Actualizando archivo dashboard.html existente"
+          else
+            echo "Creando nuevo archivo dashboard.html"
+            # Crear estructura básica del dashboard si no existe
+            cat > "$DASHBOARD_HTML" << EOF
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ka0s Dashboard</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Incluir estilos adicionales aquí -->
+</head>
+<body>
+    <header>
+        <h1>Ka0s Dashboard</h1>
+        <nav id="main-nav">
+            <!-- Navegación generada dinámicamente -->
+        </nav>
+    </header>
+    
+    <main id="dashboard-container">
+        <!-- Aquí se cargarán las secciones -->
+    </main>
+    
+    <!-- Contenedores para cada sección (inicialmente ocultos) -->
+    <div id="sections-container">
+        <!-- Las secciones se cargarán aquí -->
+    </div>
+    
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
+EOF
+          fi
+          
+          # Generar navegación y contenedores para cada sección
+          SECTIONS=$(cat $STRUCTURE_FILE | grep -o '"section[0-9]*": *"[^"]*"' | cut -d'"' -f2,4 | tr '\n' ' ')
+          
+          # Crear arrays para almacenar los elementos de navegación y contenedores
+          NAV_ITEMS=""
+          SECTION_CONTAINERS=""
+          
+          # Procesar cada sección
+          for entry in $SECTIONS; do
+            SECTION_NAME=$(echo $entry | cut -d':' -f2 | tr -d '"')
+            SECTION_JSON="core/config/webs/${SECTION_NAME}.json"
+            
+            if [ -f "$SECTION_JSON" ]; then
+              # Extraer título de la sección
+              SECTION_TITLE=$(jq -r '.title' "$SECTION_JSON")
+              
+              # Añadir elemento de navegación
+              NAV_ITEMS+="<li><a href=\"#${SECTION_NAME}\" data-section=\"${SECTION_NAME}\">${SECTION_TITLE}</a></li>\n"
+              
+              # Añadir contenedor para la sección
+              SECTION_CONTAINERS+="<div id=\"${SECTION_NAME}\" class=\"section-container hidden\">\n"
+              SECTION_CONTAINERS+="  <iframe src=\"structure/${SECTION_NAME}/${SECTION_NAME}.html\" frameborder=\"0\" width=\"100%\" height=\"600px\"></iframe>\n"
+              SECTION_CONTAINERS+="</div>\n"
+            fi
+          done
+          
+          # Actualizar el archivo dashboard.html con la navegación y contenedores
+          # Primero, crear un archivo temporal
+          TEMP_FILE=$(mktemp)
+          
+          # Leer el archivo dashboard.html y reemplazar los marcadores
+          cat "$DASHBOARD_HTML" | 
+          sed "/<nav id=\"main-nav\">/,/<\/nav>/c\\
+          <nav id=\"main-nav\">\n            <ul>\n                ${NAV_ITEMS}            </ul>\n        </nav>" |
+          sed "/<div id=\"sections-container\">/,/<\/div>/c\\
+          <div id=\"sections-container\">\n        ${SECTION_CONTAINERS}    </div>" > "$TEMP_FILE"
+          
+          # Reemplazar el archivo original con el temporal
+          mv "$TEMP_FILE" "$DASHBOARD_HTML"
+          
+          # Crear o actualizar el archivo JavaScript para manejar la navegación
+          JS_DIR="core/results/webs/${TITLE}/js"
+          mkdir -p "$JS_DIR"
+          
+          cat > "${JS_DIR}/dashboard.js" << EOF
+// Script para manejar la navegación entre secciones
+document.addEventListener('DOMContentLoaded', function() {
+    // Obtener todos los enlaces de navegación
+    const navLinks = document.querySelectorAll('#main-nav a');
+    
+    // Añadir evento de clic a cada enlace
+    navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Ocultar todas las secciones
+            document.querySelectorAll('.section-container').forEach(section => {
+                section.classList.add('hidden');
+            });
+            
+            // Mostrar la sección seleccionada
+            const sectionId = this.getAttribute('data-section');
+            document.getElementById(sectionId).classList.remove('hidden');
+            
+            // Marcar el enlace activo
+            navLinks.forEach(navLink => {
+                navLink.classList.remove('active');
+            });
+            this.classList.add('active');
+        });
+    });
+    
+    // Mostrar la primera sección por defecto
+    if (navLinks.length > 0) {
+        navLinks[0].click();
+    }
+});
+EOF
+          
+          # Crear un archivo CSS básico si no existe
+          CSS_DIR="core/results/webs/${TITLE}/css"
+          mkdir -p "$CSS_DIR"
+          
+          if [ ! -f "${CSS_DIR}/styles.css" ]; then
+            cat > "${CSS_DIR}/styles.css" << EOF
+/* Estilos básicos para el dashboard */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: #333;
+    color: white;
+    padding: 1rem;
+}
+
+nav ul {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+nav li {
+    margin-right: 1rem;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    padding: 0.5rem;
+}
+
+nav a.active {
+    background-color: #555;
+    border-radius: 4px;
+}
+
+.hidden {
+    display: none;
+}
+
+.section-container {
+    padding: 1rem;
+}
+
+iframe {
+    border: none;
+    width: 100%;
+    min-height: 600px;
+}
+EOF
+          fi
+          
+          echo "Dashboard actualizado con todas las secciones en $DASHBOARD_HTML"
   
       - name: Subir HTMLs generados
         run: |
@@ -280,6 +464,9 @@ jobs:
           git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
           git pull
           git add core/results/webs/**/structure/**/*.html
+          git add core/results/webs/**/dashboard.html
+          git add core/results/webs/**/js/dashboard.js
+          git add core/results/webs/**/css/styles.css
           if git diff --staged --quiet; then
             echo "No hay cambios para hacer commit"
           else
