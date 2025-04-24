@@ -199,6 +199,80 @@ jobs:
             git commit -m "[Ka0S] Uploading data files to web structure..."
             git push origin ${{ env.KAOS_REF }}
           fi
+  job-design:
+    runs-on:
+      group: ka0s
+    needs: [job-core, job-data]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+  
+      - name: Generar HTML de secciones según JSON
+        run: |
+          echo "Generando HTML de secciones según su JSON..."
+          STRUCTURE_FILE="core/config/webs/webs.json"
+          TITLE=$(cat $STRUCTURE_FILE | grep -o '"title": *"[^"]*"' | cut -d'"' -f4)
+          SECTIONS=$(cat $STRUCTURE_FILE | grep -o '"section[0-9]*": *"[^"]*"' | cut -d'"' -f2,4 | tr '\n' ' ')
+          for entry in $SECTIONS; do
+            SECTION_KEY=$(echo $entry | cut -d':' -f1 | tr -d '"')
+            SECTION_NAME=$(echo $entry | cut -d':' -f2 | tr -d '"')
+            SECTION_JSON="core/config/webs/${SECTION_NAME}.json"
+            SECTION_HTML="core/results/webs/${TITLE}/structure/${SECTION_NAME}/${SECTION_NAME}.html"
+            if [ -f "$SECTION_JSON" ]; then
+              echo "Procesando $SECTION_JSON para $SECTION_HTML"
+              # Extraer título de la sección
+              SECTION_TITLE=$(jq -r '.title' "$SECTION_JSON")
+              
+              # Leer la plantilla HTML
+              TEMPLATE_HTML="core/web/templates/section-template.html"
+              if [ -f "$TEMPLATE_HTML" ]; then
+                # Copiar la plantilla al destino
+                mkdir -p "$(dirname "$SECTION_HTML")"
+                cp "$TEMPLATE_HTML" "$SECTION_HTML"
+                
+                # Reemplazar los placeholders con los valores reales
+                sed -i "s/SECTION_TITLE_PLACEHOLDER/$SECTION_TITLE/g" "$SECTION_HTML"
+                
+                # Procesar templates y reemplazar el placeholder de templates
+                TEMPLATES_HTML=""
+                jq -c '.templates[]' "$SECTION_JSON" | while read -r template; do
+                  TYPE=$(echo $template | jq -r '.type')
+                  if [ "$TYPE" = "graphic" ]; then
+                    TEMPLATES_HTML+=$(cat core/web/templates/graphic.html)
+                    TEMPLATES_HTML+="<script src=\"../../js/graphic.js\"></script>"
+                  elif [ "$TYPE" = "list" ]; then
+                    TEMPLATES_HTML+=$(cat core/web/templates/data-list.html)
+                    TEMPLATES_HTML+="<script src=\"../../js/data-list.js\"></script>"
+                  fi
+                done
+                
+                # Reemplazar el placeholder de templates con el HTML generado
+                sed -i "s|<!-- TEMPLATES_PLACEHOLDER -->|$TEMPLATES_HTML|g" "$SECTION_HTML"
+                
+                echo "Generado $SECTION_HTML"
+              else
+                echo "Error: No se encontró la plantilla HTML en $TEMPLATE_HTML"
+              fi
+            else
+              echo "No se encontró $SECTION_JSON"
+            fi
+          done
+  
+      - name: Subir HTMLs generados
+        run: |
+          git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
+          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
+          git pull
+          git add core/results/webs/**/structure/**/*.html
+          if git diff --staged --quiet; then
+            echo "No hay cambios para hacer commit"
+          else
+            git commit -m "[Ka0S] Generados HTML de secciones según JSON"
+            git push origin ${{ env.KAOS_REF }}
+          fi
      
   handle-success:
     runs-on:
@@ -315,74 +389,7 @@ jobs:
           gh issue comment $RNNUMBER --body "Se finaliza Ka0s ${{ env.KAOS_CODE }}"
           gh workflow run inspector.yml --ref 'main' -f kaos-issue-id=$RNNUMBER -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start=""
 
-  job-design:
-    runs-on:
-      group: ka0s
-    needs: [job-core, job-data]
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
   
-      - name: Generar HTML de secciones según JSON
-        run: |
-          echo "Generando HTML de secciones según su JSON..."
-          STRUCTURE_FILE="core/config/webs/webs.json"
-          TITLE=$(cat $STRUCTURE_FILE | grep -o '"title": *"[^"]*"' | cut -d'"' -f4)
-          SECTIONS=$(cat $STRUCTURE_FILE | grep -o '"section[0-9]*": *"[^"]*"' | cut -d'"' -f2,4 | tr '\n' ' ')
-          for entry in $SECTIONS; do
-            SECTION_KEY=$(echo $entry | cut -d':' -f1 | tr -d '"')
-            SECTION_NAME=$(echo $entry | cut -d':' -f2 | tr -d '"')
-            SECTION_JSON="core/config/webs/${SECTION_NAME}.json"
-            SECTION_HTML="core/results/webs/${TITLE}/structure/${SECTION_NAME}/${SECTION_NAME}.html"
-            if [ -f "$SECTION_JSON" ]; then
-              echo "Procesando $SECTION_JSON para $SECTION_HTML"
-              # Extraer título de la sección
-              SECTION_TITLE=$(jq -r '.title' "$SECTION_JSON")
-              # Inicializar HTML
-              cat << EOF > "$SECTION_HTML"
-          <!DOCTYPE html>
-          <html lang="es">
-          <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>$SECTION_TITLE</title>
-          </head>
-          <body>
-            <h1>$SECTION_TITLE</h1>
-          EOF
-              # Procesar templates
-              jq -c '.templates[]' "$SECTION_JSON" | while read -r template; do
-                TYPE=$(echo $template | jq -r '.type')
-                if [ "$TYPE" = "graphic" ]; then
-                  cat core/web/templates/graphic.html >> "$SECTION_HTML"
-                  echo "<script src=\"../../js/graphic.js\"></script>" >> "$SECTION_HTML"
-                elif [ "$TYPE" = "list" ]; then
-                  cat core/web/templates/data-list.html >> "$SECTION_HTML"
-                  echo "<script src=\"../../js/data-list.js\"></script>" >> "$SECTION_HTML"
-                fi
-              done
-              echo "</body></html>" >> "$SECTION_HTML"
-              echo "Generado $SECTION_HTML"
-            else
-              echo "No se encontró $SECTION_JSON"
-            fi
-          done
-  
-      - name: Subir HTMLs generados
-        run: |
-          git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
-          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
-          git pull
-          git add core/results/webs/**/structure/**/*.html
-          if git diff --staged --quiet; then
-            echo "No hay cambios para hacer commit"
-          else
-            git commit -m "[Ka0S] Generados HTML de secciones según JSON"
-            git push origin ${{ env.KAOS_REF }}
-          fi
 
 
 
