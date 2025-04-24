@@ -290,7 +290,7 @@ jobs:
   handle-success:
     runs-on:
       group: ka0s
-    needs: [job-core]
+    needs: [job-core, job-data, job-design]
     if: ${{ success() }}
     steps:
       - id: repo
@@ -313,7 +313,7 @@ jobs:
   handle_failure:
     runs-on:
       group: ka0s
-    needs: [job-core, handle-success]
+    needs: [job-core, job-data, job-design, handle-success]
     if: ${{ failure() }}
     steps:
       - id: repo
@@ -381,7 +381,7 @@ jobs:
   end-workflow:
     runs-on:
       group: ka0s
-    needs: [job-core, handle-success, handle_failure]
+    needs: [job-core, job-data, job-design, handle-success, handle_failure]
     if: ${{ always() && !contains(github.event.head_commit.message, '[Ka0S] ') }}
     env:
         GH_TOKEN: ${{ secrets.KAOS_ACTIONS_TOKEN }}
