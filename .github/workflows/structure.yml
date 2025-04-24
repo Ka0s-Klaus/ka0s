@@ -288,38 +288,37 @@ jobs:
             echo "Creando nuevo archivo dashboard.html"
             # Crear estructura básica del dashboard si no existe
             cat > "$DASHBOARD_HTML" << EOF
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ka0s Dashboard</title>
-    <link rel="stylesheet" href="css/styles.css">
-    <!-- Incluir estilos adicionales aquí -->
-</head>
-<body>
-    <header>
-        <h1>Ka0s Dashboard</h1>
-        <nav id="main-nav">
-            <!-- Navegación generada dinámicamente -->
-        </nav>
-    </header>
-    
-    <main id="dashboard-container">
-        <!-- Aquí se cargarán las secciones -->
-    </main>
-    
-    <!-- Contenedores para cada sección (inicialmente ocultos) -->
-    <div id="sections-container">
-        <!-- Las secciones se cargarán aquí -->
-    </div>
-    
-    <script src="js/dashboard.js"></script>
-</body>
-</html>
-EOF
-          fi
-          
+          <!DOCTYPE html>
+          <html lang="es">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Ka0s Dashboard</title>
+              <!-- No incluimos CSS -->
+          </head>
+          <body>
+              <header>
+                  <h1>Ka0s Dashboard</h1>
+                  <nav id="main-nav">
+                      <!-- Navegación generada dinámicamente -->
+                  </nav>
+              </header>
+              
+              <main id="dashboard-container">
+                  <!-- Aquí se cargarán las secciones -->
+              </main>
+              
+              <!-- Contenedores para cada sección (inicialmente ocultos) -->
+              <div id="sections-container">
+                  <!-- Las secciones se cargarán aquí -->
+              </div>
+              
+              <script src="js/dashboard.js"></script>
+          </body>
+          </html>
+          EOF
+                    fi
+                    
           # Generar navegación y contenedores para cada sección
           SECTIONS=$(cat $STRUCTURE_FILE | grep -o '"section[0-9]*": *"[^"]*"' | cut -d'"' -f2,4 | tr '\n' ' ')
           
@@ -340,7 +339,7 @@ EOF
               NAV_ITEMS+="<li><a href=\"#${SECTION_NAME}\" data-section=\"${SECTION_NAME}\">${SECTION_TITLE}</a></li>\n"
               
               # Añadir contenedor para la sección
-              SECTION_CONTAINERS+="<div id=\"${SECTION_NAME}\" class=\"section-container hidden\">\n"
+              SECTION_CONTAINERS+="<div id=\"${SECTION_NAME}\" class=\"section-container\">\n"
               SECTION_CONTAINERS+="  <iframe src=\"structure/${SECTION_NAME}/${SECTION_NAME}.html\" frameborder=\"0\" width=\"100%\" height=\"600px\"></iframe>\n"
               SECTION_CONTAINERS+="</div>\n"
             fi
@@ -365,96 +364,44 @@ EOF
           mkdir -p "$JS_DIR"
           
           cat > "${JS_DIR}/dashboard.js" << EOF
-// Script para manejar la navegación entre secciones
-document.addEventListener('DOMContentLoaded', function() {
-    // Obtener todos los enlaces de navegación
-    const navLinks = document.querySelectorAll('#main-nav a');
-    
-    // Añadir evento de clic a cada enlace
-    navLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            // Ocultar todas las secciones
-            document.querySelectorAll('.section-container').forEach(section => {
-                section.classList.add('hidden');
-            });
-            
-            // Mostrar la sección seleccionada
-            const sectionId = this.getAttribute('data-section');
-            document.getElementById(sectionId).classList.remove('hidden');
-            
-            // Marcar el enlace activo
-            navLinks.forEach(navLink => {
-                navLink.classList.remove('active');
-            });
-            this.classList.add('active');
-        });
-    });
-    
-    // Mostrar la primera sección por defecto
-    if (navLinks.length > 0) {
-        navLinks[0].click();
-    }
-});
-EOF
-          
-          # Crear un archivo CSS básico si no existe
-          CSS_DIR="core/results/webs/${TITLE}/css"
-          mkdir -p "$CSS_DIR"
-          
-          if [ ! -f "${CSS_DIR}/styles.css" ]; then
-            cat > "${CSS_DIR}/styles.css" << EOF
-/* Estilos básicos para el dashboard */
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-}
-
-header {
-    background-color: #333;
-    color: white;
-    padding: 1rem;
-}
-
-nav ul {
-    display: flex;
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-nav li {
-    margin-right: 1rem;
-}
-
-nav a {
-    color: white;
-    text-decoration: none;
-    padding: 0.5rem;
-}
-
-nav a.active {
-    background-color: #555;
-    border-radius: 4px;
-}
-
-.hidden {
-    display: none;
-}
-
-.section-container {
-    padding: 1rem;
-}
-
-iframe {
-    border: none;
-    width: 100%;
-    min-height: 600px;
-}
-EOF
-          fi
+          // Script para manejar la navegación entre secciones
+          document.addEventListener('DOMContentLoaded', function() {
+              // Obtener todos los enlaces de navegación
+              const navLinks = document.querySelectorAll('#main-nav a');
+              
+              // Añadir evento de clic a cada enlace
+              navLinks.forEach(link => {
+                  link.addEventListener('click', function(e) {
+                      e.preventDefault();
+                      
+                      // Ocultar todas las secciones
+                      document.querySelectorAll('.section-container').forEach(section => {
+                          section.style.display = 'none';
+                      });
+                      
+                      // Mostrar la sección seleccionada
+                      const sectionId = this.getAttribute('data-section');
+                      document.getElementById(sectionId).style.display = 'block';
+                      
+                      // Marcar el enlace activo
+                      navLinks.forEach(navLink => {
+                          navLink.classList.remove('active');
+                      });
+                      this.classList.add('active');
+                  });
+              });
+              
+              // Mostrar la primera sección por defecto y ocultar las demás
+              if (navLinks.length > 0) {
+                  document.querySelectorAll('.section-container').forEach(section => {
+                      section.style.display = 'none';
+                  });
+                  const firstSectionId = navLinks[0].getAttribute('data-section');
+                  document.getElementById(firstSectionId).style.display = 'block';
+                  navLinks[0].classList.add('active');
+              }
+          });
+          EOF
           
           echo "Dashboard actualizado con todas las secciones en $DASHBOARD_HTML"
   
@@ -466,7 +413,6 @@ EOF
           git add core/results/webs/**/structure/**/*.html
           git add core/results/webs/**/dashboard.html
           git add core/results/webs/**/js/dashboard.js
-          git add core/results/webs/**/css/styles.css
           if git diff --staged --quiet; then
             echo "No hay cambios para hacer commit"
           else
