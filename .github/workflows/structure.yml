@@ -274,6 +274,20 @@ jobs:
             fi
           done
       
+      - name: Subir HTMLs generados
+        run: |
+          git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
+          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
+          git pull
+          git add core/results/webs/**/structure/**/*.html
+          git add core/results/webs/**/js/dashboard.js
+          if git diff --staged --quiet; then
+            echo "No hay cambios para hacer commit"
+          else
+            git commit -m "[Ka0S] Generados HTML de secciones según JSON"
+            git push origin ${{ env.KAOS_REF }}
+          fi
+      
       - name: Actualizar dashboard.html con secciones
         run: |
           echo "Actualizando dashboard.html para incluir todas las secciones..."
@@ -404,19 +418,13 @@ jobs:
           EOF
           
           echo "Dashboard actualizado con todas las secciones en $DASHBOARD_HTML"
-  
-      - name: Subir HTMLs generados
-        run: |
-          git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
-          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
-          git pull
-          git add core/results/webs/**/structure/**/*.html
+          
+          # Subir el dashboard.html actualizado
           git add core/results/webs/**/dashboard.html
-          git add core/results/webs/**/js/dashboard.js
           if git diff --staged --quiet; then
-            echo "No hay cambios para hacer commit"
+            echo "No hay cambios en dashboard.html para hacer commit"
           else
-            git commit -m "[Ka0S] Generados HTML de secciones según JSON"
+            git commit -m "[Ka0S] Actualizado dashboard.html con secciones"
             git push origin ${{ env.KAOS_REF }}
           fi
      
