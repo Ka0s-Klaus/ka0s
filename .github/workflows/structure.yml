@@ -234,16 +234,10 @@ jobs:
                 cp "$TEMPLATE_HTML" "$SECTION_HTML"
                 
                 # Reemplazar los placeholders con los valores reales
-                sed -i "s|SECTION_TITLE_PLACEHOLDER|$SECTION_TITLE|g" "$SECTION_HTML"
+                sed -i "s/SECTION_TITLE_PLACEHOLDER/$SECTION_TITLE/g" "$SECTION_HTML"
                 
                 # Procesar templates y reemplazar el placeholder de templates
-                # Crear un archivo temporal para almacenar el HTML generado
-                TEMP_HTML=$(mktemp)
-                
-                # Inicializar el contenido HTML para los templates
-                echo "" > "$TEMP_HTML"
-                
-                # Procesar cada template del JSON
+                TEMPLATES_HTML=""
                 jq -c '.templates[]' "$SECTION_JSON" | while read -r template; do
                   TYPE=$(echo $template | jq -r '.type')
                   TITLE=$(echo $template | jq -r '.title')
@@ -251,45 +245,27 @@ jobs:
                   
                   if [ "$TYPE" = "graphic" ]; then
                     # Leer la plantilla de gráfico
-                    if [ -f "core/web/templates/graphic.html" ]; then
-                      GRAPHIC_HTML=$(cat core/web/templates/graphic.html)
-                      # Reemplazar placeholders en la plantilla
-                      GRAPHIC_HTML=$(echo "$GRAPHIC_HTML" | sed "s/GRAPHIC_TITLE_PLACEHOLDER/$TITLE/g")
-                      GRAPHIC_HTML=$(echo "$GRAPHIC_HTML" | sed "s|DATA_SOURCE_PLACEHOLDER|$DATA_SOURCE|g")
-                      # Añadir el HTML del gráfico al archivo temporal
-                      echo "$GRAPHIC_HTML" >> "$TEMP_HTML"
-                      echo "<script src=\"../../js/graphic.js\" data-source=\"$DATA_SOURCE\"></script>" >> "$TEMP_HTML"
-                    else
-                      echo "Error: No se encontró la plantilla de gráfico"
-                    fi
+                    GRAPHIC_TEMPLATE=$(cat core/web/templates/graphic.html)
+                    # Reemplazar placeholders en la plantilla
+                    GRAPHIC_TEMPLATE=$(echo "$GRAPHIC_TEMPLATE" | sed "s/GRAPHIC_TITLE_PLACEHOLDER/$TITLE/g")
+                    GRAPHIC_TEMPLATE=$(echo "$GRAPHIC_TEMPLATE" | sed "s|DATA_SOURCE_PLACEHOLDER|$DATA_SOURCE|g")
+                    TEMPLATES_HTML+="$GRAPHIC_TEMPLATE"
+                    TEMPLATES_HTML+="<script src=\"../../js/graphic.js\" data-source=\"$DATA_SOURCE\"></script>"
                   elif [ "$TYPE" = "list" ]; then
                     # Leer la plantilla de lista
-                    if [ -f "core/web/templates/data-list.html" ]; then
-                      LIST_HTML=$(cat core/web/templates/data-list.html)
-                      # Reemplazar placeholders en la plantilla
-                      LIST_HTML=$(echo "$LIST_HTML" | sed "s/LIST_TITLE_PLACEHOLDER/$TITLE/g")
-                      LIST_HTML=$(echo "$LIST_HTML" | sed "s|DATA_SOURCE_PLACEHOLDER|$DATA_SOURCE|g")
-                      # Añadir el HTML de la lista al archivo temporal
-                      echo "$LIST_HTML" >> "$TEMP_HTML"
-                      echo "<script src=\"../../js/data-list.js\" data-source=\"$DATA_SOURCE\"></script>" >> "$TEMP_HTML"
-                    else
-                      echo "Error: No se encontró la plantilla de lista"
-                    fi
+                    LIST_TEMPLATE=$(cat core/web/templates/data-list.html)
+                    # Reemplazar placeholders en la plantilla
+                    LIST_TEMPLATE=$(echo "$LIST_TEMPLATE" | sed "s/LIST_TITLE_PLACEHOLDER/$TITLE/g")
+                    LIST_TEMPLATE=$(echo "$LIST_TEMPLATE" | sed "s|DATA_SOURCE_PLACEHOLDER|$DATA_SOURCE|g")
+                    TEMPLATES_HTML+="$LIST_TEMPLATE"
+                    TEMPLATES_HTML+="<script src=\"../../js/data-list.js\" data-source=\"$DATA_SOURCE\"></script>"
                   fi
                 done
                 
-                # Leer el contenido del archivo temporal
-                TEMPLATES_HTML=$(cat "$TEMP_HTML")
-                
                 # Reemplazar el placeholder de templates con el HTML generado
-                # Escapar caracteres especiales para sed
-                TEMPLATES_HTML_ESCAPED=$(echo "$TEMPLATES_HTML" | sed -e 's/[\/&]/\\&/g')
-                sed -i "s|<!-- TEMPLATES_PLACEHOLDER -->|$TEMPLATES_HTML_ESCAPED|g" "$SECTION_HTML"
+                sed -i "s|<!-- TEMPLATES_PLACEHOLDER -->|$TEMPLATES_HTML|g" "$SECTION_HTML"
                 
-                # Eliminar el archivo temporal
-                rm "$TEMP_HTML"
-                
-                echo "Generado $SECTION_HTML con éxito"
+                echo "Generado $SECTION_HTML"
               else
                 echo "Error: No se encontró la plantilla HTML en $TEMPLATE_HTML"
               fi
