@@ -250,16 +250,27 @@ jobs:
                   if jq -e '.templates[] | select(.type == "list")' "$SECTION_JSON" > /dev/null; then
                     # Obtener el primer template de tipo list (usando head -1 en lugar de first)
                     LIST_TEMPLATE_JSON=$(jq -c '.templates[] | select(.type == "list")' "$SECTION_JSON" | head -1)
+                    echo "LIST_TEMPLATE_JSON: $LIST_TEMPLATE_JSON"
                     LIST_TITLE=$(echo "$LIST_TEMPLATE_JSON" | jq -r '.title')
+                    echo "LIST_TITLE: $LIST_TITLE"
                     LIST_DATA_SOURCE=$(echo "$LIST_TEMPLATE_JSON" | jq -r '.dataSource')
+                    echo "LIST_DATA_SOURCE: $LIST_DATA_SOURCE"
                     
                     # Leer la plantilla de lista
                     LIST_TEMPLATE=$(cat core/web/templates/data-list.html)
+                    echo "LIST_TEMPLATE: $LIST_TEMPLATE"
                     # Reemplazar placeholders en la plantilla
-                    LIST_TITLE_ESCAPED=$(echo "$LIST_TITLE" | sed 's/[\/&]/\\&/g')
+                    # Escapar caracteres especiales para sed de manera más segura
+                    # Método alternativo para escapar caracteres especiales
+                    LIST_TITLE_ESCAPED=$(printf '%s\n' "$LIST_TITLE" | sed 's/[\/&]/\\&/g')
+                    echo "LIST_TITLE_ESCAPED: $LIST_TITLE_ESCAPED"
                     LIST_DATA_SOURCE_ESCAPED=$(echo "$LIST_DATA_SOURCE" | sed 's/[\/&]/\\&/g')
-                    LIST_TEMPLATE=$(echo "$LIST_TEMPLATE" | sed "s/LIST_TITLE_PLACEHOLDER/$LIST_TITLE_ESCAPED/g")
-                    LIST_TEMPLATE=$(echo "$LIST_TEMPLATE" | sed "s|DATA_SOURCE_PLACEHOLDER|$LIST_DATA_SOURCE_ESCAPED|g")
+                    echo "LIST_DATA_SOURCE_ESCAPED: $LIST_DATA_SOURCE_ESCAPED"
+                    # Usar reemplazo nativo de Bash
+                    LIST_TEMPLATE="${LIST_TEMPLATE//LIST_TITLE_PLACEHOLDER/$LIST_TITLE}"
+                    echo "LIST_TEMPLATE: $LIST_TEMPLATE"
+                    LIST_TEMPLATE="${LIST_TEMPLATE//DATA_SOURCE_PLACEHOLDER/$LIST_DATA_SOURCE}"
+                    echo "LIST_TEMPLATE: $LIST_TEMPLATE"
                     
                     # Reemplazar el placeholder con la lista
                     sed -i "s|SECTION_LIST_PLACEHOLDER|$LIST_TEMPLATE|g" "$SECTION_HTML"
