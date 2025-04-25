@@ -325,7 +325,7 @@ jobs:
           </body>
           </html>
           EOF
-                    fi
+          fi
                     
           # Generar navegación y contenedores para cada sección
           SECTIONS=$(cat $STRUCTURE_FILE | grep -o '"section[0-9]*": *"[^"]*"' | cut -d'"' -f2,4 | tr '\n' ' ')
@@ -414,7 +414,7 @@ jobs:
           echo "Dashboard actualizado con todas las secciones en $DASHBOARD_HTML"
           
           # Subir el dashboard.html actualizado
-          git add core/results/webs/**/dashboard.html
+          git add core/results/webs/dashboard/dashboard.html
           if git diff --staged --quiet; then
             echo "No hay cambios en dashboard.html para hacer commit"
           else
