@@ -256,8 +256,10 @@ jobs:
                     # Leer la plantilla de lista
                     LIST_TEMPLATE=$(cat core/web/templates/data-list.html)
                     # Reemplazar placeholders en la plantilla
-                    LIST_TEMPLATE=$(echo "$LIST_TEMPLATE" | sed "s/LIST_TITLE_PLACEHOLDER/$LIST_TITLE/g")
-                    LIST_TEMPLATE=$(echo "$LIST_TEMPLATE" | sed "s|DATA_SOURCE_PLACEHOLDER|$LIST_DATA_SOURCE|g")
+                    LIST_TITLE_ESCAPED=$(echo "$LIST_TITLE" | sed 's/[\/&]/\\&/g')
+                    LIST_DATA_SOURCE_ESCAPED=$(echo "$LIST_DATA_SOURCE" | sed 's/[\/&]/\\&/g')
+                    LIST_TEMPLATE=$(echo "$LIST_TEMPLATE" | sed "s/LIST_TITLE_PLACEHOLDER/$LIST_TITLE_ESCAPED/g")
+                    LIST_TEMPLATE=$(echo "$LIST_TEMPLATE" | sed "s|DATA_SOURCE_PLACEHOLDER|$LIST_DATA_SOURCE_ESCAPED|g")
                     
                     # Reemplazar el placeholder con la lista
                     sed -i "s|SECTION_LIST_PLACEHOLDER|$LIST_TEMPLATE|g" "$SECTION_HTML"
