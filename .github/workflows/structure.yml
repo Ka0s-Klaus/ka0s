@@ -219,13 +219,15 @@ jobs:
           STRUCTURE_FILE="core/config/webs/webs.json"
           TITLE=$(cat $STRUCTURE_FILE | grep -o '"title": *"[^"]*"' | cut -d'"' -f4)
           SECTIONS=$(cat $STRUCTURE_FILE | grep -o '"section[0-9]*": *"[^"]*"' | cut -d'"' -f2,4 | tr '\n' ' ')
-          for entry in $SECTIONS; do
-            SECTION_KEY=$(echo $entry | cut -d':' -f1 | tr -d '"')
-            SECTION_NAME=$(echo $entry | cut -d':' -f2 | tr -d '"')
-            SECTION_JSON="core/config/webs/${SECTION_NAME}.json"
-            SECTION_HTML="core/results/webs/${TITLE}/structure/${SECTION_NAME}/${SECTION_NAME}.html"
-            if [ -f "$SECTION_JSON" ]; then
-              echo "Procesando $SECTION_JSON para $SECTION_HTML"
+          for entry in $SECTIONS; do 
+            SECTION_KEY=$(echo $entry | cut -d':' -f1 | tr -d '"') 
+            SECTION_NAME=$(echo $entry | cut -d':' -f2 | tr -d '"') 
+            SECTION_JSON="core/config/webs/${SECTION_NAME}.json" 
+            SECTION_HTML="core/results/webs/${TITLE}/structure/${SECTION_NAME}/${SECTION_NAME}.html" 
+            # Definir la ubicación del archivo de dashboard principal
+            DASHBOARD_HTML="core/results/webs/${TITLE}/dashboard.html"
+            if [ -f "$SECTION_JSON" ]; then 
+              echo "Procesando $SECTION_JSON para $SECTION_HTML" 
               # Extraer título de la sección
               SECTION_TITLE=$(jq -r '.title' "$SECTION_JSON")
               
@@ -268,9 +270,10 @@ jobs:
                 # Reemplazar el placeholder de templates con el HTML generado
                 sed -i "s|<!-- TEMPLATES_PLACEHOLDER -->|$TEMPLATES_HTML|g" "$SECTION_HTML"
                 
-                echo "Generado $SECTION_HTML"
-                cat $SECTION_HTML > "$DASHBOARD_HTML"
-              else
+                echo "Generado $SECTION_HTML" 
+                # Ahora $DASHBOARD_HTML está definido
+                cat $SECTION_HTML > "$DASHBOARD_HTML" 
+                else 
                 echo "Error: No se encontró la plantilla HTML en $TEMPLATE_HTML"
               fi
             else
