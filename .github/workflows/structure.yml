@@ -418,6 +418,7 @@ jobs:
           if git diff --staged --quiet; then
             echo "No hay cambios en dashboard.html para hacer commit"
           else
+            git pull origin ${{ env.KAOS_REF }}
             git commit -m "[Ka0S] Actualizado dashboard.html con secciones"
             git push origin ${{ env.KAOS_REF }}
           fi
