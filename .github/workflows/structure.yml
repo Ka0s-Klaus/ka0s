@@ -243,6 +243,29 @@ jobs:
                 # Reemplazar los placeholders con los valores reales
                 sed -i "s/SECTION_TITLE_PLACEHOLDER/$SECTION_TITLE/g" "$SECTION_HTML"
                 
+                # Comprobar si hay un placeholder para lista de sección y procesarlo
+                if grep -q "SECTION_LIST_PLACEHOLDER" "$SECTION_HTML"; then
+                  echo "Encontrado placeholder para lista de sección, procesando..."
+                  # Verificar si el JSON de la sección tiene una lista
+                  if jq -e '.type == "list"' "$SECTION_JSON" > /dev/null; then
+                    LIST_TITLE=$(jq -r '.title' "$SECTION_JSON")
+                    LIST_DATA_SOURCE=$(jq -r '.dataSource' "$SECTION_JSON")
+                    
+                    # Leer la plantilla de lista
+                    LIST_TEMPLATE=$(cat core/web/templates/data-list.html)
+                    # Reemplazar placeholders en la plantilla
+                    LIST_TEMPLATE=$(echo "$LIST_TEMPLATE" | sed "s/LIST_TITLE_PLACEHOLDER/$LIST_TITLE/g")
+                    LIST_TEMPLATE=$(echo "$LIST_TEMPLATE" | sed "s|DATA_SOURCE_PLACEHOLDER|$LIST_DATA_SOURCE|g")
+                    
+                    # Reemplazar el placeholder con la lista
+                    sed -i "s|SECTION_LIST_PLACEHOLDER|$LIST_TEMPLATE|g" "$SECTION_HTML"
+                    echo "Añadido componente de lista a la sección"
+                  else
+                    echo "La sección no tiene una lista definida, eliminando placeholder"
+                    sed -i "s|SECTION_LIST_PLACEHOLDER||g" "$SECTION_HTML"
+                  fi
+                fi
+                
                 # Procesar templates y reemplazar el placeholder de templates
                 TEMPLATES_HTML=""
                 jq -c '.templates[]' "$SECTION_JSON" | while read -r template; do
