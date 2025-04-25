@@ -248,8 +248,8 @@ jobs:
                   echo "Encontrado placeholder para lista de sección, procesando..."
                   # Verificar si el JSON de la sección tiene una lista en sus templates
                   if jq -e '.templates[] | select(.type == "list")' "$SECTION_JSON" > /dev/null; then
-                    # Obtener el primer template de tipo list
-                    LIST_TEMPLATE_JSON=$(jq -c '.templates[] | select(.type == "list") | first' "$SECTION_JSON")
+                    # Obtener el primer template de tipo list (usando head -1 en lugar de first)
+                    LIST_TEMPLATE_JSON=$(jq -c '.templates[] | select(.type == "list")' "$SECTION_JSON" | head -1)
                     LIST_TITLE=$(echo "$LIST_TEMPLATE_JSON" | jq -r '.title')
                     LIST_DATA_SOURCE=$(echo "$LIST_TEMPLATE_JSON" | jq -r '.dataSource')
                     
