@@ -259,15 +259,14 @@ jobs:
                     # Leer la plantilla de lista
                     LIST_TEMPLATE=$(cat core/web/templates/data-list.html)
                     echo "LIST_TEMPLATE: $LIST_TEMPLATE"
-                    # Reemplazar placeholders en la plantilla
-                    # Escapar caracteres especiales para sed de manera más segura
-                    # Método alternativo para escapar caracteres especiales
-                    LIST_TITLE_ESCAPED=$(printf '%s\n' "$LIST_TITLE" | sed 's/[\/&]/\\&/g')
-                    echo "LIST_TITLE_ESCAPED: $LIST_TITLE_ESCAPED"
-                    LIST_DATA_SOURCE_ESCAPED=$(echo "$LIST_DATA_SOURCE" | sed 's/[\/&]/\\&/g')
-                    echo "LIST_DATA_SOURCE_ESCAPED: $LIST_DATA_SOURCE_ESCAPED"
-                    # Usar reemplazo nativo de Bash
-                    # Reemplazar con awk
+                    
+                    # ELIMINAR O COMENTAR ESTAS LÍNEAS PROBLEMÁTICAS
+                    # LIST_TITLE_ESCAPED=$(printf '%s\n' "$LIST_TITLE" | sed 's/[\/&]/\\&/g')
+                    # echo "LIST_TITLE_ESCAPED: $LIST_TITLE_ESCAPED"
+                    # LIST_DATA_SOURCE_ESCAPED=$(echo "$LIST_DATA_SOURCE" | sed 's/[\/&]/\\&/g')
+                    # echo "LIST_DATA_SOURCE_ESCAPED: $LIST_DATA_SOURCE_ESCAPED"
+                    
+                    # Reemplazar con awk (mantener estas líneas)
                     LIST_TEMPLATE=$(awk -v title="$LIST_TITLE" '{gsub(/LIST_TITLE_PLACEHOLDER/, title); print}' <<< "$LIST_TEMPLATE")
                     LIST_TEMPLATE=$(awk -v source="$LIST_DATA_SOURCE" '{gsub(/DATA_SOURCE_PLACEHOLDER/, source); print}' <<< "$LIST_TEMPLATE")
                     
