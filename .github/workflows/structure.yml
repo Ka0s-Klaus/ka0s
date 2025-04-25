@@ -319,7 +319,11 @@ jobs:
           
           # Concatenar todas las secciones
           if [ -d "core/results/webs/${TITLE}/temp_sections" ]; then
-            cat "core/results/webs/${TITLE}/temp_sections"/*.html >> "core/results/webs/${TITLE}/dashboard.html"
+            for section_file in "core/results/webs/${TITLE}/temp_sections"/*.html; do
+              echo "<div class=\"section-content\">" >> "core/results/webs/${TITLE}/dashboard.html"
+              cat "$section_file" >> "core/results/webs/${TITLE}/dashboard.html"
+              echo "</div>" >> "core/results/webs/${TITLE}/dashboard.html"
+            done
           fi
           
           echo "</body></html>" >> "core/results/webs/${TITLE}/dashboard.html"
