@@ -246,10 +246,12 @@ jobs:
                 # Comprobar si hay un placeholder para lista de sección y procesarlo
                 if grep -q "SECTION_LIST_PLACEHOLDER" "$SECTION_HTML"; then
                   echo "Encontrado placeholder para lista de sección, procesando..."
-                  # Verificar si el JSON de la sección tiene una lista
-                  if jq -e '.type == "list"' "$SECTION_JSON" > /dev/null; then
-                    LIST_TITLE=$(jq -r '.title' "$SECTION_JSON")
-                    LIST_DATA_SOURCE=$(jq -r '.dataSource' "$SECTION_JSON")
+                  # Verificar si el JSON de la sección tiene una lista en sus templates
+                  if jq -e '.templates[] | select(.type == "list")' "$SECTION_JSON" > /dev/null; then
+                    # Obtener el primer template de tipo list
+                    LIST_TEMPLATE_JSON=$(jq -c '.templates[] | select(.type == "list") | first' "$SECTION_JSON")
+                    LIST_TITLE=$(echo "$LIST_TEMPLATE_JSON" | jq -r '.title')
+                    LIST_DATA_SOURCE=$(echo "$LIST_TEMPLATE_JSON" | jq -r '.dataSource')
                     
                     # Leer la plantilla de lista
                     LIST_TEMPLATE=$(cat core/web/templates/data-list.html)
