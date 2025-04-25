@@ -273,7 +273,9 @@ jobs:
                 sed -i "s|<!-- TEMPLATES_PLACEHOLDER -->|$TEMPLATES_HTML|g" "$SECTION_HTML"
                 
                 echo "Generado $SECTION_HTML"
-                cat $SECTION_HTML > "core/results/webs/${TITLE}/dashboard.html"
+                # Almacenar cada sección en un directorio temporal para concatenarlas después
+                mkdir -p "core/results/webs/${TITLE}/temp_sections"
+                cp "$SECTION_HTML" "core/results/webs/${TITLE}/temp_sections/${SECTION_NAME}.html"
               else
                 echo "Error: No se encontro la plantilla HTML en $TEMPLATE_HTML"
               fi
@@ -281,147 +283,24 @@ jobs:
               echo "No se encontró $SECTION_JSON"
             fi
           done
-      
-      - name: Actualizar dashboard.html con secciones
-        run: |
-          echo "Actualizando dashboard.html para incluir todas las secciones..."
-          STRUCTURE_FILE="core/config/webs/webs.json"
-          TITLE=$(cat $STRUCTURE_FILE | grep -o '"title": *"[^"]*"' | cut -d'"' -f4)
-          DASHBOARD_HTML="core/results/webs/${TITLE}/dashboard.html"
           
-          # Verificar si existe el archivo dashboard.html
-          if [ -f "$DASHBOARD_HTML" ]; then
-            echo "Actualizando archivo dashboard.html existente"
-          else
-            echo "Creando nuevo archivo dashboard.html"
-            # Crear estructura básica del dashboard si no existe
-            cat > "$DASHBOARD_HTML" << EOF
-          <!DOCTYPE html>
-          <html lang="es">
+          # Crear el dashboard.html con todas las secciones concatenadas
+          echo "<!DOCTYPE html>
+          <html lang=\"en\">
           <head>
-              <meta charset="UTF-8">
-              <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <title>Ka0s Dashboard</title>
-              <!-- No incluimos CSS -->
+              <meta charset=\"UTF-8\">
+              <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
+              <title>Dashboard</title>
           </head>
-          <body>
-              <header>
-                  <h1>Ka0s Dashboard</h1>
-                  <nav id="main-nav">
-                      <!-- Navegación generada dinámicamente -->
-                  </nav>
-              </header>
-              
-              <main id="dashboard-container">
-                  <!-- Aquí se cargarán las secciones -->
-              </main>
-              
-              <!-- Contenedores para cada sección (inicialmente ocultos) -->
-              <div id="sections-container">
-                  <!-- Las secciones se cargarán aquí -->
-              </div>
-              
-              <script src="js/dashboard.js"></script>
-          </body>
-          </html>
-          EOF
+          <body>" > "core/results/webs/${TITLE}/dashboard.html"
+          
+          # Concatenar todas las secciones
+          if [ -d "core/results/webs/${TITLE}/temp_sections" ]; then
+            cat "core/results/webs/${TITLE}/temp_sections"/*.html >> "core/results/webs/${TITLE}/dashboard.html"
           fi
-                    
-          # Generar navegación y contenedores para cada sección
-          SECTIONS=$(cat $STRUCTURE_FILE | grep -o '"section[0-9]*": *"[^"]*"' | cut -d'"' -f2,4 | tr '\n' ' ')
           
-          # Crear arrays para almacenar los elementos de navegación y contenedores
-          NAV_ITEMS=""
-          SECTION_CONTAINERS=""
-          
-          # Procesar cada sección
-          for entry in $SECTIONS; do
-            SECTION_NAME=$(echo $entry | cut -d':' -f2 | tr -d '"')
-            SECTION_JSON="core/config/webs/${SECTION_NAME}.json"
-            
-            if [ -f "$SECTION_JSON" ]; then
-              # Extraer título de la sección
-              SECTION_TITLE=$(jq -r '.title' "$SECTION_JSON")
-              
-              # Añadir elemento de navegación
-              NAV_ITEMS+="<li><a href=\"#${SECTION_NAME}\" data-section=\"${SECTION_NAME}\">${SECTION_TITLE}</a></li>\n"
-              
-              # Añadir contenedor para la sección
-              SECTION_CONTAINERS+="<div id=\"${SECTION_NAME}\" class=\"section-container\">\n"
-              SECTION_CONTAINERS+="  <iframe src=\"structure/${SECTION_NAME}/${SECTION_NAME}.html\" frameborder=\"0\" width=\"100%\" height=\"600px\"></iframe>\n"
-              SECTION_CONTAINERS+="</div>\n"
-            fi
-          done
-          
-          # Actualizar el archivo dashboard.html con la navegación y contenedores
-          # Primero, crear un archivo temporal
-          TEMP_FILE=$(mktemp)
-          
-          # Leer el archivo dashboard.html y reemplazar los marcadores
-          cat "$DASHBOARD_HTML" | 
-          sed "/<nav id=\"main-nav\">/,/<\/nav>/c\\
-          <nav id=\"main-nav\">\n            <ul>\n                ${NAV_ITEMS}            </ul>\n        </nav>" |
-          sed "/<div id=\"sections-container\">/,/<\/div>/c\\
-          <div id=\"sections-container\">\n        ${SECTION_CONTAINERS}    </div>" > "$TEMP_FILE"
-          
-          # Reemplazar el archivo original con el temporal
-          mv "$TEMP_FILE" "$DASHBOARD_HTML"
-          
-          # Crear o actualizar el archivo JavaScript para manejar la navegación
-          JS_DIR="core/results/webs/${TITLE}/js"
-          mkdir -p "$JS_DIR"
-          
-          cat > "${JS_DIR}/dashboard.js" << EOF
-          // Script para manejar la navegación entre secciones
-          document.addEventListener('DOMContentLoaded', function() {
-              // Obtener todos los enlaces de navegación
-              const navLinks = document.querySelectorAll('#main-nav a');
-              
-              // Añadir evento de clic a cada enlace
-              navLinks.forEach(link => {
-                  link.addEventListener('click', function(e) {
-                      e.preventDefault();
-                      
-                      // Ocultar todas las secciones
-                      document.querySelectorAll('.section-container').forEach(section => {
-                          section.style.display = 'none';
-                      });
-                      
-                      // Mostrar la sección seleccionada
-                      const sectionId = this.getAttribute('data-section');
-                      document.getElementById(sectionId).style.display = 'block';
-                      
-                      // Marcar el enlace activo
-                      navLinks.forEach(navLink => {
-                          navLink.classList.remove('active');
-                      });
-                      this.classList.add('active');
-                  });
-              });
-              
-              // Mostrar la primera sección por defecto y ocultar las demás
-              if (navLinks.length > 0) {
-                  document.querySelectorAll('.section-container').forEach(section => {
-                      section.style.display = 'none';
-                  });
-                  const firstSectionId = navLinks[0].getAttribute('data-section');
-                  document.getElementById(firstSectionId).style.display = 'block';
-                  navLinks[0].classList.add('active');
-              }
-          });
-          EOF
-          
-          echo "Dashboard actualizado con todas las secciones en $DASHBOARD_HTML"
-          
-          # Subir el dashboard.html actualizado
-          git add core/results/webs/dashboard/dashboard.html
-          if git diff --staged --quiet; then
-            echo "No hay cambios en dashboard.html para hacer commit"
-          else
-            git pull origin ${{ env.KAOS_REF }}
-            git commit -m "[Ka0S] Actualizado dashboard.html con secciones"
-            git push origin ${{ env.KAOS_REF }}
-          fi
+          echo "</body></html>" >> "core/results/webs/${TITLE}/dashboard.html"
+          echo "Dashboard generado con todas las secciones"
       - id: upload-files
         name: Upload Files
         run: |
