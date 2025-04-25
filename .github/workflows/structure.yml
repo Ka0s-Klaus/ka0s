@@ -124,6 +124,7 @@ jobs:
         run: |
           echo "Reading data.json file..."
           DATA_FILE="${{ env.KAOS_JSON_DATA }}"
+          echo "Data file: $DATA_FILE"
           
           # Extract title for main folder name from structure file
           STRUCTURE_FILE="${{ env.KAOS_JSON_WEB }}"
@@ -146,10 +147,13 @@ jobs:
             jq -c '.dataFiles[]' "$DATA_FILE" | while read -r file; do
               SOURCE=$(echo $file | jq -r '.source')
               DEST=$(echo $file | jq -r '.destination')
-              
+              echo "Source: $SOURCE"
+              echo "Destination: $DEST"
+
               # Ensure destination directory exists
               DEST_DIR=$(dirname "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/$DEST")
               mkdir -p "$DEST_DIR"
+              echo "Destination directory: $DEST_DIR"
               
               # Copy the file
               if [ -f "$SOURCE" ]; then
