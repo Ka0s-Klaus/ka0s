@@ -392,6 +392,28 @@ jobs:
           fi
           
           echo "Archivos JavaScript copiados correctamente"
+          
+          # Copiar archivos de plantillas HTML necesarios
+          echo "Copiando archivos de plantillas HTML necesarios..."
+          mkdir -p "core/results/webs/${TITLE}/templates"
+          if [ -f "core/web/templates/data-list.html" ]; then
+            echo "Copiando data-list.html a la carpeta de destino"
+            cp "core/web/templates/data-list.html" "core/results/webs/${TITLE}/templates/"
+          else
+            echo "Advertencia: No se encontró el archivo data-list.html en core/web/templates/"
+          fi
+          
+          # Copiar archivos CSS necesarios
+          echo "Copiando archivos CSS necesarios..."
+          mkdir -p "core/results/webs/${TITLE}/css"
+          if [ -f "core/web/css/dashboard.css" ]; then
+            echo "Copiando dashboard.css a la carpeta de destino"
+            cp "core/web/css/dashboard.css" "core/results/webs/${TITLE}/css/"
+          else
+            echo "Advertencia: No se encontró el archivo dashboard.css en core/web/css/"
+          fi
+          
+          echo "Archivos de plantillas y CSS copiados correctamente"
       - id: upload-files
         name: Upload Files
         run: |
@@ -409,6 +431,10 @@ jobs:
           # Asegurarse de que la carpeta web_structure se añade explicitamente
           git add core/results/webs/*
           git add core/outputs/webs/*
+          # Añadir específicamente los archivos de plantillas y CSS
+          git add core/results/webs/*/templates/*
+          git add core/results/webs/*/css/*
+          git add core/results/webs/*/js/*
           # Verificar si hay cambios para hacer commit
           if git diff --staged --quiet; then
               echo "No hay cambios para hacer commit"
