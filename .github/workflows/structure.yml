@@ -319,27 +319,53 @@ jobs:
             fi
           done
           
-          # Crear el dashboard.html con todas las secciones concatenadas
-          echo "<!DOCTYPE html>
-          <html lang=\"en\">
+          // ...existing code...
+      - name: Combinar secciones en dashboard.html
+        run: |
+          # Crear o limpiar el archivo dashboard.html
+          echo '<!DOCTYPE html>
+          <html lang="es">
           <head>
-              <meta charset=\"UTF-8\">
-              <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
-              <title>Dashboard</title>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Ka0s - Dashboard</title>
+              <script src="https://cdn.tailwindcss.com"></script>
+              <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
           </head>
-          <body>" > "core/results/webs/${TITLE}/dashboard.html"
+          <body class="bg-gray-50">
+              <div class="container mx-auto px-4 py-8">
+                  <header class="py-3 mb-4 border-b border-gray-200">
+                      <div class="flex items-center">
+                          <h1 class="text-xl font-semibold text-gray-800">Ka0s Dashboard</h1>
+                      </div>
+                  </header>
+                  <div id="main-content">' > "$DASHBOARD_DIR/dashboard.html"
           
-          # Concatenar todas las secciones
-          if [ -d "core/results/webs/${TITLE}/temp_sections" ]; then
-            for section_file in "core/results/webs/${TITLE}/temp_sections"/*.html; do
-              echo "<div class=\"section-content\">" >> "core/results/webs/${TITLE}/dashboard.html"
-              cat "$section_file" >> "core/results/webs/${TITLE}/dashboard.html"
-              echo "</div>" >> "core/results/webs/${TITLE}/dashboard.html"
-            done
-          fi
+          # Añadir cada sección al dashboard
+          for SECTION_DIR in "$DASHBOARD_DIR/structure/section"*; do
+            if [ -d "$SECTION_DIR" ]; then
+              SECTION_NAME=$(basename "$SECTION_DIR")
+              SECTION_HTML="$SECTION_DIR/$SECTION_NAME.html"
+              
+              if [ -f "$SECTION_HTML" ]; then
+                echo "Añadiendo sección $SECTION_NAME al dashboard..."
+                # Extraer solo el contenido del body (sin las etiquetas html, head, body)
+                SECTION_CONTENT=$(sed -n '/<body/,/<\/body>/p' "$SECTION_HTML" | sed '1d;$d')
+                echo "<section id=\"$SECTION_NAME\" class=\"mb-8\">" >> "$DASHBOARD_DIR/dashboard.html"
+                echo "$SECTION_CONTENT" >> "$DASHBOARD_DIR/dashboard.html"
+                echo "</section>" >> "$DASHBOARD_DIR/dashboard.html"
+              fi
+            fi
+          done
           
-          echo "</body></html>" >> "core/results/webs/${TITLE}/dashboard.html"
-          echo "Dashboard generado con todas las secciones"
+          # Cerrar el archivo HTML
+          echo '      </div>
+                  <script src="js/dashboard.js"></script>
+              </div>
+          </body>
+          </html>' >> "$DASHBOARD_DIR/dashboard.html"
+          
+          echo "Dashboard generado en $DASHBOARD_DIR/dashboard.html"
       - id: upload-files
         name: Upload Files
         run: |
