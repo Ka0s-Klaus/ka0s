@@ -345,12 +345,53 @@ jobs:
                       SECTION_NAME=$(basename "$section_file" .html)
                       echo "<div class=\"section-content\" id=\"${SECTION_NAME}\">" >> "core/results/webs/${TITLE}/dashboard.html"
                       
-                      # Extraer solo el contenido del body de cada sección
-                      awk '/<body/,/<\/body>/' "$section_file" | 
-                        sed '/<body/d;/<\/body>/d;/<script src="..\/js\/data-list.js">/d;/<script src=" `https:\/\/cdn.tailwindcss.com` ">/d;/<script src=" `https:\/\/cdn.jsdelivr.net\/npm\/bootstrap@5.2.3\/dist\/js\/bootstrap.bundle.min.js` ">/d' >> "core/results/webs/${TITLE}/dashboard.html"
+                      # Extraer solo el contenido del body de cada sección usando cut
+                      # Primero guardamos el contenido en un archivo temporal
+                      TEMP_CONTENT=$(mktemp)
+                      awk '/<body/,/<\/body>/' "$section_file" > "$TEMP_CONTENT"
+                      
+                      # Usamos cut para extraer solo las partes relevantes
+                      # Eliminamos las etiquetas body y scripts innecesarios
+                      cat "$TEMP_CONTENT" | 
+                        grep -v "<body" | 
+                        grep -v "</body>" | 
+                        grep -v "<script src=\"..\/js\/data-list.js\">" |
+                        grep -v "<script src=\" \`https:\/\/cdn.tailwindcss.com\` \">" |
+                        grep -v "<script src=\" \`https:\/\/cdn.jsdelivr.net\/npm\/bootstrap@5.2.3\/dist\/js\/bootstrap.bundle.min.js\` \">" >> "core/results/webs/${TITLE}/dashboard.html"
+                      
+                      # Limpiamos el archivo temporal
+                      rm "$TEMP_CONTENT"
                       
                       echo "</div>" >> "core/results/webs/${TITLE}/dashboard.html"
                     done
+                    
+                    # Añadir componente de lista directamente
+                    echo "<div class=\"data-list-component my-8\">" >> "core/results/webs/${TITLE}/dashboard.html"
+                    echo "<h2 class=\"text-xl font-semibold text-gray-800 mb-4\">Datos del Sistema</h2>" >> "core/results/webs/${TITLE}/dashboard.html"
+                    
+                    # Extraer el componente de lista de data-list.html usando cut
+                    if [ -f "core/web/templates/data-list.html" ]; then
+                      # Extraer la parte principal del componente de lista
+                      LIST_CONTENT=$(mktemp)
+                      awk '/<div class="my-6">/,/<div id="pagination"/' "core/web/templates/data-list.html" > "$LIST_CONTENT"
+                      
+                      # Reemplazar los placeholders con valores reales
+                      sed -i "s/{{TEMPLATE_TITLE}}/Listado de Workflows/g" "$LIST_CONTENT"
+                      sed -i "s|{{DATA_SOURCE}}|data/kaos-workflows-available.json|g" "$LIST_CONTENT"
+                      
+                      # Añadir al dashboard
+                      cat "$LIST_CONTENT" >> "core/results/webs/${TITLE}/dashboard.html"
+                      rm "$LIST_CONTENT"
+                      
+                      # Añadir el componente de paginación
+                      echo "<div id=\"pagination\" class=\"flex justify-center my-6\">" >> "core/results/webs/${TITLE}/dashboard.html"
+                      echo "  <!-- La paginación se generará dinámicamente -->" >> "core/results/webs/${TITLE}/dashboard.html"
+                      echo "</div>" >> "core/results/webs/${TITLE}/dashboard.html"
+                    else
+                      echo "Advertencia: No se encontró el archivo data-list.html"
+                    fi
+                    
+                    echo "</div>" >> "core/results/webs/${TITLE}/dashboard.html"
                   fi
                   
                   # Agregar scripts comunes al final
