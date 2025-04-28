@@ -305,7 +305,7 @@ jobs:
                 done
                 
                 # Reemplazar el placeholder de templates con el HTML generado
-                sed -i "s|<!-- TEMPLATES_PLACEHOLDER -->|$TEMPLATES_HTML|g" "$SECTION_HTML"
+                awk -v r="$TEMPLATES_HTML" '{gsub("<!-- TEMPLATES_PLACEHOLDER -->", r)} 1' "$SECTION_HTML" > temp && mv temp "$SECTION_HTML"
                 
                 echo "Generado $SECTION_HTML"
                 # Almacenar cada sección en un directorio temporal para concatenarlas después
