@@ -420,26 +420,32 @@ jobs:
           echo "Uploading files to the repository..."
           git config --global user.name "***"
           git config --global user.email "***"
-
-          # Handle untracked files that would be overwritten
-          if [ -f "core/results/webs/dashboard/dashboard.html" ]; then
-              echo "Found untracked dashboard.html - adding to git"
-              git add "core/results/webs/dashboard/dashboard.html"
-          fi
-
+          
+          # Primero hacemos un stash de los cambios locales
+          git stash
+          
+          # Ahora podemos hacer pull sin problemas
           git pull
-          # Asegurarse de que la carpeta web_structure se añade explicitamente
+          
+          # Recuperamos los cambios locales
+          git stash pop || true
+          
+          # Resolvemos conflictos automáticamente a favor de nuestros cambios locales
+          git checkout --ours -- core/results/webs/dashboard/dashboard.html || true
+          
+          # Añadimos todos los archivos necesarios
           git add core/results/webs/*
           git add core/outputs/webs/*
           # Añadir específicamente los archivos de plantillas y CSS
           git add core/results/webs/*/templates/*
           git add core/results/webs/*/js/*
+          
           # Verificar si hay cambios para hacer commit
           if git diff --staged --quiet; then
               echo "No hay cambios para hacer commit"
           else
               git commit -m "[Ka0S] Uploading resume execution files and web structure to the repository..."
-              git push origin refs/heads/main
+              git push origin ${{ env.KAOS_REF }}
           fi
      
   handle-success:
