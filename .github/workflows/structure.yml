@@ -373,6 +373,25 @@ jobs:
           </html>" >> "core/results/webs/${TITLE}/dashboard.html"
           
           echo "Dashboard generado con todas las secciones integradas correctamente"
+          
+          # Copiar archivos JS necesarios
+          echo "Copiando archivos JavaScript necesarios..."
+          mkdir -p "core/results/webs/${TITLE}/js"
+          if [ -f "core/web/js/data-list.js" ]; then
+            echo "Copiando data-list.js a la carpeta de destino"
+            cp "core/web/js/data-list.js" "core/results/webs/${TITLE}/js/"
+          else
+            echo "Advertencia: No se encontró el archivo data-list.js en core/web/js/"
+          fi
+          
+          if [ -f "core/web/js/dashboard.js" ]; then
+            echo "Copiando dashboard.js a la carpeta de destino"
+            cp "core/web/js/dashboard.js" "core/results/webs/${TITLE}/js/"
+          else
+            echo "Advertencia: No se encontró el archivo dashboard.js en core/web/js/"
+          fi
+          
+          echo "Archivos JavaScript copiados correctamente"
       - id: upload-files
         name: Upload Files
         run: |
