@@ -260,15 +260,12 @@ jobs:
                     LIST_TEMPLATE=$(cat core/web/templates/data-list.html)
                     echo "LIST_TEMPLATE: $LIST_TEMPLATE"
                     
-                    # ELIMINAR O COMENTAR ESTAS LÍNEAS PROBLEMÁTICAS
-                    # LIST_TITLE_ESCAPED=$(printf '%s\n' "$LIST_TITLE" | sed 's/[\/&]/\\&/g')
-                    # echo "LIST_TITLE_ESCAPED: $LIST_TITLE_ESCAPED"
-                    # LIST_DATA_SOURCE_ESCAPED=$(echo "$LIST_DATA_SOURCE" | sed 's/[\/&]/\\&/g')
-                    # echo "LIST_DATA_SOURCE_ESCAPED: $LIST_DATA_SOURCE_ESCAPED"
-                    
-                    # Reemplazar con awk (mantener estas líneas)
-                    LIST_TEMPLATE=$(awk -v title="$LIST_TITLE" '{gsub(/LIST_TITLE_PLACEHOLDER/, title); print}' <<< "$LIST_TEMPLATE")
+                    # Usar reemplazo nativo de Bash
+                    LIST_TEMPLATE="${LIST_TEMPLATE//LIST_TITLE_PLACEHOLDER/$LIST_TITLE}"
+                    LIST_TEMPLATE="${LIST_TEMPLATE//DATA_SOURCE_PLACEHOLDER/$LIST_DATA_SOURCE}"
+                    echo "LIST_TEMPLATE: $LIST_TEMPLATE"
                     LIST_TEMPLATE=$(awk -v source="$LIST_DATA_SOURCE" '{gsub(/DATA_SOURCE_PLACEHOLDER/, source); print}' <<< "$LIST_TEMPLATE")
+                    echo "LIST_TEMPLATE: $LIST_TEMPLATE"
                     
                     # Reemplazar el placeholder con la lista
                     sed -i "s|SECTION_LIST_PLACEHOLDER|$LIST_TEMPLATE|g" "$SECTION_HTML"
