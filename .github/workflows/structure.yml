@@ -321,25 +321,58 @@ jobs:
           
           # Crear el dashboard.html con todas las secciones concatenadas
           echo "<!DOCTYPE html>
-          <html lang=\"en\">
+          <html lang=\"es\">
           <head>
               <meta charset=\"UTF-8\">
               <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
-              <title>Dashboard</title>
+              <title>Ka0s Dashboard - ${TITLE}</title>
+              <script src=\"https://cdn.tailwindcss.com\"></script>
+              <script src=\"https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js\"></script>
+              <link rel=\"stylesheet\" href=\"css/dashboard.css\">
           </head>
-          <body>" > "core/results/webs/${TITLE}/dashboard.html"
+          <body class=\"bg-gray-50\">
+              <div class=\"container mx-auto px-4 py-8\">
+                  <header class=\"py-3 mb-4 border-b border-gray-200\">
+                      <div class=\"flex items-center\">
+                          <h1 class=\"text-2xl font-bold text-gray-800\">${TITLE}</h1>
+                      </div>
+                  </header>
+                  <div class=\"dashboard-content\">" > "core/results/webs/${TITLE}/dashboard.html"
+                  
+                  # Concatenar todas las secciones
+                  if [ -d "core/results/webs/${TITLE}/temp_sections" ]; then
+                    for section_file in "core/results/webs/${TITLE}/temp_sections"/*.html; do
+                      SECTION_NAME=$(basename "$section_file" .html)
+                      echo "<div class=\"section-content\" id=\"${SECTION_NAME}\">" >> "core/results/webs/${TITLE}/dashboard.html"
+                      
+                      # Extraer solo el contenido del body de cada sección
+                      awk '/<body/,/<\/body>/' "$section_file" | 
+                        sed '/<body/d;/<\/body>/d;/<script src="..\/js\/data-list.js">/d;/<script src=" `https:\/\/cdn.tailwindcss.com` ">/d;/<script src=" `https:\/\/cdn.jsdelivr.net\/npm\/bootstrap@5.2.3\/dist\/js\/bootstrap.bundle.min.js` ">/d' >> "core/results/webs/${TITLE}/dashboard.html"
+                      
+                      echo "</div>" >> "core/results/webs/${TITLE}/dashboard.html"
+                    done
+                  fi
+                  
+                  # Agregar scripts comunes al final
+                  echo "        </div>
+              </div>
+              <script src=\"js/dashboard.js\"></script>
+              <script src=\"js/data-list.js\"></script>
+              <script>
+                  document.addEventListener('DOMContentLoaded', function() {
+                      // Inicializar todos los componentes de datos
+                      const dataLists = document.querySelectorAll('[data-source]');
+                      dataLists.forEach(element => {
+                          const dataSource = element.getAttribute('data-source');
+                          // Aquí se puede agregar lógica para cargar datos desde cada fuente
+                          console.log('Cargando datos desde:', dataSource);
+                      });
+                  });
+              </script>
+          </body>
+          </html>" >> "core/results/webs/${TITLE}/dashboard.html"
           
-          # Concatenar todas las secciones
-          if [ -d "core/results/webs/${TITLE}/temp_sections" ]; then
-            for section_file in "core/results/webs/${TITLE}/temp_sections"/*.html; do
-              echo "<div class=\"section-content\">" >> "core/results/webs/${TITLE}/dashboard.html"
-              cat "$section_file" >> "core/results/webs/${TITLE}/dashboard.html"
-              echo "</div>" >> "core/results/webs/${TITLE}/dashboard.html"
-            done
-          fi
-          
-          echo "</body></html>" >> "core/results/webs/${TITLE}/dashboard.html"
-          echo "Dashboard generado con todas las secciones"
+          echo "Dashboard generado con todas las secciones integradas correctamente"
       - id: upload-files
         name: Upload Files
         run: |
