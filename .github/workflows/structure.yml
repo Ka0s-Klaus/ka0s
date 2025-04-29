@@ -258,20 +258,19 @@ jobs:
                     
                     # Leer la plantilla de lista
                     LIST_TEMPLATE=$(cat core/web/templates/data-list.html)
-                    
-                    # Limpiar la plantilla de caracteres problemáticos
-                    LIST_TEMPLATE="${LIST_TEMPLATE//\`/}"
+                    echo "LIST_TEMPLATE: $LIST_TEMPLATE"
                     
                     # Usar reemplazo nativo de Bash con los placeholders correctos
                     LIST_TEMPLATE="${LIST_TEMPLATE//\{\{TEMPLATE_TITLE\}\}/$LIST_TITLE}"
                     LIST_TEMPLATE="${LIST_TEMPLATE//\{\{DATA_SOURCE\}\}/$LIST_DATA_SOURCE}"
+                    echo "LIST_TEMPLATE después de reemplazo: $LIST_TEMPLATE"
                     
-                    # Escapar caracteres especiales para sed
-                    LIST_TEMPLATE_ESCAPED="${LIST_TEMPLATE//\//\\/}"
-                    LIST_TEMPLATE_ESCAPED="${LIST_TEMPLATE_ESCAPED//&/\\&}"
-                    
-                    # Reemplazar el placeholder con la lista usando sed
-                    sed -i "s/SECTION_LIST_PLACEHOLDER/$LIST_TEMPLATE_ESCAPED/g" "$SECTION_HTML"
+                    # Reemplazar el placeholder con la lista usando archivos temporales
+                    TEMP_FILE=$(mktemp)
+                    cat "$SECTION_HTML" | while IFS= read -r line; do
+                      echo "${line//SECTION_LIST_PLACEHOLDER/$LIST_TEMPLATE}" 
+                    done > "$TEMP_FILE"
+                    mv "$TEMP_FILE" "$SECTION_HTML"
                     echo "Añadido componente de lista a la sección"
                   else
                     echo "La sección no tiene una lista definida, eliminando placeholder"
