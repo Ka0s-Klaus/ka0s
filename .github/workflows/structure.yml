@@ -260,17 +260,27 @@ jobs:
                     LIST_TEMPLATE=$(cat core/web/templates/data-list.html)
                     echo "LIST_TEMPLATE: $LIST_TEMPLATE"
                     
-                    # Usar reemplazo nativo de Bash con los placeholders correctos
-                    LIST_TEMPLATE="${LIST_TEMPLATE//\{\{TEMPLATE_TITLE\}\}/$LIST_TITLE}"
-                    LIST_TEMPLATE="${LIST_TEMPLATE//\{\{DATA_SOURCE\}\}/$LIST_DATA_SOURCE}"
-                    echo "LIST_TEMPLATE después de reemplazo: $LIST_TEMPLATE"
+                    # Crear un archivo temporal con la plantilla de lista modificada
+                    TEMP_LIST=$(mktemp)
+                    cat core/web/templates/data-list.html | 
+                      sed "s|{{TEMPLATE_TITLE}}|$LIST_TITLE|g" | 
+                      sed "s|{{DATA_SOURCE}}|$LIST_DATA_SOURCE|g" > "$TEMP_LIST"
                     
-                    # Reemplazar el placeholder con la lista usando archivos temporales
-                    TEMP_FILE=$(mktemp)
-                    cat "$SECTION_HTML" | while IFS= read -r line; do
-                      echo "${line//SECTION_LIST_PLACEHOLDER/$LIST_TEMPLATE}" 
-                    done > "$TEMP_FILE"
-                    mv "$TEMP_FILE" "$SECTION_HTML"
+                    # Crear un archivo temporal para el resultado final
+                    TEMP_RESULT=$(mktemp)
+                    
+                    # Usar awk para reemplazar el placeholder con el contenido del archivo temporal
+                    awk -v placeholder="SECTION_LIST_PLACEHOLDER" -v replacement="$(cat $TEMP_LIST)" '{
+                      gsub(placeholder, replacement)
+                      print
+                    }' "$SECTION_HTML" > "$TEMP_RESULT"
+                    
+                    # Mover el resultado al archivo final
+                    mv "$TEMP_RESULT" "$SECTION_HTML"
+                    
+                    # Limpiar archivos temporales
+                    rm -f "$TEMP_LIST"
+                    
                     echo "Añadido componente de lista a la sección"
                   else
                     echo "La sección no tiene una lista definida, eliminando placeholder"
@@ -400,209 +410,32 @@ jobs:
               <script src=\"js/dashboard.js\"></script>
               <script src=\"js/data-list.js\"></script>
               <script>
-                  document.addEventListener('DOMContentLoaded', function() {
-                      // Inicializar todos los componentes de datos
-                      const dataLists = document.querySelectorAll('[data-source]');
-                      dataLists.forEach(element => {
-                          const dataSource = element.getAttribute('data-source');
-                          // Aquí se puede agregar lógica para cargar datos desde cada fuente
-                          console.log('Cargando datos desde:', dataSource);
-                      });
-                  });
+                document.addEventListener('DOMContentLoaded', function() {
+                  // Inicializar componentes
+                  console.log('Dashboard cargado correctamente');
+                });
               </script>
           </body>
           </html>" >> "core/results/webs/${TITLE}/dashboard.html"
           
-          echo "Dashboard generado con todas las secciones integradas correctamente"
-          
-          # Copiar archivos JS necesarios
-          echo "Copiando todos los archivos JavaScript necesarios..."
-          mkdir -p "core/results/webs/${TITLE}/js"
-          if [ -f "core/web/js/data-list.js" ]; then
-            echo "Copiando data-list.js a la carpeta de destino"
-            cp "core/web/js/data-list.js" "core/results/webs/${TITLE}/js/"
-          else
-            echo "Advertencia: No se encontró el archivo data-list.js en core/web/js/"
-          fi
-          
-          if [ -f "core/web/js/dashboard.js" ]; then
-            echo "Copiando dashboard.js a la carpeta de destino"
-            cp "core/web/js/dashboard.js" "core/results/webs/${TITLE}/js/"
-          else
-            echo "Advertencia: No se encontró el archivo dashboard.js en core/web/js/"
-          fi
-          
-          echo "Archivos JavaScript copiados correctamente"
-          
-          # Copiar archivos de plantillas HTML necesarios
-          echo "Copiando archivos de plantillas HTML necesarios..."
-          mkdir -p "core/results/webs/${TITLE}/templates"
-          if [ -f "core/web/templates/data-list.html" ]; then
-            echo "Copiando data-list.html a la carpeta de destino"
-            cp "core/web/templates/data-list.html" "core/results/webs/${TITLE}/templates/"
-          else
-            echo "Advertencia: No se encontró el archivo data-list.html en core/web/templates/"
-          fi
-          
-          # Copiar archivos CSS necesarios
-          echo "Copiando archivos CSS necesarios..."
-          mkdir -p "core/results/webs/${TITLE}/css"
-          if [ -f "core/web/css/dashboard.css" ]; then
-            echo "Copiando dashboard.css a la carpeta de destino"
-            cp "core/web/css/dashboard.css" "core/results/webs/${TITLE}/css/"
-          else
-            echo "Advertencia: No se encontró el archivo dashboard.css en core/web/css/"
-          fi
-          
-          echo "Archivos de plantillas y CSS copiados correctamente"
+          echo "Dashboard HTML generado correctamente en core/results/webs/${TITLE}/dashboard.html"
+
       - id: upload-files
         name: Upload Files
         run: |
-          echo "Uploading files to the repository..."
-          git config --global user.name "***"
-          git config --global user.email "***"
-          
-          # Primero hacemos un stash de los cambios locales
-          git stash
-          
-          # Ahora podemos hacer pull sin problemas
+          echo "Uploading HTML files to the repository..."
+          git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
+          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
           git pull
-          
-          # Recuperamos los cambios locales
-          git stash pop || true
-          
-          # Resolvemos conflictos automáticamente a favor de nuestros cambios locales
-          git checkout --ours -- core/results/webs/dashboard/dashboard.html || true
-          
-          # Añadimos todos los archivos necesarios
-          git add core/results/webs/*
-          git add core/outputs/webs/*
-          # Añadir específicamente los archivos de plantillas y CSS
-          git add core/results/webs/*/templates/*
-          git add core/results/webs/*/js/*
-          
-          # Verificar si hay cambios para hacer commit
+          # Add the HTML files
+          git add core/results/webs/**/*.html
+          # Verify if there are changes to commit
           if git diff --staged --quiet; then
-              echo "No hay cambios para hacer commit"
+            echo "No hay cambios para hacer commit"
           else
-              git commit -m "[Ka0S] Uploading resume execution files and web structure to the repository..."
-              git push origin ${{ env.KAOS_REF }}
+            git commit -m "[Ka0S] Uploading HTML files to web structure..."
+            git push origin ${{ env.KAOS_REF }}
           fi
-     
-  handle-success:
-    runs-on:
-      group: ka0s
-    needs: [job-core, job-data, job-design]
-    if: ${{ success() }}
-    steps:
-      - id: repo
-        name: Checkout code
-        if: ${{ always() }}
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
-      - id: handle-success-execution
-        name: handle-success-execution
-        env:
-          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
-        run: |
-          # Si todo ha ido correcto añadimos el contenido del fichero
-          # RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
-          RNNUMBER=220
-          gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
-  
-  handle_failure:
-    runs-on:
-      group: ka0s
-    needs: [job-core, job-data, job-design, handle-success]
-    if: ${{ failure() }}
-    steps:
-      - id: repo
-        name: Checkout code
-        if: ${{ always() }}
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
-      - id: handle-failure-execution
-        name: handle-failure-execution
-        env:
-          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
-        run: |
-          echo "Error detected in process"
-          # RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
-          RNNUMBER=220
-          gh issue comment $RNNUMBER --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
-          
-      - id: revert-changes
-        name: Revert changes made by workflow
-        run: |
-          echo "Reverting changes made by the workflow..."
-          
-          # Extract title to know which folders to remove
-          STRUCTURE_FILE="${{ env.KAOS_JSON_WEB }}"
-          if [ -f "$STRUCTURE_FILE" ]; then
-            TITLE=$(cat $STRUCTURE_FILE | grep -o '"title": *"[^"]*"' | cut -d'"' -f4)
-            if [ -z "$TITLE" ]; then
-              TITLE="dashboard"
-              echo "Title not found in JSON file, using default: $TITLE"
-            else
-              echo "Reverting changes for: $TITLE"
-            fi
-            
-            # Remove created directories and files
-            if [ -d "${{ env.KAOS_WEB_STRUCTURE }}$TITLE" ]; then
-              echo "Removing web structure directory: ${{ env.KAOS_WEB_STRUCTURE }}$TITLE"
-              rm -rf "${{ env.KAOS_WEB_STRUCTURE }}$TITLE"
-            fi
-            
-            if [ -d "${{ env.KAOS_JSON_RESUME }}$TITLE" ]; then
-              echo "Removing resume directory: ${{ env.KAOS_JSON_RESUME }}$TITLE"
-              rm -rf "${{ env.KAOS_JSON_RESUME }}$TITLE"
-            fi
-            
-            # Commit the removal
-            git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
-            git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
-            git pull
-            git add "${{ env.KAOS_WEB_STRUCTURE }}"
-            git add "${{ env.KAOS_JSON_RESUME }}"
-            
-            # Check if there are changes to commit
-            if git diff --staged --quiet; then
-              echo "No changes to revert"
-            else
-              git commit -m "[Ka0S] Reverting changes due to workflow failure"
-              git push origin ${{ env.KAOS_REF }}
-              echo "Changes successfully reverted"
-            fi
-          else
-            echo "Structure file not found, cannot determine what to revert"
-          fi
-  end-workflow:
-    runs-on:
-      group: ka0s
-    needs: [job-core, job-data, job-design, handle-success, handle_failure]
-    if: ${{ always() && !contains(github.event.head_commit.message, '[Ka0S] ') }}
-    env:
-        GH_TOKEN: ${{ secrets.KAOS_ACTIONS_TOKEN }}
-    steps:
-      - id: repo
-        name: Checkout code
-        if: ${{ always() }}
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
-      - id: end-process
-        name: Finaliza el workflow
-        run: |
-          echo "End process"
-          # RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
-          RNNUMBER=220
-          gh issue comment $RNNUMBER --body "Se finaliza Ka0s ${{ env.KAOS_CODE }}"
-          gh workflow run inspector.yml --ref 'main' -f kaos-issue-id=$RNNUMBER -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start=""
 
   
 
