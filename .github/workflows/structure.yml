@@ -217,6 +217,11 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.KAOS_REPO_TOKEN }}
   
+      - name: Copiar scripts JS a dashboard/js
+        run: |
+          mkdir -p core/results/webs/dashboard/js
+          cp core/web/js/data-list.js core/results/webs/dashboard/js/data-list.js
+          cp core/web/js/graphic.js core/results/webs/dashboard/js/graphic.js
       - name: Generar HTML de secciones según JSON
         run: |
           echo "Generando HTML de secciones según su JSON..."
