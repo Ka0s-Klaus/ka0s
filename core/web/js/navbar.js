@@ -1,5 +1,5 @@
 // Script para cargar dinámicamente las secciones en la navbar y el título
-fetch('../../web/data/webs.json')
+fetch('data/webs.json')
     .then(response => response.json())
     .then(data => {
         // Actualizar el título de la navbar
