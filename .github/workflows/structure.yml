@@ -222,13 +222,11 @@ jobs:
           mkdir -p core/results/webs/dashboard/js
           cp core/web/js/data-list.js core/results/webs/dashboard/js/data-list.js
           cp core/web/js/graphic.js core/results/webs/dashboard/js/graphic.js
-      - name: Generar HTML de secciones según JSON
+          cp core/web/js/navbar.js core/results/webs/dashboard/js/navbar.js
+      - name: Copiar navbar.html a dashboard/templates
         run: |
-          #Copiar templates HTML a dashboard/templates
           mkdir -p core/results/webs/dashboard/templates
           cp core/web/templates/navbar.html core/results/webs/dashboard/templates/navbar.html
-
-        
           echo "Generando HTML de secciones según su JSON..."
           STRUCTURE_FILE="core/config/webs/webs.json"
           TITLE=$(cat $STRUCTURE_FILE | grep -o '"title": *"[^"]*"' | cut -d'"' -f4)
