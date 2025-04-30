@@ -1,0 +1,44 @@
+version: "3.8"
+
+networks:
+  default:
+    name: elk
+    external: true
+
+services:
+  es01:
+    image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
+    environment: 
+      - node.name=es01
+      - cluster.name=${CLUSTER_NAME}
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms2g -Xmx2g
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+    ports:
+      - ${ES_PORT}:9200
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    
+  kibana:
+    image: docker.elastic.co/kibana/kibana:${STACK_VERSION}
+    depends_on:
+      - es01
+    environment:
+      - ELASTICSEARCH_HOSTS=http://es01:9200
+      - XPACK_APM_SERVICEMAPENABLED="true"
+      - XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY=${ENCRYPTION_KEY}
+    ports:
+      - ${KIBANA_PORT}:5601
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s -I http://localhost:5601 | grep -q 'HTTP/1.1 302 Found'",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 120
