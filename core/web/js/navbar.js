@@ -14,7 +14,7 @@ fetch('../../config/webs/webs.json')
         }
         // Cargar los enlaces con iconos
         const navbar = document.getElementById('navbar-sections');
-        navbar.innerHTML = ""; // Limpiar antes de agregar
+        navbar.innerHTML = ""; // Limpiar antes de agregarr
         if (Array.isArray(data.links)) {
             data.links.forEach(link => {
                 const li = document.createElement('li');
