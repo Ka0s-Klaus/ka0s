@@ -120,3 +120,4 @@
 - **Version**: 0.0.119 - **Description**: H220 web de resultados
 - **Version**: 0.0.120 - **Description**: H220 web de resultados
 - **Version**: 0.0.121 - **Description**: H220 web de resultados
+- **Version**: 0.0.122 - **Description**: H220 web de resultados
