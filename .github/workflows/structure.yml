@@ -307,7 +307,10 @@ jobs:
                     GRAPHIC_TEMPLATE=$(echo "$GRAPHIC_TEMPLATE" | sed "s/GRAPHIC_TITLE_PLACEHOLDER/$TITLE/g")
                     GRAPHIC_TEMPLATE=$(echo "$GRAPHIC_TEMPLATE" | sed "s|DATA_SOURCE_PLACEHOLDER|$DATA_SOURCE|g")
                     TEMPLATES_HTML+="$GRAPHIC_TEMPLATE"
-                    TEMPLATES_HTML+="<script src=\"../../js/graphic.js\" data-source=\"$DATA_SOURCE\"></script>"
+                    # Añadir referencia a Chart.js antes del script graphic.js
+                    TEMPLATES_HTML+="<script src=\"https://cdn.jsdelivr.net/npm/chart.js\"></script>"
+                    # Modificar la forma de incluir el script para que pueda recibir el data-source
+                    TEMPLATES_HTML+="<script src=\"../../js/graphic.js\" id=\"graphic-script\" data-source=\"$DATA_SOURCE\"></script>"
                   elif [ "$TYPE" = "list" ]; then
                     # Leer la plantilla de lista
                     LIST_TEMPLATE=$(cat core/web/templates/data-list.html)
@@ -404,6 +407,33 @@ jobs:
                       echo "</div>" >> "core/results/webs/${TITLE}/dashboard.html"
                     else
                       echo "Advertencia: No se encontró el archivo data-list.html"
+                    fi
+                    
+                    echo "</div>" >> "core/results/webs/${TITLE}/dashboard.html"
+                    
+                    # Añadir componente de gráfico directamente
+                    echo "<div class=\"graphic-component my-8\">" >> "core/results/webs/${TITLE}/dashboard.html"
+                    echo "<h2 class=\"text-xl font-semibold text-gray-800 mb-4\">Visualización de Datos</h2>" >> "core/results/webs/${TITLE}/dashboard.html"
+                    
+                    # Extraer el componente de gráfico de graphic.html usando cat
+                    if [ -f "core/web/templates/graphic.html" ]; then
+                      # Extraer la parte principal del componente de gráfico
+                      GRAPHIC_CONTENT=$(mktemp)
+                      awk '/<div class="chart-container">/,/<\/div>/' "core/web/templates/graphic.html" > "$GRAPHIC_CONTENT"
+                      
+                      # Añadir al dashboard
+                      cat "$GRAPHIC_CONTENT" >> "core/results/webs/${TITLE}/dashboard.html"
+                      rm "$GRAPHIC_CONTENT"
+                      
+                      # Añadir el selector de datos
+                      echo "<div class=\"data-selector my-4\">" >> "core/results/webs/${TITLE}/dashboard.html"
+                      echo "  <label for=\"dataSource\" class=\"mr-2\">Seleccionar fuente de datos:</label>" >> "core/results/webs/${TITLE}/dashboard.html"
+                      echo "  <select id=\"dataSource\" class=\"p-2 border rounded\">" >> "core/results/webs/${TITLE}/dashboard.html"
+                      echo "    <option value=\"data/kaos-workflows-stats.json\">Estadísticas de Workflows</option>" >> "core/results/webs/${TITLE}/dashboard.html"
+                      echo "  </select>" >> "core/results/webs/${TITLE}/dashboard.html"
+                      echo "</div>" >> "core/results/webs/${TITLE}/dashboard.html"
+                    else
+                      echo "Advertencia: No se encontró el archivo graphic.html"
                     fi
                     
                     echo "</div>" >> "core/results/webs/${TITLE}/dashboard.html"
