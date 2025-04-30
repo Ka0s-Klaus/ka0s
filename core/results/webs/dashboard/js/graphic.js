@@ -1,12 +1,17 @@
 // Función para cargar el archivo data.json que contiene las rutas
 async function loadDataConfig() {
     try {
-        const response = await fetch('/core/web/data/data.json');
+        // Corregir la ruta para usar una ruta relativa en lugar de absoluta
+        const response = await fetch('../../data/data.json');
         const config = await response.json();
         return config;
     } catch (error) {
         console.error('Error al cargar la configuración de datos:', error);
-        document.getElementById('loadingMessage').textContent = 'Error al cargar la configuración de datos';
+        // Verificar si el elemento existe antes de intentar modificarlo
+        const loadingMessage = document.getElementById('loadingMessage');
+        if (loadingMessage) {
+            loadingMessage.textContent = 'Error al cargar la configuración de datos';
+        }
         return null;
     }
 }
@@ -14,14 +19,25 @@ async function loadDataConfig() {
 // Función para cargar los datos desde una ruta específica
 async function loadDataFromSource(sourcePath) {
     try {
-        // Ajustar la ruta relativa para que no duplique 'core/'
-        const adjustedPath = sourcePath.replace(/^core\//, '../../');
+        // Ajustar la ruta relativa para que funcione correctamente
+        let adjustedPath = sourcePath;
+        if (sourcePath.startsWith('core/')) {
+            adjustedPath = '../../' + sourcePath.substring(5);
+        }
+        console.log('Intentando cargar datos desde ruta ajustada:', adjustedPath);
+        
         const response = await fetch(adjustedPath);
+        if (!response.ok) {
+            throw new Error(`Error HTTP: ${response.status}`);
+        }
         const data = await response.json();
         return data;
     } catch (error) {
         console.error(`Error al cargar los datos desde ${sourcePath}:`, error);
-        document.getElementById('loadingMessage').textContent = `Error al cargar los datos desde ${sourcePath}`;
+        const loadingMessage = document.getElementById('loadingMessage');
+        if (loadingMessage) {
+            loadingMessage.textContent = `Error al cargar los datos desde ${sourcePath}`;
+        }
         return null;
     }
 }
@@ -30,11 +46,18 @@ async function loadDataFromSource(sourcePath) {
 async function initializeDataSourceSelector() {
     const config = await loadDataConfig();
     if (!config || !config.dataFiles || config.dataFiles.length === 0) {
-        document.getElementById('loadingMessage').textContent = 'No se encontraron fuentes de datos';
+        const loadingMessage = document.getElementById('loadingMessage');
+        if (loadingMessage) {
+            loadingMessage.textContent = 'No se encontraron fuentes de datos';
+        }
         return;
     }
     
     const selector = document.getElementById('dataSource');
+    if (!selector) {
+        console.error('No se encontró el elemento selector de fuente de datos');
+        return;
+    }
     
     // Agregar opciones al selector
     config.dataFiles.forEach(file => {
@@ -45,7 +68,10 @@ async function initializeDataSourceSelector() {
     });
     
     // Ocultar mensaje de carga
-    document.getElementById('loadingMessage').style.display = 'none';
+    const loadingMessage = document.getElementById('loadingMessage');
+    if (loadingMessage) {
+        loadingMessage.style.display = 'none';
+    }
     
     // Agregar evento de cambio al selector
     selector.addEventListener('change', async function() {
@@ -61,8 +87,8 @@ async function initializeDataSourceSelector() {
 // Función para cargar los datos directamente desde el archivo específico
 async function loadData() {
     try {
-        // Ruta directa al archivo de estadísticas del repositorio HARCODEADA
-        const dataPath = '/core/results/webs/dashboard/data/kaos-repository-statistics.json';
+        // Corregir la ruta para usar una ruta relativa en lugar de absoluta
+        const dataPath = '../../data/kaos-repository-statistics.json';
         console.log('Intentando cargar datos desde:', dataPath);
         
         const response = await fetch(dataPath);
