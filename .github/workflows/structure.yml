@@ -155,6 +155,16 @@ jobs:
           cp $STRUCTURE_FILE "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/data/webs.json"
           echo "Copied webs.json to data directory"
           
+          # Copiar todos los archivos JSON de core/web/data a la estructura
+          echo "Copying all JSON files from core/web/data directory..."
+          find core/web/data -name "*.json" -type f | while read -r json_file; do
+            # Obtener el nombre del archivo
+            JSON_FILENAME=$(basename "$json_file")
+            echo "Copying JSON file: $json_file to data directory"
+            cp "$json_file" "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/data/$JSON_FILENAME"
+          done
+          echo "All JSON files from core/web/data copied successfully!"
+          
           # Read data.json and copy files
           if [ -f "$DATA_FILE" ]; then
             echo "Processing data files from data.json..."
