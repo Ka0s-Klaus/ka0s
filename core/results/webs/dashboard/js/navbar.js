@@ -21,3 +21,22 @@ fetch('data/webs.json')
     .catch(error => {
         console.error('Error cargando webs.json:', error);
     });
+
+document.addEventListener('DOMContentLoaded', function() {
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', toggleSidebar);
+        console.log('Evento de clic agregado al botón de toggle');
+    } else {
+        console.error('No se encontró el elemento con ID sidebarToggle');
+    }
+
+    function handleResponsiveLayout() {
+        const sidebar = document.getElementById('sidebar');
+        if (window.innerWidth < 640 && sidebar.classList.contains('w-[250px]')) {
+            toggleSidebar();
+        }
+    }
+    window.addEventListener('load', handleResponsiveLayout);
+    window.addEventListener('resize', handleResponsiveLayout);
+});
