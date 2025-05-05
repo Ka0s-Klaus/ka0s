@@ -10,22 +10,21 @@ window.sectionUtils.createNavbarHtml = async function(data) {
     
     // Replace placeholders with actual data
     let html = navbarTemplate;
-    html = html.replace('{{TITLE}}', data.title || 'Ka0s Dashboard');
+    html = html.replace(/{{NAVBAR_TITLE}}/g, data.title || 'Ka0s Dashboard');
+    html = html.replace(/{{NAVBAR_LOGO}}/g, data.logo || 'images/kaos-summary.png');
     
-    // Process menu items
-    const menuItemsMatch = html.match(/{{#each menuItems}}([\s\S]*?){{\/each}}/);
-    if (menuItemsMatch && data.menuItems) {
-        const itemTemplate = menuItemsMatch[1];
-        const menuItemsHtml = data.menuItems.map(item => {
-            let itemHtml = itemTemplate;
-            itemHtml = itemHtml.replace(/{{name}}/g, item.name);
-            itemHtml = itemHtml.replace(/{{icon}}/g, item.icon);
-            itemHtml = itemHtml.replace(/{{link}}/g, item.link);
-            return itemHtml;
-        }).join('');
-        
-        html = html.replace(/{{#each menuItems}}[\s\S]*?{{\/each}}/, menuItemsHtml);
+    // Process links
+    let linksHtml = '';
+    if (data.links && Array.isArray(data.links)) {
+        linksHtml = data.links.map(link => `
+            <a href="${link.url}" class="flex items-center gap-3 p-3 text-gray-700 hover:bg-blue-50 rounded-lg transition-all duration-200">
+                <i class="fas ${link.icon} text-blue-500 w-5 text-center"></i>
+                <span class="sidebar-text transition-opacity duration-300">${link.text}</span>
+            </a>
+        `).join('');
     }
+    
+    html = html.replace('{{NAVBAR__LINKS}}', linksHtml);
     
     return html;
 };

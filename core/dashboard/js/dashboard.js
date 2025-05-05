@@ -69,8 +69,9 @@ async function updateDashboard() {
     }
     
     // Update navbar
+    // Update navbar
     if (navbar) {
-        const navbarHtml = await window.navigationUtils.createNavbarHtml(navbar);
+        const navbarHtml = await window.sectionUtils.createNavbarHtml(navbar);
         const navbarElement = document.querySelector('#navbar');
         if (navbarElement) {
             navbarElement.innerHTML = navbarHtml;
