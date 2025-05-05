@@ -1,7 +1,7 @@
 // Función para cargar el archivo data.json que contiene las rutas
 async function loadDataConfig() {
     try {
-        const response = await fetch('/core/web/data/data.json');
+        const response = await fetch('data/data.json');
         const config = await response.json();
         return config;
     } catch (error) {
@@ -62,7 +62,7 @@ async function initializeDataSourceSelector() {
 async function loadData() {
     try {
         // Ruta directa al archivo de estadísticas del repositorio HARCODEADA
-        const dataPath = '/core/results/webs/dashboard/data/kaos-repository-statistics.json';
+        const dataPath = 'data/kaos-repository-statistics.json';
         console.log('Intentando cargar datos desde:', dataPath);
         
         const response = await fetch(dataPath);

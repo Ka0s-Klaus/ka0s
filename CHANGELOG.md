@@ -2469,3 +2469,84 @@
   - core/results/webs/dashboard/temp_sections/section1inicio.html
   - version.txt
 ---------------------------------
+## Version 0.0.121
+- **Branch**: refs/pull/1141/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Daniel-NS10
+- **Date**: Wed Apr 30 09:45:19 UTC 2025
+- **Message**: H220 web de resultados
+- **Files Changed**:
+  - .github/workflows/structure.yml
+  - core/config/webs/webs.json
+  - core/outputs/webs/dashboard/dashboard_resume.json
+  - core/outputs/webs/data-files-summary.json
+  - core/results/k/event_data_14751059814.json
+  - core/results/k/event_data_14751059814.json.bak
+  - core/results/k/event_data_14751339235.json
+  - core/results/k/event_data_14751339235.json.bak
+  - core/results/k/event_data_14751578267.json
+  - core/results/k/event_data_14751578267.json.bak
+  - core/results/webs/dashboard/structure/prueba/prueba.html
+  - core/web/js/navbar.js
+  - core/web/templates/navbar.html
+  - version.txt
+---------------------------------
+## Version 0.0.122
+- **Branch**: refs/pull/1142/merge
+- **Commit**: [Ka0S] Uploading resume execution files and web structure to the repository...
+- **Author**: Daniel-NS10
+- **Date**: Wed Apr 30 10:04:56 UTC 2025
+- **Message**: H220 web de resultados
+- **Files Changed**:
+  - core/config/webs/webs.json
+  - core/outputs/webs/Dashboard/Dashboard_resume.json
+  - core/outputs/webs/Dashboard/readme.txt
+  - core/results/k/event_data_14751854509.json
+  - core/results/k/event_data_14751854509.json.bak
+  - core/results/webs/Dashboard/Dashboard.html
+  - core/results/webs/Dashboard/custom/custom.html
+  - core/results/webs/Dashboard/data/data.html
+  - core/results/webs/Dashboard/js/js.html
+  - core/results/webs/Dashboard/structure/inicio/inicio.html
+  - core/results/webs/Dashboard/structure/issues/issues.html
+  - core/results/webs/Dashboard/structure/prueba/prueba.html
+  - core/results/webs/Dashboard/structure/structure.html
+  - core/results/webs/Dashboard/structure/workflows/workflows.html
+  - core/results/webs/Dashboard/templates/templates.html
+  - version.txt
+---------------------------------
+## Version 0.0.123
+- **Branch**: refs/pull/1143/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: jorgecg646
+- **Date**: Wed Apr 30 13:20:43 UTC 2025
+- **Message**: H220 web de resultados
+- **Files Changed**:
+  - .github/workflows/structure.yml
+  - core/config/webs/webs.json
+  - core/outputs/webs/Dashboard/Dashboard_resume.json
+  - core/outputs/webs/dashboard/dashboard_resume.json
+  - core/outputs/webs/dashboard/readme.txt
+  - core/outputs/webs/data-files-summary.json
+  - core/results/k/event_data_14752903430.json
+  - core/results/k/event_data_14752903430.json.bak
+  - core/results/k/event_data_14752934739.json
+  - core/results/k/event_data_14752934739.json.bak
+  - core/results/k/event_data_14753285360.json
+  - core/results/k/event_data_14753285360.json.bak
+  - core/results/k/event_data_14753330327.json
+  - core/results/k/event_data_14753330327.json.bak
+  - core/results/k/event_data_14755327276.json
+  - core/results/k/event_data_14755327276.json.bak
+  - core/results/k/event_data_14755481350.json
+  - core/results/k/event_data_14755481350.json.bak
+  - core/results/k/event_data_14755516002.json
+  - core/results/k/event_data_14755516002.json.bak
+  - core/results/k/event_data_14755531231.json
+  - core/results/k/event_data_14755531231.json.bak
+  - core/results/webs/dashboard/dashboard.html
+  - core/results/webs/dashboard/js/data-list.js
+  - core/results/webs/dashboard/js/graphic.js
+  - core/web/js/navbar.js
+  - version.txt
+---------------------------------
