@@ -9,15 +9,27 @@ fetch('data/webs.json')
         }
         // Cargar las secciones
         const navbar = document.getElementById('navbar-sections');
+        
+        // Mapeo de iconos según el tipo de sección
+        const iconMapping = {
+            inicio: 'fa-home',
+            workflows: 'fa-diagram-project',
+            issues: 'fa-bug',
+            prueba: 'fa-vial'
+        };
+
         Object.keys(data)
             .filter(key => /^section\d+$/.test(key))
             .forEach(key => {
                 const sectionName = data[key];
+                // Obtener el icono del mapeo o usar uno por defecto
+                const icon = iconMapping[sectionName.toLowerCase()] || 'fa-circle';
+                
                 const li = document.createElement('li');
                 li.innerHTML = `
                     <a href="#${sectionName}" 
                        class="flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-blue-50 rounded-lg transition-all duration-200 group">
-                        <i class="fas fa-chart-line text-blue-500 group-hover:text-blue-600"></i>
+                        <i class="fas ${icon} text-orange-300 group-hover:text-orange-500"></i>
                         <span class="sidebar-text font-medium capitalize">${sectionName}</span>
                     </a>`;
                 navbar.appendChild(li);
