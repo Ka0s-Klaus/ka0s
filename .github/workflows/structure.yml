@@ -139,6 +139,7 @@ jobs:
           # Create data directory if it doesn't exist
           mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/data"
           
+          cp core/web/data/webs.json core/results/webs/dashboard/data/webs.json
           # Read data.json and copy files
           if [ -f "$DATA_FILE" ]; then
             echo "Processing data files from data.json..."
@@ -222,13 +223,11 @@ jobs:
           mkdir -p core/results/webs/dashboard/js
           cp core/web/js/data-list.js core/results/webs/dashboard/js/data-list.js
           cp core/web/js/graphic.js core/results/webs/dashboard/js/graphic.js
-      - name: Generar HTML de secciones según JSON
+          cp core/web/js/navbar.js core/results/webs/dashboard/js/navbar.js
+      - name: Copiar navbar.html a dashboard/templates
         run: |
-          #Copiar templates HTML a dashboard/templates
           mkdir -p core/results/webs/dashboard/templates
           cp core/web/templates/navbar.html core/results/webs/dashboard/templates/navbar.html
-
-        
           echo "Generando HTML de secciones según su JSON..."
           STRUCTURE_FILE="core/config/webs/webs.json"
           TITLE=$(cat $STRUCTURE_FILE | grep -o '"title": *"[^"]*"' | cut -d'"' -f4)
@@ -456,32 +455,26 @@ jobs:
           git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
           git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
           # Añadir los archivos JS al commit
-          git add core/results/webs/dashboard/js/data-list.js
-          git add core/results/webs/dashboard/js/graphic.js
-          # Primero, guardar los archivos no rastreados que queremos conservar
-          echo "Verificando archivos no rastreados..."
-          if [ -f "core/results/webs/dashboard/dashboard.html" ]; then
-            echo "Respaldando dashboard.html antes del pull..."
-            mkdir -p /tmp/backup
-            cp core/results/webs/dashboard/dashboard.html /tmp/backup/
+          git add core/results/webs/dashboard/*
+          
+          # Verificar si el archivo dashboard.html existe y no está rastreado
+          if [ -f "core/results/webs/dashboard/dashboard.html" ] && ! git ls-files --error-unmatch core/results/webs/dashboard/dashboard.html > /dev/null 2>&1; then
+            echo "El archivo dashboard.html existe pero no está rastreado. Añadiéndolo al staging..."
+            git add core/results/webs/dashboard/dashboard.html
+            git commit -m "[Ka0S] Añadiendo dashboard.html antes del pull"
           fi
           
           # Hacer pull con estrategia de recursión para manejar conflictos
-          git pull
+          git pull --strategy-option=theirs
           
-          # Restaurar archivos respaldados si existen
-          if [ -d "/tmp/backup" ] && [ -f "/tmp/backup/dashboard.html" ]; then
-            echo "Restaurando dashboard.html después del pull..."
-            cp /tmp/backup/dashboard.html core/results/webs/dashboard/dashboard.html
-          fi
+          # Añadir todos los archivos de la carpeta dashboard
+          git add core/results/webs/dashboard/*
           
-          # Add the HTML files
-          git add core/results/webs/**/*.html
           # Verify if there are changes to commit
           if git diff --staged --quiet; then
             echo "No hay cambios para hacer commit"
           else
-            git commit -m "[Ka0S] Uploading HTML files to web structure..."
+            git commit -m "[Ka0S] Uploading dashboard files to web structure..."
             git push origin ${{ env.KAOS_REF }}
           fi
   handle-success:
