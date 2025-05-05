@@ -70,8 +70,15 @@ jobs:
             
             # Guardar la ruta del archivo JSON de datos para esta sección
             if [ ! -z "$section_data" ]; then
-              echo "$section_data" > "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/structure/$section_title/$section_title.json"
-              echo "    Data source: $section_data"
+              # Copiar el contenido del archivo JSON en lugar de solo la ruta
+              if [ -f "$section_data" ]; then
+                cp "$section_data" "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/structure/$section_title/$section_title.json"
+                echo "    Data source: $section_data (copiado)"
+              else
+                # Si el archivo no existe, guardar al menos la ruta como referencia
+                echo "$section_data" > "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/structure/$section_title/$section_title.json"
+                echo "    Data source: $section_data (ruta guardada, archivo no encontrado)"
+              fi
             fi
           done
           
