@@ -14,29 +14,80 @@ fetch('data/webs.json')
             .forEach(key => {
                 const sectionName = data[key];
                 const li = document.createElement('li');
-                li.innerHTML = `<a href="#${sectionName}" class="text-gray-300 hover:text-white capitalize">${sectionName}</a>`;
+                li.innerHTML = `
+                    <a href="#${sectionName}" 
+                       class="flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-blue-50 rounded-lg transition-all duration-200 group">
+                        <i class="fas fa-chart-line text-blue-500 group-hover:text-blue-600"></i>
+                        <span class="sidebar-text font-medium capitalize">${sectionName}</span>
+                    </a>`;
                 navbar.appendChild(li);
             });
+
+        // Inicializar la funcionalidad del sidebar después de cargar el contenido
+        initializeSidebar();
     })
     .catch(error => {
         console.error('Error cargando webs.json:', error);
     });
 
-document.addEventListener('DOMContentLoaded', function() {
+function initializeSidebar() {
+    const sidebar = document.getElementById('sidebar');
     const sidebarToggle = document.getElementById('sidebarToggle');
-    if (sidebarToggle) {
-        sidebarToggle.addEventListener('click', toggleSidebar);
-        console.log('Evento de clic agregado al botón de toggle');
-    } else {
-        console.error('No se encontró el elemento con ID sidebarToggle');
+    const toggleIcon = document.getElementById('toggleIcon');
+    const mainContent = document.getElementById('main-content');
+
+    if (!sidebar || !sidebarToggle || !toggleIcon) {
+        console.error('No se encontraron los elementos necesarios del sidebar');
+        return;
+    }
+
+    function toggleSidebar() {
+        const sidebarTexts = document.querySelectorAll('.sidebar-text');
+        const logoImage = document.querySelector('.logo-image');
+        
+        if (sidebar.classList.contains('w-[250px]')) {
+            // Colapsar sidebar
+            sidebar.classList.remove('w-[250px]');
+            sidebar.classList.add('w-[60px]');
+            toggleIcon.style.transform = 'rotate(180deg)';
+            sidebarTexts.forEach(text => {
+                text.style.opacity = '0';
+                text.classList.add('hidden');
+            });
+            logoImage.classList.add('scale-75');
+            if (mainContent) {
+                mainContent.classList.remove('ml-[250px]');
+                mainContent.classList.add('ml-[60px]');
+            }
+        } else {
+            // Expandir sidebar
+            sidebar.classList.remove('w-[60px]');
+            sidebar.classList.add('w-[250px]');
+            toggleIcon.style.transform = 'rotate(0deg)';
+            logoImage.classList.remove('scale-75');
+            sidebarTexts.forEach(text => {
+                text.classList.remove('hidden');
+                setTimeout(() => {
+                    text.style.opacity = '1';
+                }, 150);
+            });
+            if (mainContent) {
+                mainContent.classList.remove('ml-[60px]');
+                mainContent.classList.add('ml-[250px]');
+            }
+        }
     }
 
     function handleResponsiveLayout() {
-        const sidebar = document.getElementById('sidebar');
         if (window.innerWidth < 640 && sidebar.classList.contains('w-[250px]')) {
             toggleSidebar();
         }
     }
-    window.addEventListener('load', handleResponsiveLayout);
+
+    // Agregar event listeners
+    sidebarToggle.addEventListener('click', toggleSidebar);
     window.addEventListener('resize', handleResponsiveLayout);
-});
+    
+    // Ejecutar el layout responsive inicial
+    handleResponsiveLayout();
+}
