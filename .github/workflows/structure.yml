@@ -196,17 +196,6 @@ jobs:
             fi
           done
           
-          # Asegurar que todos los archivos JSON en la carpeta data se copien y se suban
-          echo "Ensuring all JSON files in data directory are included..."
-          if [ -d "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/data" ]; then
-            # Buscar todos los archivos JSON en la carpeta de origen y copiarlos a la carpeta de destino
-            find "core/results/webs/$TITLE/data" -name "*.json" -type f | while read json_file; do
-              FILENAME=$(basename "$json_file")
-              echo "Copying JSON file: $json_file to data directory"
-              cp "$json_file" "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/data/$FILENAME"
-            done
-          fi
-          
           # Generate a summary of copied files
           echo "Generating data files summary..."
           echo "{" > "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
