@@ -6,13 +6,13 @@ document.addEventListener('DOMContentLoaded', function() {
     let allData = [];
     // --- INICIO CAMBIO ---
     // Obtener dinámicamente la fuente de datos desde el HTML
-    let archive = null;
-    const dataListElement = document.getElementById('data-list');
-    if (dataListElement && dataListElement.getAttribute('data-source')) {
-        archive = dataListElement.getAttribute('data-source');
-    } else {
-        archive = 'data/kaos-issue.json'; // Valor por defecto si no se especifica
-    }
+    let archive = '/core/results/webs/dashboard/data/kaos-workflows-available.json';
+    // const dataListElement = document.getElementById('data-list');
+    // if (dataListElement && dataListElement.getAttribute('data-source')) {
+    //     archive = dataListElement.getAttribute('data-source');
+    // } else {
+    //     archive = 'data/kaos-workflows-available.json'; // Valor por defecto si no se especifica
+    // }
     // --- FIN CAMBIO ---
     
     // Funcion para cargar datos
