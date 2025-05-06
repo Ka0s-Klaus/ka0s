@@ -1,0 +1,56 @@
+{
+    "title": "Lead Time Analysis",
+    "description": "Análisis del tiempo transcurrido desde el commit hasta el despliegue",
+    "templates": [
+        {
+            "type": "stats",
+            "items": [
+                {
+                    "title": "Total Workflows",
+                    "value": "4666"
+                },
+                {
+                    "title": "Avg Lead Time",
+                    "value": "2235m 3s"
+                },
+                {
+                    "title": "Max Lead Time",
+                    "value": "42894m 6s"
+                },
+                {
+                    "title": "Min Lead Time",
+                    "value": "0m 0s"
+                }
+            ]
+        },
+        {
+            "type": "table",
+            "title": "Recent Executions",
+            "dataSource": "core/results/webs/dashboard/data/kaos-workflows-runs.json",
+            "columns": [
+                {
+                    "header": "WORKFLOW",
+                    "field": "name"
+                },
+                {
+                    "header": "LEAD TIME",
+                    "field": "lead_time",
+                    "calculated": true
+                },
+                {
+                    "header": "TIME",
+                    "field": "created_at",
+                    "format": "timeAgo"
+                },
+                {
+                    "header": "STATUS",
+                    "field": "conclusion",
+                    "format": "status"
+                }
+            ],
+            "limit": 5,
+            "sortBy": "created_at",
+            "sortDirection": "desc"
+        }
+    ]
+}
