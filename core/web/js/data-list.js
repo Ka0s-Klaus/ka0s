@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let allData = [];
     let archive = 'data/kaos-issue.json'; 
     
-    // Función para cargar datos
+    // Funcion para cargar datos
     async function loadData() {
         try {
             // Cargar el archivo JSON
