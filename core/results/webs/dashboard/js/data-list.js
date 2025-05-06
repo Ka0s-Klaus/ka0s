@@ -4,9 +4,24 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentPage = 1;
     let filteredData = [];
     let allData = [];
+<<<<<<< HEAD
     let archive = 'data/kaos-issue.json'; 
     
     // Función para cargar datos
+=======
+    // --- INICIO CAMBIO ---
+    // Obtener dinámicamente la fuente de datos desde el HTML
+    let archive = '/core/results/webs/dashboard/data/kaos-workflows-available.json';
+    // const dataListElement = document.getElementById('data-list');
+    // if (dataListElement && dataListElement.getAttribute('data-source')) {
+    //     archive = dataListElement.getAttribute('data-source');
+    // } else {
+    //     archive = 'data/kaos-workflows-available.json'; // Valor por defecto si no se especifica
+    // }
+    // --- FIN CAMBIO ---
+    
+    // Funcion para cargar datos
+>>>>>>> origin
     async function loadData() {
         try {
             // Cargar el archivo JSON
