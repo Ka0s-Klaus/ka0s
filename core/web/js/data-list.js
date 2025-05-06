@@ -4,7 +4,16 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentPage = 1;
     let filteredData = [];
     let allData = [];
-    let archive = 'data/kaos-issue.json'; 
+    // --- INICIO CAMBIO ---
+    // Obtener dinámicamente la fuente de datos desde el HTML
+    let archive = null;
+    const dataListElement = document.getElementById('data-list');
+    if (dataListElement && dataListElement.getAttribute('data-source')) {
+        archive = dataListElement.getAttribute('data-source');
+    } else {
+        archive = 'data/kaos-issue.json'; // Valor por defecto si no se especifica
+    }
+    // --- FIN CAMBIO ---
     
     // Funcion para cargar datos
     async function loadData() {
