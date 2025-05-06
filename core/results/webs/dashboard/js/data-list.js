@@ -4,7 +4,10 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentPage = 1;
     let filteredData = [];
     let allData = [];
-    let archive = 'data/kaos-issue.json'; 
+    
+    // Obtener la fuente de datos del atributo data-source del elemento data-list
+    const dataListElement = document.getElementById('data-list');
+    let archive = dataListElement ? dataListElement.getAttribute('data-source') : 'data/kaos-issue.json';
     
     // Función para cargar datos
     async function loadData() {
@@ -17,41 +20,68 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const data = await response.json();
             
-            // Adaptarse a la estructura real del JSON
-            if (Array.isArray(data) && data.length > 0) {
-                // Si es un array de arrays
-                if (Array.isArray(data[0])) {
-                    allData = data[0]; // Tomar el primer array interno
-                } else {
-                    allData = data; // Es un array simple
+            // Filtrar solo los workflows "Ka0s Inspector" y status "completed"
+            let filtered = [];
+            if (Array.isArray(data)) {
+                // Mostrar todos los workflows con status "completed"
+                filtered = data.filter(item =>
+                    item.status === "completed"
+                ).map(item => {
+                    // Calcular lead time en segundos
+                    const start = new Date(item.run_started_at);
+                    const end = new Date(item.updated_at);
+                    const diffMs = end - start;
+                    const diffSec = Math.floor(diffMs / 1000);
+                    const min = Math.floor(diffSec / 60);
+                    const sec = diffSec % 60;
+                    const leadTime = `${min}m ${sec}s`;
+                    
+                    // Hace cuánto se ejecutó (usando función global si existe)
+                    let timeAgo = item.created_at;
+                    if (typeof window.formatTimeAgo === "function") {
+                        timeAgo = window.formatTimeAgo(item.created_at);
+                    }
+                    
+                    // Estado (usando función global si existe)
+                    let status = item.conclusion || "";
+                    if (typeof window.formatStatus === "function") {
+                        status = window.formatStatus(item.conclusion);
+                    }
+                    
+                    return {
+                        "WORKFLOW": item.name,
+                        "LEAD TIME": leadTime,
+                        "TIME": timeAgo,
+                        "STATUS": status
+                    };
+                });
+            
+            // Eliminar duplicados por WORKFLOW (name)
+            const unique = [];
+            const seen = new Set();
+            for (const item of filtered) {
+                if (!seen.has(item["WORKFLOW"])) {
+                    unique.push(item);
+                    seen.add(item["WORKFLOW"]);
                 }
-            } else if (data.dataFiles && Array.isArray(data.dataFiles)) {
-                // Si tiene la estructura esperada con dataFiles
-                allData = data.dataFiles;
-            } else if (typeof data === 'object') {
-                // Si es un objeto simple, convertir cada propiedad en una fila
-                allData = Object.entries(data).map(([key, value]) => ({
-                    key: key,
-                    value: typeof value === 'object' ? JSON.stringify(value) : value
-                }));
-            } else {
-                throw new Error('Formato de datos no reconocido');
             }
-            
-            // Inicializar con todos los datos
-            filteredData = [...allData];
-            
-            // Renderizar la primera página
-            renderPage(1);
-        } catch (error) {
-            console.error('Error cargando datos:', error);
-            document.getElementById('data-list').innerHTML = `
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                    Error cargando datos: ${error.message}
-                </div>
-            `;
+            filtered = unique;
         }
+
+        allData = filtered;
+        filteredData = [...allData];
+
+        // Renderizar la primera página
+        renderPage(1);
+    } catch (error) {
+        console.error('Error cargando datos:', error);
+        document.getElementById('data-list').innerHTML = `
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                Error cargando datos: ${error.message}
+            </div>
+        `;
     }
+}
 
     // Renderizar una página de datos
     function renderPage(page) {
@@ -133,45 +163,38 @@ document.addEventListener('DOMContentLoaded', function() {
     function renderPagination(currentPage) {
         const totalPages = Math.ceil(filteredData.length / itemsPerPage);
         const pagination = document.getElementById('pagination');
+        const start = (currentPage - 1) * itemsPerPage + 1;
+        const end = Math.min(currentPage * itemsPerPage, filteredData.length);
 
-        let html = '<nav><ul class="pagination">';
+        // Texto de resumen a la izquierda
+        let html = `<div class="flex w-full items-center justify-between">
+            <div class="text-gray-700">
+                Mostrando <span class="font-semibold">${start}</span> a <span class="font-semibold">${end}</span> de <span class="font-semibold">${filteredData.length}</span> workflows
+            </div>
+            <div class="flex items-center space-x-2">
+                <button class="px-4 py-2 rounded ${currentPage === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 border'}" ${currentPage === 1 ? 'disabled' : ''} data-page="${currentPage - 1}">Previous</button>
+                <span class="mx-2">Page ${currentPage} of ${totalPages}</span>
+                <button class="px-4 py-2 rounded ${currentPage === totalPages ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-green-500 text-white'}" ${currentPage === totalPages ? 'disabled' : ''} data-page="${currentPage + 1}">Next</button>
+            </div>
+        </div>`;
 
-        // Botón anterior
-        html += `
-            <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
-                <a class="page-link" href="#" data-page="${currentPage - 1}">Anterior</a>
-            </li>
-        `;
-
-        // Páginas
-        for (let i = 1; i <= totalPages; i++) {
-            html += `
-                <li class="page-item ${i === currentPage ? 'active' : ''}">
-                    <a class="page-link" href="#" data-page="${i}">${i}</a>
-                </li>
-            `;
-        }
-
-        // Botón siguiente
-        html += `
-            <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
-                <a class="page-link" href="#" data-page="${currentPage + 1}">Siguiente</a>
-            </li>
-        `;
-
-        html += '</ul></nav>';
         pagination.innerHTML = html;
 
-        // Añadir event listeners a los enlaces de paginación
-        document.querySelectorAll('.page-link').forEach(link => {
-            link.addEventListener('click', function (e) {
+        // Event listeners para los botones
+        const prevBtn = pagination.querySelector('button[data-page="' + (currentPage - 1) + '"]');
+        const nextBtn = pagination.querySelector('button[data-page="' + (currentPage + 1) + '"]');
+        if (prevBtn && currentPage > 1) {
+            prevBtn.addEventListener('click', function (e) {
                 e.preventDefault();
-                const page = parseInt(this.getAttribute('data-page'));
-                if (page >= 1 && page <= totalPages) {
-                    renderPage(page);
-                }
+                renderPage(currentPage - 1);
             });
-        });
+        }
+        if (nextBtn && currentPage < totalPages) {
+            nextBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                renderPage(currentPage + 1);
+            });
+        }
     }
 
     // Mostrar detalles de un elemento
@@ -234,6 +257,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.body.removeChild(modal);
         });
     }
+    
     // Iniciar carga de datos
     loadData();
 });

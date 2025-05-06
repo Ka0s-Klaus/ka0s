@@ -7,21 +7,26 @@ fetch('data/webs.json')
         if (navbarTitle && data.title) {
             navbarTitle.textContent = data.title;
         }
+
         // Cargar las secciones
         const navbar = document.getElementById('navbar-sections');
-        Object.keys(data)
-            .filter(key => /^section\d+$/.test(key))
-            .forEach(key => {
-                const sectionName = data[key];
+        if (data.sections && Array.isArray(data.sections)) {
+            data.sections.forEach(section => {
                 const li = document.createElement('li');
                 li.innerHTML = `
-                    <a href="#${sectionName}" 
-                       class="flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-blue-50 rounded-lg transition-all duration-200 group">
-                        <i class="fas fa-chart-line text-blue-500 group-hover:text-blue-600"></i>
-                        <span class="sidebar-text font-medium capitalize">${sectionName}</span>
+                    <a href="#${section.title.toLowerCase()}" 
+                       class="flex items-center justify-center w-full py-3 text-gray-700 hover:bg-blue-50 rounded-lg transition-all duration-200 group relative">
+                        <div class="flex items-center justify-center w-12">
+                            <i class="fas ${section.icon} text-orange-300 group-hover:text-orange-500 text-xl"></i>
+                        </div>
+                        <span class="sidebar-text flex-1 font-medium capitalize">${section.title}</span>
+                        <div class="tooltip hidden absolute left-16 top-1/2 -translate-y-1/2 bg-gray-800 text-white px-2 py-1 rounded text-sm whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-200">
+                            ${section.title}
+                        </div>
                     </a>`;
                 navbar.appendChild(li);
             });
+        }
 
         // Inicializar la funcionalidad del sidebar después de cargar el contenido
         initializeSidebar();
@@ -44,6 +49,7 @@ function initializeSidebar() {
     function toggleSidebar() {
         const sidebarTexts = document.querySelectorAll('.sidebar-text');
         const logoImage = document.querySelector('.logo-image');
+        const tooltips = document.querySelectorAll('.tooltip');
         
         if (sidebar.classList.contains('w-[250px]')) {
             // Colapsar sidebar
@@ -54,27 +60,29 @@ function initializeSidebar() {
                 text.style.opacity = '0';
                 text.classList.add('hidden');
             });
-            logoImage.classList.add('scale-75');
-            if (mainContent) {
-                mainContent.classList.remove('ml-[250px]');
-                mainContent.classList.add('ml-[60px]');
+            if (logoImage) {
+                logoImage.classList.add('hidden');
             }
+            tooltips.forEach(tooltip => {
+                tooltip.classList.remove('hidden');
+            });
         } else {
             // Expandir sidebar
             sidebar.classList.remove('w-[60px]');
             sidebar.classList.add('w-[250px]');
             toggleIcon.style.transform = 'rotate(0deg)';
-            logoImage.classList.remove('scale-75');
+            if (logoImage) {
+                logoImage.classList.remove('hidden');
+            }
+            tooltips.forEach(tooltip => {
+                tooltip.classList.add('hidden');
+            });
             sidebarTexts.forEach(text => {
                 text.classList.remove('hidden');
                 setTimeout(() => {
                     text.style.opacity = '1';
                 }, 150);
             });
-            if (mainContent) {
-                mainContent.classList.remove('ml-[60px]');
-                mainContent.classList.add('ml-[250px]');
-            }
         }
     }
 
