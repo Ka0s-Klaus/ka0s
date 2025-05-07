@@ -33,28 +33,16 @@
 <!-- Cargar la navbar desde el template -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Navbar
         fetch('templates/navbar.html')
             .then(response => response.text())
             .then(html => {
                 document.getElementById('navbar-container').innerHTML = html;
+                // Cargar el script de la navbar después de insertar el HTML
                 const script = document.createElement('script');
                 script.src = 'js/navbar.js';
                 document.body.appendChild(script);
             })
             .catch(error => console.error('Error cargando navbar:', error));
-
-        // Cargar data-list.html en el div correspondiente
-        fetch('temp_sections/data-list.html')
-            .then(response => response.text())
-            .then(html => {
-                document.getElementById('data-list').innerHTML = html;
-                // Cargar el script después de insertar el HTML
-                const script = document.createElement('script');
-                script.src = 'js/data-list.js';
-                document.body.appendChild(script);
-            })
-            .catch(error => console.error('Error cargando data-list:', error));
     });
 </script>
 </body>
