@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentPage = 1;
     let filteredData = [];
     let allData = [];
-    // --- INICIO CAMBIO ---
+    // ----- INICIO CAMBIO -----
     // Obtener dinámicamente la fuente de datos desde el HTML
     let archive = 'data/kaos-workflows-available.json';
     // const dataListElement = document.getElementById('data-list');
