@@ -4,16 +4,12 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentPage = 1;
     let filteredData = [];
     let allData = [];
-    // --- INICIO CAMBIO ---
     // Obtener dinámicamente la fuente de datos desde el HTML
     let archive = 'data/kaos-workflows-available.json';
-    // const dataListElement = document.getElementById('data-list');
-    // if (dataListElement && dataListElement.getAttribute('data-source')) {
-    //     archive = dataListElement.getAttribute('data-source');
-    // } else {
-    //     archive = 'data/kaos-workflows-available.json'; // Valor por defecto si no se especifica
-    // }
-    // --- FIN CAMBIO ---
+    const dataListElement = document.getElementById('data-list');
+    if (dataListElement && dataListElement.getAttribute('data-source')) {
+        archive = dataListElement.getAttribute('data-source');
+    }
     
     // Funcion para cargar datos
     async function loadData() {
