@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let allData = [];
     // --- INICIO CAMBIO ---
     // Obtener dinámicamente la fuente de datos desde el HTML
-    let archive = '/data/kaos-workflows-available.json';
+    let archive = 'data/kaos-workflows-available.json';
     // const dataListElement = document.getElementById('data-list');
     // if (dataListElement && dataListElement.getAttribute('data-source')) {
     //     archive = dataListElement.getAttribute('data-source');
