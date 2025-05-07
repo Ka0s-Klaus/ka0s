@@ -43,13 +43,10 @@ jobs:
           username: ${{ secrets.KAOS_WEB_USER }}
           password: ${{ secrets.KAOS_WEB_TOKEN }}
           port: ${{ secrets.KAOS_WEB_PORT }}
-          # local-dir ahora apunta a la carpeta específica del dashboard
-          local-dir: ${{ env.KAOS_PATH_ORIGIN }} 
-          # server-dir ahora apunta a la carpeta específica del dashboard en el servidor
-          server-dir: ${{ env.KAOS_PATH_WEB }} 
-          # dangerous-clean-slate ahora limpiará solo el contenido de server-dir (/html/dashboard/)
-          dangerous-clean-slate: true 
-          state-name: ${{ env.KAOS_PATH_RESUME }}${{ env.KAOS_CODE }}-${{ env.KAOS_FILE_STATE }}
+          local-dir: ${{ env.KAOS_PATH_ORIGIN }}
+          server-dir: ${{ env.KAOS_PATH_WEB }}
+          dangerous-clean-slate: true
+          state-name: ${{ env.KAOS_CODE }}-${{ env.KAOS_FILE_STATE }}
           exclude: |
             **/.git*
             **/.git*/**
