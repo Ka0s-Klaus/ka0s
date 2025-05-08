@@ -77,48 +77,119 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
+        // Determinar si necesitamos scroll horizontal
+        const headers = Object.keys(pageData[0]);
+        const needsScroll = headers.length > 4;
+        
         // Generar encabezados dinámicamente basados en el primer elemento
         if (pageData.length > 0) {
-            const headers = Object.keys(pageData[0]);
             const dataHeaders = document.getElementById('data-headers');
-
+            
+            // Limpiar cualquier clase de scroll anterior
+            if (dataHeaders.parentElement) {
+                dataHeaders.parentElement.classList.remove('overflow-x-auto');
+            }
+            
             // Calcular el ancho de columna basado en el número de propiedades
             const colSpan = Math.floor(12 / headers.length);
-
+            
             let headersHtml = '';
-            headers.forEach(header => {
-                // Convertir el nombre de la propiedad a un formato más legible
-                const displayName = header.charAt(0).toUpperCase() + header.slice(1).replace(/([A-Z])/g, ' $1');
-                headersHtml += `<div class="col-span-${colSpan} font-medium text-gray-700">${displayName}</div>`;
-            });
+            
+            if (needsScroll) {
+                // Para muchas columnas, usamos un contenedor con ancho fijo para cada columna
+                headersHtml = '';
+                headers.forEach(header => {
+                    const displayName = header.charAt(0).toUpperCase() + header.slice(1).replace(/([A-Z])/g, ' $1');
+                    headersHtml += `<div class="px-4 py-2 min-w-[150px] font-medium text-gray-700">${displayName}</div>`;
+                });
+            } else {
+                // Para pocas columnas, usamos grid
+                headers.forEach(header => {
+                    const displayName = header.charAt(0).toUpperCase() + header.slice(1).replace(/([A-Z])/g, ' $1');
+                    headersHtml += `<div class="col-span-${colSpan} font-medium text-gray-700">${displayName}</div>`;
+                });
+            }
 
             dataHeaders.innerHTML = headersHtml;
         }
 
         let html = '';
-        pageData.forEach(item => {
-            const headers = Object.keys(item);
-            const colSpan = Math.floor(12 / headers.length);
-
-            html += `<div class="bg-white border border-gray-200 rounded-md p-4 mb-3 hover:shadow-md transition-all">`;
-            html += `<div class="grid grid-cols-12 gap-4">`;
-
+        
+        if (needsScroll) {
+            // Crear un contenedor único con scroll para encabezados y datos
+            html = `<div class="overflow-x-auto">
+                <table class="min-w-full">
+                    <thead>
+                        <tr>`;
+            
+            // Añadir encabezados a la tabla
             headers.forEach(header => {
-                let value = item[header];
-
-                // Formatear objetos o arrays
-                if (typeof value === 'object' && value !== null) {
-                    value = JSON.stringify(value);
-                }
-
-                html += `<div class="col-span-${colSpan} text-gray-800">${value}</div>`;
+                const displayName = header.charAt(0).toUpperCase() + header.slice(1).replace(/([A-Z])/g, ' $1');
+                html += `<th class="px-4 py-2 min-w-[150px] font-medium text-gray-700 bg-gray-100 sticky top-0">${displayName}</th>`;
             });
-
-            html += `</div>`;
-            html += `<div class="mt-3 text-right">
+            
+            html += `</tr>
+                    </thead>
+                    <tbody>`;
+            
+            // Añadir filas de datos
+            pageData.forEach(item => {
+                html += `<tr class="border-b hover:bg-gray-50">`;
+                
+                headers.forEach(header => {
+                    let value = item[header];
+                    
+                    // Formatear objetos o arrays
+                    if (typeof value === 'object' && value !== null) {
+                        value = JSON.stringify(value);
+                    }
+                    
+                    html += `<td class="px-4 py-3 text-gray-800">${value}</td>`;
+                });
+                
+                html += `</tr>`;
+            });
+            
+            html += `</tbody>
+                </table>
             </div>`;
-            html += `</div>`;
-        });
+            
+            // Ocultar los encabezados originales cuando usamos tabla
+            const dataHeaders = document.getElementById('data-headers');
+            if (dataHeaders) {
+                dataHeaders.style.display = 'none';
+            }
+        } else {
+            // Formato original para pocas columnas
+            // Mostrar los encabezados originales
+            const dataHeaders = document.getElementById('data-headers');
+            if (dataHeaders) {
+                dataHeaders.style.display = '';
+            }
+            
+            pageData.forEach(item => {
+                const colSpan = Math.floor(12 / headers.length);
+                
+                html += `<div class="bg-white border border-gray-200 rounded-md p-4 mb-3 hover:shadow-md transition-all">`;
+                html += `<div class="grid grid-cols-12 gap-4">`;
+
+                headers.forEach(header => {
+                    let value = item[header];
+
+                    // Formatear objetos o arrays
+                    if (typeof value === 'object' && value !== null) {
+                        value = JSON.stringify(value);
+                    }
+
+                    html += `<div class="col-span-${colSpan} text-gray-800">${value}</div>`;
+                });
+
+                html += `</div>`;
+                html += `<div class="mt-3 text-right">
+                </div>`;
+                html += `</div>`;
+            });
+        }
 
         dataList.innerHTML = html;
 
@@ -138,44 +209,43 @@ document.addEventListener('DOMContentLoaded', function() {
     function renderPagination(currentPage) {
         const totalPages = Math.ceil(filteredData.length / itemsPerPage);
         const pagination = document.getElementById('pagination');
+        const startItem = (currentPage - 1) * itemsPerPage + 1;
+        const endItem = Math.min(startItem + itemsPerPage - 1, filteredData.length);
 
-        let html = '<nav><ul class="pagination">';
-
-        // Botón anterior
-        html += `
-            <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
-                <a class="page-link" href="#" data-page="${currentPage - 1}">Anterior</a>
-            </li>
+        let html = `
+            <div class="flex items-center justify-between w-full">
+                <div class="text-sm text-gray-700">
+                    Showing ${startItem} to ${endItem} of ${filteredData.length} successful workflows
+                </div>
+                <div class="flex space-x-2">
+                    <button id="prevPage" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50'}" ${currentPage === 1 ? 'disabled' : ''}>
+                        Previous
+                    </button>
+                    <div class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md">
+                        Page ${currentPage} of ${totalPages}
+                    </div>
+                     <button id="nextPage" class="px-4 py-2 text-sm font-medium text-white bg-green-500 rounded-md ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-green-600'}" ${currentPage === totalPages ? 'disabled' : ''}>
+                        Next
+                    </button>
+                </div>
+            </div>
         `;
 
-        // Páginas
-        for (let i = 1; i <= totalPages; i++) {
-            html += `
-                <li class="page-item ${i === currentPage ? 'active' : ''}">
-                    <a class="page-link" href="#" data-page="${i}">${i}</a>
-                </li>
-            `;
-        }
-
-        // Botón siguiente
-        html += `
-            <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
-                <a class="page-link" href="#" data-page="${currentPage + 1}">Siguiente</a>
-            </li>
-        `;
-
-        html += '</ul></nav>';
         pagination.innerHTML = html;
 
-        // Añadir event listeners a los enlaces de paginación
-        document.querySelectorAll('.page-link').forEach(link => {
-            link.addEventListener('click', function (e) {
-                e.preventDefault();
-                const page = parseInt(this.getAttribute('data-page'));
-                if (page >= 1 && page <= totalPages) {
-                    renderPage(page);
-                }
-            });
+        // Añadir event listeners a los botones de paginación
+        document.getElementById('prevPage')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (currentPage > 1) {
+                renderPage(currentPage - 1);
+            }
+        });
+
+        document.getElementById('nextPage')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (currentPage < totalPages) {
+                renderPage(currentPage + 1);
+            }
         });
     }
 
