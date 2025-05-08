@@ -1,140 +1,69 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Cargar datos de seccion2.json
+    // Cargar datos de section3leadtime.json
     async function loadConfig() {
         try {
-            const response = await fetch('data/seccion2.json');
+            const response = await fetch('../../config/webs/section3leadtime.json');
             if (!response.ok) {
                 throw new Error(`Error HTTP: ${response.status}`);
             }
-            
             const config = await response.json();
-            
-            // Actualizar título y descripción si existen
+
+            // Actualizar título y descripción
             if (config.title) {
-                document.querySelector('h1').textContent = config.title;
+                const h1 = document.querySelector('h1');
+                if (h1) h1.textContent = config.title;
             }
-            
             if (config.description) {
-                document.querySelector('p.text-gray-600').textContent = config.description;
+                const desc = document.querySelector('p.text-gray-600');
+                if (desc) desc.textContent = config.description;
             }
-            
-            // Procesar las plantillas
-            if (config.templates && Array.isArray(config.templates)) {
-                // Procesar estadísticas
-                const statsTemplate = config.templates.find(t => t.type === 'stats');
-                if (statsTemplate && statsTemplate.items && Array.isArray(statsTemplate.items)) {
-                    updateStats(statsTemplate.items);
+
+            // Actualizar métricas
+            const metrics = [
+                { key: 'metric1', color: 'blue' },
+                { key: 'metric2', color: 'green' },
+                { key: 'metric3', color: 'yellow' },
+                { key: 'metric4', color: 'purple' }
+            ];
+            metrics.forEach((metric, idx) => {
+                const container = document.querySelectorAll('.grid.grid-cols-1.md\\:grid-cols-4 > div')[idx];
+                if (container && config[metric.key]) {
+                    const h2 = container.querySelector('h2');
+                    if (h2) h2.textContent = config[metric.key];
                 }
-                
-                // Procesar tabla
-                const tableTemplate = config.templates.find(t => t.type === 'table');
-                if (tableTemplate && tableTemplate.dataSource) {
-                    // Configurar la fuente de datos para data-list.js
-                    const dataListElement = document.getElementById('data-list');
-                    if (dataListElement) {
-                        dataListElement.setAttribute('data-source', tableTemplate.dataSource);
-                        
-                        // Actualizar el título de la tabla si existe
-                        if (tableTemplate.title) {
-                            const tableTitle = document.querySelector('h2.text-xl');
-                            if (tableTitle) {
-                                tableTitle.textContent = tableTemplate.title;
-                            }
-                        }
-                        
-                        // Inicializar data-list.js
-                        window.archive = tableTemplate.dataSource;
-                        
-                        // Configurar columnas personalizadas si existen
-                        if (tableTemplate.columns && Array.isArray(tableTemplate.columns)) {
-                            window.customColumns = tableTemplate.columns;
-                        }
-                        
-                        // Configurar límite si existe
-                        if (tableTemplate.limit) {
-                            window.itemsPerPage = tableTemplate.limit;
-                        }
-                        
-                        // Configurar ordenación si existe
-                        if (tableTemplate.sortBy) {
-                            window.sortBy = tableTemplate.sortBy;
-                            window.sortDirection = tableTemplate.sortDirection || 'asc';
-                        }
+            });
+
+            // Configurar la lista dinámica
+            if (config.templates && Array.isArray(config.templates)) {
+                const listTemplate = config.templates.find(t => t.type === 'list');
+                if (listTemplate) {
+                    // Título de la tabla/lista
+                    const tableTitle = document.querySelector('.bg-white.shadow-sm.rounded-lg.p-6 h2, .bg-white.shadow-sm.rounded-lg.p-6 h3, .bg-white.shadow-sm.rounded-lg.p-6 .text-xl');
+                    const h2Table = document.querySelector('.bg-white.shadow-sm.rounded-lg.p-6 h2.text-xl, .bg-white.shadow-sm.rounded-lg.p-6 h3.text-xl, .bg-white.shadow-sm.rounded-lg.p-6 h2, .bg-white.shadow-sm.rounded-lg.p-6 h3');
+                    const h2Fallback = document.querySelector('.text-xl.font-semibold.text-gray-800');
+                    if (tableTitle) tableTitle.textContent = listTemplate.title;
+                    else if (h2Table) h2Table.textContent = listTemplate.title;
+                    else if (h2Fallback) h2Fallback.textContent = listTemplate.title;
+
+                    // Fuente de datos
+                    const dataList = document.getElementById('data-list');
+                    if (dataList && listTemplate.dataSource) {
+                        dataList.setAttribute('data-source', listTemplate.dataSource);
                     }
                 }
             }
-            
         } catch (error) {
             console.error('Error cargando configuración:', error);
-            document.getElementById('data-list').innerHTML = `
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                    Error cargando configuración: ${error.message}
-                </div>
-            `;
-        }
-    }
-    
-    // Actualizar las estadísticas en la interfaz
-    function updateStats(items) {
-        if (!items || !Array.isArray(items)) return;
-        
-        const statContainers = document.querySelectorAll('.grid.grid-cols-1.md\\:grid-cols-4 > div');
-        
-        items.forEach((item, index) => {
-            if (index < statContainers.length) {
-                const container = statContainers[index];
-                const titleElement = container.querySelector('h2');
-                const valueElement = container.querySelector('p');
-                
-                if (titleElement && item.title) {
-                    titleElement.textContent = item.title;
-                }
-                
-                if (valueElement && item.value) {
-                    valueElement.textContent = item.value;
-                }
+            const dataList = document.getElementById('data-list');
+            if (dataList) {
+                dataList.innerHTML = `
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                        Error cargando configuración: ${error.message}
+                    </div>
+                `;
             }
-        });
+        }
     }
-    
-    // Formatear tiempo relativo
-    window.formatTimeAgo = function(dateString) {
-        const date = new Date(dateString);
-        const now = new Date();
-        const diffInHours = Math.floor((now - date) / (1000 * 60 * 60));
-        
-        if (diffInHours < 24) {
-            return `${diffInHours}h ago`;
-        } else {
-            const diffInDays = Math.floor(diffInHours / 24);
-            return `${diffInDays}d ago`;
-        }
-    };
-    
-    // Formatear estado
-    window.formatStatus = function(status) {
-        if (!status) return '';
-        
-        const statusLower = status.toLowerCase();
-        let statusClass = '';
-        let icon = '';
-        
-        if (statusLower === 'success') {
-            statusClass = 'bg-green-100 text-green-800';
-            icon = 'fa-check-circle';
-        } else if (statusLower === 'failed' || statusLower === 'failure') {
-            statusClass = 'bg-red-100 text-red-800';
-            icon = 'fa-times-circle';
-        } else {
-            statusClass = 'bg-gray-100 text-gray-800';
-            icon = 'fa-info-circle';
-        }
-        
-        return `<span class="px-2 py-1 rounded-full ${statusClass} inline-flex items-center">
-                    <i class="fas ${icon} mr-1"></i> ${status}
-                </span>`;
-    };
-    
-    // Cargar configuración
+
     loadConfig();
 });
