@@ -2550,3 +2550,33 @@
   - core/web/js/navbar.js
   - version.txt
 ---------------------------------
+## Version 0.0.124
+- **Branch**: refs/pull/1144/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: AlejandroPB5
+- **Date**: Tue May  6 14:34:30 UTC 2025
+- **Message**: H220 web de resultados
+- **Files Changed**:
+  - core/outputs/webs/dashboard/dashboard_resume.json
+  - core/outputs/webs/dashboard/data-files-summary.json
+  - core/results/k/event_data_14831536213.json
+  - core/results/k/event_data_14831536213.json.bak
+  - core/results/k/event_data_14856411233.json
+  - core/results/k/event_data_14856411233.json.bak
+  - core/results/k/event_data_14857628568.json
+  - core/results/k/event_data_14857628568.json.bak
+  - core/results/k/event_data_14857696856.json
+  - core/results/k/event_data_14857696856.json.bak
+  - core/results/k/event_data_14858086520.json
+  - core/results/k/event_data_14858086520.json.bak
+  - core/results/k/event_data_14862301266.json
+  - core/results/k/event_data_14862301266.json.bak
+  - core/results/webs/dashboard/data/kaos-issue.json
+  - core/results/webs/dashboard/data/kaos-repository-global-statistics.json
+  - core/results/webs/dashboard/data/kaos-workflows-runs.json
+  - core/results/webs/dashboard/data/webs.json
+  - core/results/webs/dashboard/js/data-list.js
+  - core/results/webs/dashboard/templates/navbar.html
+  - core/web/js/data-list.js
+  - version.txt
+---------------------------------

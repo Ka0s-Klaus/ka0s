@@ -4,9 +4,14 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentPage = 1;
     let filteredData = [];
     let allData = [];
-    let archive = 'data/kaos-issue.json'; 
+    // Obtener dinámicamente la fuente de datos desde el HTML
+    let archive = 'data/kaos-workflows-available.json';
+    const dataListElement = document.getElementById('data-list');
+    if (dataListElement && dataListElement.getAttribute('data-source')) {
+        archive = dataListElement.getAttribute('data-source');
+    }
     
-    // Función para cargar datos
+    // Funcion para cargar datos
     async function loadData() {
         try {
             // Cargar el archivo JSON
