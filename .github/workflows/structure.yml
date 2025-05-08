@@ -452,8 +452,18 @@ jobs:
                           document.body.appendChild(script);
                       })
                       .catch(error => console.error('Error cargando data-list:', error));
+                      
+                  fetch('templates/leadTime.html')
+                      .then(response => response.text())
+                      .then(html => {
+                          document.getElementById('leadTime').innerHTML = html;
+                          // Cargar el script después de insertar el HTML
+                          const script = document.createElement('script');
+                          script.src = 'js/leadTime.js';
+                          document.body.appendChild(script);
+                      })
+                      .catch(error => console.error('Error cargando leadTime:', error));
               });
-              
           </script>
           </body>
           </html>" >> "core/results/webs/${TITLE}/dashboard.html"
