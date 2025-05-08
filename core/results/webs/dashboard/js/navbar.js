@@ -111,7 +111,7 @@ function loadSection(sectionName) {
     // Si es leadTime, cargar el archivo leadTime.html
     if (sectionName === 'leadTime') {
         // Cargar el contenido de leadTime.html en el contenedor principal
-        fetch('structure/leadTime/leadTime.html')
+        fetch('templates/leadTime.html')
             .then(response => response.text())
             .then(html => {
                 // Crear un contenedor temporal para el contenido
