@@ -1,0 +1,54 @@
+name: Ka0s JSON to RAG Processor
+
+on:
+  push:
+    paths:
+      - 'core/outputs/w/**'
+  workflow_dispatch:
+
+jobs:
+  process-json:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install langchain chromadb pydantic
+
+    - name: Process JSON files
+      run: |
+        python -c "
+        import os
+        import json
+        from langchain.document_loaders import DirectoryLoader
+        from langchain.text_splitter import CharacterTextSplitter
+        from langchain.embeddings import OpenAIEmbeddings
+        from langchain.vectorstores import Chroma
+
+        # Load all JSON files from directory
+        loader = DirectoryLoader('core/outputs/w', glob='**/*.json', loader_kwargs={'mode': 'json'})
+        documents = loader.load()
+
+        # Split documents into chunks
+        text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+        texts = text_splitter.split_documents(documents)
+
+        # Create embeddings and store in ChromaDB
+        embeddings = OpenAIEmbeddings()
+        db = Chroma.from_documents(texts, embeddings, persist_directory='./rag_vectorstore')
+        db.persist()
+        "
+
+    - name: Upload vector store
+      uses: actions/upload-artifact@v3
+      with:
+        name: rag-vector-store
+        path: ./rag_vectorstore
