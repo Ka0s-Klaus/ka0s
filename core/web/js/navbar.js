@@ -99,3 +99,80 @@ function initializeSidebar() {
     // Ejecutar el layout responsive inicial
     handleResponsiveLayout();
 }
+
+
+// Función para cargar el contenido de una sección
+function loadSection(sectionName) {
+    // Ocultar todas las secciones primero
+    document.querySelectorAll('.section-content').forEach(section => {
+        section.style.display = 'none';
+    });
+    
+    // Si es leadTime, cargar el archivo leadTime.html
+    if (sectionName === 'leadTime') {
+        // Cargar el contenido de leadTime.html en el contenedor principal
+        fetch('structure/leadTime/leadTime.html')
+            .then(response => response.text())
+            .then(html => {
+                // Crear un contenedor temporal para el contenido
+                const tempContainer = document.createElement('div');
+                tempContainer.innerHTML = html;
+                
+                // Extraer el contenido del body
+                const bodyContent = tempContainer.querySelector('body').innerHTML;
+                
+                // Insertar el contenido en el main-content
+                const mainContent = document.getElementById('main-content');
+                const container = mainContent.querySelector('.container');
+                container.innerHTML = bodyContent;
+            })
+            .catch(error => console.error('Error cargando leadTime.html:', error));
+    } else {
+        // Para otras secciones, mostrar la sección correspondiente si existe
+        const sectionElement = document.getElementById(sectionName);
+        if (sectionElement) {
+            sectionElement.style.display = 'block';
+        }
+    }
+}
+
+// Agregar event listeners a los elementos del menú
+document.addEventListener('DOMContentLoaded', function() {
+    // Cargar la navbar
+    const navbarContainer = document.getElementById('navbar-container');
+    fetch('templates/navbar.html')
+        .then(response => response.text())
+        .then(html => {
+            navbarContainer.innerHTML = html;
+            
+            // Agregar event listeners a los elementos del menú después de cargar la navbar
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Remover la clase active de todos los elementos
+                    document.querySelectorAll('.nav-item').forEach(navItem => {
+                        navItem.classList.remove('active');
+                    });
+                    
+                    // Agregar la clase active al elemento clickeado
+                    this.classList.add('active');
+                    
+                    // Obtener el nombre de la sección del atributo data-section
+                    const sectionName = this.getAttribute('data-section');
+                    
+                    // Cargar la sección
+                    loadSection(sectionName);
+                });
+            });
+            
+            // Cargar la sección inicial (primera sección)
+            const firstSection = document.querySelector('.nav-item');
+            if (firstSection) {
+                firstSection.classList.add('active');
+                const sectionName = firstSection.getAttribute('data-section');
+                loadSection(sectionName);
+            }
+        })
+        .catch(error => console.error('Error cargando navbar:', error));
+});
