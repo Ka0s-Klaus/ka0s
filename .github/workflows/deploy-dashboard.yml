@@ -37,6 +37,16 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.KAOS_REPO_TOKEN }}
           
+      - name: Limpiar caché local antes del despliegue
+        run: |
+          echo "Limpiando caché local de GitHub Actions runner..."
+          if [ -d ~/.cache ]; then
+            rm -rf ~/.cache/*
+            echo "Caché local eliminada."
+          else
+            echo "No se encontró directorio de caché local."
+          fi
+          
       - name: Deploy Dashboard to Web Server via SFTP
         id: sftp
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
@@ -54,30 +64,7 @@ jobs:
             **/.git*/**
             **/node_modules/**
       
-      # Nuevo paso para limpiar la caché
-      - name: Clear server cache
-        if: ${{ success() }}
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.KAOS_WEB_SERVER }}
-          username: ${{ secrets.KAOS_WEB_USER }}
-          password: ${{ secrets.KAOS_WEB_TOKEN }}
-          port: ${{ secrets.KAOS_WEB_PORT }}
-          script: |
-            # Crear un archivo de versión con timestamp para forzar recarga de caché
-            echo "${{ env.KAOS_CACHE_BUSTER }}" > ${{ env.KAOS_PATH_WEB }}version.txt
-            
-            # Si tienes acceso a comandos del servidor web, puedes añadir comandos para limpiar la caché
-            # Por ejemplo, para Nginx:
-            # sudo service nginx reload
-            
-            # O para Apache:
-            # sudo service apache2 reload
-            
-            # También puedes tocar los archivos JS para actualizar su timestamp
-            find ${{ env.KAOS_PATH_WEB }}js/ -name "*.js" -exec touch {} \;
-            
-            echo "Cache cleared successfully"
+     
          
   handle-success:
     runs-on:
