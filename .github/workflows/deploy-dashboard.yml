@@ -21,6 +21,8 @@ env:
     KAOS_PATH_RESUME: "core/results/dw/"
     KAOS_FILE_STATE: "ftp-deploy-sync-state.json"
     KAOS_ACTOR: ${{ github.actor }}
+    # Añadir variable para control de caché
+    KAOS_CACHE_BUSTER: ${{ github.run_id }}-${{ github.run_number }}
 
 jobs:
   job-core:
@@ -51,6 +53,31 @@ jobs:
             **/.git*
             **/.git*/**
             **/node_modules/**
+      
+      # Nuevo paso para limpiar la caché
+      - name: Clear server cache
+        if: ${{ success() }}
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.KAOS_WEB_SERVER }}
+          username: ${{ secrets.KAOS_WEB_USER }}
+          password: ${{ secrets.KAOS_WEB_TOKEN }}
+          port: ${{ secrets.KAOS_WEB_PORT }}
+          script: |
+            # Crear un archivo de versión con timestamp para forzar recarga de caché
+            echo "${{ env.KAOS_CACHE_BUSTER }}" > ${{ env.KAOS_PATH_WEB }}version.txt
+            
+            # Si tienes acceso a comandos del servidor web, puedes añadir comandos para limpiar la caché
+            # Por ejemplo, para Nginx:
+            # sudo service nginx reload
+            
+            # O para Apache:
+            # sudo service apache2 reload
+            
+            # También puedes tocar los archivos JS para actualizar su timestamp
+            find ${{ env.KAOS_PATH_WEB }}js/ -name "*.js" -exec touch {} \;
+            
+            echo "Cache cleared successfully"
          
   handle-success:
     runs-on:
