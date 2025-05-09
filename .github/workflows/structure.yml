@@ -246,6 +246,16 @@ jobs:
       - id: upload-json   
         name: Copiar archivos JSON de config/webs a data
         run: |
+          # Extraer título para el nombre de la carpeta principal desde el archivo de estructura
+          STRUCTURE_FILE="${{ env.KAOS_JSON_WEB }}"
+          TITLE=$(jq -r '.title' $STRUCTURE_FILE)
+          if [ -z "$TITLE" ]; then
+            TITLE="dashboard"
+            echo "Título no encontrado en el archivo JSON, usando el valor predeterminado: $TITLE"
+          else
+            echo "La carpeta principal se llama: $TITLE"
+          fi
+          
           echo "Copiando archivos JSON de core/config/webs a data..."
           mkdir -p "core/results/webs/${TITLE}/data"
           
