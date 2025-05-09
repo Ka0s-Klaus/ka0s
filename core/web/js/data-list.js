@@ -15,7 +15,9 @@ document.addEventListener('DOMContentLoaded', function() {
     async function loadData() {
         try {
             // Cargar el archivo JSON
-            const response = await fetch(archive);
+            // Asegurarse de que la ruta sea relativa y no contenga rutas absolutas de Windows
+            const adjustedPath = archive.replace(/^(c:\\|C:\\).*?core[\\/]/, '').replace(/\\/g, '/');
+            const response = await fetch(adjustedPath);
             if (!response.ok) {
                 throw new Error(`Error HTTP: ${response.status}`);
             }
@@ -309,6 +311,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.body.removeChild(modal);
         });
     }
+    
     // Iniciar carga de datos
     loadData();
 });
