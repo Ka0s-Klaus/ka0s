@@ -47,18 +47,28 @@
         fetch('temp_sections/data-list.html')
             .then(response => response.text())
             .then(html => {
-                document.getElementById('data-list').innerHTML = html;
-                // Cargar el script después de insertar el HTML
-                const script = document.createElement('script');
-                script.src = 'js/data-list.js';
-                document.body.appendChild(script);
+                const dataListElement = document.getElementById('data-list');
+                if (dataListElement) {
+                    dataListElement.innerHTML = html;
+                    // Cargar el script después de insertar el HTML
+                    const script = document.createElement('script');
+                    script.src = 'js/data-list.js';
+                    document.body.appendChild(script);
+                }
             })
             .catch(error => console.error('Error cargando data-list:', error));
             
         fetch('templates/leadTime.html')
             .then(response => response.text())
             .then(html => {
-                document.getElementById('leadTime').innerHTML = html;
+                // Crear el elemento leadTime si no existe
+                let leadTimeElement = document.getElementById('leadTime');
+                if (!leadTimeElement) {
+                    leadTimeElement = document.createElement('div');
+                    leadTimeElement.id = 'leadTime';
+                    document.querySelector('.dashboard-content').appendChild(leadTimeElement);
+                }
+                leadTimeElement.innerHTML = html;
                 // Cargar el script después de insertar el HTML
                 const script = document.createElement('script');
                 script.src = 'js/leadTime.js';
