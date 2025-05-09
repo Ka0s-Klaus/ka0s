@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Cargar datos de section3leadtime.json
     async function loadConfig() {
         try {
-            const response = await fetch('../../config/webs/section4actionsperformance.json');
+            const response = await fetch('../../config/webs/section6handlersuccess.json');
             if (!response.ok) {
                 throw new Error(`Error HTTP: ${response.status}`);
             }
@@ -20,9 +20,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Actualizar métricas
             const metrics = [
-                { key: 'metric1', color: 'blue' },
-                { key: 'metric2', color: 'green' },
-                { key: 'metric3', color: 'purple' }
+                { key: 'metric1', color: 'green' },
+                { key: 'metric2', color: 'blue' },
+                { key: 'metric3', color: 'purple' },
+                { key: 'metric3', color: 'orange' }
             ];
             metrics.forEach((metric, idx) => {
                 const container = document.querySelectorAll('.grid.grid-cols-1.md\\:grid-cols-4 > div')[idx];
