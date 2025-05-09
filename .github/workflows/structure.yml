@@ -243,6 +243,20 @@ jobs:
             git commit -m "[Ka0S] Uploading data files to web structure..."
             git push origin ${{ env.KAOS_REF }}
           fi
+      - id: upload-json   
+        name: Copiar archivos JSON de config/webs a data
+        run: |
+          echo "Copiando archivos JSON de core/config/webs a data..."
+          mkdir -p "core/results/webs/${TITLE}/data"
+          
+          # Copiar todos los archivos JSON de core/config/webs a la estructura
+          find core/config/webs -name "*.json" -type f | while read -r json_file; do
+            # Obtener el nombre del archivo
+            JSON_FILENAME=$(basename "$json_file")
+            echo "Copiando archivo JSON: $json_file a data directory"
+            cp "$json_file" "core/results/webs/${TITLE}/data/$JSON_FILENAME"
+          done
+          echo "Todos los archivos JSON de core/config/webs copiados exitosamente!"
   job-design:
     runs-on:
       group: ka0s
@@ -445,18 +459,28 @@ jobs:
                   fetch('temp_sections/data-list.html')
                       .then(response => response.text())
                       .then(html => {
-                          document.getElementById('data-list').innerHTML = html;
-                          // Cargar el script después de insertar el HTML
-                          const script = document.createElement('script');
-                          script.src = 'js/data-list.js';
-                          document.body.appendChild(script);
+                          const dataListElement = document.getElementById('data-list');
+                          if (dataListElement) {
+                              dataListElement.innerHTML = html;
+                              // Cargar el script después de insertar el HTML
+                              const script = document.createElement('script');
+                              script.src = 'js/data-list.js';
+                              document.body.appendChild(script);
+                          }
                       })
                       .catch(error => console.error('Error cargando data-list:', error));
                       
                   fetch('templates/leadTime.html')
                       .then(response => response.text())
                       .then(html => {
-                          document.getElementById('leadTime').innerHTML = html;
+                          // Crear el elemento leadTime si no existe
+                          let leadTimeElement = document.getElementById('leadTime');
+                          if (!leadTimeElement) {
+                              leadTimeElement = document.createElement('div');
+                              leadTimeElement.id = 'leadTime';
+                              document.querySelector('.dashboard-content').appendChild(leadTimeElement);
+                          }
+                          leadTimeElement.innerHTML = html;
                           // Cargar el script después de insertar el HTML
                           const script = document.createElement('script');
                           script.src = 'js/leadTime.js';
@@ -495,7 +519,35 @@ jobs:
           </body>
           </html>" >> "core/results/webs/${TITLE}/dashboard.html"
                   fi
-
+      - name: Copiar archivos JS y otros recursos estáticos
+        run: |
+          # Copiar todos los archivos JS
+          STRUCTURE_FILE="${{ env.KAOS_JSON_WEB }}"
+          TITLE=$(cat $STRUCTURE_FILE | jq -r '.title')
+          mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/js"
+          cp -r core/web/js/* "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/js/" || true
+          git add core/results/webs/dashboard/*
+          
+          # Verificar si el archivo dashboard.html existe y no está rastreado
+          if [ -f "core/results/webs/dashboard/dashboard.html" ] && ! git ls-files --error-unmatch core/results/webs/dashboard/dashboard.html > /dev/null 2>&1; then
+            echo "El archivo dashboard.html existe pero no está rastreado. Añadiéndolo al staging..."
+            git add core/results/webs/dashboard/dashboard.html
+            git commit -m "[Ka0S] Añadiendo dashboard.html antes del pull"
+          fi
+          
+          # Hacer pull con estrategia de recursión para manejar conflictos
+          git pull --strategy-option=theirs
+          
+          # Añadir todos los archivos de la carpeta dashboard
+          git add core/results/webs/dashboard/*
+          
+          # Verify if there are changes to commit
+          if git diff --staged --quiet; then
+            echo "No hay cambios para hacer commit"
+          else
+            git commit -m "[Ka0S] Uploading dashboard files to web structure..."
+            git push origin ${{ env.KAOS_REF }}
+          fi
       - id: upload-files
         name: Upload Files
         run: |
@@ -639,33 +691,5 @@ jobs:
           RNNUMBER=220
           gh issue comment $RNNUMBER --body "Se finaliza Ka0s ${{ env.KAOS_CODE }}"
           gh workflow run inspector.yml --ref 'main' -f kaos-issue-id=$RNNUMBER -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start=""
-      - name: Copiar archivos JS y otros recursos estáticos
-        run: |
-          # Copiar todos los archivos JS
-          STRUCTURE_FILE="${{ env.KAOS_JSON_WEB }}"
-          TITLE=$(cat $STRUCTURE_FILE | jq -r '.title')
-          mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/js"
-          cp -r core/web/js/* "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/js/" || true
-          git add core/results/webs/dashboard/*
-          
-          # Verificar si el archivo dashboard.html existe y no está rastreado
-          if [ -f "core/results/webs/dashboard/dashboard.html" ] && ! git ls-files --error-unmatch core/results/webs/dashboard/dashboard.html > /dev/null 2>&1; then
-            echo "El archivo dashboard.html existe pero no está rastreado. Añadiéndolo al staging..."
-            git add core/results/webs/dashboard/dashboard.html
-            git commit -m "[Ka0S] Añadiendo dashboard.html antes del pull"
-          fi
-          
-          # Hacer pull con estrategia de recursión para manejar conflictos
-          git pull --strategy-option=theirs
-          
-          # Añadir todos los archivos de la carpeta dashboard
-          git add core/results/webs/dashboard/*
-          
-          # Verify if there are changes to commit
-          if git diff --staged --quiet; then
-            echo "No hay cambios para hacer commit"
-          else
-            git commit -m "[Ka0S] Uploading dashboard files to web structure..."
-            git push origin ${{ env.KAOS_REF }}
-          fi
+      
   
