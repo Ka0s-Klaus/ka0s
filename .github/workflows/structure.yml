@@ -287,8 +287,6 @@ jobs:
       - name: Copiar navbar.html a dashboard/templates
         run: |
           mkdir -p core/results/webs/dashboard/templates
-          cp core/web/templates/navbar.html core/results/webs/dashboard/templates/navbar.html
-          cp core/web/templates/leadTime.html core/results/webs/dashboard/templates/leadTime.html
           echo "Generando HTML de secciones según su JSON..."
           STRUCTURE_FILE="core/config/webs/webs.json"
           TITLE=$(jq -r '.title' $STRUCTURE_FILE)
@@ -322,38 +320,7 @@ jobs:
                     LIST_TEMPLATE_JSON=$(jq -c '.templates[] | select(.type == "list")' "$section_data" | head -1)
                     LIST_TITLE=$(echo "$LIST_TEMPLATE_JSON" | jq -r '.title')
                     LIST_DATA_SOURCE=$(echo "$LIST_TEMPLATE_JSON" | jq -r '.dataSource')
-                    
-                    # Leer la plantilla de lista
-                    LIST_TEMPLATE=$(cat core/web/templates/data-list.html)
-                    
-                    # Crear un archivo temporal con la plantilla de lista modificada
-                    TEMP_LIST=$(mktemp)
-                    cat core/web/templates/data-list.html | 
-                      sed "s|{{TEMPLATE_TITLE}}|$LIST_TITLE|g" | 
-                      sed "s|{{DATA_SOURCE}}|$LIST_DATA_SOURCE|g" > "$TEMP_LIST"
-                    
-                    # Crear un archivo temporal para el resultado final
-                    TEMP_RESULT=$(mktemp)
-                    
-                    # Usar awk para reemplazar el placeholder con el contenido del archivo temporal
-                    awk -v placeholder="SECTION_LIST_PLACEHOLDER" -v replacement="$(cat $TEMP_LIST)" '{
-                      gsub(placeholder, replacement)
-                      print
-                    }' "$SECTION_HTML" > "$TEMP_RESULT"
-                    
-                    # Mover el resultado al archivo final
-                    mv "$TEMP_RESULT" "$SECTION_HTML"
-                    
-                    # Limpiar archivos temporales
-                    rm -f "$TEMP_LIST"
-                    
-                    echo "Añadido componente de lista a la sección"
-                  else
-                    echo "La sección no tiene una lista definida, eliminando placeholder"
-                    sed -i "s|SECTION_LIST_PLACEHOLDER||g" "$SECTION_HTML"
-                  fi
-                fi
-                
+        
                 # Procesar templates y reemplazar el placeholder de templates
                 TEMPLATES_HTML=""
                 jq -c '.templates[]' "$section_data" | while read -r template; do
@@ -363,7 +330,6 @@ jobs:
                   
                   if [ "$TYPE" = "graphic" ]; then
                     # Leer la plantilla de gráfico
-                    GRAPHIC_TEMPLATE=$(cat core/web/templates/graphic.html)
                     # Reemplazar placeholders en la plantilla
                     GRAPHIC_TEMPLATE=$(echo "$GRAPHIC_TEMPLATE" | sed "s/GRAPHIC_TITLE_PLACEHOLDER/$TITLE/g")
                     GRAPHIC_TEMPLATE=$(echo "$GRAPHIC_TEMPLATE" | sed "s|DATA_SOURCE_PLACEHOLDER|$DATA_SOURCE|g")
@@ -371,15 +337,12 @@ jobs:
                     # Añadir referencia a Chart.js antes del script graphic.js
                     TEMPLATES_HTML+="<script src=\"https://cdn.jsdelivr.net/npm/chart.js\"></script>"
                     # Modificar la forma de incluir el script para que pueda recibir el data-source
-                    TEMPLATES_HTML+="<script src=\"../../js/graphic.js\" id=\"graphic-script\" data-source=\"$DATA_SOURCE\"></script>"
                   elif [ "$TYPE" = "list" ]; then
                     # Leer la plantilla de lista
-                    LIST_TEMPLATE=$(cat core/web/templates/data-list.html)
                     # Reemplazar placeholders en la plantilla
                     LIST_TEMPLATE=$(echo "$LIST_TEMPLATE" | sed "s/LIST_TITLE_PLACEHOLDER/$TITLE/g")
                     LIST_TEMPLATE=$(echo "$LIST_TEMPLATE" | sed "s|DATA_SOURCE_PLACEHOLDER|$DATA_SOURCE|g")
                     TEMPLATES_HTML+="$LIST_TEMPLATE"
-                    TEMPLATES_HTML+="<script src=\"../../js/data-list.js\" data-source=\"$DATA_SOURCE\"></script>"
                   fi
                 done
                 
@@ -436,7 +399,6 @@ jobs:
                       cat "$TEMP_CONTENT" | 
                         grep -v "<body" | 
                         grep -v "</body>" | 
-                        grep -v "<script src=\"..\/js\/data-list.js\">" |
                         
                       
                       # Limpiamos el archivo temporal
