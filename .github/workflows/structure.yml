@@ -173,7 +173,46 @@ jobs:
           
           # Crear directorio principal para el dashboard de test
           mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TEST_TITLE"
-          touch ${{ env.KAOS_WEB_STRUCTURE }}$TEST_TITLE/$TEST_TITLE".html"
+          
+          # En lugar de solo crear un archivo vacío, crear un archivo HTML básico
+          cat > ${{ env.KAOS_WEB_STRUCTURE }}$TEST_TITLE/$TEST_TITLE".html" << 'EOL'
+          <!DOCTYPE html>
+          <html lang="es">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Ka0s Dashboard - test</title>
+              <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+          </head>
+          <body class="bg-gray-50">
+              <!-- Incluir la navbar -->
+              <div id="navbar-container"></div>
+              
+              <div id="main-content" class="ml-[250px] transition-all duration-300">
+                  <div class="container mx-auto px-4 py-8">
+                      <header class="py-3 mb-4 border-b border-gray-200">
+                          <div class="flex items-center">
+                              <h1 class="text-2xl font-bold text-gray-800">test</h1>
+                          </div>
+                      </header>
+                      <div class="dashboard-content">
+          <div class="section-content" id="data-list">
+          </div>
+          <div class="section-content" id="inicio">
+          </div>
+          <div class="section-content" id="section1inicio">
+          </div>
+                    </div>
+              </div>
+              </div>
+          </div>
+
+          <!-- Cargar la navbar desde el template -->
+          <script src=js/orchestrator.js></script>
+          </body>
+          </html>
+          EOL
+          
           mkdir -p "${{ env.KAOS_JSON_RESUME }}$TEST_TITLE"
           touch ${{ env.KAOS_JSON_RESUME }}$TEST_TITLE/readme.txt
           
