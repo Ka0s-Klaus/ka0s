@@ -283,9 +283,7 @@ jobs:
       - name: Copiar scripts JS a dashboard/js
         run: |
           mkdir -p core/results/webs/dashboard/js
-          cp core/web/js/data-list.js core/results/webs/dashboard/js/data-list.js
-          cp core/web/js/graphic.js core/results/webs/dashboard/js/graphic.js
-          cp core/web/js/navbar.js core/results/webs/dashboard/js/navbar.js
+         cp core/web/js/orchestrator.js core/results/webs/dashboard/js/orchestrator.js
       - name: Copiar navbar.html a dashboard/templates
         run: |
           mkdir -p core/results/webs/dashboard/templates
@@ -451,53 +449,9 @@ jobs:
               </div>
           </div>
           
-          <!-- Cargar la navbar desde el template -->
-          <script>
-              document.addEventListener('DOMContentLoaded', function() {
-                  fetch('templates/navbar.html')
-                      .then(response => response.text())
-                      .then(html => {
-                          document.getElementById('navbar-container').innerHTML = html;
-                          // Cargar el script de la navbar después de insertar el HTML
-                          const script = document.createElement('script');
-                          script.src = 'js/navbar.js';
-                          document.body.appendChild(script);
-                      })
-                      .catch(error => console.error('Error cargando navbar:', error));
-                  
-                  fetch('temp_sections/data-list.html')
-                      .then(response => response.text())
-                      .then(html => {
-                          const dataListElement = document.getElementById('data-list');
-                          if (dataListElement) {
-                              dataListElement.innerHTML = html;
-                              // Cargar el script después de insertar el HTML
-                              const script = document.createElement('script');
-                              script.src = 'js/data-list.js';
-                              document.body.appendChild(script);
-                          }
-                      })
-                      .catch(error => console.error('Error cargando data-list:', error));
-                      
-                  fetch('templates/leadTime.html')
-                      .then(response => response.text())
-                      .then(html => {
-                          // Crear el elemento leadTime si no existe
-                          let leadTimeElement = document.getElementById('leadTime');
-                          if (!leadTimeElement) {
-                              leadTimeElement = document.createElement('div');
-                              leadTimeElement.id = 'leadTime';
-                              document.querySelector('.dashboard-content').appendChild(leadTimeElement);
-                          }
-                          leadTimeElement.innerHTML = html;
-                          // Cargar el script después de insertar el HTML
-                          const script = document.createElement('script');
-                          script.src = 'js/leadTime.js';
-                          document.body.appendChild(script);
-                      })
-                      .catch(error => console.error('Error cargando leadTime:', error));
-              });
-          </script>
+          <!-- Cargar orchestrator desde el template -->
+          <script>js/orchestrator.js</script>
+        
           </body>
           </html>" >> "core/results/webs/${TITLE}/dashboard.html"
                     
