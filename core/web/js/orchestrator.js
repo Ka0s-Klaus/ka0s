@@ -41,24 +41,6 @@ function loadWebsConfig() {
                         configFile: section.data,
                         metrics: [] // Se llenará al cargar la configuración específica
                     };
-
-                    // Si la sección tiene una función de procesamiento específica, añadirla
-                    if (section.title === 'endWorkflow') {
-                        sectionConfigMap[section.title].processData = function (data) {
-                            // Filtrar solo los workflows completados
-                            const completedWorkflows = data.filter(workflow => workflow.status === "completed");
-
-                            // Calcular métricas
-                            updateEndWorkflowMetrics(completedWorkflows);
-
-                            // Inicializar con los datos filtrados
-                            allData = completedWorkflows;
-                            filteredData = [...allData];
-
-                            // Renderizar la primera página
-                            renderPage(1);
-                        };
-                    }
                 });
             }
 
@@ -618,3 +600,271 @@ function filterData(searchTerm) {
 window.initSection = initSection;
 window.filterData = filterData;
 window.initializeChart = initializeChart;
+
+// Función para cargar el navbar y procesar la configuración de la sección
+document.addEventListener('DOMContentLoaded', function() {
+    // Cargar el navbar
+    const navbarContainer = document.getElementById('navbar-container');
+    if (navbarContainer) {
+        fetch('../templates/navbar.html')
+            .then(response => response.text())
+            .then(data => {
+                navbarContainer.innerHTML = data;
+                // Inicializar el orquestador después de cargar el navbar
+                if (typeof loadWebsConfig === 'function') {
+                    loadWebsConfig();
+                }
+            })
+            .catch(error => console.error('Error cargando el navbar:', error));
+    }
+
+    // Ajustar el contenido principal cuando cambia el tamaño del sidebar
+    function adjustMainContent() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('main-content');
+        
+        if (sidebar && mainContent) {
+            if (sidebar.classList.contains('w-[60px]')) {
+                mainContent.classList.remove('ml-[250px]');
+                mainContent.classList.add('ml-[60px]');
+            } else {
+                mainContent.classList.remove('ml-[60px]');
+                mainContent.classList.add('ml-[250px]');
+            }
+        }
+    }
+
+    // Observar cambios en el sidebar
+    setTimeout(() => {
+        const sidebar = document.getElementById('sidebar');
+        if (sidebar) {
+            const observer = new MutationObserver(adjustMainContent);
+            observer.observe(sidebar, { attributes: true, attributeFilter: ['class'] });
+            adjustMainContent();
+        }
+    }, 1000);
+});
+
+// Función para renderizar métricas dinámicamente
+function renderMetrics(config) {
+    const metricsContainer = document.getElementById('metrics-container');
+    if (!metricsContainer) return;
+    
+    // Limpiar el contenedor
+    metricsContainer.innerHTML = '';
+    
+    // Colores para las métricas
+    const colors = ['blue', 'green', 'yellow', 'purple', 'red', 'orange', 'gray'];
+    
+    // Contador de métricas
+    let metricCount = 0;
+    
+    // Buscar todas las propiedades que comienzan con "metric"
+    for (const key in config) {
+        if (key.startsWith('metric') && !isNaN(key.substring(6))) {
+            const metricNumber = key.substring(6);
+            const titleKey = `metric${metricNumber}Title`;
+            const title = config[titleKey] || `Métrica ${metricNumber}`;
+            const value = config[key] || '0';
+            const color = colors[metricCount % colors.length];
+            
+            // Crear el elemento de métrica
+            const metricElement = document.createElement('div');
+            metricElement.className = `bg-white rounded-lg shadow-sm p-4 border-l-4 border-${color}-500`;
+            metricElement.innerHTML = `
+                <p class="text-sm text-gray-500 uppercase">${title}</p>
+                <h2 id="metric${metricNumber}" class="text-2xl font-bold text-gray-800">${value}</h2>
+            `;
+            
+            // Añadir al contenedor
+            metricsContainer.appendChild(metricElement);
+            metricCount++;
+        }
+    }
+    
+    // Si no hay métricas, ocultar el contenedor
+    if (metricCount === 0) {
+        metricsContainer.style.display = 'none';
+    } else {
+        metricsContainer.style.display = 'grid';
+        
+        // Ajustar el número de columnas según la cantidad de métricas
+        if (metricCount <= 2) {
+            metricsContainer.className = 'grid grid-cols-1 md:grid-cols-2 gap-4 mb-8';
+        } else if (metricCount <= 3) {
+            metricsContainer.className = 'grid grid-cols-1 md:grid-cols-3 gap-4 mb-8';
+        } else {
+            metricsContainer.className = 'grid grid-cols-1 md:grid-cols-4 gap-4 mb-8';
+        }
+    }
+}
+
+// Función para renderizar plantillas dinámicamente
+function renderTemplates(config) {
+    const templatesContainer = document.getElementById('templates-container');
+    if (!templatesContainer || !config.templates || !Array.isArray(config.templates)) return;
+    
+    // Limpiar el contenedor
+    templatesContainer.innerHTML = '';
+    
+    // Procesar cada plantilla
+    config.templates.forEach((template, index) => {
+        // Crear contenedor para esta plantilla
+        const templateContainer = document.createElement('div');
+        templateContainer.className = 'bg-white shadow-sm rounded-lg p-6 mb-6';
+        
+        // Título de la plantilla
+        const titleElement = document.createElement('h2');
+        titleElement.className = 'text-xl font-semibold text-gray-800 mb-4';
+        titleElement.textContent = template.title || `Plantilla ${index + 1}`;
+        templateContainer.appendChild(titleElement);
+        
+        // Contenido según el tipo de plantilla
+        if (template.type === 'list') {
+            // Crear contenedor de búsqueda
+            const searchContainer = document.createElement('div');
+            searchContainer.className = 'flex justify-between items-center mb-4';
+            searchContainer.innerHTML = `
+                <div class="relative ml-auto">
+                    <input type="text" id="search-input-${index}" placeholder="Buscar..." 
+                        class="pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                </div>
+            `;
+            templateContainer.appendChild(searchContainer);
+            
+            // Crear contenedor de encabezados
+            const headersContainer = document.createElement('div');
+            headersContainer.id = `data-headers-${index}`;
+            headersContainer.className = 'grid grid-cols-12 gap-4 p-3 bg-gray-100 rounded-t-lg mb-2';
+            templateContainer.appendChild(headersContainer);
+            
+            // Crear contenedor de datos
+            const dataContainer = document.createElement('div');
+            dataContainer.id = `data-list-${index}`;
+            dataContainer.setAttribute('data-source', template.dataSource || '');
+            templateContainer.appendChild(dataContainer);
+            
+            // Crear contenedor de paginación
+            const paginationContainer = document.createElement('div');
+            paginationContainer.id = `pagination-${index}`;
+            paginationContainer.className = 'mt-4';
+            templateContainer.appendChild(paginationContainer);
+            
+            // Configurar evento de búsqueda
+            setTimeout(() => {
+                const searchInput = document.getElementById(`search-input-${index}`);
+                if (searchInput && window.filterData) {
+                    searchInput.addEventListener('input', function(e) {
+                        window.filterData(e.target.value);
+                    });
+                }
+            }, 500);
+            
+        } else if (template.type === 'graphic' || template.type === 'chart') {
+            // Crear contenedor para el gráfico
+            const chartContainer = document.createElement('div');
+            chartContainer.className = 'w-full h-64 md:h-80';
+            
+            // Crear el canvas para el gráfico
+            const canvas = document.createElement('canvas');
+            canvas.id = `chart-${index}`;
+            chartContainer.appendChild(canvas);
+            templateContainer.appendChild(chartContainer);
+            
+            // Cargar datos y crear gráfico
+            if (template.dataSource) {
+                fetch(template.dataSource)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Configuración básica del gráfico
+                        const ctx = canvas.getContext('2d');
+                        new Chart(ctx, {
+                            type: 'bar', // Tipo predeterminado, se puede cambiar según los datos
+                            data: {
+                                labels: data.labels || Object.keys(data),
+                                datasets: [{
+                                    label: template.title || 'Datos',
+                                    data: data.values || Object.values(data),
+                                    backgroundColor: [
+                                        'rgba(54, 162, 235, 0.5)',
+                                        'rgba(75, 192, 192, 0.5)',
+                                        'rgba(255, 206, 86, 0.5)',
+                                        'rgba(153, 102, 255, 0.5)',
+                                        'rgba(255, 99, 132, 0.5)'
+                                    ],
+                                    borderColor: [
+                                        'rgba(54, 162, 235, 1)',
+                                        'rgba(75, 192, 192, 1)',
+                                        'rgba(255, 206, 86, 1)',
+                                        'rgba(153, 102, 255, 1)',
+                                        'rgba(255, 99, 132, 1)'
+                                    ],
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                scales: {
+                                    y: {
+                                        beginAtZero: true
+                                    }
+                                }
+                            }
+                        });
+                    })
+                    .catch(error => {
+                        console.error(`Error cargando datos para el gráfico ${index}:`, error);
+                        chartContainer.innerHTML = `
+                            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                                Error cargando datos del gráfico: ${error.message}
+                            </div>
+                        `;
+                    });
+            }
+        }
+        
+        // Añadir la plantilla al contenedor principal
+        templatesContainer.appendChild(templateContainer);
+    });
+}
+
+// Función para procesar la configuración completa
+function processConfig(config) {
+    // Actualizar título y descripción
+    const titleElement = document.getElementById('section-title');
+    if (titleElement && config.title) {
+        titleElement.textContent = config.title;
+    }
+    
+    const descriptionElement = document.getElementById('section-description');
+    if (descriptionElement && config.description) {
+        descriptionElement.textContent = config.description;
+    }
+    
+    // Renderizar métricas
+    renderMetrics(config);
+    
+    // Renderizar plantillas
+    renderTemplates(config);
+}
+
+// Exponer la función para que pueda ser usada desde otros contextos
+window.processConfig = processConfig;
+
+// Exponer la función de filtrado para que pueda ser usada por los inputs de búsqueda
+window.filterData = function(searchTerm) {
+    if (!searchTerm) {
+        filteredData = [...allData];
+    } else {
+        searchTerm = searchTerm.toLowerCase();
+        filteredData = allData.filter(item => {
+            return Object.values(item).some(value => {
+                if (value === null || value === undefined) return false;
+                return value.toString().toLowerCase().includes(searchTerm);
+            });
+        });
+    }
+    renderPage(1);
+};
