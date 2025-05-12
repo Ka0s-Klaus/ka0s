@@ -601,12 +601,12 @@ window.initSection = initSection;
 window.filterData = filterData;
 window.initializeChart = initializeChart;
 
-// Función para cargar el navbar y procesar la configuración de la sección
+// Función para cargar el navbar y procesar la configuracion de la seccion
 document.addEventListener('DOMContentLoaded', function() {
     // Cargar el navbar
     const navbarContainer = document.getElementById('navbar-container');
     if (navbarContainer) {
-        fetch('../templates/navbar.html')
+        fetch('templates/navbar.html')
             .then(response => response.text())
             .then(data => {
                 navbarContainer.innerHTML = data;
