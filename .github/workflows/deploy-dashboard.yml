@@ -1,11 +1,12 @@
-name: Ka0s Deploy Webs
+name: Ka0s Deploy Webs (Dashboard y Test)
  
 on:
   push:
     branches: [ main ]
     paths:
-      # Ajustar el path si el contenido del dashboard está en una subcarpeta
-      - 'core/results/webs/dashboard/**' 
+      # Ajustar el path para incluir ambos dashboards
+      - 'core/results/webs/dashboard/**'
+      - 'core/results/webs/test/**'
   workflow_dispatch:
 
 env:
@@ -14,10 +15,12 @@ env:
     KAOS_ACTION: ${{ github.action }}
     KAOS_REF: ${{ github.ref }}
     KAOS_MODULE: "[Ka0S] Deploy Webs"
-    # Ajustar KAOS_PATH_ORIGIN para apuntar específicamente al contenido del dashboard
-    KAOS_PATH_ORIGIN: "core/results/webs/dashboard/" 
-    # Ajustar KAOS_PATH_WEB para apuntar al directorio del dashboard en el servidor
-    KAOS_PATH_WEB: "/html/dashboard/" 
+    # Variables para el dashboard principal
+    KAOS_PATH_ORIGIN_DASHBOARD: "core/results/webs/dashboard/" 
+    KAOS_PATH_WEB_DASHBOARD: "/html/dashboard/" 
+    # Variables para el dashboard de test
+    KAOS_PATH_ORIGIN_TEST: "core/results/webs/test/"
+    KAOS_PATH_WEB_TEST: "/html/test/"
     KAOS_PATH_RESUME: "core/results/dw/"
     KAOS_FILE_STATE: "ftp-deploy-sync-state.json"
     KAOS_ACTOR: ${{ github.actor }}
@@ -48,22 +51,60 @@ jobs:
           fi
           
       - name: Deploy Dashboard to Web Server via SFTP
-        id: sftp
+        id: sftp-dashboard
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.KAOS_WEB_SERVER }}
           username: ${{ secrets.KAOS_WEB_USER }}
           password: ${{ secrets.KAOS_WEB_TOKEN }}
           port: ${{ secrets.KAOS_WEB_PORT }}
-          local-dir: ${{ env.KAOS_PATH_ORIGIN }}
-          server-dir: ${{ env.KAOS_PATH_WEB }}
+          local-dir: ${{ env.KAOS_PATH_ORIGIN_DASHBOARD }}
+          server-dir: ${{ env.KAOS_PATH_WEB_DASHBOARD }}
           dangerous-clean-slate: true
-          state-name: ${{ env.KAOS_CODE }}-${{ env.KAOS_FILE_STATE }}
+          state-name: ${{ env.KAOS_CODE }}-dashboard-${{ env.KAOS_FILE_STATE }}
           exclude: |
             **/.git*
             **/.git*/**
             **/node_modules/**
-      
+
+  job-test:
+    runs-on:
+      group: ka0s
+    steps:
+      - id: repo
+        name: Checkout repository
+        if: ${{ success() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+          
+      - name: Limpiar caché local antes del despliegue
+        run: |
+          echo "Limpiando caché local de GitHub Actions runner..."
+          if [ -d ~/.cache ]; then
+            rm -rf ~/.cache/*
+            echo "Caché local eliminada."
+          else
+            echo "No se encontró directorio de caché local."
+          fi
+          
+      - name: Deploy Test Dashboard to Web Server via SFTP
+        id: sftp-test
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.KAOS_WEB_SERVER }}
+          username: ${{ secrets.KAOS_WEB_USER }}
+          password: ${{ secrets.KAOS_WEB_TOKEN }}
+          port: ${{ secrets.KAOS_WEB_PORT }}
+          local-dir: ${{ env.KAOS_PATH_ORIGIN_TEST }}
+          server-dir: ${{ env.KAOS_PATH_WEB_TEST }}
+          dangerous-clean-slate: true
+          state-name: ${{ env.KAOS_CODE }}-test-${{ env.KAOS_FILE_STATE }}
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
      
          
   handle-success:
