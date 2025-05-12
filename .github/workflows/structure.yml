@@ -283,7 +283,7 @@ jobs:
       - name: Copiar scripts JS a dashboard/js
         run: |
           mkdir -p core/results/webs/dashboard/js
-         cp core/web/js/orchestrator.js core/results/webs/dashboard/js/orchestrator.js
+          cp core/web/js/orchestrator.js core/results/webs/dashboard/js/orchestrator.js
       - name: Copiar navbar.html a dashboard/templates
         run: |
           mkdir -p core/results/webs/dashboard/templates
@@ -437,6 +437,8 @@ jobs:
                         grep -v "<body" | 
                         grep -v "</body>" | 
                         grep -v "<script src=\"..\/js\/data-list.js\">" |
+                        
+                      
                       # Limpiamos el archivo temporal
                       rm "$TEMP_CONTENT"
                       
@@ -448,10 +450,9 @@ jobs:
               </div>
               </div>
           </div>
-          
-          <!-- Cargar orchestrator desde el template -->
-          <script>js/orchestrator.js</script>
         
+          <!-- Cargar orchestrator el template -->
+          <script>js/orchestrator.js</script>      
           </body>
           </html>" >> "core/results/webs/${TITLE}/dashboard.html"
                     
