@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ka0s Dashboard - dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="bg-gray-50">
@@ -30,52 +29,7 @@
     </div>
 </div>
 
-<!-- Cargar la navbar desde el template -->
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        fetch('templates/navbar.html')
-            .then(response => response.text())
-            .then(html => {
-                document.getElementById('navbar-container').innerHTML = html;
-                // Cargar el script de la navbar después de insertar el HTML
-                const script = document.createElement('script');
-                script.src = 'js/navbar.js';
-                document.body.appendChild(script);
-            })
-            .catch(error => console.error('Error cargando navbar:', error));
-        
-        fetch('temp_sections/data-list.html')
-            .then(response => response.text())
-            .then(html => {
-                const dataListElement = document.getElementById('data-list');
-                if (dataListElement) {
-                    dataListElement.innerHTML = html;
-                    // Cargar el script después de insertar el HTML
-                    const script = document.createElement('script');
-                    script.src = 'js/data-list.js';
-                    document.body.appendChild(script);
-                }
-            })
-            .catch(error => console.error('Error cargando data-list:', error));
-            
-        fetch('templates/leadTime.html')
-            .then(response => response.text())
-            .then(html => {
-                // Crear el elemento leadTime si no existe
-                let leadTimeElement = document.getElementById('leadTime');
-                if (!leadTimeElement) {
-                    leadTimeElement = document.createElement('div');
-                    leadTimeElement.id = 'leadTime';
-                    document.querySelector('.dashboard-content').appendChild(leadTimeElement);
-                }
-                leadTimeElement.innerHTML = html;
-                // Cargar el script después de insertar el HTML
-                const script = document.createElement('script');
-                script.src = 'js/leadTime.js';
-                document.body.appendChild(script);
-            })
-            .catch(error => console.error('Error cargando leadTime:', error));
-    });
-</script>
+<!-- Cargar orchestrator el template -->
+<script>js/orchestrator.js</script>      
 </body>
 </html>
