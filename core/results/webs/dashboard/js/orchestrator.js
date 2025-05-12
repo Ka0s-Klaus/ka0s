@@ -184,8 +184,8 @@ function updateTitleAndDescription(config) {
  * Actualiza las métricas en la página
  * @param {Object} config - Configuración con valores de métricas
  * @param {Array} metricConfig - Configuración de las métricas (claves y colores)
- 
-/**function updateMetrics(config, metricConfig) {
+ */
+function updateMetrics(config, metricConfig) {
     if (!metricConfig || !Array.isArray(metricConfig)) return;
 
     metricConfig.forEach((metric, idx) => {
@@ -195,7 +195,79 @@ function updateTitleAndDescription(config) {
             if (h2) h2.textContent = config[metric.key];
         }
     });
-}*/
+}
+
+/**
+ * Inicializa un gráfico con los datos proporcionados
+ * @param {Object} data - Datos para el gráfico
+ * @param {string} containerId - ID del contenedor del gráfico
+ * @param {Object} options - Opciones adicionales para el gráfico
+ */
+function initializeChart(data, containerId = 'dataChart', options = {}) {
+    // Limpiar el gráfico anterior si existe
+    const chartContainer = document.getElementById(containerId);
+    if (!chartContainer) {
+        console.error(`No se encontró el elemento canvas para el gráfico con ID: ${containerId}`);
+        return;
+    }
+    
+    if (currentChart) {
+        currentChart.destroy();
+    }
+    
+    // Preparar los datos para el gráfico
+    let labels = [];
+    let values = [];
+    
+    // Extraer datos específicos para estadísticas
+    if (data.statistics) {
+        // Usar las estadísticas del repositorio
+        labels = Object.keys(data.statistics).filter(key => typeof data.statistics[key] === 'number');
+        values = labels.map(key => data.statistics[key]);
+    } else if (typeof data === 'object') {
+        // Fallback: usar todas las propiedades numéricas
+        labels = Object.keys(data).filter(key => typeof data[key] === 'number');
+        values = labels.map(key => data[key]);
+    }
+    
+    // Crear el gráfico
+    const ctx = chartContainer.getContext('2d');
+    currentChart = new Chart(ctx, {
+        type: options.type || 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: options.label || 'Estadísticas',
+                data: values,
+                backgroundColor: options.backgroundColor || 'rgba(54, 162, 235, 0.5)',
+                borderColor: options.borderColor || 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: options.title || 'Estadísticas'
+                },
+                legend: {
+                    position: 'top',
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+    
+    return currentChart;
+}
+
+// Exponer la función initializeChart al objeto global window
+window.initializeChart = initializeChart;
 
 /**
  * Configura la lista de datos basada en la configuración
