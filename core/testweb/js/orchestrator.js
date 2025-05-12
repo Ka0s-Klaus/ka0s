@@ -621,7 +621,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Cargar el navbar
     const navbarContainer = document.getElementById('navbar-container');
     if (navbarContainer) {
-        fetch('../templates/navbar.html')
+        fetch('templates/navbar.html')
             .then(response => response.text())
             .then(data => {
                 navbarContainer.innerHTML = data;
