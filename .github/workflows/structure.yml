@@ -320,6 +320,8 @@ jobs:
                     LIST_TEMPLATE_JSON=$(jq -c '.templates[] | select(.type == "list")' "$section_data" | head -1)
                     LIST_TITLE=$(echo "$LIST_TEMPLATE_JSON" | jq -r '.title')
                     LIST_DATA_SOURCE=$(echo "$LIST_TEMPLATE_JSON" | jq -r '.dataSource')
+                  fi
+                fi
         
                 # Procesar templates y reemplazar el placeholder de templates
                 TEMPLATES_HTML=""
