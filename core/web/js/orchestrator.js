@@ -601,7 +601,7 @@ window.initSection = initSection;
 window.filterData = filterData;
 window.initializeChart = initializeChart;
 
-// Función para cargar el navbar y procesar la configuración de la sección
+// Función para cargar el navbar y procesar la configuracion de la seccion
 document.addEventListener('DOMContentLoaded', function() {
     // Cargar el navbar
     const navbarContainer = document.getElementById('navbar-container');
