@@ -278,19 +278,30 @@ function initNavbar() {
     }
 
     // Inicializar la funcionalidad del sidebar después de cargar el contenido
-    initializeSidebar();
+    // Asegurarse de que el DOM esté listo antes de inicializar el sidebar
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        initializeSidebar();
+    } else {
+        document.addEventListener('DOMContentLoaded', initializeSidebar);
+    }
 }
 
 function initializeSidebar() {
+    console.log('Estado del DOM:', document.readyState); 
+    console.log('Elemento sidebar:', document.getElementById('sidebar')); 
+    console.log('Elemento sidebarToggle:', document.getElementById('sidebarToggle')); 
+    console.log('Elemento toggleIcon:', document.getElementById('toggleIcon'));
+    
     const sidebar = document.getElementById('sidebar');
     const sidebarToggle = document.getElementById('sidebarToggle');
     const toggleIcon = document.getElementById('toggleIcon');
 
-    if (!sidebar || !sidebarToggle || !toggleIcon) {
-        console.error('No se encontraron los elementos necesarios del sidebar');
+    if (!sidebar) {
+        console.warn('No se encontró el elemento sidebar, omitiendo inicialización');
         return;
     }
 
+    // Continuar incluso si faltan algunos elementos secundarios
     function toggleSidebar() {
         const sidebarTexts = document.querySelectorAll('.sidebar-text');
         const logoImage = document.querySelector('.logo-image');
@@ -300,7 +311,7 @@ function initializeSidebar() {
             // Colapsar sidebar
             sidebar.classList.remove('w-[250px]');
             sidebar.classList.add('w-[60px]');
-            toggleIcon.style.transform = 'rotate(180deg)';
+            if (toggleIcon) toggleIcon.style.transform = 'rotate(180deg)';
             sidebarTexts.forEach(text => {
                 text.style.opacity = '0';
                 text.classList.add('hidden');
@@ -331,6 +342,11 @@ function initializeSidebar() {
         }
     }
 
+    // Agregar event listeners solo si los elementos existen
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', toggleSidebar);
+    }
+    
     function handleResponsiveLayout() {
         if (window.innerWidth < 640 && sidebar.classList.contains('w-[250px]')) {
             toggleSidebar();
@@ -599,7 +615,6 @@ function filterData(searchTerm) {
 // Exportar funciones para uso global
 window.initSection = initSection;
 window.filterData = filterData;
-window.initializeChart = initializeChart;
 
 // Función para cargar el navbar y procesar la configuración de la sección
 document.addEventListener('DOMContentLoaded', function() {

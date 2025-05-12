@@ -21,6 +21,8 @@ env:
     KAOS_WEB_STRUCTURE: "core/results/webs/" # directorio donde se alojan las diferentes estructura de webs
     KAOS_TEST_STRUCTURE: "core/results/test/" # directorio donde se alojará la estructura de testweb
     KAOS_ACTOR: ${{ github.actor }}
+    KAOS_TEST_JSON_WEB: "core/testweb/data/webs.json" # archivo JSON para el dashboard de test
+    KAOS_TEST_JSON_DATA: "core/testweb/data/data.json" # archivo JSON de datos para el dashboard de test
 jobs:
   job-core:
     runs-on:
@@ -160,6 +162,86 @@ jobs:
           echo "]" >> ${{ env.KAOS_JSON_RESUME }}test/test_resume.json
           echo "VII - Test folder structure copied successfully!"
           
+          # NUEVA SECCIÓN: Crear dashboard de test en la estructura de webs
+          echo "VIII - Creating test dashboard in webs structure..."
+          # Leer el archivo webs.json de testweb
+          TEST_STRUCTURE_FILE="${{ env.KAOS_TEST_JSON_WEB }}"
+          
+          # Extraer título para el nombre de la carpeta principal
+          TEST_TITLE="test"
+          echo "IX - Test dashboard will be named: $TEST_TITLE"
+          
+          # Crear directorio principal para el dashboard de test
+          mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TEST_TITLE"
+          touch ${{ env.KAOS_WEB_STRUCTURE }}$TEST_TITLE/$TEST_TITLE".html"
+          mkdir -p "${{ env.KAOS_JSON_RESUME }}$TEST_TITLE"
+          touch ${{ env.KAOS_JSON_RESUME }}$TEST_TITLE/readme.txt
+          
+          # Copiar la estructura de directorios de testweb a la estructura de webs
+          find core/testweb -type d | while read dir; do
+            if [ "$dir" != "core/testweb" ]; then
+              # Eliminar el prefijo core/testweb de la ruta del directorio
+              clean_dir=${dir#core/testweb/}
+              echo "X - Created test web directory: $clean_dir"
+              target_dir="${{ env.KAOS_WEB_STRUCTURE }}$TEST_TITLE/$clean_dir"
+              mkdir -p "$target_dir"
+              touch $target_dir/$clean_dir".html"
+              echo "X - Created test web directory: $target_dir"
+            fi
+          done
+          
+          # Extraer información de secciones y crear subcarpetas
+          if [ -f "$TEST_STRUCTURE_FILE" ]; then
+            jq -r '.sections[] | [.title, .icon, .data] | @tsv' $TEST_STRUCTURE_FILE | while IFS=$'\t' read -r section_title section_icon section_data; do
+              echo "XI - Creating subfolder for test section: $section_title"
+              mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TEST_TITLE/structure/$section_title"
+              touch ${{ env.KAOS_WEB_STRUCTURE }}$TEST_TITLE/structure/$section_title/$section_title".html"
+              
+              # Guardar la ruta del archivo JSON de datos para esta sección
+              if [ ! -z "$section_data" ]; then
+                # Si section_data es un array, procesarlo
+                if [[ "$section_data" == "["* ]]; then
+                  echo "$section_data" > "${{ env.KAOS_WEB_STRUCTURE }}$TEST_TITLE/structure/$section_title/$section_title.json"
+                  echo "    Data source: Array data (guardado)"
+                else
+                  # Copiar el contenido del archivo JSON en lugar de solo la ruta
+                  if [ -f "$section_data" ]; then
+                    cp "$section_data" "${{ env.KAOS_WEB_STRUCTURE }}$TEST_TITLE/structure/$section_title/$section_title.json"
+                    echo "    Data source: $section_data (copiado)"
+                  else
+                    # Si el archivo no existe, guardar al menos la ruta como referencia
+                    echo "$section_data" > "${{ env.KAOS_WEB_STRUCTURE }}$TEST_TITLE/structure/$section_title/$section_title.json"
+                    echo "    Data source: $section_data (ruta guardada, archivo no encontrado)"
+                  fi
+                fi
+              fi
+            done
+          else
+            echo "Warning: Test webs.json file not found at $TEST_STRUCTURE_FILE"
+          fi
+          
+          # Crear un archivo JSON con la información de la estructura
+          echo "[" > ${{ env.KAOS_JSON_RESUME }}$TEST_TITLE/$TEST_TITLE"_resume.json"
+          # Encontrar todos los archivos y directorios
+          find ${{ env.KAOS_WEB_STRUCTURE }}$TEST_TITLE -type f -o -type d | sort | while read path; do
+            if [ "$path" != "${{ env.KAOS_WEB_STRUCTURE }}$TEST_TITLE" ]; then
+              # Obtener el tipo (archivo o directorio)
+              if [ -d "$path" ]; then
+                TYPE="directory"
+              else
+                TYPE="file"
+              fi
+              # Obtener el nombre del elemento (última parte de la ruta)
+              NAME=$(basename "$path")
+              # Crear la entrada JSON
+              echo "  {\"path\": \"$path\", \"name\": \"$NAME\", \"type\": \"$TYPE\"}," >> ${{ env.KAOS_JSON_RESUME }}$TEST_TITLE/$TEST_TITLE"_resume.json"
+            fi
+          done
+          # Eliminar la última coma y cerrar el array JSON
+          sed -i '$ s/,$//' ${{ env.KAOS_JSON_RESUME }}$TEST_TITLE/$TEST_TITLE"_resume.json"
+          echo "]" >> ${{ env.KAOS_JSON_RESUME }}$TEST_TITLE/$TEST_TITLE"_resume.json"
+          echo "XII - Test web folder structure created successfully!"
+          
       - id: upload-files
         name: Upload Files
         run: |
@@ -282,6 +364,100 @@ jobs:
           echo "}" >> "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
           
           echo "Data files summary generated at ${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
+          
+          # NUEVA SECCIÓN: Copiar archivos de datos para el dashboard de test
+          echo "Reading test data.json file..."
+          TEST_DATA_FILE="${{ env.KAOS_TEST_JSON_DATA }}"
+          echo "Test data file: $TEST_DATA_FILE"
+          
+          # Establecer el título para el dashboard de test
+          TEST_TITLE="test"
+          echo "Test dashboard is named: $TEST_TITLE"
+          
+          # Crear directorio de datos si no existe
+          mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TEST_TITLE/data"
+          
+          # Copiar el archivo webs.json de testweb a la estructura
+          cp ${{ env.KAOS_TEST_JSON_WEB }} "${{ env.KAOS_WEB_STRUCTURE }}$TEST_TITLE/data/webs.json"
+          echo "Copied test webs.json to data directory"
+          
+          # Copiar todos los archivos JSON de core/testweb/data a la estructura
+          echo "Copying all JSON files from core/testweb/data directory..."
+          find core/testweb/data -name "*.json" -type f | while read -r json_file; do
+            # Obtener el nombre del archivo
+            JSON_FILENAME=$(basename "$json_file")
+            echo "Copying JSON file: $json_file to test data directory"
+            cp "$json_file" "${{ env.KAOS_WEB_STRUCTURE }}$TEST_TITLE/data/$JSON_FILENAME"
+          done
+          echo "All JSON files from core/testweb/data copied successfully!"
+          
+          # Leer data.json de testweb y copiar archivos
+          if [ -f "$TEST_DATA_FILE" ]; then
+            echo "Processing data files from test data.json..."
+            
+            # Extraer rutas de origen y destino
+            jq -c '.dataFiles[]' "$TEST_DATA_FILE" | while read -r file; do
+              SOURCE=$(echo $file | jq -r '.source')
+              DEST=$(echo $file | jq -r '.destination')
+              echo "Source: $SOURCE"
+              echo "Destination: $DEST"
+
+              # Asegurar que el directorio de destino existe
+              DEST_DIR=$(dirname "${{ env.KAOS_WEB_STRUCTURE }}$TEST_TITLE/$DEST")
+              mkdir -p "$DEST_DIR"
+              echo "Destination directory: $DEST_DIR"
+              
+              # Copiar el archivo
+              if [ -f "$SOURCE" ]; then
+                echo "Copying $SOURCE to ${{ env.KAOS_WEB_STRUCTURE }}$TEST_TITLE/$DEST"
+                cp "$SOURCE" "${{ env.KAOS_WEB_STRUCTURE }}$TEST_TITLE/$DEST"
+              else
+                echo "Warning: Source file $SOURCE not found"
+              fi
+            done
+            
+            echo "Test data files copied successfully!"
+          else
+            echo "Warning: test data.json file not found at $TEST_DATA_FILE"
+          fi
+          
+          # Copiar los archivos JSON de datos de sección para test
+          echo "Copying test section data files..."
+          if [ -f "${{ env.KAOS_TEST_JSON_WEB }}" ]; then
+            jq -r '.sections[].data' ${{ env.KAOS_TEST_JSON_WEB }} | while read data_path; do
+              if [ ! -z "$data_path" ]; then
+                # Verificar si es un array o una cadena
+                if [[ "$data_path" == "["* ]]; then
+                  echo "Skipping array data: $data_path"
+                elif [ -f "$data_path" ]; then
+                  # Obtener el nombre del archivo
+                  DATA_FILENAME=$(basename "$data_path")
+                  echo "Copying test section data file: $data_path to test data directory"
+                  cp "$data_path" "${{ env.KAOS_WEB_STRUCTURE }}$TEST_TITLE/data/$DATA_FILENAME"
+                fi
+              fi
+            done
+          fi
+          
+          # Generar un resumen de los archivos copiados para test
+          echo "Generating test data files summary..."
+          echo "{" > "${{ env.KAOS_JSON_RESUME }}$TEST_TITLE/data-files-summary.json"
+          echo "  \"generated_at\": \"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\"," >> "${{ env.KAOS_JSON_RESUME }}$TEST_TITLE/data-files-summary.json"
+          echo "  \"title\": \"$TEST_TITLE\"," >> "${{ env.KAOS_JSON_RESUME }}$TEST_TITLE/data-files-summary.json"
+          echo "  \"files\": [" >> "${{ env.KAOS_JSON_RESUME }}$TEST_TITLE/data-files-summary.json"
+          
+          # Listar todos los archivos copiados
+          find "${{ env.KAOS_WEB_STRUCTURE }}$TEST_TITLE/data" -type f | sort | while read -r file; do
+            RELATIVE_PATH="${file#${{ env.KAOS_WEB_STRUCTURE }}$TEST_TITLE/}"
+            echo "    {\"path\": \"$RELATIVE_PATH\"}," >> "${{ env.KAOS_JSON_RESUME }}$TEST_TITLE/data-files-summary.json"
+          done
+          
+          # Eliminar la última coma y cerrar el JSON
+          sed -i '$ s/,$//' "${{ env.KAOS_JSON_RESUME }}$TEST_TITLE/data-files-summary.json"
+          echo "  ]" >> "${{ env.KAOS_JSON_RESUME }}$TEST_TITLE/data-files-summary.json"
+          echo "}" >> "${{ env.KAOS_JSON_RESUME }}$TEST_TITLE/data-files-summary.json"
+          
+          echo "Test data files summary generated at ${{ env.KAOS_JSON_RESUME }}$TEST_TITLE/data-files-summary.json"
       
       - id: copy-json   
         name: Copiar archivos JSON de config/webs a data
@@ -307,6 +483,20 @@ jobs:
             cp "$json_file" "core/results/webs/${TITLE}/data/$JSON_FILENAME"
           done
           echo "Todos los archivos JSON de core/config/webs copiados exitosamente!"
+          
+          # Copiar archivos JSON de testweb a la estructura de test
+          TEST_TITLE="test"
+          echo "Copiando archivos JSON de core/testweb a data de test..."
+          mkdir -p "core/results/webs/${TEST_TITLE}/data"
+          
+          # Copiar todos los archivos JSON de core/testweb a la estructura
+          find core/testweb -name "*.json" -type f | while read -r json_file; do
+            # Obtener el nombre del archivo
+            JSON_FILENAME=$(basename "$json_file")
+            echo "Copiando archivo JSON: $json_file a test data directory"
+            cp "$json_file" "core/results/webs/${TEST_TITLE}/data/$JSON_FILENAME"
+          done
+          echo "Todos los archivos JSON de core/testweb copiados exitosamente!"
 
       - id: upload-files
         name: Upload Files
@@ -352,7 +542,7 @@ jobs:
           find core/web/templates -type f -name "*.html" | while read -r template_file; do
             # Obtener el nombre del archivo
             TEMPLATE_FILENAME=$(basename "$template_file")
-            echo "Copiando plantilla: $template_file a templates directory"
+            echo "Copiar plantilla: $template_file a templates directory"
             cp "$template_file" "core/results/webs/${TITLE}/templates/$TEMPLATE_FILENAME"
           done
           echo "Todas las plantillas HTML copiadas exitosamente!"
