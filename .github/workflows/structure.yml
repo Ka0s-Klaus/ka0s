@@ -279,21 +279,42 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.KAOS_REPO_TOKEN }}
-  
-      - name: Copiar scripts JS a dashboard/js
+      
+      - name: Preparar directorios y copiar archivos estáticos
         run: |
-          mkdir -p core/results/webs/dashboard/js
-          cp core/web/js/data-list.js core/results/webs/dashboard/js/data-list.js
-          cp core/web/js/graphic.js core/results/webs/dashboard/js/graphic.js
-          cp core/web/js/navbar.js core/results/webs/dashboard/js/navbar.js
-      - name: Copiar navbar.html a dashboard/templates
+          # Configuración inicial
+          STRUCTURE_FILE="${{ env.KAOS_JSON_WEB }}"
+          TITLE=$(cat $STRUCTURE_FILE | jq -r '.title')
+          
+          # Crear directorios necesarios
+          mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/js"
+          mkdir -p "core/results/webs/${TITLE}/templates"
+          mkdir -p "core/results/webs/${TITLE}/temp_sections"
+          
+          # Copiar archivos de plantillas
+          find core/web/templates -type f -name "*.html" | while read -r template_file; do
+            # Obtener el nombre del archivo
+            TEMPLATE_FILENAME=$(basename "$template_file")
+            echo "Copiando plantilla: $template_file a templates directory"
+            cp "$template_file" "core/results/webs/${TITLE}/templates/$TEMPLATE_FILENAME"
+          done
+          echo "Todas las plantillas HTML copiadas exitosamente!"
+          
+          # Verificar si el archivo dashboard.html existe y no está rastreado
+          if [ -f "core/results/webs/${TITLE}/dashboard.html" ] && ! git ls-files --error-unmatch "core/results/webs/${TITLE}/dashboard.html" > /dev/null 2>&1; then
+            echo "El archivo dashboard.html existe pero no está rastreado. Añadiéndolo al staging..."
+            git add "core/results/webs/${TITLE}/dashboard.html"
+            git commit -m "[Ka0S] Añadiendo dashboard.html antes del pull"
+          fi
+          
+          # Hacer pull con estrategia de recursión para manejar conflictos
+          git pull --strategy-option=theirs
+      
+      - name: Generar HTML de secciones
         run: |
-          mkdir -p core/results/webs/dashboard/templates
-          cp core/web/templates/navbar.html core/results/webs/dashboard/templates/navbar.html
-          cp core/web/templates/leadTime.html core/results/webs/dashboard/templates/leadTime.html
-          echo "Generando HTML de secciones según su JSON..."
           STRUCTURE_FILE="core/config/webs/webs.json"
           TITLE=$(jq -r '.title' $STRUCTURE_FILE)
+          echo "Generando HTML de secciones según su JSON para el título: ${TITLE}"
           
           # Procesar cada sección en el archivo webs.json
           jq -r 'to_entries | .[] | select(.key | startswith("section")) | [.key, .value.title, .value.data] | @tsv' $STRUCTURE_FILE | while IFS=$'\t' read -r section_key section_title section_data; do
@@ -388,6 +409,9 @@ jobs:
                 # Reemplazar el placeholder de templates con el HTML generado
                 awk -v r="$TEMPLATES_HTML" '{gsub("<!-- TEMPLATES_PLACEHOLDER -->", r)} 1' "$SECTION_HTML" > temp && mv temp "$SECTION_HTML"
                 
+                # Asegurarse de que la referencia a orchestrator.js sea correcta
+                sed -i 's|src="../js/orchestrator.js"|src="../../js/orchestrator.js"|g' "$SECTION_HTML"
+                
                 echo "Generado $SECTION_HTML"
                 # Almacenar cada sección en un directorio temporal para concatenarlas después
                 mkdir -p "core/results/webs/${TITLE}/temp_sections"
@@ -399,6 +423,11 @@ jobs:
               echo "No se encontró el archivo de datos para la sección: $section_data"
             fi
           done
+      
+      - name: Crear dashboard.html
+        run: |
+          STRUCTURE_FILE="core/config/webs/webs.json"
+          TITLE=$(jq -r '.title' $STRUCTURE_FILE)
           
           # Crear el dashboard.html con todas las secciones concatenadas y la navbar
           echo "<!DOCTYPE html>
@@ -422,34 +451,37 @@ jobs:
                           </div>
                       </header>
                       <div class=\"dashboard-content\">" > "core/results/webs/${TITLE}/dashboard.html"
-                  
-                  # Concatenar todas las secciones
-                  if [ -d "core/results/webs/${TITLE}/temp_sections" ]; then
-                    for section_file in "core/results/webs/${TITLE}/temp_sections"/*.html; do
-                      SECTION_NAME=$(basename "$section_file" .html)
-                      echo "<div class=\"section-content\" id=\"${SECTION_NAME}\">" >> "core/results/webs/${TITLE}/dashboard.html"
-                      
-                      # Extraer solo el contenido del body de cada sección usando cut
-                      # Primero guardamos el contenido en un archivo temporal
-                      TEMP_CONTENT=$(mktemp)
-                      awk '/<body/,/<\/body>/' "$section_file" > "$TEMP_CONTENT"
-                      
-                      # Usamos cut para extraer solo las partes relevantes
-                      # Eliminamos las etiquetas body y scripts innecesarios
-                      cat "$TEMP_CONTENT" | 
-                        grep -v "<body" | 
-                        grep -v "</body>" | 
-                        grep -v "<script src=\"..\/js\/data-list.js\">" |
-                        grep -v "<script src=\" \`https:\/\/cdn.tailwindcss.com\` \">" |
-                      
-                      # Limpiamos el archivo temporal
-                      rm "$TEMP_CONTENT"
-                      
-                      echo "</div>" >> "core/results/webs/${TITLE}/dashboard.html"
-                    done
-                    
-                    # Cerrar las etiquetas HTML
-                    echo "          </div>
+          
+          # Concatenar todas las secciones
+          if [ -d "core/results/webs/${TITLE}/temp_sections" ]; then
+            for section_file in "core/results/webs/${TITLE}/temp_sections"/*.html; do
+              if [ -f "$section_file" ]; then
+                SECTION_NAME=$(basename "$section_file" .html)
+                echo "<div class=\"section-content\" id=\"${SECTION_NAME}\">" >> "core/results/webs/${TITLE}/dashboard.html"
+                
+                # Extraer solo el contenido del body de cada sección
+                TEMP_CONTENT=$(mktemp)
+                awk '/<body/,/<\/body>/' "$section_file" > "$TEMP_CONTENT"
+                
+                # Filtrar el contenido para eliminar etiquetas innecesarias
+                cat "$TEMP_CONTENT" | 
+                  grep -v "<body" | 
+                  grep -v "</body>" | 
+                  grep -v "<script src=\"..\/js\/data-list.js\">" |
+                  grep -v "<script src=\" \`https:\/\/cdn.tailwindcss.com\` \">" >> "core/results/webs/${TITLE}/dashboard.html"
+                
+                # Limpiar archivos temporales
+                rm -f "$TEMP_CONTENT"
+                
+                echo "</div>" >> "core/results/webs/${TITLE}/dashboard.html"
+              fi
+            done
+          else
+            echo "No se encontró el directorio de secciones temporales"
+          fi
+          
+          # Cerrar las etiquetas HTML
+          echo "          </div>
               </div>
               </div>
           </div>
@@ -468,20 +500,6 @@ jobs:
                       })
                       .catch(error => console.error('Error cargando navbar:', error));
                   
-                  fetch('temp_sections/data-list.html')
-                      .then(response => response.text())
-                      .then(html => {
-                          const dataListElement = document.getElementById('data-list');
-                          if (dataListElement) {
-                              dataListElement.innerHTML = html;
-                              // Cargar el script después de insertar el HTML
-                              const script = document.createElement('script');
-                              script.src = 'js/data-list.js';
-                              document.body.appendChild(script);
-                          }
-                      })
-                      .catch(error => console.error('Error cargando data-list:', error));
-                      
                   fetch('templates/leadTime.html')
                       .then(response => response.text())
                       .then(html => {
@@ -493,100 +511,25 @@ jobs:
                               document.querySelector('.dashboard-content').appendChild(leadTimeElement);
                           }
                           leadTimeElement.innerHTML = html;
-                          // Cargar el script después de insertar el HTML
-                          const script = document.createElement('script');
-                          script.src = 'js/leadTime.js';
-                          document.body.appendChild(script);
                       })
                       .catch(error => console.error('Error cargando leadTime:', error));
               });
           </script>
           </body>
           </html>" >> "core/results/webs/${TITLE}/dashboard.html"
-                    
-                    echo "Dashboard HTML generado correctamente"
-                  else
-                    echo "No se encontraron secciones temporales para concatenar"
-                    
-                    # Cerrar las etiquetas HTML incluso si no hay secciones
-                    echo "          </div>
-              </div>
-              </div>
-          </div>
           
-          <script>
-              document.addEventListener('DOMContentLoaded', function() {
-                  fetch('templates/navbar.html')
-                      .then(response => response.text())
-                      .then(html => {
-                          document.getElementById('navbar-container').innerHTML = html;
-                          // Cargar el script de la navbar después de insertar el HTML
-                          const script = document.createElement('script');
-                          script.src = 'js/navbar.js';
-                          document.body.appendChild(script);
-                      })
-                      .catch(error => console.error('Error cargando navbar:', error));
-              });
-          </script>
-          </body>
-          </html>" >> "core/results/webs/${TITLE}/dashboard.html"
-                  fi
-      - name: Copiar archivos JS y otros recursos estáticos
+          echo "Dashboard HTML generado correctamente en core/results/webs/${TITLE}/dashboard.html"
+      
+      - name: Guardar cambios en el repositorio
         run: |
-          # Copiar todos los archivos JS
-          STRUCTURE_FILE="${{ env.KAOS_JSON_WEB }}"
-          TITLE=$(cat $STRUCTURE_FILE | jq -r '.title')
-          mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/js"
-          cp -r core/web/js/* "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/js/" || true
-          git add core/results/webs/dashboard/*
+          # Añadir todos los archivos generados
+          git add "core/results/webs/"
           
-          # Verificar si el archivo dashboard.html existe y no está rastreado
-          if [ -f "core/results/webs/dashboard/dashboard.html" ] && ! git ls-files --error-unmatch core/results/webs/dashboard/dashboard.html > /dev/null 2>&1; then
-            echo "El archivo dashboard.html existe pero no está rastreado. Añadiéndolo al staging..."
-            git add core/results/webs/dashboard/dashboard.html
-            git commit -m "[Ka0S] Añadiendo dashboard.html antes del pull"
-          fi
-          
-          # Hacer pull con estrategia de recursión para manejar conflictos
-          git pull --strategy-option=theirs
-          
-          # Añadir todos los archivos de la carpeta dashboard
-          git add core/results/webs/dashboard/*
-          
-          # Verify if there are changes to commit
+          # Verificar si hay cambios para hacer commit
           if git diff --staged --quiet; then
             echo "No hay cambios para hacer commit"
           else
-            git commit -m "[Ka0S] Uploading dashboard files to web structure..."
-            git push origin ${{ env.KAOS_REF }}
-          fi
-      - id: upload-files
-        name: Upload Files
-        run: |
-          echo "Uploading HTML files to the repository..."
-          git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
-          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
-          # Añadir los archivos JS al commit
-          git add core/results/webs/dashboard/*
-          
-          # Verificar si el archivo dashboard.html existe y no está rastreado
-          if [ -f "core/results/webs/dashboard/dashboard.html" ] && ! git ls-files --error-unmatch core/results/webs/dashboard/dashboard.html > /dev/null 2>&1; then
-            echo "El archivo dashboard.html existe pero no está rastreado. Añadiéndolo al staging..."
-            git add core/results/webs/dashboard/dashboard.html
-            git commit -m "[Ka0S] Añadiendo dashboard.html antes del pull"
-          fi
-          
-          # Hacer pull con estrategia de recursión para manejar conflictos
-          git pull --strategy-option=theirs
-          
-          # Añadir todos los archivos de la carpeta dashboard
-          git add core/results/webs/dashboard/*
-          
-          # Verify if there are changes to commit
-          if git diff --staged --quiet; then
-            echo "No hay cambios para hacer commit"
-          else
-            git commit -m "[Ka0S] Uploading dashboard files to web structure..."
+            git commit -m "[Ka0S] Actualizando archivos de estructura web"
             git push origin ${{ env.KAOS_REF }}
           fi
   handle-success:
