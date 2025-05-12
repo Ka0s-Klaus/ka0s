@@ -403,11 +403,11 @@ jobs:
                     LIST_DATA_SOURCE=$(echo "$LIST_TEMPLATE_JSON" | jq -r '.dataSource')
                     
                     # Leer la plantilla de lista
-                    LIST_TEMPLATE=$(cat core/web/templates/data-list.html)
+                   
                     
                     # Crear un archivo temporal con la plantilla de lista modificada
                     TEMP_LIST=$(mktemp)
-                    cat core/web/templates/data-list.html | 
+                    
                       sed "s|{{TEMPLATE_TITLE}}|$LIST_TITLE|g" | 
                       sed "s|{{DATA_SOURCE}}|$LIST_DATA_SOURCE|g" > "$TEMP_LIST"
                     
@@ -442,7 +442,7 @@ jobs:
                   
                   if [ "$TYPE" = "graphic" ]; then
                     # Leer la plantilla de gráfico
-                    GRAPHIC_TEMPLATE=$(cat core/web/templates/graphic.html)
+                   
                     # Reemplazar placeholders en la plantilla
                     GRAPHIC_TEMPLATE=$(echo "$GRAPHIC_TEMPLATE" | sed "s/GRAPHIC_TITLE_PLACEHOLDER/$TITLE/g")
                     GRAPHIC_TEMPLATE=$(echo "$GRAPHIC_TEMPLATE" | sed "s|DATA_SOURCE_PLACEHOLDER|$DATA_SOURCE|g")
@@ -450,15 +450,14 @@ jobs:
                     # Añadir referencia a Chart.js antes del script graphic.js
                     TEMPLATES_HTML+="<script src=\"https://cdn.jsdelivr.net/npm/chart.js\"></script>"
                     # Modificar la forma de incluir el script para que pueda recibir el data-source
-                    TEMPLATES_HTML+="<script src=\"../../js/graphic.js\" id=\"graphic-script\" data-source=\"$DATA_SOURCE\"></script>"
                   elif [ "$TYPE" = "list" ]; then
                     # Leer la plantilla de lista
-                    LIST_TEMPLATE=$(cat core/web/templates/data-list.html)
+                    
                     # Reemplazar placeholders en la plantilla
                     LIST_TEMPLATE=$(echo "$LIST_TEMPLATE" | sed "s/LIST_TITLE_PLACEHOLDER/$TITLE/g")
                     LIST_TEMPLATE=$(echo "$LIST_TEMPLATE" | sed "s|DATA_SOURCE_PLACEHOLDER|$DATA_SOURCE|g")
                     TEMPLATES_HTML+="$LIST_TEMPLATE"
-                    TEMPLATES_HTML+="<script src=\"../../js/data-list.js\" data-source=\"$DATA_SOURCE\"></script>"
+                    
                   fi
                 done
                 
@@ -492,7 +491,6 @@ jobs:
               <meta charset=\"UTF-8\">
               <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
               <title>Ka0s Dashboard - ${TITLE}</title>
-              <script src=\"https://cdn.tailwindcss.com\"></script>
               <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css\">
           </head>
           <body class=\"bg-gray-50\">
@@ -523,8 +521,8 @@ jobs:
                 cat "$TEMP_CONTENT" | 
                   grep -v "<body" | 
                   grep -v "</body>" | 
-                  grep -v "<script src=\"..\/js\/data-list.js\">" |
-                  grep -v "<script src=\" \`https:\/\/cdn.tailwindcss.com\` \">" >> "core/results/webs/${TITLE}/dashboard.html"
+                  
+                  
                 
                 # Limpiar archivos temporales
                 rm -f "$TEMP_CONTENT"
@@ -543,34 +541,7 @@ jobs:
           </div>
           
           <!-- Cargar la navbar desde el template -->
-          <script>
-              document.addEventListener('DOMContentLoaded', function() {
-                  fetch('templates/navbar.html')
-                      .then(response => response.text())
-                      .then(html => {
-                          document.getElementById('navbar-container').innerHTML = html;
-                          // Cargar el script de la navbar después de insertar el HTML
-                          const script = document.createElement('script');
-                          script.src = 'js/navbar.js';
-                          document.body.appendChild(script);
-                      })
-                      .catch(error => console.error('Error cargando navbar:', error));
-                  
-                  fetch('templates/leadTime.html')
-                      .then(response => response.text())
-                      .then(html => {
-                          // Crear el elemento leadTime si no existe
-                          let leadTimeElement = document.getElementById('leadTime');
-                          if (!leadTimeElement) {
-                              leadTimeElement = document.createElement('div');
-                              leadTimeElement.id = 'leadTime';
-                              document.querySelector('.dashboard-content').appendChild(leadTimeElement);
-                          }
-                          leadTimeElement.innerHTML = html;
-                      })
-                      .catch(error => console.error('Error cargando leadTime:', error));
-              });
-          </script>
+          <script>"js/orchestrator.js"</script>
           </body>
           </html>" >> "core/results/webs/${TITLE}/dashboard.html"
           
@@ -609,7 +580,7 @@ jobs:
           # Si todo ha ido correcto añadimos el contenido del fichero
           # RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
           RNNUMBER=220
-          gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
+          #gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
   
   handle_failure:
     runs-on:
@@ -632,7 +603,7 @@ jobs:
           echo "Error detected in process"
           # RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
           RNNUMBER=220
-          gh issue comment $RNNUMBER --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
+          #gh issue comment $RNNUMBER --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
           
       - id: revert-changes
         name: Revert changes made by workflow
@@ -700,7 +671,7 @@ jobs:
           echo "End process"
           # RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
           RNNUMBER=220
-          gh issue comment $RNNUMBER --body "Se finaliza Ka0s ${{ env.KAOS_CODE }}"
+          #gh issue comment $RNNUMBER --body "Se finaliza Ka0s ${{ env.KAOS_CODE }}"
           gh workflow run inspector.yml --ref 'main' -f kaos-issue-id=$RNNUMBER -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start=""
       
   
