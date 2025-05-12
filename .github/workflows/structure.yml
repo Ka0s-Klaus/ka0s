@@ -113,7 +113,7 @@ jobs:
           mkdir -p "${{ env.KAOS_JSON_RESUME }}test"
           touch ${{ env.KAOS_JSON_RESUME }}test/readme.txt
           
-          # Copiar la estructura de directorios (sin archivos)
+          # Copiar la estructura de directorios de testweb (sin archivos)
           find core/testweb -type d | while read dir; do
             if [ "$dir" != "core/testweb" ]; then
               # Eliminar el prefijo core/testweb de la ruta del directorio
@@ -121,6 +121,7 @@ jobs:
               echo "VI - Created test directory: $clean_dir"
               target_dir="${{ env.KAOS_TEST_STRUCTURE }}$clean_dir"
               mkdir -p "$target_dir"
+              touch $target_dir/$clean_dir".html"
               echo "VI - Created test directory: $target_dir"
             fi
           done
@@ -157,8 +158,8 @@ jobs:
           # Eliminar la última coma y cerrar el array JSON
           sed -i '$ s/,$//' ${{ env.KAOS_JSON_RESUME }}test/test_resume.json
           echo "]" >> ${{ env.KAOS_JSON_RESUME }}test/test_resume.json
-          echo "VIII - Test structure copied successfully!"
-
+          echo "VII - Test folder structure copied successfully!"
+          
       - id: upload-files
         name: Upload Files
         run: |
