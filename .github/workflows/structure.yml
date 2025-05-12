@@ -7,6 +7,7 @@ on:
       - 'RN*'
     paths:
       - 'core/config/webs/**'
+      - 'core/testweb/**'
   workflow_dispatch:
 env:
     KAOS_CODE: ${{ github.run_id }}
@@ -18,6 +19,7 @@ env:
     KAOS_JSON_RESUME: "core/outputs/webs/" # directorio que aloja los json de resultados de la operación 
     KAOS_JSON_DATA: "core/web/data/data.json" # directorio que aloja los json de datos de la operación
     KAOS_WEB_STRUCTURE: "core/results/webs/" # directorio donde se alojan las diferentes estructura de webs
+    KAOS_TEST_STRUCTURE: "core/results/test/" # directorio donde se alojará la estructura de testweb
     KAOS_ACTOR: ${{ github.actor }}
 jobs:
   job-core:
@@ -103,6 +105,59 @@ jobs:
           sed -i '$ s/,$//' ${{ env.KAOS_JSON_RESUME }}$TITLE/$TITLE"_resume.json"
           echo "]" >> ${{ env.KAOS_JSON_RESUME }}$TITLE/$TITLE"_resume.json"
           echo "IV - Web folder structure copied successfully!"
+          
+          # NUEVA SECCIÓN: Copiar estructura de testweb
+          echo "V - Creating test structure from testweb folder..."
+          # Crear directorio principal para test
+          mkdir -p "${{ env.KAOS_TEST_STRUCTURE }}"
+          mkdir -p "${{ env.KAOS_JSON_RESUME }}test"
+          touch ${{ env.KAOS_JSON_RESUME }}test/readme.txt
+          
+          # Copiar la estructura de directorios (sin archivos)
+          find core/testweb -type d | while read dir; do
+            if [ "$dir" != "core/testweb" ]; then
+              # Eliminar el prefijo core/testweb de la ruta del directorio
+              clean_dir=${dir#core/testweb/}
+              echo "VI - Created test directory: $clean_dir"
+              target_dir="${{ env.KAOS_TEST_STRUCTURE }}$clean_dir"
+              mkdir -p "$target_dir"
+              echo "VI - Created test directory: $target_dir"
+            fi
+          done
+          
+          # Copiar todos los archivos de testweb a la estructura de test
+          find core/testweb -type f | while read file; do
+            # Eliminar el prefijo core/testweb de la ruta del archivo
+            clean_file=${file#core/testweb/}
+            target_file="${{ env.KAOS_TEST_STRUCTURE }}$clean_file"
+            # Asegurarse de que el directorio de destino existe
+            mkdir -p "$(dirname "$target_file")"
+            # Copiar el archivo
+            cp "$file" "$target_file"
+            echo "VII - Copied file: $file to $target_file"
+          done
+          
+          # Crear un archivo JSON con la información de la estructura de test
+          echo "[" > ${{ env.KAOS_JSON_RESUME }}test/test_resume.json
+          # Encontrar todos los archivos y directorios
+          find ${{ env.KAOS_TEST_STRUCTURE }} -type f -o -type d | sort | while read path; do
+            if [ "$path" != "${{ env.KAOS_TEST_STRUCTURE }}" ]; then
+              # Obtener el tipo (archivo o directorio)
+              if [ -d "$path" ]; then
+                TYPE="directory"
+              else
+                TYPE="file"
+              fi
+              # Obtener el nombre del elemento (última parte de la ruta)
+              NAME=$(basename "$path")
+              # Crear la entrada JSON
+              echo "  {\"path\": \"$path\", \"name\": \"$NAME\", \"type\": \"$TYPE\"}," >> ${{ env.KAOS_JSON_RESUME }}test/test_resume.json
+            fi
+          done
+          # Eliminar la última coma y cerrar el array JSON
+          sed -i '$ s/,$//' ${{ env.KAOS_JSON_RESUME }}test/test_resume.json
+          echo "]" >> ${{ env.KAOS_JSON_RESUME }}test/test_resume.json
+          echo "VIII - Test structure copied successfully!"
 
       - id: upload-files
         name: Upload Files
@@ -113,12 +168,13 @@ jobs:
           git pull
           # Asegurarse de que la carpeta web_structure se añade explicitamente
           git add ${{ env.KAOS_WEB_STRUCTURE }}*
+          git add ${{ env.KAOS_TEST_STRUCTURE }}*
           git add ${{ env.KAOS_JSON_RESUME }}*
           # Verificar si hay cambios para hacer commit
           if git diff --staged --quiet; then
             echo "No hay cambios para hacer commit"
           else
-            git commit -m "[Ka0S] Uploading resume execution files and web structure to the repository..."
+            git commit -m "[Ka0S] Uploading resume execution files and web/test structure to the repository..."
             git push origin ${{ env.KAOS_REF }}
           fi
   job-data:
