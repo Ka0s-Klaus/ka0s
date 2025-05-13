@@ -22,22 +22,44 @@ document.addEventListener('DOMContentLoaded', function () {
  * Carga y procesa el archivo de configuración principal
  */
 function loadWebsConfig() {
-    loadDataFromUrl('data/webs.json', function(data) {
-        if (!data || !data.sections || !Array.isArray(data.sections)) {
-            console.error('Formato de webs.json inválido');
-            return;
-        }
-        
-        // Establecer el título de la página
-        document.title = data.title || 'Ka0s Dashboard';
-        
-        // Cargar la sección inicial por defecto (la primera)
-        if (data.sections.length > 0) {
-            loadSection(data.sections[0]);
-        }
-    }, function(error) {
-        console.error('Error cargando webs.json:', error);
-    });
+    fetch('data/webs.json')
+        .then(response => response.json())
+        .then(data => {
+            // Establecer el título del documento
+            document.title = data.title || 'Ka0s Dashboard';
+            
+            // Para la sección inicial (inicio)
+            if (data.sections && data.sections.length > 0) {
+                const inicioSection = data.sections.find(section => section.title === 'inicio');
+                if (inicioSection && inicioSection.datatemplate) {
+                    // Cargar la información de la plantilla de la sección
+                    fetch(inicioSection.datatemplate)
+                        .then(response => response.json())
+                        .then(templateData => {
+                            document.title = templateData.title || data.title;
+                            // Si hay un elemento para mostrar la descripción, actualizarlo
+                            const descriptionElement = document.querySelector('.section-description');
+                            if (descriptionElement && templateData.description) {
+                                descriptionElement.textContent = templateData.description;
+                            }
+                        })
+                        .catch(error => console.error('Error cargando la plantilla de la sección:', error));
+                }
+            }
+        })
+        .catch(error => console.error('Error cargando webs.json:', error));
+    if (!data || !data.sections || !Array.isArray(data.sections)) {
+        console.error('Formato de webs.json inválido');
+        return;
+    }
+    
+    // Establecer el título de la página
+    document.title = data.title || 'Ka0s Dashboard';
+    
+    // Cargar la sección inicial por defecto (la primera)
+    if (data.sections.length > 0) {
+        loadSection(data.sections[0]);
+    }
 }
 
 /**
