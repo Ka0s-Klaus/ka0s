@@ -182,7 +182,10 @@ jobs:
               <meta charset="UTF-8">
               <meta name="viewport" content="width=device-width, initial-scale=1.0">
               <title>Sección Ka0s</title>
+<<<<<<< HEAD
               <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+=======
+>>>>>>> origin
               <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
               <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
           </head>
@@ -206,6 +209,12 @@ jobs:
                       <!-- Contenedor de plantillas - se generará dinámicamente -->
                       <div id="templates-container">
                           <!-- Las plantillas (gráficos, listas, etc.) se generarán dinámicamente según el JSON -->
+                          <div id="data-list" class="bg-white shadow-sm rounded-lg p-6 mb-6">
+                              <!-- Aquí se mostrará la lista de datos -->
+                          </div>
+                          <div id="pagination" class="mt-4">
+                              <!-- Aquí se mostrará la paginación -->
+                          </div>
                       </div>
                   </div>
               </div>
@@ -247,6 +256,20 @@ jobs:
             echo "JS files copied successfully!"
           else
             echo "Warning: JS directory not found at core/testweb/js"
+          fi
+          
+          # AÑADIR AQUÍ: Copiar archivos JS desde core/web/js
+          if [ -d "core/web/js" ]; then
+            echo "X.2.1 - Copying JS files from core/web/js..."
+            mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/js"
+            find core/web/js -type f -name "*.js" | while read js_file; do
+              JS_FILENAME=$(basename "$js_file")
+              echo "Copying JS file: $js_file to ${{ env.KAOS_WEB_STRUCTURE }}$TITLE/js/$JS_FILENAME"
+              cp "$js_file" "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/js/$JS_FILENAME"
+            done
+            echo "Web JS files copied successfully!"
+          else
+            echo "Warning: JS directory not found at core/web/js"
           fi
           
           # Copiar archivos de Templates
