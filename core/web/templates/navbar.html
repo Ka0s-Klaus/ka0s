@@ -1,18 +1,91 @@
-<nav class="fixed m-4 p-2 bg-gradient-to-r from-blue-50 to-white rounded-xl h-[96%] shadow-2xl w-[250px] transition-all duration-300 z-50" id="sidebar">
+<nav id="sidebar">
     <!-- Header con toggle -->
-    <div class="flex items-center justify-between p-4 border-b border-gray-200">
+    <div class="sidebar-header">
         <!-- Contenedor izquierdo: Logo y Título -->
-        <div class="flex items-center gap-3 overflow-hidden">
-            <span id="navbar-title" class="text-lg font-semibold text-gray-800 sidebar-text transition-opacity duration-300 whitespace-nowrap"></span>
+        <div class="logo-container">
+            <span id="navbar-title" class="sidebar-text"></span>
         </div>
-        <button id="sidebarToggle" class="rounded-lg transition-all duration-300 flex items-center font-bold  w-8 h-8 flex-shrink-0">
-            <i class="fas fa-chevron-left text-gray-600 transition-transform duration-300 text-sm" id="toggleIcon"></i>
+        <button id="sidebarToggle">
+            <i class="fas fa-chevron-left" id="toggleIcon"></i>
         </button>
     </div>
     <!-- Enlaces de navegación -->
-    <div class="mt-6 flex flex-col gap-2 px-2">
-        <ul id="navbar-sections" class="flex flex-col gap-1">
+    <div class="sidebar-menu">
+        <ul id="navbar-sections">
             <!-- Las secciones se insertarán aquí dinámicamente -->
         </ul>
     </div>
 </nav>
+
+<style>
+    #sidebar {
+        position: fixed;
+        margin: 1rem;
+        padding: 0.5rem;
+        background-image: linear-gradient(to right, #ebf5ff, #ffffff);
+        border-radius: 0.75rem;
+        height: 96%;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        width: 250px;
+        transition: all 0.3s;
+        z-index: 50;
+    }
+    
+    .sidebar-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .logo-container {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        overflow: hidden;
+    }
+    
+    #navbar-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #1f2937;
+        transition: opacity 0.3s;
+        white-space: nowrap;
+    }
+    
+    #sidebarToggle {
+        border-radius: 0.5rem;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        font-weight: 700;
+        width: 2rem;
+        height: 2rem;
+        flex-shrink: 0;
+    }
+    
+    #toggleIcon {
+        color: #4b5563;
+        transition: transform 0.3s;
+        font-size: 0.875rem;
+    }
+    
+    .sidebar-menu {
+        margin-top: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 0 0.5rem;
+    }
+    
+    #navbar-sections {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    
+    .sidebar-text {
+        transition: opacity 0.3s;
+    }
+</style>

@@ -2580,3 +2580,236 @@
   - core/web/js/data-list.js
   - version.txt
 ---------------------------------
+## Version 0.0.125
+- **Branch**: refs/pull/1146/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: jorgecg646
+- **Date**: Thu May  8 10:48:18 UTC 2025
+- **Message**: H220 web de resultados
+- **Files Changed**:
+  - .github/workflows/structure.yml
+  - core/config/webs/section3issues.json
+  - core/config/webs/section3leadtime.json
+  - core/outputs/webs/dashboard/dashboard_resume.json
+  - core/outputs/webs/dashboard/data-files-summary.json
+  - core/results/k/event_data_14904297088.json
+  - core/results/k/event_data_14904297088.json.bak
+  - core/results/k/event_data_14904321265.json
+  - core/results/k/event_data_14904321265.json.bak
+  - core/results/k/event_data_14904541574.json
+  - core/results/k/event_data_14904541574.json.bak
+  - core/results/k/event_data_14904560844.json
+  - core/results/k/event_data_14904560844.json.bak
+  - core/results/k/event_data_14904595321.json
+  - core/results/k/event_data_14904595321.json.bak
+  - core/results/webs/dashboard/js/actionsPerformance.js
+  - core/results/webs/dashboard/js/data-list.js
+  - core/results/webs/dashboard/js/leadTime.js
+  - core/results/webs/dashboard/js/leadtime.js
+  - core/results/webs/dashboard/js/navbar.js
+  - core/results/webs/dashboard/structure/actionsPerformance/actionsPerformance.html
+  - core/web/data/kaos-workflows-runs.json
+  - core/web/js/actionsPerformance.js
+  - core/web/js/data-list.js
+  - core/web/js/leadTime.js
+  - core/web/js/navbar.js
+  - core/web/templates/actionsPerformance.html
+  - core/web/templates/data-list.html
+  - core/web/templates/leadTime.html
+  - version.txt
+---------------------------------
+## Version 0.0.126
+- **Branch**: refs/pull/1154/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Jhony Chaves
+- **Date**: Mon May 12 08:03:50 UTC 2025
+- **Message**: H1149 desarrollo de orchestrator
+- **Files Changed**:
+  - core/results/k/event_data_14966712417.json
+  - core/results/k/event_data_14966712417.json.bak
+  - core/web/js/actionsPerformance.js
+  - core/web/js/data-list.js
+  - core/web/js/data.js
+  - core/web/js/graphic.js
+  - core/web/js/leadTime.js
+  - core/web/js/navbar.js
+  - core/web/js/orchestrator.js
+  - core/web/structure/structure.html
+  - version.txt
+---------------------------------
+## Version 0.0.127
+- **Branch**: refs/pull/1156/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: jorgecg646
+- **Date**: Mon May 12 08:46:16 UTC 2025
+- **Message**: H1150 desarrollo de secciones
+- **Files Changed**:
+  - .github/workflows/structure.yml
+  - core/results/k/event_data_14967129630.json
+  - core/results/k/event_data_14967129630.json.bak
+  - core/results/k/event_data_14967605132.json
+  - core/results/k/event_data_14967605132.json.bak
+  - core/results/k/event_data_14967653733.json
+  - core/results/k/event_data_14967653733.json.bak
+  - core/results/k/event_data_14967762748.json
+  - core/results/k/event_data_14967762748.json.bak
+  - core/results/k/event_data_14967774753.json
+  - core/results/k/event_data_14967774753.json.bak
+  - core/web/custom/custom.html
+  - core/web/data/seccion1.json
+  - core/web/js/orchestrator.js
+  - core/web/templates/actionsPerformance.html
+  - core/web/templates/data-list.html
+  - core/web/templates/leadTime.html
+  - core/web/templates/navbar.html
+  - core/web/templates/section-template.html
+  - core/web/templates/template.html
+  - version.txt
+---------------------------------
+## Version 0.0.128
+- **Branch**: refs/pull/1159/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Jhony Chaves
+- **Date**: Mon May 12 10:56:35 UTC 2025
+- **Message**: H1149 desarrollo de orchestrator
+- **Files Changed**:
+  - .github/workflows/structure.yml
+  - core/outputs/webs/dashboard/data-files-summary.json
+  - core/outputs/webs/test/readme.txt
+  - core/outputs/webs/test/test_resume.json
+  - core/results/k/event_data_14968351032.json
+  - core/results/k/event_data_14968351032.json.bak
+  - core/results/k/event_data_14969771090.json
+  - core/results/k/event_data_14969771090.json.bak
+  - core/results/k/event_data_14970133496.json
+  - core/results/k/event_data_14970133496.json.bak
+  - core/results/k/event_data_14970253783.json
+  - core/results/k/event_data_14970253783.json.bak
+  - core/results/test/data/data.json
+  - core/results/test/data/kaos-workflows-runs.json
+  - core/results/test/data/seccion1.json
+  - core/results/test/data/webs.json
+  - core/results/test/index.html
+  - core/results/test/js/orchestrator.js
+  - core/results/test/js/structure.js
+  - core/results/test/templates/graphic.html
+  - core/results/test/templates/navbar.html
+  - core/results/test/templates/section-template.html
+  - core/results/webs/dashboard/data/seccion1.json
+  - core/testweb/data/data.json
+  - core/testweb/data/kaos-workflows-runs.json
+  - core/testweb/data/seccion1.json
+  - core/testweb/data/webs.json
+  - core/testweb/index.html
+  - core/testweb/js/orchestrator.js
+  - core/testweb/js/structure.js
+  - core/testweb/templates/graphic.html
+  - core/testweb/templates/navbar.html
+  - core/testweb/templates/section-template.html
+  - core/web/data/webs.json
+  - version.txt
+---------------------------------
+## Version 0.0.129
+- **Branch**: refs/pull/1161/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Jhony Chaves
+- **Date**: Mon May 12 13:10:23 UTC 2025
+- **Message**: H1149 desarrollo de orchestrator
+- **Files Changed**:
+  - .github/workflows/structure.yml
+  - core/results/k/event_data_14973069163.json
+  - core/results/k/event_data_14973069163.json.bak
+  - version.txt
+---------------------------------
+## Version 0.0.130
+- **Branch**: refs/pull/1162/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: jorgecg646
+- **Date**: Mon May 12 13:41:22 UTC 2025
+- **Message**: H1150 desarrollo de secciones
+- **Files Changed**:
+  - core/outputs/webs/dashboard/data-files-summary.json
+  - core/results/k/event_data_14973718489.json
+  - core/results/k/event_data_14973718489.json.bak
+  - core/results/webs/dashboard/js/orchestrator.js
+  - version.txt
+---------------------------------
+## Version 0.0.131
+- **Branch**: refs/pull/1167/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Jhony Chaves
+- **Date**: Tue May 13 06:06:50 UTC 2025
+- **Message**: H1149 desarrollo de orchestrator
+- **Files Changed**:
+  - .github/workflows/structure.yml
+  - core/results/k/event_data_14976241828.json
+  - core/results/k/event_data_14976241828.json.bak
+  - core/results/k/event_data_14976845071.json
+  - core/results/k/event_data_14976845071.json.bak
+  - core/results/k/event_data_14989368570.json
+  - core/results/k/event_data_14989368570.json.bak
+  - version.txt
+---------------------------------
+## Version 0.0.132
+- **Branch**: refs/pull/1168/merge
+- **Commit**: Merge branch 'H1149-desarrollo-de-orchestrator' of https://github.com/Ka0s-Klaus/ka0s into H1149-desarrollo-de-orchestrator
+- **Author**: Jhony Chaves
+- **Date**: Tue May 13 06:22:35 UTC 2025
+- **Message**: H1149 desarrollo de orchestrator
+- **Files Changed**:
+  - .github/workflows/structure.yml
+  - version.txt
+---------------------------------
+## Version 0.0.133
+- **Branch**: refs/pull/1169/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Jhony Chaves
+- **Date**: Tue May 13 06:49:12 UTC 2025
+- **Message**: H1149 desarrollo de orchestrator
+- **Files Changed**:
+  - .github/workflows/structure.yml
+  - core/results/k/event_data_14990049573.json
+  - core/results/k/event_data_14990049573.json.bak
+  - version.txt
+---------------------------------
+## Version 0.0.134
+- **Branch**: refs/pull/1170/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Jhony Chaves
+- **Date**: Tue May 13 08:13:58 UTC 2025
+- **Message**: H1149 desarrollo de orchestrator
+- **Files Changed**:
+  - .github/workflows/structure.yml
+  - core/results/k/event_data_14990659427.json
+  - core/results/k/event_data_14990659427.json.bak
+  - core/results/k/event_data_14990929431.json
+  - core/results/k/event_data_14990929431.json.bak
+  - core/results/k/event_data_14991525606.json
+  - core/results/k/event_data_14991525606.json.bak
+  - core/results/k/event_data_14991592293.json
+  - core/results/k/event_data_14991592293.json.bak
+  - core/testweb/data/sections/section1.json
+  - core/testweb/data/sections/section2.json
+  - core/testweb/data/sections/section3.json
+  - core/testweb/data/sections/section4.json
+  - core/testweb/data/sections/section5.json
+  - core/testweb/data/sections/section6.json
+  - core/testweb/data/sections/section7.json
+  - core/testweb/data/webs.json
+  - core/testweb/js/orchestrator.js
+  - core/testweb/templates/summary.html
+  - core/testweb/templates/table.html
+  - version.txt
+---------------------------------
+## Version 0.0.135
+- **Branch**: refs/pull/1172/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Jhony Chaves
+- **Date**: Tue May 13 08:42:12 UTC 2025
+- **Message**: H1149 desarrollo de orchestrator
+- **Files Changed**:
+  - .github/workflows/structure.yml
+  - core/results/k/event_data_14992152498.json
+  - core/results/k/event_data_14992152498.json.bak
+  - version.txt
+---------------------------------

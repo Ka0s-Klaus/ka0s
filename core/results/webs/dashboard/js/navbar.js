@@ -99,3 +99,136 @@ function initializeSidebar() {
     // Ejecutar el layout responsive inicial
     handleResponsiveLayout();
 }
+
+
+// Función para cargar el contenido de una sección
+function loadSection(sectionName) {
+    // Ocultar todas las secciones primero
+    document.querySelectorAll('.section-content').forEach(section => {
+        section.style.display = 'none';
+    });
+    
+    // Si es leadTime, cargar el archivo leadTime.html
+    if (sectionName === 'leadTime') {
+        // Cargar el contenido de leadTime.html en el contenedor principal
+        fetch('templates/leadTime.html')
+            .then(response => response.text())
+            .then(html => {
+                // Crear un contenedor temporal para el contenido
+                const tempContainer = document.createElement('div');
+                tempContainer.innerHTML = html;
+                
+                // Extraer el contenido del body
+                const bodyContent = tempContainer.querySelector('body').innerHTML;
+                
+                // Insertar el contenido en el main-content
+                const mainContent = document.getElementById('main-content');
+                const container = mainContent.querySelector('.container');
+                container.innerHTML = bodyContent;
+            })
+            .catch(error => console.error('Error cargando leadTime.html:', error));
+    } else {
+        // Para otras secciones, mostrar la sección correspondiente si existe
+        const sectionElement = document.getElementById(sectionName);
+        if (sectionElement) {
+            sectionElement.style.display = 'block';
+        }
+    }
+}
+
+// Agregar event listeners a los elementos del menú
+document.addEventListener('DOMContentLoaded', function() {
+    // Cargar la navbar
+    const navbarContainer = document.getElementById('navbar-container');
+    fetch('templates/navbar.html')
+        .then(response => response.text())
+        .then(html => {
+            navbarContainer.innerHTML = html;
+            
+            // Agregar event listeners a los elementos del menú después de cargar la navbar
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Remover la clase active de todos los elementos
+                    document.querySelectorAll('.nav-item').forEach(navItem => {
+                        navItem.classList.remove('active');
+                    });
+                    
+                    // Agregar la clase active al elemento clickeado
+                    this.classList.add('active');
+                    
+                    // Obtener el nombre de la sección del atributo data-section
+                    const sectionName = this.getAttribute('data-section');
+                    
+                    // Caso especial para leadTime
+                    if (sectionName === 'leadTime') {
+                        // Ocultar todas las secciones
+                        document.querySelectorAll('.section-content').forEach(section => {
+                            section.style.display = 'none';
+                        });
+                        
+                        // Crear o mostrar el contenedor para leadTime
+                        let leadTimeContainer = document.getElementById('leadTime-container');
+                        if (!leadTimeContainer) {
+                            leadTimeContainer = document.createElement('div');
+                            leadTimeContainer.id = 'leadTime-container';
+                            document.querySelector('.dashboard-content').appendChild(leadTimeContainer);
+                        }
+                        
+                        // Mostrar el contenedor
+                        leadTimeContainer.style.display = 'block';
+                        
+                        // Cargar el contenido de leadTime.html
+                        fetch('templates/leadTime.html')
+                            .then(response => response.text())
+                            .then(html => {
+                                // Crear un parser para extraer solo el contenido del body
+                                const parser = new DOMParser();
+                                const doc = parser.parseFromString(html, 'text/html');
+                                const bodyContent = doc.querySelector('body > div').innerHTML;
+                                
+                                // Insertar el contenido en el contenedor
+                                leadTimeContainer.innerHTML = bodyContent;
+                                
+                                // Cargar los scripts necesarios
+                                if (!document.getElementById('leadTime-script')) {
+                                    const script = document.createElement('script');
+                                    script.id = 'leadTime-script';
+                                    script.src = 'js/leadTime.js';
+                                    document.body.appendChild(script);
+                                }
+                                
+                                if (!document.getElementById('data-list-script')) {
+                                    const dataListScript = document.createElement('script');
+                                    dataListScript.id = 'data-list-script';
+                                    dataListScript.src = 'js/data-list.js';
+                                    document.body.appendChild(dataListScript);
+                                }
+                            })
+                            .catch(error => console.error('Error cargando leadTime:', error));
+                    } else {
+                        // Para otras secciones, mostrar la sección correspondiente
+                        document.querySelectorAll('.section-content').forEach(section => {
+                            section.style.display = section.id === sectionName ? 'block' : 'none';
+                        });
+                        
+                        // Ocultar el contenedor de leadTime si existe
+                        const leadTimeContainer = document.getElementById('leadTime-container');
+                        if (leadTimeContainer) {
+                            leadTimeContainer.style.display = 'none';
+                        }
+                    }
+                });
+            });
+            
+            // Cargar la sección inicial (primera sección)
+            const firstSection = document.querySelector('.nav-item');
+            if (firstSection) {
+                firstSection.classList.add('active');
+                const sectionName = firstSection.getAttribute('data-section');
+                loadSection(sectionName);
+            }
+        })
+        .catch(error => console.error('Error cargando navbar:', error));
+});
