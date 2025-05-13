@@ -780,6 +780,75 @@ jobs:
           
           echo "Dashboard HTML generado correctamente en core/results/webs/${TITLE}/dashboard.html"
       
+
+      - name: Crear test.html
+        run: |
+          TEST_STRUCTURE_FILE="${{ env.KAOS_TEST_JSON_WEB }}"
+          TITLE=$(jq -r '.title' $TEST_STRUCTURE_FILE)
+          
+          # Crear el test.html con todas las secciones concatenadas y la navbar
+          echo "<!DOCTYPE html>
+          <html lang=\"es\">
+          <head>
+              <meta charset=\"UTF-8\">
+              <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
+              <title>Ka0s Dashboard - ${TITLE}</title>
+              <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css\">
+          </head>
+          <body class=\"bg-gray-50\">
+              <!-- Incluir la navbar -->
+              <div id=\"navbar-container\"></div>
+              
+              <div id=\"main-content\" class=\"ml-[250px] transition-all duration-300\">
+                  <div class=\"container mx-auto px-4 py-8\">
+                      <header class=\"py-3 mb-4 border-b border-gray-200\">
+                          <div class=\"flex items-center\">
+                              <h1 class=\"text-2xl font-bold text-gray-800\">${TITLE}</h1>
+                          </div>
+                      </header>
+                      <div class=\"dashboard-content\">" > "core/results/webs/test/test.html"
+          
+          # Concatenar todas las secciones
+          if [ -d "core/results/webs/test/temp_sections" ]; then
+            for section_file in "core/results/webs/test/temp_sections"/*.html; do
+              if [ -f "$section_file" ]; then
+                SECTION_NAME=$(basename "$section_file" .html)
+                echo "<div class=\"section-content\" id=\"${SECTION_NAME}\">" >> "core/results/webs/test/test.html"
+                
+                # Extraer solo el contenido del body de cada sección
+                TEMP_CONTENT=$(mktemp)
+                awk '/<body/,/<\/body>/' "$section_file" > "$TEMP_CONTENT"
+                
+                # Filtrar el contenido para eliminar etiquetas innecesarias
+                cat "$TEMP_CONTENT" | 
+                  grep -v "<body" | 
+                  grep -v "</body>" | 
+                  
+                  
+                
+                # Limpiar archivos temporales
+                rm -f "$TEMP_CONTENT"
+                
+                echo "</div>" >> "core/results/webs/test/test.html"
+              fi
+            done
+          else
+            echo "No se encontró el directorio de secciones temporales"
+          fi
+          
+          # Cerrar las etiquetas HTML
+          echo "          </div>
+              </div>
+              </div>
+          </div>
+          
+          <!-- Cargar la navbar desde el template -->
+          <script src="js/orchestrator.js"></script>
+          </body>
+          </html>" >> "core/results/webs/test/test.html"
+          
+          echo "Test HTML generado correctamente en core/results/webs/test/test.html"
+          
       - name: Guardar cambios en el repositorio
         run: |
           # Añadir todos los archivos generados
