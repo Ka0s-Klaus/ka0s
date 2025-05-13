@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let filteredData = [];
     let allData = [];
 <<<<<<< HEAD
+<<<<<<< HEAD
     let archive = 'data/kaos-issue.json'; 
     
     // Función para cargar datos
@@ -32,6 +33,11 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Funcion para cargar datos
 >>>>>>> origin
+=======
+    let archive = 'data/kaos-issue.json'; 
+    
+    // Funcion para cargar datos
+>>>>>>> f47181d0 (modificados data-list)
     async function loadData() {
         try {
             // Cargar el archivo JSON
@@ -54,9 +60,15 @@ function loadData() {
             if (!response.ok) {
                 throw new Error(`Error HTTP: ${response.status}`);
             }
+<<<<<<< HEAD
             return response.json();
         })
         .then(data => {
+=======
+            
+            const data = await response.json();
+            
+>>>>>>> f47181d0 (modificados data-list)
             // Adaptarse a la estructura real del JSON
             if (Array.isArray(data) && data.length > 0) {
                 // Si es un array de arrays
@@ -83,12 +95,37 @@ function loadData() {
             
             // Renderizar la primera página
             renderPage(1);
+<<<<<<< HEAD
         })
         .catch(error => {
+=======
+        } catch (error) {
+>>>>>>> f47181d0 (modificados data-list)
             console.error('Error cargando datos:', error);
             document.getElementById('data-list').innerHTML = `
                 <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
                     Error cargando datos: ${error.message}
+<<<<<<< HEAD
+=======
+                </div>
+            `;
+        }
+    }
+
+    // Renderizar una página de datos
+    function renderPage(page) {
+        currentPage = page;
+        const startIndex = (page - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const pageData = filteredData.slice(startIndex, endIndex);
+
+        const dataList = document.getElementById('data-list');
+
+        if (pageData.length === 0) {
+            dataList.innerHTML = `
+                <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4">
+                    No se encontraron datos que coincidan con los criterios de búsqueda.
+>>>>>>> f47181d0 (modificados data-list)
                 </div>
             `;
         });
@@ -240,6 +277,7 @@ function renderPage(page) {
     renderPagination(page);
 }
 
+<<<<<<< HEAD
 // Renderizar controles de paginación
 function renderPagination(currentPage) {
     const totalPages = Math.ceil(filteredData.length / itemsPerPage);
@@ -258,6 +296,99 @@ function renderPagination(currentPage) {
                 </button>
                 <div class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md">
                     Page ${currentPage} of ${totalPages}
+=======
+    // Renderizar controles de paginación
+    function renderPagination(currentPage) {
+        const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+        const pagination = document.getElementById('pagination');
+
+        let html = '<nav><ul class="pagination">';
+
+        // Botón anterior
+        html += `
+            <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                <a class="page-link" href="#" data-page="${currentPage - 1}">Anterior</a>
+            </li>
+        `;
+
+        // Páginas
+        for (let i = 1; i <= totalPages; i++) {
+            html += `
+                <li class="page-item ${i === currentPage ? 'active' : ''}">
+                    <a class="page-link" href="#" data-page="${i}">${i}</a>
+                </li>
+            `;
+        }
+
+        // Botón siguiente
+        html += `
+            <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                <a class="page-link" href="#" data-page="${currentPage + 1}">Siguiente</a>
+            </li>
+        `;
+
+        html += '</ul></nav>';
+        pagination.innerHTML = html;
+
+        // Añadir event listeners a los enlaces de paginación
+        document.querySelectorAll('.page-link').forEach(link => {
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
+                const page = parseInt(this.getAttribute('data-page'));
+                if (page >= 1 && page <= totalPages) {
+                    renderPage(page);
+                }
+            });
+        });
+    }
+
+    // Mostrar detalles de un elemento
+    function showDetails(item) {
+        // Crear modal para mostrar detalles
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.id = 'detailsModal';
+        modal.setAttribute('tabindex', '-1');
+        modal.setAttribute('aria-labelledby', 'detailsModalLabel');
+        modal.setAttribute('aria-hidden', 'true');
+
+        let detailsHtml = '';
+        for (const [key, value] of Object.entries(item.data)) {
+            if (typeof value !== 'object') {
+                detailsHtml += `
+                    <div class="mb-2">
+                        <strong>${key}:</strong> ${value}
+                    </div>
+                `;
+            }
+        }
+
+        modal.innerHTML = `
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="detailsModalLabel">${item.name}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <span class="badge bg-secondary">${item.type}</span>
+                            <small class="text-muted ms-2">
+                                ${new Date(item.date).toLocaleString('es-ES')}
+                            </small>
+                        </div>
+                        
+                        ${detailsHtml}
+                        
+                        <div class="mt-4">
+                            <h6>Datos completos:</h6>
+                            <pre class="bg-light p-3 rounded">${JSON.stringify(item.data, null, 2)}</pre>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    </div>
+>>>>>>> f47181d0 (modificados data-list)
                 </div>
                  <button id="nextPage" class="px-4 py-2 text-sm font-medium text-white bg-green-500 rounded-md ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-green-600'}" ${currentPage === totalPages ? 'disabled' : ''}>
                     Next
@@ -303,6 +434,7 @@ function showDetails(item) {
             `;
         }
     }
+<<<<<<< HEAD
 
     modal.innerHTML = `
         <div class="modal-dialog modal-lg">
@@ -343,3 +475,8 @@ function showDetails(item) {
         document.body.removeChild(modal);
     });
 }
+=======
+    // Iniciar carga de datos
+    loadData();
+});
+>>>>>>> f47181d0 (modificados data-list)
