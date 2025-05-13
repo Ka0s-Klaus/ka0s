@@ -295,15 +295,11 @@ jobs:
               echo "Copying section file: $section_file to ${{ env.KAOS_WEB_STRUCTURE }}$TEST_TITLE/data/sections/$SECTION_FILENAME"
               cp "$section_file" "${{ env.KAOS_WEB_STRUCTURE }}$TEST_TITLE/data/sections/$SECTION_FILENAME"
             done
-            # Crear un archivo HTML en el directorio sections (corregido)
-            touch "${{ env.KAOS_WEB_STRUCTURE }}$TEST_TITLE/data/sections/sections.html"
             echo "Sections folder copied successfully!"
           else
             echo "Warning: Sections directory not found at core/testweb/data/sections"
             # Crear el directorio aunque no exista en el origen
             mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TEST_TITLE/data/sections"
-            # Crear un archivo HTML en el directorio sections (corregido)
-            touch "${{ env.KAOS_WEB_STRUCTURE }}$TEST_TITLE/data/sections/sections.html"
             echo "Created empty sections directory in test web structure"
           fi
           
