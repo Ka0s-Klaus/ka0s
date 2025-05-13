@@ -182,7 +182,7 @@ jobs:
               <meta charset="UTF-8">
               <meta name="viewport" content="width=device-width, initial-scale=1.0">
               <title>Sección Ka0s</title>
-              <link href="../css/output.css" rel="stylesheet">
+              <link href=css/output.css" rel="stylesheet">
               <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
               <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
           </head>
@@ -211,7 +211,7 @@ jobs:
               </div>
   
               <!-- Scripts -->
-              <script src="../js/orchestrator.js"></script>
+              <script src="js/orchestrator.js"></script>
           </body>
           </html>
           EOL
@@ -698,7 +698,7 @@ jobs:
                 awk -v r="$TEMPLATES_HTML" '{gsub("<!-- TEMPLATES_PLACEHOLDER -->", r)} 1' "$SECTION_HTML" > temp && mv temp "$SECTION_HTML"
                 
                 # Asegurarse de que la referencia a orchestrator.js sea correcta
-                sed -i 's|src="../js/orchestrator.js"|src="../../js/orchestrator.js"|g' "$SECTION_HTML"
+                sed -i 's|src="js/orchestrator.js"|src="js/orchestrator.js"|g' "$SECTION_HTML"
                 
                 echo "Generado $SECTION_HTML"
                 # Almacenar cada sección en un directorio temporal para concatenarlas después
@@ -848,7 +848,7 @@ jobs:
           </html>" >> "core/results/webs/test/test.html"
           
           echo "Test HTML generado correctamente en core/results/webs/test/test.html"
-          
+
       - name: Guardar cambios en el repositorio
         run: |
           # Añadir todos los archivos generados
