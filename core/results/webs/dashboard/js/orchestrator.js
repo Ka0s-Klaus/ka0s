@@ -277,8 +277,10 @@ function initNavbar() {
         });
     }
 
-    // Inicializar la funcionalidad del sidebar después de cargar el contenido
-    initializeSidebar();
+    // Esperar a que el DOM esté actualizado antes de inicializar el sidebar
+    setTimeout(() => {
+        initializeSidebar();
+    }, 0);
 }
 
 function initializeSidebar() {
