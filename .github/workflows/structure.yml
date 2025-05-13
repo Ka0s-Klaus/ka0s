@@ -728,13 +728,18 @@ jobs:
                     LIST_DATA_SOURCE=$(echo "$LIST_TEMPLATE_JSON" | jq -r '.dataSource')
                     
                     # Leer la plantilla de lista
-                   
-                    
-                    # Crear un archivo temporal con la plantilla de lista modificada
-                    TEMP_LIST=$(mktemp)
-                    
-                      sed "s|{{TEMPLATE_TITLE}}|$LIST_TITLE|g" | 
-                      sed "s|{{DATA_SOURCE}}|$LIST_DATA_SOURCE|g" > "$TEMP_LIST"
+                    LIST_TEMPLATE_HTML="core/web/templates/list-template.html"
+                    if [ -f "$LIST_TEMPLATE_HTML" ]; then
+                        # Crear un archivo temporal con la plantilla de lista modificada
+                        TEMP_LIST=$(mktemp)
+                        
+                        # Aplicar las sustituciones en un solo comando
+                        cat "$LIST_TEMPLATE_HTML" | \
+                        sed "s|{{TEMPLATE_TITLE}}|$LIST_TITLE|g" | \
+                        sed "s|{{DATA_SOURCE}}|$LIST_DATA_SOURCE|g" > "$TEMP_LIST"
+                    else
+                        echo "Error: No se encontró la plantilla de lista en $LIST_TEMPLATE_HTML"
+                    fi
                     
                     # Crear un archivo temporal para el resultado final
                     TEMP_RESULT=$(mktemp)
@@ -767,7 +772,13 @@ jobs:
                   
                   if [ "$TYPE" = "graphic" ]; then
                     # Leer la plantilla de gráfico
-                   
+                    GRAPHIC_TEMPLATE_HTML="core/web/templates/graphic-template.html"
+                    if [ -f "$GRAPHIC_TEMPLATE_HTML" ]; then
+                        GRAPHIC_TEMPLATE=$(cat "$GRAPHIC_TEMPLATE_HTML")
+                    else
+                        echo "Error: No se encontró la plantilla de gráfico en $GRAPHIC_TEMPLATE_HTML"
+                        GRAPHIC_TEMPLATE="<div>Error: Plantilla de gráfico no encontrada</div>"
+                    fi
                     # Reemplazar placeholders en la plantilla
                     GRAPHIC_TEMPLATE=$(echo "$GRAPHIC_TEMPLATE" | sed "s/GRAPHIC_TITLE_PLACEHOLDER/$TITLE/g")
                     GRAPHIC_TEMPLATE=$(echo "$GRAPHIC_TEMPLATE" | sed "s|DATA_SOURCE_PLACEHOLDER|$DATA_SOURCE|g")
@@ -777,7 +788,13 @@ jobs:
                     # Modificar la forma de incluir el script para que pueda recibir el data-source
                   elif [ "$TYPE" = "list" ]; then
                     # Leer la plantilla de lista
-                    
+                    LIST_TEMPLATE_HTML="core/web/templates/list-template.html"
+                    if [ -f "$LIST_TEMPLATE_HTML" ]; then
+                        LIST_TEMPLATE=$(cat "$LIST_TEMPLATE_HTML")
+                    else
+                        echo "Error: No se encontró la plantilla de lista en $LIST_TEMPLATE_HTML"
+                        LIST_TEMPLATE="<div>Error: Plantilla de lista no encontrada</div>"
+                    fi
                     # Reemplazar placeholders en la plantilla
                     LIST_TEMPLATE=$(echo "$LIST_TEMPLATE" | sed "s/LIST_TITLE_PLACEHOLDER/$TITLE/g")
                     LIST_TEMPLATE=$(echo "$LIST_TEMPLATE" | sed "s|DATA_SOURCE_PLACEHOLDER|$DATA_SOURCE|g")
