@@ -596,6 +596,79 @@ function filterData(searchTerm) {
     renderPage(1);
 }
 
+/**
+ * Inicializa un grafico con los datos proporcionados
+ * @param {Object} data - Datos para el gráfico
+ */
+function initializeChart(data) {
+    // Verificar si existe la función createChart (posiblemente en graphic.js)
+    if (typeof createChart === 'function') {
+        createChart(data);
+    } else {
+        console.error('La función createChart no está disponible');
+        
+        // Implementación básica de respaldo
+        const chartContainer = document.getElementById('dataChart');
+        if (!chartContainer) {
+            console.error('No se encontró el elemento canvas para el gráfico');
+            return;
+        }
+        
+        if (window.currentChart) {
+            window.currentChart.destroy();
+        }
+        
+        // Preparar los datos para el gráfico
+        let labels = [];
+        let values = [];
+        
+        if (data.statistics) {
+            // Usar las estadísticas del repositorio
+            labels = Object.keys(data.statistics).filter(key => typeof data.statistics[key] === 'number');
+            values = labels.map(key => data.statistics[key]);
+        } else if (typeof data === 'object') {
+            // Fallback: usar todas las propiedades numéricas
+            labels = Object.keys(data).filter(key => typeof data[key] === 'number');
+            values = labels.map(key => data[key]);
+        }
+        
+        // Crear el gráfico si Chart.js está disponible
+        if (typeof Chart === 'function') {
+            const ctx = chartContainer.getContext('2d');
+            window.currentChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Datos',
+                        data: values,
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Gráfico de Datos'
+                        },
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+    }
+}
+
 // Exportar funciones para uso global
 window.initSection = initSection;
 window.filterData = filterData;
