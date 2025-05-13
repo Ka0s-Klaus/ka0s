@@ -19,320 +19,543 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 /**
- * Carga y procesa el archivo de configuración principal
+ * Carga la configuración principal desde webs.json
  */
 function loadWebsConfig() {
-    fetch('data/webs.json')
-        .then(response => response.json())
-        .then(data => {
-            // Establecer el título del documento
-            document.title = data.title || 'Ka0s Dashboard';
-            
-            // Para la sección inicial (inicio)
-            if (data.sections && data.sections.length > 0) {
-                const inicioSection = data.sections.find(section => section.title === 'inicio');
-                if (inicioSection && inicioSection.datatemplate) {
-                    // Cargar la información de la plantilla de la sección
-                    fetch(inicioSection.datatemplate)
-                        .then(response => response.json())
-                        .then(templateData => {
-                            document.title = templateData.title || data.title;
-                            // Si hay un elemento para mostrar la descripción, actualizarlo
-                            const descriptionElement = document.querySelector('.section-description');
-                            if (descriptionElement && templateData.description) {
-                                descriptionElement.textContent = templateData.description;
-                            }
-                        })
-                        .catch(error => console.error('Error cargando la plantilla de la sección:', error));
+    loadDataFromUrl('data/webs.json', function(data) {
+        if (!data || !data.sections || !Array.isArray(data.sections)) {
+            console.error('Formato de webs.json inválido');
+            return;
+        }
+        
+        // Guardar la configuración globalmente
+        webConfig = data;
+        
+        // Establecer el título de la página
+        document.title = data.title || 'Ka0s Dashboard';
+        
+        // Inicializar el navbar con la configuración cargada
+        initNavbar();
+        
+        // Crear el mapa de configuraciones de sección
+        data.sections.forEach(section => {
+            sectionConfigMap[section.title.toLowerCase()] = {
+                configFile: section.datatemplate,
+                title: section.title,
+                icon: section.icon
+            };
+        });
+        
+        // Cargar la sección inicial por defecto (la primera)
+        if (data.sections.length > 0) {
+            initSection(data.sections[0].title.toLowerCase());
+        }
+    }, function(error) {
+        console.error('Error cargando webs.json:', error);
+    });
+}
+
+/**
+ * Inicializa una sección específica
+ * @param {string} sectionName - Nombre de la sección a inicializar
+ */
+function initSection(sectionName) {
+    console.log(`Inicializando sección: ${sectionName}`);
+
+    const sectionConfig = sectionConfigMap[sectionName];
+    if (!sectionConfig) {
+        console.error(`Configuración no encontrada para la sección: ${sectionName}`);
+        return;
+    }
+
+    // Cargar la configuración de la sección
+    loadDataFromUrl(
+        sectionConfig.configFile,
+        (config) => {
+            // Actualizar título y descripción
+            updateTitleAndDescription(config);
+
+            // Configurar las métricas basadas en el archivo de configuración
+            const metricKeys = [];
+            const colors = ['blue', 'green', 'yellow', 'purple', 'red', 'orange', 'gray'];
+
+            // Buscar todas las propiedades que comienzan con "metric"
+            for (const key in config) {
+                if (key.startsWith('metric') && !isNaN(key.substring(6))) {
+                    metricKeys.push({
+                        key: key,
+                        color: colors[metricKeys.length % colors.length] // Asignar color cíclicamente
+                    });
                 }
             }
-        })
-        .catch(error => console.error('Error cargando webs.json:', error));
-    if (!data || !data.sections || !Array.isArray(data.sections)) {
-        console.error('Formato de webs.json inválido');
-        return;
+
+            // Actualizar la configuración de métricas para esta sección
+            sectionConfig.metrics = metricKeys;
+
+            // Actualizar métricas en la UI
+            updateMetrics(config, sectionConfig.metrics);
+
+            // Configurar la lista dinámica
+            configureDataList(config);
+
+            // Procesar datos específicos si es necesario
+            if (sectionConfig.processData && typeof sectionConfig.processData === 'function') {
+                // Obtener la fuente de datos
+                const dataSource = document.getElementById('data-list').getAttribute('data-source');
+
+                // Cargar los datos para procesamiento específico
+                loadDataFromUrl(
+                    dataSource,
+                    sectionConfig.processData,
+                    (error) => {
+                        console.error(`Error procesando datos para ${sectionName}:`, error);
+                    }
+                );
+            }
+        },
+        (error) => {
+            console.error(`Error cargando configuración para ${sectionName}:`, error);
+            const dataList = document.getElementById('data-list');
+            if (dataList) {
+                dataList.innerHTML = `
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                        Error cargando configuración: ${error.message}
+                    </div>
+                `;
+            }
+        }
+    );
+}
+
+/**
+ * Actualiza el título y descripción de la página
+ * @param {Object} config - Configuración con título y descripción
+ */
+function updateTitleAndDescription(config) {
+    if (config.title) {
+        const h1 = document.querySelector('h1');
+        if (h1) h1.textContent = config.title;
     }
-    
-    // Establecer el título de la página
-    document.title = data.title || 'Ka0s Dashboard';
-    
-    // Cargar la sección inicial por defecto (la primera)
-    if (data.sections.length > 0) {
-        loadSection(data.sections[0]);
+    if (config.description) {
+        const desc = document.querySelector('p.text-gray-600, header p');
+        if (desc) desc.textContent = config.description;
     }
 }
 
 /**
- * Carga una sección específica
- * @param {Object} section - Objeto de sección del archivo webs.json
- */
-function loadSection(section) {
-    if (!section || !section.datatemplate) {
-        console.error('Sección inválida o sin plantilla de datos');
-        return;
-    }
-    
-    // Actualizar título de la sección actual
-    const sectionTitle = document.getElementById('section-title');
-    if (sectionTitle) {
-        sectionTitle.textContent = section.title || 'Sección';
-    }
-    
-    // Cargar la plantilla de datos de la sección
-    loadDataFromUrl(section.datatemplate, function(templateData) {
-        // Cargar los datos para esta sección
-        loadSectionData(section, templateData);
-    }, function(error) {
-        console.error(`Error cargando plantilla ${section.datatemplate}:`, error);
+ * Actualiza las métricas en la página
+ * @param {Object} config - Configuración con valores de métricas
+ * @param {Array} metricConfig - Configuración de las métricas (claves y colores)
+ 
+/**function updateMetrics(config, metricConfig) {
+    if (!metricConfig || !Array.isArray(metricConfig)) return;
+
+    metricConfig.forEach((metric, idx) => {
+        const container = document.querySelectorAll('.grid.grid-cols-1.md\\:grid-cols-4 > div')[idx];
+        if (container && config[metric.key]) {
+            const h2 = container.querySelector('h2');
+            if (h2) h2.textContent = config[metric.key];
+        }
     });
+}*/
+
+/**
+ * Configura la lista de datos basada en la configuración
+ * @param {Object} config - Configuración con plantillas
+ */
+function configureDataList(config) {
+    if (!config.templates || !Array.isArray(config.templates)) return;
+
+    const listTemplate = config.templates.find(t => t.type === 'list');
+    if (!listTemplate) return;
+
+    // Actualizar el título de la tabla/lista
+    updateTableTitle(listTemplate.title);
+
+    // Configurar la fuente de datos
+    const dataList = document.getElementById('data-list');
+    if (dataList && listTemplate.dataSource) {
+        dataList.setAttribute('data-source', listTemplate.dataSource);
+        // Cargar datos
+        loadData(listTemplate.dataSource);
+    }
 }
 
 /**
- * Carga los datos para una sección y su plantilla
- * @param {Object} section - Objeto de sección
- * @param {Object} templateData - Datos de la plantilla de la sección
- */
-function loadSectionData(section, templateData) {
-    // Actualizar título y descripción de la sección
-    const sectionTitle = document.getElementById('section-title');
-    const sectionDescription = document.getElementById('section-description');
-    
-    if (sectionTitle && templateData.title) {
-        sectionTitle.textContent = templateData.title;
+ * Actualiza el título de la tabla/lista
+ * @param {string} title - Título a establecer
+
+function updateTableTitle(title) {
+    if (!title) return;
+
+    const selectors = [
+        '.bg-white.shadow-sm.rounded-lg.p-6 h2',
+        '.bg-white.shadow-sm.rounded-lg.p-6 h3',
+        '.bg-white.shadow-sm.rounded-lg.p-6 .text-xl',
+        '#table-title',
+        '.text-xl.font-semibold.text-gray-800'
+    ];
+
+    for (const selector of selectors) {
+        const element = document.querySelector(selector);
+        if (element) {
+            element.textContent = title;
+            break;
+        }
     }
-    
-    if (sectionDescription && templateData.description) {
-        sectionDescription.textContent = templateData.description;
+} */
+
+// ==================== MÓDULO NAVBAR ====================
+function initNavbar() {
+    // Usar la configuración ya cargada
+    if (!webConfig) {
+        console.error('Configuración no disponible para inicializar navbar');
+        return;
     }
-    
-    // Procesar las plantillas definidas en la sección
-    if (templateData.templates && Array.isArray(templateData.templates)) {
-        renderTemplates(templateData.templates);
+
+    // Actualizar el título de la navbar
+    const navbarTitle = document.getElementById('navbar-title');
+    if (navbarTitle && webConfig.title) {
+        navbarTitle.textContent = webConfig.title;
     }
+
+    // Cargar las secciones
+    const navbar = document.getElementById('navbar-sections');
+    if (navbar && webConfig.sections && Array.isArray(webConfig.sections)) {
+        webConfig.sections.forEach(section => {
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <a href="#${section.title.toLowerCase()}" 
+                   class="flex items-center justify-center w-full py-3 text-gray-700 hover:bg-blue-50 rounded-lg transition-all duration-200 group relative">
+                    <div class="flex items-center justify-center w-12">
+                        <i class="fas ${section.icon} text-orange-300 group-hover:text-orange-500 text-xl"></i>
+                    </div>
+                    <span class="sidebar-text flex-1 font-medium capitalize">${section.title}</span>
+                    <div class="tooltip hidden absolute left-16 top-1/2 -translate-y-1/2 bg-gray-800 text-white px-2 py-1 rounded text-sm whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-200">
+                        ${section.title}
+                    </div>
+                </a>`;
+            navbar.appendChild(li);
+        });
+    }
+
+    // Inicializar la funcionalidad del sidebar después de cargar el contenido
+    // Asegurarse de que el DOM esté listo antes de inicializar el sidebar
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        initializeSidebar();
+    } else {
+        document.addEventListener('DOMContentLoaded', initializeSidebar);
+    }
+}
+
+function initializeSidebar() {
+    console.log('Estado del DOM:', document.readyState); 
+    console.log('Elemento sidebar:', document.getElementById('sidebar')); 
+    console.log('Elemento sidebarToggle:', document.getElementById('sidebarToggle')); 
+    console.log('Elemento toggleIcon:', document.getElementById('toggleIcon'));
     
-    // Cargar datos si la sección tiene una URL de datos
-    if (section.data) {
-        if (Array.isArray(section.data)) {
-            // Cargar múltiples fuentes de datos
-            const dataPromises = section.data.map(dataItem => {
-                return new Promise((resolve, reject) => {
-                    loadDataFromUrl(dataItem.url, resolve, reject);
-                });
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const toggleIcon = document.getElementById('toggleIcon');
+
+    if (!sidebar) {
+        console.warn('No se encontró el elemento sidebar, omitiendo inicialización');
+        return;
+    }
+
+    // Continuar incluso si faltan algunos elementos secundarios
+    function toggleSidebar() {
+        const sidebarTexts = document.querySelectorAll('.sidebar-text');
+        const logoImage = document.querySelector('.logo-image');
+        const tooltips = document.querySelectorAll('.tooltip');
+
+        if (sidebar.classList.contains('w-[250px]')) {
+            // Colapsar sidebar
+            sidebar.classList.remove('w-[250px]');
+            sidebar.classList.add('w-[60px]');
+            if (toggleIcon) toggleIcon.style.transform = 'rotate(180deg)';
+            sidebarTexts.forEach(text => {
+                text.style.opacity = '0';
+                text.classList.add('hidden');
             });
-            
-            Promise.all(dataPromises)
-                .then(dataResults => {
-                    // Combinar todos los resultados de datos
-                    const combinedData = {};
-                    dataResults.forEach((data, index) => {
-                        const dataKey = section.data[index].key || `data${index}`;
-                        combinedData[dataKey] = data;
-                    });
-                    
-                    // Actualizar las plantillas con los datos combinados
-                    updateTemplatesWithData(combinedData);
-                })
-                .catch(error => {
-                    console.error('Error cargando datos múltiples:', error);
-                });
+            if (logoImage) {
+                logoImage.classList.add('hidden');
+            }
+            tooltips.forEach(tooltip => {
+                tooltip.classList.remove('hidden');
+            });
         } else {
-            // Cargar una sola fuente de datos
-            loadDataFromUrl(section.data, function(data) {
-                updateTemplatesWithData(data);
-            }, function(error) {
-                console.error(`Error cargando datos ${section.data}:`, error);
+            // Expandir sidebar
+            sidebar.classList.remove('w-[60px]');
+            sidebar.classList.add('w-[250px]');
+            toggleIcon.style.transform = 'rotate(0deg)';
+            if (logoImage) {
+                logoImage.classList.remove('hidden');
+            }
+            tooltips.forEach(tooltip => {
+                tooltip.classList.add('hidden');
+            });
+            sidebarTexts.forEach(text => {
+                text.classList.remove('hidden');
+                setTimeout(() => {
+                    text.style.opacity = '1';
+                }, 150);
             });
         }
     }
-}
 
-/**
- * Renderiza las plantillas en el contenedor de plantillas
- * @param {Array} templates - Array de objetos de plantilla
- */
-function renderTemplates(templates) {
-    const templatesContainer = document.getElementById('templates-container');
-    if (!templatesContainer) {
-        console.error('No se encontró el contenedor de plantillas');
-        return;
+    // Agregar event listeners solo si los elementos existen
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', toggleSidebar);
     }
     
-    // Limpiar el contenedor de plantillas
-    templatesContainer.innerHTML = '';
-    
-    // Renderizar cada plantilla
-    templates.forEach((template, index) => {
-        const templateDiv = document.createElement('div');
-        templateDiv.className = 'mb-8';
-        templateDiv.id = `template-${index}`;
-        
-        switch (template.type) {
-            case 'summary':
-                // Plantilla de resumen (métricas)
-                templateDiv.innerHTML = `
-                    <div id="metrics-container" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8" data-source="${template.dataSource}">
-                        <!-- Total Workflows -->
-                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 flex flex-col items-center justify-center">
-                            <h2 class="text-3xl font-bold text-blue-700" id="total-workflows">--</h2>
-                            <p class="text-blue-600 mt-1">Total Workflows</p>
-                        </div>
-                        
-                        <!-- Avg Lead Time -->
-                        <div class="bg-green-50 border border-green-200 rounded-lg p-4 flex flex-col items-center justify-center">
-                            <h2 class="text-3xl font-bold text-green-700" id="avg-lead-time">--</h2>
-                            <p class="text-green-600 mt-1">Avg Lead Time</p>
-                        </div>
-                        
-                        <!-- Max Lead Time -->
-                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex flex-col items-center justify-center">
-                            <h2 class="text-3xl font-bold text-yellow-700" id="max-lead-time">--</h2>
-                            <p class="text-yellow-600 mt-1">Max Lead Time</p>
-                        </div>
-                        
-                        <!-- Min Lead Time -->
-                        <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 flex flex-col items-center justify-center">
-                            <h2 class="text-3xl font-bold text-purple-700" id="min-lead-time">--</h2>
-                            <p class="text-purple-600 mt-1">Min Lead Time</p>
-                        </div>
-                    </div>
-                `;
-                break;
-                
-            case 'table':
-                // Plantilla de tabla
-                templateDiv.innerHTML = `
-                    <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
-                        <header class="mb-4 px-6 pt-6">
-                            <h2 class="text-2xl font-bold text-gray-800" id="table-title">${template.title || 'Tabla'}</h2>
-                            <p class="text-gray-600 mt-2" id="table-description">${template.description || ''}</p>
-                        </header>
-                        <table class="min-w-full divide-y divide-gray-200" data-source="${template.dataSource}">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        MÓDULO
-                                    </th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        DESCRIPCIÓN
-                                    </th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        ESTADO
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200" id="table-body">
-                                <!-- Los datos de la tabla se cargarán dinámicamente -->
-                                <tr>
-                                    <td colspan="3" class="px-6 py-4 text-center text-gray-500">
-                                        Cargando datos...
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                `;
-                break;
-                
-            case 'chart':
-                // Plantilla de gráfico
-                templateDiv.innerHTML = `
-                    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-                        <h2 class="text-2xl font-bold text-gray-800 mb-4">${template.title || 'Gráfico'}</h2>
-                        <div id="chart-${index}" class="h-80" data-source="${template.dataSource}">
-                            <!-- El gráfico se cargará dinámicamente -->
-                            <div class="flex items-center justify-center h-full text-gray-500">
-                                Cargando gráfico...
-                            </div>
-                        </div>
-                    </div>
-                `;
-                break;
-                
-            default:
-                templateDiv.innerHTML = `
-                    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-                        <h2 class="text-xl font-bold text-gray-800 mb-2">Plantilla desconocida</h2>
-                        <p class="text-gray-600">Tipo de plantilla no soportado: ${template.type}</p>
-                    </div>
-                `;
+    function handleResponsiveLayout() {
+        if (window.innerWidth < 640 && sidebar.classList.contains('w-[250px]')) {
+            toggleSidebar();
         }
-        
-        templatesContainer.appendChild(templateDiv);
-        
-        // Inicializar la plantilla según su tipo
-        if (template.type === 'summary') {
-            initSummaryIfPresent();
-        } else if (template.type === 'table') {
-            initTableIfPresent();
+    }
+
+    // Agregar event listeners
+    sidebarToggle.addEventListener('click', toggleSidebar);
+    window.addEventListener('resize', handleResponsiveLayout);
+
+    // Ejecutar el layout responsive inicial
+    handleResponsiveLayout();
+}
+
+// ==================== MÓDULO DATA-LIST ====================
+function initDataList() {
+    const dataListElement = document.getElementById('data-list');
+    if (dataListElement && dataListElement.getAttribute('data-source')) {
+        const dataSource = dataListElement.getAttribute('data-source');
+        loadData(dataSource);
+    } else {
+        loadData(config.defaultArchive);
+    }
+}
+
+// Cargar datos desde una fuente específica
+function loadData(dataSource) {
+    loadDataFromUrl(dataSource,
+        // Callback de éxito
+        (data) => {
+            // Adaptarse a la estructura real del JSON
+            if (Array.isArray(data) && data.length > 0) {
+                // Si es un array de arrays
+                if (Array.isArray(data[0])) {
+                    allData = data[0]; // Tomar el primer array interno
+                } else {
+                    allData = data; // Es un array simple
+                }
+            } else if (data.dataFiles && Array.isArray(data.dataFiles)) {
+                // Si tiene la estructura esperada con dataFiles
+                allData = data.dataFiles;
+            } else if (typeof data === 'object') {
+                // Si es un objeto simple, convertir cada propiedad en una fila
+                allData = Object.entries(data).map(([key, value]) => ({
+                    key: key,
+                    value: typeof value === 'object' ? JSON.stringify(value) : value
+                }));
+            } else {
+                throw new Error('Formato de datos no reconocido');
+            }
+
+            // Inicializar con todos los datos
+            filteredData = [...allData];
+
+            // Renderizar la primera página
+            renderPage(1);
+        },
+        // Callback de error
+        (error) => {
+            const dataList = document.getElementById('data-list');
+            if (dataList) {
+                dataList.innerHTML = `
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                        Error cargando datos: ${error.message}
+                    </div>
+                `;
+            }
+        }
+    );
+}
+
+// Renderizar una página de datos
+function renderPage(page) {
+    currentPage = page;
+    const startIndex = (page - 1) * config.itemsPerPage;
+    const endIndex = startIndex + config.itemsPerPage;
+    const pageData = filteredData.slice(startIndex, endIndex);
+
+    const dataList = document.getElementById('data-list');
+    if (!dataList) return;
+
+    if (pageData.length === 0) {
+        dataList.innerHTML = `
+            <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4">
+                No se encontraron datos que coincidan con los criterios de búsqueda.
+            </div>
+        `;
+        const pagination = document.getElementById('pagination');
+        if (pagination) pagination.innerHTML = '';
+        return;
+    }
+
+    // Determinar si necesitamos scroll horizontal
+    const headers = Object.keys(pageData[0]);
+    const needsScroll = headers.length > 4;
+
+    // Generar encabezados dinámicamente basados en el primer elemento
+    if (pageData.length > 0) {
+        const dataHeaders = document.getElementById('data-headers');
+        if (!dataHeaders) return;
+
+        // Limpiar cualquier clase de scroll anterior
+        if (dataHeaders.parentElement) {
+            dataHeaders.parentElement.classList.remove('overflow-x-auto');
+        }
+
+        // Calcular el ancho de columna basado en el número de propiedades
+        const colSpan = Math.floor(12 / headers.length);
+
+        let headersHtml = '';
+
+        if (needsScroll) {
+            // Para muchas columnas, usamos un contenedor con ancho fijo para cada columna
+            headersHtml = '';
+            headers.forEach(header => {
+                const displayName = header.charAt(0).toUpperCase() + header.slice(1).replace(/([A-Z])/g, ' $1');
+                headersHtml += `<div class="px-4 py-2 min-w-[150px] font-medium text-gray-700">${displayName}</div>`;
+            });
+        } else {
+            // Para pocas columnas, usamos grid
+            headers.forEach(header => {
+                const displayName = header.charAt(0).toUpperCase() + header.slice(1).replace(/([A-Z])/g, ' $1');
+                headersHtml += `<div class="col-span-${colSpan} font-medium text-gray-700">${displayName}</div>`;
+            });
+        }
+
+        dataHeaders.innerHTML = headersHtml;
+    }
+
+    let html = '';
+
+    if (needsScroll) {
+        // Crear un contenedor único con scroll para encabezados y datos
+        html = `<div class="overflow-x-auto">
+            <table class="min-w-full">
+                <thead>
+                    <tr>`;
+
+        // Añadir encabezados a la tabla
+        headers.forEach(header => {
+            const displayName = header.charAt(0).toUpperCase() + header.slice(1).replace(/([A-Z])/g, ' $1');
+            html += `<th class="px-4 py-2 min-w-[150px] font-medium text-gray-700 bg-gray-100 sticky top-0">${displayName}</th>`;
+        });
+
+        html += `</tr>
+                </thead>
+                <tbody>`;
+
+        // Añadir filas de datos
+        pageData.forEach(item => {
+            html += `<tr class="border-b hover:bg-gray-50">`;
+
+            headers.forEach(header => {
+                let value = item[header];
+                // Formatear objetos o arrays
+                if (typeof value === 'object' && value !== null) {
+                    value = JSON.stringify(value);
+                }
+
+                html += `<td class="px-4 py-3 text-gray-800">${value}</td>`;
+            });
+
+            html += `</tr>`;
+        });
+
+        html += `</tbody>
+                </table>
+            </div>`;
+
+        // Ocultar los encabezados originales cuando usamos tabla
+        const dataHeaders = document.getElementById('data-headers');
+        if (dataHeaders) {
+            dataHeaders.style.display = 'none';
+        }
+    } else {
+        // Formato original para pocas columnas
+        // Mostrar los encabezados originales
+        const dataHeaders = document.getElementById('data-headers');
+        if (dataHeaders) {
+            dataHeaders.style.display = '';
+        }
+
+        pageData.forEach(item => {
+            const colSpan = Math.floor(12 / headers.length);
+
+            html += `<div class="bg-white border border-gray-200 rounded-md p-4 mb-3 hover:shadow-md transition-all">`;
+            html += `<div class="grid grid-cols-12 gap-4">`;
+
+            headers.forEach(header => {
+                let value = item[header];
+
+                // Formatear objetos o arrays
+                if (typeof value === 'object' && value !== null) {
+                    value = JSON.stringify(value);
+                }
+
+                html += `<div class="col-span-${colSpan} text-gray-800">${value}</div>`;
+            });
+
+            html += `</div>`;
+            html += `</div>`;
+        });
+    }
+
+    dataList.innerHTML = html;
+
+    // Actualizar paginación
+    updatePagination();
+}
+
+// Actualizar la paginación
+function updatePagination() {
+    const totalPages = Math.ceil(filteredData.length / config.itemsPerPage);
+    const pagination = document.getElementById('pagination');
+
+    if (!pagination || totalPages <= 1) {
+        if (pagination) pagination.innerHTML = '';
+        return;
+    }
+
+    let paginationHtml = `
+        <div class="flex items-center justify-between mt-4">
+            <button id="prev-page" class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed" ${currentPage === 1 ? 'disabled' : ''}>
+                Anterior
+            </button>
+            <span class="text-gray-600">Página ${currentPage} de ${totalPages}</span>
+            <button id="next-page" class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed" ${currentPage === totalPages ? 'disabled' : ''}>
+                Siguiente
+            </button>
+        </div>
+    `;
+
+    pagination.innerHTML = paginationHtml;
+
+    // Agregar event listeners para los botones de paginación
+    document.getElementById('prev-page').addEventListener('click', () => {
+        if (currentPage > 1) {
+            renderPage(currentPage - 1);
+        }
+    });
+
+    document.getElementById('next-page').addEventListener('click', () => {
+        if (currentPage < totalPages) {
+            renderPage(currentPage + 1);
         }
     });
 }
-
-/**
- * Actualiza las plantillas con los datos cargados
- * @param {Object} data - Datos cargados
- */
-function updateTemplatesWithData(data) {
-    // Actualizar resumen si existe
-    updateSummaryWithData(data);
-    
-    // Actualizar tabla si existe
-    updateTableWithData(data);
-}
-
-/**
- * Actualiza el resumen con los datos cargados
- * @param {Object} data - Datos cargados
- */
-function updateSummaryWithData(data) {
-    // Implementar la actualización del resumen con los datos
-    if (data.totalWorkflows) {
-        const totalWorkflows = document.getElementById('total-workflows');
-        if (totalWorkflows) {
-            totalWorkflows.textContent = data.totalWorkflows;
-        }
-    }
-    
-    if (data.avgLeadTime) {
-        const avgLeadTime = document.getElementById('avg-lead-time');
-        if (avgLeadTime) {
-            avgLeadTime.textContent = formatLeadTime(data.avgLeadTime);
-        }
-    }
-    
-    if (data.maxLeadTime) {
-        const maxLeadTime = document.getElementById('max-lead-time');
-        if (maxLeadTime) {
-            maxLeadTime.textContent = formatLeadTime(data.maxLeadTime);
-        }
-    }
-    
-    if (data.minLeadTime) {
-        const minLeadTime = document.getElementById('min-lead-time');
-        if (minLeadTime) {
-            minLeadTime.textContent = formatLeadTime(data.minLeadTime);
-        }
-    }
-}
-
-/**
- * Actualiza la tabla con los datos cargados
- * @param {Object} data - Datos cargados
- */
-function updateTableWithData(data) {
-    // Implementar la actualización de la tabla con los datos
-    if (Array.isArray(data)) {
-        renderModulesTable(data);
-    } else if (data.modules && Array.isArray(data.modules)) {
-        renderModulesTable(data.modules);
-    }
-}
-
-// Inicializar la aplicación cuando el DOM esté cargado
-document.addEventListener('DOMContentLoaded', function() {
-    // Cargar la configuración principal desde webs.json
-    loadWebsConfig();
-});
 
 // Función para filtrar datos
 function filterData(searchTerm) {
@@ -358,12 +581,8 @@ window.filterData = filterData;
 // Función para cargar el navbar y procesar la configuración de la sección
 document.addEventListener('DOMContentLoaded', function() {
     // Cargar el navbar
-    // ==================== MÓDULO NAVBAR ====================
-    /**
-     * Inicializa la barra de navegación
-     */
-    function initNavbar() {
-        // Cargar la plantilla de navbar.html
+    const navbarContainer = document.getElementById('navbar-container');
+    if (navbarContainer) {
         fetch('templates/navbar.html')
             .then(response => {
                 if (!response.ok) {
@@ -372,54 +591,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 return response.text();
             })
             .then(template => {
-                // Obtener el contenedor de la barra de navegación
-                const navbarContainer = document.getElementById('navbar-container');
-                if (!navbarContainer) {
-                    console.error('No se encontró el contenedor de la barra de navegación');
-                    return;
+                navbarContainer.innerHTML = template;
+                
+                // Inicializar el navbar después de cargar la plantilla
+                if (webConfig) {
+                    initNavbar();
                 }
                 
-                // Cargar el navbar
-                fetch('templates/navbar.html')
-                    .then(response => response.text())
-                    .then(data => {
-                        navbarContainer.innerHTML = data;
-                        // Inicializar el orquestador después de cargar el navbar
-                        if (typeof loadWebsConfig === 'function') {
-                            loadWebsConfig();
-                        }
-                    })
-                    .catch(error => console.error('Error cargando el navbar:', error));
+                // Inicializar el sidebar
+                initializeSidebar();
+            })
+            .catch(error => {
+                console.error('Error cargando el navbar:', error);
+                navbarContainer.innerHTML = `
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                        Error cargando el navbar: ${error.message}
+                    </div>
+                `;
             });
-    
-    // Ajustar el contenido principal cuando cambia el tamaño del sidebar
-    function adjustMainContent() {
-        const sidebar = document.getElementById('sidebar');
-        const mainContent = document.getElementById('main-content');
-        
-        if (sidebar && mainContent) {
-            if (sidebar.classList.contains('w-[60px]')) {
-                mainContent.classList.remove('ml-[250px]');
-                mainContent.classList.add('ml-[60px]');
-            } else {
-                mainContent.classList.remove('ml-[60px]');
-                mainContent.classList.add('ml-[250px]');
-            }
-        }
     }
-
-    // Observar cambios en el sidebar
-    setTimeout(() => {
-        const sidebar = document.getElementById('sidebar');
-        if (sidebar) {
-            const observer = new MutationObserver(adjustMainContent);
-            observer.observe(sidebar, { attributes: true, attributeFilter: ['class'] });
-            adjustMainContent();
-        }
-    }, 1000);
-}
 });
-
 
 // Función para renderizar métricas dinámicamente
 function renderMetrics(config) {
