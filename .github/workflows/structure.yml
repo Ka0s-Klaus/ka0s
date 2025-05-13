@@ -61,7 +61,8 @@ jobs:
               echo "II - Created directory: $clean_dir"
               target_dir="${{ env.KAOS_WEB_STRUCTURE }}$TITLE/$clean_dir"
               mkdir -p "$target_dir"
-              touch $target_dir/$clean_dir".html"
+              base_name=$(basename "$clean_dir")
+              touch "$target_dir/$base_name.html"
               echo "II - Created directory: $target_dir"
             fi
           done
@@ -123,7 +124,8 @@ jobs:
               echo "VI - Created test directory: $clean_dir"
               target_dir="${{ env.KAOS_TEST_STRUCTURE }}$clean_dir"
               mkdir -p "$target_dir"
-              touch $target_dir/$clean_dir".html"
+              base_name=$(basename "$clean_dir")
+              touch "$target_dir/$base_name.html"
               echo "VI - Created test directory: $target_dir"
             fi
           done
@@ -233,7 +235,8 @@ jobs:
               echo "X - Created test web directory: $clean_dir"
               target_dir="${{ env.KAOS_WEB_STRUCTURE }}$TEST_TITLE/$clean_dir"
               mkdir -p "$target_dir"
-              touch $target_dir/$clean_dir".html"
+              base_name=$(basename "$clean_dir")
+              touch "$target_dir/$base_name.html"
               echo "X - Created test web directory: $target_dir"
             fi
           done
