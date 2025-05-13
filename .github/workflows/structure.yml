@@ -249,6 +249,20 @@ jobs:
             echo "Warning: JS directory not found at core/testweb/js"
           fi
           
+          # AÑADIR AQUÍ: Copiar archivos JS desde core/web/js
+          if [ -d "core/web/js" ]; then
+            echo "X.2.1 - Copying JS files from core/web/js..."
+            mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/js"
+            find core/web/js -type f -name "*.js" | while read js_file; do
+              JS_FILENAME=$(basename "$js_file")
+              echo "Copying JS file: $js_file to ${{ env.KAOS_WEB_STRUCTURE }}$TITLE/js/$JS_FILENAME"
+              cp "$js_file" "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/js/$JS_FILENAME"
+            done
+            echo "Web JS files copied successfully!"
+          else
+            echo "Warning: JS directory not found at core/web/js"
+          fi
+          
           # Copiar archivos de Templates
           if [ -d "core/testweb/templates" ]; then
             echo "X.3 - Copying Template files..."
