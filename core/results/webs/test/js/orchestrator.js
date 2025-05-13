@@ -618,73 +618,46 @@ window.filterData = filterData;
 
 // Función para cargar el navbar y procesar la configuración de la sección
 document.addEventListener('DOMContentLoaded', function() {
-    // Cargar la configuración principal desde webs.json
-    fetch('data/webs.json')
-        .then(response => response.json())
-        .then(data => {
-            // Establecer el título del documento
-            document.title = data.title || 'Ka0s Dashboard';
-            
-            // Buscar la sección de inicio
-            const inicioSection = data.sections.find(section => section.title === 'inicio');
-            if (inicioSection && inicioSection.datatemplate) {
-                // Cargar la plantilla de la sección inicio
-                fetch(inicioSection.datatemplate)
-                    .then(response => response.json())
-                    .then(sectionData => {
-                        // Obtener el contenedor principal
-                        const mainContent = document.querySelector('.dashboard-content');
-                        if (!mainContent) return;
-
-                        // Crear el contenido de la sección
-                        let html = `
-                            <div class="bg-white rounded-2xl p-6 shadow-md mb-6">
-                                <h2 class="text-2xl font-bold text-gray-800 mb-3">${sectionData.title}</h2>
-                                <p class="text-gray-600 mb-6">${sectionData.description}</p>
-                            </div>
-                        `;
-
-                        // Procesar las plantillas
-                        if (sectionData.templates) {
-                            sectionData.templates.forEach(template => {
-                                if (template.type === 'summary') {
-                                    // Cargar y renderizar la plantilla summary
-                                    fetch('templates/summary.html')
-                                        .then(response => response.text())
-                                        .then(summaryTemplate => {
-                                            const templateContainer = document.createElement('div');
-                                            templateContainer.innerHTML = summaryTemplate;
-                                            mainContent.appendChild(templateContainer);
-                                            
-                                            // Cargar los datos para el summary
-                                            fetch(template.dataSource)
-                                                .then(response => response.json())
-                                                .then(summaryData => {
-                                                    // Actualizar los valores del summary con los datos reales
-                                                    updateSummaryMetrics(summaryData);
-                                                })
-                                                .catch(error => console.error('Error cargando datos del summary:', error));
-                                        })
-                                        .catch(error => console.error('Error cargando plantilla summary:', error));
-                                }
-                            });
-                        }
-
-                        mainContent.innerHTML = html;
-                    })
-                    .catch(error => console.error('Error cargando datos de la sección:', error));
-            }
-        })
-        .catch(error => console.error('Error cargando webs.json:', error));
-
-    // Función para actualizar las métricas del summary
-    function updateSummaryMetrics(data) {
-        // Actualizar cada métrica con los datos reales
-        document.getElementById('total-workflows').textContent = data.totalWorkflows || '0';
-        document.getElementById('avg-lead-time').textContent = data.avgLeadTime || '0m 0s';
-        document.getElementById('max-lead-time').textContent = data.maxLeadTime || '0m 0s';
-        document.getElementById('min-lead-time').textContent = data.minLeadTime || '0m 0s';
+    // Cargar el navbar
+    const navbarContainer = document.getElementById('navbar-container');
+    if (navbarContainer) {
+        fetch('templates/navbar.html')
+            .then(response => response.text())
+            .then(data => {
+                navbarContainer.innerHTML = data;
+                // Inicializar el orquestador después de cargar el navbar
+                if (typeof loadWebsConfig === 'function') {
+                    loadWebsConfig();
+                }
+            })
+            .catch(error => console.error('Error cargando el navbar:', error));
     }
+
+    // Ajustar el contenido principal cuando cambia el tamaño del sidebar
+    function adjustMainContent() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('main-content');
+        
+        if (sidebar && mainContent) {
+            if (sidebar.classList.contains('w-[60px]')) {
+                mainContent.classList.remove('ml-[250px]');
+                mainContent.classList.add('ml-[60px]');
+            } else {
+                mainContent.classList.remove('ml-[60px]');
+                mainContent.classList.add('ml-[250px]');
+            }
+        }
+    }
+
+    // Observar cambios en el sidebar
+    setTimeout(() => {
+        const sidebar = document.getElementById('sidebar');
+        if (sidebar) {
+            const observer = new MutationObserver(adjustMainContent);
+            observer.observe(sidebar, { attributes: true, attributeFilter: ['class'] });
+            adjustMainContent();
+        }
+    }, 1000);
 });
 
 // Función para renderizar métricas dinámicamente
