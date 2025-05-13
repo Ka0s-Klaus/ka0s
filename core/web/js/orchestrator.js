@@ -597,7 +597,7 @@ function filterData(searchTerm) {
 }
 
 /**
- * Inicializa un gráfico con los datos proporcionados
+ * Inicializa un grafico con los datos proporcionados
  * @param {Object} data - Datos para el gráfico
  */
 function initializeChart(data) {
