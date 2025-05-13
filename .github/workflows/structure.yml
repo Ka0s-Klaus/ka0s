@@ -232,6 +232,37 @@ jobs:
             fi
           done
           
+          # NUEVA SECCIÓN: Copiar archivos JS y Templates específicamente
+          echo "X.1 - Copying JS and Template files to test web structure..."
+          
+          # Copiar archivos JS
+          if [ -d "core/testweb/js" ]; then
+            echo "X.2 - Copying JS files..."
+            mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TEST_TITLE/js"
+            find core/testweb/js -type f -name "*.js" | while read js_file; do
+              JS_FILENAME=$(basename "$js_file")
+              echo "Copying JS file: $js_file to ${{ env.KAOS_WEB_STRUCTURE }}$TEST_TITLE/js/$JS_FILENAME"
+              cp "$js_file" "${{ env.KAOS_WEB_STRUCTURE }}$TEST_TITLE/js/$JS_FILENAME"
+            done
+            echo "JS files copied successfully!"
+          else
+            echo "Warning: JS directory not found at core/testweb/js"
+          fi
+          
+          # Copiar archivos de Templates
+          if [ -d "core/testweb/templates" ]; then
+            echo "X.3 - Copying Template files..."
+            mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TEST_TITLE/templates"
+            find core/testweb/templates -type f | while read template_file; do
+              TEMPLATE_FILENAME=$(basename "$template_file")
+              echo "Copying Template file: $template_file to ${{ env.KAOS_WEB_STRUCTURE }}$TEST_TITLE/templates/$TEMPLATE_FILENAME"
+              cp "$template_file" "${{ env.KAOS_WEB_STRUCTURE }}$TEST_TITLE/templates/$TEMPLATE_FILENAME"
+            done
+            echo "Template files copied successfully!"
+          else
+            echo "Warning: Templates directory not found at core/testweb/templates"
+          fi
+          
           # Extraer información de secciones y crear subcarpetas
           if [ -f "$TEST_STRUCTURE_FILE" ]; then
             jq -r '.sections[] | [.title, .icon, .data] | @tsv' $TEST_STRUCTURE_FILE | while IFS=$'\t' read -r section_title section_icon section_data; do
@@ -350,7 +381,7 @@ jobs:
           if [ -f "$DATA_FILE" ]; then
             echo "Processing data files from data.json..."
             
-            # Extract source and destination paths
+            # Extraer source and destination paths
             jq -c '.dataFiles[]' "$DATA_FILE" | while read -r file; do
               SOURCE=$(echo $file | jq -r '.source')
               DEST=$(echo $file | jq -r '.destination')
@@ -598,7 +629,7 @@ jobs:
           
           # Hacer pull con estrategia de recursión para manejar conflictos
           git pull --strategy-option=theirs
-      
+
       - name: Generar HTML de secciones
         run: |
           STRUCTURE_FILE="core/config/webs/webs.json"
