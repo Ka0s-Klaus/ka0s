@@ -28,27 +28,12 @@ function loadWebsConfig() {
             return;
         }
         
-        // Guardar la configuración globalmente
-        webConfig = data;
-        
         // Establecer el título de la página
         document.title = data.title || 'Ka0s Dashboard';
         
-        // Inicializar el navbar con la configuración cargada
-        initNavbar();
-        
-        // Crear el mapa de configuraciones de sección
-        data.sections.forEach(section => {
-            sectionConfigMap[section.title.toLowerCase()] = {
-                configFile: section.datatemplate,
-                title: section.title,
-                icon: section.icon
-            };
-        });
-        
         // Cargar la sección inicial por defecto (la primera)
         if (data.sections.length > 0) {
-            initSection(data.sections[0].title.toLowerCase());
+            loadSection(data.sections[0]);
         }
     }, function(error) {
         console.error('Error cargando webs.json:', error);
@@ -584,32 +569,42 @@ document.addEventListener('DOMContentLoaded', function() {
     const navbarContainer = document.getElementById('navbar-container');
     if (navbarContainer) {
         fetch('templates/navbar.html')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`Error HTTP: ${response.status}`);
+            .then(response => response.text())
+            .then(data => {
+                navbarContainer.innerHTML = data;
+                // Inicializar el orquestador después de cargar el navbar
+                if (typeof loadWebsConfig === 'function') {
+                    loadWebsConfig();
                 }
-                return response.text();
             })
-            .then(template => {
-                navbarContainer.innerHTML = template;
-                
-                // Inicializar el navbar después de cargar la plantilla
-                if (webConfig) {
-                    initNavbar();
-                }
-                
-                // Inicializar el sidebar
-                initializeSidebar();
-            })
-            .catch(error => {
-                console.error('Error cargando el navbar:', error);
-                navbarContainer.innerHTML = `
-                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                        Error cargando el navbar: ${error.message}
-                    </div>
-                `;
-            });
+            .catch(error => console.error('Error cargando el navbar:', error));
     }
+
+    // Ajustar el contenido principal cuando cambia el tamaño del sidebar
+    function adjustMainContent() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('main-content');
+        
+        if (sidebar && mainContent) {
+            if (sidebar.classList.contains('w-[60px]')) {
+                mainContent.classList.remove('ml-[250px]');
+                mainContent.classList.add('ml-[60px]');
+            } else {
+                mainContent.classList.remove('ml-[60px]');
+                mainContent.classList.add('ml-[250px]');
+            }
+        }
+    }
+
+    // Observar cambios en el sidebar
+    setTimeout(() => {
+        const sidebar = document.getElementById('sidebar');
+        if (sidebar) {
+            const observer = new MutationObserver(adjustMainContent);
+            observer.observe(sidebar, { attributes: true, attributeFilter: ['class'] });
+            adjustMainContent();
+        }
+    }, 1000);
 });
 
 // Función para renderizar métricas dinámicamente
