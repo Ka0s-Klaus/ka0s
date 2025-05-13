@@ -22,22 +22,75 @@ document.addEventListener('DOMContentLoaded', function () {
  * Carga la configuración principal desde webs.json
  */
 function loadWebsConfig() {
-    loadDataFromUrl('data/webs.json', function(data) {
-        if (!data || !data.sections || !Array.isArray(data.sections)) {
-            console.error('Formato de webs.json inválido');
-            return;
+    loadDataFromUrl(
+        'data/webs.json',
+        (data) => {
+            webConfig = data;
+            console.log('Configuración principal cargada:', webConfig);
+
+            // Inicializar la barra de navegación
+            initNavbar();
+
+            // Inicializar el módulo de datos
+            initDataList();
+
+            // Inicializar el mapa de configuración de secciones
+            if (webConfig && webConfig.sections) {
+                webConfig.sections.forEach(section => {
+                    sectionConfigMap[section.title] = {
+                        configFile: section.data,
+                        metrics: [] // Se llenará al cargar la configuración específica
+                    };
+                });
+            }
+
+            // Inicializar los módulos específicos según la página actual
+            const currentPath = window.location.pathname;
+
+            // Determinar qué sección inicializar basado en la ruta
+            if (webConfig && webConfig.sections) {
+                for (const section of webConfig.sections) {
+                    if (currentPath.includes(section.title.toLowerCase())) {
+                        initSection(section.title);
+                        break;
+                    }
+                }
+            }
+        },
+        (error) => {
+            console.error('Error cargando configuración principal:', error);
         }
-        
-        // Establecer el título de la página
-        document.title = data.title || 'Ka0s Dashboard';
-        
-        // Cargar la sección inicial por defecto (la primera)
-        if (data.sections.length > 0) {
-            loadSection(data.sections[0]);
-        }
-    }, function(error) {
-        console.error('Error cargando webs.json:', error);
-    });
+    );
+}
+
+// ==================== UTILIDADES GENERALES ====================
+/**
+ * Función genérica para cargar datos desde una URL
+ * @param {string} url - La URL del archivo a cargar
+ * @param {function} successCallback - Función a ejecutar si la carga es exitosa
+ * @param {function} errorCallback - Función a ejecutar si hay un error (opcional)
+ */
+function loadDataFromUrl(url, successCallback, errorCallback = null) {
+    console.log(`Cargando datos desde: ${url}`);
+
+    fetch(url)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Error HTTP: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (successCallback && typeof successCallback === 'function') {
+                successCallback(data);
+            }
+        })
+        .catch(error => {
+            console.error(`Error cargando datos desde ${url}:`, error);
+            if (errorCallback && typeof errorCallback === 'function') {
+                errorCallback(error);
+            }
+        });
 }
 
 /**
