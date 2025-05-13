@@ -61,8 +61,7 @@ jobs:
               echo "II - Created directory: $clean_dir"
               target_dir="${{ env.KAOS_WEB_STRUCTURE }}$TITLE/$clean_dir"
               mkdir -p "$target_dir"
-              base_name=$(basename "$clean_dir")
-              touch "$target_dir/$base_name.html"
+              touch $target_dir/$clean_dir".html"
               echo "II - Created directory: $target_dir"
             fi
           done
@@ -124,8 +123,7 @@ jobs:
               echo "VI - Created test directory: $clean_dir"
               target_dir="${{ env.KAOS_TEST_STRUCTURE }}$clean_dir"
               mkdir -p "$target_dir"
-              base_name=$(basename "$clean_dir")
-              touch "$target_dir/$base_name.html"
+              touch $target_dir/$clean_dir".html"
               echo "VI - Created test directory: $target_dir"
             fi
           done
@@ -205,14 +203,27 @@ jobs:
                           <!-- Las métricas se generarán dinámicamente según el JSON -->
                       </div>
   
-                      <!-- Contenedor de plantillas - se generará dinámicamente -->
-                      <div id="templates-container">
+                                            <!-- Contenedor de plantillas - se generará dinámicamente -->
+                      <div id="templates-container" class="space-y-6">
                           <!-- Las plantillas (gráficos, listas, etc.) se generarán dinámicamente según el JSON -->
                           <div id="data-list" class="bg-white shadow-sm rounded-lg p-6 mb-6">
                               <!-- Aquí se mostrará la lista de datos -->
+                              <div class="animate-pulse flex space-x-4">
+                                  <div class="flex-1 space-y-4 py-1">
+                                      <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+                                      <div class="space-y-2">
+                                          <div class="h-4 bg-gray-200 rounded"></div>
+                                          <div class="h-4 bg-gray-200 rounded w-5/6"></div>
+                                      </div>
+                                  </div>
+                              </div>
                           </div>
-                          <div id="pagination" class="mt-4">
+                          <div id="pagination" class="mt-4 flex justify-center">
                               <!-- Aquí se mostrará la paginación -->
+                              <div class="flex space-x-2">
+                                  <button class="px-3 py-1 bg-gray-200 rounded" disabled>Anterior</button>
+                                  <button class="px-3 py-1 bg-gray-200 rounded" disabled>Siguiente</button>
+                              </div>
                           </div>
                       </div>
                   </div>
@@ -235,8 +246,7 @@ jobs:
               echo "X - Created test web directory: $clean_dir"
               target_dir="${{ env.KAOS_WEB_STRUCTURE }}$TEST_TITLE/$clean_dir"
               mkdir -p "$target_dir"
-              base_name=$(basename "$clean_dir")
-              touch "$target_dir/$base_name.html"
+              touch $target_dir/$clean_dir".html"
               echo "X - Created test web directory: $target_dir"
             fi
           done
@@ -818,31 +828,39 @@ jobs:
                       </header>
                       <div class=\"dashboard-content\">" > "core/results/webs/${TITLE}/dashboard.html"
           
-           <!-- Contenido principal -->
-                  <div class="ml-[250px] w-full transition-all duration-300 p-6" id="main-content">
-                      <header class="mb-8">
-                          <h1 class="text-3xl font-bold text-gray-800" id="section-title">SECTION_TITLE_PLACEHOLDER</h1>
-                          <p class="text-gray-600 mt-2" id="section-description">SECTION_DESCRIPTION_PLACEHOLDER</p>
-                      </header>
-  
-                      <!-- Contenedor de métricas - se generará dinámicamente -->
-                      <div id="metrics-container" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-                          <!-- Las métricas se generarán dinámicamente según el JSON -->
-                      </div>
-  
-                      <!-- Contenedor de plantillas - se generará dinámicamente -->
-                      <div id="templates-container">
-                          <!-- Las plantillas (gráficos, listas, etc.) se generarán dinámicamente según el JSON -->
-                          <div id="data-list" class="bg-white shadow-sm rounded-lg p-6 mb-6">
-                              <!-- Aquí se mostrará la lista de datos -->
-                          </div>
-                          <div id="pagination" class="mt-4">
-                              <!-- Aquí se mostrará la paginación -->
-                          </div>
-                      </div>
-                  </div>
-              </div>
+          # Concatenar todas las secciones
+          if [ -d "core/results/webs/${TITLE}/temp_sections" ]; then
+            for section_file in "core/results/webs/${TITLE}/temp_sections"/*.html; do
+              if [ -f "$section_file" ]; then
+                SECTION_NAME=$(basename "$section_file" .html)
+                echo "<div class=\"section-content\" id=\"${SECTION_NAME}\">" >> "core/results/webs/${TITLE}/dashboard.html"
+                
+                # Extraer solo el contenido del body de cada sección
+                TEMP_CONTENT=$(mktemp)
+                awk '/<body/,/<\/body>/' "$section_file" > "$TEMP_CONTENT"
+                
+                # Filtrar el contenido para eliminar etiquetas innecesarias
+                cat "$TEMP_CONTENT" | 
+                  grep -v "<body" | 
+                  grep -v "</body>" | 
+                  
+                  
+                
+                # Limpiar archivos temporales
+                rm -f "$TEMP_CONTENT"
+                
+                echo "</div>" >> "core/results/webs/${TITLE}/dashboard.html"
+              fi
+            done
+          else
+            echo "No se encontró el directorio de secciones temporales"
+          fi
           
+          # Cerrar las etiquetas HTML
+          echo "          </div>
+              </div>
+              </div>
+          </div>
           
           <!-- Cargar la navbar desde el template -->
           <script src="js/orchestrator.js"></script>
