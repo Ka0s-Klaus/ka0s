@@ -283,6 +283,26 @@ jobs:
             echo "Warning: Templates directory not found at core/testweb/templates"
           fi
           
+          # NUEVA SECCIÓN: Copiar carpeta de secciones a la estructura de webs/test/data
+          echo "X.4 - Copying sections folder to test web structure..."
+          if [ -d "core/testweb/data/sections" ]; then
+            echo "Creating sections directory in test web structure..."
+            mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TEST_TITLE/data/sections"
+            
+            # Copiar todos los archivos de la carpeta sections
+            find core/testweb/data/sections -type f | while read section_file; do
+              SECTION_FILENAME=$(basename "$section_file")
+              echo "Copying section file: $section_file to ${{ env.KAOS_WEB_STRUCTURE }}$TEST_TITLE/data/sections/$SECTION_FILENAME"
+              cp "$section_file" "${{ env.KAOS_WEB_STRUCTURE }}$TEST_TITLE/data/sections/$SECTION_FILENAME"
+            done
+            echo "Sections folder copied successfully!"
+          else
+            echo "Warning: Sections directory not found at core/testweb/data/sections"
+            # Crear el directorio aunque no exista en el origen
+            mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TEST_TITLE/data/sections"
+            echo "Created empty sections directory in test web structure"
+          fi
+          
           # Extraer información de secciones y crear subcarpetas
           if [ -f "$TEST_STRUCTURE_FILE" ]; then
             jq -r '.sections[] | [.title, .icon, .data] | @tsv' $TEST_STRUCTURE_FILE | while IFS=$'\t' read -r section_title section_icon section_data; do
