@@ -14,20 +14,204 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 navbarContainer.innerHTML = data;
                 loadWebsConfig();
+                
+                // Añadir event listeners a los enlaces del navbar después de cargarlo
+                setTimeout(() => {
+                    setupNavbarLinks();
+                }, 500);
             })
             .catch(error => console.error('Error cargando el navbar:', error));
     }
+    
+    // Cargar el footer
+    const footerContainer = document.getElementById('footer-container');
+    if (footerContainer) {
+        fetch('templates/footer.html')
+            .then(response => response.text())
+            .then(data => {
+                footerContainer.innerHTML = data;
+            })
+            .catch(error => console.error('Error cargando el footer:', error));
+    }
 
-    // AJUSTAR MAIN CONTENT CUANDO EL SIDEBAR SE MINIMICE
-    setTimeout(() => {
-        const sidebar = document.getElementById('sidebar');
-        if (sidebar) {
-            const observer = new MutationObserver(adjustMainContent);
-            observer.observe(sidebar, { attributes: true, attributeFilter: ['class'] });
-            adjustMainContent();
-        }
-    }, 1000);
+    // Escuchar cambios en el hash de la URL
+    window.addEventListener('hashchange', handleHashChange);
+    
+    // Comprobar si hay un hash en la URL al cargar la página
+    if (window.location.hash) {
+        handleHashChange();
+    }
 });
+
+/**
+ * Configura los event listeners para los enlaces del navbar
+ */
+function setupNavbarLinks() {
+    const navLinks = document.querySelectorAll('.nav-link');
+    navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            // El hash ya se actualiza automáticamente con el href="#sección"
+            // Solo necesitamos prevenir el comportamiento predeterminado si queremos
+            // hacer algo especial, pero en este caso dejamos que el hash cambie
+            
+            // Marcar este enlace como activo
+            navLinks.forEach(l => l.classList.remove('active-nav-link'));
+            this.classList.add('active-nav-link');
+        });
+    });
+    
+    console.log('Enlaces del navbar configurados:', navLinks.length);
+}
+
+/**
+ * Maneja los cambios en el hash de la URL
+ */
+function handleHashChange() {
+    const hash = window.location.hash.substring(1); // Eliminar el # del inicio
+    console.log('Hash cambiado a:', hash);
+    
+    if (hash && webConfig && webConfig.sections) {
+        // Buscar la sección que coincide con el hash
+        const section = webConfig.sections.find(s => 
+            s.title.toLowerCase() === hash.toLowerCase()
+        );
+        
+        if (section) {
+            console.log('Sección encontrada para el hash:', section);
+            loadSection(section);
+        } else {
+            console.warn('No se encontró ninguna sección para el hash:', hash);
+        }
+    }
+}
+
+/**
+ * Carga una sección específica
+ */
+function loadSection(section) {
+    console.log('Cargando sección:', section.title);
+    
+    // Cargar la plantilla de sección desde el archivo datatemplate
+    if (section.datatemplate) {
+        loadDataFromUrl(section.datatemplate, (sectionData) => {
+            console.log('Datos de plantilla cargados para', section.title, ':', sectionData);
+            
+            // Actualizar directamente los elementos del título y descripción
+            const sectionTitle = document.getElementById('section-title');
+            const sectionDescription = document.getElementById('section-description');
+            
+            if (sectionTitle) {
+                if (sectionData && sectionData.title) {
+                    console.log('Actualizando título a:', sectionData.title);
+                    sectionTitle.textContent = sectionData.title;
+                } else {
+                    // Si no hay título en los datos, usar el título de la sección
+                    sectionTitle.textContent = section.title;
+                }
+            }
+            
+            if (sectionDescription) {
+                if (sectionData && sectionData.description) {
+                    console.log('Actualizando descripción a:', sectionData.description);
+                    sectionDescription.textContent = sectionData.description;
+                } else {
+                    // Si no hay descripción, dejar un mensaje genérico
+                    sectionDescription.textContent = 'Información sobre ' + section.title;
+                }
+            }
+            
+            // Cargar las plantillas definidas en la sección
+            const contentContainer = document.getElementById('content-container');
+            if (contentContainer) {
+                // Limpiar el contenedor antes de añadir nuevas plantillas
+                contentContainer.innerHTML = '';
+                
+                if (sectionData && sectionData.templates && sectionData.templates.length > 0) {
+                    console.log('Cargando plantillas de la sección:', sectionData.templates);
+                    
+                    // Procesar cada plantilla
+                    sectionData.templates.forEach(template => {
+                        console.log('Procesando plantilla:', template);
+                        
+                        if (template.type === 'summary') {
+                            loadTemplateFromUrl('templates/summary.html', (templateHtml) => {
+                                processTemplate(contentContainer, templateHtml, template, updateSummaryTemplate);
+                            });
+                        } else if (template.type === 'table') {
+                            loadTemplateFromUrl('templates/table.html', (templateHtml) => {
+                                processTemplate(contentContainer, templateHtml, template, updateTableTemplate);
+                            });
+                        } else {
+                            console.warn('Tipo de plantilla no soportado:', template.type);
+                        }
+                    });
+                } else {
+                    // Si no hay plantillas, mostrar un mensaje
+                    contentContainer.innerHTML = `
+                        <div class="bg-white rounded-lg shadow-md p-6">
+                            <h2 class="text-xl font-semibold mb-4">Sección ${section.title}</h2>
+                            <p>No hay plantillas definidas para esta sección.</p>
+                        </div>
+                    `;
+                }
+            }
+            
+            // Inicializar la sección para cargar sus datos específicos
+            initSection(section.title);
+        }, (error) => {
+            console.error('Error cargando datos de plantilla para', section.title, ':', error);
+            
+            // Mostrar un mensaje de error en la interfaz
+            const contentContainer = document.getElementById('content-container');
+            
+        });
+    } else {
+        console.error('No se encontró la propiedad datatemplate en la sección', section.title);
+    }
+}
+
+/**
+ * Procesa una plantilla y la añade al contenedor
+ */
+function processTemplate(container, templateHtml, template, updateFunction) {
+    // Crear un contenedor para esta plantilla
+    const templateContainer = document.createElement('div');
+    templateContainer.className = 'template-container mb-8';
+    templateContainer.innerHTML = templateHtml;
+    
+    // Actualizar el título de la tabla si está definido
+    if (template.title) {
+        const tableTitle = templateContainer.querySelector('#table-title');
+        if (tableTitle) {
+            tableTitle.textContent = template.title;
+        }
+    }
+    
+    // Añadir al contenedor principal
+    container.appendChild(templateContainer);
+    
+    // Cargar los datos para esta plantilla
+    if (template.dataSource) {
+        loadDataFromUrl(template.dataSource, (data) => {
+            console.log('Datos cargados para', template.type, ':', data);
+            updateFunction(templateContainer, data);
+        }, (error) => {
+            console.error('Error cargando datos para', template.type, ':', error);
+        });
+    }
+}
+
+// AJUSTAR MAIN CONTENT CUANDO EL SIDEBAR SE MINIMICE
+setTimeout(() => {
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) {
+        const observer = new MutationObserver(adjustMainContent);
+        observer.observe(sidebar, { attributes: true, attributeFilter: ['class'] });
+        adjustMainContent();
+    }
+}, 1000);
+
+
 
 /**
  * Carga la configuración principal desde webs.json
@@ -68,108 +252,119 @@ function loadWebsConfig() {
                 if (inicioSection) {
                     console.log('Llamando a loadInicioSection con:', inicioSection);
                     
-                    // Actualizar directamente los elementos del título y descripción
-                    const sectionTitle = document.getElementById('section-title');
-                    const sectionDescription = document.getElementById('section-description');
-                    
-                    if (sectionTitle && inicioSection.titleWeb) {
-                        console.log('Actualizando título a:', inicioSection.titleWeb);
-                        sectionTitle.textContent = inicioSection.titleWeb;
-                    } else {
-                        console.warn('No se pudo actualizar el título. Elemento o datos faltantes.');
-                    }
-                    
-                    if (sectionDescription && inicioSection.description) {
-                        console.log('Actualizando descripción a:', inicioSection.description);
-                        sectionDescription.textContent = inicioSection.description;
-                    } else {
-                        console.warn('No se pudo actualizar la descripción. Elemento o datos faltantes.');
-                    }
-                    
-                    // Cargar las plantillas definidas en la sección
-                    if (inicioSection.templates && inicioSection.templates.length > 0) {
-                        console.log('Cargando plantillas de la sección inicio:', inicioSection.templates);
-                        
-                        // Contenedor principal para las plantillas
-                        const contentContainer = document.getElementById('content-container');
-                        if (!contentContainer) {
-                            console.error('No se encontró el contenedor de contenido con ID "content-container"');
-                            return;
-                        }
-                        
-                        // Limpiar el contenedor antes de añadir nuevas plantillas
-                        contentContainer.innerHTML = '';
-                        
-                        // Procesar cada plantilla
-                        inicioSection.templates.forEach(template => {
-                            console.log('Procesando plantilla:', template);
+                    // Cargar la plantilla de sección desde el archivo datatemplate
+                    if (inicioSection.datatemplate) {
+                        loadDataFromUrl(inicioSection.datatemplate, (sectionData) => {
+                            console.log('Datos de plantilla cargados:', sectionData);
                             
-                            if (template.type === 'summary') {
-                                // Cargar la plantilla de resumen
-                                loadTemplateFromUrl('templates/summary.html', (templateHtml) => {
-                                    console.log('Plantilla summary cargada:', templateHtml);
-                                    
-                                    // Crear un contenedor para esta plantilla
-                                    const templateContainer = document.createElement('div');
-                                    templateContainer.className = 'template-container mb-8';
-                                    templateContainer.innerHTML = templateHtml;
-                                    
-                                    // Añadir al contenedor principal
-                                    contentContainer.appendChild(templateContainer);
-                                    
-                                    // Cargar los datos para esta plantilla
-                                    if (template.dataSource) {
-                                        loadDataFromUrl(template.dataSource, (data) => {
-                                            console.log('Datos cargados para summary:', data);
-                                            updateSummaryTemplate(templateContainer, data);
-                                        }, (error) => {
-                                            console.error('Error cargando datos para summary:', error);
-                                        });
-                                    }
-                                }, (error) => {
-                                    console.error('Error cargando plantilla summary:', error);
-                                });
-                            } else if (template.type === 'table') {
-                                // Cargar la plantilla de tabla
-                                loadTemplateFromUrl('templates/table.html', (templateHtml) => {
-                                    console.log('Plantilla table cargada:', templateHtml);
-                                    
-                                    // Crear un contenedor para esta plantilla
-                                    const templateContainer = document.createElement('div');
-                                    templateContainer.className = 'template-container mb-8';
-                                    templateContainer.innerHTML = templateHtml;
-                                    
-                                    // Actualizar el título de la tabla si está definido
-                                    if (template.title) {
-                                        const tableTitle = templateContainer.querySelector('#table-title');
-                                        if (tableTitle) {
-                                            tableTitle.textContent = template.title;
-                                        }
-                                    }
-                                    
-                                    // Añadir al contenedor principal
-                                    contentContainer.appendChild(templateContainer);
-                                    
-                                    // Cargar los datos para esta plantilla
-                                    if (template.dataSource) {
-                                        loadDataFromUrl(template.dataSource, (data) => {
-                                            console.log('Datos cargados para table:', data);
-                                            updateTableTemplate(templateContainer, data);
-                                        }, (error) => {
-                                            console.error('Error cargando datos para table:', error);
-                                        });
-                                    }
-                                }, (error) => {
-                                    console.error('Error cargando plantilla table:', error);
-                                });
+                            // Actualizar directamente los elementos del título y descripción
+                            const sectionTitle = document.getElementById('section-title');
+                            const sectionDescription = document.getElementById('section-description');
+                            
+                            if (sectionTitle && sectionData.title) {
+                                console.log('Actualizando título a:', sectionData.title);
+                                sectionTitle.textContent = sectionData.title;
                             } else {
-                                console.warn('Tipo de plantilla no soportado:', template.type);
+                                console.warn('No se pudo actualizar el título. Elemento o datos faltantes.');
                             }
+                            
+                            if (sectionDescription && sectionData.description) {
+                                console.log('Actualizando descripción a:', sectionData.description);
+                                sectionDescription.textContent = sectionData.description;
+                            } else {
+                                console.warn('No se pudo actualizar la descripción. Elemento o datos faltantes.');
+                            }
+                            
+                            // Cargar las plantillas definidas en la sección
+                            if (sectionData.templates && sectionData.templates.length > 0) {
+                                console.log('Cargando plantillas de la sección inicio:', sectionData.templates);
+                                
+                                // Contenedor principal para las plantillas
+                                const contentContainer = document.getElementById('content-container');
+                                if (!contentContainer) {
+                                    console.error('No se encontró el contenedor de contenido con ID "content-container"');
+                                    return;
+                                }
+                                
+                                // Limpiar el contenedor antes de añadir nuevas plantillas
+                                contentContainer.innerHTML = '';
+                                
+                                // Procesar cada plantilla
+                                sectionData.templates.forEach(template => {
+                                    console.log('Procesando plantilla:', template);
+                                    
+                                    if (template.type === 'summary') {
+                                        // Cargar la plantilla de resumen
+                                        loadTemplateFromUrl('templates/summary.html', (templateHtml) => {
+                                            console.log('Plantilla summary cargada:', templateHtml);
+                                            
+                                            // Crear un contenedor para esta plantilla
+                                            const templateContainer = document.createElement('div');
+                                            templateContainer.className = 'template-container mb-8';
+                                            templateContainer.innerHTML = templateHtml;
+                                            
+                                            // Añadir al contenedor principal
+                                            contentContainer.appendChild(templateContainer);
+                                            
+                                            // Cargar los datos para esta plantilla
+                                            if (template.dataSource) {
+                                                loadDataFromUrl(template.dataSource, (data) => {
+                                                    console.log('Datos cargados para summary:', data);
+                                                    updateSummaryTemplate(templateContainer, data);
+                                                }, (error) => {
+                                                    console.error('Error cargando datos para summary:', error);
+                                                });
+                                            }
+                                        }, (error) => {
+                                            console.error('Error cargando plantilla summary:', error);
+                                        });
+                                    } else if (template.type === 'table') {
+                                        // Cargar la plantilla de tabla
+                                        loadTemplateFromUrl('templates/table.html', (templateHtml) => {
+                                            console.log('Plantilla table cargada:', templateHtml);
+                                            
+                                            // Crear un contenedor para esta plantilla
+                                            const templateContainer = document.createElement('div');
+                                            templateContainer.className = 'template-container mb-8';
+                                            templateContainer.innerHTML = templateHtml;
+                                            
+                                            // Actualizar el título de la tabla si está definido
+                                            if (template.title) {
+                                                const tableTitle = templateContainer.querySelector('#table-title');
+                                                if (tableTitle) {
+                                                    tableTitle.textContent = template.title;
+                                                }
+                                            }
+                                            
+                                            // Añadir al contenedor principal
+                                            contentContainer.appendChild(templateContainer);
+                                            
+                                            // Cargar los datos para esta plantilla
+                                            if (template.dataSource) {
+                                                loadDataFromUrl(template.dataSource, (data) => {
+                                                    console.log('Datos cargados para table:', data);
+                                                    updateTableTemplate(templateContainer, data);
+                                                }, (error) => {
+                                                    console.error('Error cargando datos para table:', error);
+                                                });
+                                            }
+                                        }, (error) => {
+                                            console.error('Error cargando plantilla table:', error);
+                                        });
+                                    } else {
+                                        console.warn('Tipo de plantilla no soportado:', template.type);
+                                    }
+                                });
+                            }
+                            
+                            // Inicializar la sección para cargar sus datos específicos
+                            initSection(inicioSection.title);
+                        }, (error) => {
+                            console.error('Error cargando datos de plantilla:', error);
                         });
+                    } else {
+                        console.error('No se encontró la propiedad datatemplate en la sección inicio');
                     }
-                    
-                    // Inicializar la sección para cargar sus datos específicos
-                    initSection(inicioSection.title);
                 } else {
                     console.warn('No se encontró la sección inicio, buscando por ruta...');
                     // Si no hay sección inicio, buscar por ruta
@@ -333,24 +528,34 @@ function getIconClass(name) {
 /**
  * Función genérica para cargar datos desde una URL
  */
-function loadDataFromUrl(url, successCallback, errorCallback = null) {
-
+/**
+ * Carga datos desde una URL
+ */
+function loadDataFromUrl(url, successCallback, errorCallback) {
+    console.log('Cargando datos desde:', url);
+    
     fetch(url)
         .then(response => {
             if (!response.ok) {
-                throw new Error(`Error HTTP: ${response.status}`);
+                throw new Error(`Error HTTP: ${response.status} - ${response.statusText}`);
             }
             return response.json();
         })
         .then(data => {
-            if (successCallback && typeof successCallback === 'function') {
-                successCallback(data);
-            }
+            console.log('Datos cargados correctamente desde:', url);
+            if (successCallback) successCallback(data);
         })
         .catch(error => {
-            if (errorCallback && typeof errorCallback === 'function') {
-                errorCallback(error);
-            }
+            console.error(`Error cargando datos desde ${url}:`, error);
+            
+            // Mostrar el error en la consola con más detalles
+            console.error('Detalles del error:', {
+                url: url,
+                error: error.message,
+                stack: error.stack
+            });
+            
+            if (errorCallback) errorCallback(error);
         });
 }
 
