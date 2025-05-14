@@ -1,77 +1,339 @@
-// Configuración global
-const config = {
-    itemsPerPage: 10,
-    defaultArchive: 'data/kaos-workflows-available.json'
-};
-
-// Variables globales iniciales
-let currentPage = 1;
-let filteredData = [];
-let allData = [];
-let currentChart = null;
+/**
+ * FUNCION PRINCIPAL PARA INICIALIZAR TODOS LOS COMPONENTES CUANDO EL DOM ESTE INCIALIZADO
+ */
+// Variables globales
 let webConfig = null;
 let sectionConfigMap = {};
 
-// Función para inicializar todos los módulos cuando el DOM esté listo
-document.addEventListener('DOMContentLoaded', function () {
-    // Cargar la configuración principal desde webs.json
-    loadWebsConfig();
+document.addEventListener('DOMContentLoaded', function() {
+    // Cargar el navbar
+    const navbarContainer = document.getElementById('navbar-container');
+    if (navbarContainer) {
+        fetch('templates/navbar.html')
+            .then(response => response.text())
+            .then(data => {
+                navbarContainer.innerHTML = data;
+                loadWebsConfig();
+            })
+            .catch(error => console.error('Error cargando el navbar:', error));
+    }
+
+    // AJUSTAR MAIN CONTENT CUANDO EL SIDEBAR SE MINIMICE
+    setTimeout(() => {
+        const sidebar = document.getElementById('sidebar');
+        if (sidebar) {
+            const observer = new MutationObserver(adjustMainContent);
+            observer.observe(sidebar, { attributes: true, attributeFilter: ['class'] });
+            adjustMainContent();
+        }
+    }, 1000);
 });
 
 /**
  * Carga la configuración principal desde webs.json
  */
 function loadWebsConfig() {
+    console.log('Iniciando carga de configuración web...');
+    
     loadDataFromUrl(
         'data/webs.json',
         (data) => {
             webConfig = data;
             console.log('Configuración principal cargada:', webConfig);
-
-            // Inicializar la barra de navegación
+            console.log('Secciones disponibles:', webConfig.sections);
             initNavbar();
-
-            // Inicializar el módulo de datos
-            initDataList();
-
-            // Inicializar el mapa de configuración de secciones
+            
             if (webConfig && webConfig.sections) {
                 webConfig.sections.forEach(section => {
                     sectionConfigMap[section.title] = {
-                        configFile: section.data,
-                        metrics: [] // Se llenará al cargar la configuración específica
+                        configFile: section.data
                     };
                 });
             }
 
-            // Inicializar los módulos específicos según la página actual
+            // Inicializar sección actual
             const currentPath = window.location.pathname;
-
-            // Determinar qué sección inicializar basado en la ruta
+            console.log('Ruta actual:', currentPath);
+            
             if (webConfig && webConfig.sections) {
-                for (const section of webConfig.sections) {
-                    if (currentPath.includes(section.title.toLowerCase())) {
-                        initSection(section.title);
-                        break;
+                // Cargar automáticamente la sección "inicio"
+                console.log('Buscando sección inicio...');
+                const inicioSection = webConfig.sections.find(section => {
+                    console.log('Comparando:', section.title.toLowerCase(), 'con "inicio"');
+                    return section.title.toLowerCase() === 'inicio';
+                });
+                
+                console.log('Sección inicio encontrada:', inicioSection);
+                
+                if (inicioSection) {
+                    console.log('Llamando a loadInicioSection con:', inicioSection);
+                    
+                    // Actualizar directamente los elementos del título y descripción
+                    const sectionTitle = document.getElementById('section-title');
+                    const sectionDescription = document.getElementById('section-description');
+                    
+                    if (sectionTitle && inicioSection.titleWeb) {
+                        console.log('Actualizando título a:', inicioSection.titleWeb);
+                        sectionTitle.textContent = inicioSection.titleWeb;
+                    } else {
+                        console.warn('No se pudo actualizar el título. Elemento o datos faltantes.');
+                    }
+                    
+                    if (sectionDescription && inicioSection.description) {
+                        console.log('Actualizando descripción a:', inicioSection.description);
+                        sectionDescription.textContent = inicioSection.description;
+                    } else {
+                        console.warn('No se pudo actualizar la descripción. Elemento o datos faltantes.');
+                    }
+                    
+                    // Cargar las plantillas definidas en la sección
+                    if (inicioSection.templates && inicioSection.templates.length > 0) {
+                        console.log('Cargando plantillas de la sección inicio:', inicioSection.templates);
+                        
+                        // Contenedor principal para las plantillas
+                        const contentContainer = document.getElementById('content-container');
+                        if (!contentContainer) {
+                            console.error('No se encontró el contenedor de contenido con ID "content-container"');
+                            return;
+                        }
+                        
+                        // Limpiar el contenedor antes de añadir nuevas plantillas
+                        contentContainer.innerHTML = '';
+                        
+                        // Procesar cada plantilla
+                        inicioSection.templates.forEach(template => {
+                            console.log('Procesando plantilla:', template);
+                            
+                            if (template.type === 'summary') {
+                                // Cargar la plantilla de resumen
+                                loadTemplateFromUrl('templates/summary.html', (templateHtml) => {
+                                    console.log('Plantilla summary cargada:', templateHtml);
+                                    
+                                    // Crear un contenedor para esta plantilla
+                                    const templateContainer = document.createElement('div');
+                                    templateContainer.className = 'template-container mb-8';
+                                    templateContainer.innerHTML = templateHtml;
+                                    
+                                    // Añadir al contenedor principal
+                                    contentContainer.appendChild(templateContainer);
+                                    
+                                    // Cargar los datos para esta plantilla
+                                    if (template.dataSource) {
+                                        loadDataFromUrl(template.dataSource, (data) => {
+                                            console.log('Datos cargados para summary:', data);
+                                            updateSummaryTemplate(templateContainer, data);
+                                        }, (error) => {
+                                            console.error('Error cargando datos para summary:', error);
+                                        });
+                                    }
+                                }, (error) => {
+                                    console.error('Error cargando plantilla summary:', error);
+                                });
+                            } else if (template.type === 'table') {
+                                // Cargar la plantilla de tabla
+                                loadTemplateFromUrl('templates/table.html', (templateHtml) => {
+                                    console.log('Plantilla table cargada:', templateHtml);
+                                    
+                                    // Crear un contenedor para esta plantilla
+                                    const templateContainer = document.createElement('div');
+                                    templateContainer.className = 'template-container mb-8';
+                                    templateContainer.innerHTML = templateHtml;
+                                    
+                                    // Actualizar el título de la tabla si está definido
+                                    if (template.title) {
+                                        const tableTitle = templateContainer.querySelector('#table-title');
+                                        if (tableTitle) {
+                                            tableTitle.textContent = template.title;
+                                        }
+                                    }
+                                    
+                                    // Añadir al contenedor principal
+                                    contentContainer.appendChild(templateContainer);
+                                    
+                                    // Cargar los datos para esta plantilla
+                                    if (template.dataSource) {
+                                        loadDataFromUrl(template.dataSource, (data) => {
+                                            console.log('Datos cargados para table:', data);
+                                            updateTableTemplate(templateContainer, data);
+                                        }, (error) => {
+                                            console.error('Error cargando datos para table:', error);
+                                        });
+                                    }
+                                }, (error) => {
+                                    console.error('Error cargando plantilla table:', error);
+                                });
+                            } else {
+                                console.warn('Tipo de plantilla no soportado:', template.type);
+                            }
+                        });
+                    }
+                    
+                    // Inicializar la sección para cargar sus datos específicos
+                    initSection(inicioSection.title);
+                } else {
+                    console.warn('No se encontró la sección inicio, buscando por ruta...');
+                    // Si no hay sección inicio, buscar por ruta
+                    for (const section of webConfig.sections) {
+                        if (currentPath.includes(section.title.toLowerCase())) {
+                            initSection(section.title);
+                            break;
+                        }
                     }
                 }
             }
-        },
-        (error) => {
-            console.error('Error cargando configuración principal:', error);
         }
     );
 }
 
-// ==================== UTILIDADES GENERALES ====================
+/**
+ * Carga una plantilla HTML desde una URL
+ */
+function loadTemplateFromUrl(url, successCallback, errorCallback) {
+    console.log('Cargando plantilla desde:', url);
+    
+    fetch(url)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Error HTTP: ${response.status}`);
+            }
+            return response.text();
+        })
+        .then(html => {
+            console.log('Plantilla cargada correctamente');
+            if (successCallback) successCallback(html);
+        })
+        .catch(error => {
+            console.error('Error cargando plantilla:', error);
+            if (errorCallback) errorCallback(error);
+        });
+}
+
+/**
+ * Actualiza los elementos de la plantilla de resumen con los datos proporcionados
+ */
+function updateSummaryTemplate(container, data) {
+    console.log('Actualizando plantilla de resumen con datos:', data);
+    
+    // Actualizar los elementos de la plantilla con los datos
+    // Ejemplo: Total Workflows
+    const totalWorkflows = container.querySelector('#total-workflows');
+    if (totalWorkflows && data.totalWorkflows) {
+        totalWorkflows.textContent = data.totalWorkflows;
+    }
+    
+    // Ejemplo: Avg Lead Time
+    const avgLeadTime = container.querySelector('#avg-lead-time');
+    if (avgLeadTime && data.avgLeadTime) {
+        avgLeadTime.textContent = data.avgLeadTime;
+    }
+    
+    // Ejemplo: Max Lead Time
+    const maxLeadTime = container.querySelector('#max-lead-time');
+    if (maxLeadTime && data.maxLeadTime) {
+        maxLeadTime.textContent = data.maxLeadTime;
+    }
+    
+    // Ejemplo: Min Lead Time
+    const minLeadTime = container.querySelector('#min-lead-time');
+    if (minLeadTime && data.minLeadTime) {
+        minLeadTime.textContent = data.minLeadTime;
+    }
+}
+
+/**
+ * Actualiza los elementos de la plantilla de tabla con los datos proporcionados
+ */
+function updateTableTemplate(container, data) {
+    console.log('Actualizando plantilla de tabla con datos:', data);
+    
+    // Obtener el cuerpo de la tabla
+    const tableBody = container.querySelector('#table-body');
+    if (!tableBody) {
+        console.error('No se encontró el cuerpo de la tabla');
+        return;
+    }
+    
+    // Limpiar el cuerpo de la tabla
+    tableBody.innerHTML = '';
+    
+    // Verificar que los datos sean un array
+    if (!Array.isArray(data)) {
+        console.error('Los datos no son un array:', data);
+        return;
+    }
+    
+    // Crear filas para cada elemento en los datos
+    data.forEach(item => {
+        // Determinar el estado para el estilo de la etiqueta
+        const statusClass = getStatusClass(item.state);
+        const iconClass = getIconClass(item.name);
+        
+        // Crear la fila
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 h-6 w-6 flex items-center justify-center bg-gray-800 text-white rounded">
+                        <i class="${iconClass} text-xs"></i>
+                    </div>
+                    <div class="ml-4">
+                        <div class="text-sm font-medium text-gray-900">${item.name}</div>
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass.bgClass} ${statusClass.textClass}">
+                            ${item.state}
+                        </span>
+                    </div>
+                </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-900">${item.path}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass.bgClass} ${statusClass.textClass}">
+                    ${item.state}
+                </span>
+            </td>
+        `;
+        
+        // Añadir la fila al cuerpo de la tabla
+        tableBody.appendChild(row);
+    });
+}
+
+/**
+ * Obtiene las clases CSS para el estado
+ */
+function getStatusClass(state) {
+    switch (state.toLowerCase()) {
+        case 'active':
+            return { bgClass: 'bg-green-100', textClass: 'text-green-800' };
+        case 'disabled_manually':
+            return { bgClass: 'bg-red-100', textClass: 'text-red-800' };
+        default:
+            return { bgClass: 'bg-gray-100', textClass: 'text-gray-800' };
+    }
+}
+
+/**
+ * Obtiene la clase de icono basada en el nombre
+ */
+function getIconClass(name) {
+    if (name.includes('CodeQL')) {
+        return 'fas fa-code';
+    } else if (name.includes('Version')) {
+        return 'fas fa-code-branch';
+    } else if (name.includes('Execution')) {
+        return 'fas fa-vial';
+    } else if (name.includes('Lint')) {
+        return 'fas fa-check-square';
+    } else {
+        return 'fas fa-cog';
+    }
+}
+
 /**
  * Función genérica para cargar datos desde una URL
- * @param {string} url - La URL del archivo a cargar
- * @param {function} successCallback - Función a ejecutar si la carga es exitosa
- * @param {function} errorCallback - Función a ejecutar si hay un error (opcional)
  */
 function loadDataFromUrl(url, successCallback, errorCallback = null) {
-    console.log(`Cargando datos desde: ${url}`);
 
     fetch(url)
         .then(response => {
@@ -86,162 +348,11 @@ function loadDataFromUrl(url, successCallback, errorCallback = null) {
             }
         })
         .catch(error => {
-            console.error(`Error cargando datos desde ${url}:`, error);
             if (errorCallback && typeof errorCallback === 'function') {
                 errorCallback(error);
             }
         });
 }
-
-/**
- * Inicializa una sección específica
- * @param {string} sectionName - Nombre de la sección a inicializar
- */
-function initSection(sectionName) {
-    console.log(`Inicializando sección: ${sectionName}`);
-
-    const sectionConfig = sectionConfigMap[sectionName];
-    if (!sectionConfig) {
-        console.error(`Configuración no encontrada para la sección: ${sectionName}`);
-        return;
-    }
-
-    // Cargar la configuración de la sección
-    loadDataFromUrl(
-        sectionConfig.configFile,
-        (config) => {
-            // Actualizar título y descripción
-            updateTitleAndDescription(config);
-
-            // Configurar las métricas basadas en el archivo de configuración
-            const metricKeys = [];
-            const colors = ['blue', 'green', 'yellow', 'purple', 'red', 'orange', 'gray'];
-
-            // Buscar todas las propiedades que comienzan con "metric"
-            for (const key in config) {
-                if (key.startsWith('metric') && !isNaN(key.substring(6))) {
-                    metricKeys.push({
-                        key: key,
-                        color: colors[metricKeys.length % colors.length] // Asignar color cíclicamente
-                    });
-                }
-            }
-
-            // Actualizar la configuración de métricas para esta sección
-            sectionConfig.metrics = metricKeys;
-
-            // Actualizar métricas en la UI
-            updateMetrics(config, sectionConfig.metrics);
-
-            // Configurar la lista dinámica
-            configureDataList(config);
-
-            // Procesar datos específicos si es necesario
-            if (sectionConfig.processData && typeof sectionConfig.processData === 'function') {
-                // Obtener la fuente de datos
-                const dataSource = document.getElementById('data-list').getAttribute('data-source');
-
-                // Cargar los datos para procesamiento específico
-                loadDataFromUrl(
-                    dataSource,
-                    sectionConfig.processData,
-                    (error) => {
-                        console.error(`Error procesando datos para ${sectionName}:`, error);
-                    }
-                );
-            }
-        },
-        (error) => {
-            console.error(`Error cargando configuración para ${sectionName}:`, error);
-            const dataList = document.getElementById('data-list');
-            if (dataList) {
-                dataList.innerHTML = `
-                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                        Error cargando configuración: ${error.message}
-                    </div>
-                `;
-            }
-        }
-    );
-}
-
-/**
- * Actualiza el título y descripción de la página
- * @param {Object} config - Configuración con título y descripción
- */
-function updateTitleAndDescription(config) {
-    if (config.title) {
-        const h1 = document.querySelector('h1');
-        if (h1) h1.textContent = config.title;
-    }
-    if (config.description) {
-        const desc = document.querySelector('p.text-gray-600, header p');
-        if (desc) desc.textContent = config.description;
-    }
-}
-
-/**
- * Actualiza las métricas en la página
- * @param {Object} config - Configuración con valores de métricas
- * @param {Array} metricConfig - Configuración de las métricas (claves y colores)
- 
-/**function updateMetrics(config, metricConfig) {
-    if (!metricConfig || !Array.isArray(metricConfig)) return;
-
-    metricConfig.forEach((metric, idx) => {
-        const container = document.querySelectorAll('.grid.grid-cols-1.md\\:grid-cols-4 > div')[idx];
-        if (container && config[metric.key]) {
-            const h2 = container.querySelector('h2');
-            if (h2) h2.textContent = config[metric.key];
-        }
-    });
-}*/
-
-/**
- * Configura la lista de datos basada en la configuración
- * @param {Object} config - Configuración con plantillas
- */
-function configureDataList(config) {
-    if (!config.templates || !Array.isArray(config.templates)) return;
-
-    const listTemplate = config.templates.find(t => t.type === 'list');
-    if (!listTemplate) return;
-
-    // Actualizar el título de la tabla/lista
-    updateTableTitle(listTemplate.title);
-
-    // Configurar la fuente de datos
-    const dataList = document.getElementById('data-list');
-    if (dataList && listTemplate.dataSource) {
-        dataList.setAttribute('data-source', listTemplate.dataSource);
-        // Cargar datos
-        loadData(listTemplate.dataSource);
-    }
-}
-
-/**
- * Actualiza el título de la tabla/lista
- * @param {string} title - Título a establecer
-
-function updateTableTitle(title) {
-    if (!title) return;
-
-    const selectors = [
-        '.bg-white.shadow-sm.rounded-lg.p-6 h2',
-        '.bg-white.shadow-sm.rounded-lg.p-6 h3',
-        '.bg-white.shadow-sm.rounded-lg.p-6 .text-xl',
-        '#table-title',
-        '.text-xl.font-semibold.text-gray-800'
-    ];
-
-    for (const selector of selectors) {
-        const element = document.querySelector(selector);
-        if (element) {
-            element.textContent = title;
-            break;
-        }
-    }
-} */
 
 // ==================== MÓDULO NAVBAR ====================
 function initNavbar() {
@@ -286,11 +397,22 @@ function initNavbar() {
     }
 }
 
+function adjustMainContent() {
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('main-content');
+    
+    if (sidebar && mainContent) {
+        if (sidebar.classList.contains('w-[60px]')) {
+            mainContent.classList.remove('ml-[250px]');
+            mainContent.classList.add('ml-[5px]');
+        } else {
+            mainContent.classList.remove('ml-[5px]');
+            mainContent.classList.add('ml-[250px]');
+        }
+    }
+}
+
 function initializeSidebar() {
-    console.log('Estado del DOM:', document.readyState); 
-    console.log('Elemento sidebar:', document.getElementById('sidebar')); 
-    console.log('Elemento sidebarToggle:', document.getElementById('sidebarToggle')); 
-    console.log('Elemento toggleIcon:', document.getElementById('toggleIcon'));
     
     const sidebar = document.getElementById('sidebar');
     const sidebarToggle = document.getElementById('sidebarToggle');
@@ -360,526 +482,3 @@ function initializeSidebar() {
     // Ejecutar el layout responsive inicial
     handleResponsiveLayout();
 }
-
-// ==================== MÓDULO DATA-LIST ====================
-function initDataList() {
-    const dataListElement = document.getElementById('data-list');
-    if (dataListElement && dataListElement.getAttribute('data-source')) {
-        const dataSource = dataListElement.getAttribute('data-source');
-        loadData(dataSource);
-    } else {
-        loadData(config.defaultArchive);
-    }
-}
-
-// Cargar datos desde una fuente específica
-function loadData(dataSource) {
-    loadDataFromUrl(dataSource,
-        // Callback de éxito
-        (data) => {
-            // Adaptarse a la estructura real del JSON
-            if (Array.isArray(data) && data.length > 0) {
-                // Si es un array de arrays
-                if (Array.isArray(data[0])) {
-                    allData = data[0]; // Tomar el primer array interno
-                } else {
-                    allData = data; // Es un array simple
-                }
-            } else if (data.dataFiles && Array.isArray(data.dataFiles)) {
-                // Si tiene la estructura esperada con dataFiles
-                allData = data.dataFiles;
-            } else if (typeof data === 'object') {
-                // Si es un objeto simple, convertir cada propiedad en una fila
-                allData = Object.entries(data).map(([key, value]) => ({
-                    key: key,
-                    value: typeof value === 'object' ? JSON.stringify(value) : value
-                }));
-            } else {
-                throw new Error('Formato de datos no reconocido');
-            }
-
-            // Inicializar con todos los datos
-            filteredData = [...allData];
-
-            // Renderizar la primera página
-            renderPage(1);
-        },
-        // Callback de error
-        (error) => {
-            const dataList = document.getElementById('data-list');
-            if (dataList) {
-                dataList.innerHTML = `
-                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                        Error cargando datos: ${error.message}
-                    </div>
-                `;
-            }
-        }
-    );
-}
-
-// Renderizar una página de datos
-function renderPage(page) {
-    currentPage = page;
-    const startIndex = (page - 1) * config.itemsPerPage;
-    const endIndex = startIndex + config.itemsPerPage;
-    const pageData = filteredData.slice(startIndex, endIndex);
-
-    const dataList = document.getElementById('data-list');
-    if (!dataList) return;
-
-    if (pageData.length === 0) {
-        dataList.innerHTML = `
-            <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4">
-                No se encontraron datos que coincidan con los criterios de búsqueda.
-            </div>
-        `;
-        const pagination = document.getElementById('pagination');
-        if (pagination) pagination.innerHTML = '';
-        return;
-    }
-
-    // Determinar si necesitamos scroll horizontal
-    const headers = Object.keys(pageData[0]);
-    const needsScroll = headers.length > 4;
-
-    // Generar encabezados dinámicamente basados en el primer elemento
-    if (pageData.length > 0) {
-        const dataHeaders = document.getElementById('data-headers');
-        if (!dataHeaders) return;
-
-        // Limpiar cualquier clase de scroll anterior
-        if (dataHeaders.parentElement) {
-            dataHeaders.parentElement.classList.remove('overflow-x-auto');
-        }
-
-        // Calcular el ancho de columna basado en el número de propiedades
-        const colSpan = Math.floor(12 / headers.length);
-
-        let headersHtml = '';
-
-        if (needsScroll) {
-            // Para muchas columnas, usamos un contenedor con ancho fijo para cada columna
-            headersHtml = '';
-            headers.forEach(header => {
-                const displayName = header.charAt(0).toUpperCase() + header.slice(1).replace(/([A-Z])/g, ' $1');
-                headersHtml += `<div class="px-4 py-2 min-w-[150px] font-medium text-gray-700">${displayName}</div>`;
-            });
-        } else {
-            // Para pocas columnas, usamos grid
-            headers.forEach(header => {
-                const displayName = header.charAt(0).toUpperCase() + header.slice(1).replace(/([A-Z])/g, ' $1');
-                headersHtml += `<div class="col-span-${colSpan} font-medium text-gray-700">${displayName}</div>`;
-            });
-        }
-
-        dataHeaders.innerHTML = headersHtml;
-    }
-
-    let html = '';
-
-    if (needsScroll) {
-        // Crear un contenedor único con scroll para encabezados y datos
-        html = `<div class="overflow-x-auto">
-            <table class="min-w-full">
-                <thead>
-                    <tr>`;
-
-        // Añadir encabezados a la tabla
-        headers.forEach(header => {
-            const displayName = header.charAt(0).toUpperCase() + header.slice(1).replace(/([A-Z])/g, ' $1');
-            html += `<th class="px-4 py-2 min-w-[150px] font-medium text-gray-700 bg-gray-100 sticky top-0">${displayName}</th>`;
-        });
-
-        html += `</tr>
-                </thead>
-                <tbody>`;
-
-        // Añadir filas de datos
-        pageData.forEach(item => {
-            html += `<tr class="border-b hover:bg-gray-50">`;
-
-            headers.forEach(header => {
-                let value = item[header];
-                // Formatear objetos o arrays
-                if (typeof value === 'object' && value !== null) {
-                    value = JSON.stringify(value);
-                }
-
-                html += `<td class="px-4 py-3 text-gray-800">${value}</td>`;
-            });
-
-            html += `</tr>`;
-        });
-
-        html += `</tbody>
-                </table>
-            </div>`;
-
-        // Ocultar los encabezados originales cuando usamos tabla
-        const dataHeaders = document.getElementById('data-headers');
-        if (dataHeaders) {
-            dataHeaders.style.display = 'none';
-        }
-    } else {
-        // Formato original para pocas columnas
-        // Mostrar los encabezados originales
-        const dataHeaders = document.getElementById('data-headers');
-        if (dataHeaders) {
-            dataHeaders.style.display = '';
-        }
-
-        pageData.forEach(item => {
-            const colSpan = Math.floor(12 / headers.length);
-
-            html += `<div class="bg-white border border-gray-200 rounded-md p-4 mb-3 hover:shadow-md transition-all">`;
-            html += `<div class="grid grid-cols-12 gap-4">`;
-
-            headers.forEach(header => {
-                let value = item[header];
-
-                // Formatear objetos o arrays
-                if (typeof value === 'object' && value !== null) {
-                    value = JSON.stringify(value);
-                }
-
-                html += `<div class="col-span-${colSpan} text-gray-800">${value}</div>`;
-            });
-
-            html += `</div>`;
-            html += `</div>`;
-        });
-    }
-
-    dataList.innerHTML = html;
-
-    // Actualizar paginación
-    updatePagination();
-}
-
-// Actualizar la paginación
-function updatePagination() {
-    const totalPages = Math.ceil(filteredData.length / config.itemsPerPage);
-    const pagination = document.getElementById('pagination');
-
-    if (!pagination || totalPages <= 1) {
-        if (pagination) pagination.innerHTML = '';
-        return;
-    }
-
-    let paginationHtml = `
-        <div class="flex items-center justify-between mt-4">
-            <button id="prev-page" class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed" ${currentPage === 1 ? 'disabled' : ''}>
-                Anterior
-            </button>
-            <span class="text-gray-600">Página ${currentPage} de ${totalPages}</span>
-            <button id="next-page" class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed" ${currentPage === totalPages ? 'disabled' : ''}>
-                Siguiente
-            </button>
-        </div>
-    `;
-
-    pagination.innerHTML = paginationHtml;
-
-    // Agregar event listeners para los botones de paginación
-    document.getElementById('prev-page').addEventListener('click', () => {
-        if (currentPage > 1) {
-            renderPage(currentPage - 1);
-        }
-    });
-
-    document.getElementById('next-page').addEventListener('click', () => {
-        if (currentPage < totalPages) {
-            renderPage(currentPage + 1);
-        }
-    });
-}
-
-// Función para filtrar datos
-function filterData(searchTerm) {
-    if (!searchTerm || searchTerm.trim() === '') {
-        filteredData = [...allData];
-    } else {
-        searchTerm = searchTerm.toLowerCase();
-        filteredData = allData.filter(item => {
-            return Object.values(item).some(value => {
-                if (value === null || value === undefined) return false;
-                return value.toString().toLowerCase().includes(searchTerm);
-            });
-        });
-    }
-
-    renderPage(1);
-}
-
-// Exportar funciones para uso global
-window.initSection = initSection;
-window.filterData = filterData;
-
-// Función para cargar el navbar y procesar la configuración de la sección
-document.addEventListener('DOMContentLoaded', function() {
-    // Cargar el navbar
-    const navbarContainer = document.getElementById('navbar-container');
-    if (navbarContainer) {
-        fetch('templates/navbar.html')
-            .then(response => response.text())
-            .then(data => {
-                navbarContainer.innerHTML = data;
-                // Inicializar el orquestador después de cargar el navbar
-                if (typeof loadWebsConfig === 'function') {
-                    loadWebsConfig();
-                }
-            })
-            .catch(error => console.error('Error cargando el navbar:', error));
-    }
-
-    // Ajustar el contenido principal cuando cambia el tamaño del sidebar
-    function adjustMainContent() {
-        const sidebar = document.getElementById('sidebar');
-        const mainContent = document.getElementById('main-content');
-        
-        if (sidebar && mainContent) {
-            if (sidebar.classList.contains('w-[60px]')) {
-                mainContent.classList.remove('ml-[250px]');
-                mainContent.classList.add('ml-[60px]');
-            } else {
-                mainContent.classList.remove('ml-[60px]');
-                mainContent.classList.add('ml-[250px]');
-            }
-        }
-    }
-
-    // Observar cambios en el sidebar
-    setTimeout(() => {
-        const sidebar = document.getElementById('sidebar');
-        if (sidebar) {
-            const observer = new MutationObserver(adjustMainContent);
-            observer.observe(sidebar, { attributes: true, attributeFilter: ['class'] });
-            adjustMainContent();
-        }
-    }, 1000);
-});
-
-// Función para renderizar métricas dinámicamente
-function renderMetrics(config) {
-    const metricsContainer = document.getElementById('metrics-container');
-    if (!metricsContainer) return;
-    
-    // Limpiar el contenedor
-    metricsContainer.innerHTML = '';
-    
-    // Colores para las métricas
-    const colors = ['blue', 'green', 'yellow', 'purple', 'red', 'orange', 'gray'];
-    
-    // Contador de métricas
-    let metricCount = 0;
-    
-    // Buscar todas las propiedades que comienzan con "metric"
-    for (const key in config) {
-        if (key.startsWith('metric') && !isNaN(key.substring(6))) {
-            const metricNumber = key.substring(6);
-            const titleKey = `metric${metricNumber}Title`;
-            const title = config[titleKey] || `Métrica ${metricNumber}`;
-            const value = config[key] || '0';
-            const color = colors[metricCount % colors.length];
-            
-            // Crear el elemento de métrica
-            const metricElement = document.createElement('div');
-            metricElement.className = `bg-white rounded-lg shadow-sm p-4 border-l-4 border-${color}-500`;
-            metricElement.innerHTML = `
-                <p class="text-sm text-gray-500 uppercase">${title}</p>
-                <h2 id="metric${metricNumber}" class="text-2xl font-bold text-gray-800">${value}</h2>
-            `;
-            
-            // Añadir al contenedor
-            metricsContainer.appendChild(metricElement);
-            metricCount++;
-        }
-    }
-    
-    // Si no hay métricas, ocultar el contenedor
-    if (metricCount === 0) {
-        metricsContainer.style.display = 'none';
-    } else {
-        metricsContainer.style.display = 'grid';
-        
-        // Ajustar el número de columnas según la cantidad de métricas
-        if (metricCount <= 2) {
-            metricsContainer.className = 'grid grid-cols-1 md:grid-cols-2 gap-4 mb-8';
-        } else if (metricCount <= 3) {
-            metricsContainer.className = 'grid grid-cols-1 md:grid-cols-3 gap-4 mb-8';
-        } else {
-            metricsContainer.className = 'grid grid-cols-1 md:grid-cols-4 gap-4 mb-8';
-        }
-    }
-}
-
-// Función para renderizar plantillas dinámicamente
-function renderTemplates(config) {
-    const templatesContainer = document.getElementById('templates-container');
-    if (!templatesContainer || !config.templates || !Array.isArray(config.templates)) return;
-    
-    // Limpiar el contenedor
-    templatesContainer.innerHTML = '';
-    
-    // Procesar cada plantilla
-    config.templates.forEach((template, index) => {
-        // Crear contenedor para esta plantilla
-        const templateContainer = document.createElement('div');
-        templateContainer.className = 'bg-white shadow-sm rounded-lg p-6 mb-6';
-        
-        // Título de la plantilla
-        const titleElement = document.createElement('h2');
-        titleElement.className = 'text-xl font-semibold text-gray-800 mb-4';
-        titleElement.textContent = template.title || `Plantilla ${index + 1}`;
-        templateContainer.appendChild(titleElement);
-        
-        // Contenido según el tipo de plantilla
-        if (template.type === 'list') {
-            // Crear contenedor de búsqueda
-            const searchContainer = document.createElement('div');
-            searchContainer.className = 'flex justify-between items-center mb-4';
-            searchContainer.innerHTML = `
-                <div class="relative ml-auto">
-                    <input type="text" id="search-input-${index}" placeholder="Buscar..." 
-                        class="pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
-                </div>
-            `;
-            templateContainer.appendChild(searchContainer);
-            
-            // Crear contenedor de encabezados
-            const headersContainer = document.createElement('div');
-            headersContainer.id = `data-headers-${index}`;
-            headersContainer.className = 'grid grid-cols-12 gap-4 p-3 bg-gray-100 rounded-t-lg mb-2';
-            templateContainer.appendChild(headersContainer);
-            
-            // Crear contenedor de datos
-            const dataContainer = document.createElement('div');
-            dataContainer.id = `data-list-${index}`;
-            dataContainer.setAttribute('data-source', template.dataSource || '');
-            templateContainer.appendChild(dataContainer);
-            
-            // Crear contenedor de paginación
-            const paginationContainer = document.createElement('div');
-            paginationContainer.id = `pagination-${index}`;
-            paginationContainer.className = 'mt-4';
-            templateContainer.appendChild(paginationContainer);
-            
-            // Configurar evento de búsqueda
-            setTimeout(() => {
-                const searchInput = document.getElementById(`search-input-${index}`);
-                if (searchInput && window.filterData) {
-                    searchInput.addEventListener('input', function(e) {
-                        window.filterData(e.target.value);
-                    });
-                }
-            }, 500);
-            
-        } else if (template.type === 'graphic' || template.type === 'chart') {
-            // Crear contenedor para el gráfico
-            const chartContainer = document.createElement('div');
-            chartContainer.className = 'w-full h-64 md:h-80';
-            
-            // Crear el canvas para el gráfico
-            const canvas = document.createElement('canvas');
-            canvas.id = `chart-${index}`;
-            chartContainer.appendChild(canvas);
-            templateContainer.appendChild(chartContainer);
-            
-            // Cargar datos y crear gráfico
-            if (template.dataSource) {
-                fetch(template.dataSource)
-                    .then(response => response.json())
-                    .then(data => {
-                        // Configuración básica del gráfico
-                        const ctx = canvas.getContext('2d');
-                        new Chart(ctx, {
-                            type: 'bar', // Tipo predeterminado, se puede cambiar según los datos
-                            data: {
-                                labels: data.labels || Object.keys(data),
-                                datasets: [{
-                                    label: template.title || 'Datos',
-                                    data: data.values || Object.values(data),
-                                    backgroundColor: [
-                                        'rgba(54, 162, 235, 0.5)',
-                                        'rgba(75, 192, 192, 0.5)',
-                                        'rgba(255, 206, 86, 0.5)',
-                                        'rgba(153, 102, 255, 0.5)',
-                                        'rgba(255, 99, 132, 0.5)'
-                                    ],
-                                    borderColor: [
-                                        'rgba(54, 162, 235, 1)',
-                                        'rgba(75, 192, 192, 1)',
-                                        'rgba(255, 206, 86, 1)',
-                                        'rgba(153, 102, 255, 1)',
-                                        'rgba(255, 99, 132, 1)'
-                                    ],
-                                    borderWidth: 1
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                scales: {
-                                    y: {
-                                        beginAtZero: true
-                                    }
-                                }
-                            }
-                        });
-                    })
-                    .catch(error => {
-                        console.error(`Error cargando datos para el gráfico ${index}:`, error);
-                        chartContainer.innerHTML = `
-                            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                                Error cargando datos del gráfico: ${error.message}
-                            </div>
-                        `;
-                    });
-            }
-        }
-        
-        // Añadir la plantilla al contenedor principal
-        templatesContainer.appendChild(templateContainer);
-    });
-}
-
-// Función para procesar la configuración completa
-function processConfig(config) {
-    // Actualizar título y descripción
-    const titleElement = document.getElementById('section-title');
-    if (titleElement && config.title) {
-        titleElement.textContent = config.title;
-    }
-    
-    const descriptionElement = document.getElementById('section-description');
-    if (descriptionElement && config.description) {
-        descriptionElement.textContent = config.description;
-    }
-    
-    // Renderizar métricas
-    renderMetrics(config);
-    
-    // Renderizar plantillas
-    renderTemplates(config);
-}
-
-// Exponer la función para que pueda ser usada desde otros contextos
-window.processConfig = processConfig;
-
-// Exponer la función de filtrado para que pueda ser usada por los inputs de búsqueda
-window.filterData = function(searchTerm) {
-    if (!searchTerm) {
-        filteredData = [...allData];
-    } else {
-        searchTerm = searchTerm.toLowerCase();
-        filteredData = allData.filter(item => {
-            return Object.values(item).some(value => {
-                if (value === null || value === undefined) return false;
-                return value.toString().toLowerCase().includes(searchTerm);
-            });
-        });
-    }
-    renderPage(1);
-};
