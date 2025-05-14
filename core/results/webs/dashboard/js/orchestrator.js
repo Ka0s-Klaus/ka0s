@@ -1,4 +1,5 @@
 // Configuración global
+
 const config = {
     itemsPerPage: 10,
     defaultArchive: 'data/kaos-workflows-available.json'
@@ -30,7 +31,7 @@ function loadWebsConfig() {
 
             // Inicializar la barra de navegación
             initNavbar();
-
+            processConfig(webConfig);
             // Inicializar el módulo de datos
             initDataList();
 
@@ -110,9 +111,9 @@ function initSection(sectionName) {
     loadDataFromUrl(
         sectionConfig.configFile,
         (config) => {
-            // Actualizar título y descripción
-            updateTitleAndDescription(config);
-
+            // Procesar la configuración usando la función processConfig
+            processConfig(config);
+            
             // Configurar las métricas basadas en el archivo de configuración
             const metricKeys = [];
             const colors = ['blue', 'green', 'yellow', 'purple', 'red', 'orange', 'gray'];
@@ -129,12 +130,6 @@ function initSection(sectionName) {
 
             // Actualizar la configuración de métricas para esta sección
             sectionConfig.metrics = metricKeys;
-
-            // Actualizar métricas en la UI
-            updateMetrics(config, sectionConfig.metrics);
-
-            // Configurar la lista dinámica
-            configureDataList(config);
 
             // Procesar datos específicos si es necesario
             if (sectionConfig.processData && typeof sectionConfig.processData === 'function') {
@@ -260,6 +255,9 @@ function initNavbar() {
     // Cargar las secciones
     const navbar = document.getElementById('navbar-sections');
     if (navbar && webConfig.sections && Array.isArray(webConfig.sections)) {
+        // Limpiar elementos existentes para evitar duplicados
+        navbar.innerHTML = '';
+        
         webConfig.sections.forEach(section => {
             const li = document.createElement('li');
             li.innerHTML = `
@@ -269,9 +267,6 @@ function initNavbar() {
                         <i class="fas ${section.icon} text-orange-300 group-hover:text-orange-500 text-xl"></i>
                     </div>
                     <span class="sidebar-text flex-1 font-medium capitalize">${section.title}</span>
-                    <div class="tooltip hidden absolute left-16 top-1/2 -translate-y-1/2 bg-gray-800 text-white px-2 py-1 rounded text-sm whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-200">
-                        ${section.title}
-                    </div>
                 </a>`;
             navbar.appendChild(li);
         });
@@ -356,6 +351,7 @@ function initDataList() {
     } else {
         loadData(config.defaultArchive);
     }
+    console.log("data-list element:", dataListElement);
 }
 
 // Cargar datos desde una fuente específica
@@ -386,7 +382,7 @@ function loadData(dataSource) {
 
             // Inicializar con todos los datos
             filteredData = [...allData];
-
+            console.log("data:", data);
             // Renderizar la primera página
             renderPage(1);
         },
@@ -406,6 +402,7 @@ function loadData(dataSource) {
 
 // Renderizar una página de datos
 function renderPage(page) {
+    console.log("pagina: ", page);
     currentPage = page;
     const startIndex = (page - 1) * config.itemsPerPage;
     const endIndex = startIndex + config.itemsPerPage;
@@ -433,6 +430,7 @@ function renderPage(page) {
     if (pageData.length > 0) {
         const dataHeaders = document.getElementById('data-headers');
         if (!dataHeaders) return;
+        console.log("datalistelement:", dataList);  // Cambiado de dataListElement a dataList
 
         // Limpiar cualquier clase de scroll anterior
         if (dataHeaders.parentElement) {
@@ -911,7 +909,9 @@ function processConfig(config) {
     const titleElement = document.getElementById('section-title');
     if (titleElement && config.title) {
         titleElement.textContent = config.title;
+        console.log("Titulo:", config.title)
     }
+    console.log("Titulo:", config.title)
     
     const descriptionElement = document.getElementById('section-description');
     if (descriptionElement && config.description) {
