@@ -828,6 +828,60 @@ jobs:
           
           # Crear el dashboard.html con todas las secciones concatenadas y la navbar
           echo "<!DOCTYPE html>
+          <html lang=es>
+          <head>
+              <meta charset=UTF-8>
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Ka0s Dashboard - dashboard</title>
+              <link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css>
+              <!-- Añadir Tailwind CSS -->
+              <script src="https://cdn.tailwindcss.com"></script>
+              
+          </head>
+          <body class=bg-gray-50>
+              <!-- Incluir la navbar -->
+              <div id=navbar-container></div>
+              
+              <!-- Contenido principal --> 
+              <div class=p-6 id=main-content> 
+                  <header class=mb-8 header-centered> 
+                      <h1 class=text-3xl font-bold text-gray-800 id=section-title>SECTION_TITLE_PLACEHOLDER</h1> 
+                      <p class=text-gray-600 mt-2 id=section-description>SECTION_DESCRIPTION_PLACEHOLDER</p> 
+                  </header> 
+
+                  <!-- Contenedor de métricas - se generará dinámicamente --> 
+                  <div id=metrics-container class=grid grid-cols-1 md:grid-cols-4 gap-4 mb-8> 
+                      <!-- Las métricas se generarán dinámicamente según el JSON --> 
+                  </div> 
+
+                  <!-- Contenedor de plantillas - se generará dinámicamente --> 
+                  <div id=templates-container> 
+                      <!-- Las plantillas (gráficos, listas, etc.) se generarán dinámicamente según el JSON --> 
+                      <div id=data-list class="bg-white rounded-lg overflow-hidden shadow-lg mb-6">
+                          <div id=data-headers class="grid grid-cols-12 gap-4 mb-4 p-4 bg-gray-50 border-b"></div>
+                          <!-- Aquí se mostrará la lista de datos --> 
+                      </div>
+                      <div id=pagination class="mt-4 flex justify-center w-full"> 
+                          <!-- Aquí se mostrará la paginación --> 
+                      </div>
+                  </div>
+              </div>
+
+          <!-- Cargar la navbar desde el template -->
+          <script src=js/orchestrator.js></script>
+          </body>
+          </html>" > "core/results/webs/${TITLE}/dashboard.html"
+          
+          echo "Dashboard HTML generado correctamente en core/results/webs/${TITLE}/dashboard.html"
+      
+
+      - name: Crear test.html
+        run: |
+          TEST_STRUCTURE_FILE="${{ env.KAOS_TEST_JSON_WEB }}"
+          TITLE=$(jq -r '.title' $TEST_STRUCTURE_FILE)
+          
+          # Crear el test.html con todas las secciones concatenadas y la navbar
+          echo "<!DOCTYPE html>
           <html lang=\"es\">
           <head>
               <meta charset=\"UTF-8\">
