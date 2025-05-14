@@ -403,11 +403,11 @@ function adjustMainContent() {
     
     if (sidebar && mainContent) {
         if (sidebar.classList.contains('w-[60px]')) {
-            mainContent.classList.remove('ml-[250px]');
-            mainContent.classList.add('ml-[5px]');
+            mainContent.classList.remove('ml-[260px]');
+            mainContent.classList.add('ml-[75px]');
         } else {
-            mainContent.classList.remove('ml-[5px]');
-            mainContent.classList.add('ml-[250px]');
+            mainContent.classList.remove('ml-[75px]');
+            mainContent.classList.add('ml-[260px]');
         }
     }
 }
