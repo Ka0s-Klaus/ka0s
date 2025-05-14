@@ -464,24 +464,25 @@ function renderPage(page) {
 
     if (needsScroll) {
         // Crear un contenedor único con scroll para encabezados y datos
-        html = `<div class="overflow-x-auto">
-            <table class="min-w-full">
-                <thead>
+        html = `<div class="overflow-x-auto shadow-md rounded-lg">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
                     <tr>`;
 
         // Añadir encabezados a la tabla
         headers.forEach(header => {
             const displayName = header.charAt(0).toUpperCase() + header.slice(1).replace(/([A-Z])/g, ' $1');
-            html += `<th class="px-4 py-2 min-w-[150px] font-medium text-gray-700 bg-gray-100 sticky top-0">${displayName}</th>`;
+            html += `<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 bg-gray-50">${displayName}</th>`;
         });
 
         html += `</tr>
                 </thead>
-                <tbody>`;
+                <tbody class="bg-white divide-y divide-gray-200">`;
 
-        // Añadir filas de datos
-        pageData.forEach(item => {
-            html += `<tr class="border-b hover:bg-gray-50">`;
+        // Añadir filas de datos con estilos alternados
+        pageData.forEach((item, index) => {
+            const rowClass = index % 2 === 0 ? "bg-white" : "bg-gray-50";
+            html += `<tr class="${rowClass} hover:bg-blue-50 transition-colors duration-150">`;
 
             headers.forEach(header => {
                 let value = item[header];
@@ -490,7 +491,7 @@ function renderPage(page) {
                     value = JSON.stringify(value);
                 }
 
-                html += `<td class="px-4 py-3 text-gray-800">${value}</td>`;
+                html += `<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${value}</td>`;
             });
 
             html += `</tr>`;
@@ -552,13 +553,15 @@ function updatePagination() {
     }
 
     let paginationHtml = `
-        <div class="flex items-center justify-between mt-4">
-            <button id="prev-page" class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed" ${currentPage === 1 ? 'disabled' : ''}>
-                Anterior
+        <div class="flex items-center justify-between mt-4 w-full max-w-md">
+            <button id="prev-page" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 active:bg-blue-700 transition-all duration-200 shadow-md hover:shadow-lg flex items-center space-x-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-400" ${currentPage === 1 ? 'disabled' : ''}>
+                <i class="fas fa-chevron-left text-sm"></i>
+                <span>Anterior</span>
             </button>
-            <span class="text-gray-600">Página ${currentPage} de ${totalPages}</span>
-            <button id="next-page" class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed" ${currentPage === totalPages ? 'disabled' : ''}>
-                Siguiente
+            <span class="text-gray-700 font-medium">Página ${currentPage} de ${totalPages}</span>
+            <button id="next-page" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 active:bg-blue-700 transition-all duration-200 shadow-md hover:shadow-lg flex items-center space-x-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-400" ${currentPage === totalPages ? 'disabled' : ''}>
+                <span>Siguiente</span>
+                <i class="fas fa-chevron-right text-sm"></i>
             </button>
         </div>
     `;
@@ -566,17 +569,26 @@ function updatePagination() {
     pagination.innerHTML = paginationHtml;
 
     // Agregar event listeners para los botones de paginación
-    document.getElementById('prev-page').addEventListener('click', () => {
-        if (currentPage > 1) {
-            renderPage(currentPage - 1);
-        }
-    });
-
-    document.getElementById('next-page').addEventListener('click', () => {
-        if (currentPage < totalPages) {
-            renderPage(currentPage + 1);
-        }
-    });
+    const prevButton = document.getElementById('prev-page');
+    const nextButton = document.getElementById('next-page');
+    
+    if (prevButton) {
+        prevButton.onclick = function() {
+            if (currentPage > 1) {
+                console.log("Botón anterior clickeado, cambiando a página", currentPage - 1);
+                renderPage(currentPage - 1);
+            }
+        };
+    }
+    
+    if (nextButton) {
+        nextButton.onclick = function() {
+            if (currentPage < totalPages) {
+                console.log("Botón siguiente clickeado, cambiando a página", currentPage + 1);
+                renderPage(currentPage + 1);
+            }
+        };
+    }
 }
 
 // Función para filtrar datos
