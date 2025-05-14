@@ -400,196 +400,10 @@ function loadData(dataSource) {
     );
 }
 
-// Renderizar una página de datos
-function renderPage(page) {
-    console.log("pagina: ", page);
-    currentPage = page;
-    const startIndex = (page - 1) * config.itemsPerPage;
-    const endIndex = startIndex + config.itemsPerPage;
-    const pageData = filteredData.slice(startIndex, endIndex);
 
-    const dataList = document.getElementById('data-list');
-    if (!dataList) return;
-
-    if (pageData.length === 0) {
-        dataList.innerHTML = `
-            <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4">
-                No se encontraron datos que coincidan con los criterios de búsqueda.
-            </div>
-        `;
-        const pagination = document.getElementById('pagination');
-        if (pagination) pagination.innerHTML = '';
-        return;
-    }
-
-    // Determinar si necesitamos scroll horizontal
-    const headers = Object.keys(pageData[0]);
-    const needsScroll = headers.length > 4;
-
-    // Generar encabezados dinámicamente basados en el primer elemento
-    if (pageData.length > 0) {
-        const dataHeaders = document.getElementById('data-headers');
-        if (!dataHeaders) return;
-        console.log("datalistelement:", dataList);  // Cambiado de dataListElement a dataList
-
-        // Limpiar cualquier clase de scroll anterior
-        if (dataHeaders.parentElement) {
-            dataHeaders.parentElement.classList.remove('overflow-x-auto');
-        }
-
-        // Calcular el ancho de columna basado en el número de propiedades
-        const colSpan = Math.floor(12 / headers.length);
-
-        let headersHtml = '';
-
-        if (needsScroll) {
-            // Para muchas columnas, usamos un contenedor con ancho fijo para cada columna
-            headersHtml = '';
-            headers.forEach(header => {
-                const displayName = header.charAt(0).toUpperCase() + header.slice(1).replace(/([A-Z])/g, ' $1');
-                headersHtml += `<div class="px-4 py-2 min-w-[150px] font-medium text-gray-700">${displayName}</div>`;
-            });
-        } else {
-            // Para pocas columnas, usamos grid
-            headers.forEach(header => {
-                const displayName = header.charAt(0).toUpperCase() + header.slice(1).replace(/([A-Z])/g, ' $1');
-                headersHtml += `<div class="col-span-${colSpan} font-medium text-gray-700">${displayName}</div>`;
-            });
-        }
-
-        dataHeaders.innerHTML = headersHtml;
-    }
-
-    let html = '';
-
-    if (needsScroll) {
-        // Crear un contenedor único con scroll para encabezados y datos
-        html = `<div class="overflow-x-auto shadow-md rounded-lg">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>`;
-
-        // Añadir encabezados a la tabla
-        headers.forEach(header => {
-            const displayName = header.charAt(0).toUpperCase() + header.slice(1).replace(/([A-Z])/g, ' $1');
-            html += `<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 bg-gray-50">${displayName}</th>`;
-        });
-
-        html += `</tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">`;
-
-        // Añadir filas de datos con estilos alternados
-        pageData.forEach((item, index) => {
-            const rowClass = index % 2 === 0 ? "bg-white" : "bg-gray-50";
-            html += `<tr class="${rowClass} hover:bg-blue-50 transition-colors duration-150">`;
-
-            headers.forEach(header => {
-                let value = item[header];
-                // Formatear objetos o arrays
-                if (typeof value === 'object' && value !== null) {
-                    value = JSON.stringify(value);
-                }
-
-                html += `<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${value}</td>`;
-            });
-
-            html += `</tr>`;
-        });
-
-        html += `</tbody>
-                </table>
-            </div>`;
-
-        // Ocultar los encabezados originales cuando usamos tabla
-        const dataHeaders = document.getElementById('data-headers');
-        if (dataHeaders) {
-            dataHeaders.style.display = 'none';
-        }
-    } else {
-        // Formato original para pocas columnas
-        // Mostrar los encabezados originales
-        const dataHeaders = document.getElementById('data-headers');
-        if (dataHeaders) {
-            dataHeaders.style.display = '';
-        }
-
-        pageData.forEach(item => {
-            const colSpan = Math.floor(12 / headers.length);
-
-            html += `<div class="bg-white border border-gray-200 rounded-md p-4 mb-3 hover:shadow-md transition-all">`;
-            html += `<div class="grid grid-cols-12 gap-4">`;
-
-            headers.forEach(header => {
-                let value = item[header];
-
-                // Formatear objetos o arrays
-                if (typeof value === 'object' && value !== null) {
-                    value = JSON.stringify(value);
-                }
-
-                html += `<div class="col-span-${colSpan} text-gray-800">${value}</div>`;
-            });
-
-            html += `</div>`;
-            html += `</div>`;
-        });
-    }
-
-    dataList.innerHTML = html;
-
-    // Actualizar paginación
-    updatePagination();
-}
 
 // Actualizar la paginación
-function updatePagination() {
-    const totalPages = Math.ceil(filteredData.length / config.itemsPerPage);
-    const pagination = document.getElementById('pagination');
 
-    if (!pagination || totalPages <= 1) {
-        if (pagination) pagination.innerHTML = '';
-        return;
-    }
-
-    let paginationHtml = `
-        <div class="flex items-center justify-between mt-4 w-full max-w-md">
-            <button id="prev-page" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 active:bg-blue-700 transition-all duration-200 shadow-md hover:shadow-lg flex items-center space-x-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-400" ${currentPage === 1 ? 'disabled' : ''}>
-                <i class="fas fa-chevron-left text-sm"></i>
-                <span>Anterior</span>
-            </button>
-            <span class="text-gray-700 font-medium">Página ${currentPage} de ${totalPages}</span>
-            <button id="next-page" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 active:bg-blue-700 transition-all duration-200 shadow-md hover:shadow-lg flex items-center space-x-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-400" ${currentPage === totalPages ? 'disabled' : ''}>
-                <span>Siguiente</span>
-                <i class="fas fa-chevron-right text-sm"></i>
-            </button>
-        </div>
-    `;
-
-    pagination.innerHTML = paginationHtml;
-
-    // Agregar event listeners para los botones de paginación
-    const prevButton = document.getElementById('prev-page');
-    const nextButton = document.getElementById('next-page');
-    
-    if (prevButton) {
-        prevButton.onclick = function() {
-            if (currentPage > 1) {
-                console.log("Botón anterior clickeado, cambiando a página", currentPage - 1);
-                renderPage(currentPage - 1);
-            }
-        };
-    }
-    
-    if (nextButton) {
-        nextButton.onclick = function() {
-            if (currentPage < totalPages) {
-                console.log("Botón siguiente clickeado, cambiando a página", currentPage + 1);
-                renderPage(currentPage + 1);
-            }
-        };
-    }
-}
 
 // Función para filtrar datos
 function filterData(searchTerm) {
@@ -955,3 +769,133 @@ window.filterData = function(searchTerm) {
     }
     renderPage(1);
 };
+
+
+// Función para renderizar una página de datos
+function renderPage(page) {
+    currentPage = page;
+    
+    const dataList = document.getElementById('data-list');
+    if (!dataList) return;
+    
+    // Calcular índices para la paginación
+    const startIndex = (page - 1) * config.itemsPerPage;
+    const endIndex = Math.min(startIndex + config.itemsPerPage, filteredData.length);
+    
+    // Crear la estructura de la tabla
+    let tableHTML = `
+    <div class="overflow-x-auto">
+        <table class="min-w-full bg-white border border-gray-200">
+            <thead>
+                <tr class="bg-gray-100">`;
+    
+    // Determinar las columnas basadas en el primer elemento
+    const columns = [];
+    if (filteredData.length > 0) {
+        const firstItem = filteredData[0];
+        for (const key in firstItem) {
+            if (Object.prototype.hasOwnProperty.call(firstItem, key)) {
+                columns.push(key);
+            }
+        }
+        
+        // Agregar encabezados de columna
+        columns.forEach(column => {
+            tableHTML += `<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">${column.toUpperCase()}</th>`;
+        });
+    }
+    
+    tableHTML += `
+            </tr>
+        </thead>
+        <tbody>`;
+    
+    // Agregar filas de datos
+    if (filteredData.length === 0) {
+        tableHTML += `
+            <tr>
+                <td colspan="${columns.length}" class="px-6 py-4 text-center text-gray-500">
+                    No se encontraron datos
+                </td>
+            </tr>`;
+    } else {
+        // Mostrar los datos de la página actual
+        for (let i = startIndex; i < endIndex; i++) {
+            const item = filteredData[i];
+            const rowClass = i % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+            
+            tableHTML += `<tr class="${rowClass}">`;
+            
+            columns.forEach(column => {
+                let cellValue = item[column] || '';
+                // Truncar valores muy largos
+                if (typeof cellValue === 'string' && cellValue.length > 50) {
+                    cellValue = cellValue.substring(0, 47) + '...';
+                }
+                tableHTML += `<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${cellValue}</td>`;
+            });
+            
+            tableHTML += `</tr>`;
+        }
+    }
+    
+    tableHTML += `
+        </tbody>
+    </table>
+    </div>`;
+    
+    // Agregar paginación similar a la imagen
+    if (filteredData.length > 0) {
+        const totalPages = Math.ceil(filteredData.length / config.itemsPerPage);
+        
+        tableHTML += `
+        <div class="flex items-center justify-between mt-4 px-4 py-3 bg-white border-t border-gray-200">
+            <button onclick="renderPage(${Math.max(1, currentPage - 1)})" 
+                class="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}">
+                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+                Anterior
+            </button>
+            
+            <div class="text-sm text-gray-700">
+                Página ${currentPage} de ${totalPages}
+            </div>
+            
+            <button onclick="renderPage(${Math.min(totalPages, currentPage + 1)})" 
+                class="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}">
+                Siguiente
+                <svg class="w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+            </button>
+        </div>`;
+    }
+    
+    // Actualizar el contenido
+    dataList.innerHTML = tableHTML;
+    
+    // Exportar la función para uso global
+    window.renderPage = renderPage;
+}
+
+// Actualizar el título de la tabla/lista
+function updateTableTitle(title) {
+    if (!title) return;
+
+    const selectors = [
+        '.bg-white.shadow-sm.rounded-lg.p-6 h2',
+        '.bg-white.shadow-sm.rounded-lg.p-6 h3',
+        '.bg-white.shadow-sm.rounded-lg.p-6 .text-xl',
+        '#table-title',
+        '.text-xl.font-semibold.text-gray-800'
+    ];
+
+    for (const selector of selectors) {
+        const element = document.querySelector(selector);
+        if (element) {
+            element.textContent = title;
+            break;
+        }
+    }
+}
