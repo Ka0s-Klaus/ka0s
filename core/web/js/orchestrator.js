@@ -1,4 +1,5 @@
 // Configuración global
+
 const config = {
     itemsPerPage: 10,
     defaultArchive: 'data/kaos-workflows-available.json'
@@ -30,7 +31,7 @@ function loadWebsConfig() {
 
             // Inicializar la barra de navegación
             initNavbar();
-
+            processConfig(webConfig);
             // Inicializar el módulo de datos
             initDataList();
 
@@ -110,9 +111,9 @@ function initSection(sectionName) {
     loadDataFromUrl(
         sectionConfig.configFile,
         (config) => {
-            // Actualizar título y descripción
-            updateTitleAndDescription(config);
-
+            // Procesar la configuración usando la función processConfig
+            processConfig(config);
+            
             // Configurar las métricas basadas en el archivo de configuración
             const metricKeys = [];
             const colors = ['blue', 'green', 'yellow', 'purple', 'red', 'orange', 'gray'];
@@ -129,12 +130,6 @@ function initSection(sectionName) {
 
             // Actualizar la configuración de métricas para esta sección
             sectionConfig.metrics = metricKeys;
-
-            // Actualizar métricas en la UI
-            updateMetrics(config, sectionConfig.metrics);
-
-            // Configurar la lista dinámica
-            configureDataList(config);
 
             // Procesar datos específicos si es necesario
             if (sectionConfig.processData && typeof sectionConfig.processData === 'function') {
@@ -911,7 +906,9 @@ function processConfig(config) {
     const titleElement = document.getElementById('section-title');
     if (titleElement && config.title) {
         titleElement.textContent = config.title;
+        console.log("Titulo:", config.title)
     }
+    console.log("Titulo:", config.title)
     
     const descriptionElement = document.getElementById('section-description');
     if (descriptionElement && config.description) {
