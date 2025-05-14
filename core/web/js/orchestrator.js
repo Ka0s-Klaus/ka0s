@@ -2,7 +2,7 @@
 
 const config = {
     itemsPerPage: 10,
-    defaultArchive: 'data/kaos-workflows-available.json'
+    defaultArchive: 'data/kaos-workflows-runs.json'
 };
 
 // Variables globales iniciales
