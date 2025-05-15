@@ -827,7 +827,7 @@ jobs:
           TITLE=$(jq -r '.title' $STRUCTURE_FILE)
           
           # Crear el dashboard.html con todas las secciones concatenadas y la navbar
-          echo "<!DOCTYPE html>
+          echo '<!DOCTYPE html>
           <html lang=es>
           <head>
               <meta charset=UTF-8>
@@ -842,7 +842,7 @@ jobs:
           </head>
           <body class=bg-gray-50>
               <!-- Incluir la navbar -->
-              <div id=""navbar-container"></div>
+              <div id="navbar-container"></div>
               
               <!-- Contenido principal --> 
               <div class=p-6 id=main-content> 
@@ -857,34 +857,34 @@ jobs:
                   </div> 
 
                   <!-- Contenedor de gráficos -->
-                  <div id=charts-section class="mb-8">
+                  <div id="charts-section" class="mb-8 overflow-x-auto">
                       <!-- Gráfico de barras -->
-                      <div id=chart-container class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                      <div id="chart-container" class="bg-white rounded-lg shadow-lg p-6 mb-6 w-full">
                           <h2 class="text-xl font-semibold text-gray-800 mb-4">Análisis de Workflows</h2>
                           <div class="w-full h-64">
-                              <canvas id=workflows-chart></canvas>
+                              <canvas id="workflows-chart"></canvas>
                           </div>
                       </div>
                       
                       <!-- Gráfico circular -->
-                      <div id=status-chart-container class="bg-white rounded-lg shadow-lg p-6">
+                      <div id="status-chart-container" class="bg-white rounded-lg shadow-lg p-6 w-full">
                           <h2 class="text-xl font-semibold text-gray-800 mb-4">Estado de los Workflows</h2>
                           <div class="w-full h-64">
-                              <canvas id=workflows-status-chart></canvas>
+                              <canvas id="workflows-status-chart"></canvas>
                           </div>
                       </div>
                   </div>
 
                   <!-- Contenedor de tabla de datos --> 
-                  <div id=data-section class="mb-8">
-                      <div class="bg-white rounded-lg shadow-lg p-6 mb-4">
-                          <h2 class="text-xl font-semibold text-gray-800 mb-4">Datos de Workflows</h2>
-                          <div id=data-list class="bg-white rounded-lg overflow-hidden">
-                              <div id=data-headers class="grid grid-cols-12 gap-4 mb-4 p-4 bg-gray-50 border-b"></div>
+                  <div id=data-section class=mb-8>
+                      <div class=bg-white rounded-lg shadow-lg p-6 mb-4>
+                          <h2 class=text-xl font-semibold text-gray-800 mb-4>Datos de Workflows</h2>
+                          <div id=data-list class=bg-white rounded-lg overflow-hidden>
+                              <div id=data-headers class=grid grid-cols-12 gap-4 mb-4 p-4 bg-gray-50 border-b></div>
                               <!-- Aquí se mostrará la lista de datos --> 
                           </div>
                       </div>
-                      <div id=pagination class="mt-4 flex justify-center w-full"> 
+                      <div id=pagination class=mt-4 flex justify-center w-full> 
                           <!-- Aquí se mostrará la paginación --> 
                       </div>
                   </div>
@@ -893,7 +893,7 @@ jobs:
           <!-- Cargar la navbar desde el template -->
           <script src=js/orchestrator.js></script>
           </body>
-          </html>" > "core/results/webs/${TITLE}/dashboard.html"
+          </html>' > "core/results/webs/${TITLE}/dashboard.html"
           
           echo "Dashboard HTML generado correctamente en core/results/webs/${TITLE}/dashboard.html"
       
