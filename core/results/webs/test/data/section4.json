@@ -1,22 +1,55 @@
 {
-    "title": "Workflows",
+    "title": "Actions Performance",
     "description": "Estado y lista de workflows disponibles",
-    "metric1Title": "Total",
-    "metric1": "42",
-    "metric2Title": "Activos",
-    "metric2": "28",
-    "metric3Title": "Completados",
-    "metric3": "14",
     "templates": [
         {
-            "type": "graphic",
-            "title": "Estado de Workflows",
-            "dataSource": "core/results/webs/dashboard/data/kaos-workflows-runs.json"
+            "type": "summary",
+            "dataSource": "data/kaos-workflows-runs.json",
+            "metrics": [
+                {
+                    "name": "totalItems",
+                    "type": "count",
+                    "title": "Total"
+                },
+                {
+                    "name": "activeCount",
+                    "type": "count",
+                    "title": "In Progress",
+                    "filter": {
+                        "field": "status",
+                        "value": "in_progress"
+                    }
+                },
+                {
+                    "name": "disabledCount",
+                    "type": "count",
+                    "title": "Compleatados",
+                    "filter": {
+                        "field": "status",
+                        "value": "completed"
+                    }
+                }
+                ,
+                {
+                    "name": "disabledCount",
+                    "type": "count",
+                    "title": "Rama Principal",
+                    "filter": {
+                        "field": "head_branch",
+                        "value": "main"
+                    }
+                }
+            ]
         },
         {
-            "type": "list",
-            "title": "Lista de Workflows",
-            "dataSource": "core/results/webs/dashboard/data/kaos-workflows-available.json"
+            "type": "table",
+            "title": "Ka0s Modules",
+            "dataSource": "data/kaos-workflows-available.json",
+            "columns": [
+                "id",
+                "name",
+                "state"
+            ]
         }
     ]
 }

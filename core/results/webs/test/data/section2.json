@@ -1,22 +1,57 @@
 {
-    "title": "Workflows",
+    "title": "Backlogs",
     "description": "Estado y lista de workflows disponibles",
-    "metric1Title": "Total",
-    "metric1": "42",
-    "metric2Title": "Activos",
-    "metric2": "28",
-    "metric3Title": "Completados",
-    "metric3": "14",
     "templates": [
         {
-            "type": "graphic",
-            "title": "Estado de Workflows",
-            "dataSource": "core/results/webs/dashboard/data/kaos-workflows-runs.json"
+            "type": "summary",
+            "dataSource": "data/kaos-workflows-available.json",
+            "metrics": [
+                {
+                    "name": "totalItems",
+                    "type": "count",
+                    "title": "Total"
+                },
+                {
+                    "name": "activeCount",
+                    "type": "count",
+                    "title": "Activos",
+                    "filter": {
+                        "field": "state",
+                        "value": "active"
+                    }
+                },
+                {
+                    "name": "disabledCount",
+                    "type": "count",
+                    "title": "Desactivos",
+                    "filter": {
+                        "field": "state",
+                        "value": "disabled_manually"
+                    }
+                },
+                {
+                    "name": "activeRate",
+                    "type": "rate",
+                    "title": "Tasa de Activos",
+                    "numerator": {
+                        "field": "state",
+                        "value": "active"
+                    },
+                    "denominator": "total",
+                    "format": "percentage"
+                }
+            ]
         },
         {
-            "type": "list",
-            "title": "Lista de Workflows",
-            "dataSource": "core/results/webs/dashboard/data/kaos-workflows-available.json"
+            "type": "table",
+            "title": "Ka0s Modules",
+            "dataSource": "data/kaos-workflows-available.json",
+            "columns": [
+                "id",
+                "name",
+                "state",
+                "path"
+            ]
         }
     ]
 }
