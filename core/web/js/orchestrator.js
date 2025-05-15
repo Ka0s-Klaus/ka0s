@@ -407,8 +407,168 @@ function loadData(dataSource) {
 
 
 
-// Actualizar la paginación
+// Función para renderizar una página específica de datos
+function renderPage(pageNumber) {
+    const dataList = document.getElementById('data-list');
+    if (!dataList) return;
+    
+    // Actualizar la página actual
+    currentPage = pageNumber;
+    
+    // Calcular índices para la paginación
+    const startIndex = (currentPage - 1) * config.itemsPerPage;
+    const endIndex = Math.min(startIndex + config.itemsPerPage, filteredData.length);
+    
+    // Crear la estructura de la tabla
+    let tableHTML = `
+    <div class="overflow-x-auto">
+        <table class="min-w-full bg-white border border-gray-200">
+            <thead>
+                <tr class="bg-gray-100">`;
+    
+    // Determinar las columnas basadas en el primer elemento
+    const columns = [];
+    if (filteredData.length > 0) {
+        const firstItem = filteredData[0];
+        for (const key in firstItem) {
+            if (Object.prototype.hasOwnProperty.call(firstItem, key)) {
+                columns.push(key);
+            }
+        }
+        
+        // Agregar encabezados de columna
+        columns.forEach(column => {
+            tableHTML += `<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">${column.toUpperCase()}</th>`;
+        });
+    }
+    
+    tableHTML += `
+            </tr>
+        </thead>
+        <tbody>`;
+    
+    // Agregar filas de datos
+    if (filteredData.length === 0) {
+        tableHTML += `
+            <tr>
+                <td colspan="${columns.length}" class="px-6 py-4 text-center text-gray-500">
+                    No se encontraron datos
+                </td>
+            </tr>`;
+    } else {
+        // Mostrar los datos de la página actual
+        for (let i = startIndex; i < endIndex; i++) {
+            const item = filteredData[i];
+            const rowClass = i % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+            
+            tableHTML += `<tr class="${rowClass}">`;
+            
+            columns.forEach(column => {
+                let cellValue = item[column] || '';
+                // Truncar valores muy largos
+                if (typeof cellValue === 'string' && cellValue.length > 50) {
+                    cellValue = cellValue.substring(0, 47) + '...';
+                }
+                tableHTML += `<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${cellValue}</td>`;
+            });
+            
+            tableHTML += `</tr>`;
+        }
+    }
+    
+    tableHTML += `
+        </tbody>
+    </table>
+    </div>`;
+    
+    // Agregar paginación similar a la imagen
+    if (filteredData.length > 0) {
+        const totalPages = Math.ceil(filteredData.length / config.itemsPerPage);
+        
+        tableHTML += `
+        <div class="flex items-center justify-between mt-4 px-4 py-3 bg-white border-t border-gray-200">
+            <button onclick="renderPage(${Math.max(1, currentPage - 1)})" 
+                class="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}">
+                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+                Anterior
+            </button>
+            
+            <div class="text-sm text-gray-700">
+                Página ${currentPage} de ${totalPages}
+            </div>
+            
+            <button onclick="renderPage(${Math.min(totalPages, currentPage + 1)})" 
+                class="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}">
+                Siguiente
+                <svg class="w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+            </button>
+        </div>`;
+    }
+    
+    // Actualizar el contenido
+    dataList.innerHTML = tableHTML;
+}
 
+// Función para actualizar la paginación
+function updatePagination() {
+    const paginationElement = document.getElementById('pagination');
+    if (!paginationElement) return;
+    
+    const totalPages = Math.ceil(filteredData.length / config.itemsPerPage);
+    
+    // No mostrar paginación si solo hay una página
+    if (totalPages <= 1) {
+        paginationElement.innerHTML = '';
+        return;
+    }
+    
+    let paginationHTML = '';
+    
+    // Botón anterior
+    paginationHTML += `
+        <button class="px-3 py-1 rounded-md ${currentPage === 1 ? 'text-gray-400 cursor-not-allowed' : 'text-blue-600 hover:bg-blue-100'}"
+                ${currentPage === 1 ? 'disabled' : `onclick="renderPage(${currentPage - 1})"`}>
+            <i class="fas fa-chevron-left"></i>
+        </button>
+    `;
+    
+    // Números de página
+    for (let i = 1; i <= totalPages; i++) {
+        // Mostrar solo algunas páginas para no sobrecargar la UI
+        if (
+            i === 1 || // Primera página
+            i === totalPages || // Última página
+            (i >= currentPage - 2 && i <= currentPage + 2) // Páginas cercanas a la actual
+        ) {
+            paginationHTML += `
+                <button class="px-3 py-1 rounded-md ${i === currentPage ? 'bg-blue-600 text-white' : 'text-blue-600 hover:bg-blue-100'}"
+                        onclick="renderPage(${i})">
+                    ${i}
+                </button>
+            `;
+        } else if (
+            (i === currentPage - 3 && currentPage > 3) ||
+            (i === currentPage + 3 && currentPage < totalPages - 2)
+        ) {
+            // Puntos suspensivos para indicar páginas omitidas
+            paginationHTML += `<span class="px-3 py-1">...</span>`;
+        }
+    }
+    
+    // Botón siguiente
+    paginationHTML += `
+        <button class="px-3 py-1 rounded-md ${currentPage === totalPages ? 'text-gray-400 cursor-not-allowed' : 'text-blue-600 hover:bg-blue-100'}"
+                ${currentPage === totalPages ? 'disabled' : `onclick="renderPage(${currentPage + 1})"`}>
+            <i class="fas fa-chevron-right"></i>
+        </button>
+    `;
+    
+    paginationElement.innerHTML = paginationHTML;
+}
 
 // Función para filtrar datos
 function filterData(searchTerm) {
@@ -501,6 +661,7 @@ function initializeChart(data) {
 }
 
 // Exportar funciones para uso global
+window.renderPage = renderPage;
 window.initSection = initSection;
 window.filterData = filterData;
 window.initializeChart = initializeChart;
