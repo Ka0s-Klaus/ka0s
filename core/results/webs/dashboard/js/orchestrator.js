@@ -20,14 +20,6 @@ let workflowsStatusChart = null;
 document.addEventListener('DOMContentLoaded', function () {
     // Cargar la configuración principal desde webs.json
     loadWebsConfig();
-    
-    // Configurar el contenedor de gráficos con scroll
-    const chartsSection = document.getElementById('charts-section');
-    if (chartsSection) {
-        chartsSection.style.overflowX = 'auto';
-        chartsSection.style.maxWidth = '100%';
-        chartsSection.style.display = 'block';
-    }
 });
 
 /**
@@ -998,36 +990,6 @@ function initWorkflowsChart() {
         'data/kaos-workflows-runs.json',
         (data) => {
             createWorkflowsCharts(newBarCanvas, newStatusCanvas, data);
-            
-            // Mejorar el diseño de los contenedores de gráficos
-            const chartContainers = document.querySelectorAll('#chart-container, #status-chart-container');
-            chartContainers.forEach(container => {
-                container.style.minWidth = '400px';
-                container.style.margin = '0 0 20px 0';
-            });
-
-            // Configurar el contenedor principal de gráficos
-            const chartsSection = document.getElementById('charts-section');
-            if (chartsSection) {
-                // Aplicar grid layout para mejor organización
-                chartsSection.style.display = 'grid';
-                chartsSection.style.gridTemplateColumns = 'repeat(auto-fit, minmax(400px, 1fr))';
-                chartsSection.style.gap = '20px';
-                chartsSection.style.overflowX = 'auto';
-                
-                // Asegurar que el contenedor tenga suficiente espacio
-                chartsSection.style.padding = '10px';
-                chartsSection.style.maxWidth = '100%';
-            }
-
-            // Ajustar el tamaño de los canvas para los gráficos
-            const canvases = document.querySelectorAll('#workflows-chart, #workflows-status-chart');
-            canvases.forEach(canvas => {
-                const parent = canvas.parentElement;
-                if (parent) {
-                    parent.style.height = '300px';
-                }
-            });
         },
         (error) => {
             console.error('Error cargando datos para el gráfico:', error);
