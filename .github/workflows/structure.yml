@@ -61,7 +61,8 @@ jobs:
               echo "II - Created directory: $clean_dir"
               target_dir="${{ env.KAOS_WEB_STRUCTURE }}$TITLE/$clean_dir"
               mkdir -p "$target_dir"
-              touch $target_dir/$clean_dir".html"
+              base_name=$(basename "$clean_dir")
+              touch "$target_dir/$base_name.html"
               echo "II - Created directory: $target_dir"
             fi
           done
@@ -123,7 +124,8 @@ jobs:
               echo "VI - Created test directory: $clean_dir"
               target_dir="${{ env.KAOS_TEST_STRUCTURE }}$clean_dir"
               mkdir -p "$target_dir"
-              touch $target_dir/$clean_dir".html"
+              base_name=$(basename "$clean_dir")
+              touch "$target_dir/$base_name.html"
               echo "VI - Created test directory: $target_dir"
             fi
           done
@@ -189,7 +191,7 @@ jobs:
           <body class="bg-gray-100 min-h-screen">
               <div class="flex">
                   <!-- Incluir el navbar -->
-                  <div id="navbar-container"></div>
+                  <div id="navbar"></div>
   
                   <!-- Contenido principal -->
                   <div class="ml-[250px] w-full transition-all duration-300 p-6" id="main-content">
@@ -246,7 +248,8 @@ jobs:
               echo "X - Created test web directory: $clean_dir"
               target_dir="${{ env.KAOS_WEB_STRUCTURE }}$TEST_TITLE/$clean_dir"
               mkdir -p "$target_dir"
-              touch $target_dir/$clean_dir".html"
+              base_name=$(basename "$clean_dir")
+              touch "$target_dir/$base_name.html"
               echo "X - Created test web directory: $target_dir"
             fi
           done
@@ -725,13 +728,18 @@ jobs:
                     LIST_DATA_SOURCE=$(echo "$LIST_TEMPLATE_JSON" | jq -r '.dataSource')
                     
                     # Leer la plantilla de lista
-                   
-                    
-                    # Crear un archivo temporal con la plantilla de lista modificada
-                    TEMP_LIST=$(mktemp)
-                    
-                      sed "s|{{TEMPLATE_TITLE}}|$LIST_TITLE|g" | 
-                      sed "s|{{DATA_SOURCE}}|$LIST_DATA_SOURCE|g" > "$TEMP_LIST"
+                    LIST_TEMPLATE_HTML="core/web/templates/list-template.html"
+                    if [ -f "$LIST_TEMPLATE_HTML" ]; then
+                        # Crear un archivo temporal con la plantilla de lista modificada
+                        TEMP_LIST=$(mktemp)
+                        
+                        # Aplicar las sustituciones en un solo comando
+                        cat "$LIST_TEMPLATE_HTML" | \
+                        sed "s|{{TEMPLATE_TITLE}}|$LIST_TITLE|g" | \
+                        sed "s|{{DATA_SOURCE}}|$LIST_DATA_SOURCE|g" > "$TEMP_LIST"
+                    else
+                        echo "Error: No se encontró la plantilla de lista en $LIST_TEMPLATE_HTML"
+                    fi
                     
                     # Crear un archivo temporal para el resultado final
                     TEMP_RESULT=$(mktemp)
@@ -764,7 +772,13 @@ jobs:
                   
                   if [ "$TYPE" = "graphic" ]; then
                     # Leer la plantilla de gráfico
-                   
+                    GRAPHIC_TEMPLATE_HTML="core/web/templates/graphic-template.html"
+                    if [ -f "$GRAPHIC_TEMPLATE_HTML" ]; then
+                        GRAPHIC_TEMPLATE=$(cat "$GRAPHIC_TEMPLATE_HTML")
+                    else
+                        echo "Error: No se encontró la plantilla de gráfico en $GRAPHIC_TEMPLATE_HTML"
+                        GRAPHIC_TEMPLATE="<div>Error: Plantilla de gráfico no encontrada</div>"
+                    fi
                     # Reemplazar placeholders en la plantilla
                     GRAPHIC_TEMPLATE=$(echo "$GRAPHIC_TEMPLATE" | sed "s/GRAPHIC_TITLE_PLACEHOLDER/$TITLE/g")
                     GRAPHIC_TEMPLATE=$(echo "$GRAPHIC_TEMPLATE" | sed "s|DATA_SOURCE_PLACEHOLDER|$DATA_SOURCE|g")
@@ -774,7 +788,13 @@ jobs:
                     # Modificar la forma de incluir el script para que pueda recibir el data-source
                   elif [ "$TYPE" = "list" ]; then
                     # Leer la plantilla de lista
-                    
+                    LIST_TEMPLATE_HTML="core/web/templates/list-template.html"
+                    if [ -f "$LIST_TEMPLATE_HTML" ]; then
+                        LIST_TEMPLATE=$(cat "$LIST_TEMPLATE_HTML")
+                    else
+                        echo "Error: No se encontró la plantilla de lista en $LIST_TEMPLATE_HTML"
+                        LIST_TEMPLATE="<div>Error: Plantilla de lista no encontrada</div>"
+                    fi
                     # Reemplazar placeholders en la plantilla
                     LIST_TEMPLATE=$(echo "$LIST_TEMPLATE" | sed "s/LIST_TITLE_PLACEHOLDER/$TITLE/g")
                     LIST_TEMPLATE=$(echo "$LIST_TEMPLATE" | sed "s|DATA_SOURCE_PLACEHOLDER|$DATA_SOURCE|g")
@@ -807,73 +827,81 @@ jobs:
           TITLE=$(jq -r '.title' $STRUCTURE_FILE)
           
           # Crear el dashboard.html con todas las secciones concatenadas y la navbar
-          echo "<!DOCTYPE html>
-          <html lang=\"es\">
+          echo '<!DOCTYPE html>
+          <html lang=es>
           <head>
-              <meta charset=\"UTF-8\">
-              <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
-              <title>Ka0s Dashboard - ${TITLE}</title>
-              <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css\">
-          </head>
-          <body class=\"bg-gray-50\">
-              <!-- Incluir la navbar -->
-              <div id=\"navbar-container\"></div>
+              <meta charset=UTF-8>
+              <meta name=viewport content="width=device-width, initial-scale=1.0">
+              <title>Ka0s Dashboard - dashboard</title>
+              <link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css>
+              <!-- Añadir Tailwind CSS -->
+              <script src=https://cdn.tailwindcss.com></script>
+              <!-- Añadir Chart.js para gráficos -->
+              <script src=https://cdn.jsdelivr.net/npm/chart.js></script>
               
-              <div id=\"main-content\" class=\"ml-[250px] transition-all duration-300\">
-                  <div class=\"container mx-auto px-4 py-8\">
-                      <header class=\"py-3 mb-4 border-b border-gray-200\">
-                          <div class=\"flex items-center\">
-                              <h1 class=\"text-2xl font-bold text-gray-800\">${TITLE}</h1>
+          </head>
+          <body class=bg-gray-50>
+              <!-- Incluir la navbar -->
+              <div id="navbar-container"></div>
+              
+              <!-- Contenido principal --> 
+              <div class=p-6 id=main-content> 
+                  <header class=mb-8 header-centered> 
+                      <h1 class=text-3xl font-bold text-gray-800 id=section-title>SECTION_TITLE_PLACEHOLDER</h1> 
+                      <p class=text-gray-600 mt-2 id=section-description>SECTION_DESCRIPTION_PLACEHOLDER</p> 
+                  </header> 
+
+                  <!-- Contenedor de métricas - se generará dinámicamente --> 
+                  <div id=metrics-container class=grid grid-cols-1 md:grid-cols-4 gap-4 mb-8> 
+                      <!-- Las métricas se generarán dinámicamente según el JSON --> 
+                  </div> 
+
+                  <!-- Contenedor de gráficos -->
+                  <div id="charts-section" class="mb-8 overflow-x-auto">
+                      <!-- Gráfico de barras -->
+                      <div id="chart-container" class="bg-white rounded-lg shadow-lg p-6 mb-6 w-full">
+                          <h2 class="text-xl font-semibold text-gray-800 mb-4">Análisis de Workflows</h2>
+                          <div class="w-full h-64">
+                              <canvas id="workflows-chart"></canvas>
                           </div>
-                      </header>
-                      <div class=\"dashboard-content\">" > "core/results/webs/${TITLE}/dashboard.html"
-          
-          # Concatenar todas las secciones
-          if [ -d "core/results/webs/${TITLE}/temp_sections" ]; then
-            for section_file in "core/results/webs/${TITLE}/temp_sections"/*.html; do
-              if [ -f "$section_file" ]; then
-                SECTION_NAME=$(basename "$section_file" .html)
-                echo "<div class=\"section-content\" id=\"${SECTION_NAME}\">" >> "core/results/webs/${TITLE}/dashboard.html"
-                
-                # Extraer solo el contenido del body de cada sección
-                TEMP_CONTENT=$(mktemp)
-                awk '/<body/,/<\/body>/' "$section_file" > "$TEMP_CONTENT"
-                
-                # Filtrar el contenido para eliminar etiquetas innecesarias
-                cat "$TEMP_CONTENT" | 
-                  grep -v "<body" | 
-                  grep -v "</body>" | 
-                  
-                  
-                
-                # Limpiar archivos temporales
-                rm -f "$TEMP_CONTENT"
-                
-                echo "</div>" >> "core/results/webs/${TITLE}/dashboard.html"
-              fi
-            done
-          else
-            echo "No se encontró el directorio de secciones temporales"
-          fi
-          
-          # Cerrar las etiquetas HTML
-          echo "          </div>
+                      </div>
+                      
+                      <!-- Gráfico circular -->
+                      <div id="status-chart-container" class="bg-white rounded-lg shadow-lg p-6 w-full">
+                          <h2 class="text-xl font-semibold text-gray-800 mb-4">Estado de los Workflows</h2>
+                          <div class="w-full h-64">
+                              <canvas id="workflows-status-chart"></canvas>
+                          </div>
+                      </div>
+                  </div>
+
+                  <!-- Contenedor de tabla de datos --> 
+                  <div id=data-section class=mb-8>
+                      <div class=bg-white rounded-lg shadow-lg p-6 mb-4>
+                          <h2 class=text-xl font-semibold text-gray-800 mb-4>Datos de Workflows</h2>
+                          <div id=data-list class=bg-white rounded-lg overflow-hidden>
+                              <div id=data-headers class=grid grid-cols-12 gap-4 mb-4 p-4 bg-gray-50 border-b></div>
+                              <!-- Aquí se mostrará la lista de datos --> 
+                          </div>
+                      </div>
+                      <div id=pagination class=mt-4 flex justify-center w-full> 
+                          <!-- Aquí se mostrará la paginación --> 
+                      </div>
+                  </div>
               </div>
-              </div>
-          </div>
-          
+
           <!-- Cargar la navbar desde el template -->
-          <script src="js/orchestrator.js"></script>
+          <script src=js/orchestrator.js></script>
           </body>
-          </html>" >> "core/results/webs/${TITLE}/dashboard.html"
+          </html>' > "core/results/webs/${TITLE}/dashboard.html"
           
           echo "Dashboard HTML generado correctamente en core/results/webs/${TITLE}/dashboard.html"
       
-
       - name: Crear test.html
         run: |
           TEST_STRUCTURE_FILE="${{ env.KAOS_TEST_JSON_WEB }}"
           TITLE=$(jq -r '.title' $TEST_STRUCTURE_FILE)
+          
           
           # Crear el test.html con todas las secciones concatenadas y la navbar
           echo "<!DOCTYPE html>
@@ -882,60 +910,35 @@ jobs:
               <meta charset=\"UTF-8\">
               <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
               <title>Ka0s Dashboard - ${TITLE}</title>
-              <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-              <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css\">
+              <script src=\"https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4\"></script>
+              <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css\">
+              <script src=\"https://cdn.jsdelivr.net/npm/chart.js\"></script>
           </head>
-          <body class=\"bg-gray-50\">
-              <!-- Incluir la navbar -->
-              <div id=\"navbar-container\"></div>
-              
-              <div id=\"main-content\" class=\"ml-[250px] transition-all duration-300\">
-                  <div class=\"container mx-auto px-4 py-8\">
-                      <header class=\"py-3 mb-4 border-b border-gray-200\">
-                          <div class=\"flex items-center\">
-                              <h1 class=\"text-2xl font-bold text-gray-800\">${TITLE}</h1>
-                          </div>
+          <body class=\"bg-gray-100 min-h-screen\">
+              <div class=\"flex\">
+                  <!-- Incluir el navbar -->
+                  <div id=\"navbar-container\"></div>
+  
+                  <!-- Contenido principal -->
+                  <div class=\"ml-[260px] w-full transition-all duration-300 p-6\" id=\"main-content\">
+                      <header class=\"mb-8\">
+                          <h1 class=\"text-3xl font-bold text-gray-800\" id=\"section-title\">SECTION_TITLE_PLACEHOLDER</h1>
+                          <p class=\"text-gray-600 mt-2\" id=\"section-description\">SECTION_DESCRIPTION_PLACEHOLDER</p>
                       </header>
-                      <div class=\"dashboard-content\">" > "core/results/webs/test/test.html"
-          
-          # Concatenar todas las secciones
-          if [ -d "core/results/webs/test/temp_sections" ]; then
-            for section_file in "core/results/webs/test/temp_sections"/*.html; do
-              if [ -f "$section_file" ]; then
-                SECTION_NAME=$(basename "$section_file" .html)
-                echo "<div class=\"section-content\" id=\"${SECTION_NAME}\">" >> "core/results/webs/test/test.html"
-                
-                # Extraer solo el contenido del body de cada sección
-                TEMP_CONTENT=$(mktemp)
-                awk '/<body/,/<\/body>/' "$section_file" > "$TEMP_CONTENT"
-                
-                # Filtrar el contenido para eliminar etiquetas innecesarias
-                cat "$TEMP_CONTENT" | 
-                  grep -v "<body" | 
-                  grep -v "</body>" | 
-                  
-                  
-                
-                # Limpiar archivos temporales
-                rm -f "$TEMP_CONTENT"
-                
-                echo "</div>" >> "core/results/webs/test/test.html"
-              fi
-            done
-          else
-            echo "No se encontró el directorio de secciones temporales"
-          fi
-          
-          # Cerrar las etiquetas HTML
-          echo "          </div>
+  
+                      <!-- Contenedor de plantillas - se generará dinámicamente -->
+                      <div id=\"content-container\">
+                          <!-- Las plantillas (gráficos, listas, etc.) se generarán dinámicamente según el JSON -->
+                      </div>
+                          
+                      </div>
+                  </div>
               </div>
-              </div>
-          </div>
-          
-          <!-- Cargar la navbar desde el template -->
-          <script src="js/orchestrator.js"></script>
+  
+              <!-- Scripts -->
+              <script src=\"js/orchestrator.js\"></script>
           </body>
-          </html>" >> "core/results/webs/test/test.html"
+          </html>" > "core/results/webs/test/test.html"
           
           echo "Test HTML generado correctamente en core/results/webs/test/test.html"
 
