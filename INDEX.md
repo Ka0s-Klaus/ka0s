@@ -139,3 +139,4 @@
 - **Version**: 0.0.138 - **Description**: H1149 desarrollo de orchestrator
 - **Version**: 0.0.139 - **Description**: H1152 desarrollo inicio
 - **Version**: 0.0.140 - **Description**: H1152 desarrollo inicio
+- **Version**: 0.0.141 - **Description**: H1149 desarrollo de orchestrator
