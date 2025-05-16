@@ -166,6 +166,63 @@ function initSection(sectionName) {
 }
 
 /**
+ * Carga el contenido de una sección específica
+ * @param {string} sectionName - Nombre de la sección a cargar
+ * @param {string} templatePath - Ruta al archivo de plantilla JSON
+ */
+function loadSectionContent(sectionName, templatePath) {
+    console.log(`Cargando sección: ${sectionName} desde ${templatePath}`);
+    
+    // Cargar la plantilla JSON
+    loadDataFromUrl(
+        templatePath,
+        (templateData) => {
+            // Actualizar título y descripción
+            updateSectionHeader(templateData);
+            
+            // Actualizar métricas
+            updateMetrics(templateData);
+            
+            // Configurar la lista de datos si existe
+            if (templateData.templates && Array.isArray(templateData.templates)) {
+                const listTemplate = templateData.templates.find(t => t.type === 'list');
+                if (listTemplate) {
+                    updateDataList(listTemplate);
+                }
+            }
+            
+            // Inicializar la sección específica
+            initSection(sectionName);
+        },
+        (error) => {
+            console.error(`Error cargando plantilla para ${sectionName}:`, error);
+            document.getElementById('main-content').innerHTML = `
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                    Error cargando la sección: ${error.message}
+                </div>
+            `;
+        }
+    );
+}
+
+/**
+ * Actualiza el encabezado de la sección con título y descripción
+ * @param {Object} templateData - Datos de la plantilla
+ */
+function updateSectionHeader(templateData) {
+    const titleElement = document.getElementById('section-title');
+    const descriptionElement = document.getElementById('section-description');
+    
+    if (titleElement && templateData.title) {
+        titleElement.textContent = templateData.title;
+    }
+    
+    if (descriptionElement && templateData.description) {
+        descriptionElement.textContent = templateData.description;
+    }
+}
+
+/**
  * Actualiza el título y descripción de la página
  * @param {Object} config - Configuración con título y descripción
  */
@@ -267,13 +324,24 @@ function initNavbar() {
             const li = document.createElement('li');
             li.innerHTML = `
                 <a href="#${section.title.toLowerCase()}" 
-                   class="flex items-center justify-center w-full py-3 text-gray-700 hover:bg-blue-50 rounded-lg transition-all duration-200 group relative">
+                   class="flex items-center justify-center w-full py-3 text-gray-700 hover:bg-blue-50 rounded-lg transition-all duration-200 group relative"
+                   data-section="${section.title}" 
+                   data-template="${section.datatemplate}">
                     <div class="flex items-center justify-center w-12">
                         <i class="fas ${section.icon} text-orange-300 group-hover:text-orange-500 text-xl"></i>
                     </div>
                     <span class="sidebar-text flex-1 font-medium capitalize">${section.title}</span>
                 </a>`;
             navbar.appendChild(li);
+            
+            // Agregar event listener para cada enlace
+            const link = li.querySelector('a');
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const sectionName = this.getAttribute('data-section');
+                const templatePath = this.getAttribute('data-template');
+                loadSectionContent(sectionName, templatePath);
+            });
         });
     }
 
@@ -764,6 +832,80 @@ function renderMetrics(config) {
     }
 }
 
+/**
+ * Actualiza las métricas en la interfaz
+ * @param {Object} templateData - Datos de la plantilla
+ */
+function updateMetrics(templateData) {
+    const metricsContainer = document.getElementById('metrics-container');
+    if (!metricsContainer) return;
+    
+    // Limpiar métricas existentes
+    metricsContainer.innerHTML = '';
+    
+    // Colores para las métricas
+    const colors = ['blue', 'green', 'yellow', 'purple'];
+    
+    // Buscar todas las propiedades que comienzan con "metric"
+    let metricIndex = 1;
+    while (templateData[`metric${metricIndex}Title`] && templateData[`metric${metricIndex}`]) {
+        const color = colors[(metricIndex - 1) % colors.length];
+        const metricTitle = templateData[`metric${metricIndex}Title`];
+        const metricValue = templateData[`metric${metricIndex}`];
+        
+        const metricElement = document.createElement('div');
+        metricElement.className = `bg-${color}-50 rounded-lg p-4 shadow-sm`;
+        metricElement.innerHTML = `
+            <h2 class="text-lg font-semibold text-${color}-800">${metricTitle}</h2>
+            <p class="text-3xl font-bold text-${color}-600" id="metric${metricIndex}">${metricValue}</p>
+        `;
+        
+        metricsContainer.appendChild(metricElement);
+        metricIndex++;
+    }
+}
+
+/**
+ * Actualiza la lista de datos
+ * @param {Object} listTemplate - Configuración de la plantilla de lista
+ */
+function updateDataList(listTemplate) {
+    const dataList = document.getElementById('data-list');
+    if (!dataList) return;
+    
+    // Actualizar el título de la tabla
+    const tableTitle = document.querySelector('#data-section h2');
+    if (tableTitle && listTemplate.title) {
+        tableTitle.textContent = listTemplate.title;
+    }
+    
+    // Configurar la fuente de datos
+    if (listTemplate.dataSource) {
+        dataList.setAttribute('data-source', listTemplate.dataSource);
+        // Cargar datos
+        loadData(listTemplate.dataSource);
+    }
+    
+    // Actualizar encabezados si están definidos
+    if (listTemplate.columns && Array.isArray(listTemplate.columns)) {
+        const dataHeaders = document.getElementById('data-headers');
+        if (dataHeaders) {
+            dataHeaders.innerHTML = '';
+            
+            // Determinar el número de columnas para la cuadrícula
+            const colClass = `grid-cols-${Math.min(12, listTemplate.columns.length)}`;
+            dataHeaders.className = `grid ${colClass} gap-4 mb-4 p-4 bg-gray-50 border-b`;
+            
+            listTemplate.columns.forEach(column => {
+                const headerElement = document.createElement('div');
+                headerElement.className = 'font-medium text-gray-700';
+                headerElement.textContent = column;
+                dataHeaders.appendChild(headerElement);
+            });
+        }
+    }
+}
+
 // Función para renderizar plantillas dinámicamente
 function renderTemplates(config) {
     const templatesContainer = document.getElementById('templates-container');
@@ -897,23 +1039,26 @@ function renderTemplates(config) {
 
 // Función para procesar la configuración completa
 function processConfig(config) {
+    if (!config) return;
+    
     // Actualizar título y descripción
-    const titleElement = document.getElementById('section-title');
-    if (titleElement && config.title) {
-        titleElement.textContent = config.title;
-        console.log("Titulo:", config.title)
-    }
-    console.log("Titulo:", config.title)
+    updateSectionHeader(config);
     
-    const descriptionElement = document.getElementById('section-description');
-    if (descriptionElement && config.description) {
-        descriptionElement.textContent = config.description;
+    // Actualizar métricas
+    updateMetrics(config);
+    
+    // Configurar la lista de datos si existe
+    if (config.templates && Array.isArray(config.templates)) {
+        const listTemplate = config.templates.find(t => t.type === 'list');
+        if (listTemplate) {
+            updateDataList(listTemplate);
+        }
     }
     
-    // Renderizar métricas
+    // Renderizar métricas (mantener para compatibilidad)
     renderMetrics(config);
     
-    // Renderizar plantillas
+    // Renderizar plantillas (mantener para compatibilidad)
     renderTemplates(config);
 }
 
@@ -1280,6 +1425,80 @@ function renderMetrics(config) {
     }
 }
 
+/**
+ * Actualiza las métricas en la interfaz
+ * @param {Object} templateData - Datos de la plantilla
+ */
+function updateMetrics(templateData) {
+    const metricsContainer = document.getElementById('metrics-container');
+    if (!metricsContainer) return;
+    
+    // Limpiar métricas existentes
+    metricsContainer.innerHTML = '';
+    
+    // Colores para las métricas
+    const colors = ['blue', 'green', 'yellow', 'purple'];
+    
+    // Buscar todas las propiedades que comienzan con "metric"
+    let metricIndex = 1;
+    while (templateData[`metric${metricIndex}Title`] && templateData[`metric${metricIndex}`]) {
+        const color = colors[(metricIndex - 1) % colors.length];
+        const metricTitle = templateData[`metric${metricIndex}Title`];
+        const metricValue = templateData[`metric${metricIndex}`];
+        
+        const metricElement = document.createElement('div');
+        metricElement.className = `bg-${color}-50 rounded-lg p-4 shadow-sm`;
+        metricElement.innerHTML = `
+            <h2 class="text-lg font-semibold text-${color}-800">${metricTitle}</h2>
+            <p class="text-3xl font-bold text-${color}-600" id="metric${metricIndex}">${metricValue}</p>
+        `;
+        
+        metricsContainer.appendChild(metricElement);
+        metricIndex++;
+    }
+}
+
+/**
+ * Actualiza la lista de datos
+ * @param {Object} listTemplate - Configuración de la plantilla de lista
+ */
+function updateDataList(listTemplate) {
+    const dataList = document.getElementById('data-list');
+    if (!dataList) return;
+    
+    // Actualizar el título de la tabla
+    const tableTitle = document.querySelector('#data-section h2');
+    if (tableTitle && listTemplate.title) {
+        tableTitle.textContent = listTemplate.title;
+    }
+    
+    // Configurar la fuente de datos
+    if (listTemplate.dataSource) {
+        dataList.setAttribute('data-source', listTemplate.dataSource);
+        // Cargar datos
+        loadData(listTemplate.dataSource);
+    }
+    
+    // Actualizar encabezados si están definidos
+    if (listTemplate.columns && Array.isArray(listTemplate.columns)) {
+        const dataHeaders = document.getElementById('data-headers');
+        if (dataHeaders) {
+            dataHeaders.innerHTML = '';
+            
+            // Determinar el número de columnas para la cuadrícula
+            const colClass = `grid-cols-${Math.min(12, listTemplate.columns.length)}`;
+            dataHeaders.className = `grid ${colClass} gap-4 mb-4 p-4 bg-gray-50 border-b`;
+            
+            listTemplate.columns.forEach(column => {
+                const headerElement = document.createElement('div');
+                headerElement.className = 'font-medium text-gray-700';
+                headerElement.textContent = column;
+                dataHeaders.appendChild(headerElement);
+            });
+        }
+    }
+}
+
 // Función para renderizar plantillas dinámicamente
 function renderTemplates(config) {
     const templatesContainer = document.getElementById('templates-container');
@@ -1413,23 +1632,26 @@ function renderTemplates(config) {
 
 // Función para procesar la configuración completa
 function processConfig(config) {
+    if (!config) return;
+    
     // Actualizar título y descripción
-    const titleElement = document.getElementById('section-title');
-    if (titleElement && config.title) {
-        titleElement.textContent = config.title;
-        console.log("Titulo:", config.title)
-    }
-    console.log("Titulo:", config.title)
+    updateSectionHeader(config);
     
-    const descriptionElement = document.getElementById('section-description');
-    if (descriptionElement && config.description) {
-        descriptionElement.textContent = config.description;
+    // Actualizar métricas
+    updateMetrics(config);
+    
+    // Configurar la lista de datos si existe
+    if (config.templates && Array.isArray(config.templates)) {
+        const listTemplate = config.templates.find(t => t.type === 'list');
+        if (listTemplate) {
+            updateDataList(listTemplate);
+        }
     }
     
-    // Renderizar métricas
+    // Renderizar métricas (mantener para compatibilidad)
     renderMetrics(config);
     
-    // Renderizar plantillas
+    // Renderizar plantillas (mantener para compatibilidad)
     renderTemplates(config);
 }
 
