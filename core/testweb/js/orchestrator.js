@@ -417,7 +417,7 @@ function updateSummaryTemplate(container, data, templateConfig) {
         metricsContainer.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8';
     }
     
-    // Colores para las diferentes métricas (se pueden añadir más si es necesario)
+    // Colores para las diferentes métricas
     const colors = [
         { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700', textLight: 'text-blue-600' },
         { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-700', textLight: 'text-green-600' },
@@ -430,29 +430,9 @@ function updateSummaryTemplate(container, data, templateConfig) {
     // Calcular valores para métricas de tipo "count" primero
     const metricValues = {};
     
-    // Primera pasada: calcular todos los conteos
-    templateConfig.metrics.forEach(metric => {
-        if (metric.type === 'count') {
-            let value = 0;
-            
-            if (!metric.filter) {
-                // Contar todos los elementos (totalItems)
-                value = Array.isArray(data) ? data.length : 1;
-                metricValues['total'] = value; // Guardar el total para usarlo en cálculos de rate
-            } else {
-                // Contar elementos que cumplen con el filtro
-                value = Array.isArray(data) ? 
-                    data.filter(item => item[metric.filter.field] === metric.filter.value).length : 
-                    (data[metric.filter.field] === metric.filter.value ? 1 : 0);
-            }
-            
-            metricValues[metric.name] = value;
-        }
-    });
-    
     // Procesar cada métrica definida en la configuración
     templateConfig.metrics.forEach((metric, index) => {
-        // Obtener el color para esta métrica (rotando si hay más métricas que colores)
+        // Obtener el color para esta métrica
         const color = colors[index % colors.length];
         
         // Calcular el valor de la métrica según su tipo
@@ -460,9 +440,92 @@ function updateSummaryTemplate(container, data, templateConfig) {
         let formattedValue = '';
         
         if (metric.type === 'count') {
-            // Ya calculado en la primera pasada
-            metricValue = metricValues[metric.name];
+            // Contar todos los elementos
+            metricValue = Array.isArray(data) ? data.length : 1;
             formattedValue = metricValue.toString();
+        } else if (metric.type === 'maxTime') {
+            // Calcular el tiempo máximo de duración
+            if (Array.isArray(data) && data.length > 0) {
+                let maxDuration = 0;
+                let maxWorkflow = null;
+                
+                data.forEach(workflow => {
+                    if (workflow.status === 'completed') {
+                        const createdAt = new Date(workflow.created_at);
+                        const updatedAt = new Date(workflow.updated_at);
+                        const duration = (updatedAt - createdAt) / 1000; // en segundos
+                        
+                        if (duration > maxDuration) {
+                            maxDuration = duration;
+                            maxWorkflow = workflow;
+                        }
+                    }
+                });
+                
+                if (maxWorkflow) {
+                    if (metric.format === 'minutes') {
+                        const minutes = Math.floor(maxDuration / 60);
+                        const seconds = Math.floor(maxDuration % 60);
+                        formattedValue = `${minutes}m ${seconds}s`;
+                    } else {
+                        formattedValue = `${maxDuration.toFixed(0)}s`;
+                    }
+                    
+                    // Añadir tooltip con información adicional
+                    metricValue = {
+                        value: maxDuration,
+                        formatted: formattedValue,
+                        tooltip: `Workflow: ${maxWorkflow.name}`
+                    };
+                } else {
+                    formattedValue = 'N/A';
+                    metricValue = { value: 0, formatted: formattedValue };
+                }
+            } else {
+                formattedValue = 'N/A';
+                metricValue = { value: 0, formatted: formattedValue };
+            }
+        } else if (metric.type === 'avgTime') {
+            // Calcular el tiempo promedio de duración
+            if (Array.isArray(data) && data.length > 0) {
+                let totalDuration = 0;
+                let completedCount = 0;
+                
+                data.forEach(workflow => {
+                    if (workflow.status === 'completed') {
+                        const createdAt = new Date(workflow.created_at);
+                        const updatedAt = new Date(workflow.updated_at);
+                        const duration = (updatedAt - createdAt) / 1000; // en segundos
+                        
+                        totalDuration += duration;
+                        completedCount++;
+                    }
+                });
+                
+                if (completedCount > 0) {
+                    const avgDuration = totalDuration / completedCount;
+                    
+                    if (metric.format === 'minutes') {
+                        const minutes = Math.floor(avgDuration / 60);
+                        const seconds = Math.floor(avgDuration % 60);
+                        formattedValue = `${minutes}m ${seconds}s`;
+                    } else {
+                        formattedValue = `${avgDuration.toFixed(0)}s`;
+                    }
+                    
+                    metricValue = {
+                        value: avgDuration,
+                        formatted: formattedValue,
+                        tooltip: `Basado en ${completedCount} workflows completados`
+                    };
+                } else {
+                    formattedValue = 'N/A';
+                    metricValue = { value: 0, formatted: formattedValue };
+                }
+            } else {
+                formattedValue = 'N/A';
+                metricValue = { value: 0, formatted: formattedValue };
+            }
         } else if (metric.type === 'rate') {
             // Calcular el numerador
             let numerator = 0;
@@ -475,7 +538,7 @@ function updateSummaryTemplate(container, data, templateConfig) {
             // Obtener el denominador
             let denominator = 1;
             if (metric.denominator === 'total') {
-                denominator = metricValues['total'] || Array.isArray(data) ? data.length : 1;
+                denominator = Array.isArray(data) ? data.length : 1;
             } else if (metricValues[metric.denominator]) {
                 denominator = metricValues[metric.denominator];
             }
@@ -498,8 +561,17 @@ function updateSummaryTemplate(container, data, templateConfig) {
         // Crear el elemento HTML para esta métrica
         const metricElement = document.createElement('div');
         metricElement.className = `${color.bg} border ${color.border} rounded-lg p-4 flex flex-col items-center justify-center`;
+        
+        // Si la métrica tiene un tooltip, añadir atributo title
+        if (typeof metricValue === 'object' && metricValue.tooltip) {
+            metricElement.title = metricValue.tooltip;
+        }
+        
+        // Determinar el valor a mostrar
+        const displayValue = typeof metricValue === 'object' ? metricValue.formatted : formattedValue;
+        
         metricElement.innerHTML = `
-            <h2 class="text-3xl font-bold ${color.text}" id="${metric.name}">${formattedValue}</h2>
+            <h2 class="text-3xl font-bold ${color.text}" id="${metric.name}">${displayValue}</h2>
             <p class="${color.textLight} mt-1" id="${metric.name}-title">${metric.title || metric.name}</p>
         `;
         
