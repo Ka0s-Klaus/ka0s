@@ -1132,7 +1132,7 @@ function initWorkflowsChart() {
     
     // Cargar datos para el gráfico con los nuevos canvas
     loadDataFromUrl(
-        'data/kaos-workflows-runs.json',
+        'data/kaos-workflows-available.json',
         (data) => {
             createWorkflowsCharts(newBarCanvas, newStatusCanvas, data);
         },
