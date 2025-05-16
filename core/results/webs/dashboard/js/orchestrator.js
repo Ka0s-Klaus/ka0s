@@ -1086,244 +1086,257 @@ window.filterData = function(searchTerm) {
  * Inicializa el gráfico de workflows
  */
 function initWorkflowsChart() {
-    console.log('Inicializando gráfico de workflows');
-    
-    // Obtener referencias a los canvas
-    const chartCanvas = document.getElementById('workflows-chart');
-    const statusCanvas = document.getElementById('workflows-status-chart');
-    
-    if (!chartCanvas || !statusCanvas) {
-        console.error('No se encontraron los elementos canvas para los gráficos');
-        return;
-    }
-    
-    // Destruir gráficos existentes si existen
-    if (workflowsBarChart) {
-        workflowsBarChart.destroy();
-        workflowsBarChart = null;
-    }
-    
-    if (workflowsStatusChart) {
-        workflowsStatusChart.destroy();
-        workflowsStatusChart = null;
-    }
-    
-    // Limpiar los canvas para evitar problemas de Chart.js
-    // Esto es crucial para evitar el error "Canvas is already in use"
-    const barChartParent = chartCanvas.parentNode;
-    const statusChartParent = statusCanvas.parentNode;
-    
-    // Recrear los canvas para asegurarnos de que estén limpios
-    const newBarCanvas = document.createElement('canvas');
-    newBarCanvas.id = 'workflows-chart';
-    const newStatusCanvas = document.createElement('canvas');
-    newStatusCanvas.id = 'workflows-status-chart';
-    
-    // Reemplazar los canvas existentes con los nuevos
-    if (barChartParent) {
-        barChartParent.innerHTML = '';
-        barChartParent.appendChild(newBarCanvas);
-    }
-    
-    if (statusChartParent) {
-        statusChartParent.innerHTML = '';
-        statusChartParent.appendChild(newStatusCanvas);
-    }
-    
-    // Cargar datos para el gráfico con los nuevos canvas
+    // Cargar datos para el gráfico
     loadDataFromUrl(
-        'data/kaos-workflows-available.json',
+        config.defaultArchive,
         (data) => {
-            createWorkflowsCharts(newBarCanvas, newStatusCanvas, data);
+            // Procesar datos para el gráfico de barras
+            const workflowsData = processWorkflowsData(data);
+            
+            // Crear el gráfico de barras
+            createWorkflowsBarChart(workflowsData);
+            
+            // Procesar datos para el gráfico de estado
+            const statusData = processWorkflowsStatusData(data);
+            
+            // Crear el gráfico de estado
+            createWorkflowsStatusChart(statusData);
         },
         (error) => {
-            console.error('Error cargando datos para el gráfico:', error);
-            const chartContainer = document.getElementById('chart-container');
-            const statusChartContainer = document.getElementById('status-chart-container');
-            
-            if (chartContainer) {
-                chartContainer.innerHTML = `
-                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                        Error cargando datos para el gráfico: ${error.message}
-                    </div>
-                `;
-            }
-            
-            if (statusChartContainer) {
-                statusChartContainer.innerHTML = `
-                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                        Error cargando datos para el gráfico: ${error.message}
-                    </div>
-                `;
-            }
+            console.error('Error cargando datos para gráficos:', error);
         }
     );
 }
 
-/**
- * Crea los gráficos de workflows basados en los datos proporcionados
- * @param {HTMLCanvasElement} barCanvas - El elemento canvas para el gráfico de barras
- * @param {HTMLCanvasElement} pieCanvas - El elemento canvas para el gráfico circular
- * @param {Array} data - Los datos de workflows
- */
-function createWorkflowsCharts(barCanvas, pieCanvas, data) {
-    if (!barCanvas || !pieCanvas || !data || !Array.isArray(data)) return;
-
-    // Procesar datos para el gráfico
-    const workflowNames = {};
-    const workflowStatus = {
-        'completed': { count: 0, color: 'rgba(34, 197, 94, 0.7)' },
-        'in_progress': { count: 0, color: 'rgba(59, 130, 246, 0.7)' },
-        'queued': { count: 0, color: 'rgba(250, 204, 21, 0.7)' },
-        'failure': { count: 0, color: 'rgba(239, 68, 68, 0.7)' },
-        'cancelled': { count: 0, color: 'rgba(156, 163, 175, 0.7)' },
-        'other': { count: 0, color: 'rgba(107, 114, 128, 0.7)' }
-    };
-
-    // Contar workflows por nombre
-    data.forEach(workflow => {
-        if (workflow.name) {
-            if (!workflowNames[workflow.name]) {
-                workflowNames[workflow.name] = 0;
-            }
-            workflowNames[workflow.name]++;
-        }
-
-        // Contar por estado
-        if (workflow.status === 'completed') {
-            if (workflow.conclusion === 'success') {
-                workflowStatus.completed.count++;
-            } else if (workflow.conclusion === 'failure') {
-                workflowStatus.failure.count++;
-            } else if (workflow.conclusion === 'cancelled') {
-                workflowStatus.cancelled.count++;
-            } else {
-                workflowStatus.other.count++;
-            }
-        } else if (workflow.status === 'in_progress') {
-            workflowStatus.in_progress.count++;
-        } else if (workflow.status === 'queued') {
-            workflowStatus.queued.count++;
-        } else {
-            workflowStatus.other.count++;
-        }
-    });
-
-    // Crear datasets para el gráfico de barras
-    const workflowNamesLabels = Object.keys(workflowNames).slice(0, 10); // Limitar a 10 workflows
-    const workflowNamesCounts = workflowNamesLabels.map(name => workflowNames[name]);
+// Procesar datos para el gráfico de barras
+function processWorkflowsData(data) {
+    // Adaptarse a la estructura real del JSON
+    let workflowsData = [];
     
-    // Crear datasets para el gráfico circular
-    const statusLabels = ['Completados', 'En progreso', 'En cola', 'Fallidos', 'Cancelados', 'Otros'];
-    const statusCounts = [
-        workflowStatus.completed.count,
-        workflowStatus.in_progress.count,
-        workflowStatus.queued.count,
-        workflowStatus.failure.count,
-        workflowStatus.cancelled.count,
-        workflowStatus.other.count
-    ];
-    const statusColors = [
-        workflowStatus.completed.color,
-        workflowStatus.in_progress.color,
-        workflowStatus.queued.color,
-        workflowStatus.failure.color,
-        workflowStatus.cancelled.color,
-        workflowStatus.other.color
-    ];
+    if (Array.isArray(data)) {
+        // Contar ejecuciones por workflow
+        const workflowCounts = {};
+        
+        data.forEach(item => {
+            const workflowName = item.name || item.workflow_name || 'Desconocido';
+            workflowCounts[workflowName] = (workflowCounts[workflowName] || 0) + 1;
+        });
+        
+        // Convertir a formato para Chart.js
+        workflowsData = {
+            labels: Object.keys(workflowCounts),
+            datasets: [{
+                label: 'Número de ejecuciones',
+                data: Object.values(workflowCounts),
+                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        };
+    }
+    
+    return workflowsData;
+}
 
-    try {
-        // Crear el gráfico de barras
-        workflowsBarChart = new Chart(barCanvas, {
-            type: 'bar',
-            data: {
-                labels: workflowNamesLabels,
-                datasets: [{
-                    label: 'Número de ejecuciones',
-                    data: workflowNamesCounts,
-                    backgroundColor: 'rgba(59, 130, 246, 0.7)',
-                    borderColor: 'rgba(59, 130, 246, 1)',
-                    borderWidth: 1
-                }]
+// Procesar datos para el gráfico de estado
+function processWorkflowsStatusData(data) {
+    // Adaptarse a la estructura real del JSON
+    let statusData = {
+        labels: [],
+        datasets: [{
+            data: [],
+            backgroundColor: []
+        }]
+    };
+    
+    if (Array.isArray(data) && data.length > 0) {
+        // Detectar automáticamente el campo que contiene el estado
+        const possibleStatusFields = ['status', 'state', 'conclusion', 'estado', 'estado actual', 'estadoActual', 'status_actual', 'workflow_status'];
+        let statusField = null;
+        
+        // Examinar el primer elemento para encontrar un campo de estado
+        const firstItem = data[0];
+        for (const field of possibleStatusFields) {
+            if (firstItem[field] !== undefined) {
+                statusField = field;
+                break;
+            }
+        }
+        
+        // Si no encontramos ningún campo predefinido, buscar cualquier campo que pueda contener información de estado
+        if (!statusField) {
+            // Buscar campos que contengan palabras clave relacionadas con estado
+            const statusKeywords = ['status', 'state', 'estado', 'condition', 'situacion', 'situación'];
+            
+            for (const key in firstItem) {
+                const keyLower = key.toLowerCase();
+                if (statusKeywords.some(keyword => keyLower.includes(keyword))) {
+                    statusField = key;
+                    break;
+                }
+            }
+            
+            // Si aún no encontramos nada, usar el primer campo que tenga valores de texto cortos (probablemente sea un estado)
+            if (!statusField) {
+                for (const key in firstItem) {
+                    const value = firstItem[key];
+                    if (typeof value === 'string' && value.length < 20) {
+                        statusField = key;
+                        break;
+                    }
+                }
+            }
+            
+            // Si todo falla, usar el primer campo disponible
+            if (!statusField && Object.keys(firstItem).length > 0) {
+                statusField = Object.keys(firstItem)[0];
+            }
+        }
+        
+        console.log(`Campo de estado detectado: ${statusField}`);
+        
+        // Contar workflows por estado
+        const statusCounts = {};
+        
+        if (statusField) {
+            data.forEach(item => {
+                // Obtener el estado del workflow desde el campo detectado
+                const status = item[statusField] || 'Desconocido';
+                statusCounts[status] = (statusCounts[status] || 0) + 1;
+            });
+        } else {
+            // Si no pudimos detectar ningún campo, usar un valor predeterminado
+            statusCounts['Desconocido'] = data.length;
+        }
+        
+        // Generar colores para los estados
+        const predefinedColors = [
+            'rgba(75, 192, 192, 0.8)',   // verde-azulado
+            'rgba(255, 99, 132, 0.8)',   // rojo
+            'rgba(54, 162, 235, 0.8)',   // azul
+            'rgba(255, 205, 86, 0.8)',   // amarillo
+            'rgba(153, 102, 255, 0.8)',  // morado
+            'rgba(255, 159, 64, 0.8)',   // naranja
+            'rgba(201, 203, 207, 0.8)',  // gris
+            'rgba(128, 128, 128, 0.8)'   // gris oscuro
+        ];
+        
+        // Asignar colores a los estados
+        const statusColors = {};
+        Object.keys(statusCounts).forEach((status, index) => {
+            statusColors[status] = predefinedColors[index % predefinedColors.length];
+        });
+        
+        // Traducciones comunes para estados
+        const commonTranslations = {
+            'success': 'Completados',
+            'completed': 'Completados',
+            'failure': 'Fallidos',
+            'failed': 'Fallidos',
+            'cancelled': 'Cancelados',
+            'in_progress': 'En progreso',
+            'pending': 'Pendientes',
+            'queued': 'En cola',
+            'skipped': 'Omitidos',
+            'Desconocido': 'Otros'
+        };
+        
+        // Traducir estados o formatear para mejor visualización
+        const formatStatusLabel = (status) => {
+            if (commonTranslations[status]) {
+                return commonTranslations[status];
+            }
+            
+            // Si no hay traducción, formatear el texto para mejor visualización
+            return status
+                .replace(/_/g, ' ')                      // Reemplazar guiones bajos por espacios
+                .split(' ')                              // Dividir en palabras
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()) // Capitalizar cada palabra
+                .join(' ');                              // Unir de nuevo
+        };
+        
+        // Convertir a formato para Chart.js
+        statusData.labels = Object.keys(statusCounts).map(formatStatusLabel);
+        statusData.datasets[0].data = Object.values(statusCounts);
+        statusData.datasets[0].backgroundColor = Object.keys(statusCounts).map(status => statusColors[status]);
+    }
+    
+    return statusData;
+}
+
+// Crear el gráfico de barras de workflows
+function createWorkflowsBarChart(data) {
+    const ctx = document.getElementById('workflows-chart');
+    if (!ctx) return;
+    
+    // Destruir el gráfico existente si hay uno
+    if (workflowsBarChart) {
+        workflowsBarChart.destroy();
+    }
+    
+    // Crear el nuevo gráfico
+    workflowsBarChart = new Chart(ctx, {
+        type: 'bar',
+        data: data,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: false,
+                    text: 'Workflows más ejecutados'
+                }
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    },
+            scales: {
+                y: {
+                    beginAtZero: true,
                     title: {
                         display: true,
-                        text: 'Workflows más ejecutados'
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return `Ejecuciones: ${context.raw}`;
-                            }
-                        }
+                        text: 'Número de ejecuciones'
                     }
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Número de ejecuciones'
-                        }
-                    },
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Nombre del workflow'
-                        }
-                    }
-                }
-            }
-        });
-
-        // Crear el gráfico circular
-        workflowsStatusChart = new Chart(pieCanvas, {
-            type: 'doughnut',
-            data: {
-                labels: statusLabels,
-                datasets: [{
-                    data: statusCounts,
-                    backgroundColor: statusColors,
-                    borderColor: statusColors.map(color => color.replace('0.7', '1')),
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'right',
-                    },
+                x: {
                     title: {
                         display: true,
-                        text: 'Estado de los workflows'
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const label = context.label || '';
-                                const value = context.raw;
-                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                const percentage = Math.round((value / total) * 100);
-                                return `${label}: ${value} (${percentage}%)`;
-                            }
-                        }
+                        text: 'Nombre del workflow'
                     }
                 }
             }
-        });
-    } catch (error) {
-        console.error('Error al crear los gráficos:', error);
-        alert('Error al crear los gráficos: ' + error.message);
+        }
+    });
+}
+
+// Crear el gráfico circular de estado de workflows
+function createWorkflowsStatusChart(data) {
+    const ctx = document.getElementById('workflows-status-chart');
+    if (!ctx) return;
+    
+    // Destruir el gráfico existente si hay uno
+    if (workflowsStatusChart) {
+        workflowsStatusChart.destroy();
     }
+    
+    // Crear el nuevo gráfico
+    workflowsStatusChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: data,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                },
+                title: {
+                    display: false,
+                    text: 'Estado de los workflows'
+                }
+            }
+        }
+    });
 }
 
 // Modificar la función loadWebsConfig para inicializar el gráfico
