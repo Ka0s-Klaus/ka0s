@@ -1022,6 +1022,10 @@ function initWorkflowsChart() {
 function processWorkflowsData(data) {
     // Adaptarse a la estructura real del JSON
     let workflowsData = [];
+    let chartData = {
+        xAxisLabel: 'Cogerlo del JSON',
+        yAxisLabel: 'Cogerlo del JSON'
+    };
     
     if (Array.isArray(data)) {
         // Contar ejecuciones por workflow
@@ -1036,7 +1040,7 @@ function processWorkflowsData(data) {
         workflowsData = {
             labels: Object.keys(workflowCounts),
             datasets: [{
-                label: 'Número de ejecuciones',
+                label: 'Incluir aqui filtro en JSON',
                 data: Object.values(workflowCounts),
                 backgroundColor: 'rgba(54, 162, 235, 0.5)',
                 borderColor: 'rgba(54, 162, 235, 1)',
@@ -1045,7 +1049,8 @@ function processWorkflowsData(data) {
         };
     }
     
-    return workflowsData;
+    // Combinar los datos del gráfico con las etiquetas de los ejes
+    return { ...workflowsData, ...chartData };
 }
 
 // Procesar datos para el gráfico de estado
@@ -1205,13 +1210,13 @@ function createWorkflowsBarChart(data) {
                     beginAtZero: true,
                     title: {
                         display: true,
-                        text: 'Número de ejecuciones'
+                        text: data.yAxisLabel
                     }
                 },
                 x: {
                     title: {
                         display: true,
-                        text: 'Nombre del workflow'
+                        text: data.xAxisLabel
                     }
                 }
             }
