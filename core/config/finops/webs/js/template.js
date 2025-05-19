@@ -92,24 +92,51 @@ async function createCostChart(container, config) {
         }
         const data = await response.json();
 
-        // Filtrar datos para el mes actual (2025-05)
+        // Filtrar datos para el año 2025 y agrupar por mes
+        const year = 2025;
         let filteredData = data.filter(item => {
-            return item.month === '2025-05-01';
+            const itemDate = new Date(item.month);
+            return itemDate.getFullYear() === year;
         });
 
-        // Ordenar los datos por fecha
-        filteredData.sort((a, b) => new Date(a.month) - new Date(b.month));
+        // Agrupar por mes
+        const groupedByMonth = filteredData.reduce((acc, item) => {
+            const date = new Date(item.month);
+            const monthKey = date.getMonth();
+            
+            if (!acc[monthKey]) {
+                acc[monthKey] = {
+                    cost: 0,
+                    credits: 0,
+                    networkCost: 0,
+                    flatrateCost: 0,
+                    k8sCost: 0
+                };
+            }
+            
+            acc[monthKey].cost += parseFloat(item.cost || 0);
+            acc[monthKey].credits += parseFloat(item.credits || 0);
+            acc[monthKey].networkCost += parseFloat(item.inc_ntw_cost_sharing || 0);
+            acc[monthKey].flatrateCost += parseFloat(item.inc_flatrate_cost_sharing || 0);
+            acc[monthKey].k8sCost += parseFloat(item.inc_k8s_cost_sharing || 0);
+            
+            return acc;
+        }, {});
 
-        // Actualizar el título para mostrar el mes actual
-        const currentDate = new Date('2025-05-01');
-        const monthName = currentDate.toLocaleString('es-ES', { month: 'long' });
-        const year = currentDate.getFullYear();
-        config.title = `Tu costo total (${monthName} ${year})`;
+        // Convertir el objeto agrupado en array para el gráfico
+        const monthlyData = Object.entries(groupedByMonth).map(([month, data]) => ({
+            month: new Date(year, parseInt(month)).toLocaleString('es-ES', { month: 'short' }),
+            cost: data.cost + data.networkCost + data.flatrateCost + data.k8sCost,
+            credits: Math.abs(data.credits)
+        }));
 
-        // Calcular totales con los datos filtrados
-        const totalCost = filteredData.reduce((sum, item) => sum + parseFloat(item.cost || 0), 0);
-        const totalCredits = filteredData.reduce((sum, item) => sum + parseFloat(item.credits || 0), 0);
+        // Calcular totales anuales
+        const totalCost = monthlyData.reduce((sum, item) => sum + item.cost, 0);
+        const totalCredits = monthlyData.reduce((sum, item) => sum + item.credits, 0);
         const netCost = totalCost - totalCredits;
+
+        // Actualizar el título
+        config.title = `Tu costo total (${year})`;
 
         // Función para formatear moneda
         const formatCurrency = (value) => {
@@ -161,13 +188,10 @@ async function createCostChart(container, config) {
         new Chart(canvas, {
             type: 'bar',
             data: {
-                labels: filteredData.map(item => {
-                    const date = new Date(item.month);
-                    return date.toLocaleString('es-ES', { month: 'short' });
-                }),
+                labels: monthlyData.map(item => item.month),
                 datasets: [{
                     label: 'Costo',
-                    data: filteredData.map(item => parseFloat(item.cost || 0)),
+                    data: monthlyData.map(item => item.cost),
                     backgroundColor: 'rgba(66, 133, 244, 0.8)',
                     borderColor: 'rgba(66, 133, 244, 1)',
                     borderWidth: 0,
@@ -175,7 +199,7 @@ async function createCostChart(container, config) {
                     stack: 'Stack 0'
                 }, {
                     label: 'Créditos',
-                    data: filteredData.map(item => parseFloat(item.credits || 0)),
+                    data: monthlyData.map(item => item.credits),
                     backgroundColor: 'rgba(234, 237, 242, 0.8)',
                     borderColor: 'rgba(234, 237, 242, 1)',
                     borderWidth: 0,
