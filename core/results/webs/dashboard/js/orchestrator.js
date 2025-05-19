@@ -249,21 +249,6 @@ function updateSectionHeader(templateData) {
 }
 
 /**
- * Actualiza el título y descripción de la página
- * @param {Object} config - Configuración con título y descripción
- */
-function updateTitleAndDescription(config) {
-    if (config.title) {
-        const h1 = document.querySelector('h1');
-        if (h1) h1.textContent = config.title;
-    }
-    if (config.description) {
-        const desc = document.querySelector('p.text-gray-600, header p');
-        if (desc) desc.textContent = config.description;
-    }
-}
-
-/**
  * Actualiza las métricas en la página
  * @param {Object} config - Configuración con valores de métricas
  * @param {Array} metricConfig - Configuración de las métricas (claves y colores)
@@ -280,51 +265,6 @@ function updateTitleAndDescription(config) {
     });
 }*/
 
-/**
- * Configura la lista de datos basada en la configuración
- * @param {Object} config - Configuración con plantillas
- */
-function configureDataList(config) {
-    if (!config.templates || !Array.isArray(config.templates)) return;
-
-    const listTemplate = config.templates.find(t => t.type === 'list');
-    if (!listTemplate) return;
-
-    // Actualizar el título de la tabla/lista
-    updateTableTitle(listTemplate.title);
-
-    // Configurar la fuente de datos
-    const dataList = document.getElementById('data-list');
-    if (dataList && listTemplate.dataSource) {
-        dataList.setAttribute('data-source', listTemplate.dataSource);
-        // Cargar datos
-        loadData(listTemplate.dataSource);
-    }
-}
-
-/**
- * Actualiza el título de la tabla/lista
- * @param {string} title - Título a establecer
-
-function updateTableTitle(title) {
-    if (!title) return;
-
-    const selectors = [
-        '.bg-white.shadow-sm.rounded-lg.p-6 h2',
-        '.bg-white.shadow-sm.rounded-lg.p-6 h3',
-        '.bg-white.shadow-sm.rounded-lg.p-6 .text-xl',
-        '#table-title',
-        '.text-xl.font-semibold.text-gray-800'
-    ];
-
-    for (const selector of selectors) {
-        const element = document.querySelector(selector);
-        if (element) {
-            element.textContent = title;
-            break;
-        }
-    }
-} */
 
 // ==================== MÓDULO NAVBAR ====================
 function initNavbar() {
@@ -804,59 +744,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 1000);
 });
 
-// Función para renderizar métricas dinámicamente
-function renderMetrics(config) {
-    const metricsContainer = document.getElementById('metrics-container');
-    if (!metricsContainer) return;
-    
-    // Limpiar el contenedor
-    metricsContainer.innerHTML = '';
-    
-    // Colores para las métricas
-    const colors = ['blue', 'green', 'yellow', 'purple', 'red', 'orange', 'gray'];
-    
-    // Contador de métricas
-    let metricCount = 0;
-    
-    // Buscar todas las propiedades que comienzan con "metric"
-    for (const key in config) {
-        if (key.startsWith('metric') && !isNaN(key.substring(6))) {
-            const metricNumber = key.substring(6);
-            const titleKey = `metric${metricNumber}Title`;
-            const title = config[titleKey] || `Métrica ${metricNumber}`;
-            const value = config[key] || '0';
-            const color = colors[metricCount % colors.length];
-            
-            // Crear el elemento de métrica
-            const metricElement = document.createElement('div');
-            metricElement.className = `bg-white rounded-lg shadow-sm p-4 border-l-4 border-${color}-500`;
-            metricElement.innerHTML = `
-                <p class="text-sm text-gray-500 uppercase">${title}</p>
-                <h2 id="metric${metricNumber}" class="text-2xl font-bold text-gray-800">${value}</h2>
-            `;
-            
-            // Añadir al contenedor
-            metricsContainer.appendChild(metricElement);
-            metricCount++;
-        }
-    }
-    
-    // Si no hay métricas, ocultar el contenedor
-    if (metricCount === 0) {
-        metricsContainer.style.display = 'none';
-    } else {
-        metricsContainer.style.display = 'grid';
-        
-        // Ajustar el número de columnas según la cantidad de métricas
-        if (metricCount <= 2) {
-            metricsContainer.className = 'grid grid-cols-1 md:grid-cols-2 gap-4 mb-8';
-        } else if (metricCount <= 3) {
-            metricsContainer.className = 'grid grid-cols-1 md:grid-cols-3 gap-4 mb-8';
-        } else {
-            metricsContainer.className = 'grid grid-cols-1 md:grid-cols-4 gap-4 mb-8';
-        }
-    }
-}
+
 
 /**
  * Actualiza las métricas en la interfaz
@@ -1081,11 +969,6 @@ function processConfig(config) {
         }
     }
     
-    // Renderizar métricas (mantener para compatibilidad)
-    renderMetrics(config);
-    
-    // Renderizar plantillas (mantener para compatibilidad)
-    renderTemplates(config);
 }
 
 // Exponer la función para que pueda ser usada desde otros contextos
@@ -1107,44 +990,6 @@ window.filterData = function(searchTerm) {
     renderPage(1);
 };
 
-// Función para asegurar que los contenedores de gráficas estén presentes
-function ensureChartContainers() {
-    const contentContainer = document.getElementById('main-content');
-    if (!contentContainer) return;
-    
-    // Verificar si ya existen los contenedores de gráficas
-    let chartsContainer = document.getElementById('charts-container');
-    
-    // Si no existe el contenedor principal de gráficas, crearlo
-    if (!chartsContainer) {
-        chartsContainer = document.createElement('div');
-        chartsContainer.id = 'charts-container';
-        chartsContainer.className = 'grid grid-cols-1 md:grid-cols-2 gap-6 mb-8';
-        contentContainer.appendChild(chartsContainer);
-        
-        // Crear contenedor para el gráfico de barras
-        const barChartContainer = document.createElement('div');
-        barChartContainer.className = 'bg-white p-4 rounded-lg shadow';
-        barChartContainer.innerHTML = `
-            <h3 class="text-lg font-semibold mb-4">Workflows más ejecutados</h3>
-            <div class="h-64">
-                <canvas id="workflows-chart"></canvas>
-            </div>
-        `;
-        chartsContainer.appendChild(barChartContainer);
-        
-        // Crear contenedor para el gráfico de estado
-        const statusChartContainer = document.createElement('div');
-        statusChartContainer.className = 'bg-white p-4 rounded-lg shadow';
-        statusChartContainer.innerHTML = `
-            <h3 class="text-lg font-semibold mb-4">Estado de los workflows</h3>
-            <div class="h-64">
-                <canvas id="workflows-status-chart"></canvas>
-            </div>
-        `;
-        chartsContainer.appendChild(statusChartContainer);
-    }
-}
 
 // ==================== MÓDULO DE GRÁFICOS ====================
 /**
@@ -1577,136 +1422,6 @@ function updateDataList(listTemplate) {
     }
 }
 
-// Función para renderizar plantillas dinámicamente
-function renderTemplates(config) {
-    const templatesContainer = document.getElementById('templates-container');
-    if (!templatesContainer || !config.templates || !Array.isArray(config.templates)) return;
-    
-    // Limpiar el contenedor
-    templatesContainer.innerHTML = '';
-    
-    // Procesar cada plantilla
-    config.templates.forEach((template, index) => {
-        // Crear contenedor para esta plantilla
-        const templateContainer = document.createElement('div');
-        templateContainer.className = 'bg-white shadow-sm rounded-lg p-6 mb-6';
-        
-        // Título de la plantilla
-        const titleElement = document.createElement('h2');
-        titleElement.className = 'text-xl font-semibold text-gray-800 mb-4';
-        titleElement.textContent = template.title || `Plantilla ${index + 1}`;
-        templateContainer.appendChild(titleElement);
-        
-        // Contenido según el tipo de plantilla
-        if (template.type === 'list') {
-            // Crear contenedor de búsqueda
-            const searchContainer = document.createElement('div');
-            searchContainer.className = 'flex justify-between items-center mb-4';
-            searchContainer.innerHTML = `
-                <div class="relative ml-auto">
-                    <input type="text" id="search-input-${index}" placeholder="Buscar..." 
-                        class="pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
-                </div>
-            `;
-            templateContainer.appendChild(searchContainer);
-            
-            // Crear contenedor de encabezados
-            const headersContainer = document.createElement('div');
-            headersContainer.id = `data-headers-${index}`;
-            headersContainer.className = 'grid grid-cols-12 gap-4 p-3 bg-gray-100 rounded-t-lg mb-2';
-            templateContainer.appendChild(headersContainer);
-            
-            // Crear contenedor de datos
-            const dataContainer = document.createElement('div');
-            dataContainer.id = `data-list-${index}`;
-            dataContainer.setAttribute('data-source', template.dataSource || '');
-            templateContainer.appendChild(dataContainer);
-            
-            // Crear contenedor de paginación
-            const paginationContainer = document.createElement('div');
-            paginationContainer.id = `pagination-${index}`;
-            paginationContainer.className = 'mt-4';
-            templateContainer.appendChild(paginationContainer);
-            
-            // Configurar evento de búsqueda
-            setTimeout(() => {
-                const searchInput = document.getElementById(`search-input-${index}`);
-                if (searchInput && window.filterData) {
-                    searchInput.addEventListener('input', function(e) {
-                        window.filterData(e.target.value);
-                    });
-                }
-            }, 500);
-            
-        } else if (template.type === 'graphic' || template.type === 'chart') {
-            // Crear contenedor para el gráfico
-            const chartContainer = document.createElement('div');
-            chartContainer.className = 'w-full h-64 md:h-80';
-            
-            // Crear el canvas para el gráfico
-            const canvas = document.createElement('canvas');
-            canvas.id = `chart-${index}`;
-            chartContainer.appendChild(canvas);
-            templateContainer.appendChild(chartContainer);
-            
-            // Cargar datos y crear gráfico
-            if (template.dataSource) {
-                fetch(template.dataSource)
-                    .then(response => response.json())
-                    .then(data => {
-                        // Configuración básica del gráfico
-                        const ctx = canvas.getContext('2d');
-                        new Chart(ctx, {
-                            type: 'bar', // Tipo predeterminado, se puede cambiar según los datos
-                            data: {
-                                labels: data.labels || Object.keys(data),
-                                datasets: [{
-                                    label: template.title || 'Datos',
-                                    data: data.values || Object.values(data),
-                                    backgroundColor: [
-                                        'rgba(54, 162, 235, 0.5)',
-                                        'rgba(75, 192, 192, 0.5)',
-                                        'rgba(255, 206, 86, 0.5)',
-                                        'rgba(153, 102, 255, 0.5)',
-                                        'rgba(255, 99, 132, 0.5)'
-                                    ],
-                                    borderColor: [
-                                        'rgba(54, 162, 235, 1)',
-                                        'rgba(75, 192, 192, 1)',
-                                        'rgba(255, 206, 86, 1)',
-                                        'rgba(153, 102, 255, 1)',
-                                        'rgba(255, 99, 132, 1)'
-                                    ],
-                                    borderWidth: 1
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                scales: {
-                                    y: {
-                                        beginAtZero: true
-                                    }
-                                }
-                            }
-                        });
-                    })
-                    .catch(error => {
-                        console.error(`Error cargando datos para el gráfico ${index}:`, error);
-                        chartContainer.innerHTML = `
-                            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                                Error cargando datos del gráfico: ${error.message}
-                            </div>
-                        `;
-                    });
-            }
-        }
-        
-        // Añadir la plantilla al contenedor principal
-        templatesContainer.appendChild(templateContainer);
-    });
-}
 
 // Función para procesar la configuración completa
 function processConfig(config) {
