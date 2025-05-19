@@ -173,6 +173,12 @@ function initSection(sectionName) {
 function loadSectionContent(sectionName, templatePath) {
     console.log(`Cargando sección: ${sectionName} desde ${templatePath}`);
     
+    // Eliminar cualquier mensaje de error anterior
+    const existingErrors = document.querySelectorAll('.bg-red-100.border.border-red-400');
+    existingErrors.forEach(errorElement => {
+        errorElement.remove();
+    });
+    
     // Cargar la plantilla JSON
     loadDataFromUrl(
         templatePath,
@@ -193,14 +199,34 @@ function loadSectionContent(sectionName, templatePath) {
             
             // Inicializar la sección específica
             initSection(sectionName);
+            
+            // Asegurarse de que los contenedores de gráficas estén presentes
+            ensureChartContainers();
         },
         (error) => {
             console.error(`Error cargando plantilla para ${sectionName}:`, error);
-            document.getElementById('main-content').innerHTML = `
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                    Error cargando la sección: ${error.message}
-                </div>
-            `;
+            
+            // En lugar de reemplazar todo el contenido, solo mostrar el error en un contenedor específico
+            const errorContainer = document.createElement('div');
+            errorContainer.className = "bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-8";
+            errorContainer.innerHTML = `Error cargando la sección: ${error.message}`;
+            
+            const contentContainer = document.getElementById('main-content');
+            if (contentContainer) {
+                // Preservar el encabezado y los contenedores de gráficas
+                const header = contentContainer.querySelector('header');
+                
+                // Insertar el mensaje de error después del encabezado
+                if (header) {
+                    header.after(errorContainer);
+                } else {
+                    // Si no hay encabezado, simplemente añadir al principio
+                    contentContainer.prepend(errorContainer);
+                }
+                
+                // Reinicializar la barra de navegación para asegurar que los enlaces funcionen
+                initNavbar();
+            }
         }
     );
 }
@@ -1081,6 +1107,45 @@ window.filterData = function(searchTerm) {
     renderPage(1);
 };
 
+// Función para asegurar que los contenedores de gráficas estén presentes
+function ensureChartContainers() {
+    const contentContainer = document.getElementById('main-content');
+    if (!contentContainer) return;
+    
+    // Verificar si ya existen los contenedores de gráficas
+    let chartsContainer = document.getElementById('charts-container');
+    
+    // Si no existe el contenedor principal de gráficas, crearlo
+    if (!chartsContainer) {
+        chartsContainer = document.createElement('div');
+        chartsContainer.id = 'charts-container';
+        chartsContainer.className = 'grid grid-cols-1 md:grid-cols-2 gap-6 mb-8';
+        contentContainer.appendChild(chartsContainer);
+        
+        // Crear contenedor para el gráfico de barras
+        const barChartContainer = document.createElement('div');
+        barChartContainer.className = 'bg-white p-4 rounded-lg shadow';
+        barChartContainer.innerHTML = `
+            <h3 class="text-lg font-semibold mb-4">Workflows más ejecutados</h3>
+            <div class="h-64">
+                <canvas id="workflows-chart"></canvas>
+            </div>
+        `;
+        chartsContainer.appendChild(barChartContainer);
+        
+        // Crear contenedor para el gráfico de estado
+        const statusChartContainer = document.createElement('div');
+        statusChartContainer.className = 'bg-white p-4 rounded-lg shadow';
+        statusChartContainer.innerHTML = `
+            <h3 class="text-lg font-semibold mb-4">Estado de los workflows</h3>
+            <div class="h-64">
+                <canvas id="workflows-status-chart"></canvas>
+            </div>
+        `;
+        chartsContainer.appendChild(statusChartContainer);
+    }
+}
+
 // ==================== MÓDULO DE GRÁFICOS ====================
 /**
  * Inicializa el gráfico de workflows
@@ -1686,3 +1751,42 @@ window.filterData = function(searchTerm) {
     }
     renderPage(1);
 };
+
+// Función para asegurar que los contenedores de gráficas estén presentes
+function ensureChartContainers() {
+    const contentContainer = document.getElementById('main-content');
+    if (!contentContainer) return;
+    
+    // Verificar si ya existen los contenedores de gráficas
+    let chartsContainer = document.getElementById('charts-container');
+    
+    // Si no existe el contenedor principal de gráficas, crearlo
+    if (!chartsContainer) {
+        chartsContainer = document.createElement('div');
+        chartsContainer.id = 'charts-container';
+        chartsContainer.className = 'grid grid-cols-1 md:grid-cols-2 gap-6 mb-8';
+        contentContainer.appendChild(chartsContainer);
+        
+        // Crear contenedor para el gráfico de barras
+        const barChartContainer = document.createElement('div');
+        barChartContainer.className = 'bg-white p-4 rounded-lg shadow';
+        barChartContainer.innerHTML = `
+            <h3 class="text-lg font-semibold mb-4">Workflows más ejecutados</h3>
+            <div class="h-64">
+                <canvas id="workflows-chart"></canvas>
+            </div>
+        `;
+        chartsContainer.appendChild(barChartContainer);
+        
+        // Crear contenedor para el gráfico de estado
+        const statusChartContainer = document.createElement('div');
+        statusChartContainer.className = 'bg-white p-4 rounded-lg shadow';
+        statusChartContainer.innerHTML = `
+            <h3 class="text-lg font-semibold mb-4">Estado de los workflows</h3>
+            <div class="h-64">
+                <canvas id="workflows-status-chart"></canvas>
+            </div>
+        `;
+        chartsContainer.appendChild(statusChartContainer);
+    }
+}

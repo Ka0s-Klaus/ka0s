@@ -196,11 +196,19 @@ function loadSectionContent(sectionName, templatePath) {
         },
         (error) => {
             console.error(`Error cargando plantilla para ${sectionName}:`, error);
-            document.getElementById('main-content').innerHTML = `
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                    Error cargando la sección: ${error.message}
-                </div>
-            `;
+            const contentContainer = document.getElementById('main-content');
+            if (contentContainer) {
+                contentContainer.innerHTML = `
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                        Error cargando la sección: ${error.message}
+                    </div>
+                `;
+                
+                // Asegurarse de que los enlaces del navbar sigan funcionando
+                setTimeout(() => {
+                    setupNavbarLinks();
+                }, 100);
+            }
         }
     );
 }
