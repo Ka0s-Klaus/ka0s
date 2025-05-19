@@ -72,31 +72,61 @@ function loadWebsConfig() {
 // ==================== UTILIDADES GENERALES ====================
 /**
  * Función genérica para cargar datos desde una URL
- * @param {string} url - La URL del archivo a cargar
+ * @param {string|Array} url - La URL del archivo a cargar o array de objetos con URLs
  * @param {function} successCallback - Función a ejecutar si la carga es exitosa
  * @param {function} errorCallback - Función a ejecutar si hay un error (opcional)
  */
 function loadDataFromUrl(url, successCallback, errorCallback = null) {
     console.log(`Cargando datos desde: ${url}`);
 
-    fetch(url)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`Error HTTP: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (successCallback && typeof successCallback === 'function') {
-                successCallback(data);
-            }
-        })
-        .catch(error => {
-            console.error(`Error cargando datos desde ${url}:`, error);
-            if (errorCallback && typeof errorCallback === 'function') {
-                errorCallback(error);
-            }
+    // Si url es un array, procesamos cada elemento por separado
+    if (Array.isArray(url)) {
+        // Crear un array para almacenar todas las promesas de fetch
+        const fetchPromises = url.map(item => {
+            const urlToFetch = item.url || item;
+            return fetch(urlToFetch)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Error HTTP: ${response.status}`);
+                    }
+                    return response.json();
+                });
         });
+
+        // Esperar a que todas las promesas se resuelvan
+        Promise.all(fetchPromises)
+            .then(dataArray => {
+                if (successCallback && typeof successCallback === 'function') {
+                    successCallback(dataArray);
+                }
+            })
+            .catch(error => {
+                console.error(`Error cargando datos desde ${url}:`, error);
+                if (errorCallback && typeof errorCallback === 'function') {
+                    errorCallback(error);
+                }
+            });
+    } else {
+        // Comportamiento original para una sola URL
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (successCallback && typeof successCallback === 'function') {
+                    successCallback(data);
+                }
+            })
+            .catch(error => {
+                console.error(`Error cargando datos desde ${url}:`, error);
+                if (errorCallback && typeof errorCallback === 'function') {
+                    errorCallback(error);
+                }
+            });
+    }
 }
 
 /**
@@ -1244,11 +1274,7 @@ function createWorkflowsStatusChart(data) {
             plugins: {
                 legend: {
                     position: 'right',
-                },
-                title: {
-                    display: false,
-                    text: 'Estado de los workflows'
-                }
+                }                
             }
         }
     });
