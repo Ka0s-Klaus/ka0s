@@ -1244,11 +1244,7 @@ function createWorkflowsStatusChart(data) {
             plugins: {
                 legend: {
                     position: 'right',
-                },
-                title: {
-                    display: false,
-                    text: 'Estado de los workflows'
-                }
+                }                
             }
         }
     });
