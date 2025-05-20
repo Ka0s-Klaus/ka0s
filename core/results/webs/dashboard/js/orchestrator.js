@@ -578,6 +578,9 @@ function renderPage(pageNumber, columns = null) {
     // Calcular índices para la paginación
     const startIndex = (currentPage - 1) * config.itemsPerPage;
     const endIndex = Math.min(startIndex + config.itemsPerPage, filteredData.length);
+    
+    // Calcular el número total de páginas
+    const totalPages = Math.ceil(filteredData.length / config.itemsPerPage);
 
     // Usar columnas del template si están definidas, si no, usar todas las del primer elemento
     let tableColumns = columns && columns.length > 0 ? columns : [];
@@ -635,36 +638,139 @@ function renderPage(pageNumber, columns = null) {
     </table>
     </div>`;
 
-    // Agregar paginación similar a la imagen
-    if (filteredData.length > 0) {
-        const totalPages = Math.ceil(filteredData.length / config.itemsPerPage);
+    // Agregar paginación
+    if (totalPages > 1) {
+        tableHTML += `
+        <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+            <div class="flex-1 flex justify-between sm:hidden">
+                <button id="prev-page-mobile" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    Anterior
+                </button>
+                <button id="next-page-mobile" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    Siguiente
+                </button>
+            </div>
+            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                    <p class="text-sm text-gray-700">
+                        Mostrando <span class="font-medium">${startIndex + 1}</span> a <span class="font-medium">${endIndex}</span> de <span class="font-medium">${filteredData.length}</span> resultados
+                    </p>
+                </div>
+                <div>
+                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                        <button id="prev-page" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <span class="sr-only">Anterior</span>
+                            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                            </svg>
+                        </button>`;
+
+        // Mostrar números de página
+        const maxPagesToShow = 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+        let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+
+        if (endPage - startPage + 1 < maxPagesToShow) {
+            startPage = Math.max(1, endPage - maxPagesToShow + 1);
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            const isCurrentPage = i === currentPage;
+            tableHTML += `
+                <button data-page="${i}" class="page-number relative inline-flex items-center px-4 py-2 border ${isCurrentPage ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-gray-300 bg-white text-gray-500 hover:bg-gray-50'} text-sm font-medium">
+                    ${i}
+                </button>`;
+        }
 
         tableHTML += `
-        <div class="flex items-center justify-between mt-4 px-4 py-3 bg-white border-t border-gray-200">
-            <button onclick="renderPage(${Math.max(1, currentPage - 1)}, ${JSON.stringify(tableColumns)})" 
-                class="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}">
-                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                </svg>
-                Anterior
-            </button>
-
-            <div class="text-sm text-gray-700">
-                Página ${currentPage} de ${totalPages}
+                        <button id="next-page" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <span class="sr-only">Siguiente</span>
+                            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    </nav>
+                </div>
             </div>
-
-            <button onclick="renderPage(${Math.min(totalPages, currentPage + 1)}, ${JSON.stringify(tableColumns)})" 
-                class="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}">
-                Siguiente
-                <svg class="w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                </svg>
-            </button>
         </div>`;
     }
 
-    // Actualizar el contenido
+    // Actualizar el contenido del elemento
     dataList.innerHTML = tableHTML;
+    
+    // Añadir event listeners a los botones de paginación
+    if (totalPages > 1) {
+        // Botón anterior (versión escritorio)
+        const prevButton = document.getElementById('prev-page');
+        if (prevButton) {
+            prevButton.addEventListener('click', function() {
+                if (currentPage > 1) {
+                    renderPage(currentPage - 1, tableColumns);
+                }
+            });
+            // Deshabilitar si estamos en la primera página
+            prevButton.disabled = currentPage === 1;
+            if (prevButton.disabled) {
+                prevButton.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        }
+        
+        // Botón siguiente (versión escritorio)
+        const nextButton = document.getElementById('next-page');
+        if (nextButton) {
+            nextButton.addEventListener('click', function() {
+                if (currentPage < totalPages) {
+                    renderPage(currentPage + 1, tableColumns);
+                }
+            });
+            // Deshabilitar si estamos en la última página
+            nextButton.disabled = currentPage === totalPages;
+            if (nextButton.disabled) {
+                nextButton.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        }
+        
+        // Botón anterior (versión móvil)
+        const prevButtonMobile = document.getElementById('prev-page-mobile');
+        if (prevButtonMobile) {
+            prevButtonMobile.addEventListener('click', function() {
+                if (currentPage > 1) {
+                    renderPage(currentPage - 1, tableColumns);
+                }
+            });
+            // Deshabilitar si estamos en la primera página
+            prevButtonMobile.disabled = currentPage === 1;
+            if (prevButtonMobile.disabled) {
+                prevButtonMobile.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        }
+        
+        // Botón siguiente (versión móvil)
+        const nextButtonMobile = document.getElementById('next-page-mobile');
+        if (nextButtonMobile) {
+            nextButtonMobile.addEventListener('click', function() {
+                if (currentPage < totalPages) {
+                    renderPage(currentPage + 1, tableColumns);
+                }
+            });
+            // Deshabilitar si estamos en la última página
+            nextButtonMobile.disabled = currentPage === totalPages;
+            if (nextButtonMobile.disabled) {
+                nextButtonMobile.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        }
+        
+        // Botones de número de página
+        const pageButtons = document.querySelectorAll('.page-number');
+        pageButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const pageNum = parseInt(this.getAttribute('data-page'));
+                if (pageNum !== currentPage) {
+                    renderPage(pageNum, tableColumns);
+                }
+            });
+        });
+    }
 }
 
 // Función para actualizar la paginación
