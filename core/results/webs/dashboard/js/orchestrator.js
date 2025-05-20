@@ -197,6 +197,111 @@ function initSection(sectionName) {
 }
 
 /**
+ * Procesa las plantillas de la sección actual
+ * @param {Object} templateData - Datos de la plantilla JSON
+ */
+function processTemplates(templateData) {
+    if (!templateData.templates || !Array.isArray(templateData.templates)) {
+        console.error('No se encontraron plantillas en los datos');
+        return;
+    }
+    
+    // Obtener todas las plantillas gráficas
+    const graphicTemplates = templateData.templates.filter(t => t.type === 'graphic');
+    
+    // Mostrar la sección de gráficos si hay plantillas gráficas
+    const chartsSection = document.getElementById('charts-section');
+    if (chartsSection && graphicTemplates.length > 0) {
+        chartsSection.style.display = 'block';
+        
+        // Limpiar el contenedor de gráficos
+        const chartsContainer = document.getElementById('charts-container');
+        if (chartsContainer) {
+            chartsContainer.innerHTML = '';
+            
+            // Procesar cada plantilla gráfica
+            graphicTemplates.forEach((template, index) => {
+                // Crear un contenedor para este gráfico
+                const graphicContainer = document.createElement('div');
+                graphicContainer.className = 'bg-white rounded-lg shadow-sm p-4 mb-4';
+                
+                // Añadir título al contenedor
+                const titleElement = document.createElement('h3');
+                titleElement.className = 'text-lg font-semibold mb-3';
+                titleElement.textContent = template.title || `Gráfico ${index + 1}`;
+                graphicContainer.appendChild(titleElement);
+                
+                // Crear contenedor para los dos tipos de gráficos (barras y circular)
+                const chartsGrid = document.createElement('div');
+                chartsGrid.className = 'grid grid-cols-1 md:grid-cols-2 gap-4';
+                
+                // Generar IDs únicos para los gráficos
+                const barChartId = `bar-chart-${index}`;
+                const doughnutChartId = `doughnut-chart-${index}`;
+                
+                // Crear contenedor para el gráfico de barras
+                const barChartContainer = document.createElement('div');
+                barChartContainer.className = 'h-64';
+                barChartContainer.innerHTML = `<canvas id="${barChartId}"></canvas>`;
+                
+                // Crear contenedor para el gráfico circular
+                const doughnutChartContainer = document.createElement('div');
+                doughnutChartContainer.className = 'h-64';
+                doughnutChartContainer.innerHTML = `<canvas id="${doughnutChartId}"></canvas>`;
+                
+                // Añadir los contenedores al grid
+                chartsGrid.appendChild(barChartContainer);
+                chartsGrid.appendChild(doughnutChartContainer);
+                
+                // Añadir el grid al contenedor del gráfico
+                graphicContainer.appendChild(chartsGrid);
+                
+                // Añadir el contenedor del gráfico al contenedor principal
+                chartsContainer.appendChild(graphicContainer);
+                
+                // Cargar datos para los gráficos
+                if (template.dataSource) {
+                    loadDataFromUrl(
+                        template.dataSource,
+                        (data) => {
+                            // Crear gráfico de barras
+                            createBarChart(data, barChartId, template);
+                            
+                            // Crear gráfico circular
+                            createDoughnutChart(data, doughnutChartId, template);
+                        },
+                        (error) => {
+                            console.error(`Error cargando datos para gráficos:`, error);
+                            
+                            // Mostrar mensaje de error en los contenedores de gráficos
+                            document.getElementById(barChartId).parentNode.innerHTML = `
+                                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                                    Error cargando datos para el gráfico: ${error.message}
+                                </div>
+                            `;
+                            
+                            document.getElementById(doughnutChartId).parentNode.innerHTML = `
+                                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                                    Error cargando datos para el gráfico: ${error.message}
+                                </div>
+                            `;
+                        }
+                    );
+                }
+            });
+        }
+    } else if (chartsSection) {
+        chartsSection.style.display = 'none';
+    }
+    
+    // Configurar la lista de datos si existe
+    const listTemplate = templateData.templates.find(t => t.type === 'list');
+    if (listTemplate) {
+        updateDataList(listTemplate);
+    }
+}
+
+/**
  * Carga el contenido de una sección específica
  * @param {string} sectionName - Nombre de la sección a cargar
  * @param {string} templatePath - Ruta al archivo de plantilla JSON
@@ -214,42 +319,29 @@ function loadSectionContent(sectionName, templatePath) {
     loadDataFromUrl(
         templatePath,
         (templateData) => {
-            // Ocultar los gráficos por defecto
-            const chartsSection = document.getElementById('charts-section');
-            if (chartsSection) {
-                chartsSection.style.display = 'none';
-            }
             // Actualizar título y descripción
             updateSectionHeader(templateData);
             
             // Actualizar métricas
             updateMetrics(templateData);
             
-            // Configurar la lista de datos si existe
-            if (templateData.templates && Array.isArray(templateData.templates)) {
-                const listTemplate = templateData.templates.find(t => t.type === 'list');
-                if (listTemplate) {
-                    updateDataList(listTemplate);
-                }
-            }
+            // Procesar las plantillas
+            processTemplates(templateData);
             
             // Inicializar la sección específica
             initSection(sectionName);
-            
-            // Asegurarse de que los contenedores de gráficas estén presentes
-            ensureChartContainers();
         },
         (error) => {
             console.error(`Error cargando plantilla para ${sectionName}:`, error);
             
-            // En lugar de reemplazar todo el contenido, solo mostrar el error en un contenedor específico
+            // Mostrar mensaje de error
             const errorContainer = document.createElement('div');
             errorContainer.className = "bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-8";
             errorContainer.innerHTML = `Error cargando la sección: ${error.message}`;
             
             const contentContainer = document.getElementById('main-content');
             if (contentContainer) {
-                // Preservar el encabezado y los contenedores de gráficas
+                // Preservar el encabezado
                 const header = contentContainer.querySelector('header');
                 
                 // Insertar el mensaje de error después del encabezado
@@ -259,9 +351,6 @@ function loadSectionContent(sectionName, templatePath) {
                     // Si no hay encabezado, simplemente añadir al principio
                     contentContainer.prepend(errorContainer);
                 }
-                
-                // Reinicializar la barra de navegación para asegurar que los enlaces funcionen
-                initNavbar();
             }
         }
     );
@@ -1078,8 +1167,8 @@ function processChartData(data, template, chartType) {
                 borderWidth: 1
             }],
             // Obtener etiquetas de ejes del template
-            xAxisLabel: template.xAxisLabel || 'Categoría',
-            yAxisLabel: template.yAxisLabel || 'Cantidad'
+            xAxisLabel: template.xAxisLabel,
+            yAxisLabel: template.yAxisLabel
         };
     } else if (chartType === 'doughnut') {
         // Contar elementos por estado o categoría
@@ -1336,25 +1425,70 @@ function createWorkflowsStatusChart(data) {
     return createDoughnutChart(data, 'workflows-status-chart');
 }
 
-// Crear el gráfico de barras
-function createBarChart(data, chartId = 'bar-chart') {
+/**
+ * Crea un gráfico de barras
+ * @param {Array} data - Datos para el gráfico
+ * @param {string} chartId - ID del elemento canvas
+ * @param {Object} template - Plantilla con configuración adicional
+ */
+function createBarChart(data, chartId = 'bar-chart', template = {}) {
+    console.log(`Creando gráfico de barras con ID: ${chartId}`, data);
     const ctx = document.getElementById(chartId);
-    if (!ctx) return;
+    if (!ctx) {
+        console.error(`No se encontró el elemento canvas con ID: ${chartId}`);
+        return;
+    }
     
     // Destruir el gráfico existente si hay uno
-    if (window.charts && window.charts[chartId]) {
-        window.charts[chartId].destroy();
+    if (charts[chartId]) {
+        charts[chartId].destroy();
     }
     
-    // Inicializar el objeto de gráficos si no existe
-    if (!window.charts) {
-        window.charts = {};
+    // Verificar que los datos sean un array
+    if (!Array.isArray(data)) {
+        console.error('Los datos para el gráfico no son un array:', data);
+        return;
     }
     
-    // Crear el nuevo gráfico
-    window.charts[chartId] = new Chart(ctx, {
+    // Procesar datos para el gráfico
+    const counts = {};
+    const categoryField = template.categoryField || 'name';
+    
+    // Contar elementos por categoría
+    data.forEach(item => {
+        if (item && typeof item === 'object') {
+            const category = item[categoryField] || 'Sin categoría';
+            counts[category] = (counts[category] || 0) + 1;
+        }
+    });
+    
+    // Verificar si hay datos procesados
+    if (Object.keys(counts).length === 0) {
+        console.warn(`No se encontraron datos válidos para el campo: ${categoryField}`);
+        // Crear datos de muestra para evitar errores
+        counts['Sin datos'] = 0;
+    }
+    
+    // Ordenar por cantidad (de mayor a menor)
+    const sortedItems = Object.entries(counts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10); // Limitar a los 10 más frecuentes
+    
+    console.log('Datos procesados para gráfico de barras:', sortedItems);
+    
+    // Crear el gráfico
+    charts[chartId] = new Chart(ctx, {
         type: 'bar',
-        data: data,
+        data: {
+            labels: sortedItems.map(item => item[0]),
+            datasets: [{
+                label: template.barChartLabel || 'Frecuencia',
+                data: sortedItems.map(item => item[1]),
+                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
         options: {
             responsive: true,
             maintainAspectRatio: false,
@@ -1372,53 +1506,102 @@ function createBarChart(data, chartId = 'bar-chart') {
                     beginAtZero: true,
                     title: {
                         display: true,
-                        text: data.yAxisLabel || 'Cantidad'
+                        text: template.yAxisLabel || 'Cantidad'
                     }
                 },
                 x: {
                     title: {
                         display: true,
-                        text: data.xAxisLabel || 'Categoría'
+                        text: template.xAxisLabel || 'Categoría'
                     }
                 }
             }
         }
     });
     
-    return window.charts[chartId];
+    return charts[chartId];
 }
 
-// Crear el gráfico circular
-function createDoughnutChart(data, chartId = 'doughnut-chart') {
+/**
+ * Crea un gráfico circular
+ * @param {Array} data - Datos para el gráfico
+ * @param {string} chartId - ID del elemento canvas
+ * @param {Object} template - Plantilla con configuración adicional
+ */
+function createDoughnutChart(data, chartId = 'doughnut-chart', template = {}) {
+    console.log(`Creando gráfico circular con ID: ${chartId}`, data);
     const ctx = document.getElementById(chartId);
-    if (!ctx) return;
+    if (!ctx) {
+        console.error(`No se encontró el elemento canvas con ID: ${chartId}`);
+        return;
+    }
     
     // Destruir el gráfico existente si hay uno
-    if (window.charts && window.charts[chartId]) {
-        window.charts[chartId].destroy();
+    if (charts[chartId]) {
+        charts[chartId].destroy();
     }
     
-    // Inicializar el objeto de gráficos si no existe
-    if (!window.charts) {
-        window.charts = {};
+    // Verificar que los datos sean un array
+    if (!Array.isArray(data)) {
+        console.error('Los datos para el gráfico no son un array:', data);
+        return;
     }
     
-    // Crear el nuevo gráfico
-    window.charts[chartId] = new Chart(ctx, {
+    // Procesar datos para el gráfico
+    const counts = {};
+    const statusField = template.statusField || 'status';
+    
+    // Contar elementos por estado
+    data.forEach(item => {
+        if (item && typeof item === 'object') {
+            const status = item[statusField] || 'Desconocido';
+            counts[status] = (counts[status] || 0) + 1;
+        }
+    });
+    
+    // Verificar si hay datos procesados
+    if (Object.keys(counts).length === 0) {
+        console.warn(`No se encontraron datos válidos para el campo: ${statusField}`);
+        // Crear datos de muestra para evitar errores
+        counts['Sin datos'] = 0;
+    }
+    
+    console.log('Datos procesados para gráfico circular:', counts);
+    
+    // Generar colores para los estados
+    const colors = [
+        'rgba(75, 192, 192, 0.8)',   // verde-azulado
+        'rgba(255, 99, 132, 0.8)',   // rojo
+        'rgba(54, 162, 235, 0.8)',   // azul
+        'rgba(255, 205, 86, 0.8)',   // amarillo
+        'rgba(153, 102, 255, 0.8)',  // morado
+        'rgba(255, 159, 64, 0.8)',   // naranja
+        'rgba(201, 203, 207, 0.8)'   // gris
+    ];
+    
+    // Crear el gráfico
+    charts[chartId] = new Chart(ctx, {
         type: 'doughnut',
-        data: data,
+        data: {
+            labels: Object.keys(counts),
+            datasets: [{
+                data: Object.values(counts),
+                backgroundColor: Object.keys(counts).map((_, i) => colors[i % colors.length]),
+                borderWidth: 1
+            }]
+        },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
                 legend: {
                     position: 'right',
-                }                
+                }
             }
         }
     });
     
-    return window.charts[chartId];
+    return charts[chartId];
 }
 
 // Modificar la función loadWebsConfig para inicializar los gráficos
@@ -1696,8 +1879,8 @@ function processChartData(data, template, chartType) {
                 borderWidth: 1
             }],
             // Obtener etiquetas de ejes del template
-            xAxisLabel: template.xAxisLabel || 'Categoría',
-            yAxisLabel: template.yAxisLabel || 'Cantidad'
+            xAxisLabel: template.xAxisLabel,
+            yAxisLabel: template.yAxisLabel
         };
     } else if (chartType === 'doughnut') {
         // Contar elementos por estado o categoría
@@ -1772,6 +1955,55 @@ function ensureChartContainers() {
     }
 }
 
+/**
+ * Asegura que existen los contenedores para los gráficos
+ * @param {string} barChartId - ID para el gráfico de barras
+ * @param {string} doughnutChartId - ID para el gráfico circular
+ * @param {string} title - Título de la sección de gráficos
+ */
+function ensureChartContainers(barChartId, doughnutChartId, title) {
+    const chartsContainer = document.getElementById('charts-container');
+    if (!chartsContainer) return;
+    
+    // Limpiar contenedores existentes
+    chartsContainer.innerHTML = '';
+    
+    // Crear título de la sección
+    const titleElement = document.createElement('h2');
+    titleElement.className = 'text-xl font-semibold mb-4';
+    titleElement.textContent = title || 'Gráficos';
+    chartsContainer.appendChild(titleElement);
+    
+    // Crear contenedor para los gráficos
+    const chartsGrid = document.createElement('div');
+    chartsGrid.className = 'grid grid-cols-1 md:grid-cols-2 gap-4';
+    
+    // Crear contenedor para el gráfico de barras
+    const barChartContainer = document.createElement('div');
+    barChartContainer.className = 'bg-white rounded-lg shadow-sm p-4';
+    barChartContainer.innerHTML = `
+        <div class="h-64">
+            <canvas id="${barChartId}"></canvas>
+        </div>
+    `;
+    
+    // Crear contenedor para el gráfico circular
+    const doughnutChartContainer = document.createElement('div');
+    doughnutChartContainer.className = 'bg-white rounded-lg shadow-sm p-4';
+    doughnutChartContainer.innerHTML = `
+        <div class="h-64">
+            <canvas id="${doughnutChartId}"></canvas>
+        </div>
+    `;
+    
+    // Añadir los contenedores al grid
+    chartsGrid.appendChild(barChartContainer);
+    chartsGrid.appendChild(doughnutChartContainer);
+    
+    // Añadir el grid al contenedor principal
+    chartsContainer.appendChild(chartsGrid);
+}
+
 // Función para asegurar que existe un contenedor para el gráfico
 function ensureChartContainer(chartId) {
     if (!document.getElementById(chartId)) {
@@ -1788,5 +2020,58 @@ function ensureChartContainer(chartId) {
             `;
             chartsContainer.appendChild(chartContainer);
         }
+    }
+}
+
+/**
+ * Procesa una plantilla gráfica y crea los gráficos correspondientes
+ * @param {Object} template - Plantilla gráfica a procesar
+ * @param {number} index - Índice de la plantilla
+ */
+function processGraphicTemplate(template, index) {
+    // Generar IDs únicos para los gráficos
+    const barChartId = template.barChartId || `bar-chart-${index}`;
+    const doughnutChartId = template.doughnutChartId || `doughnut-chart-${index}`;
+    
+    // Asegurarse de que existen los contenedores para los gráficos
+    ensureChartContainers(barChartId, doughnutChartId, template.title);
+    
+    // Cargar datos para los gráficos
+    if (template.dataSource) {
+        loadDataFromUrl(
+            template.dataSource,
+            (data) => {
+                // Procesar datos para gráfico de barras
+                const barData = processChartData(data, template, 'bar');
+                createBarChart(barData, barChartId);
+                
+                // Procesar datos para gráfico circular
+                const doughnutData = processChartData(data, template, 'doughnut');
+                createDoughnutChart(doughnutData, doughnutChartId);
+            },
+            (error) => {
+                console.error(`Error cargando datos para gráficos:`, error);
+                
+                // Mostrar mensaje de error en los contenedores de gráficos
+                const barChartContainer = document.getElementById(barChartId).parentNode;
+                const doughnutChartContainer = document.getElementById(doughnutChartId).parentNode;
+                
+                if (barChartContainer) {
+                    barChartContainer.innerHTML = `
+                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                            Error cargando datos para el gráfico: ${error.message}
+                        </div>
+                    `;
+                }
+                
+                if (doughnutChartContainer) {
+                    doughnutChartContainer.innerHTML = `
+                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                            Error cargando datos para el gráfico: ${error.message}
+                        </div>
+                    `;
+                }
+            }
+        );
     }
 }
