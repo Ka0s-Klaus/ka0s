@@ -1475,27 +1475,5 @@ function ensureChartContainers() {
         chartsContainer.id = 'charts-container';
         chartsContainer.className = 'grid grid-cols-1 md:grid-cols-2 gap-6 mb-8';
         contentContainer.appendChild(chartsContainer);
-        
-        // Crear contenedor para el gráfico de barras
-        const barChartContainer = document.createElement('div');
-        barChartContainer.className = 'bg-white p-4 rounded-lg shadow';
-        barChartContainer.innerHTML = `
-            <h3 class="text-lg font-semibold mb-4">Workflows más ejecutados</h3>
-            <div class="h-64">
-                <canvas id="workflows-chart"></canvas>
-            </div>
-        `;
-        chartsContainer.appendChild(barChartContainer);
-        
-        // Crear contenedor para el gráfico de estado
-        const statusChartContainer = document.createElement('div');
-        statusChartContainer.className = 'bg-white p-4 rounded-lg shadow';
-        statusChartContainer.innerHTML = `
-            <h3 class="text-lg font-semibold mb-4">Estado de los workflows</h3>
-            <div class="h-64">
-                <canvas id="workflows-status-chart"></canvas>
-            </div>
-        `;
-        chartsContainer.appendChild(statusChartContainer);
     }
 }
