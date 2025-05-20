@@ -1,8 +1,9 @@
 // Configuración global
-
 const config = {
     itemsPerPage: 10,
-    defaultArchive: 'data/kaos-workflows-available.json'
+    defaultArchive: 'data/kaos-workflows-available.json',
+    defaultSection: 'Workflows',
+    defaultTemplate: 'data/section1.json'
 };
 
 // Variables globales iniciales
@@ -77,6 +78,20 @@ function loadDataFromUrl(url, successCallback, errorCallback = null) {
             });
     }
 }
+
+function initApp() {
+    // Usar directamente la configuración por defecto
+    console.log('Inicializando aplicación con configuración por defecto');
+    
+    // Inicializar la barra de navegación
+    initNavbar();
+    
+    // Cargar la sección por defecto
+    loadSectionContent(config.defaultSection, config.defaultTemplate);
+}
+
+// Ejecutar la inicialización cuando el DOM esté completamente cargado
+document.addEventListener('DOMContentLoaded', initApp);
 
 /**
  * Inicializa una sección específica
