@@ -412,6 +412,9 @@ function initializeSidebar() {
 }
 
 // ==================== MÓDULO DATA-LIST ====================
+// Variable global para columnas actuales de la lista
+let currentListColumns = [];
+
 function initDataList() {
     const dataListElement = document.getElementById('data-list');
     if (dataListElement && dataListElement.getAttribute('data-source')) {
@@ -452,8 +455,8 @@ function loadData(dataSource) {
             // Inicializar con todos los datos
             filteredData = [...allData];
             console.log("data:", data);
-            // Renderizar la primera página
-            renderPage(1);
+            // Renderizar la primera página usando las columnas actuales
+            renderPage(1, currentListColumns);
         },
         // Callback de error
         (error) => {
@@ -469,53 +472,45 @@ function loadData(dataSource) {
     );
 }
 
-
-
 // Función para renderizar una página específica de datos
-function renderPage(pageNumber) {
+function renderPage(pageNumber, columns = null) {
     const dataList = document.getElementById('data-list');
     if (!dataList) return;
-    
+
     // Actualizar la página actual
     currentPage = pageNumber;
-    
+
     // Calcular índices para la paginación
     const startIndex = (currentPage - 1) * config.itemsPerPage;
     const endIndex = Math.min(startIndex + config.itemsPerPage, filteredData.length);
-    
+
+    // Usar columnas del template si están definidas, si no, usar todas las del primer elemento
+    let tableColumns = columns && columns.length > 0 ? columns : [];
+    if (tableColumns.length === 0 && filteredData.length > 0) {
+        tableColumns = Object.keys(filteredData[0]);
+    }
+
     // Crear la estructura de la tabla
     let tableHTML = `
     <div class="overflow-x-auto">
         <table class="min-w-full bg-white border border-gray-200">
             <thead>
                 <tr class="bg-gray-100">`;
-    
-    // Determinar las columnas basadas en el primer elemento
-    const columns = [];
-    if (filteredData.length > 0) {
-        const firstItem = filteredData[0];
-        for (const key in firstItem) {
-            if (Object.prototype.hasOwnProperty.call(firstItem, key)) {
-                columns.push(key);
-            }
-        }
-        
-        // Agregar encabezados de columna
-        columns.forEach(column => {
-            tableHTML += `<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">${column.toUpperCase()}</th>`;
-        });
-    }
-    
+
+    tableColumns.forEach(column => {
+        tableHTML += `<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">${column.toUpperCase()}</th>`;
+    });
+
     tableHTML += `
             </tr>
         </thead>
         <tbody>`;
-    
+
     // Agregar filas de datos
     if (filteredData.length === 0) {
         tableHTML += `
             <tr>
-                <td colspan="${columns.length}" class="px-6 py-4 text-center text-gray-500">
+                <td colspan="${tableColumns.length}" class="px-6 py-4 text-center text-gray-500">
                     No se encontraron datos
                 </td>
             </tr>`;
@@ -524,10 +519,10 @@ function renderPage(pageNumber) {
         for (let i = startIndex; i < endIndex; i++) {
             const item = filteredData[i];
             const rowClass = i % 2 === 0 ? 'bg-white' : 'bg-gray-50';
-            
+
             tableHTML += `<tr class="${rowClass}">`;
-            
-            columns.forEach(column => {
+
+            tableColumns.forEach(column => {
                 let cellValue = item[column] || '';
                 // Truncar valores muy largos
                 if (typeof cellValue === 'string' && cellValue.length > 50) {
@@ -535,35 +530,35 @@ function renderPage(pageNumber) {
                 }
                 tableHTML += `<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${cellValue}</td>`;
             });
-            
+
             tableHTML += `</tr>`;
         }
     }
-    
+
     tableHTML += `
         </tbody>
     </table>
     </div>`;
-    
+
     // Agregar paginación similar a la imagen
     if (filteredData.length > 0) {
         const totalPages = Math.ceil(filteredData.length / config.itemsPerPage);
-        
+
         tableHTML += `
         <div class="flex items-center justify-between mt-4 px-4 py-3 bg-white border-t border-gray-200">
-            <button onclick="renderPage(${Math.max(1, currentPage - 1)})" 
+            <button onclick="renderPage(${Math.max(1, currentPage - 1)}, ${JSON.stringify(tableColumns)})" 
                 class="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}">
                 <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                 </svg>
                 Anterior
             </button>
-            
+
             <div class="text-sm text-gray-700">
                 Página ${currentPage} de ${totalPages}
             </div>
-            
-            <button onclick="renderPage(${Math.min(totalPages, currentPage + 1)})" 
+
+            <button onclick="renderPage(${Math.min(totalPages, currentPage + 1)}, ${JSON.stringify(tableColumns)})" 
                 class="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}">
                 Siguiente
                 <svg class="w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -572,7 +567,7 @@ function renderPage(pageNumber) {
             </button>
         </div>`;
     }
-    
+
     // Actualizar el contenido
     dataList.innerHTML = tableHTML;
 }
@@ -810,43 +805,27 @@ function updateMetrics(templateData) {
 }
 
 /**
- * Actualiza la lista de datos
+ * Actualiza la lista de datos basada en la configuración
  * @param {Object} listTemplate - Configuración de la plantilla de lista
  */
 function updateDataList(listTemplate) {
     const dataList = document.getElementById('data-list');
     if (!dataList) return;
-    
-    // Actualizar el título de la tabla
+
+    // Guardar columnas en variable global
+    currentListColumns = Array.isArray(listTemplate.columns) ? listTemplate.columns : [];
+
+    // Actualizar el título de la tabla/lista
     const tableTitle = document.querySelector('#data-section h2');
     if (tableTitle && listTemplate.title) {
         tableTitle.textContent = listTemplate.title;
     }
-    
+
     // Configurar la fuente de datos
     if (listTemplate.dataSource) {
         dataList.setAttribute('data-source', listTemplate.dataSource);
         // Cargar datos
         loadData(listTemplate.dataSource);
-    }
-    
-    // Actualizar encabezados si están definidos
-    if (listTemplate.columns && Array.isArray(listTemplate.columns)) {
-        const dataHeaders = document.getElementById('data-headers');
-        if (dataHeaders) {
-            dataHeaders.innerHTML = '';
-            
-            // Determinar el número de columnas para la cuadrícula
-            const colClass = `grid-cols-${Math.min(12, listTemplate.columns.length)}`;
-            dataHeaders.className = `grid ${colClass} gap-4 mb-4 p-4 bg-gray-50 border-b`;
-            
-            listTemplate.columns.forEach(column => {
-                const headerElement = document.createElement('div');
-                headerElement.className = 'font-medium text-gray-700';
-                headerElement.textContent = column;
-                dataHeaders.appendChild(headerElement);
-            });
-        }
     }
 }
 
@@ -1413,43 +1392,27 @@ function updateMetrics(templateData) {
 }
 
 /**
- * Actualiza la lista de datos
+ * Actualiza la lista de datos basada en la configuración
  * @param {Object} listTemplate - Configuración de la plantilla de lista
  */
 function updateDataList(listTemplate) {
     const dataList = document.getElementById('data-list');
     if (!dataList) return;
-    
-    // Actualizar el título de la tabla
+
+    // Guardar columnas en variable global
+    currentListColumns = Array.isArray(listTemplate.columns) ? listTemplate.columns : [];
+
+    // Actualizar el título de la tabla/lista
     const tableTitle = document.querySelector('#data-section h2');
     if (tableTitle && listTemplate.title) {
         tableTitle.textContent = listTemplate.title;
     }
-    
+
     // Configurar la fuente de datos
     if (listTemplate.dataSource) {
         dataList.setAttribute('data-source', listTemplate.dataSource);
         // Cargar datos
         loadData(listTemplate.dataSource);
-    }
-    
-    // Actualizar encabezados si están definidos
-    if (listTemplate.columns && Array.isArray(listTemplate.columns)) {
-        const dataHeaders = document.getElementById('data-headers');
-        if (dataHeaders) {
-            dataHeaders.innerHTML = '';
-            
-            // Determinar el número de columnas para la cuadrícula
-            const colClass = `grid-cols-${Math.min(12, listTemplate.columns.length)}`;
-            dataHeaders.className = `grid ${colClass} gap-4 mb-4 p-4 bg-gray-50 border-b`;
-            
-            listTemplate.columns.forEach(column => {
-                const headerElement = document.createElement('div');
-                headerElement.className = 'font-medium text-gray-700';
-                headerElement.textContent = column;
-                dataHeaders.appendChild(headerElement);
-            });
-        }
     }
 }
 
