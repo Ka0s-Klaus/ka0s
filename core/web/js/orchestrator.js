@@ -15,6 +15,7 @@ let sectionConfigMap = {};
 // Declarar variables para almacenar referencias a los gráficos
 let workflowsBarChart = null;
 let workflowsStatusChart = null;
+let charts = {};
 
 // Función para inicializar todos los módulos cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', function () {
@@ -988,6 +989,138 @@ function processConfig(config) {
 // Exponer la función para que pueda ser usada desde otros contextos
 window.processConfig = processConfig;
 
+// Función para inicializar los gráficos
+function initCharts() {
+    // Inicializar el gráfico de workflows
+    initWorkflowsChart();
+    
+    // Buscar si hay plantillas gráficas en la configuración actual
+    if (webConfig && webConfig.sections) {
+        // Buscar en la sección actual
+        const currentPath = window.location.pathname;
+        for (const section of webConfig.sections) {
+            if (currentPath.includes(section.title.toLowerCase())) {
+                // Cargar la configuración de la sección para encontrar las plantillas gráficas
+                loadDataFromUrl(
+                    section.datatemplate,
+                    (templateData) => {
+                        if (templateData.templates && Array.isArray(templateData.templates)) {
+                            // Buscar todas las plantillas gráficas
+                            const graphicTemplates = templateData.templates.filter(t => t.type === 'graphic');
+                            
+                            // Inicializar cada gráfico con su ID específico
+                            graphicTemplates.forEach((template, index) => {
+                                // Generar IDs únicos para cada gráfico
+                                const barChartId = template.barChartId || `bar-chart-${index}`;
+                                const doughnutChartId = template.doughnutChartId || `doughnut-chart-${index}`;
+                                
+                                // Asegurarse de que existen los contenedores para los gráficos
+                                ensureChartContainer(barChartId);
+                                ensureChartContainer(doughnutChartId);
+                                
+                                // Cargar datos para los gráficos
+                                if (template.dataSource) {
+                                    loadDataFromUrl(
+                                        template.dataSource,
+                                        (data) => {
+                                            // Procesar datos para gráfico de barras
+                                            const barData = processChartData(data, template, 'bar');
+                                            createBarChart(barData, barChartId);
+                                            
+                                            // Procesar datos para gráfico circular
+                                            const doughnutData = processChartData(data, template, 'doughnut');
+                                            createDoughnutChart(doughnutData, doughnutChartId);
+                                        },
+                                        (error) => {
+                                            console.error(`Error cargando datos para gráficos:`, error);
+                                        }
+                                    );
+                                }
+                            });
+                        }
+                    },
+                    (error) => {
+                        console.error(`Error cargando plantilla gráfica:`, error);
+                    }
+                );
+                break;
+            }
+        }
+    }
+}
+
+// Función para procesar datos para diferentes tipos de gráficos
+function processChartData(data, template, chartType) {
+    if (chartType === 'bar') {
+        // Contar elementos por nombre o categoría
+        const counts = {};
+        
+        data.forEach(item => {
+            // Usar el campo especificado en la plantilla o uno predeterminado
+            const field = template.categoryField || 'name';
+            const name = item[field] || 'Sin nombre';
+            counts[name] = (counts[name] || 0) + 1;
+        });
+        
+        // Ordenar por cantidad (de mayor a menor)
+        const sortedItems = Object.entries(counts)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 10); // Limitar a los 10 más frecuentes
+        
+        // Preparar datos para el gráfico
+        return {
+            labels: sortedItems.map(item => item[0]),
+            datasets: [{
+                label: template.barChartLabel || 'Frecuencia',
+                data: sortedItems.map(item => item[1]),
+                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }],
+            // Obtener etiquetas de ejes del template
+            xAxisLabel: template.xAxisLabel || 'Categoría',
+            yAxisLabel: template.yAxisLabel || 'Cantidad'
+        };
+    } else if (chartType === 'doughnut') {
+        // Contar elementos por estado o categoría
+        const counts = {};
+        
+        data.forEach(item => {
+            // Usar el campo especificado en la plantilla o uno predeterminado
+            const field = template.statusField || 'status';
+            const status = item[field] || 'Desconocido';
+            counts[status] = (counts[status] || 0) + 1;
+        });
+        
+        // Generar colores para los estados
+        const colors = [
+            'rgba(75, 192, 192, 0.8)',   // verde-azulado
+            'rgba(255, 99, 132, 0.8)',   // rojo
+            'rgba(54, 162, 235, 0.8)',   // azul
+            'rgba(255, 205, 86, 0.8)',   // amarillo
+            'rgba(153, 102, 255, 0.8)',  // morado
+            'rgba(255, 159, 64, 0.8)',   // naranja
+            'rgba(201, 203, 207, 0.8)'   // gris
+        ];
+        
+        // Preparar datos para el gráfico
+        const labels = Object.keys(counts);
+        const data = Object.values(counts);
+        const backgroundColor = labels.map((_, i) => colors[i % colors.length]);
+        
+        return {
+            labels: labels,
+            datasets: [{
+                data: data,
+                backgroundColor: backgroundColor,
+                borderWidth: 1
+            }]
+        };
+    }
+    
+    return null;
+}
+
 // Exponer la función de filtrado para que pueda ser usada por los inputs de búsqueda
 window.filterData = function(searchTerm) {
     if (!searchTerm) {
@@ -1195,16 +1328,31 @@ function processWorkflowsStatusData(data) {
 
 // Crear el gráfico de barras de workflows
 function createWorkflowsBarChart(data) {
-    const ctx = document.getElementById('workflows-chart');
+    return createBarChart(data, 'workflows-chart');
+}
+
+// Crear el gráfico circular de estado de workflows
+function createWorkflowsStatusChart(data) {
+    return createDoughnutChart(data, 'workflows-status-chart');
+}
+
+// Crear el gráfico de barras
+function createBarChart(data, chartId = 'bar-chart') {
+    const ctx = document.getElementById(chartId);
     if (!ctx) return;
     
     // Destruir el gráfico existente si hay uno
-    if (workflowsBarChart) {
-        workflowsBarChart.destroy();
+    if (window.charts && window.charts[chartId]) {
+        window.charts[chartId].destroy();
+    }
+    
+    // Inicializar el objeto de gráficos si no existe
+    if (!window.charts) {
+        window.charts = {};
     }
     
     // Crear el nuevo gráfico
-    workflowsBarChart = new Chart(ctx, {
+    window.charts[chartId] = new Chart(ctx, {
         type: 'bar',
         data: data,
         options: {
@@ -1216,7 +1364,7 @@ function createWorkflowsBarChart(data) {
                 },
                 title: {
                     display: false,
-                    text: 'Workflows más ejecutados'
+                    text: 'Elementos más frecuentes'
                 }
             },
             scales: {
@@ -1224,32 +1372,39 @@ function createWorkflowsBarChart(data) {
                     beginAtZero: true,
                     title: {
                         display: true,
-                        text: data.yAxisLabel
+                        text: data.yAxisLabel || 'Cantidad'
                     }
                 },
                 x: {
                     title: {
                         display: true,
-                        text: data.xAxisLabel
+                        text: data.xAxisLabel || 'Categoría'
                     }
                 }
             }
         }
     });
+    
+    return window.charts[chartId];
 }
 
-// Crear el gráfico circular de estado de workflows
-function createWorkflowsStatusChart(data) {
-    const ctx = document.getElementById('workflows-status-chart');
+// Crear el gráfico circular
+function createDoughnutChart(data, chartId = 'doughnut-chart') {
+    const ctx = document.getElementById(chartId);
     if (!ctx) return;
     
     // Destruir el gráfico existente si hay uno
-    if (workflowsStatusChart) {
-        workflowsStatusChart.destroy();
+    if (window.charts && window.charts[chartId]) {
+        window.charts[chartId].destroy();
+    }
+    
+    // Inicializar el objeto de gráficos si no existe
+    if (!window.charts) {
+        window.charts = {};
     }
     
     // Crear el nuevo gráfico
-    workflowsStatusChart = new Chart(ctx, {
+    window.charts[chartId] = new Chart(ctx, {
         type: 'doughnut',
         data: data,
         options: {
@@ -1262,9 +1417,11 @@ function createWorkflowsStatusChart(data) {
             }
         }
     });
+    
+    return window.charts[chartId];
 }
 
-// Modificar la función loadWebsConfig para inicializar el gráfico
+// Modificar la función loadWebsConfig para inicializar los gráficos
 function loadWebsConfig() {
     loadDataFromUrl(
         'data/webs.json',
@@ -1277,8 +1434,8 @@ function loadWebsConfig() {
             processConfig(webConfig);
             // Inicializar el módulo de datos
             initDataList();
-            // Inicializar el gráfico de workflows
-            initWorkflowsChart();
+            // Inicializar los gráficos
+            initCharts();
 
             // Inicializar el mapa de configuración de secciones
             if (webConfig && webConfig.sections) {
@@ -1450,6 +1607,138 @@ function processConfig(config) {
 // Exponer la función para que pueda ser usada desde otros contextos
 window.processConfig = processConfig;
 
+// Función para inicializar los gráficos
+function initCharts() {
+    // Inicializar el gráfico de workflows
+    initWorkflowsChart();
+    
+    // Buscar si hay plantillas gráficas en la configuración actual
+    if (webConfig && webConfig.sections) {
+        // Buscar en la sección actual
+        const currentPath = window.location.pathname;
+        for (const section of webConfig.sections) {
+            if (currentPath.includes(section.title.toLowerCase())) {
+                // Cargar la configuración de la sección para encontrar las plantillas gráficas
+                loadDataFromUrl(
+                    section.datatemplate,
+                    (templateData) => {
+                        if (templateData.templates && Array.isArray(templateData.templates)) {
+                            // Buscar todas las plantillas gráficas
+                            const graphicTemplates = templateData.templates.filter(t => t.type === 'graphic');
+                            
+                            // Inicializar cada gráfico con su ID específico
+                            graphicTemplates.forEach((template, index) => {
+                                // Generar IDs únicos para cada gráfico
+                                const barChartId = template.barChartId || `bar-chart-${index}`;
+                                const doughnutChartId = template.doughnutChartId || `doughnut-chart-${index}`;
+                                
+                                // Asegurarse de que existen los contenedores para los gráficos
+                                ensureChartContainer(barChartId);
+                                ensureChartContainer(doughnutChartId);
+                                
+                                // Cargar datos para los gráficos
+                                if (template.dataSource) {
+                                    loadDataFromUrl(
+                                        template.dataSource,
+                                        (data) => {
+                                            // Procesar datos para gráfico de barras
+                                            const barData = processChartData(data, template, 'bar');
+                                            createBarChart(barData, barChartId);
+                                            
+                                            // Procesar datos para gráfico circular
+                                            const doughnutData = processChartData(data, template, 'doughnut');
+                                            createDoughnutChart(doughnutData, doughnutChartId);
+                                        },
+                                        (error) => {
+                                            console.error(`Error cargando datos para gráficos:`, error);
+                                        }
+                                    );
+                                }
+                            });
+                        }
+                    },
+                    (error) => {
+                        console.error(`Error cargando plantilla gráfica:`, error);
+                    }
+                );
+                break;
+            }
+        }
+    }
+}
+
+// Función para procesar datos para diferentes tipos de gráficos
+function processChartData(data, template, chartType) {
+    if (chartType === 'bar') {
+        // Contar elementos por nombre o categoría
+        const counts = {};
+        
+        data.forEach(item => {
+            // Usar el campo especificado en la plantilla o uno predeterminado
+            const field = template.categoryField || 'name';
+            const name = item[field] || 'Sin nombre';
+            counts[name] = (counts[name] || 0) + 1;
+        });
+        
+        // Ordenar por cantidad (de mayor a menor)
+        const sortedItems = Object.entries(counts)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 10); // Limitar a los 10 más frecuentes
+        
+        // Preparar datos para el gráfico
+        return {
+            labels: sortedItems.map(item => item[0]),
+            datasets: [{
+                label: template.barChartLabel || 'Frecuencia',
+                data: sortedItems.map(item => item[1]),
+                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }],
+            // Obtener etiquetas de ejes del template
+            xAxisLabel: template.xAxisLabel || 'Categoría',
+            yAxisLabel: template.yAxisLabel || 'Cantidad'
+        };
+    } else if (chartType === 'doughnut') {
+        // Contar elementos por estado o categoría
+        const counts = {};
+        
+        data.forEach(item => {
+            // Usar el campo especificado en la plantilla o uno predeterminado
+            const field = template.statusField || 'status';
+            const status = item[field] || 'Desconocido';
+            counts[status] = (counts[status] || 0) + 1;
+        });
+        
+        // Generar colores para los estados
+        const colors = [
+            'rgba(75, 192, 192, 0.8)',   // verde-azulado
+            'rgba(255, 99, 132, 0.8)',   // rojo
+            'rgba(54, 162, 235, 0.8)',   // azul
+            'rgba(255, 205, 86, 0.8)',   // amarillo
+            'rgba(153, 102, 255, 0.8)',  // morado
+            'rgba(255, 159, 64, 0.8)',   // naranja
+            'rgba(201, 203, 207, 0.8)'   // gris
+        ];
+        
+        // Preparar datos para el gráfico
+        const labels = Object.keys(counts);
+        const data = Object.values(counts);
+        const backgroundColor = labels.map((_, i) => colors[i % colors.length]);
+        
+        return {
+            labels: labels,
+            datasets: [{
+                data: data,
+                backgroundColor: backgroundColor,
+                borderWidth: 1
+            }]
+        };
+    }
+    
+    return null;
+}
+
 // Exponer la función de filtrado para que pueda ser usada por los inputs de búsqueda
 window.filterData = function(searchTerm) {
     if (!searchTerm) {
@@ -1480,5 +1769,24 @@ function ensureChartContainers() {
         chartsContainer.id = 'charts-container';
         chartsContainer.className = 'grid grid-cols-1 md:grid-cols-2 gap-6 mb-8';
         contentContainer.appendChild(chartsContainer);
+    }
+}
+
+// Función para asegurar que existe un contenedor para el gráfico
+function ensureChartContainer(chartId) {
+    if (!document.getElementById(chartId)) {
+        // Buscar el contenedor de gráficos
+        const chartsContainer = document.getElementById('charts-container');
+        if (chartsContainer) {
+            // Crear un nuevo contenedor para el gráfico
+            const chartContainer = document.createElement('div');
+            chartContainer.className = 'bg-white rounded-lg shadow-sm p-4 mb-4';
+            chartContainer.innerHTML = `
+                <div class="h-64">
+                    <canvas id="${chartId}"></canvas>
+                </div>
+            `;
+            chartsContainer.appendChild(chartContainer);
+        }
     }
 }
