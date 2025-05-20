@@ -213,6 +213,11 @@ function loadSectionContent(sectionName, templatePath) {
     loadDataFromUrl(
         templatePath,
         (templateData) => {
+            // Ocultar los gráficos por defecto
+            const chartsSection = document.getElementById('charts-section');
+            if (chartsSection) {
+                chartsSection.style.display = 'none';
+            }
             // Actualizar título y descripción
             updateSectionHeader(templateData);
             
