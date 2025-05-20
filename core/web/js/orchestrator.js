@@ -39,7 +39,6 @@ function loadWebsConfig() {
             // Inicializar el módulo de datos
             initDataList();
             // Inicializar el gráfico de workflows
-            initWorkflowsChart();
 
             // Inicializar el mapa de configuración de secciones
             if (webConfig && webConfig.sections) {
@@ -197,6 +196,111 @@ function initSection(sectionName) {
 }
 
 /**
+ * Procesa las plantillas de la sección actual
+ * @param {Object} templateData - Datos de la plantilla JSON
+ */
+function processTemplates(templateData) {
+    if (!templateData.templates || !Array.isArray(templateData.templates)) {
+        console.error('No se encontraron plantillas en los datos');
+        return;
+    }
+    
+    // Obtener todas las plantillas gráficas
+    const graphicTemplates = templateData.templates.filter(t => t.type === 'graphic');
+    
+    // Mostrar la sección de gráficos si hay plantillas gráficas
+    const chartsSection = document.getElementById('charts-section');
+    if (chartsSection && graphicTemplates.length > 0) {
+        chartsSection.style.display = 'block';
+        
+        // Limpiar el contenedor de gráficos
+        const chartsContainer = document.getElementById('charts-container');
+        if (chartsContainer) {
+            chartsContainer.innerHTML = '';
+            
+            // Procesar cada plantilla gráfica
+            graphicTemplates.forEach((template, index) => {
+                // Crear un contenedor para este gráfico
+                const graphicContainer = document.createElement('div');
+                graphicContainer.className = 'bg-white rounded-lg shadow-sm p-4 mb-4';
+                
+                // Añadir título al contenedor
+                const titleElement = document.createElement('h3');
+                titleElement.className = 'text-lg font-semibold mb-3';
+                titleElement.textContent = template.title || `Gráfico ${index + 1}`;
+                graphicContainer.appendChild(titleElement);
+                
+                // Crear contenedor para los dos tipos de gráficos (barras y circular)
+                const chartsGrid = document.createElement('div');
+                chartsGrid.className = 'grid grid-cols-1 md:grid-cols-2 gap-4';
+                
+                // Generar IDs únicos para los gráficos
+                const barChartId = `bar-chart-${index}`;
+                const doughnutChartId = `doughnut-chart-${index}`;
+                
+                // Crear contenedor para el gráfico de barras
+                const barChartContainer = document.createElement('div');
+                barChartContainer.className = 'h-64';
+                barChartContainer.innerHTML = `<canvas id="${barChartId}"></canvas>`;
+                
+                // Crear contenedor para el gráfico circular
+                const doughnutChartContainer = document.createElement('div');
+                doughnutChartContainer.className = 'h-64';
+                doughnutChartContainer.innerHTML = `<canvas id="${doughnutChartId}"></canvas>`;
+                
+                // Añadir los contenedores al grid
+                chartsGrid.appendChild(barChartContainer);
+                chartsGrid.appendChild(doughnutChartContainer);
+                
+                // Añadir el grid al contenedor del gráfico
+                graphicContainer.appendChild(chartsGrid);
+                
+                // Añadir el contenedor del gráfico al contenedor principal
+                chartsContainer.appendChild(graphicContainer);
+                
+                // Cargar datos para los gráficos
+                if (template.dataSource) {
+                    loadDataFromUrl(
+                        template.dataSource,
+                        (data) => {
+                            // Crear gráfico de barras
+                            createBarChart(data, barChartId, template);
+                            
+                            // Crear gráfico circular
+                            createDoughnutChart(data, doughnutChartId, template);
+                        },
+                        (error) => {
+                            console.error(`Error cargando datos para gráficos:`, error);
+                            
+                            // Mostrar mensaje de error en los contenedores de gráficos
+                            document.getElementById(barChartId).parentNode.innerHTML = `
+                                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                                    Error cargando datos para el gráfico: ${error.message}
+                                </div>
+                            `;
+                            
+                            document.getElementById(doughnutChartId).parentNode.innerHTML = `
+                                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                                    Error cargando datos para el gráfico: ${error.message}
+                                </div>
+                            `;
+                        }
+                    );
+                }
+            });
+        }
+    } else if (chartsSection) {
+        chartsSection.style.display = 'none';
+    }
+    
+    // Configurar la lista de datos si existe
+    const listTemplate = templateData.templates.find(t => t.type === 'list');
+    if (listTemplate) {
+        updateDataList(listTemplate);
+    }
+}
+
+/**
  * Carga el contenido de una sección específica
  * @param {string} sectionName - Nombre de la sección a cargar
  * @param {string} templatePath - Ruta al archivo de plantilla JSON
@@ -214,42 +318,29 @@ function loadSectionContent(sectionName, templatePath) {
     loadDataFromUrl(
         templatePath,
         (templateData) => {
-            // Ocultar los gráficos por defecto
-            const chartsSection = document.getElementById('charts-section');
-            if (chartsSection) {
-                chartsSection.style.display = 'none';
-            }
             // Actualizar título y descripción
             updateSectionHeader(templateData);
             
             // Actualizar métricas
             updateMetrics(templateData);
             
-            // Configurar la lista de datos si existe
-            if (templateData.templates && Array.isArray(templateData.templates)) {
-                const listTemplate = templateData.templates.find(t => t.type === 'list');
-                if (listTemplate) {
-                    updateDataList(listTemplate);
-                }
-            }
+            // Procesar las plantillas
+            processTemplates(templateData);
             
             // Inicializar la sección específica
             initSection(sectionName);
-            
-            // Asegurarse de que los contenedores de gráficas estén presentes
-            ensureChartContainers();
         },
         (error) => {
             console.error(`Error cargando plantilla para ${sectionName}:`, error);
             
-            // En lugar de reemplazar todo el contenido, solo mostrar el error en un contenedor específico
+            // Mostrar mensaje de error
             const errorContainer = document.createElement('div');
             errorContainer.className = "bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-8";
             errorContainer.innerHTML = `Error cargando la sección: ${error.message}`;
             
             const contentContainer = document.getElementById('main-content');
             if (contentContainer) {
-                // Preservar el encabezado y los contenedores de gráficas
+                // Preservar el encabezado
                 const header = contentContainer.querySelector('header');
                 
                 // Insertar el mensaje de error después del encabezado
@@ -259,9 +350,6 @@ function loadSectionContent(sectionName, templatePath) {
                     // Si no hay encabezado, simplemente añadir al principio
                     contentContainer.prepend(errorContainer);
                 }
-                
-                // Reinicializar la barra de navegación para asegurar que los enlaces funcionen
-                initNavbar();
             }
         }
     );
@@ -283,23 +371,6 @@ function updateSectionHeader(templateData) {
         descriptionElement.textContent = templateData.description;
     }
 }
-
-/**
- * Actualiza las métricas en la página
- * @param {Object} config - Configuración con valores de métricas
- * @param {Array} metricConfig - Configuración de las métricas (claves y colores)
- 
-/**function updateMetrics(config, metricConfig) {
-    if (!metricConfig || !Array.isArray(metricConfig)) return;
-
-    metricConfig.forEach((metric, idx) => {
-        const container = document.querySelectorAll('.grid.grid-cols-1.md\\:grid-cols-4 > div')[idx];
-        if (container && config[metric.key]) {
-            const h2 = container.querySelector('h2');
-            if (h2) h2.textContent = config[metric.key];
-        }
-    });
-}*/
 
 
 // ==================== MÓDULO NAVBAR ====================
@@ -489,6 +560,9 @@ function renderPage(pageNumber, columns = null) {
     // Calcular índices para la paginación
     const startIndex = (currentPage - 1) * config.itemsPerPage;
     const endIndex = Math.min(startIndex + config.itemsPerPage, filteredData.length);
+    
+    // Calcular el número total de páginas
+    const totalPages = Math.ceil(filteredData.length / config.itemsPerPage);
 
     // Usar columnas del template si están definidas, si no, usar todas las del primer elemento
     let tableColumns = columns && columns.length > 0 ? columns : [];
@@ -546,36 +620,139 @@ function renderPage(pageNumber, columns = null) {
     </table>
     </div>`;
 
-    // Agregar paginación similar a la imagen
-    if (filteredData.length > 0) {
-        const totalPages = Math.ceil(filteredData.length / config.itemsPerPage);
+    // Agregar paginación
+    if (totalPages > 1) {
+        tableHTML += `
+        <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+            <div class="flex-1 flex justify-between sm:hidden">
+                <button id="prev-page-mobile" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    Anterior
+                </button>
+                <button id="next-page-mobile" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    Siguiente
+                </button>
+            </div>
+            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                    <p class="text-sm text-gray-700">
+                        Mostrando <span class="font-medium">${startIndex + 1}</span> a <span class="font-medium">${endIndex}</span> de <span class="font-medium">${filteredData.length}</span> resultados
+                    </p>
+                </div>
+                <div>
+                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                        <button id="prev-page" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <span class="sr-only">Anterior</span>
+                            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                            </svg>
+                        </button>`;
+
+        // Mostrar números de página
+        const maxPagesToShow = 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+        let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+
+        if (endPage - startPage + 1 < maxPagesToShow) {
+            startPage = Math.max(1, endPage - maxPagesToShow + 1);
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            const isCurrentPage = i === currentPage;
+            tableHTML += `
+                <button data-page="${i}" class="page-number relative inline-flex items-center px-4 py-2 border ${isCurrentPage ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-gray-300 bg-white text-gray-500 hover:bg-gray-50'} text-sm font-medium">
+                    ${i}
+                </button>`;
+        }
 
         tableHTML += `
-        <div class="flex items-center justify-between mt-4 px-4 py-3 bg-white border-t border-gray-200">
-            <button onclick="renderPage(${Math.max(1, currentPage - 1)}, ${JSON.stringify(tableColumns)})" 
-                class="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}">
-                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                </svg>
-                Anterior
-            </button>
-
-            <div class="text-sm text-gray-700">
-                Página ${currentPage} de ${totalPages}
+                        <button id="next-page" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <span class="sr-only">Siguiente</span>
+                            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    </nav>
+                </div>
             </div>
-
-            <button onclick="renderPage(${Math.min(totalPages, currentPage + 1)}, ${JSON.stringify(tableColumns)})" 
-                class="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}">
-                Siguiente
-                <svg class="w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                </svg>
-            </button>
         </div>`;
     }
 
-    // Actualizar el contenido
+    // Actualizar el contenido del elemento
     dataList.innerHTML = tableHTML;
+    
+    // Añadir event listeners a los botones de paginación
+    if (totalPages > 1) {
+        // Botón anterior (versión escritorio)
+        const prevButton = document.getElementById('prev-page');
+        if (prevButton) {
+            prevButton.addEventListener('click', function() {
+                if (currentPage > 1) {
+                    renderPage(currentPage - 1, tableColumns);
+                }
+            });
+            // Deshabilitar si estamos en la primera página
+            prevButton.disabled = currentPage === 1;
+            if (prevButton.disabled) {
+                prevButton.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        }
+        
+        // Botón siguiente (versión escritorio)
+        const nextButton = document.getElementById('next-page');
+        if (nextButton) {
+            nextButton.addEventListener('click', function() {
+                if (currentPage < totalPages) {
+                    renderPage(currentPage + 1, tableColumns);
+                }
+            });
+            // Deshabilitar si estamos en la última página
+            nextButton.disabled = currentPage === totalPages;
+            if (nextButton.disabled) {
+                nextButton.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        }
+        
+        // Botón anterior (versión móvil)
+        const prevButtonMobile = document.getElementById('prev-page-mobile');
+        if (prevButtonMobile) {
+            prevButtonMobile.addEventListener('click', function() {
+                if (currentPage > 1) {
+                    renderPage(currentPage - 1, tableColumns);
+                }
+            });
+            // Deshabilitar si estamos en la primera página
+            prevButtonMobile.disabled = currentPage === 1;
+            if (prevButtonMobile.disabled) {
+                prevButtonMobile.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        }
+        
+        // Botón siguiente (versión móvil)
+        const nextButtonMobile = document.getElementById('next-page-mobile');
+        if (nextButtonMobile) {
+            nextButtonMobile.addEventListener('click', function() {
+                if (currentPage < totalPages) {
+                    renderPage(currentPage + 1, tableColumns);
+                }
+            });
+            // Deshabilitar si estamos en la última página
+            nextButtonMobile.disabled = currentPage === totalPages;
+            if (nextButtonMobile.disabled) {
+                nextButtonMobile.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        }
+        
+        // Botones de número de página
+        const pageButtons = document.querySelectorAll('.page-number');
+        pageButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const pageNum = parseInt(this.getAttribute('data-page'));
+                if (pageNum !== currentPage) {
+                    renderPage(pageNum, tableColumns);
+                }
+            });
+        });
+    }
 }
 
 // Función para actualizar la paginación
@@ -967,87 +1144,9 @@ function renderTemplates(config) {
 }
 
 // Función para procesar la configuración completa
-function processConfig(config) {
-    if (!config) return;
-    
-    // Actualizar título y descripción
-    updateSectionHeader(config);
-    
-    // Actualizar métricas
-    updateMetrics(config);
-    
-    // Configurar la lista de datos si existe
-    if (config.templates && Array.isArray(config.templates)) {
-        const listTemplate = config.templates.find(t => t.type === 'list');
-        if (listTemplate) {
-            updateDataList(listTemplate);
-        }
-    }
-    
-}
 
 // Exponer la función para que pueda ser usada desde otros contextos
 window.processConfig = processConfig;
-
-// Función para inicializar los gráficos
-function initCharts() {
-    // Inicializar el gráfico de workflows
-    initWorkflowsChart();
-    
-    // Buscar si hay plantillas gráficas en la configuración actual
-    if (webConfig && webConfig.sections) {
-        // Buscar en la sección actual
-        const currentPath = window.location.pathname;
-        for (const section of webConfig.sections) {
-            if (currentPath.includes(section.title.toLowerCase())) {
-                // Cargar la configuración de la sección para encontrar las plantillas gráficas
-                loadDataFromUrl(
-                    section.datatemplate,
-                    (templateData) => {
-                        if (templateData.templates && Array.isArray(templateData.templates)) {
-                            // Buscar todas las plantillas gráficas
-                            const graphicTemplates = templateData.templates.filter(t => t.type === 'graphic');
-                            
-                            // Inicializar cada gráfico con su ID específico
-                            graphicTemplates.forEach((template, index) => {
-                                // Generar IDs únicos para cada gráfico
-                                const barChartId = template.barChartId || `bar-chart-${index}`;
-                                const doughnutChartId = template.doughnutChartId || `doughnut-chart-${index}`;
-                                
-                                // Asegurarse de que existen los contenedores para los gráficos
-                                ensureChartContainer(barChartId);
-                                ensureChartContainer(doughnutChartId);
-                                
-                                // Cargar datos para los gráficos
-                                if (template.dataSource) {
-                                    loadDataFromUrl(
-                                        template.dataSource,
-                                        (data) => {
-                                            // Procesar datos para gráfico de barras
-                                            const barData = processChartData(data, template, 'bar');
-                                            createBarChart(barData, barChartId);
-                                            
-                                            // Procesar datos para gráfico circular
-                                            const doughnutData = processChartData(data, template, 'doughnut');
-                                            createDoughnutChart(doughnutData, doughnutChartId);
-                                        },
-                                        (error) => {
-                                            console.error(`Error cargando datos para gráficos:`, error);
-                                        }
-                                    );
-                                }
-                            });
-                        }
-                    },
-                    (error) => {
-                        console.error(`Error cargando plantilla gráfica:`, error);
-                    }
-                );
-                break;
-            }
-        }
-    }
-}
 
 // Función para procesar datos para diferentes tipos de gráficos
 function processChartData(data, template, chartType) {
@@ -1078,8 +1177,8 @@ function processChartData(data, template, chartType) {
                 borderWidth: 1
             }],
             // Obtener etiquetas de ejes del template
-            xAxisLabel: template.xAxisLabel || 'Categoría',
-            yAxisLabel: template.yAxisLabel || 'Cantidad'
+            xAxisLabel: template.xAxisLabel,
+            yAxisLabel: template.yAxisLabel
         };
     } else if (chartType === 'doughnut') {
         // Contar elementos por estado o categoría
@@ -1139,32 +1238,6 @@ window.filterData = function(searchTerm) {
 
 
 // ==================== MÓDULO DE GRÁFICOS ====================
-/**
- * Inicializa el gráfico de workflows
- */
-function initWorkflowsChart() {
-    // Cargar datos para el gráfico
-    loadDataFromUrl(
-        config.defaultArchive,
-        (data) => {
-            // Procesar datos para el gráfico de barras
-            const workflowsData = processWorkflowsData(data);
-            
-            // Crear el gráfico de barras
-            createWorkflowsBarChart(workflowsData);
-            
-            // Procesar datos para el gráfico de estado
-            const statusData = processWorkflowsStatusData(data);
-            
-            // Crear el gráfico de estado
-            createWorkflowsStatusChart(statusData);
-        },
-        (error) => {
-            console.error('Error cargando datos para gráficos:', error);
-        }
-    );
-}
-
 // Procesar datos para el gráfico de barras
 function processWorkflowsData(data) {
     // Adaptarse a la estructura real del JSON
@@ -1336,25 +1409,70 @@ function createWorkflowsStatusChart(data) {
     return createDoughnutChart(data, 'workflows-status-chart');
 }
 
-// Crear el gráfico de barras
-function createBarChart(data, chartId = 'bar-chart') {
+/**
+ * Crea un gráfico de barras
+ * @param {Array} data - Datos para el gráfico
+ * @param {string} chartId - ID del elemento canvas
+ * @param {Object} template - Plantilla con configuración adicional
+ */
+function createBarChart(data, chartId = 'bar-chart', template = {}) {
+    console.log(`Creando gráfico de barras con ID: ${chartId}`, data);
     const ctx = document.getElementById(chartId);
-    if (!ctx) return;
+    if (!ctx) {
+        console.error(`No se encontró el elemento canvas con ID: ${chartId}`);
+        return;
+    }
     
     // Destruir el gráfico existente si hay uno
-    if (window.charts && window.charts[chartId]) {
-        window.charts[chartId].destroy();
+    if (charts[chartId]) {
+        charts[chartId].destroy();
     }
     
-    // Inicializar el objeto de gráficos si no existe
-    if (!window.charts) {
-        window.charts = {};
+    // Verificar que los datos sean un array
+    if (!Array.isArray(data)) {
+        console.error('Los datos para el gráfico no son un array:', data);
+        return;
     }
     
-    // Crear el nuevo gráfico
-    window.charts[chartId] = new Chart(ctx, {
+    // Procesar datos para el gráfico
+    const counts = {};
+    const categoryField = template.categoryField || 'name';
+    
+    // Contar elementos por categoría
+    data.forEach(item => {
+        if (item && typeof item === 'object') {
+            const category = item[categoryField] || 'Sin categoría';
+            counts[category] = (counts[category] || 0) + 1;
+        }
+    });
+    
+    // Verificar si hay datos procesados
+    if (Object.keys(counts).length === 0) {
+        console.warn(`No se encontraron datos válidos para el campo: ${categoryField}`);
+        // Crear datos de muestra para evitar errores
+        counts['Sin datos'] = 0;
+    }
+    
+    // Ordenar por cantidad (de mayor a menor)
+    const sortedItems = Object.entries(counts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10); // Limitar a los 10 más frecuentes
+    
+    console.log('Datos procesados para gráfico de barras:', sortedItems);
+    
+    // Crear el gráfico
+    charts[chartId] = new Chart(ctx, {
         type: 'bar',
-        data: data,
+        data: {
+            labels: sortedItems.map(item => item[0]),
+            datasets: [{
+                label: template.barChartLabel || 'Frecuencia',
+                data: sortedItems.map(item => item[1]),
+                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
         options: {
             responsive: true,
             maintainAspectRatio: false,
@@ -1372,53 +1490,102 @@ function createBarChart(data, chartId = 'bar-chart') {
                     beginAtZero: true,
                     title: {
                         display: true,
-                        text: data.yAxisLabel || 'Cantidad'
+                        text: template.yAxisLabel || 'Cantidad'
                     }
                 },
                 x: {
                     title: {
                         display: true,
-                        text: data.xAxisLabel || 'Categoría'
+                        text: template.xAxisLabel || 'Categoría'
                     }
                 }
             }
         }
     });
     
-    return window.charts[chartId];
+    return charts[chartId];
 }
 
-// Crear el gráfico circular
-function createDoughnutChart(data, chartId = 'doughnut-chart') {
+/**
+ * Crea un gráfico circular
+ * @param {Array} data - Datos para el gráfico
+ * @param {string} chartId - ID del elemento canvas
+ * @param {Object} template - Plantilla con configuración adicional
+ */
+function createDoughnutChart(data, chartId = 'doughnut-chart', template = {}) {
+    console.log(`Creando gráfico circular con ID: ${chartId}`, data);
     const ctx = document.getElementById(chartId);
-    if (!ctx) return;
+    if (!ctx) {
+        console.error(`No se encontró el elemento canvas con ID: ${chartId}`);
+        return;
+    }
     
     // Destruir el gráfico existente si hay uno
-    if (window.charts && window.charts[chartId]) {
-        window.charts[chartId].destroy();
+    if (charts[chartId]) {
+        charts[chartId].destroy();
     }
     
-    // Inicializar el objeto de gráficos si no existe
-    if (!window.charts) {
-        window.charts = {};
+    // Verificar que los datos sean un array
+    if (!Array.isArray(data)) {
+        console.error('Los datos para el gráfico no son un array:', data);
+        return;
     }
     
-    // Crear el nuevo gráfico
-    window.charts[chartId] = new Chart(ctx, {
+    // Procesar datos para el gráfico
+    const counts = {};
+    const statusField = template.statusField || 'status';
+    
+    // Contar elementos por estado
+    data.forEach(item => {
+        if (item && typeof item === 'object') {
+            const status = item[statusField] || 'Desconocido';
+            counts[status] = (counts[status] || 0) + 1;
+        }
+    });
+    
+    // Verificar si hay datos procesados
+    if (Object.keys(counts).length === 0) {
+        console.warn(`No se encontraron datos válidos para el campo: ${statusField}`);
+        // Crear datos de muestra para evitar errores
+        counts['Sin datos'] = 0;
+    }
+    
+    console.log('Datos procesados para gráfico circular:', counts);
+    
+    // Generar colores para los estados
+    const colors = [
+        'rgba(75, 192, 192, 0.8)',   // verde-azulado
+        'rgba(255, 99, 132, 0.8)',   // rojo
+        'rgba(54, 162, 235, 0.8)',   // azul
+        'rgba(255, 205, 86, 0.8)',   // amarillo
+        'rgba(153, 102, 255, 0.8)',  // morado
+        'rgba(255, 159, 64, 0.8)',   // naranja
+        'rgba(201, 203, 207, 0.8)'   // gris
+    ];
+    
+    // Crear el gráfico
+    charts[chartId] = new Chart(ctx, {
         type: 'doughnut',
-        data: data,
+        data: {
+            labels: Object.keys(counts),
+            datasets: [{
+                data: Object.values(counts),
+                backgroundColor: Object.keys(counts).map((_, i) => colors[i % colors.length]),
+                borderWidth: 1
+            }]
+        },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
                 legend: {
                     position: 'right',
-                }                
+                }
             }
         }
     });
     
-    return window.charts[chartId];
+    return charts[chartId];
 }
 
 // Modificar la función loadWebsConfig para inicializar los gráficos
@@ -1435,7 +1602,7 @@ function loadWebsConfig() {
             // Inicializar el módulo de datos
             initDataList();
             // Inicializar los gráficos
-            initCharts();
+            
 
             // Inicializar el mapa de configuración de secciones
             if (webConfig && webConfig.sections) {
@@ -1520,38 +1687,7 @@ function renderMetrics(config) {
     }
 }
 
-/**
- * Actualiza las métricas en la interfaz
- * @param {Object} templateData - Datos de la plantilla
- */
-function updateMetrics(templateData) {
-    const metricsContainer = document.getElementById('metrics-container');
-    if (!metricsContainer) return;
-    
-    // Limpiar métricas existentes
-    metricsContainer.innerHTML = '';
-    
-    // Colores para las métricas
-    const colors = ['blue', 'green', 'yellow', 'purple'];
-    
-    // Buscar todas las propiedades que comienzan con "metric"
-    let metricIndex = 1;
-    while (templateData[`metric${metricIndex}Title`] && templateData[`metric${metricIndex}`]) {
-        const color = colors[(metricIndex - 1) % colors.length];
-        const metricTitle = templateData[`metric${metricIndex}Title`];
-        const metricValue = templateData[`metric${metricIndex}`];
-        
-        const metricElement = document.createElement('div');
-        metricElement.className = `bg-${color}-50 rounded-lg p-4 shadow-sm`;
-        metricElement.innerHTML = `
-            <h2 class="text-lg font-semibold text-${color}-800">${metricTitle}</h2>
-            <p class="text-3xl font-bold text-${color}-600" id="metric${metricIndex}">${metricValue}</p>
-        `;
-        
-        metricsContainer.appendChild(metricElement);
-        metricIndex++;
-    }
-}
+
 
 /**
  * Actualiza la lista de datos basada en la configuración
@@ -1607,66 +1743,6 @@ function processConfig(config) {
 // Exponer la función para que pueda ser usada desde otros contextos
 window.processConfig = processConfig;
 
-// Función para inicializar los gráficos
-function initCharts() {
-    // Inicializar el gráfico de workflows
-    initWorkflowsChart();
-    
-    // Buscar si hay plantillas gráficas en la configuración actual
-    if (webConfig && webConfig.sections) {
-        // Buscar en la sección actual
-        const currentPath = window.location.pathname;
-        for (const section of webConfig.sections) {
-            if (currentPath.includes(section.title.toLowerCase())) {
-                // Cargar la configuración de la sección para encontrar las plantillas gráficas
-                loadDataFromUrl(
-                    section.datatemplate,
-                    (templateData) => {
-                        if (templateData.templates && Array.isArray(templateData.templates)) {
-                            // Buscar todas las plantillas gráficas
-                            const graphicTemplates = templateData.templates.filter(t => t.type === 'graphic');
-                            
-                            // Inicializar cada gráfico con su ID específico
-                            graphicTemplates.forEach((template, index) => {
-                                // Generar IDs únicos para cada gráfico
-                                const barChartId = template.barChartId || `bar-chart-${index}`;
-                                const doughnutChartId = template.doughnutChartId || `doughnut-chart-${index}`;
-                                
-                                // Asegurarse de que existen los contenedores para los gráficos
-                                ensureChartContainer(barChartId);
-                                ensureChartContainer(doughnutChartId);
-                                
-                                // Cargar datos para los gráficos
-                                if (template.dataSource) {
-                                    loadDataFromUrl(
-                                        template.dataSource,
-                                        (data) => {
-                                            // Procesar datos para gráfico de barras
-                                            const barData = processChartData(data, template, 'bar');
-                                            createBarChart(barData, barChartId);
-                                            
-                                            // Procesar datos para gráfico circular
-                                            const doughnutData = processChartData(data, template, 'doughnut');
-                                            createDoughnutChart(doughnutData, doughnutChartId);
-                                        },
-                                        (error) => {
-                                            console.error(`Error cargando datos para gráficos:`, error);
-                                        }
-                                    );
-                                }
-                            });
-                        }
-                    },
-                    (error) => {
-                        console.error(`Error cargando plantilla gráfica:`, error);
-                    }
-                );
-                break;
-            }
-        }
-    }
-}
-
 // Función para procesar datos para diferentes tipos de gráficos
 function processChartData(data, template, chartType) {
     if (chartType === 'bar') {
@@ -1696,8 +1772,8 @@ function processChartData(data, template, chartType) {
                 borderWidth: 1
             }],
             // Obtener etiquetas de ejes del template
-            xAxisLabel: template.xAxisLabel || 'Categoría',
-            yAxisLabel: template.yAxisLabel || 'Cantidad'
+            xAxisLabel: template.xAxisLabel,
+            yAxisLabel: template.yAxisLabel
         };
     } else if (chartType === 'doughnut') {
         // Contar elementos por estado o categoría
@@ -1755,21 +1831,55 @@ window.filterData = function(searchTerm) {
     renderPage(1);
 };
 
-// Función para asegurar que los contenedores de gráficas estén presentes
-function ensureChartContainers() {
-    const contentContainer = document.getElementById('main-content');
-    if (!contentContainer) return;
+
+
+/**
+ * Asegura que existen los contenedores para los gráficos
+ * @param {string} barChartId - ID para el gráfico de barras
+ * @param {string} doughnutChartId - ID para el gráfico circular
+ * @param {string} title - Título de la sección de gráficos
+ */
+function ensureChartContainers(barChartId, doughnutChartId, title) {
+    const chartsContainer = document.getElementById('charts-container');
+    if (!chartsContainer) return;
     
-    // Verificar si ya existen los contenedores de gráficas
-    let chartsContainer = document.getElementById('charts-container');
+    // Limpiar contenedores existentes
+    chartsContainer.innerHTML = '';
     
-    // Si no existe el contenedor principal de gráficas, crearlo
-    if (!chartsContainer) {
-        chartsContainer = document.createElement('div');
-        chartsContainer.id = 'charts-container';
-        chartsContainer.className = 'grid grid-cols-1 md:grid-cols-2 gap-6 mb-8';
-        contentContainer.appendChild(chartsContainer);
-    }
+    // Crear título de la sección
+    const titleElement = document.createElement('h2');
+    titleElement.className = 'text-xl font-semibold mb-4';
+    titleElement.textContent = title || 'Gráficos';
+    chartsContainer.appendChild(titleElement);
+    
+    // Crear contenedor para los gráficos
+    const chartsGrid = document.createElement('div');
+    chartsGrid.className = 'grid grid-cols-1 md:grid-cols-2 gap-4';
+    
+    // Crear contenedor para el gráfico de barras
+    const barChartContainer = document.createElement('div');
+    barChartContainer.className = 'bg-white rounded-lg shadow-sm p-4';
+    barChartContainer.innerHTML = `
+        <div class="h-64">
+            <canvas id="${barChartId}"></canvas>
+        </div>
+    `;
+    
+    // Crear contenedor para el gráfico circular
+    const doughnutChartContainer = document.createElement('div');
+    doughnutChartContainer.className = 'bg-white rounded-lg shadow-sm p-4';
+    doughnutChartContainer.innerHTML = `
+        <div class="h-64">
+            <canvas id="${doughnutChartId}"></canvas>
+        </div>
+    `;
+    
+    // Añadir los contenedores al grid
+    chartsGrid.appendChild(barChartContainer);
+    chartsGrid.appendChild(doughnutChartContainer);
+    
+    // Añadir el grid al contenedor principal
+    chartsContainer.appendChild(chartsGrid);
 }
 
 // Función para asegurar que existe un contenedor para el gráfico
@@ -1788,5 +1898,58 @@ function ensureChartContainer(chartId) {
             `;
             chartsContainer.appendChild(chartContainer);
         }
+    }
+}
+
+/**
+ * Procesa una plantilla gráfica y crea los gráficos correspondientes
+ * @param {Object} template - Plantilla gráfica a procesar
+ * @param {number} index - Índice de la plantilla
+ */
+function processGraphicTemplate(template, index) {
+    // Generar IDs únicos para los gráficos
+    const barChartId = template.barChartId || `bar-chart-${index}`;
+    const doughnutChartId = template.doughnutChartId || `doughnut-chart-${index}`;
+    
+    // Asegurarse de que existen los contenedores para los gráficos
+    ensureChartContainers(barChartId, doughnutChartId, template.title);
+    
+    // Cargar datos para los gráficos
+    if (template.dataSource) {
+        loadDataFromUrl(
+            template.dataSource,
+            (data) => {
+                // Procesar datos para gráfico de barras
+                const barData = processChartData(data, template, 'bar');
+                createBarChart(barData, barChartId);
+                
+                // Procesar datos para gráfico circular
+                const doughnutData = processChartData(data, template, 'doughnut');
+                createDoughnutChart(doughnutData, doughnutChartId);
+            },
+            (error) => {
+                console.error(`Error cargando datos para gráficos:`, error);
+                
+                // Mostrar mensaje de error en los contenedores de gráficos
+                const barChartContainer = document.getElementById(barChartId).parentNode;
+                const doughnutChartContainer = document.getElementById(doughnutChartId).parentNode;
+                
+                if (barChartContainer) {
+                    barChartContainer.innerHTML = `
+                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                            Error cargando datos para el gráfico: ${error.message}
+                        </div>
+                    `;
+                }
+                
+                if (doughnutChartContainer) {
+                    doughnutChartContainer.innerHTML = `
+                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                            Error cargando datos para el gráfico: ${error.message}
+                        </div>
+                    `;
+                }
+            }
+        );
     }
 }

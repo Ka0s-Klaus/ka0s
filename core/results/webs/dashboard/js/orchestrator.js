@@ -39,7 +39,6 @@ function loadWebsConfig() {
             // Inicializar el módulo de datos
             initDataList();
             // Inicializar el gráfico de workflows
-            initWorkflowsChart();
 
             // Inicializar el mapa de configuración de secciones
             if (webConfig && webConfig.sections) {
@@ -372,23 +371,6 @@ function updateSectionHeader(templateData) {
         descriptionElement.textContent = templateData.description;
     }
 }
-
-/**
- * Actualiza las métricas en la página
- * @param {Object} config - Configuración con valores de métricas
- * @param {Array} metricConfig - Configuración de las métricas (claves y colores)
- 
-/**function updateMetrics(config, metricConfig) {
-    if (!metricConfig || !Array.isArray(metricConfig)) return;
-
-    metricConfig.forEach((metric, idx) => {
-        const container = document.querySelectorAll('.grid.grid-cols-1.md\\:grid-cols-4 > div')[idx];
-        if (container && config[metric.key]) {
-            const h2 = container.querySelector('h2');
-            if (h2) h2.textContent = config[metric.key];
-        }
-    });
-}*/
 
 
 // ==================== MÓDULO NAVBAR ====================
@@ -1162,87 +1144,9 @@ function renderTemplates(config) {
 }
 
 // Función para procesar la configuración completa
-function processConfig(config) {
-    if (!config) return;
-    
-    // Actualizar título y descripción
-    updateSectionHeader(config);
-    
-    // Actualizar métricas
-    updateMetrics(config);
-    
-    // Configurar la lista de datos si existe
-    if (config.templates && Array.isArray(config.templates)) {
-        const listTemplate = config.templates.find(t => t.type === 'list');
-        if (listTemplate) {
-            updateDataList(listTemplate);
-        }
-    }
-    
-}
 
 // Exponer la función para que pueda ser usada desde otros contextos
 window.processConfig = processConfig;
-
-// Función para inicializar los gráficos
-function initCharts() {
-    // Inicializar el gráfico de workflows
-    initWorkflowsChart();
-    
-    // Buscar si hay plantillas gráficas en la configuración actual
-    if (webConfig && webConfig.sections) {
-        // Buscar en la sección actual
-        const currentPath = window.location.pathname;
-        for (const section of webConfig.sections) {
-            if (currentPath.includes(section.title.toLowerCase())) {
-                // Cargar la configuración de la sección para encontrar las plantillas gráficas
-                loadDataFromUrl(
-                    section.datatemplate,
-                    (templateData) => {
-                        if (templateData.templates && Array.isArray(templateData.templates)) {
-                            // Buscar todas las plantillas gráficas
-                            const graphicTemplates = templateData.templates.filter(t => t.type === 'graphic');
-                            
-                            // Inicializar cada gráfico con su ID específico
-                            graphicTemplates.forEach((template, index) => {
-                                // Generar IDs únicos para cada gráfico
-                                const barChartId = template.barChartId || `bar-chart-${index}`;
-                                const doughnutChartId = template.doughnutChartId || `doughnut-chart-${index}`;
-                                
-                                // Asegurarse de que existen los contenedores para los gráficos
-                                ensureChartContainer(barChartId);
-                                ensureChartContainer(doughnutChartId);
-                                
-                                // Cargar datos para los gráficos
-                                if (template.dataSource) {
-                                    loadDataFromUrl(
-                                        template.dataSource,
-                                        (data) => {
-                                            // Procesar datos para gráfico de barras
-                                            const barData = processChartData(data, template, 'bar');
-                                            createBarChart(barData, barChartId);
-                                            
-                                            // Procesar datos para gráfico circular
-                                            const doughnutData = processChartData(data, template, 'doughnut');
-                                            createDoughnutChart(doughnutData, doughnutChartId);
-                                        },
-                                        (error) => {
-                                            console.error(`Error cargando datos para gráficos:`, error);
-                                        }
-                                    );
-                                }
-                            });
-                        }
-                    },
-                    (error) => {
-                        console.error(`Error cargando plantilla gráfica:`, error);
-                    }
-                );
-                break;
-            }
-        }
-    }
-}
 
 // Función para procesar datos para diferentes tipos de gráficos
 function processChartData(data, template, chartType) {
@@ -1334,32 +1238,6 @@ window.filterData = function(searchTerm) {
 
 
 // ==================== MÓDULO DE GRÁFICOS ====================
-/**
- * Inicializa el gráfico de workflows
- */
-function initWorkflowsChart() {
-    // Cargar datos para el gráfico
-    loadDataFromUrl(
-        config.defaultArchive,
-        (data) => {
-            // Procesar datos para el gráfico de barras
-            const workflowsData = processWorkflowsData(data);
-            
-            // Crear el gráfico de barras
-            createWorkflowsBarChart(workflowsData);
-            
-            // Procesar datos para el gráfico de estado
-            const statusData = processWorkflowsStatusData(data);
-            
-            // Crear el gráfico de estado
-            createWorkflowsStatusChart(statusData);
-        },
-        (error) => {
-            console.error('Error cargando datos para gráficos:', error);
-        }
-    );
-}
-
 // Procesar datos para el gráfico de barras
 function processWorkflowsData(data) {
     // Adaptarse a la estructura real del JSON
@@ -1724,7 +1602,7 @@ function loadWebsConfig() {
             // Inicializar el módulo de datos
             initDataList();
             // Inicializar los gráficos
-            initCharts();
+            
 
             // Inicializar el mapa de configuración de secciones
             if (webConfig && webConfig.sections) {
@@ -1809,38 +1687,7 @@ function renderMetrics(config) {
     }
 }
 
-/**
- * Actualiza las métricas en la interfaz
- * @param {Object} templateData - Datos de la plantilla
- */
-function updateMetrics(templateData) {
-    const metricsContainer = document.getElementById('metrics-container');
-    if (!metricsContainer) return;
-    
-    // Limpiar métricas existentes
-    metricsContainer.innerHTML = '';
-    
-    // Colores para las métricas
-    const colors = ['blue', 'green', 'yellow', 'purple'];
-    
-    // Buscar todas las propiedades que comienzan con "metric"
-    let metricIndex = 1;
-    while (templateData[`metric${metricIndex}Title`] && templateData[`metric${metricIndex}`]) {
-        const color = colors[(metricIndex - 1) % colors.length];
-        const metricTitle = templateData[`metric${metricIndex}Title`];
-        const metricValue = templateData[`metric${metricIndex}`];
-        
-        const metricElement = document.createElement('div');
-        metricElement.className = `bg-${color}-50 rounded-lg p-4 shadow-sm`;
-        metricElement.innerHTML = `
-            <h2 class="text-lg font-semibold text-${color}-800">${metricTitle}</h2>
-            <p class="text-3xl font-bold text-${color}-600" id="metric${metricIndex}">${metricValue}</p>
-        `;
-        
-        metricsContainer.appendChild(metricElement);
-        metricIndex++;
-    }
-}
+
 
 /**
  * Actualiza la lista de datos basada en la configuración
@@ -1895,66 +1742,6 @@ function processConfig(config) {
 
 // Exponer la función para que pueda ser usada desde otros contextos
 window.processConfig = processConfig;
-
-// Función para inicializar los gráficos
-function initCharts() {
-    // Inicializar el gráfico de workflows
-    initWorkflowsChart();
-    
-    // Buscar si hay plantillas gráficas en la configuración actual
-    if (webConfig && webConfig.sections) {
-        // Buscar en la sección actual
-        const currentPath = window.location.pathname;
-        for (const section of webConfig.sections) {
-            if (currentPath.includes(section.title.toLowerCase())) {
-                // Cargar la configuración de la sección para encontrar las plantillas gráficas
-                loadDataFromUrl(
-                    section.datatemplate,
-                    (templateData) => {
-                        if (templateData.templates && Array.isArray(templateData.templates)) {
-                            // Buscar todas las plantillas gráficas
-                            const graphicTemplates = templateData.templates.filter(t => t.type === 'graphic');
-                            
-                            // Inicializar cada gráfico con su ID específico
-                            graphicTemplates.forEach((template, index) => {
-                                // Generar IDs únicos para cada gráfico
-                                const barChartId = template.barChartId || `bar-chart-${index}`;
-                                const doughnutChartId = template.doughnutChartId || `doughnut-chart-${index}`;
-                                
-                                // Asegurarse de que existen los contenedores para los gráficos
-                                ensureChartContainer(barChartId);
-                                ensureChartContainer(doughnutChartId);
-                                
-                                // Cargar datos para los gráficos
-                                if (template.dataSource) {
-                                    loadDataFromUrl(
-                                        template.dataSource,
-                                        (data) => {
-                                            // Procesar datos para gráfico de barras
-                                            const barData = processChartData(data, template, 'bar');
-                                            createBarChart(barData, barChartId);
-                                            
-                                            // Procesar datos para gráfico circular
-                                            const doughnutData = processChartData(data, template, 'doughnut');
-                                            createDoughnutChart(doughnutData, doughnutChartId);
-                                        },
-                                        (error) => {
-                                            console.error(`Error cargando datos para gráficos:`, error);
-                                        }
-                                    );
-                                }
-                            });
-                        }
-                    },
-                    (error) => {
-                        console.error(`Error cargando plantilla gráfica:`, error);
-                    }
-                );
-                break;
-            }
-        }
-    }
-}
 
 // Función para procesar datos para diferentes tipos de gráficos
 function processChartData(data, template, chartType) {
@@ -2044,22 +1831,7 @@ window.filterData = function(searchTerm) {
     renderPage(1);
 };
 
-// Función para asegurar que los contenedores de gráficas estén presentes
-function ensureChartContainers() {
-    const contentContainer = document.getElementById('main-content');
-    if (!contentContainer) return;
-    
-    // Verificar si ya existen los contenedores de gráficas
-    let chartsContainer = document.getElementById('charts-container');
-    
-    // Si no existe el contenedor principal de gráficas, crearlo
-    if (!chartsContainer) {
-        chartsContainer = document.createElement('div');
-        chartsContainer.id = 'charts-container';
-        chartsContainer.className = 'grid grid-cols-1 md:grid-cols-2 gap-6 mb-8';
-        contentContainer.appendChild(chartsContainer);
-    }
-}
+
 
 /**
  * Asegura que existen los contenedores para los gráficos
