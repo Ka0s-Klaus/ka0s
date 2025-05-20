@@ -1205,7 +1205,7 @@ function createWorkflowsStatusChart(data) {
  * @param {string} chartId - ID del elemento canvas
  * @param {Object} template - Plantilla con configuración adicional
  */
-function createBarChart(data, chartId = 'bar-chart', template = {}) {
+function createBarChart(data, chartId, template) {
     console.log(`Creando gráfico de barras con ID: ${chartId}`, data);
     const ctx = document.getElementById(chartId);
     if (!ctx) {
@@ -1224,40 +1224,52 @@ function createBarChart(data, chartId = 'bar-chart', template = {}) {
         return;
     }
     
-    // Procesar datos para el gráfico
-    const counts = {};
+    // Determinar los campos a utilizar
     const categoryField = template.categoryField || 'name';
+    const valueField = template.valueField || null;
     
-    // Contar elementos por categoría
-    data.forEach(item => {
-        if (item && typeof item === 'object') {
-            const category = item[categoryField] || 'Sin categoría';
-            counts[category] = (counts[category] || 0) + 1;
-        }
-    });
+    // Preparar datos para el gráfico
+    let labels = [];
+    let values = [];
     
-    // Verificar si hay datos procesados
-    if (Object.keys(counts).length === 0) {
-        console.warn(`No se encontraron datos válidos para el campo: ${categoryField}`);
-        // Crear datos de muestra para evitar errores
-        counts['Sin datos'] = 0;
+    if (valueField) {
+        // Si hay un campo de valor específico, usarlo directamente
+        data.forEach(item => {
+            if (item && typeof item === 'object') {
+                const category = item[categoryField] || 'Sin categoría';
+                const value = parseFloat(item[valueField]) || 0;
+                
+                labels.push(category);
+                values.push(value);
+            }
+        });
+    } else {
+        // Si no hay campo de valor, contar ocurrencias (comportamiento anterior)
+        const counts = {};
+        data.forEach(item => {
+            if (item && typeof item === 'object') {
+                const category = item[categoryField] || 'Sin categoría';
+                counts[category] = (counts[category] || 0) + 1;
+            }
+        });
+        
+        // Ordenar por cantidad (de mayor a menor)
+        const sortedItems = Object.entries(counts)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 10); // Limitar a los 10 más frecuentes
+        
+        labels = sortedItems.map(item => item[0]);
+        values = sortedItems.map(item => item[1]);
     }
-    
-    // Ordenar por cantidad (de mayor a menor)
-    const sortedItems = Object.entries(counts)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 10); // Limitar a los 10 más frecuentes
-    
-    console.log('Datos procesados para gráfico de barras:', sortedItems);
     
     // Crear el gráfico
     charts[chartId] = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: sortedItems.map(item => item[0]),
+            labels: labels,
             datasets: [{
-                label: template.barChartLabel || 'Frecuencia',
-                data: sortedItems.map(item => item[1]),
+                label: template.barChartLabel || 'Valor',
+                data: values,
                 backgroundColor: 'rgba(54, 162, 235, 0.5)',
                 borderColor: 'rgba(54, 162, 235, 1)',
                 borderWidth: 1
@@ -1280,20 +1292,18 @@ function createBarChart(data, chartId = 'bar-chart', template = {}) {
                     beginAtZero: true,
                     title: {
                         display: true,
-                        text: template.yAxisLabel || 'Cantidad'
+                        text: template.yAxisLabel || 'Eje Y'
                     }
                 },
                 x: {
                     title: {
                         display: true,
-                        text: template.xAxisLabel || 'Categoría'
+                        text: template.xAxisLabel || 'Eje X'
                     }
                 }
             }
         }
     });
-    
-    return charts[chartId];
 }
 
 /**
