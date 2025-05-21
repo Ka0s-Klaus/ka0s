@@ -163,6 +163,8 @@ function initSection(sectionName) {
  * Procesa las plantillas de la sección actual
  * @param {Object} templateData - Datos de la plantilla JSON
  */
+// ... existing code ...
+
 function processTemplates(templateData) {
     if (!templateData.templates || !Array.isArray(templateData.templates)) {
         console.error('No se encontraron plantillas en los datos');
@@ -177,62 +179,7 @@ function processTemplates(templateData) {
         if (chartsContainer) {
             chartsContainer.innerHTML = '';
             graphicTemplates.forEach((template, index) => {
-                // ... existing code para gráficos ...
-                // Crear un contenedor para este gráfico
-                const graphicContainer = document.createElement('div');
-                graphicContainer.className = 'bg-white rounded-lg shadow-sm p-4 mb-4';
-                // Añadir título al contenedor
-                const titleElement = document.createElement('h3');
-                titleElement.className = 'text-lg font-semibold mb-3';
-                titleElement.textContent = template.title || `Gráfico ${index + 1}`;
-                graphicContainer.appendChild(titleElement);
-                // Crear contenedor para los dos tipos de gráficos (barras y circular)
-                const chartsGrid = document.createElement('div');
-                chartsGrid.className = 'grid grid-cols-1 md:grid-cols-2 gap-4';
-                // Generar IDs únicos para los gráficos
-                const barChartId = `bar-chart-${index}`;
-                const doughnutChartId = `doughnut-chart-${index}`;
-                // Crear contenedor para el gráfico de barras
-                const barChartContainer = document.createElement('div');
-                barChartContainer.className = 'h-64';
-                barChartContainer.innerHTML = `<canvas id="${barChartId}"></canvas>`;
-                // Crear contenedor para el gráfico circular
-                const doughnutChartContainer = document.createElement('div');
-                doughnutChartContainer.className = 'h-64';
-                doughnutChartContainer.innerHTML = `<canvas id="${doughnutChartId}"></canvas>`;
-                // Añadir los contenedores al grid
-                chartsGrid.appendChild(barChartContainer);
-                chartsGrid.appendChild(doughnutChartContainer);
-                // Añadir el grid al contenedor del gráfico
-                graphicContainer.appendChild(chartsGrid);
-                // Añadir el contenedor del gráfico al contenedor principal
-                chartsContainer.appendChild(graphicContainer);
-                // Cargar datos para los gráficos
-                if (template.dataSource) {
-                    loadDataFromUrl(
-                        template.dataSource,
-                        (data) => {
-                            // Crear gráfico de barras
-                            createBarChart(data, barChartId, template);
-                            // Crear gráfico circular
-                            createDoughnutChart(data, doughnutChartId, template);
-                        },
-                        (error) => {
-                            console.error(`Error cargando datos para gráficos:`, error);
-                            // Mostrar mensaje de error en los contenedores de gráficos
-                            document.getElementById(barChartId).parentNode.innerHTML = `
-                                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                                    Error cargando datos para el gráfico: ${error.message}
-                                </div>
-                            `;
-                            document.getElementById(doughnutChartId).parentNode.innerHTML = `
-                                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                                    Error cargando datos para el gráfico: ${error.message}
-                                </div>
-                            `;
-                        }
-                    );
-                }
+                // ... existing code ...
             });
         }
     } else if (chartsSection) {
@@ -270,10 +217,32 @@ function processTemplates(templateData) {
         loadDataFromUrl(
             listTemplate.dataSource,
             (data) => {
-                // Inicializar estado de la lista
+                // Inicializar datos completos
+                const allData = Array.isArray(data) ? data : (data.dataFiles || []);
+                
+                // Aplicar filtro si existe en la configuración de la plantilla
+                let filteredData = allData;
+                if (listTemplate.filter) {
+                    console.log(`Aplicando filtro: ${listTemplate.filter}`);
+                    // Parsear el filtro (formato esperado: "campo: valor")
+                    const filterParts = listTemplate.filter.split(':').map(part => part.trim());
+                    if (filterParts.length === 2) {
+                        const [field, value] = filterParts;
+                        // Filtrar los datos según el campo y valor especificados
+                        filteredData = allData.filter(item => {
+                            // Comparación case-insensitive para mayor flexibilidad
+                            return String(item[field]).toLowerCase() === value.toLowerCase();
+                        });
+                        console.log(`Filtrado completado: ${filteredData.length} de ${allData.length} elementos coinciden`);
+                    } else {
+                        console.warn(`Formato de filtro inválido: ${listTemplate.filter}`);
+                    }
+                }
+                
+                // Inicializar estado de la lista con los datos filtrados
                 listsState[listId] = {
-                    allData: Array.isArray(data) ? data : (data.dataFiles || []),
-                    filteredData: Array.isArray(data) ? data : (data.dataFiles || []),
+                    allData: allData,
+                    filteredData: filteredData,
                     columns: listTemplate.columns || (Array.isArray(data) && data.length > 0 ? Object.keys(data[0]) : []),
                     currentPage: 1,
                     pageSize: 10,
@@ -290,8 +259,6 @@ function processTemplates(templateData) {
             }
         );
     });
-
-    // ... existing code ...
     /**
      * Renderiza una página de una lista específica
      * @param {string} listId - ID único de la lista
@@ -300,7 +267,17 @@ function processTemplates(templateData) {
         const state = listsState[listId];
         if (!state) return;
 
-        const { filteredData, columns, currentPage, pageSize, containerId } = state;
+        // Procesar columnas para extraer nombre y color
+        const processedColumns = (state.columns || []).map(col => {
+            const match = col.match(/^([^:]+)(?::\s*(\w+))?$/);
+            return {
+                key: match ? match[1] : col,
+                color: match && match[2] ? match[2].toLowerCase() : null,
+                original: col
+            };
+        });
+
+        const { filteredData, currentPage, pageSize, containerId } = state;
         const dataList = document.getElementById(containerId);
         if (!dataList) return;
 
@@ -315,13 +292,29 @@ function processTemplates(templateData) {
             <table class="min-w-full divide-y divide-gray-200 bg-white">
                 <thead class="bg-gray-100">
                     <tr>
-                        ${columns && columns.length > 0 ? columns.map(col => `<th class="px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">${col}</th>`).join('') : ''}
+                        ${processedColumns.map(col => `<th class="px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">${col.key}</th>`).join('')}
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     ${pageData.map(row => `
                         <tr class="hover:bg-blue-50 transition-colors">
-                            ${(columns || Object.keys(row)).map(col => `<td class="px-4 py-2 text-sm text-gray-700">${row[col] !== undefined ? row[col] : ''}</td>`).join('')}
+                            ${processedColumns.map(col => {
+                                let cellClass = "px-4 py-2 text-sm text-gray-700";
+                                if (col.color) {
+                                    // Mapear color a clase de fondo de Tailwind
+                                    const colorMap = {
+                                        red: "bg-red-100 text-red-700",
+                                        green: "bg-green-100 text-green-700",
+                                        yellow: "bg-yellow-100 text-yellow-700",
+                                        blue: "bg-blue-100 text-blue-700",
+                                        orange: "bg-orange-100 text-orange-700",
+                                        purple: "bg-purple-100 text-purple-700",
+                                        gray: "bg-gray-100 text-gray-700"
+                                    };
+                                    cellClass += " " + (colorMap[col.color] || "");
+                                }
+                                return `<td class="${cellClass}">${row[col.key] !== undefined ? row[col.key] : ''}</td>`;
+                            }).join('')}
                         </tr>
                     `).join('')}
                 </tbody>
