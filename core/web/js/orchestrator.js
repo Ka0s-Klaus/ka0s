@@ -163,83 +163,19 @@ function initSection(sectionName) {
  * Procesa las plantillas de la sección actual
  * @param {Object} templateData - Datos de la plantilla JSON
  */
+// ... existing code ...
+
+// ... existing code ...
+
 function processTemplates(templateData) {
     if (!templateData.templates || !Array.isArray(templateData.templates)) {
         console.error('No se encontraron plantillas en los datos');
         return;
     }
-    // Gráficos
-    const graphicTemplates = templateData.templates.filter(t => t.type === 'graphic');
-    const chartsSection = document.getElementById('charts-section');
-    if (chartsSection && graphicTemplates.length > 0) {
-        chartsSection.style.display = 'block';
-        const chartsContainer = document.getElementById('charts-container');
-        if (chartsContainer) {
-            chartsContainer.innerHTML = '';
-            graphicTemplates.forEach((template, index) => {
-                // ... existing code para gráficos ...
-                // Crear un contenedor para este gráfico
-                const graphicContainer = document.createElement('div');
-                graphicContainer.className = 'bg-white rounded-lg shadow-sm p-4 mb-4';
-                // Añadir título al contenedor
-                const titleElement = document.createElement('h3');
-                titleElement.className = 'text-lg font-semibold mb-3';
-                titleElement.textContent = template.title || `Gráfico ${index + 1}`;
-                graphicContainer.appendChild(titleElement);
-                // Crear contenedor para los dos tipos de gráficos (barras y circular)
-                const chartsGrid = document.createElement('div');
-                chartsGrid.className = 'grid grid-cols-1 md:grid-cols-2 gap-4';
-                // Generar IDs únicos para los gráficos
-                const barChartId = `bar-chart-${index}`;
-                const doughnutChartId = `doughnut-chart-${index}`;
-                // Crear contenedor para el gráfico de barras
-                const barChartContainer = document.createElement('div');
-                barChartContainer.className = 'h-64';
-                barChartContainer.innerHTML = `<canvas id="${barChartId}"></canvas>`;
-                // Crear contenedor para el gráfico circular
-                const doughnutChartContainer = document.createElement('div');
-                doughnutChartContainer.className = 'h-64';
-                doughnutChartContainer.innerHTML = `<canvas id="${doughnutChartId}"></canvas>`;
-                // Añadir los contenedores al grid
-                chartsGrid.appendChild(barChartContainer);
-                chartsGrid.appendChild(doughnutChartContainer);
-                // Añadir el grid al contenedor del gráfico
-                graphicContainer.appendChild(chartsGrid);
-                // Añadir el contenedor del gráfico al contenedor principal
-                chartsContainer.appendChild(graphicContainer);
-                // Cargar datos para los gráficos
-                if (template.dataSource) {
-                    loadDataFromUrl(
-                        template.dataSource,
-                        (data) => {
-                            // Crear gráfico de barras
-                            createBarChart(data, barChartId, template);
-                            // Crear gráfico circular
-                            createDoughnutChart(data, doughnutChartId, template);
-                        },
-                        (error) => {
-                            console.error(`Error cargando datos para gráficos:`, error);
-                            // Mostrar mensaje de error en los contenedores de gráficos
-                            document.getElementById(barChartId).parentNode.innerHTML = `
-                                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                                    Error cargando datos para el gráfico: ${error.message}
-                                </div>
-                            `;
-                            document.getElementById(doughnutChartId).parentNode.innerHTML = `
-                                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                                    Error cargando datos para el gráfico: ${error.message}
-                                </div>
-                            `;
-                        }
-                    );
-                }
-            });
-        }
-    } else if (chartsSection) {
-        chartsSection.style.display = 'none';
-    }
+    
     // Estado de todas las listas
     const listsState = {};
+    window.listsState = listsState;
 
     // Listas
     const listTemplates = templateData.templates.filter(t => t.type === 'list');
@@ -270,10 +206,26 @@ function processTemplates(templateData) {
         loadDataFromUrl(
             listTemplate.dataSource,
             (data) => {
-                // Inicializar estado de la lista
+                // Inicializar datos completos
+                const allData = Array.isArray(data) ? data : (data.dataFiles || []);
+                
+                // Aplicar filtro si existe en la configuración de la plantilla
+                let filteredData = allData;
+                if (listTemplate.filter) {
+                    console.log(`Aplicando filtro: ${listTemplate.filter}`);
+                    const filterParts = listTemplate.filter.split(':').map(part => part.trim());
+                    if (filterParts.length === 2) {
+                        const [field, value] = filterParts;
+                        filteredData = allData.filter(item => {
+                            return String(item[field]).toLowerCase() === value.toLowerCase();
+                        });
+                    }
+                }
+                
+                // Inicializar estado de la lista con los datos filtrados
                 listsState[listId] = {
-                    allData: Array.isArray(data) ? data : (data.dataFiles || []),
-                    filteredData: Array.isArray(data) ? data : (data.dataFiles || []),
+                    allData: allData,
+                    filteredData: filteredData,
                     columns: listTemplate.columns || (Array.isArray(data) && data.length > 0 ? Object.keys(data[0]) : []),
                     currentPage: 1,
                     pageSize: 10,
@@ -291,7 +243,6 @@ function processTemplates(templateData) {
         );
     });
 
-    // ... existing code ...
     /**
      * Renderiza una página de una lista específica
      * @param {string} listId - ID único de la lista
@@ -300,7 +251,7 @@ function processTemplates(templateData) {
         const state = listsState[listId];
         if (!state) return;
 
-        const { filteredData, columns, currentPage, pageSize, containerId } = state;
+        const { filteredData, currentPage, pageSize, containerId } = state;
         const dataList = document.getElementById(containerId);
         if (!dataList) return;
 
@@ -315,13 +266,13 @@ function processTemplates(templateData) {
             <table class="min-w-full divide-y divide-gray-200 bg-white">
                 <thead class="bg-gray-100">
                     <tr>
-                        ${columns && columns.length > 0 ? columns.map(col => `<th class="px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">${col}</th>`).join('') : ''}
+                        ${state.columns.map(col => `<th class="px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">${col}</th>`).join('')}
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     ${pageData.map(row => `
                         <tr class="hover:bg-blue-50 transition-colors">
-                            ${(columns || Object.keys(row)).map(col => `<td class="px-4 py-2 text-sm text-gray-700">${row[col] !== undefined ? row[col] : ''}</td>`).join('')}
+                            ${state.columns.map(col => `<td class="px-4 py-2 text-sm text-gray-700">${row[col] !== undefined ? row[col] : ''}</td>`).join('')}
                         </tr>
                     `).join('')}
                 </tbody>
@@ -332,10 +283,22 @@ function processTemplates(templateData) {
         // Renderizar paginador
         const totalPages = Math.max(1, Math.ceil(filteredData.length / pageSize));
         html += `
-        <div class="pagination flex justify-end mt-2 gap-2">
-            <button class="px-3 py-1 rounded bg-gray-200 text-gray-700 hover:bg-gray-300 transition disabled:opacity-50" ${state.currentPage === 1 ? 'disabled' : ''} onclick="changePage('${listId}', ${currentPage - 1})">&lt;</button>
-            <span class="px-3 py-1 text-gray-700">Página ${currentPage} de ${totalPages}</span>
-            <button class="px-3 py-1 rounded bg-gray-200 text-gray-700 hover:bg-gray-300 transition disabled:opacity-50" ${state.currentPage === totalPages ? 'disabled' : ''} onclick="changePage('${listId}', ${currentPage + 1})">&gt;</button>
+        <div class="pagination flex justify-center mt-4 gap-2">
+            <button 
+                class="px-4 py-2 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 text-white font-semibold shadow hover:from-blue-500 hover:to-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                ${currentPage === 1 ? 'disabled' : ''} 
+                onclick="changePage('${listId}', ${currentPage - 1})">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <span class="px-4 py-2 rounded-full bg-gray-100 text-gray-700 font-medium shadow">
+                Página ${currentPage} de ${totalPages}
+            </span>
+            <button 
+                class="px-4 py-2 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 text-white font-semibold shadow hover:from-blue-500 hover:to-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                ${currentPage === totalPages ? 'disabled' : ''} 
+                onclick="changePage('${listId}', ${currentPage + 1})">
+                <i class="fas fa-chevron-right"></i>
+            </button>
         </div>
         `;
 
@@ -343,7 +306,6 @@ function processTemplates(templateData) {
     }
 
     // --- PAGINACIÓN GLOBAL PARA LISTAS DINÁMICAS ---
-    // Asegúrate de que listsState sea global
     window.listsState = window.listsState || listsState;
     /**
      * Cambia de página en una lista específica
@@ -356,6 +318,53 @@ function processTemplates(templateData) {
             renderPage(listId);
         }
     };
+}
+
+
+function clearContainers() {
+    // Limpiar contenedor de gráficos
+    const chartsContainer = document.getElementById('charts-container');
+    if (chartsContainer) {
+        chartsContainer.innerHTML = '';
+    }
+    
+    // Ocultar sección de gráficos si existe
+    const chartsSection = document.getElementById('charts-section');
+    if (chartsSection) {
+        chartsSection.style.display = 'none';
+    }
+    
+    // Limpiar listas dinámicas
+    const dynamicLists = document.querySelectorAll('.dynamic-list-section');
+    dynamicLists.forEach(list => {
+        list.remove();
+    });
+    
+    // Destruir todos los gráficos existentes para liberar recursos
+    if (charts) {
+        Object.keys(charts).forEach(chartId => {
+            if (charts[chartId]) {
+                charts[chartId].destroy();
+                delete charts[chartId];
+            }
+        });
+    }
+    
+    // Reiniciar variables globales de gráficos
+    if (workflowsBarChart) {
+        workflowsBarChart.destroy();
+        workflowsBarChart = null;
+    }
+    
+    if (workflowsStatusChart) {
+        workflowsStatusChart.destroy();
+        workflowsStatusChart = null;
+    }
+    
+    if (currentChart) {
+        currentChart.destroy();
+        currentChart = null;
+    }
 }
 
 
@@ -372,6 +381,7 @@ function loadSectionContent(sectionName, templatePath) {
     existingErrors.forEach(errorElement => {
         errorElement.remove();
     });
+    clearContainers();
     
     // Cargar la plantilla JSON
     loadDataFromUrl(
@@ -1017,34 +1027,62 @@ document.addEventListener('DOMContentLoaded', function() {
  * Actualiza las métricas en la interfaz
  * @param {Object} templateData - Datos de la plantilla
  */
+/**
+ * Actualiza las métricas en la interfaz
+ * @param {Object} templateData - Datos de la plantilla
+ */
 function updateMetrics(templateData) {
     const metricsContainer = document.getElementById('metrics-container');
     if (!metricsContainer) return;
     
-    // Limpiar métricas existentes
+    // Limpiar el contenedor
     metricsContainer.innerHTML = '';
     
-    // Colores para las métricas
-    const colors = ['blue', 'green', 'yellow', 'purple'];
+    // Asegurar que el contenedor tenga la clase grid con 4 columnas
+    metricsContainer.className = 'grid grid-cols-1 md:grid-cols-4 gap-4 mb-8';
     
-    // Buscar todas las propiedades que comienzan con "metric"
-    let metricIndex = 1;
-    while (templateData[`metric${metricIndex}Title`] && templateData[`metric${metricIndex}`]) {
-        const color = colors[(metricIndex - 1) % colors.length];
-        const metricTitle = templateData[`metric${metricIndex}Title`];
-        const metricValue = templateData[`metric${metricIndex}`];
+    // Definir colores para las métricas
+    const metricColors = {
+        metric1: 'blue',
+        metric2: 'green',
+        metric3: 'yellow',
+        metric4: 'purple'
+    };
+    
+    // Definir clases de color para cada métrica
+    const colorClasses = {
+        blue: 'bg-blue-50 border-blue-100 text-blue-600',
+        green: 'bg-green-50 border-green-100 text-green-600',
+        yellow: 'bg-yellow-50 border-yellow-100 text-yellow-600',
+        purple: 'bg-purple-50 border-purple-100 text-purple-600',
+        red: 'bg-red-50 border-red-100 text-red-600',
+        orange: 'bg-orange-50 border-orange-100 text-orange-600',
+        gray: 'bg-gray-50 border-gray-100 text-gray-600'
+    };
+    
+    // Crear métricas
+    for (let i = 1; i <= 4; i++) {
+        const metricKey = `metric${i}`;
+        const titleKey = `${metricKey}Title`;
         
-        const metricElement = document.createElement('div');
-        metricElement.className = `bg-${color}-50 rounded-lg p-4 shadow-sm`;
-        metricElement.innerHTML = `
-            <h2 class="text-lg font-semibold text-${color}-800">${metricTitle}</h2>
-            <p class="text-3xl font-bold text-${color}-600" id="metric${metricIndex}">${metricValue}</p>
-        `;
-        
-        metricsContainer.appendChild(metricElement);
-        metricIndex++;
+        if (templateData[metricKey] && templateData[titleKey]) {
+            const metricValue = templateData[metricKey];
+            const metricTitle = templateData[titleKey];
+            const color = metricColors[metricKey] || 'gray';
+            const colorClass = colorClasses[color];
+            
+            // Crear elemento de métrica con el nuevo estilo
+            const metricElement = document.createElement('div');
+            metricElement.className = `${colorClass} rounded-lg shadow-sm p-4 text-center border`;
+            metricElement.innerHTML = `
+                <div class="text-4xl font-bold mb-2">${metricValue}</div>
+                <div class="text-sm">${metricTitle}</div>
+            `;
+            
+            metricsContainer.appendChild(metricElement);
+        }
     }
-}
+}a
 // Exponer la función para que pueda ser usada desde otros contextos
 window.processConfig = processConfig;
 
@@ -1371,6 +1409,9 @@ function createBarChart(data, chartId, template) {
         labels = sortedItems.map(item => item[0]);
         values = sortedItems.map(item => item[1]);
     }
+    // Usar colores personalizados desde la plantilla o valores por defecto
+    const backgroundColor = template.barColor || 'rgba(54, 162, 235, 0.5)';
+    const borderColor = template.barBorderColor || 'rgba(54, 162, 235, 1)';
     
     // Crear el gráfico
     charts[chartId] = new Chart(ctx, {
@@ -1380,8 +1421,8 @@ function createBarChart(data, chartId, template) {
             datasets: [{
                 label: template.barChartLabel || 'Valor',
                 data: values,
-                backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                borderColor: 'rgba(54, 162, 235, 1)',
+                backgroundColor: backgroundColor,
+                borderColor: borderColor,
                 borderWidth: 1
             }]
         },

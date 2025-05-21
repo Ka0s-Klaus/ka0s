@@ -1,0 +1,26 @@
+{
+    "title": "GitHub Actions Failure Metrics",
+    "description": "Real-time workflow failure analysis",
+    "metric1Title": "Total Failed Workflows",
+    "metric1": "1060",
+    "metric2Title": "Failure Rate",
+    "metric2": "10.9%",
+    "metric3Title": "Most Common Error",
+    "metric3": "workflow_dispatch",
+    "metric4Title": "Avg Time to Failure",
+    "metric4": "7696m 42s",
+    "templates": [
+        {
+            "type": "list",
+            "title": "Recent Failures",
+            "dataSource": "data/kaos-workflows-runs.json",
+            "columns": [
+                "name",
+                "event",
+                "run_started_at",
+                "conclusion: red"
+            ],
+            "filter": "conclusion: failure"
+        }
+    ]
+}
