@@ -291,6 +291,7 @@ function processTemplates(templateData) {
         );
     });
 
+    // ... existing code ...
     /**
      * Renderiza una página de una lista específica
      * @param {string} listId - ID único de la lista
@@ -308,46 +309,38 @@ function processTemplates(templateData) {
         const end = start + pageSize;
         const pageData = filteredData.slice(start, end);
 
-        // Renderizar tabla
-        let html = '<table class="min-w-full divide-y divide-gray-200">';
-        if (columns && columns.length > 0) {
-            html += '<thead><tr>';
-            columns.forEach(col => html += `<th>${col}</th>`);
-            html += '</tr></thead>';
-        }
-        html += '<tbody>';
-        pageData.forEach(row => {
-            html += '<tr>';
-            (columns || Object.keys(row)).forEach(col => {
-                html += `<td>${row[col] !== undefined ? row[col] : ''}</td>`;
-            });
-            html += '</tr>';
-        });
-        html += '</tbody></table>';
+        // Renderizar tabla con Tailwind
+        let html = `
+        <div class="overflow-x-auto rounded-lg shadow">
+            <table class="min-w-full divide-y divide-gray-200 bg-white">
+                <thead class="bg-gray-100">
+                    <tr>
+                        ${columns && columns.length > 0 ? columns.map(col => `<th class="px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">${col}</th>`).join('') : ''}
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    ${pageData.map(row => `
+                        <tr class="hover:bg-blue-50 transition-colors">
+                            ${(columns || Object.keys(row)).map(col => `<td class="px-4 py-2 text-sm text-gray-700">${row[col] !== undefined ? row[col] : ''}</td>`).join('')}
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+        `;
 
         // Renderizar paginador
-        const totalPages = Math.ceil(filteredData.length / pageSize);
-        html += `<div class="pagination flex justify-end mt-2">`;
-        html += `<button ${state.currentPage === 1 ? 'disabled' : ''} onclick="changePage('${listId}', ${currentPage - 1})">&lt;</button>`;
-        html += ` <span>Página ${currentPage} de ${totalPages}</span> `;
-        html += `<button ${state.currentPage === totalPages ? 'disabled' : ''} onclick="changePage('${listId}', ${currentPage + 1})">&gt;</button>`;
-        html += `</div>`;
+        const totalPages = Math.max(1, Math.ceil(filteredData.length / pageSize));
+        html += `
+        <div class="pagination flex justify-end mt-2 gap-2">
+            <button class="px-3 py-1 rounded bg-gray-200 text-gray-700 hover:bg-gray-300 transition disabled:opacity-50" ${state.currentPage === 1 ? 'disabled' : ''} onclick="changePage('${listId}', ${currentPage - 1})">&lt;</button>
+            <span class="px-3 py-1 text-gray-700">Página ${currentPage} de ${totalPages}</span>
+            <button class="px-3 py-1 rounded bg-gray-200 text-gray-700 hover:bg-gray-300 transition disabled:opacity-50" ${state.currentPage === totalPages ? 'disabled' : ''} onclick="changePage('${listId}', ${currentPage + 1})">&gt;</button>
+        </div>
+        `;
 
         dataList.innerHTML = html;
     }
-
-    /**
-     * Cambia de página en una lista específica
-     * @param {string} listId
-     * @param {number} newPage
-     */
-    window.changePage = function(listId, newPage) {
-        if (listsState[listId]) {
-            listsState[listId].currentPage = newPage;
-            renderPage(listId);
-        }
-    };
-
 }
 
 
