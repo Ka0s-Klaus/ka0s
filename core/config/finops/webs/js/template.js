@@ -310,3 +310,158 @@ async function createMetric(container, config) {
         container.appendChild(errorMessage);
     }
 }
+
+
+async function createCostChart(container, config) {
+    const chartContainer = document.createElement('div');
+    chartContainer.style.height = '300px';
+    container.appendChild(chartContainer);
+
+    const canvas = document.createElement('canvas');
+    chartContainer.appendChild(canvas);
+
+    try {
+        const response = await fetch(config.dataSource);
+        const data = await response.json();
+
+        let processedData = data;
+        if (config.groupBy) {
+            processedData = processDataByGroup(data, config);
+        }
+
+        const datasets = [];
+        
+        // Primero añadir dataset para costo estimado (para que aparezca detrás)
+        if (config.costEstimated) {
+            datasets.push({
+                label: 'Coste Estimado',
+                data: processedData.map(item => parseFloat(item.cost_at_list || 0)),
+                backgroundColor: 'rgba(234, 67, 53, 0.8)',
+                borderColor: 'rgba(234, 67, 53, 1)',
+                borderWidth: 0,
+                borderRadius: 4,
+                order: 2  // Mayor número = más atrás
+            });
+        }
+
+        // Luego añadir dataset para costo real (para que aparezca delante)
+        if (config.costReal) {
+            datasets.push({
+                label: 'Coste Real',
+                data: processedData.map(item => parseFloat(item.cost || 0)),
+                backgroundColor: 'rgba(66, 133, 244, 0.8)',
+                borderColor: 'rgba(66, 133, 244, 1)',
+                borderWidth: 0,
+                borderRadius: 4,
+                order: 1  // Menor número = más adelante
+            });
+        }
+
+        // Si no se especifica ningún tipo de costo, mostrar el costo total
+        if (!config.costReal && !config.costEstimated) {
+            datasets.push({
+                label: 'Costo Total',
+                data: processedData.map(item => parseFloat(item.cost || 0)),
+                backgroundColor: 'rgba(66, 133, 244, 0.8)',
+                borderColor: 'rgba(66, 133, 244, 1)',
+                borderWidth: 0,
+                borderRadius: 4
+            });
+        }
+
+        new Chart(canvas, {
+            type: config.tipo === 'StackedBarChart' ? 'bar' : 'bar',
+            data: {
+                labels: processedData.map(item => {
+                    if (config.groupBy === 'month') {
+                        const date = new Date(item[config.groupBy]);
+                        return date.toLocaleString('es-ES', { month: 'short' });
+                    }
+                    return item[config.groupBy] || '';
+                }),
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        },
+                        ticks: {
+                            callback: value => `€${(value/1000).toFixed(1)}k`
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        backgroundColor: 'white',
+                        titleColor: 'black',
+                        bodyColor: 'black',
+                        borderColor: 'rgba(0,0,0,0.1)',
+                        borderWidth: 1,
+                        padding: 10,
+                        callbacks: {
+                            label: context => `€${(context.raw/1000).toFixed(1)}k`
+                        }
+                    }
+                },
+                barPercentage: 0.8,
+                categoryPercentage: 0.9,
+                grouped: true // Esta es la clave para mostrar las barras una al lado de la otra
+            }
+        });
+
+    } catch (error) {
+        console.error('Error al crear el gráfico:', error);
+        const errorMessage = document.createElement('div');
+        errorMessage.className = 'text-red-500 text-center p-4';
+        errorMessage.textContent = 'Error al cargar el gráfico';
+        container.appendChild(errorMessage);
+    }
+}
+
+// Función auxiliar para procesar datos según el groupBy
+function processDataByGroup(data, config) {
+    const grouped = data.reduce((acc, item) => {
+        const key = item[config.groupBy];
+        if (!acc[key]) {
+            acc[key] = {
+                [config.groupBy]: key,
+                name: item.name,
+                cost: 0,
+                cost_at_list: 0
+            };
+        }
+        acc[key].cost += parseFloat(item.cost || 0);
+        acc[key].cost_at_list += parseFloat(item.cost_at_list || 0);
+        return acc;
+    }, {});
+
+    let result = Object.values(grouped);
+
+    if (config.orderBy) {
+        result.sort((a, b) => {
+            return config.orderDirection === 'desc' 
+                ? b[config.orderBy] - a[config.orderBy]
+                : a[config.orderBy] - b[config.orderBy];
+        });
+    }
+
+    if (config.limit) {
+        result = result.slice(0, config.limit);
+    }
+
+    return result;
+}
