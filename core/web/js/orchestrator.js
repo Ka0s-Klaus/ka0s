@@ -176,7 +176,63 @@ function processTemplates(templateData) {
     // Estado de todas las listas
     const listsState = {};
     window.listsState = listsState;
+    // --- GRÁFICOS ---
+    const graphicTemplates = templateData.templates.filter(t => t.type === 'graphic');
+    const chartsSection = document.getElementById('charts-section');
+    if (chartsSection && graphicTemplates.length > 0) {
+        chartsSection.style.display = 'block';
+        const chartsContainer = document.getElementById('charts-container');
+        if (chartsContainer) {
+            chartsContainer.innerHTML = '';
+            graphicTemplates.forEach((template, index) => {
+                const graphicContainer = document.createElement('div');
+                graphicContainer.className = 'bg-white rounded-lg shadow-sm p-4 mb-4';
+                const titleElement = document.createElement('h3');
+                titleElement.className = 'text-lg font-semibold mb-3';
+                titleElement.textContent = template.title || `Gráfico ${index + 1}`;
+                graphicContainer.appendChild(titleElement);
 
+                const chartsGrid = document.createElement('div');
+                chartsGrid.className = 'grid grid-cols-1 md:grid-cols-2 gap-4';
+                const barChartId = `bar-chart-${index}`;
+                const doughnutChartId = `doughnut-chart-${index}`;
+                const barChartContainer = document.createElement('div');
+                barChartContainer.className = 'h-64';
+                barChartContainer.innerHTML = `<canvas id="${barChartId}"></canvas>`;
+                const doughnutChartContainer = document.createElement('div');
+                doughnutChartContainer.className = 'h-64';
+                doughnutChartContainer.innerHTML = `<canvas id="${doughnutChartId}"></canvas>`;
+                chartsGrid.appendChild(barChartContainer);
+                chartsGrid.appendChild(doughnutChartContainer);
+                graphicContainer.appendChild(chartsGrid);
+                chartsContainer.appendChild(graphicContainer);
+
+                if (template.dataSource) {
+                    loadDataFromUrl(
+                        template.dataSource,
+                        (data) => {
+                            createBarChart(data, barChartId, template);
+                            createDoughnutChart(data, doughnutChartId, template);
+                        },
+                        (error) => {
+                            document.getElementById(barChartId).parentNode.innerHTML = `
+                                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                                    Error cargando datos para el gráfico: ${error.message}
+                                </div>
+                            `;
+                            document.getElementById(doughnutChartId).parentNode.innerHTML = `
+                                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                                    Error cargando datos para el gráfico: ${error.message}
+                                </div>
+                            `;
+                        }
+                    );
+                }
+            });
+        }
+    } else if (chartsSection) {
+        chartsSection.style.display = 'none';
+    }
     // Listas
     const listTemplates = templateData.templates.filter(t => t.type === 'list');
     const mainContent = document.getElementById('main-content');
@@ -251,6 +307,16 @@ function processTemplates(templateData) {
         const state = listsState[listId];
         if (!state) return;
 
+        // Procesar columnas para extraer nombre y color
+        const processedColumns = (state.columns || []).map(col => {
+            const match = col.match(/^([^:]+)(?::\s*(\w+))?$/);
+            return {
+                key: match ? match[1] : col,
+                color: match && match[2] ? match[2].toLowerCase() : null,
+                original: col
+            };
+        });
+
         const { filteredData, currentPage, pageSize, containerId } = state;
         const dataList = document.getElementById(containerId);
         if (!dataList) return;
@@ -266,13 +332,29 @@ function processTemplates(templateData) {
             <table class="min-w-full divide-y divide-gray-200 bg-white">
                 <thead class="bg-gray-100">
                     <tr>
-                        ${state.columns.map(col => `<th class="px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">${col}</th>`).join('')}
+                        ${processedColumns.map(col => `<th class="px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">${col.key}</th>`).join('')}
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     ${pageData.map(row => `
                         <tr class="hover:bg-blue-50 transition-colors">
-                            ${state.columns.map(col => `<td class="px-4 py-2 text-sm text-gray-700">${row[col] !== undefined ? row[col] : ''}</td>`).join('')}
+                            ${processedColumns.map(col => {
+                                let cellClass = "px-4 py-2 text-sm text-gray-700";
+                                if (col.color) {
+                                    // Mapear color a clase de fondo de Tailwind
+                                    const colorMap = {
+                                        red: "bg-red-100 text-red-700 rounded-lg m-1 px-3 py-1 inline-block text-center",
+                                        green: "bg-green-100 text-green-700 rounded-lg m-1 px-3 py-1 inline-block",
+                                        yellow: "bg-yellow-100 text-yellow-700 rounded-lg m-1 px-3 py-1 inline-block",
+                                        blue: "bg-blue-100 text-blue-700 rounded-lg m-1 px-3 py-1 inline-block",
+                                        orange: "bg-orange-100 text-orange-700 rounded-lg m-1 px-3 py-1 inline-block text-center",
+                                        purple: "bg-purple-100 text-purple-700 rounded-lg m-1 px-3 py-1 inline-block",
+                                        gray: "bg-gray-100 text-gray-700 rounded-lg m-1 px-3 py-1 inline-block"
+                                    };
+                                    cellClass += " " + (colorMap[col.color] || "");
+                                }
+                                return `<td class="${cellClass}">${row[col.key] !== undefined ? row[col.key] : ''}</td>`;
+                            }).join('')}
                         </tr>
                     `).join('')}
                 </tbody>
