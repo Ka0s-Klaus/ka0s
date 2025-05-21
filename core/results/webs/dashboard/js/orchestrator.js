@@ -192,18 +192,38 @@ function processTemplates(templateData) {
                 titleElement.textContent = template.title || `Gráfico ${index + 1}`;
                 graphicContainer.appendChild(titleElement);
 
-                const chartsGrid = document.createElement('div');
-                chartsGrid.className = 'grid grid-cols-1 md:grid-cols-2 gap-4';
-                const barChartId = `bar-chart-${index}`;
-                const doughnutChartId = `doughnut-chart-${index}`;
-                const barChartContainer = document.createElement('div');
-                barChartContainer.className = 'h-64';
-                barChartContainer.innerHTML = `<canvas id="${barChartId}"></canvas>`;
-                const doughnutChartContainer = document.createElement('div');
-                doughnutChartContainer.className = 'h-64';
-                doughnutChartContainer.innerHTML = `<canvas id="${doughnutChartId}"></canvas>`;
-                chartsGrid.appendChild(barChartContainer);
-                chartsGrid.appendChild(doughnutChartContainer);
+                // Determinar qué tipos de gráficos mostrar
+                const chartTypes = template.chartTypes || ['bar', 'doughnut']; // Por defecto, mostrar ambos
+                
+                // Crear grid solo si hay más de un tipo de gráfico
+                let chartsGrid;
+                if (chartTypes.length > 1) {
+                    chartsGrid = document.createElement('div');
+                    chartsGrid.className = 'grid grid-cols-1 md:grid-cols-2 gap-4';
+                } else {
+                    chartsGrid = document.createElement('div');
+                    chartsGrid.className = 'w-full';
+                }
+                
+                // Crear contenedores para cada tipo de gráfico solicitado
+                let barChartId, doughnutChartId;
+                
+                if (chartTypes.includes('bar')) {
+                    barChartId = `bar-chart-${index}`;
+                    const barChartContainer = document.createElement('div');
+                    barChartContainer.className = chartTypes.length > 1 ? 'h-64' : 'h-80 mx-auto';
+                    barChartContainer.innerHTML = `<canvas id="${barChartId}"></canvas>`;
+                    chartsGrid.appendChild(barChartContainer);
+                }
+                
+                if (chartTypes.includes('doughnut')) {
+                    doughnutChartId = `doughnut-chart-${index}`;
+                    const doughnutChartContainer = document.createElement('div');
+                    doughnutChartContainer.className = chartTypes.length > 1 ? 'h-64' : 'h-80 mx-auto';
+                    doughnutChartContainer.innerHTML = `<canvas id="${doughnutChartId}"></canvas>`;
+                    chartsGrid.appendChild(doughnutChartContainer);
+                }
+                
                 graphicContainer.appendChild(chartsGrid);
                 chartsContainer.appendChild(graphicContainer);
 
@@ -211,20 +231,27 @@ function processTemplates(templateData) {
                     loadDataFromUrl(
                         template.dataSource,
                         (data) => {
-                            createBarChart(data, barChartId, template);
-                            createDoughnutChart(data, doughnutChartId, template);
+                            if (barChartId) {
+                                createBarChart(data, barChartId, template);
+                            }
+                            if (doughnutChartId) {
+                                createDoughnutChart(data, doughnutChartId, template);
+                            }
                         },
                         (error) => {
-                            document.getElementById(barChartId).parentNode.innerHTML = `
+                            const errorMessage = `
                                 <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
                                     Error cargando datos para el gráfico: ${error.message}
                                 </div>
                             `;
-                            document.getElementById(doughnutChartId).parentNode.innerHTML = `
-                                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                                    Error cargando datos para el gráfico: ${error.message}
-                                </div>
-                            `;
+                            
+                            if (barChartId && document.getElementById(barChartId)) {
+                                document.getElementById(barChartId).parentNode.innerHTML = errorMessage;
+                            }
+                            
+                            if (doughnutChartId && document.getElementById(doughnutChartId)) {
+                                document.getElementById(doughnutChartId).parentNode.innerHTML = errorMessage;
+                            }
                         }
                     );
                 }
