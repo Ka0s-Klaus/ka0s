@@ -424,6 +424,52 @@ function processTemplates(templateData) {
     };
 }
 
+function clearContainers() {
+    // Limpiar contenedor de gráficos
+    const chartsContainer = document.getElementById('charts-container');
+    if (chartsContainer) {
+        chartsContainer.innerHTML = '';
+    }
+    
+    // Ocultar sección de gráficos si existe
+    const chartsSection = document.getElementById('charts-section');
+    if (chartsSection) {
+        chartsSection.style.display = 'none';
+    }
+    
+    // Limpiar listas dinámicas
+    const dynamicLists = document.querySelectorAll('.dynamic-list-section');
+    dynamicLists.forEach(list => {
+        list.remove();
+    });
+    
+    // Destruir todos los gráficos existentes para liberar recursos
+    if (charts) {
+        Object.keys(charts).forEach(chartId => {
+            if (charts[chartId]) {
+                charts[chartId].destroy();
+                delete charts[chartId];
+            }
+        });
+    }
+    
+    // Reiniciar variables globales de gráficos
+    if (workflowsBarChart) {
+        workflowsBarChart.destroy();
+        workflowsBarChart = null;
+    }
+    
+    if (workflowsStatusChart) {
+        workflowsStatusChart.destroy();
+        workflowsStatusChart = null;
+    }
+    
+    if (currentChart) {
+        currentChart.destroy();
+        currentChart = null;
+    }
+}
+
 
 /**
  * Carga el contenido de una sección específica
@@ -438,6 +484,7 @@ function loadSectionContent(sectionName, templatePath) {
     existingErrors.forEach(errorElement => {
         errorElement.remove();
     });
+    clearContainers();
     
     // Cargar la plantilla JSON
     loadDataFromUrl(
