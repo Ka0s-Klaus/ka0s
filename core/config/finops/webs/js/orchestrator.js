@@ -1,4 +1,3 @@
-// Eliminamos la importación de tipo módulo
 // Función para cargar la configuración inicial
 async function loadInitialConfig() {
     try {
