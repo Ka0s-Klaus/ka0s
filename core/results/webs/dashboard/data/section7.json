@@ -1,0 +1,38 @@
+{
+    "title": "End Workflow",
+    "description": "Overview of workflow executions",
+    "metric1Title": "Total Projects",
+    "metric1": "42",
+    "metric2Title": "Success Completion Rate",
+    "metric2": "28",
+    "metric3Title": "Average Time",
+    "metric3": "14",
+    "metric4Title": "Last Completion",
+    "metric4": "14",
+    "templates": [
+        {
+            "type": "list",
+            "title": "Workflow Executions",
+            "dataSource": "data/kaos-workflows-runs.json",
+            "columns": [
+                "id",
+                "name",
+                "created_at",
+                "updated_at",
+                "conclusion"
+            ]
+        },
+        {
+            "type": "graphic",
+            "title": "Resultado de Workflows",
+            "dataSource": "data/kaos-workflows-runs.json",
+            "statusField": "conclusion",
+            "xAxisLabel": "Nombre",
+            "yAxisLabel": "Run Number",
+            "categoryField": "name",
+            "valueField": "run_number",
+            "barColor": "red",
+            "barBorderColor": "rgba(75, 192, 192, 1)"
+        }
+    ]
+}
