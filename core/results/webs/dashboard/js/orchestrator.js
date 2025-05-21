@@ -376,14 +376,14 @@ function processTemplates(templateData) {
                                 if (col.color) {
                                     // Mapear color a clase de fondo de Tailwind
                                     const colorMap = {
-                                        red: "bg-red-100 text-red-700",
-                                        green: "bg-green-100 text-green-700",
-                                        yellow: "bg-yellow-100 text-yellow-700",
-                                        blue: "bg-blue-100 text-blue-700",
-                                        orange: "bg-orange-100 text-orange-700",
-                                        purple: "bg-purple-100 text-purple-700",
-                                        gray: "bg-gray-100 text-gray-700"
-                                    };
+                                    red: "bg-red-100 text-red-700 rounded-lg m-1 px-3 py-1 inline-block text-center",
+                                    green: "bg-green-100 text-green-700 rounded-lg m-1 px-3 py-1 inline-block",
+                                    yellow: "bg-yellow-100 text-yellow-700 rounded-lg m-1 px-3 py-1 inline-block",
+                                    blue: "bg-blue-100 text-blue-700 rounded-lg m-1 px-3 py-1 inline-block",
+                                    orange: "bg-orange-100 text-orange-700 rounded-lg m-1 px-3 py-1 inline-block text-center",
+                                    purple: "bg-purple-100 text-purple-700 rounded-lg m-1 px-3 py-1 inline-block",
+                                    gray: "bg-gray-100 text-gray-700 rounded-lg m-1 px-3 py-1 inline-block"
+                                };
                                     cellClass += " " + (colorMap[col.color] || "");
                                 }
                                 return `<td class="${cellClass}">${row[col.key] !== undefined ? row[col.key] : ''}</td>`;
