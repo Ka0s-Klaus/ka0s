@@ -341,6 +341,21 @@ function processTemplates(templateData) {
 
         dataList.innerHTML = html;
     }
+
+    // --- PAGINACIÓN GLOBAL PARA LISTAS DINÁMICAS ---
+    // Asegúrate de que listsState sea global
+    window.listsState = window.listsState || listsState;
+    /**
+     * Cambia de página en una lista específica
+     * @param {string} listId
+     * @param {number} newPage
+     */
+    window.changePage = function(listId, newPage) {
+        if (window.listsState[listId]) {
+            window.listsState[listId].currentPage = newPage;
+            renderPage(listId);
+        }
+    };
 }
 
 

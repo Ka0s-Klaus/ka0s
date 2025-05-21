@@ -1,8 +1,9 @@
 // Configuración global
-
 const config = {
     itemsPerPage: 10,
-    defaultArchive: 'data/kaos-workflows-available.json'
+    defaultArchive: 'data/kaos-workflows-available.json',
+    defaultSection: 'Workflows',
+    defaultTemplate: 'data/section1.json'
 };
 
 // Variables globales iniciales
@@ -77,6 +78,20 @@ function loadDataFromUrl(url, successCallback, errorCallback = null) {
             });
     }
 }
+
+function initApp() {
+    // Usar directamente la configuración por defecto
+    console.log('Inicializando aplicación con configuración por defecto');
+    
+    // Inicializar la barra de navegación
+    initNavbar();
+    
+    // Cargar la sección por defecto
+    loadSectionContent(config.defaultSection, config.defaultTemplate);
+}
+
+// Ejecutar la inicialización cuando el DOM esté completamente cargado
+document.addEventListener('DOMContentLoaded', initApp);
 
 /**
  * Inicializa una sección específica
@@ -153,60 +168,45 @@ function processTemplates(templateData) {
         console.error('No se encontraron plantillas en los datos');
         return;
     }
-    
-    // Obtener todas las plantillas gráficas
+    // Gráficos
     const graphicTemplates = templateData.templates.filter(t => t.type === 'graphic');
-    
-    // Mostrar la sección de gráficos si hay plantillas gráficas
     const chartsSection = document.getElementById('charts-section');
     if (chartsSection && graphicTemplates.length > 0) {
         chartsSection.style.display = 'block';
-        
-        // Limpiar el contenedor de gráficos
         const chartsContainer = document.getElementById('charts-container');
         if (chartsContainer) {
             chartsContainer.innerHTML = '';
-            
-            // Procesar cada plantilla gráfica
             graphicTemplates.forEach((template, index) => {
+                // ... existing code para gráficos ...
                 // Crear un contenedor para este gráfico
                 const graphicContainer = document.createElement('div');
                 graphicContainer.className = 'bg-white rounded-lg shadow-sm p-4 mb-4';
-                
                 // Añadir título al contenedor
                 const titleElement = document.createElement('h3');
                 titleElement.className = 'text-lg font-semibold mb-3';
                 titleElement.textContent = template.title || `Gráfico ${index + 1}`;
                 graphicContainer.appendChild(titleElement);
-                
                 // Crear contenedor para los dos tipos de gráficos (barras y circular)
                 const chartsGrid = document.createElement('div');
                 chartsGrid.className = 'grid grid-cols-1 md:grid-cols-2 gap-4';
-                
                 // Generar IDs únicos para los gráficos
                 const barChartId = `bar-chart-${index}`;
                 const doughnutChartId = `doughnut-chart-${index}`;
-                
                 // Crear contenedor para el gráfico de barras
                 const barChartContainer = document.createElement('div');
                 barChartContainer.className = 'h-64';
                 barChartContainer.innerHTML = `<canvas id="${barChartId}"></canvas>`;
-                
                 // Crear contenedor para el gráfico circular
                 const doughnutChartContainer = document.createElement('div');
                 doughnutChartContainer.className = 'h-64';
                 doughnutChartContainer.innerHTML = `<canvas id="${doughnutChartId}"></canvas>`;
-                
                 // Añadir los contenedores al grid
                 chartsGrid.appendChild(barChartContainer);
                 chartsGrid.appendChild(doughnutChartContainer);
-                
                 // Añadir el grid al contenedor del gráfico
                 graphicContainer.appendChild(chartsGrid);
-                
                 // Añadir el contenedor del gráfico al contenedor principal
                 chartsContainer.appendChild(graphicContainer);
-                
                 // Cargar datos para los gráficos
                 if (template.dataSource) {
                     loadDataFromUrl(
@@ -214,20 +214,17 @@ function processTemplates(templateData) {
                         (data) => {
                             // Crear gráfico de barras
                             createBarChart(data, barChartId, template);
-                            
                             // Crear gráfico circular
                             createDoughnutChart(data, doughnutChartId, template);
                         },
                         (error) => {
                             console.error(`Error cargando datos para gráficos:`, error);
-                            
                             // Mostrar mensaje de error en los contenedores de gráficos
                             document.getElementById(barChartId).parentNode.innerHTML = `
                                 <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
                                     Error cargando datos para el gráfico: ${error.message}
                                 </div>
                             `;
-                            
                             document.getElementById(doughnutChartId).parentNode.innerHTML = `
                                 <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
                                     Error cargando datos para el gráfico: ${error.message}
@@ -241,13 +238,126 @@ function processTemplates(templateData) {
     } else if (chartsSection) {
         chartsSection.style.display = 'none';
     }
-    
-    // Configurar la lista de datos si existe
-    const listTemplate = templateData.templates.find(t => t.type === 'list');
-    if (listTemplate) {
-        updateDataList(listTemplate);
+    // Estado de todas las listas
+    const listsState = {};
+
+    // Listas
+    const listTemplates = templateData.templates.filter(t => t.type === 'list');
+    const mainContent = document.getElementById('main-content');
+    // Elimina listas previas para evitar duplicados
+    const oldLists = document.querySelectorAll('.dynamic-list-section');
+    oldLists.forEach(el => el.remove());
+
+    listTemplates.forEach((listTemplate, idx) => {
+        // Crear contenedor para cada lista
+        const listId = `list-${idx}`;
+        const containerId = `data-list-${idx}`;
+        const listSection = document.createElement('div');
+        listSection.className = 'dynamic-list-section bg-white rounded-lg shadow-md p-6 mb-6';
+        // Título de la lista
+        const title = document.createElement('h2');
+        title.className = 'text-xl font-semibold mb-4';
+        title.textContent = listTemplate.title || `Lista ${idx + 1}`;
+        listSection.appendChild(title);
+        // Contenedor de la lista
+        const dataList = document.createElement('div');
+        dataList.id = containerId;
+        listSection.appendChild(dataList);
+        // Añadir al contenido principal
+        if (mainContent) mainContent.appendChild(listSection);
+
+        // Cargar datos para la lista
+        loadDataFromUrl(
+            listTemplate.dataSource,
+            (data) => {
+                // Inicializar estado de la lista
+                listsState[listId] = {
+                    allData: Array.isArray(data) ? data : (data.dataFiles || []),
+                    filteredData: Array.isArray(data) ? data : (data.dataFiles || []),
+                    columns: listTemplate.columns || (Array.isArray(data) && data.length > 0 ? Object.keys(data[0]) : []),
+                    currentPage: 1,
+                    pageSize: 10,
+                    containerId
+                };
+                renderPage(listId);
+            },
+            (error) => {
+                dataList.innerHTML = `
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                        Error cargando datos: ${error.message}
+                    </div>
+                `;
+            }
+        );
+    });
+
+    // ... existing code ...
+    /**
+     * Renderiza una página de una lista específica
+     * @param {string} listId - ID único de la lista
+     */
+    function renderPage(listId) {
+        const state = listsState[listId];
+        if (!state) return;
+
+        const { filteredData, columns, currentPage, pageSize, containerId } = state;
+        const dataList = document.getElementById(containerId);
+        if (!dataList) return;
+
+        // Calcular paginación
+        const start = (currentPage - 1) * pageSize;
+        const end = start + pageSize;
+        const pageData = filteredData.slice(start, end);
+
+        // Renderizar tabla con Tailwind
+        let html = `
+        <div class="overflow-x-auto rounded-lg shadow">
+            <table class="min-w-full divide-y divide-gray-200 bg-white">
+                <thead class="bg-gray-100">
+                    <tr>
+                        ${columns && columns.length > 0 ? columns.map(col => `<th class="px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">${col}</th>`).join('') : ''}
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    ${pageData.map(row => `
+                        <tr class="hover:bg-blue-50 transition-colors">
+                            ${(columns || Object.keys(row)).map(col => `<td class="px-4 py-2 text-sm text-gray-700">${row[col] !== undefined ? row[col] : ''}</td>`).join('')}
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+        `;
+
+        // Renderizar paginador
+        const totalPages = Math.max(1, Math.ceil(filteredData.length / pageSize));
+        html += `
+        <div class="pagination flex justify-end mt-2 gap-2">
+            <button class="px-3 py-1 rounded bg-gray-200 text-gray-700 hover:bg-gray-300 transition disabled:opacity-50" ${state.currentPage === 1 ? 'disabled' : ''} onclick="changePage('${listId}', ${currentPage - 1})">&lt;</button>
+            <span class="px-3 py-1 text-gray-700">Página ${currentPage} de ${totalPages}</span>
+            <button class="px-3 py-1 rounded bg-gray-200 text-gray-700 hover:bg-gray-300 transition disabled:opacity-50" ${state.currentPage === totalPages ? 'disabled' : ''} onclick="changePage('${listId}', ${currentPage + 1})">&gt;</button>
+        </div>
+        `;
+
+        dataList.innerHTML = html;
     }
+
+    // --- PAGINACIÓN GLOBAL PARA LISTAS DINÁMICAS ---
+    // Asegúrate de que listsState sea global
+    window.listsState = window.listsState || listsState;
+    /**
+     * Cambia de página en una lista específica
+     * @param {string} listId
+     * @param {number} newPage
+     */
+    window.changePage = function(listId, newPage) {
+        if (window.listsState[listId]) {
+            window.listsState[listId].currentPage = newPage;
+            renderPage(listId);
+        }
+    };
 }
+
 
 /**
  * Carga el contenido de una sección específica
@@ -1205,7 +1315,7 @@ function createWorkflowsStatusChart(data) {
  * @param {string} chartId - ID del elemento canvas
  * @param {Object} template - Plantilla con configuración adicional
  */
-function createBarChart(data, chartId = 'bar-chart', template = {}) {
+function createBarChart(data, chartId, template) {
     console.log(`Creando gráfico de barras con ID: ${chartId}`, data);
     const ctx = document.getElementById(chartId);
     if (!ctx) {
@@ -1224,40 +1334,52 @@ function createBarChart(data, chartId = 'bar-chart', template = {}) {
         return;
     }
     
-    // Procesar datos para el gráfico
-    const counts = {};
+    // Determinar los campos a utilizar
     const categoryField = template.categoryField || 'name';
+    const valueField = template.valueField || null;
     
-    // Contar elementos por categoría
-    data.forEach(item => {
-        if (item && typeof item === 'object') {
-            const category = item[categoryField] || 'Sin categoría';
-            counts[category] = (counts[category] || 0) + 1;
-        }
-    });
+    // Preparar datos para el gráfico
+    let labels = [];
+    let values = [];
     
-    // Verificar si hay datos procesados
-    if (Object.keys(counts).length === 0) {
-        console.warn(`No se encontraron datos válidos para el campo: ${categoryField}`);
-        // Crear datos de muestra para evitar errores
-        counts['Sin datos'] = 0;
+    if (valueField) {
+        // Si hay un campo de valor específico, usarlo directamente
+        data.forEach(item => {
+            if (item && typeof item === 'object') {
+                const category = item[categoryField] || 'Sin categoría';
+                const value = parseFloat(item[valueField]) || 0;
+                
+                labels.push(category);
+                values.push(value);
+            }
+        });
+    } else {
+        // Si no hay campo de valor, contar ocurrencias (comportamiento anterior)
+        const counts = {};
+        data.forEach(item => {
+            if (item && typeof item === 'object') {
+                const category = item[categoryField] || 'Sin categoría';
+                counts[category] = (counts[category] || 0) + 1;
+            }
+        });
+        
+        // Ordenar por cantidad (de mayor a menor)
+        const sortedItems = Object.entries(counts)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 10); // Limitar a los 10 más frecuentes
+        
+        labels = sortedItems.map(item => item[0]);
+        values = sortedItems.map(item => item[1]);
     }
-    
-    // Ordenar por cantidad (de mayor a menor)
-    const sortedItems = Object.entries(counts)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 10); // Limitar a los 10 más frecuentes
-    
-    console.log('Datos procesados para gráfico de barras:', sortedItems);
     
     // Crear el gráfico
     charts[chartId] = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: sortedItems.map(item => item[0]),
+            labels: labels,
             datasets: [{
-                label: template.barChartLabel || 'Frecuencia',
-                data: sortedItems.map(item => item[1]),
+                label: template.barChartLabel || 'Valor',
+                data: values,
                 backgroundColor: 'rgba(54, 162, 235, 0.5)',
                 borderColor: 'rgba(54, 162, 235, 1)',
                 borderWidth: 1
@@ -1280,20 +1402,18 @@ function createBarChart(data, chartId = 'bar-chart', template = {}) {
                     beginAtZero: true,
                     title: {
                         display: true,
-                        text: template.yAxisLabel || 'Cantidad'
+                        text: template.yAxisLabel || 'Eje Y'
                     }
                 },
                 x: {
                     title: {
                         display: true,
-                        text: template.xAxisLabel || 'Categoría'
+                        text: template.xAxisLabel || 'Eje X'
                     }
                 }
             }
         }
     });
-    
-    return charts[chartId];
 }
 
 /**
