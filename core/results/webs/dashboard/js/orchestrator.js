@@ -176,7 +176,63 @@ function processTemplates(templateData) {
     // Estado de todas las listas
     const listsState = {};
     window.listsState = listsState;
+    // --- GRÁFICOS ---
+    const graphicTemplates = templateData.templates.filter(t => t.type === 'graphic');
+    const chartsSection = document.getElementById('charts-section');
+    if (chartsSection && graphicTemplates.length > 0) {
+        chartsSection.style.display = 'block';
+        const chartsContainer = document.getElementById('charts-container');
+        if (chartsContainer) {
+            chartsContainer.innerHTML = '';
+            graphicTemplates.forEach((template, index) => {
+                const graphicContainer = document.createElement('div');
+                graphicContainer.className = 'bg-white rounded-lg shadow-sm p-4 mb-4';
+                const titleElement = document.createElement('h3');
+                titleElement.className = 'text-lg font-semibold mb-3';
+                titleElement.textContent = template.title || `Gráfico ${index + 1}`;
+                graphicContainer.appendChild(titleElement);
 
+                const chartsGrid = document.createElement('div');
+                chartsGrid.className = 'grid grid-cols-1 md:grid-cols-2 gap-4';
+                const barChartId = `bar-chart-${index}`;
+                const doughnutChartId = `doughnut-chart-${index}`;
+                const barChartContainer = document.createElement('div');
+                barChartContainer.className = 'h-64';
+                barChartContainer.innerHTML = `<canvas id="${barChartId}"></canvas>`;
+                const doughnutChartContainer = document.createElement('div');
+                doughnutChartContainer.className = 'h-64';
+                doughnutChartContainer.innerHTML = `<canvas id="${doughnutChartId}"></canvas>`;
+                chartsGrid.appendChild(barChartContainer);
+                chartsGrid.appendChild(doughnutChartContainer);
+                graphicContainer.appendChild(chartsGrid);
+                chartsContainer.appendChild(graphicContainer);
+
+                if (template.dataSource) {
+                    loadDataFromUrl(
+                        template.dataSource,
+                        (data) => {
+                            createBarChart(data, barChartId, template);
+                            createDoughnutChart(data, doughnutChartId, template);
+                        },
+                        (error) => {
+                            document.getElementById(barChartId).parentNode.innerHTML = `
+                                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                                    Error cargando datos para el gráfico: ${error.message}
+                                </div>
+                            `;
+                            document.getElementById(doughnutChartId).parentNode.innerHTML = `
+                                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                                    Error cargando datos para el gráfico: ${error.message}
+                                </div>
+                            `;
+                        }
+                    );
+                }
+            });
+        }
+    } else if (chartsSection) {
+        chartsSection.style.display = 'none';
+    }
     // Listas
     const listTemplates = templateData.templates.filter(t => t.type === 'list');
     const mainContent = document.getElementById('main-content');
