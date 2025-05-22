@@ -1,17 +1,42 @@
 {
     "title": "Ka0S Dashboard",
     "description": "Dashboard for Ka0S platform monitoring and management",
-    "metric1Title": "Total Commits",
-    "metric1": "5283",
-    "metric2Title": "Commits Recientes",
-    "metric2": "2138",
-    "metric3Title": "Módulos Activos",
-    "metric3": "13",
     "templates": [
-    
+        {
+            "type": "summary",
+            "dataSource": "data/kaos-workflows-available.json",
+            "metrics": [
+                {
+                    "name": "TotalModules",
+                    "type": "count",
+                    "title": "Total Modules",
+                    "format": "number"
+                },
+                {
+                    "name": "activeWorkflows",
+                    "type": "count",
+                    "title": "Active Modules",
+                    "filter": {
+                        "field": "state",
+                        "value": "active"
+                    },
+                    "format": "number"
+                },
+                {
+                    "name": "disabledWorkflows",
+                    "type": "count",
+                    "title": "Disabled Modules",
+                    "filter": {
+                        "field": "state",
+                        "value": "disabled_manually"
+                    },
+                    "format": "number"
+                }
+            ]
+        },
         {
             "type": "list",
-            "title": "Módulos de Ka0S",
+            "title": "Ka0S Modules",
             "dataSource": "data/kaos-workflows-available.json",
             "columns": [
                 "id",
