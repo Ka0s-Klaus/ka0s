@@ -93,64 +93,22 @@ async function createCostChart(container, config) {
     try {
         const response = await fetch(config.dataSource);
         const data = await response.json();
-        
-        console.log("Datos originales cargados:", data);
-        
-        // Generar datos diarios si se solicita agrupar por día
-        let processedData = data;
-        if (config.groupBy === 'day') {
-            // Crear datos diarios a partir de datos mensuales
-            processedData = generateDailyDataFromMonthly(data);
-            console.log("Datos diarios generados:", processedData);
-        }
-        
-        // Aplicar filtros según la configuración
-        let filteredData = processedData;
-        
-        // Filtrar por mes actual si se solicita
-        if (config.currentMonth) {
-            const currentDate = new Date();
-            const currentYear = currentDate.getFullYear();
-            const currentMonth = currentDate.getMonth() + 1; 
-            console.log("Filtrando por mes actual:", currentMonth, "y año:", currentYear);
-            
-            filteredData = processedData.filter(item => {
-                // Obtener el mes del item según el formato YYYY-MM
-                if (item.month) {
-                    const [year, month] = item.month.split('-').map(Number);
-                    return year === currentYear && month === currentMonth;
-                }
-                
-                // Si estamos trabajando con datos diarios generados
-                if (item.day) {
-                    const itemDate = new Date(item.day);
-                    return itemDate.getFullYear() === currentYear && 
-                           itemDate.getMonth() + 1 === currentMonth;
-                }
-                
-                return true; // Si no hay información de fecha, incluir el item
-            });
-            
-            console.log("Datos filtrados por mes actual:", filteredData);
-            
-            // Si no hay datos después del filtrado, usar todos los datos
-            if (filteredData.length === 0) {
-                console.log("No hay datos para el mes actual, mostrando todos los datos");
-                filteredData = processedData;
-            }
-        }
-        
+
+        const currentYear = new Date().getFullYear();
+        let filteredData = data.filter(item => {
+            const itemDate = new Date(item.month);
+            return !config.currentYear || itemDate.getFullYear() === currentYear;
+        });
+
+        let processedData = filteredData;
         if (config.groupBy) {
-            filteredData = processDataByGroup(filteredData, config);
-            console.log("Datos agrupados:", filteredData);
+            processedData = processDataByGroup(filteredData, config);
         }
 
         // Calcular totales
-        const totalReal = filteredData.reduce((sum, item) => sum + parseFloat(item.cost || item.final_cost || 0), 0);
-        const totalEstimated = filteredData.reduce((sum, item) => sum + parseFloat(item.cost_at_list || item.total_credits || 0), 0);
-        
-        // Determinar si debemos sumar o restar según el signo de totalEstimated
-        const netCost = totalEstimated < 0 ? totalReal + totalEstimated : totalReal - totalEstimated;
+        const totalReal = processedData.reduce((sum, item) => sum + parseFloat(item.cost || 0), 0);
+        const totalEstimated = processedData.reduce((sum, item) => sum + parseFloat(item.cost_at_list || 0), 0);
+        const netCost = totalReal - totalEstimated;
 
         // Formatear valores
         const formatValue = (value) => {
@@ -188,7 +146,7 @@ async function createCostChart(container, config) {
         if (config.costEstimated) {
             datasets.push({
                 label: 'Coste Estimado',
-                data: processedData.map(item => parseFloat(item.total_cost || 0)),
+                data: processedData.map(item => parseFloat(item.cost_at_list || 0)),
                 backgroundColor: 'rgba(234, 67, 53, 0.8)',
                 borderColor: 'rgba(234, 67, 53, 1)',
                 borderWidth: 0,
@@ -215,9 +173,6 @@ async function createCostChart(container, config) {
                     if (config.groupBy === 'month') {
                         const date = new Date(item[config.groupBy]);
                         return date.toLocaleString('es-ES', { month: 'short' });
-                    } else if (config.groupBy === 'day') {
-                        const date = new Date(item[config.groupBy]);
-                        return date.toLocaleString('es-ES', { day: 'numeric' });
                     }
                     return item[config.groupBy] || '';
                 }),
@@ -257,80 +212,27 @@ async function createCostChart(container, config) {
     container.appendChild(mainContainer);
 }
 
-// Función para generar datos diarios a partir de datos mensuales
-function generateDailyDataFromMonthly(monthlyData) {
-    const dailyData = [];
-    
-    monthlyData.forEach(item => {
-        if (!item.month) return;
-        
-        // Obtener el año y mes del dato mensual
-        const [year, month] = item.month.split('-').map(num => parseInt(num));
-        
-        // Determinar el número de días en el mes
-        const daysInMonth = new Date(year, month, 0).getDate();
-        
-        // Distribuir el costo mensual entre los días del mes
-        const dailyCost = parseFloat(item.final_cost) / daysInMonth;
-        const dailyCredits = parseFloat(item.total_credits) / daysInMonth;
-        const dailyTotalCost = parseFloat(item.total_cost) / daysInMonth;
-        
-        // Crear un registro para cada día del mes
-        for (let day = 1; day <= daysInMonth; day++) {
-            const dayStr = day.toString().padStart(2, '0');
-            dailyData.push({
-                currency: item.currency,
-                final_cost: dailyCost.toFixed(10),
-                day: `${year}-${month.toString().padStart(2, '0')}-${dayStr}`,
-                month: item.month,
-                service_description: item.service_description,
-                total_cost: dailyTotalCost.toFixed(10),
-                total_credits: dailyCredits.toFixed(10),
-                cost: dailyCost.toFixed(10),
-                cost_at_list: dailyCredits.toFixed(10)
-            });
-        }
-    });
-    
-    return dailyData;
-}
-
 function processDataByGroup(data, config) {
-    // Asegurarse de que el campo groupBy existe en los datos
-    const groupByField = config.groupBy;
-    
     const grouped = data.reduce((acc, item) => {
-        const key = item[groupByField];
-        if (!key) return acc; // Ignorar items sin el campo de agrupación
-        
+        const key = item[config.groupBy];
         if (!acc[key]) {
             acc[key] = {
-                [groupByField]: key,
-                name: item.name || '',
+                [config.groupBy]: key,
+                name: item.name,
                 cost: 0,
                 cost_at_list: 0
             };
         }
-        
-        // Usar final_cost como cost si no existe el campo cost
-        const itemCost = parseFloat(item.cost || item.final_cost || 0);
-        // Usar total_credits como cost_at_list si no existe el campo cost_at_list
-        const itemCostAtList = parseFloat(item.cost_at_list || item.total_credits || 0);
-        
-        acc[key].cost += itemCost;
-        acc[key].cost_at_list += itemCostAtList;
+        acc[key].cost += parseFloat(item.cost || 0);
+        acc[key].cost_at_list += parseFloat(item.cost_at_list || 0);
         return acc;
     }, {});
 
     let result = Object.values(grouped);
 
-    // Ordenar por fecha si es un campo de fecha
-    if (groupByField === 'month') {
+    if (config.groupBy === 'month') {
         result.sort((a, b) => new Date(a.month) - new Date(b.month));
-    } else if (groupByField === 'day') {
-        result.sort((a, b) => new Date(a.day) - new Date(b.day));
     } else if (config.orderBy) {
-        // Ordenar por el campo especificado en la configuración
         result.sort((a, b) => {
             return config.orderDirection === 'desc' 
                 ? b[config.orderBy] - a[config.orderBy]
@@ -338,8 +240,7 @@ function processDataByGroup(data, config) {
         });
     }
 
-    // Limitar resultados si se especifica
-    if (config.limit && config.limit > 0) {
+    if (config.limit) {
         result = result.slice(0, config.limit);
     }
 

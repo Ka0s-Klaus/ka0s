@@ -6,39 +6,38 @@
             "type": "cost-chart",
             "tipo": "StackedBarChart",
             "title": "Costos GCP",
-            "dataSource": "../data/15183804885_gcp_monthly_cost_summary_query_results_20250522_120757.json",
+            "dataSource": "../data/gcp_cost_2025.json",
             "head": true,
             "costReal": true,
             "costEstimated": true,
-            "groupBy": "day",
+            "groupBy": "month",
             "aggregation": "sum",
-            "currentMonth": true
-        },
-        {
-            "type": "cost-chart",
-            "tipo": "BarChart",
-            "title": "Servicios Principales",
-            "dataSource": "../data/15184038868_gcp_project_monthly_cost_summary_query_results_20250522_121929.json",
-            "costReal": true,
-            "costEstimated": true,
-            "groupBy": "service_description",
-            "aggregation": "sum",
-            "orderBy": "cost",
-            "orderDirection": "desc",
-            "limit": 7
+            "currentYear": true
         },
         {
             "type": "cost-chart",
             "tipo": "BarChart",
             "title": "Proyectos Principales",
-            "dataSource": "../data/15183893408_gcp_day_month_cost_service_query_results_20250522_121215.json",
+            "dataSource": "../data/gcp_cost_all_year.json",
             "costReal": true,
             "costEstimated": true,
-            "groupBy": "description",
+            "groupBy": "id",
             "aggregation": "sum",
-            "orderBy": "usage_date",
-            "orderDirection": "asc",
-            "limit": 7
+            "limit": 10,
+            "orderBy": "cost",
+            "orderDirection": "desc"
+        },
+        {
+            "type": "cost-chart",
+            "title": "Servicios Principales",
+            "dataSource": "../data/gcp_cost_all_year.json",
+            "costReal": true,
+            "costEstimated": true,
+            "groupBy": "name",
+            "aggregation": "sum",
+            "limit": 7,
+            "orderBy": "cost",
+            "orderDirection": "desc"
         }
     ]
 }
