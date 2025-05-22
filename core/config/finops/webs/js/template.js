@@ -16,6 +16,7 @@ async function createTemplate(templateConfig) {
             case 'cost-chart':
                 await createCostChart(templateContainer, templateConfig);
                 break;
+            // Agregar más casos según sea necesario
             default:
                 console.error(`Tipo de template no soportado: ${templateConfig.type}`);
                 return null;
@@ -32,8 +33,7 @@ async function createCostChart(container, config) {
     const mainContainer = document.createElement('div');
     mainContainer.className = 'flex flex-col gap-6';
 
-    // Solo mostrar el encabezado si config.head es true
-    let costContainer, summaryContainer;
+    // Verificar si la configuración requiere encabezado
     if (config.head) {
         // Crear el contenedor del resumen con el título y período
         const headerContainer = document.createElement('div');
@@ -91,9 +91,11 @@ async function createCostChart(container, config) {
     chartContainer.appendChild(canvas);
 
     try {
+        // Cargar datos y procesar
         const response = await fetch(config.dataSource);
         const data = await response.json();
-
+        
+        // Procesamiento de datos y creación del gráfico
         const currentYear = new Date().getFullYear();
         let filteredData = data.filter(item => {
             const itemDate = new Date(item.month);
@@ -105,9 +107,9 @@ async function createCostChart(container, config) {
             processedData = processDataByGroup(filteredData, config);
         }
 
-        // Calcular totales
-        const totalReal = processedData.reduce((sum, item) => sum + parseFloat(item.cost || 0), 0);
-        const totalEstimated = processedData.reduce((sum, item) => sum + parseFloat(item.cost_at_list || 0), 0);
+        // Calcular totales usando los campos correctos del JSON
+        const totalReal = processedData.reduce((sum, item) => sum + parseFloat(item.final_cost || 0), 0);
+        const totalEstimated = processedData.reduce((sum, item) => sum + parseFloat(item.total_cost || 0), 0);
         const netCost = totalReal - totalEstimated;
 
         // Formatear valores
@@ -146,7 +148,7 @@ async function createCostChart(container, config) {
         if (config.costEstimated) {
             datasets.push({
                 label: 'Coste Estimado',
-                data: processedData.map(item => parseFloat(item.cost_at_list || 0)),
+                data: processedData.map(item => parseFloat(item.net_cost || 0)),
                 backgroundColor: 'rgba(234, 67, 53, 0.8)',
                 borderColor: 'rgba(234, 67, 53, 1)',
                 borderWidth: 0,
@@ -157,7 +159,7 @@ async function createCostChart(container, config) {
         if (config.costReal) {
             datasets.push({
                 label: 'Coste Real',
-                data: processedData.map(item => parseFloat(item.cost || 0)),
+                data: processedData.map(item => parseFloat(item.final_cost || 0)),
                 backgroundColor: 'rgba(66, 133, 244, 0.8)',
                 borderColor: 'rgba(66, 133, 244, 1)',
                 borderWidth: 0,
@@ -169,13 +171,7 @@ async function createCostChart(container, config) {
         new Chart(canvas, {
             type: config.tipo === 'StackedBarChart' ? 'bar' : 'bar',
             data: {
-                labels: processedData.map(item => {
-                    if (config.groupBy === 'month') {
-                        const date = new Date(item[config.groupBy]);
-                        return date.toLocaleString('es-ES', { month: 'short' });
-                    }
-                    return item[config.groupBy] || '';
-                }),
+                labels: processedData.map(item => item.day),
                 datasets: datasets
             },
             options: {
@@ -207,12 +203,49 @@ async function createCostChart(container, config) {
 
     } catch (error) {
         console.error('Error al cargar datos:', error);
+        // Manejo de errores
     }
 
     container.appendChild(mainContainer);
 }
 
 function processDataByGroup(data, config) {
+    if (config.groupBy === 'day') {
+        // Agrupar por día del mes usando usage_date
+        const now = new Date();
+        const currentDay = now.getDate();
+        const currentMonth = now.getMonth() + 1;
+        const currentYear = now.getFullYear();
+
+        // Crear un array con los días del mes hasta hoy
+        const daysArray = [];
+        for (let d = 1; d <= currentDay; d++) {
+            // Filtrar los datos para el día d del mes actual
+            const dayStr = d.toString().padStart(2, '0');
+            const monthStr = currentMonth.toString().padStart(2, '0');
+            const dateStr = `${currentYear}-${monthStr}-${dayStr}`;
+            const itemsForDay = data.filter(item => {
+                // Solo considerar registros del mes y año actual
+                return item.usage_date && item.usage_date.startsWith(`${currentYear}-${monthStr}-`) && item.usage_date.endsWith(`-${dayStr}`);
+            });
+
+            // Sumar los costes reales y estimados de ese día
+            let final_cost = 0;
+            let net_cost = 0;
+            itemsForDay.forEach(item => {
+                final_cost += parseFloat(item.final_cost || 0);
+                net_cost += parseFloat(item.net_cost || 0);
+            });
+
+            daysArray.push({
+                day: d,
+                final_cost: final_cost,
+                net_cost: net_cost
+            });
+        }
+        return daysArray;
+    }
+
     const grouped = data.reduce((acc, item) => {
         const key = item[config.groupBy];
         if (!acc[key]) {
@@ -220,18 +253,41 @@ function processDataByGroup(data, config) {
                 [config.groupBy]: key,
                 name: item.name,
                 cost: 0,
-                cost_at_list: 0
+                cost_at_list: 0,
+                final_cost: 0
             };
         }
         acc[key].cost += parseFloat(item.cost || 0);
         acc[key].cost_at_list += parseFloat(item.cost_at_list || 0);
+        acc[key].final_cost += parseFloat(item.final_cost || item.cost || 0);
         return acc;
     }, {});
 
     let result = Object.values(grouped);
 
-    if (config.groupBy === 'month') {
-        result.sort((a, b) => new Date(a.month) - new Date(b.month));
+    // Si agrupamos por día, rellenar los días faltantes del mes con 0
+    if (config.groupBy === 'day') {
+        // Determinar el día actual
+        const now = new Date();
+        const currentDay = now.getDate();
+
+        // Crear un array con los días desde 1 hasta el día actual
+        const daysArray = [];
+        for (let d = 1; d <= currentDay; d++) {
+            const existing = result.find(item => Number(item.day) === d);
+            if (existing) {
+                daysArray.push(existing);
+            } else {
+                daysArray.push({
+                    day: d,
+                    name: "",
+                    cost: 0,
+                    cost_at_list: 0,
+                    final_cost: 0
+                });
+            }
+        }
+        result = daysArray;
     } else if (config.orderBy) {
         result.sort((a, b) => {
             return config.orderDirection === 'desc' 
