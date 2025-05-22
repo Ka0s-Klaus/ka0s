@@ -1342,15 +1342,25 @@ function updateMetrics(templateData) {
     // Limpiar el contenedor
     metricsContainer.innerHTML = '';
     
-    // Asegurar que el contenedor tenga la clase grid con 4 columnas
-    metricsContainer.className = 'grid grid-cols-1 md:grid-cols-4 gap-4 mb-8';
+    // Asegurar que el contenedor tenga la clase grid con 4 columnas en pantallas medianas
+    const sectionData = templateData;
+    const metricKeys = Object.keys(sectionData)
+        .filter(key => key.startsWith('metric') && !key.endsWith('Title'));
+    const numMetrics = metricKeys.length > 0 ? metricKeys.length : 1;
+    metricsContainer.className = "grid grid-cols-1 md:grid-cols-4 gap-4 mb-8";
     
     // Definir colores para las métricas
     const metricColors = {
         metric1: 'blue',
         metric2: 'green',
         metric3: 'yellow',
-        metric4: 'purple'
+        metric4: 'purple',
+        metric5: 'red',
+        metric6: 'orange',
+        metric7: 'gray',
+        metric8: 'pink',
+        metric9: 'teal',
+        metric10: 'indigo'
     };
     
     // Definir clases de color para cada métrica
@@ -1361,11 +1371,14 @@ function updateMetrics(templateData) {
         purple: 'bg-purple-50 border-purple-100 text-purple-600',
         red: 'bg-red-50 border-red-100 text-red-600',
         orange: 'bg-orange-50 border-orange-100 text-orange-600',
-        gray: 'bg-gray-50 border-gray-100 text-gray-600'
+        gray: 'bg-gray-50 border-gray-100 text-gray-600',
+        pink: 'bg-pink-50 border-pink-100 text-pink-600',
+        teal: 'bg-teal-50 border-teal-100 text-teal-600',
+        indigo: 'bg-indigo-50 border-indigo-100 text-indigo-600'
     };
     
     // Crear métricas
-    for (let i = 1; i <= 4; i++) {
+    for (let i = 1; i <= numMetrics; i++) {
         const metricKey = `metric${i}`;
         const titleKey = `${metricKey}Title`;
         

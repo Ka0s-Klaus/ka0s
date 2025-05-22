@@ -288,9 +288,34 @@ function processTemplates(templateData) {
                         // Calcular el valor según el tipo de métrica
                         switch (metric.type) {
                             case 'count':
-                                // Contar total de elementos
-                                metricValue = items.length.toString();
-                                break;
+                            let filteredItems = items;
+                            // Aplicar filtro si existe
+                            if (metric.filter && metric.filter.field && metric.filter.value !== undefined) {
+                                filteredItems = filteredItems.filter(item => item[metric.filter.field] === metric.filter.value);
+                            }
+                            // Si hay groupBy, agrupar y contar
+                            if (metric.groupBy) {
+                                const groupCounts = {};
+                                filteredItems.forEach(item => {
+                                    const groupKey = item[metric.groupBy];
+                                    if (!groupKey) return;
+                                    groupCounts[groupKey] = (groupCounts[groupKey] || 0) + 1;
+                                });
+                                // Ordenar los grupos por cantidad descendente
+                                const sortedGroups = Object.entries(groupCounts).sort((a, b) => b[1] - a[1]);
+                                // Tomar el grupo más frecuente
+                                if (sortedGroups.length > 0) {
+                                    const [mostCommonGroup, count] = sortedGroups[0];
+                                    // Mostrar el nombre del evento más común o el valorField si está definido
+                                    metricValue = metric.valueField ? mostCommonGroup : count.toString();
+                                } else {
+                                    metricValue = '';
+                                }
+                            } else {
+                                // Si no hay groupBy, solo contar los elementos filtrados
+                                metricValue = filteredItems.length.toString();
+                            }
+                            break;
                                 
                             case 'rate':
                                 // Calcular porcentaje (ej: tasa de éxito)
@@ -1317,15 +1342,25 @@ function updateMetrics(templateData) {
     // Limpiar el contenedor
     metricsContainer.innerHTML = '';
     
-    // Asegurar que el contenedor tenga la clase grid con 4 columnas
-    metricsContainer.className = 'grid grid-cols-1 md:grid-cols-4 gap-4 mb-8';
+    // Asegurar que el contenedor tenga la clase grid con 4 columnas en pantallas medianas
+    const sectionData = templateData;
+    const metricKeys = Object.keys(sectionData)
+        .filter(key => key.startsWith('metric') && !key.endsWith('Title'));
+    const numMetrics = metricKeys.length > 0 ? metricKeys.length : 1;
+    metricsContainer.className = "grid grid-cols-1 md:grid-cols-4 gap-4 mb-8";
     
     // Definir colores para las métricas
     const metricColors = {
         metric1: 'blue',
         metric2: 'green',
         metric3: 'yellow',
-        metric4: 'purple'
+        metric4: 'purple',
+        metric5: 'red',
+        metric6: 'orange',
+        metric7: 'gray',
+        metric8: 'pink',
+        metric9: 'teal',
+        metric10: 'indigo'
     };
     
     // Definir clases de color para cada métrica
@@ -1336,11 +1371,14 @@ function updateMetrics(templateData) {
         purple: 'bg-purple-50 border-purple-100 text-purple-600',
         red: 'bg-red-50 border-red-100 text-red-600',
         orange: 'bg-orange-50 border-orange-100 text-orange-600',
-        gray: 'bg-gray-50 border-gray-100 text-gray-600'
+        gray: 'bg-gray-50 border-gray-100 text-gray-600',
+        pink: 'bg-pink-50 border-pink-100 text-pink-600',
+        teal: 'bg-teal-50 border-teal-100 text-teal-600',
+        indigo: 'bg-indigo-50 border-indigo-100 text-indigo-600'
     };
     
     // Crear métricas
-    for (let i = 1; i <= 4; i++) {
+    for (let i = 1; i <= numMetrics; i++) {
         const metricKey = `metric${i}`;
         const titleKey = `${metricKey}Title`;
         
