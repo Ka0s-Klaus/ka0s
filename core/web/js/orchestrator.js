@@ -192,18 +192,38 @@ function processTemplates(templateData) {
                 titleElement.textContent = template.title || `Gráfico ${index + 1}`;
                 graphicContainer.appendChild(titleElement);
 
-                const chartsGrid = document.createElement('div');
-                chartsGrid.className = 'grid grid-cols-1 md:grid-cols-2 gap-4';
-                const barChartId = `bar-chart-${index}`;
-                const doughnutChartId = `doughnut-chart-${index}`;
-                const barChartContainer = document.createElement('div');
-                barChartContainer.className = 'h-64';
-                barChartContainer.innerHTML = `<canvas id="${barChartId}"></canvas>`;
-                const doughnutChartContainer = document.createElement('div');
-                doughnutChartContainer.className = 'h-64';
-                doughnutChartContainer.innerHTML = `<canvas id="${doughnutChartId}"></canvas>`;
-                chartsGrid.appendChild(barChartContainer);
-                chartsGrid.appendChild(doughnutChartContainer);
+                // Determinar qué tipos de gráficos mostrar
+                const chartTypes = template.chartTypes || ['bar', 'doughnut']; // Por defecto, mostrar ambos
+                
+                // Crear grid solo si hay más de un tipo de gráfico
+                let chartsGrid;
+                if (chartTypes.length > 1) {
+                    chartsGrid = document.createElement('div');
+                    chartsGrid.className = 'grid grid-cols-1 md:grid-cols-2 gap-4';
+                } else {
+                    chartsGrid = document.createElement('div');
+                    chartsGrid.className = 'w-full';
+                }
+                
+                // Crear contenedores para cada tipo de gráfico solicitado
+                let barChartId, doughnutChartId;
+                
+                if (chartTypes.includes('bar')) {
+                    barChartId = `bar-chart-${index}`;
+                    const barChartContainer = document.createElement('div');
+                    barChartContainer.className = chartTypes.length > 1 ? 'h-64' : 'h-80 mx-auto';
+                    barChartContainer.innerHTML = `<canvas id="${barChartId}"></canvas>`;
+                    chartsGrid.appendChild(barChartContainer);
+                }
+                
+                if (chartTypes.includes('doughnut')) {
+                    doughnutChartId = `doughnut-chart-${index}`;
+                    const doughnutChartContainer = document.createElement('div');
+                    doughnutChartContainer.className = chartTypes.length > 1 ? 'h-64' : 'h-80 mx-auto';
+                    doughnutChartContainer.innerHTML = `<canvas id="${doughnutChartId}"></canvas>`;
+                    chartsGrid.appendChild(doughnutChartContainer);
+                }
+                
                 graphicContainer.appendChild(chartsGrid);
                 chartsContainer.appendChild(graphicContainer);
 
@@ -211,20 +231,27 @@ function processTemplates(templateData) {
                     loadDataFromUrl(
                         template.dataSource,
                         (data) => {
-                            createBarChart(data, barChartId, template);
-                            createDoughnutChart(data, doughnutChartId, template);
+                            if (barChartId) {
+                                createBarChart(data, barChartId, template);
+                            }
+                            if (doughnutChartId) {
+                                createDoughnutChart(data, doughnutChartId, template);
+                            }
                         },
                         (error) => {
-                            document.getElementById(barChartId).parentNode.innerHTML = `
+                            const errorMessage = `
                                 <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
                                     Error cargando datos para el gráfico: ${error.message}
                                 </div>
                             `;
-                            document.getElementById(doughnutChartId).parentNode.innerHTML = `
-                                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                                    Error cargando datos para el gráfico: ${error.message}
-                                </div>
-                            `;
+                            
+                            if (barChartId && document.getElementById(barChartId)) {
+                                document.getElementById(barChartId).parentNode.innerHTML = errorMessage;
+                            }
+                            
+                            if (doughnutChartId && document.getElementById(doughnutChartId)) {
+                                document.getElementById(doughnutChartId).parentNode.innerHTML = errorMessage;
+                            }
                         }
                     );
                 }
@@ -233,6 +260,176 @@ function processTemplates(templateData) {
     } else if (chartsSection) {
         chartsSection.style.display = 'none';
     }
+    
+    // Procesamiento de plantillas de tipo "summary" para métricas dinámicas
+    const summaryTemplates = templateData.templates.filter(t => t.type === 'summary');
+    if (summaryTemplates.length > 0) {
+        // Contenedor para métricas
+        const metricsContainer = document.getElementById('metrics-container');
+        if (!metricsContainer) return;
+        
+        summaryTemplates.forEach(template => {
+            if (!template.dataSource || !template.metrics) return;
+            
+            // Cargar datos para calcular métricas
+            loadDataFromUrl(
+                template.dataSource,
+                (data) => {
+                    // Asegurarse de que los datos sean un array
+                    const items = Array.isArray(data) ? data : (data.dataFiles || []);
+                    if (!items.length) return;
+                    
+                    // Procesar cada métrica definida
+                    template.metrics.forEach((metric, index) => {
+                        let metricValue = '';
+                        const metricId = `metric${index + 1}`;
+                        const metricTitleId = `${metricId}Title`;
+                        
+                        // Calcular el valor según el tipo de métrica
+                        switch (metric.type) {
+                            case 'count':
+                                // Contar total de elementos
+                                metricValue = items.length.toString();
+                                break;
+                                
+                            case 'rate':
+                                // Calcular porcentaje (ej: tasa de éxito)
+                                if (metric.numerator && metric.denominator) {
+                                    let numerator = 0;
+                                    const denominator = metric.denominator === 'total' ? items.length : 0;
+                                    
+                                    // Contar elementos que cumplen la condición
+                                    if (metric.numerator.field && metric.numerator.value) {
+                                        numerator = items.filter(item => 
+                                            item[metric.numerator.field] === metric.numerator.value
+                                        ).length;
+                                    }
+                                    
+                                    // Calcular porcentaje
+                                    const rate = denominator > 0 ? (numerator / denominator) * 100 : 0;
+                                    metricValue = metric.format === 'percentage' ? 
+                                        `${Math.round(rate)}%` : rate.toFixed(2);
+                                }
+                                break;
+                                
+                            case 'average':
+                                // Calcular promedio de un campo numérico
+                                if (metric.field) {
+                                    const validItems = items.filter(item => 
+                                        item[metric.field] !== undefined && 
+                                        !isNaN(parseFloat(item[metric.field]))
+                                    );
+                                    
+                                    if (validItems.length > 0) {
+                                        const sum = validItems.reduce((acc, item) => 
+                                            acc + parseFloat(item[metric.field]), 0
+                                        );
+                                        const avg = sum / validItems.length;
+                                        
+                                        if (metric.format === 'time') {
+                                            // Formatear como tiempo (minutos:segundos)
+                                            const minutes = Math.floor(avg / 60);
+                                            const seconds = Math.round(avg % 60);
+                                            metricValue = `${minutes}m ${seconds}s`;
+                                        } else {
+                                            metricValue = avg.toFixed(2);
+                                        }
+                                    }
+                                }
+                                break;
+                                
+                            case 'latest':
+                                // Obtener el valor más reciente de un campo
+                                if (metric.field) {
+                                    // Ordenar por fecha si es posible
+                                    const sortedItems = [...items].sort((a, b) => {
+                                        const dateA = new Date(a[metric.field] || 0);
+                                        const dateB = new Date(b[metric.field] || 0);
+                                        return dateB - dateA; // Orden descendente
+                                    });
+                                    
+                                    if (sortedItems.length > 0 && sortedItems[0][metric.field]) {
+                                        if (metric.format === 'date') {
+                                            // Formatear como fecha
+                                            const date = new Date(sortedItems[0][metric.field]);
+                                            metricValue = date.toLocaleDateString();
+                                        } else {
+                                            metricValue = sortedItems[0][metric.field];
+                                        }
+                                    }
+                                }
+                                break;
+                                
+                            case 'max':
+                                // Encontrar el valor máximo (ej: producto más vendido)
+                                if (metric.field && metric.groupBy) {
+                                    // Agrupar por el campo especificado
+                                    const groups = {};
+                                    items.forEach(item => {
+                                        const groupKey = item[metric.groupBy];
+                                        if (!groupKey) return;
+                                        
+                                        if (!groups[groupKey]) {
+                                            groups[groupKey] = 0;
+                                        }
+                                        
+                                        // Sumar el valor del campo
+                                        const value = parseFloat(item[metric.field]) || 0;
+                                        groups[groupKey] += value;
+                                    });
+                                    
+                                    // Encontrar el grupo con el valor máximo
+                                    let maxGroup = null;
+                                    let maxValue = -Infinity;
+                                    
+                                    Object.entries(groups).forEach(([group, value]) => {
+                                        if (value > maxValue) {
+                                            maxGroup = group;
+                                            maxValue = value;
+                                        }
+                                    });
+                                    
+                                    if (maxGroup) {
+                                        metricValue = maxGroup;
+                                    }
+                                }
+                                break;
+                                
+                            case 'sum':
+                                // Sumar valores de un campo
+                                if (metric.field) {
+                                    const sum = items.reduce((acc, item) => {
+                                        const value = parseFloat(item[metric.field]) || 0;
+                                        return acc + value;
+                                    }, 0);
+                                    
+                                    if (metric.format === 'currency') {
+                                        metricValue = `$${sum.toLocaleString('es-ES', {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2
+                                        })}`;
+                                    } else {
+                                        metricValue = sum.toString();
+                                    }
+                                }
+                                break;
+                        }
+                        
+                        // Actualizar las métricas en templateData para que estén disponibles
+                        templateData[metricTitleId] = metric.title || `Métrica ${index + 1}`;
+                        templateData[metricId] = metricValue;
+                    });
+                    
+                    // Actualizar las métricas en la interfaz
+                    updateMetrics(templateData);
+                },
+                (error) => {
+                    console.error(`Error cargando datos para métricas: ${error.message}`);
+                }
+            );
+        });
+    }
+    
     // Listas
     const listTemplates = templateData.templates.filter(t => t.type === 'list');
     const mainContent = document.getElementById('main-content');

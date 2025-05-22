@@ -1,15 +1,30 @@
 {
     "title": "End Workflow",
     "description": "Overview of workflow executions",
-    "metric1Title": "Total Projects",
-    "metric1": "42",
-    "metric2Title": "Success Completion Rate",
-    "metric2": "28",
-    "metric3Title": "Average Time",
-    "metric3": "14",
-    "metric4Title": "Last Completion",
-    "metric4": "14",
+
     "templates": [
+        {
+            "type": "summary",
+            "dataSource": "data/kaos-workflows-runs.json",
+            "metrics": [
+                {
+                    "name": "totalProjects",
+                    "type": "count",
+                    "title": "Total Projects"
+                },
+                {
+                    "name": "successRate",
+                    "type": "rate",
+                    "title": "Success Completion Rate",
+                    "numerator": {
+                        "field": "conclusion",
+                        "value": "success"
+                    },
+                    "denominator": "total",
+                    "format": "percentage"
+                }
+            ]
+        },
         {
             "type": "list",
             "title": "Workflow Executions",
