@@ -173,6 +173,14 @@ function processTemplates(templateData) {
         return;
     }
     
+    // Colores por defecto
+    const defaultColors = ['blue', 'green', 'yellow', 'purple', 'red', 'orange', 'gray', 'pink', 'teal', 'brown'];
+
+    // Si el JSON de la sección tiene un array "metricsColors", úsalo, si no, usa los colores por defecto
+    const sectionColors = Array.isArray(templateData.metricsColors) && templateData.metricsColors.length > 0
+        ? templateData.metricsColors
+        : defaultColors;
+
     // Estado de todas las listas
     const listsState = {};
     window.listsState = listsState;
@@ -185,6 +193,11 @@ function processTemplates(templateData) {
         if (chartsContainer) {
             chartsContainer.innerHTML = '';
             graphicTemplates.forEach((template, index) => {
+                // Permitir que cada template gráfico tenga su propio array de colores, si lo desea
+                const templateColors = Array.isArray(template.colors) && template.colors.length > 0
+                    ? template.colors
+                    : sectionColors;
+
                 const graphicContainer = document.createElement('div');
                 graphicContainer.className = 'bg-white rounded-lg shadow-sm p-4 mb-4';
                 const titleElement = document.createElement('h3');
@@ -232,10 +245,14 @@ function processTemplates(templateData) {
                         template.dataSource,
                         (data) => {
                             if (barChartId) {
-                                createBarChart(data, barChartId, template);
+                                // Pasar templateColors como parte de template
+                                const templateWithColors = Object.assign({}, template, { barColors: templateColors });
+                                createBarChart(data, barChartId, templateWithColors);
                             }
                             if (doughnutChartId) {
-                                createDoughnutChart(data, doughnutChartId, template);
+                                // Pasar templateColors como parte de template
+                                const templateWithColors = Object.assign({}, template, { doughnutColors: templateColors });
+                                createDoughnutChart(data, doughnutChartId, templateWithColors);
                             }
                         },
                         (error) => {
@@ -1349,19 +1366,12 @@ function updateMetrics(templateData) {
     const numMetrics = metricKeys.length > 0 ? metricKeys.length : 1;
     metricsContainer.className = "grid grid-cols-1 md:grid-cols-4 gap-4 mb-8";
     
-    // Definir colores para las métricas
-    const metricColors = {
-        metric1: 'blue',
-        metric2: 'green',
-        metric3: 'yellow',
-        metric4: 'purple',
-        metric5: 'red',
-        metric6: 'orange',
-        metric7: 'gray',
-        metric8: 'pink',
-        metric9: 'teal',
-        metric10: 'indigo'
-    };
+    // Colores por defecto
+    const defaultColors = ['blue', 'green', 'yellow', 'purple', 'red', 'orange', 'gray', 'pink', 'teal', 'indigo'];
+    // Si el JSON de la sección tiene un array "metricsColors", úsalo, si no, usa los colores por defecto
+    const sectionColors = Array.isArray(templateData.metricsColors) && templateData.metricsColors.length > 0
+        ? templateData.metricsColors
+        : defaultColors;
     
     // Definir clases de color para cada métrica
     const colorClasses = {
@@ -1374,7 +1384,8 @@ function updateMetrics(templateData) {
         gray: 'bg-gray-50 border-gray-100 text-gray-600',
         pink: 'bg-pink-50 border-pink-100 text-pink-600',
         teal: 'bg-teal-50 border-teal-100 text-teal-600',
-        indigo: 'bg-indigo-50 border-indigo-100 text-indigo-600'
+        indigo: 'bg-indigo-50 border-indigo-100 text-indigo-600',
+        brown: 'bg-yellow-900 border-yellow-900 text-yellow-100'
     };
     
     // Crear métricas
@@ -1385,8 +1396,13 @@ function updateMetrics(templateData) {
         if (templateData[metricKey] && templateData[titleKey]) {
             const metricValue = templateData[metricKey];
             const metricTitle = templateData[titleKey];
-            const color = metricColors[metricKey] || 'gray';
-            const colorClass = colorClasses[color];
+            // Permitir que el color se defina desde el array colors del JSON
+            let color = sectionColors[i - 1] || 'gray';
+            // Si el color es un objeto (por ejemplo, {name: 'blue', ...}), tomar el nombre
+            if (typeof color === 'object' && color.name) {
+                color = color.name;
+            }
+            const colorClass = colorClasses[color] || colorClasses['gray'];
             
             // Crear elemento de métrica con el nuevo estilo
             const metricElement = document.createElement('div');
@@ -1399,7 +1415,8 @@ function updateMetrics(templateData) {
             metricsContainer.appendChild(metricElement);
         }
     }
-}a
+}
+
 // Exponer la función para que pueda ser usada desde otros contextos
 window.processConfig = processConfig;
 
