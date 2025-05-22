@@ -288,9 +288,34 @@ function processTemplates(templateData) {
                         // Calcular el valor según el tipo de métrica
                         switch (metric.type) {
                             case 'count':
-                                // Contar total de elementos
-                                metricValue = items.length.toString();
-                                break;
+                            let filteredItems = items;
+                            // Aplicar filtro si existe
+                            if (metric.filter && metric.filter.field && metric.filter.value !== undefined) {
+                                filteredItems = filteredItems.filter(item => item[metric.filter.field] === metric.filter.value);
+                            }
+                            // Si hay groupBy, agrupar y contar
+                            if (metric.groupBy) {
+                                const groupCounts = {};
+                                filteredItems.forEach(item => {
+                                    const groupKey = item[metric.groupBy];
+                                    if (!groupKey) return;
+                                    groupCounts[groupKey] = (groupCounts[groupKey] || 0) + 1;
+                                });
+                                // Ordenar los grupos por cantidad descendente
+                                const sortedGroups = Object.entries(groupCounts).sort((a, b) => b[1] - a[1]);
+                                // Tomar el grupo más frecuente
+                                if (sortedGroups.length > 0) {
+                                    const [mostCommonGroup, count] = sortedGroups[0];
+                                    // Mostrar el nombre del evento más común o el valorField si está definido
+                                    metricValue = metric.valueField ? mostCommonGroup : count.toString();
+                                } else {
+                                    metricValue = '';
+                                }
+                            } else {
+                                // Si no hay groupBy, solo contar los elementos filtrados
+                                metricValue = filteredItems.length.toString();
+                            }
+                            break;
                                 
                             case 'rate':
                                 // Calcular porcentaje (ej: tasa de éxito)

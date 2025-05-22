@@ -1,15 +1,59 @@
 {
     "title": "GitHub Actions Failure Metrics",
     "description": "Real-time workflow failure analysis",
-    "metric1Title": "Total Failed Workflows",
-    "metric1": "1060",
-    "metric2Title": "Failure Rate",
-    "metric2": "10.9%",
-    "metric3Title": "Most Common Error",
-    "metric3": "workflow_dispatch",
-    "metric4Title": "Avg Time to Failure",
-    "metric4": "7696m 42s",
     "templates": [
+        {
+            "type": "summary",
+            "dataSource": "data/kaos-workflows-runs.json",
+            "metrics": [
+                {
+                    "name": "totalFailedWorkflows",
+                    "type": "count",
+                    "title": "Total Failed Workflows",
+                    "filter": {
+                        "field": "conclusion",
+                        "value": "failure"
+                    }
+                },
+                {
+                    "name": "failureRate",
+                    "type": "rate",
+                    "title": "Failure Rate",
+                    "numerator": {
+                        "field": "conclusion",
+                        "value": "failure"
+                    },
+                    "denominator": "total",
+                    "format": "percentage"
+                },
+                {
+                    "name": "mostCommonError",
+                    "type": "count",
+                    "title": "Most Common Error",
+                    "field": "event",
+                    "groupBy": "event",
+                    "filter": {
+                        "field": "conclusion",
+                        "value": "failure"
+                    },
+                    "sort": "desc",
+                    "limit": 1,
+                    "format": "text",
+                    "valueField": "event"
+                },
+                {
+                    "name": "avgTimeToFailure",
+                    "type": "average",
+                    "title": "Avg Time to Failure",
+                    "field": "run_started_at",
+                    "filter": {
+                        "field": "conclusion",
+                        "value": "failure"
+                    },
+                    "format": "time"
+                }
+            ]
+        },
         {
             "type": "list",
             "title": "Recent Failures",
