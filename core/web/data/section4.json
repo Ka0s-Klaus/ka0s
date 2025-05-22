@@ -1,17 +1,33 @@
 {
     "title": "Actions Performance",
     "description": "GitHub Actions Performance",
-    "metric1Title": "Total Workflows",
-    "metric1": "42",
-    "metric2Title": "Succes Rate",
-    "metric2": "28",
-    "metric3Title": "Total Runs",
-    "metric3": "14",
     "templates": [
         {
-            "type": "Workflow Actions",
-            "title": "Lista de Workflows",
-            "dataSource": "data/kaos-workflows-runs.json"
+            "type": "summary",
+            "dataSource": "data/kaos-workflows-runs.json",
+            "metrics": [
+                {
+                    "name": "totalWorkflows",
+                    "type": "count",
+                    "title": "Total Workflows"
+                },
+                {
+                    "name": "successRate",
+                    "type": "rate",
+                    "title": "Success Rate",
+                    "numerator": {
+                        "field": "conclusion",
+                        "value": "success"
+                    },
+                    "denominator": "total",
+                    "format": "percentage"
+                },
+                {
+                    "name": "totalRuns",
+                    "type": "count",
+                    "title": "Total Runs"
+                }
+            ]
         },
         {
             "type": "list",
@@ -30,7 +46,10 @@
             "dataSource": "data/kaos-workflows-runs.json",
             "statusField": "conclusion",
             "xAxisLabel": "Nº de workflows",
-            "yAxisLabel": "Tipo de Workflow"
+            "yAxisLabel": "Tipo de Workflow",
+            "categoryField": "name",
+            "valueField": "run_number",
+            "chartTypes": ["doughnut"]
         }
     ]
 }
