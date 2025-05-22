@@ -7,6 +7,11 @@
             "dataSource": "data/kaos-workflows-runs.json",
             "metrics": [
                 {
+                    "name": "totalWorkflows",
+                    "type": "count",
+                    "title": "Total Workflows"
+                },
+                {
                     "name": "totalFailedWorkflows",
                     "type": "count",
                     "title": "Total Failed Workflows",
@@ -37,23 +42,12 @@
                         "value": "failure"
                     },
                     "format": "text"  
-                },
-                {
-                    "name": "avgTimeToFailure",
-                    "type": "average",
-                    "title": "Avg Time to Failure",
-                    "field": "run_started_at",
-                    "filter": {
-                        "field": "conclusion",
-                        "value": "failure"
-                    },
-                    "format": "time"
-                }
+                }                
             ]
         },
         {
             "type": "list",
-            "title": "Recent Failures",
+            "title": "Failure Workflows",
             "dataSource": "data/kaos-workflows-runs.json",
             "columns": [
                 "name",
