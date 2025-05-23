@@ -16,6 +16,9 @@ async function createTemplate(templateConfig) {
             case 'cost-chart':
                 await createCostChart(templateContainer, templateConfig);
                 break;
+            case 'credit-summary':
+                await createCreditSummary(templateContainer, templateConfig);
+                break;
             // Agregar más casos según sea necesario
             default:
                 console.error(`Tipo de template no soportado: ${templateConfig.type}`);
@@ -47,24 +50,24 @@ async function createCostChart(container, config) {
 
         // Contenedor resumen centrado y grande
         summaryContainer = document.createElement('div');
-        summaryContainer.className = 'flex flex-row items-center justify-center gap-16 w-full mb-8';
+        summaryContainer.className = 'flex flex-col md:flex-row items-center justify-center gap-4 md:gap-16 w-full mb-8';
 
         summaryContainer.innerHTML = `
-            <div class="flex flex-col items-center">
+            <div class="flex flex-col items-center mb-4 md:mb-0">
                 <span class="text-base text-gray-500 mb-1">Costo</span>
                 <span class="font-bold text-2xl" id="real-cost">€0</span>
             </div>
-            <span class="text-gray-400 text-3xl font-light mx-2">−</span>
-            <div class="flex flex-col items-center">
+            <span class="hidden md:block text-gray-400 text-3xl font-light mx-2">−</span>
+            <div class="flex flex-col items-center mb-4 md:mb-0">
                 <span class="text-base text-gray-500 mb-1">Créditos usados</span>
                 <span class="font-bold text-2xl" id="estimated-cost">€0</span>
             </div>
-            <span class="text-gray-400 text-3xl font-light mx-2">=</span>
-            <div class="flex flex-col items-center">
+            <span class="hidden md:block text-gray-400 text-3xl font-light mx-2">=</span>
+            <div class="flex flex-col items-center mb-4 md:mb-0">
                 <span class="text-base text-gray-500 mb-1">Costo total</span>
                 <span class="font-bold text-2xl" id="net-cost">€0</span>
             </div>
-            <div class="flex flex-col items-center border-l-2 border-gray-200 pl-8 ml-8">
+            <div class="flex flex-col items-center md:border-l-2 md:border-gray-200 md:pl-8 md:ml-8 w-full md:w-auto">
                 <span class="text-base text-gray-500 mb-1">Costo total previsto</span>
                 <span class="font-bold text-2xl" id="total-cost-summary">€0</span>
                 <span class="text-base text-green-500" id="cost-comparison-summary">Cargando...</span>
@@ -107,9 +110,13 @@ async function createCostChart(container, config) {
             processedData = processDataByGroup(filteredData, config);
         }
 
-        // Calcular totales usando los campos correctos del JSON
-        const totalReal = processedData.reduce((sum, item) => sum + parseFloat(item.final_cost || 0), 0);
-        const totalEstimated = processedData.reduce((sum, item) => sum + parseFloat(item.total_cost || 0), 0);
+        // Definir campos para costos (usar valores por defecto si no están definidos en config)
+        const realCostField = config.realCostField || 'final_cost';
+        const estimatedCostField = config.estimatedCostField || 'total_cost';
+
+        // Calcular totales usando los campos configurados
+        const totalReal = processedData.reduce((sum, item) => sum + parseFloat(item[realCostField] || 0), 0);
+        const totalEstimated = processedData.reduce((sum, item) => sum + parseFloat(item[estimatedCostField] || 0), 0);
         const netCost = totalReal - totalEstimated;
 
         // Formatear valores
@@ -148,8 +155,8 @@ async function createCostChart(container, config) {
         if (config.costEstimated) {
             datasets.push({
                 label: 'Coste Estimado',
-                data: processedData.map(item => parseFloat(item.net_cost || 0)),
-                backgroundColor: 'rgba(234, 67, 53, 0.8)',
+                data: processedData.map(item => parseFloat(item[estimatedCostField] || 0)),
+                backgroundColor: 'rgba(255, 209, 141, 0.8)',
                 borderColor: 'rgba(234, 67, 53, 1)',
                 borderWidth: 0,
                 borderRadius: 4,
@@ -159,7 +166,7 @@ async function createCostChart(container, config) {
         if (config.costReal) {
             datasets.push({
                 label: 'Coste Real',
-                data: processedData.map(item => parseFloat(item.final_cost || 0)),
+                data: processedData.map(item => parseFloat(item[realCostField] || 0)),
                 backgroundColor: 'rgba(66, 133, 244, 0.8)',
                 borderColor: 'rgba(66, 133, 244, 1)',
                 borderWidth: 0,
@@ -210,6 +217,10 @@ async function createCostChart(container, config) {
 }
 
 function processDataByGroup(data, config) {
+    // Definir campos para costos (usar valores por defecto si no están definidos en config)
+    const realCostField = config.realCostField || 'final_cost';
+    const estimatedCostField = config.estimatedCostField || 'total_cost';
+    
     if (config.groupBy === 'day') {
         // Agrupar por día del mes usando usage_date
         const now = new Date();
@@ -230,75 +241,172 @@ function processDataByGroup(data, config) {
             });
 
             // Sumar los costes reales y estimados de ese día
-            let final_cost = 0;
-            let net_cost = 0;
+            let realCost = 0;
+            let estimatedCost = 0;
             itemsForDay.forEach(item => {
-                final_cost += parseFloat(item.final_cost || 0);
-                net_cost += parseFloat(item.net_cost || 0);
+                realCost += parseFloat(item[realCostField] || 0);
+                estimatedCost += parseFloat(item[estimatedCostField] || 0);
             });
 
             daysArray.push({
                 day: d,
-                final_cost: final_cost,
-                net_cost: net_cost
+                [realCostField]: realCost,
+                [estimatedCostField]: estimatedCost
             });
         }
         return daysArray;
     }
 
+    // Para otros tipos de agrupación (como service_description)
     const grouped = data.reduce((acc, item) => {
-        const key = item[config.groupBy];
+        const key = item[config.groupBy] || 'Sin categoría';
         if (!acc[key]) {
             acc[key] = {
-                [config.groupBy]: key,
-                name: item.name,
-                cost: 0,
-                cost_at_list: 0,
-                final_cost: 0
+                day: key, // Usamos 'day' como etiqueta para mostrar en el gráfico
+                name: key,
+                [realCostField]: 0,
+                [estimatedCostField]: 0
             };
         }
-        acc[key].cost += parseFloat(item.cost || 0);
-        acc[key].cost_at_list += parseFloat(item.cost_at_list || 0);
-        acc[key].final_cost += parseFloat(item.final_cost || item.cost || 0);
+        acc[key][realCostField] += parseFloat(item[realCostField] || 0);
+        acc[key][estimatedCostField] += parseFloat(item[estimatedCostField] || 0);
         return acc;
     }, {});
 
     let result = Object.values(grouped);
 
-    // Si agrupamos por día, rellenar los días faltantes del mes con 0
-    if (config.groupBy === 'day') {
-        // Determinar el día actual
-        const now = new Date();
-        const currentDay = now.getDate();
-
-        // Crear un array con los días desde 1 hasta el día actual
-        const daysArray = [];
-        for (let d = 1; d <= currentDay; d++) {
-            const existing = result.find(item => Number(item.day) === d);
-            if (existing) {
-                daysArray.push(existing);
-            } else {
-                daysArray.push({
-                    day: d,
-                    name: "",
-                    cost: 0,
-                    cost_at_list: 0,
-                    final_cost: 0
-                });
-            }
-        }
-        result = daysArray;
-    } else if (config.orderBy) {
+    // Ordenar según la configuración
+    if (config.orderBy) {
         result.sort((a, b) => {
+            const valueA = parseFloat(a[config.orderBy] || 0);
+            const valueB = parseFloat(b[config.orderBy] || 0);
             return config.orderDirection === 'desc' 
-                ? b[config.orderBy] - a[config.orderBy]
-                : a[config.orderBy] - b[config.orderBy];
+                ? valueB - valueA  // Mayor a menor
+                : valueA - valueB;  // Menor a mayor
+        });
+    } else {
+        // Si no hay configuración de ordenación, ordenar por el campo de costo real de mayor a menor por defecto
+        result.sort((a, b) => {
+            const valueA = parseFloat(a[realCostField] || 0);
+            const valueB = parseFloat(b[realCostField] || 0);
+            return valueB - valueA;  // Mayor a menor
         });
     }
 
-    if (config.limit) {
+    // Aplicar límite si está configurado
+    if (config.limit && config.limit > 0) {
         result = result.slice(0, config.limit);
     }
 
     return result;
+}
+
+// Función para crear un resumen de créditos similar a la imagen proporcionada
+async function createCreditSummary(container, config) {
+    const mainContainer = document.createElement('div');
+    mainContainer.className = 'flex flex-col';
+
+    // Crear el contenedor principal con borde
+    const summaryContainer = document.createElement('div');
+    summaryContainer.className = 'border border-gray-200 rounded-lg p-4';
+
+    // Título de la sección
+    const titleElement = document.createElement('div');
+    titleElement.className = 'text-lg font-medium mb-1';
+    titleElement.textContent = config.title || 'Logros importantes basados en la inversión';
+    summaryContainer.appendChild(titleElement);
+
+    // Subtítulo con número de programas
+    const subtitleElement = document.createElement('div');
+    subtitleElement.className = 'text-sm text-gray-500 mb-4';
+    subtitleElement.textContent = config.subtitle || 'De 1 programas';
+    summaryContainer.appendChild(subtitleElement);
+
+    // Contenedor para los créditos
+    const creditsContainer = document.createElement('div');
+    creditsContainer.className = 'flex justify-between items-center mb-4';
+
+    try {
+        // Cargar datos si es necesario
+        let obtainedCredits = config.obtainedCredits || '0';
+        let potentialCredits = config.potentialCredits || '0';
+        
+        if (config.dataSource) {
+            const response = await fetch(config.dataSource);
+            const data = await response.json();
+            
+            // Definir campos para créditos (usar valores por defecto si no están definidos en config)
+            const obtainedField = config.obtainedField || 'obtained_credits';
+            const potentialField = config.potentialField || 'potential_credits';
+            
+            // Calcular totales
+            obtainedCredits = data.reduce((sum, item) => sum + parseFloat(item[obtainedField] || 0), 0);
+            potentialCredits = data.reduce((sum, item) => sum + parseFloat(item[potentialField] || 0), 0);
+        }
+
+        // Formatear valores
+        const formatValue = (value) => {
+            if (Math.abs(value) >= 1e6) return `€${(value/1e6).toFixed(2)}M`;
+            if (Math.abs(value) >= 1e3) return `€${(value/1e3).toFixed(1)}k`;
+            return `€${value.toFixed(2)}`;
+        };
+
+        // Créditos obtenidos
+        const obtainedElement = document.createElement('div');
+        obtainedElement.className = 'flex flex-col items-center';
+        
+        const obtainedLabel = document.createElement('div');
+        obtainedLabel.className = 'text-sm text-green-600 mb-1 flex items-center';
+        obtainedLabel.innerHTML = '<svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> Créditos obtenidos';
+        
+        const obtainedValue = document.createElement('div');
+        obtainedValue.className = 'text-2xl font-bold';
+        obtainedValue.textContent = typeof obtainedCredits === 'number' ? formatValue(obtainedCredits) : obtainedCredits;
+        
+        obtainedElement.appendChild(obtainedLabel);
+        obtainedElement.appendChild(obtainedValue);
+        
+        // Créditos potenciales
+        const potentialElement = document.createElement('div');
+        potentialElement.className = 'flex flex-col items-center';
+        
+        const potentialLabel = document.createElement('div');
+        potentialLabel.className = 'text-sm text-gray-500 mb-1';
+        potentialLabel.textContent = 'Créditos potenciales';
+        
+        const potentialValue = document.createElement('div');
+        potentialValue.className = 'text-2xl font-bold';
+        potentialValue.textContent = typeof potentialCredits === 'number' ? formatValue(potentialCredits) : potentialCredits;
+        
+        potentialElement.appendChild(potentialLabel);
+        potentialElement.appendChild(potentialValue);
+        
+        // Añadir elementos al contenedor de créditos
+        creditsContainer.appendChild(obtainedElement);
+        
+        // Línea divisoria vertical
+        const divider = document.createElement('div');
+        divider.className = 'h-12 w-px bg-gray-200 mx-4';
+        creditsContainer.appendChild(divider);
+        
+        creditsContainer.appendChild(potentialElement);
+        
+        summaryContainer.appendChild(creditsContainer);
+        
+        // Botón "Ver detalles"
+        if (config.detailsLink) {
+            const detailsLink = document.createElement('a');
+            detailsLink.href = config.detailsLink;
+            detailsLink.className = 'flex items-center text-gray-600 hover:text-gray-800 text-sm';
+            detailsLink.innerHTML = '<svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg> Ver detalles';
+            summaryContainer.appendChild(detailsLink);
+        }
+        
+    } catch (error) {
+        console.error('Error al cargar datos de créditos:', error);
+        creditsContainer.textContent = 'Error al cargar datos';
+    }
+    
+    mainContainer.appendChild(summaryContainer);
+    container.appendChild(mainContainer);
 }
