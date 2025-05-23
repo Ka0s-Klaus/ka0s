@@ -1,18 +1,54 @@
 {
     "title": "GitHub Actions Success Metrics",
     "description": "Real-time workflow success analysis",
-    "metric1Title": "Total Successful Workflows",
-    "metric1": "7433",
-    "metric2Title": "Success Rate",
-    "metric2": "76.5%",
-    "metric3Title": "Most Common Workflow",
-    "metric3": "Push on main",
-    "metric4Title": "Avg Execution Time",
-    "metric4": "556m 12s",
     "templates": [
         {
+            "type": "summary",
+            "dataSource": "data/kaos-workflows-runs.json",
+            "metrics": [
+                {
+                    "name": "totalWorkflows",
+                    "type": "count",
+                    "title": "Total Workflows"
+                },
+                {
+                    "name": "totalSuccessfulWorkflows",
+                    "type": "count",
+                    "title": "Total Successful Workflows",
+                    "filter": {
+                        "field": "conclusion",
+                        "value": "success"
+                    },
+                    "format": "number"
+                },
+                {
+                    "name": "successRate",
+                    "type": "rate",
+                    "title": "Success Rate",
+                    "numerator": {
+                        "field": "conclusion",
+                        "value": "success"
+                    },
+                    "denominator": "total",
+                    "format": "percentage"
+                },
+                {
+                    "name": "mostCommonWorkflow",
+                    "type": "max",
+                    "title": "Most Common Workflow",
+                    "field": "name",
+                    "groupBy": "name",
+                    "filter": {
+                        "field": "conclusion",
+                        "value": "success"
+                    },
+                    "format": "text"
+                }
+            ]
+        },
+        {
             "type": "list",
-            "title": "Recent Failures",
+            "title": "Sucess Workflows",
             "dataSource": "data/kaos-workflows-runs.json",
             "columns": [
                 "name",

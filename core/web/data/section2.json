@@ -1,15 +1,34 @@
 {
     "title": "Lead Time Analysis",
-    "description": "Análisis del tiempo transcurrido desde el commit hasta el despliegue",
-    "metric1Title": "Total Workflows",
-    "metric1": "9717",
-    "metric2Title": "Avg Lead Time",
-    "metric2": "1280m 50s",
-    "metric3Title": "Max Lead Time",
-    "metric3": "42894m 6s",
-    "metric4Title": "Min Lead Time",
-    "metric4": "0m 22s",
+    "description": "Analysis of the time elapsed from commit to deployment",
     "templates": [
+        {
+            "type": "summary",
+            "dataSource": "data/kaos-workflows-runs.json",
+            "metrics": [
+                {
+                    "name": "totalWorkflows",
+                    "type": "count",
+                    "title": "Total Workflows"
+                },
+                {
+                    "name": "avgLeadTime",
+                    "type": "average",
+                    "title": "Avg Lead Time",
+                    "field": "run_started_at",
+                    "format": "time"
+                },
+                {
+                    "name": "latestLeadTime",
+                    "type": "latest",
+                    "title": "Last Lead Time Workflow",
+                    "field": "name",
+                    "groupBy": "name",
+                    "format": "text"
+                }
+                
+            ]
+        },
         {
             "type": "list",
             "title": "Recent Executions",

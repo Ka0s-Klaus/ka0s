@@ -1,4 +1,49 @@
 {
     "title": "Ka0S Dashboard",
-    "description": "Bienvenido al Panel de Control de Ka0S, tu centro de operaciones para monitorizar y gestionar todos los aspectos de tu infraestructura. Esta plataforma te proporciona una visión completa y en tiempo real del estado de tus workflows, métricas clave y análisis detallados. Navega por las diferentes secciones para explorar datos, visualizar tendencias y tomar decisiones informadas basadas en información actualizada. Ka0S está diseñado para simplificar la complejidad y potenciar tu productividad."
+    "description": "Dashboard for Ka0S platform monitoring and management",
+    "templates": [
+        {
+            "type": "summary",
+            "dataSource": "data/kaos-workflows-available.json",
+            "metrics": [
+                {
+                    "name": "TotalModules",
+                    "type": "count",
+                    "title": "Total Modules",
+                    "format": "number"
+                },
+                {
+                    "name": "activeWorkflows",
+                    "type": "count",
+                    "title": "Active Modules",
+                    "filter": {
+                        "field": "state",
+                        "value": "active"
+                    },
+                    "format": "number"
+                },
+                {
+                    "name": "disabledWorkflows",
+                    "type": "count",
+                    "title": "Disabled Modules",
+                    "filter": {
+                        "field": "state",
+                        "value": "disabled_manually"
+                    },
+                    "format": "number"
+                }
+            ]
+        },
+        {
+            "type": "list",
+            "title": "Ka0S Modules",
+            "dataSource": "data/kaos-workflows-available.json",
+            "columns": [
+                "id",
+                "name: blue",
+                "path",
+                "state"
+            ]
+        }
+    ]
 }
