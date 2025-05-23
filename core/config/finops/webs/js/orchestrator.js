@@ -90,7 +90,7 @@ function initNavbar() {
             const li = document.createElement('li');
             li.innerHTML = `
                 <a href="#${section.title.toLowerCase()}" 
-                   class="nav-link flex items-center justify-center w-full py-3 text-gray-700 hover:bg-blue-50 rounded-lg transition-all duration-200 group relative">
+                   class="flex items-center justify-center w-full py-3 text-gray-700 hover:bg-blue-50 rounded-lg transition-all duration-200 group relative">
                     <div class="flex items-center justify-center w-12">
                         <i class="fas ${section.icon || 'fa-chart-bar'} text-orange-300 group-hover:text-orange-500 text-xl"></i>
                     </div>
@@ -105,9 +105,6 @@ function initNavbar() {
 
     // Inicializar la funcionalidad del sidebar
     initializeSidebar();
-    
-    // Configurar los enlaces del navbar
-    setupNavbarLinks();
 }
 
 /**
@@ -117,25 +114,11 @@ function setupNavbarLinks() {
     const navLinks = document.querySelectorAll('.nav-link');
     navLinks.forEach(link => {
         link.addEventListener('click', function(e) {
-            // Prevenir el comportamiento predeterminado para manejar manualmente
-            e.preventDefault();
-            
             // Marcar este enlace como activo
             navLinks.forEach(l => l.classList.remove('active-nav-link'));
             this.classList.add('active-nav-link');
-            
-            // Obtener el hash del enlace
-            const hash = this.getAttribute('href');
-            if (hash && hash.startsWith('#')) {
-                // Actualizar la URL y forzar el evento hashchange
-                window.location.hash = hash.substring(1);
-                // Llamar directamente a handleHashChange para asegurar que se procese
-                handleHashChange();
-            }
         });
     });
-    
-    console.log('Enlaces del navbar configurados:', navLinks.length);
 }
 
 /**
