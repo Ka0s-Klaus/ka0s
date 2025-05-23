@@ -1,22 +1,49 @@
 {
-    "title": "Workflows",
-    "description": "Estado y lista de workflows disponibles",
-    "metric1Title": "Total",
-    "metric1": "42",
-    "metric2Title": "Activos",
-    "metric2": "28",
-    "metric3Title": "Completados",
-    "metric3": "14",
+    "title": "Ka0S Dashboard",
+    "description": "Dashboard for Ka0S platform monitoring and management",
     "templates": [
         {
-            "type": "graphic",
-            "title": "Estado de Workflows",
-            "dataSource": "core/results/webs/dashboard/data/kaos-workflows-runs.json"
+            "type": "summary",
+            "dataSource": "data/kaos-workflows-available.json",
+            "metrics": [
+                {
+                    "name": "TotalModules",
+                    "type": "count",
+                    "title": "Total Modules",
+                    "format": "number"
+                },
+                {
+                    "name": "activeWorkflows",
+                    "type": "count",
+                    "title": "Active Modules",
+                    "filter": {
+                        "field": "state",
+                        "value": "active"
+                    },
+                    "format": "number"
+                },
+                {
+                    "name": "disabledWorkflows",
+                    "type": "count",
+                    "title": "Disabled Modules",
+                    "filter": {
+                        "field": "state",
+                        "value": "disabled_manually"
+                    },
+                    "format": "number"
+                }
+            ]
         },
         {
             "type": "list",
-            "title": "Lista de Workflows",
-            "dataSource": "https://github.com/Ka0s-Klaus/ka0s/blob/main/core/results/webs/dashboard/data/kaos-workflows-available.json"
+            "title": "Ka0S Modules",
+            "dataSource": "data/kaos-workflows-available.json",
+            "columns": [
+                "id",
+                "name: blue",
+                "path",
+                "state"
+            ]
         }
     ]
 }
