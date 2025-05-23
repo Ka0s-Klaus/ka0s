@@ -71,27 +71,12 @@ function loadDataFromUrl(url, successCallback, errorCallback = null) {
                 }
             })
             .catch(error => {
-                console.error(`Error cargando datos desde ${url}:`, error);
                 if (errorCallback && typeof errorCallback === 'function') {
                     errorCallback(error);
                 }
             });
     }
 }
-
-function initApp() {
-    // Usar directamente la configuración por defecto
-    console.log('Inicializando aplicación con configuración por defecto');
-    
-    // Inicializar la barra de navegación
-    initNavbar();
-    
-    // Cargar la sección por defecto
-    loadSectionContent(config.defaultSection, config.defaultTemplate);
-}
-
-// Ejecutar la inicialización cuando el DOM esté completamente cargado
-document.addEventListener('DOMContentLoaded', initApp);
 
 /**
  * Inicializa una sección específica
@@ -102,7 +87,6 @@ function initSection(sectionName) {
 
     const sectionConfig = sectionConfigMap[sectionName];
     if (!sectionConfig) {
-        console.error(`Configuración no encontrada para la sección: ${sectionName}`);
         return;
     }
 
@@ -767,7 +751,6 @@ function updateSectionHeader(templateData) {
 function initNavbar() {
     // Usar la configuración ya cargada
     if (!webConfig) {
-        console.error('Configuración no disponible para inicializar navbar');
         return;
     }
 
@@ -886,57 +869,11 @@ function initDataList() {
     const dataListElement = document.getElementById('data-list');
     if (dataListElement && dataListElement.getAttribute('data-source')) {
         const dataSource = dataListElement.getAttribute('data-source');
-        loadData(dataSource);
+        loadDataFromUrl(dataSource);
     } else {
-        loadData(config.defaultArchive);
+        loadDataFromUrl(config.defaultArchive);
     }
     console.log("data-list element:", dataListElement);
-}
-
-// Cargar datos desde una fuente específica
-function loadData(dataSource) {
-    loadDataFromUrl(dataSource,
-        // Callback de éxito
-        (data) => {
-            // Adaptarse a la estructura real del JSON
-            if (Array.isArray(data) && data.length > 0) {
-                // Si es un array de arrays
-                if (Array.isArray(data[0])) {
-                    allData = data[0]; // Tomar el primer array interno
-                } else {
-                    allData = data; // Es un array simple
-                }
-            } else if (data.dataFiles && Array.isArray(data.dataFiles)) {
-                // Si tiene la estructura esperada con dataFiles
-                allData = data.dataFiles;
-            } else if (typeof data === 'object') {
-                // Si es un objeto simple, convertir cada propiedad en una fila
-                allData = Object.entries(data).map(([key, value]) => ({
-                    key: key,
-                    value: typeof value === 'object' ? JSON.stringify(value) : value
-                }));
-            } else {
-                throw new Error('Formato de datos no reconocido');
-            }
-
-            // Inicializar con todos los datos
-            filteredData = [...allData];
-            console.log("data:", data);
-            // Renderizar la primera página usando las columnas actuales
-            renderPage(1, currentListColumns);
-        },
-        // Callback de error
-        (error) => {
-            const dataList = document.getElementById('data-list');
-            if (dataList) {
-                dataList.innerHTML = `
-                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                        Error cargando datos: ${error.message}
-                    </div>
-                `;
-            }
-        }
-    );
 }
 
 // Función para renderizar una página específica de datos
@@ -1418,7 +1355,6 @@ function updateMetrics(templateData) {
 }
 
 // Exponer la función para que pueda ser usada desde otros contextos
-window.processConfig = processConfig;
 
 // Función para procesar datos para diferentes tipos de gráficos
 function processChartData(data, template, chartType) {
@@ -1508,43 +1444,7 @@ window.filterData = function(searchTerm) {
     renderPage(1);
 };
 
-
 // ==================== MÓDULO DE GRÁFICOS ====================
-// Procesar datos para el gráfico de barras
-function processWorkflowsData(data) {
-    // Adaptarse a la estructura real del JSON
-    let workflowsData = [];
-    let chartData = {
-        xAxisLabel: 'Cogerlo del JSON',
-        yAxisLabel: 'Cogerlo del JSON'
-    };
-    
-    if (Array.isArray(data)) {
-        // Contar ejecuciones por workflow
-        const workflowCounts = {};
-        
-        data.forEach(item => {
-            const workflowName = item.name || item.workflow_name || 'Desconocido';
-            workflowCounts[workflowName] = (workflowCounts[workflowName] || 0) + 1;
-        });
-        
-        // Convertir a formato para Chart.js
-        workflowsData = {
-            labels: Object.keys(workflowCounts),
-            datasets: [{
-                label: 'Incluir aqui filtro en JSON',
-                data: Object.values(workflowCounts),
-                backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1
-            }]
-        };
-    }
-    
-    // Combinar los datos del gráfico con las etiquetas de los ejes
-    return { ...workflowsData, ...chartData };
-}
-
 // Procesar datos para el gráfico de estado
 function processWorkflowsStatusData(data) {
     // Adaptarse a la estructura real del JSON
@@ -1875,6 +1775,10 @@ function createDoughnutChart(data, chartId = 'doughnut-chart', template = {}) {
 
 // Modificar la función loadWebsConfig para inicializar los gráficos
 function loadWebsConfig() {
+    initNavbar();
+    
+    // Cargar la sección por defecto
+    loadSectionContent(config.defaultSection, config.defaultTemplate);
     loadDataFromUrl(
         'data/webs.json',
         (data) => {
@@ -1912,9 +1816,6 @@ function loadWebsConfig() {
                 }
             }
         },
-        (error) => {
-            console.error('Error cargando configuración principal:', error);
-        }
     );
 }
 
@@ -1939,7 +1840,6 @@ function updateDataList(listTemplate) {
     if (listTemplate.dataSource) {
         dataList.setAttribute('data-source', listTemplate.dataSource);
         // Cargar datos
-        loadData(listTemplate.dataSource);
+        loadDataFromUrl(listTemplate.dataSource);
     }
 }
-
