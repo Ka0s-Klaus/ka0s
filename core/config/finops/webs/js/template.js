@@ -19,7 +19,9 @@ async function createTemplate(templateConfig) {
             case 'credit-summary':
                 await createCreditSummary(templateContainer, templateConfig);
                 break;
-            // Agregar más casos según sea necesario
+            case 'DoughnutChart':
+                await createDoughnutChart(templateContainer, templateConfig);
+                break;
             default:
                 console.error(`Tipo de template no soportado: ${templateConfig.type}`);
                 return null;
@@ -408,5 +410,85 @@ async function createCreditSummary(container, config) {
     }
     
     mainContainer.appendChild(summaryContainer);
+    container.appendChild(mainContainer);
+}
+
+async function createDoughnutChart(container, config) {
+    const mainContainer = document.createElement('div');
+    mainContainer.className = 'flex flex-col gap-6';
+    if (config.title) {
+        const titleElement = document.createElement('h3');
+        titleElement.className = 'text-lg font-semibold mb-2';
+        titleElement.textContent = config.title;
+        mainContainer.appendChild(titleElement);
+    }
+    const chartContainer = document.createElement('div');
+    chartContainer.style.height = '300px';
+    mainContainer.appendChild(chartContainer);
+    const canvas = document.createElement('canvas');
+    chartContainer.appendChild(canvas);
+    try {
+        const response = await fetch(config.dataSource);
+        const data = await response.json();
+        let processedData = data;
+        if (config.groupBy) {
+            processedData = processDataByGroup(data, config);
+        }
+        const realCostField = config.realCostField || 'final_cost';
+        const labels = processedData.map(item => item[config.groupBy] || item.day);
+        const values = processedData.map(item => parseFloat(item[realCostField] || 0));
+        const backgroundColors = [
+            'rgba(255, 99, 132, 0.8)', 'rgba(54, 162, 235, 0.8)',
+            'rgba(255, 206, 86, 0.8)', 'rgba(75, 192, 192, 0.8)',
+            'rgba(153, 102, 255, 0.8)', 'rgba(255, 159, 64, 0.8)',
+            'rgba(199, 199, 199, 0.8)', 'rgba(83, 102, 255, 0.8)',
+            'rgba(40, 159, 64, 0.8)', 'rgba(210, 199, 199, 0.8)'
+        ];
+        while (backgroundColors.length < labels.length) {
+            backgroundColors.push(...backgroundColors);
+        }
+        new Chart(canvas, {
+            type: 'doughnut',
+            data: {
+                labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: backgroundColors.slice(0, labels.length),
+                    borderColor: 'rgba(255, 255, 255, 0.8)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            boxWidth: 15,
+                            padding: 15
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                const value = context.raw;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                let formattedValue;
+                                if (Math.abs(value) >= 1e6) formattedValue = `€${(value / 1e6).toFixed(2)}M`;
+                                else if (Math.abs(value) >= 1e3) formattedValue = `€${(value / 1e3).toFixed(1)}k`;
+                                else formattedValue = `€${value.toFixed(2)}`;
+                                return `${context.label}: ${formattedValue} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Error al crear el gráfico:', error);
+        chartContainer.textContent = 'Error al cargar el gráfico';
+    }
     container.appendChild(mainContainer);
 }
