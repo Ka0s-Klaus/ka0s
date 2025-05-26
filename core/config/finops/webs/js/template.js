@@ -22,6 +22,9 @@ async function createTemplate(templateConfig) {
             case 'DoughnutChart':
                 await createDoughnutChart(templateContainer, templateConfig);
                 break;
+            case 'table':
+                await createTable(templateContainer, templateConfig);
+                break;
             default:
                 console.error(`Tipo de template no soportado: ${templateConfig.type}`);
                 return null;
@@ -489,6 +492,89 @@ async function createDoughnutChart(container, config) {
     } catch (error) {
         console.error('Error al crear el gráfico:', error);
         chartContainer.textContent = 'Error al cargar el gráfico';
+    }
+    container.appendChild(mainContainer);
+}
+
+// Add this function at the end of the file:
+async function createTable(container, config) {
+    const mainContainer = document.createElement('div');
+    mainContainer.className = 'overflow-x-auto rounded-lg shadow border border-gray-200 bg-white p-4';
+    if (config.title) {
+        const titleElement = document.createElement('h3');
+        titleElement.className = 'text-lg font-semibold mb-4';
+        titleElement.textContent = config.title;
+        mainContainer.appendChild(titleElement);
+    }
+    try {
+        const response = await fetch(config.dataSource);
+        const data = await response.json();
+        const columns = config.columns || Object.keys(data[0] || {});
+        let currentPage = 1;
+        const rowsPerPage = 10;
+        function renderTable(page) {
+            mainContainer.querySelectorAll('table, .pagination').forEach(el => el.remove());
+            const table = document.createElement('table');
+            table.className = 'min-w-full divide-y divide-gray-200';
+            const thead = document.createElement('thead');
+            thead.className = 'bg-gray-50';
+            const headerRow = document.createElement('tr');
+            columns.forEach(col => {
+                const th = document.createElement('th');
+                th.className = 'px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider border-b';
+                th.textContent = col;
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+            const tbody = document.createElement('tbody');
+            tbody.className = 'bg-white divide-y divide-gray-100';
+            const start = (page - 1) * rowsPerPage;
+            const end = Math.min(start + rowsPerPage, data.length);
+            for (let i = start; i < end; i++) {
+                const row = data[i];
+                const tr = document.createElement('tr');
+                columns.forEach(col => {
+                    const td = document.createElement('td');
+                    td.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-600';
+                    td.textContent = row[col];
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            }
+            table.appendChild(tbody);
+            mainContainer.appendChild(table);
+            // Pagination controls
+            if (data.length > rowsPerPage) {
+                const pagination = document.createElement('div');
+                pagination.className = 'pagination flex justify-center items-center mt-4 gap-2';
+                const totalPages = Math.ceil(data.length / rowsPerPage);
+                const prevBtn = document.createElement('button');
+                prevBtn.textContent = 'Anterior';
+                prevBtn.className = 'px-3 py-1 rounded border bg-gray-100 hover:bg-gray-200 text-gray-700';
+                prevBtn.disabled = page === 1;
+                prevBtn.onclick = () => { currentPage--; renderTable(currentPage); };
+                pagination.appendChild(prevBtn);
+                for (let p = 1; p <= totalPages; p++) {
+                    const pageBtn = document.createElement('button');
+                    pageBtn.textContent = p;
+                    pageBtn.className = 'px-2 py-1 rounded border text-gray-700 ' + (p === page ? 'bg-blue-100 border-blue-400 font-bold' : 'bg-gray-100 hover:bg-gray-200');
+                    pageBtn.onclick = () => { currentPage = p; renderTable(currentPage); };
+                    pagination.appendChild(pageBtn);
+                }
+                const nextBtn = document.createElement('button');
+                nextBtn.textContent = 'Siguiente';
+                nextBtn.className = 'px-3 py-1 rounded border bg-gray-100 hover:bg-gray-200 text-gray-700';
+                nextBtn.disabled = page === totalPages;
+                nextBtn.onclick = () => { currentPage++; renderTable(currentPage); };
+                pagination.appendChild(nextBtn);
+                mainContainer.appendChild(pagination);
+            }
+        }
+        renderTable(currentPage);
+    } catch (error) {
+        console.error('Error al cargar la tabla:', error);
+        mainContainer.textContent = 'Error al cargar la tabla';
     }
     container.appendChild(mainContainer);
 }
