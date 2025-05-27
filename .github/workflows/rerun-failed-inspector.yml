@@ -25,12 +25,12 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }} }}
 
       - name: Get failed workflow runs for inspector.yml
         id: get-failed-runs
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} }}
         run: |
           failed_runs=$(jq -r '.[] | select(.name == "Ka0s Inspector" and .conclusion == "failure") | .id' ${{ env.KAOS_PATH_SOURCE }} | tr '\n' ' ')
           echo "Failed runs: $failed_runs"
@@ -40,7 +40,7 @@ jobs:
         id: re-run-failed-workflows
         if: steps.get-failed-runs.outputs.failed_runs != ''
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} }}
         run: |
           for run_id in ${{ steps.get-failed-runs.outputs.failed_runs }}; do
             echo "Re-running: workflow $run_id" >> ${{ env.KAOS_PATH_RESUME }}${{ env.KAOS_CODE }}_resume_reruns_inspector.log
@@ -77,11 +77,11 @@ jobs:
                 uses: actions/checkout@v4
                 with:
                   fetch-depth: 0
-                  token: ${{ secrets.GITHUB_TOKEN }}
+                  token: ${{ secrets.GITHUB_TOKEN }} }}
               - id: handle-success-execution
                 name: handle-success-execution
                 env:
-                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} }}
                 run: |
                   # RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
                   # gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data_${{ env.KAOS_CODE }}.log"
@@ -99,11 +99,11 @@ jobs:
                 uses: actions/checkout@v4
                 with:
                   fetch-depth: 0
-                  token: ${{ secrets.GITHUB_TOKEN }}
+                  token: ${{ secrets.GITHUB_TOKEN }} }}
               - id: handle-failure-execution
                 name: handle-failure-execution
                 env:
-                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} }}
                 run: |
                   echo "Error detected in process"
                   # RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
@@ -125,7 +125,7 @@ jobs:
                 uses: actions/checkout@v4
                 with:
                   fetch-depth: 0
-                  token: ${{ secrets.GITHUB_TOKEN }}
+                  token: ${{ secrets.GITHUB_TOKEN }} }}
               - id: end-process
                 name: Finaliza el workflow
                 run: |
