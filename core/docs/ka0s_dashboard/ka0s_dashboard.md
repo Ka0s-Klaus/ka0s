@@ -1,3 +1,146 @@
+![Ka0S](/core/imgs/Portada_Documentacion_Ka0s_Dashboard.png)
+# 1.Casos de uso Generales de la web
+El dashboard web está diseñado para mostrar información de manera dinámica a partir de los archivos JSON ubicados en core\web\data. Esto lo hace sumamente flexible y adaptable a cualquier tipo de contenido o de web, ya que para crear la web solo se necesita agregar archivos JSON sin necesidad de modificar nada de Backend, simplemente escribir los datos de una determinada forma que se explicará posteriormente y obtener los resultados en pantalla.
+De esta manera cualquier persona, sin necesidad de que tenga conocimientos de programación, puede crear una web simplemente incluyendo los ficheros de datos que quiera mostrar y haciendo referencia en los JSON en los que inserte la estructura de la web que desee.
+En cuanto a los ficheros que hay que modificar o agregar para crear esta web se encuentran los siguientes:
+- El archivo principal de configuración: webs.json, en el cual se tienen que definir qué archivos se usan para cada sección. Un ejemplo de configuración de este fichero podría ser el siguiente:
+
+{
+  "title": "dashboard",
+  "sections": [
+    {
+      "title": "inicio",
+      "icon": "fa fa-home",
+      "data": "data/productos_tienda.json.json",
+      "datatemplate": "data/section1.json"
+    },
+    {
+      "title": "Articulos Invierno",
+      "icon": "fa fa-stopwatch",
+      "data": "data/productos_tienda.json.json",
+      "datatemplate": "data/section2.json"
+    },
+    {
+      "title": "Articulos Verano",
+      "icon": "fa fa-exclamation-circle",
+      "data": "data/productos_tienda.json.json",
+      "datatemplate": "data/section3.json"
+    },
+    {
+      "title": "Ingresos",
+      "icon": "fa fa-bar-chart",
+      "data": "data/productos_tienda.json.json",
+      "datatemplate": "data/section4.json"
+    },
+    {
+      "title": "Gastos",
+      "icon": "fa fa-exclamation-triangle",
+      "data": "data/productos_tienda.json.json",
+      "datatemplate": "data/section5.json"
+    }
+  ]
+}
+
+- Cada una de las secciones que se quieran agregar a la web: se configuran mediante un archivo JSON en el que se especifican el título, la descripción y los componentes que se le quiera añadir a cada una. 
+Estos componentes pueden ser: 
+
+    -NavBar: Se crea automáticamente recogiendo los títulos e iconos insertados en el JSON de configuración principal de la estructura de la web: webs.json.
+    -Métricas: Muestran datos relevantes del fichero de datos correspondiente.
+    -Lista: Muestra  los datos en forma de tablas con sus correspondientes columnas.
+    -Gráfico de Tarta: Muestra los datos en forma de gráfico fraccionado.
+    -Gráfico de Barras:Muestra los datos en forma de barras diferenciándose por la longitud de las mismas.
+Un ejemplo de cómo configurar una sección con estos componentes podría ser el siguiente:
+
+{
+  "title": "Ventas Tienda",
+  "description": "Dashboard de ventas, stock e ingresos de la tienda",
+  "metricsColors": ["orange", "blue", "orange", "blue", "orange", "blue", "orange", "blue", "orange", "blue"],
+  "templates": [
+    {
+      "type": "summary",
+      "dataSource": "data/productos_tienda.json",
+      "metrics": [
+        {
+          "name": "totalArticulos",
+          "type": "count",
+          "title": "Total Artículos"
+        },
+        {
+          "name": "ingresosTotales",
+          "type": "sum",
+          "title": "Ingresos Totales",
+          "field": "ingresos",
+          "format": "currency"
+        },
+        {
+          "name": "stockTotal",
+          "type": "sum",
+          "title": "Stock Total",
+          "field": "stock"
+        },
+        {
+          "name": "productoMasVendido",
+          "type": "max",
+          "title": "Producto más vendido",
+          "field": "ventas",
+          "groupBy": "nombre"
+        },
+        {
+          "name": "mediaValoracion",
+          "type": "average",
+          "title": "Valoración media",
+          "field": "valoracion_media"
+        }
+      ]
+    },
+    {
+        "type": "graphic",
+        "title": "Ventas por producto",
+        "dataSource": "data/productos_tienda.json",
+        "barColor": "green",
+        "barBorderColor": "white",
+        "xAxisLabel": "Producto",
+        "yAxisLabel": "Ventas",
+        "categoryField": "nombre",
+        "valueField": "ventas",
+        "chartTypes": ["bar"]
+    },
+    {
+        "type": "graphic",
+        "title": "Stock por categoría",
+        "dataSource": "data/productos_tienda.json",
+        "statusField": "categoria",
+        "chartTypes": ["doughnut"]
+    },
+    {
+        "type": "graphic",
+        "title": "Ingresos por producto y disponibilidad de stock",
+        "dataSource": "data/productos_tienda.json",
+        "xAxisLabel": "Producto",
+        "yAxisLabel": "Ingresos",
+        "categoryField": "nombre",
+        "statusField": "estado",
+        "valueField": "ingresos"
+    },
+    {
+        "type": "list",
+        "title": "Listado de productos",
+        "dataSource": "data/productos_tienda.json",
+        "columns": [
+        "id",
+        "nombre",
+        "precio",
+        "ventas",
+        "stock",
+        "ingresos",
+        "tiempo_reabastecimiento",
+        "categoria",
+        "valoracion_media",
+        "proveedor",
+        "ultima_venta"
+        ]
+    }
+
 
 # 2.Agregar y editar listas
 
