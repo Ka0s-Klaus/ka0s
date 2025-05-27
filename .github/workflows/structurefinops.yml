@@ -174,8 +174,11 @@ jobs:
             echo "Main folder is named: $TITLE"
           fi
           
+          # Sanitize the title for directory names
+          SAFE_TITLE=$(echo "$TITLE" | sed 's/+/plus/g')
+          
           # Create data directory if it doesn't exist
-          mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/data"
+          mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$SAFE_TITLE/data"
           
           # Copiar el archivo webs.json a la estructura
           cp $STRUCTURE_FILE "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/data/webs.json"
@@ -202,20 +205,20 @@ jobs:
             done
           fi
           
-          # Generate data files summary
-          echo "{" > "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
-          echo "  \"dataFiles\": [" >> "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
+          # Generate data files summary using SAFE_TITLE
+          echo "{" > "${{ env.KAOS_JSON_RESUME }}$SAFE_TITLE/data-files-summary.json"
+          echo "  \"dataFiles\": [" >> "${{ env.KAOS_JSON_RESUME }}$SAFE_TITLE/data-files-summary.json"
           
           # List all copied files
-          find "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/data" -type f | sort | while read -r file; do
-            RELATIVE_PATH="${file#${{ env.KAOS_WEB_STRUCTURE }}$TITLE/}"
-            echo "    {\"path\": \"$RELATIVE_PATH\"}," >> "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
+          find "${{ env.KAOS_WEB_STRUCTURE }}$SAFE_TITLE/data" -type f | sort | while read -r file; do
+            RELATIVE_PATH="${file#${{ env.KAOS_WEB_STRUCTURE }}$SAFE_TITLE/}"
+            echo "    {\"path\": \"$RELATIVE_PATH\"}," >> "${{ env.KAOS_JSON_RESUME }}$SAFE_TITLE/data-files-summary.json"
           done
           
           # Remove the last comma and close the JSON
-          sed -i '$ s/,$//' "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
-          echo "  ]" >> "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
-          echo "}" >> "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
+          sed -i '$ s/,$//' "${{ env.KAOS_JSON_RESUME }}$SAFE_TITLE/data-files-summary.json"
+          echo "  ]" >> "${{ env.KAOS_JSON_RESUME }}$SAFE_TITLE/data-files-summary.json"
+          echo "}" >> "${{ env.KAOS_JSON_RESUME }}$SAFE_TITLE/data-files-summary.json"
           
           echo "Data files summary generated at ${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
       
