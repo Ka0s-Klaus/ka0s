@@ -261,22 +261,7 @@ function normalizeRepositoryStats(data) {
             }
         };
     }
-
-    // Crear un objeto plano con todos los valores anidados
-    const flattenedData = {};
-    
-    function flattenObject(obj, prefix = '') {
-        for (const key in obj) {
-            if (typeof obj[key] === 'object' && obj[key] !== null && !Array.isArray(obj[key])) {
-                flattenObject(obj[key], `${prefix}${key}.`);
-            } else {
-                flattenedData[`${prefix}${key}`] = obj[key];
-            }
-        }
-    }
-    
-    flattenObject(data);
-    return flattenedData;
+    return data;
 }
 
 /**
