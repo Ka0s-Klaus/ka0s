@@ -1,0 +1,486 @@
+name: Ka0s Create structure for dashboard
+on:
+  push:
+    branches:
+      - 'H*'
+      - 'F*'
+      - 'RN*'
+    paths:
+      - 'core/config/finops/**'
+  workflow_dispatch:
+env:
+    KAOS_CODE: ${{ github.run_id }}
+    KAOS_EVENT_NAME: ${{ github.event_name }}
+    KAOS_ACTION: ${{ github.action }}
+    KAOS_REF: ${{ github.ref }}
+    KAOS_MODULE: "[Ka0S] Deploy Web Structure"
+    KAOS_JSON_RESUME: "core/outputs/webs/" # directorio que aloja los json de resultados de la operación 
+    KAOS_WEB_STRUCTURE: "core/results/webs/" # directorio donde se alojan las diferentes estructura de webs
+    KAOS_ACTOR: ${{ github.actor }}
+
+    KAOS_FINOPS_STRUCTURE: "core/results/webs/finops/" # directorio para la estructura de finops - CORREGIDO
+    KAOS_FINOPS_JSON_WEB: "core/config/finops/results/data/webs.json" # archivo JSON principal de finops
+    KAOS_FINOPS_JSON_DATA: "core/config/finops/data" # directorio de datos JSON para finops
+jobs:
+  job-core:
+    runs-on:
+      group: ka0s
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+      
+      - name: Copy web folder structure
+        run: |
+          # Crear directorios necesarios para FINOPS en la ubicación correcta
+          mkdir -p "core/results/webs/finops/data"
+          mkdir -p "core/results/webs/finops/js"
+          mkdir -p "core/results/webs/finops/templates"
+          mkdir -p "core/results/webs/finops/results/data/Section"
+          mkdir -p "core/results/webs/finops/webs/js"
+          mkdir -p "core/results/webs/finops/results/templates"
+          
+          # Copiar archivos de datos de finops
+          cp -r "core/config/finops/data/"* "core/results/webs/finops/data/"
+          
+          # Copiar archivos de configuración de finops
+          cp -r "core/config/finops/results/data/Section/"* "core/results/webs/finops/results/data/Section/"
+          cp "core/config/finops/results/data/webs.json" "core/results/webs/finops/data/webs.json"
+          
+          # Copiar archivos JS y templates de finops
+          if [ -d "core/config/finops/webs/js" ]; then
+            cp -r "core/config/finops/webs/js/"* "core/results/webs/finops/webs/js/"
+          fi
+          if [ -d "core/config/finops/results/templates" ]; then
+            cp -r "core/config/finops/results/templates/"* "core/results/webs/finops/results/templates/"
+          fi
+
+          # Tenemos que añadir al proceso que sea capaz de leer + de un json de creación de webs
+          # si web esta creada la actualiza, sino la crea desde cero
+
+          # Read the structure.json file to get folder names
+          echo "0 - Reading structure.json file..."
+          STRUCTURE_FILE="${{ env.KAOS_JSON_WEB }}"
+          
+          # Extract title for main folder name
+          TITLE=$(cat $STRUCTURE_FILE | jq -r '.title')
+          echo "I - Main folder will be named: $TITLE"
+
+          # Create main directory
+          mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TITLE"
+          touch ${{ env.KAOS_WEB_STRUCTURE }}$TITLE/$TITLE".html"
+          mkdir -p "${{ env.KAOS_JSON_RESUME }}$TITLE"
+          touch ${{ env.KAOS_JSON_RESUME }}$TITLE/readme.txt
+
+          # Copy the directory structure (without files)
+          find core/web -type d | while read dir; do
+            if [ "$dir" != "core/web" ]; then
+              # Remove core/web prefix from directory path
+              clean_dir=${dir#core/web/}
+              echo "II - Created directory: $clean_dir"
+              target_dir="${{ env.KAOS_WEB_STRUCTURE }}$TITLE/$clean_dir"
+              mkdir -p "$target_dir"
+              base_name=$(basename "$clean_dir")
+              touch "$target_dir/$base_name.html"
+              echo "II - Created directory: $target_dir"
+            fi
+          done
+
+          # Extract section information and create subfolders
+          jq -r 'to_entries | .[] | select(.key | startswith("section")) | [.key, .value.title, .value.icon, .value.data] | @tsv' $STRUCTURE_FILE | while IFS=$'\t' read -r section_key section_title section_icon section_data; do
+            echo "III - Creating subfolder for section: $section_key - $section_title"
+            mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/structure/$section_title"
+            touch ${{ env.KAOS_WEB_STRUCTURE }}$TITLE/structure/$section_title/$section_title".html"
+            
+            # Guardar la ruta del archivo JSON de datos para esta sección
+            if [ ! -z "$section_data" ]; then
+              # Copiar el contenido del archivo JSON en lugar de solo la ruta
+              if [ -f "$section_data" ]; then
+                cp "$section_data" "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/structure/$section_title/$section_title.json"
+                echo "    Data source: $section_data (copiado)"
+              else
+                # Si el archivo no existe, guardar al menos la ruta como referencia
+                echo "$section_data" > "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/structure/$section_title/$section_title.json"
+                echo "    Data source: $section_data (ruta guardada, archivo no encontrado)"
+              fi
+            fi
+          done
+          
+          # Create a JSON file with the structure information
+          echo "[" > ${{ env.KAOS_JSON_RESUME }}$TITLE/$TITLE"_resume.json"
+          # Find all files and directories
+          find ${{ env.KAOS_WEB_STRUCTURE }} -type f -o -type d | sort | while read path; do
+            if [ "$path" != "${{ env.KAOS_WEB_STRUCTURE }}" ]; then
+              # Get the type (file or directory)
+              if [ -d "$path" ]; then
+                TYPE="directory"
+              else
+                TYPE="file"
+              fi
+              # Get the name of the item (last part of path)
+              NAME=$(basename "$path")
+              # Create the JSON entry
+              echo "  {\"path\": \"$path\", \"name\": \"$NAME\", \"type\": \"$TYPE\"}," >> ${{ env.KAOS_JSON_RESUME }}$TITLE/$TITLE"_resume.json"
+            fi
+          done
+          # Remove the last comma and close the JSON array
+          sed -i '$ s/,$//' ${{ env.KAOS_JSON_RESUME }}$TITLE/$TITLE"_resume.json"
+          echo "]" >> ${{ env.KAOS_JSON_RESUME }}$TITLE/$TITLE"_resume.json"
+          echo "IV - Web folder structure copied successfully!"
+          
+      - id: upload-files
+        name: Upload Files
+        run: |
+          echo "Uploading files to the repository..."
+          git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
+          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
+          git pull
+          # Asegurarse de que la carpeta web_structure se añade explicitamente (incluyendo finops)
+          git add ${{ env.KAOS_WEB_STRUCTURE }}*
+          git add ${{ env.KAOS_JSON_RESUME }}*
+          # Verificar si hay cambios para hacer commit
+          if git diff --staged --quiet; then
+            echo "No hay cambios para hacer commit"
+          else
+            git commit -m "[Ka0S] Uploading resume execution files and finops structure to the repository..."
+            git push origin ${{ env.KAOS_REF }}
+          fi
+          
+  job-data:
+    runs-on:
+      group: ka0s
+    needs: [job-core]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+      
+      - name: Copy data files to web structure
+        run: |
+          echo "Reading data.json file..."
+          DATA_FILE="${{ env.KAOS_JSON_DATA }}"
+          echo "Data file: $DATA_FILE"
+          
+          # Extract title for main folder name from structure file
+          STRUCTURE_FILE="${{ env.KAOS_JSON_WEB }}"
+          TITLE=$(jq -r '.title' $STRUCTURE_FILE)
+          if [ -z "$TITLE" ]; then
+            TITLE="dashboard"
+            echo "Title not found in JSON file, using default: $TITLE"
+          else
+            echo "Main folder is named: $TITLE"
+          fi
+          
+          # Create data directory if it doesn't exist
+          mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/data"
+          
+          # Copiar el archivo webs.json a la estructura
+          cp $STRUCTURE_FILE "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/data/webs.json"
+          echo "Copied webs.json to data directory"
+          
+          
+          # Read data.json and copy files
+          if [ -f "$DATA_FILE" ]; then
+            echo "Processing data files from data.json..."
+            
+            # Extraer source and destination paths
+            jq -c '.dataFiles[]' "$DATA_FILE" | while read -r file; do
+              SOURCE=$(echo $file | jq -r '.source')
+              DEST=$(echo $file | jq -r '.destination')
+              echo "Source: $SOURCE"
+              echo "Destination: $DEST"
+
+              # Ensure destination directory exists
+              DEST_DIR=$(dirname "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/$DEST")
+              mkdir -p "$DEST_DIR"
+              echo "Destination directory: $DEST_DIR"
+              
+              # Copy the file
+              if [ -f "$SOURCE" ]; then
+                echo "Copying $SOURCE to ${{ env.KAOS_WEB_STRUCTURE }}$TITLE/$DEST"
+                cp "$SOURCE" "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/$DEST"
+              else
+                echo "Warning: Source file $SOURCE not found"
+              fi
+            done
+            
+            echo "Data files copied successfully!"
+          else
+            echo "Warning: data.json file not found at $DATA_FILE"
+          fi
+          
+          # Copiar los archivos JSON de datos de sección
+          echo "Copying section data files..."
+          jq -r 'to_entries | .[] | select(.key | startswith("section")) | .value.data' $STRUCTURE_FILE | while read data_path; do
+            if [ ! -z "$data_path" ] && [ -f "$data_path" ]; then
+              # Obtener el nombre del archivo
+              DATA_FILENAME=$(basename "$data_path")
+              echo "Copying section data file: $data_path to data directory"
+              cp "$data_path" "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/data/$DATA_FILENAME"
+            fi
+          done
+          
+          # List all copied files
+          find "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/data" -type f | sort | while read -r file; do
+            RELATIVE_PATH="${file#${{ env.KAOS_WEB_STRUCTURE }}$TITLE/}"
+            echo "    {\"path\": \"$RELATIVE_PATH\"}," >> "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
+          done
+          
+          # Remove the last comma and close the JSON
+          sed -i '$ s/,$//' "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
+          echo "  ]" >> "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
+          echo "}" >> "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
+          
+          echo "Data files summary generated at ${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
+      
+      - id: copy-json   
+        name: Copiar archivos JSON de config/webs a data
+        run: |
+          # Extraer título para el nombre de la carpeta principal desde el archivo de estructura
+          STRUCTURE_FILE="${{ env.KAOS_JSON_WEB }}"
+          TITLE=$(jq -r '.title' $STRUCTURE_FILE)
+          if [ -z "$TITLE" ]; then
+            TITLE="dashboard"
+            echo "Título no encontrado en el archivo JSON, usando el valor predeterminado: $TITLE"
+          else
+            echo "La carpeta principal se llama: $TITLE"
+          fi
+
+          # NUEVO: Copiar también los archivos JSON de finops al directorio de finops
+          echo "Copiando archivos JSON de core/config/finops a finops/data..."
+          mkdir -p "core/results/webs/finops/data"
+          
+          # Copiar todos los archivos JSON de core/config/finops/data
+          if [ -d "core/config/finops/data" ]; then
+            find core/config/finops/data -name "*.json" -type f | while read -r json_file; do
+              JSON_FILENAME=$(basename "$json_file")
+              echo "Copiando archivo JSON de finops: $json_file a finops/data directory"
+              cp "$json_file" "core/results/webs/finops/data/$JSON_FILENAME"
+            done
+          fi
+          
+          # Copiar también el webs.json principal de finops si existe
+          if [ -f "${{ env.KAOS_FINOPS_JSON_WEB }}" ]; then
+            echo "Copiando webs.json de finops..."
+            cp "${{ env.KAOS_FINOPS_JSON_WEB }}" "core/results/webs/finops/data/webs.json"
+          fi
+          
+          echo "Todos los archivos JSON de finops copiados exitosamente!"
+
+      - id: upload-files
+        name: Upload Files
+        run: |
+          echo "Uploading data files to the repository..."
+          git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
+          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
+          git pull
+          # Add the data files and summary (incluyendo finops)
+          git add ${{ env.KAOS_WEB_STRUCTURE }}**/data/*
+          git add ${{ env.KAOS_JSON_RESUME }}*
+          # Verify if there are changes to commit
+          if git diff --staged --quiet; then
+            echo "No hay cambios para hacer commit"
+          else
+            git commit -m "[Ka0S] Uploading data files to web structure..."
+            git push origin ${{ env.KAOS_REF }}
+          fi
+      
+  job-design:
+    runs-on:
+      group: ka0s
+    needs: [job-core, job-data]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+      
+      - name: Preparar directorios y copiar archivos estáticos
+        run: |
+          # Configuración inicial
+          STRUCTURE_FILE="${{ env.KAOS_JSON_WEB }}"
+          TITLE=$(cat $STRUCTURE_FILE | jq -r '.title')
+          
+          # Crear directorios necesarios
+          mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/js"
+          mkdir -p "core/results/webs/${TITLE}/templates"
+          mkdir -p "core/results/webs/${TITLE}/temp_sections"
+          
+          # NUEVO: Asegurar que los directorios de finops existen
+          mkdir -p "core/results/webs/finops/js"
+          mkdir -p "core/results/webs/finops/templates"
+          
+          # Copiar archivos de plantillas para el dashboard principal
+          find core/web/templates -type f -name "*.html" | while read -r template_file; do
+            # Obtener el nombre del archivo
+            TEMPLATE_FILENAME=$(basename "$template_file")
+            echo "Copiar plantilla: $template_file a templates directory"
+            cp "$template_file" "core/results/webs/${TITLE}/templates/$TEMPLATE_FILENAME"
+          done
+          echo "Todas las plantillas HTML copiadas exitosamente!"
+          
+          # NUEVO: Copiar plantillas específicas de finops si existen
+          if [ -d "core/config/finops/results/templates" ]; then
+            find core/config/finops/results/templates -type f -name "*.html" | while read -r template_file; do
+              TEMPLATE_FILENAME=$(basename "$template_file")
+              echo "Copiar plantilla de finops: $template_file a finops/templates directory"
+              cp "$template_file" "core/results/webs/finops/templates/$TEMPLATE_FILENAME"
+            done
+            echo "Todas las plantillas HTML de finops copiadas exitosamente!"
+          fi
+          
+          # Copiar archivos JS para finops
+          if [ -d "core/config/finops/webs/js" ]; then
+            find core/config/finops/webs/js -type f -name "*.js" | while read -r js_file; do
+              JS_FILENAME=$(basename "$js_file")
+              echo "Copiando archivo JS de finops: $js_file"
+              cp "$js_file" "core/results/webs/finops/js/$JS_FILENAME"
+            done
+            echo "Archivos JS copiados a finops exitosamente!"
+          fi
+          
+          # Verificar si el archivo dashboard.html existe y no está rastreado
+          if [ -f "core/results/webs/${TITLE}/dashboard.html" ] && ! git ls-files --error-unmatch "core/results/webs/${TITLE}/dashboard.html" > /dev/null 2>&1; then
+            echo "El archivo dashboard.html existe pero no está rastreado. Añadiéndolo al staging..."
+            git add "core/results/webs/${TITLE}/dashboard.html"
+            git commit -m "[Ka0S] Añadiendo dashboard.html antes del pull"
+          fi
+          
+          # Hacer pull con estrategia de recursión para manejar conflictos
+          git pull --strategy-option=theirs
+
+      - name: Crear finops.html
+        run: |
+          FINOPS_STRUCTURE_FILE="${{ env.KAOS_FINOPS_JSON_WEB }}"
+          
+          # Verificar si el archivo existe, si no usar un título por defecto
+          if [ -f "$FINOPS_STRUCTURE_FILE" ]; then
+            TITLE=$(jq -r '.title' $FINOPS_STRUCTURE_FILE)
+          else
+            TITLE="FinOps Dashboard"
+            echo "Archivo de estructura de finops no encontrado, usando título por defecto: $TITLE"
+          fi
+          
+          # Crear el finops.html con todas las secciones concatenadas y la navbar
+          echo "<!DOCTYPE html>
+          <html lang=\"es\">
+          <head>
+              <meta charset=\"UTF-8\">
+              <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
+              <title>Ka0s Dashboard - ${TITLE}</title>
+              <script src=\"https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4\"></script>
+              <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css\">
+              <script src=\"https://cdn.jsdelivr.net/npm/chart.js\"></script>
+          </head>
+          <body class=\"bg-gray-100 min-h-screen\">
+              <div class=\"flex\">
+                  <!-- Incluir el navbar -->
+                  <div id=\"navbar-container\"></div>
+  
+                  <!-- Contenido principal -->
+                  <div class=\"ml-[260px] w-full transition-all duration-300 p-6\" id=\"main-content\">
+                      <header class=\"mb-8\">
+                          <h1 class=\"text-3xl font-bold text-gray-800\" id=\"section-title\">SECTION_TITLE_PLACEHOLDER</h1>
+                          <p class=\"text-gray-600 mt-2\" id=\"section-description\">SECTION_DESCRIPTION_PLACEHOLDER</p>
+                      </header>
+  
+                      <!-- Contenedor de plantillas - se generará dinámicamente -->
+                      <div id=\"content-container\">
+                          <!-- Las plantillas (gráficos, listas, etc.) se generarán dinámicamente según el JSON -->
+                      </div>
+                          
+                      </div>
+                  </div>
+              </div>
+  
+              <!-- Primero cargar templates.js -->
+              <script src=\"js/templates.js\"></script>
+              <!-- Scripts -->
+              <script src=\"js/orchestrator.js\"></script>
+          </body>
+          </html>" > "core/results/webs/finops/results/finops.html"
+          
+          echo "Finops HTML generado correctamente en core/results/webs/finops/finops.html"
+
+      - name: Guardar cambios en el repositorio
+        run: |
+          # Añadir todos los archivos generados (incluyendo finops)
+          git add "core/results/webs/"
+          
+          # Verificar si hay cambios para hacer commit
+          if git diff --staged --quiet; then
+            echo "No hay cambios para hacer commit"
+          else
+            git commit -m "[Ka0S] Actualizando archivos de estructura web y finops"
+            git push origin ${{ env.KAOS_REF }}
+          fi
+          
+  handle-success:
+    runs-on:
+      group: ka0s
+    needs: [job-core]
+    if: ${{ success() }}
+    steps:
+      - id: repo
+        name: Checkout code
+        if: ${{ always() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+      - id: handle-success-execution
+        name: handle-success-execution
+        env:
+          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+        run: |
+          # Si todo ha ido correcto añadimos el contenido del fichero 
+          RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
+          gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data_${{ env.KAOS_CODE }}.log"
+  handle_failure:
+    runs-on:
+      group: ka0s
+    needs: [job-core, handle-success]
+    if: ${{ failure() }} 
+    steps:
+      - id: repo
+        name: Checkout code
+        if: ${{ always() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+      - id: handle-failure-execution
+        name: handle-failure-execution
+        env:
+          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+        run: |
+          echo "Error detected in process"
+          RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
+          gh issue comment $RNNUMBER --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data_${{ env.KAOS_CODE }}.log"
+  end-workflow:
+    runs-on:
+      group: ka0s
+    needs: [job-core, handle-success, handle_failure]
+    if: ${{ always() }} 
+    env:
+        GH_TOKEN: ${{ secrets.KAOS_ACTIONS_TOKEN }}
+    steps:
+      - id: repo
+        name: Checkout code
+        if: ${{ always() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+      - id: end-process
+        name: Finaliza el workflow
+        run: |
+          echo "End process"
+          RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
+          gh issue comment $RNNUMBER --body "Se finaliza Ka0s ${{ env.KAOS_CODE }}"
+          gh workflow run inspector.yml --ref 'main' -f kaos-issue-id=$RNNUMBER -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start=""
