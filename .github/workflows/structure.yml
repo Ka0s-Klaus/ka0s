@@ -968,11 +968,11 @@ jobs:
           # RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
           RNNUMBER=220
           #gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
-  GITHUB_TOKEN
+  
   handle_failure:
     runs-on:
       group: ka0s
-    needs: [job-core, job-data, GITHUB_TOKENdle-success]
+    needs: [job-core, job-data, handle-success]
     if: ${{ failure() }}
     steps:
       - id: repo
