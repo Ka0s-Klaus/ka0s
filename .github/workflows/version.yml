@@ -10,7 +10,7 @@ permissions:
   issues: write
 env:
   KAOS_MODULE: "[Ka0S] VERSION"
-  GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   PATH_RESUME: "core/config/"
   KAOS_REPO: "/actions-runner/_work/kaos/kaos"
   KAOS_STEP_MODULE: ""
@@ -37,7 +37,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
-        token: ${{ secrets.KAOS_REPO_TOKEN}}
+        token: ${{ secrets.GITHUB_TOKEN}}
 
     - id: commit_details
       name: Get commit details
@@ -137,11 +137,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
       - id: handle-success-execution
         name: handle-success-execution
         env:
-          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Si todo ha ido correcto añadimos el contenido del fichero 
           RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
@@ -158,11 +158,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
       - id: handle-failure-execution
         name: handle-failure-execution
         env:
-          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "Error detected in process"
           RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
@@ -181,7 +181,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
       - id: end-process
         name: Finaliza el workflow
         run: |

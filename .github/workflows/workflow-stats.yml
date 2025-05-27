@@ -25,11 +25,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN
 
       - name: Collect workflow statistics
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN
         run: |
           # Generate file with available workflows in repo with proper formatting
           gh workflow list --all --limit 999 --json id,name,path,state | \
@@ -102,7 +102,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN
 
       - name: Generate workflow names
         run: |
@@ -209,7 +209,7 @@ jobs:
 
       - name: Generate Issues Summary
         env:
-          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
             #  Extraemos toda la información de las issues hasta el momento
             touch ${{ env.KAOS_PATH_RESUME }}issue-log-${{ env.KAOS_CODE }}.json
@@ -237,11 +237,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN
       - id: handle-success-execution
         name: handle-success-execution
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN
         run: |
           # RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
           # gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data_${{ env.KAOS_CODE }}.log"
@@ -259,11 +259,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN
       - id: handle-failure-execution
         name: handle-failure-execution
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN
         run: |
           echo "Error detected in process"
           # RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
@@ -286,7 +286,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN
       - id: end-process
         name: Finaliza el workflow
         run: |

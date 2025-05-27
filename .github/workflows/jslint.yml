@@ -28,7 +28,7 @@ permissions:
 
 env:
   KAOS_MODULE: "[Ka0S] JSLINT"
-  GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   KAOS_jslint_CONFIG: "core/config/"
   KAOS_PATH_RESUME: "core/outputs/js/"
   KAOS_REPO: "/actions-runner/_work/kaos/kaos"
@@ -46,7 +46,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
       - id: install-node
         name: Install Node.js
         uses: actions/setup-node@v2
@@ -90,11 +90,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
       - id: handle-success-execution
         name: Handle Success Execution
         env:
-          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
           gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data_${{ env.KAOS_CODE }}.log"
@@ -110,11 +110,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
       - id: handle-failure-execution
         name: Handle Failure Execution
         env:
-          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "Error detected in process"
           RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
@@ -133,7 +133,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
       - id: end-process
         name: Finaliza el workflow
         run: |
