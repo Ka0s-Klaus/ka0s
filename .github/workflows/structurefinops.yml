@@ -47,7 +47,7 @@ jobs:
           
           # Copiar archivos de configuración de finops
           cp -r "core/config/finops/results/data/Section/"* "core/results/webs/finops/results/data/Section/"
-          cp "core/config/finops/results/data/webs.json" "core/results/webs/finops/data/webs.json"
+          cp "core/config/finops/results/data/webs.json" "core/results/webs/finops/results/data/webs.json"
           
           # Copiar archivos JS y templates de finops
           if [ -d "core/config/finops/webs/js" ]; then
@@ -204,6 +204,9 @@ jobs:
               cp "$json_file" "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/data/$DATA_FILENAME"
             done
           fi
+          
+          # Create the directory before generating the summary
+          mkdir -p "${{ env.KAOS_JSON_RESUME }}$SAFE_TITLE"
           
           # Generate data files summary using SAFE_TITLE
           echo "{" > "${{ env.KAOS_JSON_RESUME }}$SAFE_TITLE/data-files-summary.json"
