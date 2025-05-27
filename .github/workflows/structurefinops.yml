@@ -161,12 +161,11 @@ jobs:
       
       - name: Copy data files to web structure
         run: |
-          echo "Reading data.json file..."
-          DATA_FILE="${{ env.KAOS_JSON_DATA }}"
-          echo "Data file: $DATA_FILE"
+          echo "Reading structure file..."
+          STRUCTURE_FILE="${{ env.KAOS_JSON_WEB }}"
+          echo "Structure file: $STRUCTURE_FILE"
           
           # Extract title for main folder name from structure file
-          STRUCTURE_FILE="${{ env.KAOS_JSON_WEB }}"
           TITLE=$(jq -r '.title' $STRUCTURE_FILE)
           if [ -z "$TITLE" ]; then
             TITLE="dashboard"
@@ -182,37 +181,6 @@ jobs:
           cp $STRUCTURE_FILE "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/data/webs.json"
           echo "Copied webs.json to data directory"
           
-          
-          # Read data.json and copy files
-          if [ -f "$DATA_FILE" ]; then
-            echo "Processing data files from data.json..."
-            
-            # Extraer source and destination paths
-            jq -c '.dataFiles[]' "$DATA_FILE" | while read -r file; do
-              SOURCE=$(echo $file | jq -r '.source')
-              DEST=$(echo $file | jq -r '.destination')
-              echo "Source: $SOURCE"
-              echo "Destination: $DEST"
-
-              # Ensure destination directory exists
-              DEST_DIR=$(dirname "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/$DEST")
-              mkdir -p "$DEST_DIR"
-              echo "Destination directory: $DEST_DIR"
-              
-              # Copy the file
-              if [ -f "$SOURCE" ]; then
-                echo "Copying $SOURCE to ${{ env.KAOS_WEB_STRUCTURE }}$TITLE/$DEST"
-                cp "$SOURCE" "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/$DEST"
-              else
-                echo "Warning: Source file $SOURCE not found"
-              fi
-            done
-            
-            echo "Data files copied successfully!"
-          else
-            echo "Warning: data.json file not found at $DATA_FILE"
-          fi
-          
           # Copiar los archivos JSON de datos de sección
           echo "Copying section data files..."
           jq -r 'to_entries | .[] | select(.key | startswith("section")) | .value.data' $STRUCTURE_FILE | while read data_path; do
@@ -223,6 +191,20 @@ jobs:
               cp "$data_path" "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/data/$DATA_FILENAME"
             fi
           done
+          
+          # Copiar archivos de FinOps
+          echo "Copying FinOps data files..."
+          if [ -d "${{ env.KAOS_FINOPS_JSON_DATA }}" ]; then
+            find "${{ env.KAOS_FINOPS_JSON_DATA }}" -name "*.json" -type f | while read -r json_file; do
+              DATA_FILENAME=$(basename "$json_file")
+              echo "Copying FinOps data file: $json_file"
+              cp "$json_file" "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/data/$DATA_FILENAME"
+            done
+          fi
+          
+          # Generate data files summary
+          echo "{" > "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
+          echo "  \"dataFiles\": [" >> "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
           
           # List all copied files
           find "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/data" -type f | sort | while read -r file; do
