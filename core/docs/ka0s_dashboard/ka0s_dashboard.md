@@ -1,4 +1,6 @@
-2.Agregar y editar listas
+
+# 2.Agregar y editar listas
+
 Para mostrar los datos en forma de lista, debemos añadirlo en el archivo JSON de la sección correspondiente de la siguiente manera:
  {
             "type": "list",
