@@ -37,10 +37,9 @@ jobs:
           # Crear directorios necesarios para FINOPS en la ubicación correcta
           mkdir -p "core/results/webs/finops/data"
           mkdir -p "core/results/webs/finops/js"
-          mkdir -p "core/results/webs/finops/templates"
           mkdir -p "core/results/webs/finops/results/data/Section"
           mkdir -p "core/results/webs/finops/webs/js"
-          mkdir -p "core/results/webs/finops/results/templates"
+          mkdir -p "core/results/webs/finops/results/templates"sssss
           
           # Copiar archivos de datos de finops
           cp -r "core/config/finops/data/"* "core/results/webs/finops/data/"
@@ -181,7 +180,8 @@ jobs:
           mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$SAFE_TITLE/data"
           
           # Copiar el archivo webs.json a la estructura
-          cp $STRUCTURE_FILE "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/data/webs.json"
+          
+          cp $STRUCTURE_FILE "core/results/webs/finops/data/webs.json"
           echo "Copied webs.json to data directory"
           
           # Copiar los archivos de datatemplate de las secciones
@@ -294,11 +294,6 @@ jobs:
           STRUCTURE_FILE="${{ env.KAOS_JSON_WEB }}"
           TITLE=$(cat $STRUCTURE_FILE | jq -r '.title')
           
-          # Crear directorios necesarios
-          mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/js"
-          mkdir -p "core/results/webs/${TITLE}/templates"
-          mkdir -p "core/results/webs/${TITLE}/temp_sections"
-          
           # NUEVO: Asegurar que los directorios de finops existen
           mkdir -p "core/results/webs/finops/js"
           mkdir -p "core/results/webs/finops/templates"
@@ -308,7 +303,7 @@ jobs:
             # Obtener el nombre del archivo
             TEMPLATE_FILENAME=$(basename "$template_file")
             echo "Copiar plantilla: $template_file a templates directory"
-            cp "$template_file" "core/results/webs/${TITLE}/templates/$TEMPLATE_FILENAME"
+            cp "$template_file" "core/results/webs/${TITLE}/results/webs/templates/$TEMPLATE_FILENAME"
           done
           echo "Todas las plantillas HTML copiadas exitosamente!"
           
@@ -330,13 +325,6 @@ jobs:
               cp "$js_file" "core/results/webs/finops/js/$JS_FILENAME"
             done
             echo "Archivos JS copiados a finops exitosamente!"
-          fi
-          
-          # Verificar si el archivo dashboard.html existe y no está rastreado
-          if [ -f "core/results/webs/${TITLE}/dashboard.html" ] && ! git ls-files --error-unmatch "core/results/webs/${TITLE}/dashboard.html" > /dev/null 2>&1; then
-            echo "El archivo dashboard.html existe pero no está rastreado. Añadiéndolo al staging..."
-            git add "core/results/webs/${TITLE}/dashboard.html"
-            git commit -m "[Ka0S] Añadiendo dashboard.html antes del pull"
           fi
           
           # Hacer pull con estrategia de recursión para manejar conflictos
