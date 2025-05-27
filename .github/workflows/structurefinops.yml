@@ -181,14 +181,14 @@ jobs:
           cp $STRUCTURE_FILE "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/data/webs.json"
           echo "Copied webs.json to data directory"
           
-          # Copiar los archivos JSON de datos de sección
-          echo "Copying section data files..."
-          jq -r 'to_entries | .[] | select(.key | startswith("section")) | .value.data' $STRUCTURE_FILE | while read data_path; do
-            if [ ! -z "$data_path" ] && [ -f "$data_path" ]; then
+          # Copiar los archivos de datatemplate de las secciones
+          echo "Copying section datatemplate files..."
+          jq -r '.sections[] | .datatemplate' $STRUCTURE_FILE | while read datatemplate_path; do
+            if [ ! -z "$datatemplate_path" ]; then
               # Obtener el nombre del archivo
-              DATA_FILENAME=$(basename "$data_path")
-              echo "Copying section data file: $data_path to data directory"
-              cp "$data_path" "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/data/$DATA_FILENAME"
+              TEMPLATE_FILENAME=$(basename "$datatemplate_path")
+              echo "Copying section datatemplate file: $datatemplate_path to data directory"
+              cp "core/config/finops/results/data/$datatemplate_path" "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/data/$TEMPLATE_FILENAME"
             fi
           done
           
