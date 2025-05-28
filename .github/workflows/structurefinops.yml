@@ -36,32 +36,30 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.KAOS_REPO_TOKEN }}
 
-      - name: Crear archivos HTML para cada sección
+      - name: Crear estructura FinOps HTML
         run: |
           echo "Directorio actual: $(pwd)"
 
-          # Leer archivo de configuración
           STRUCTURE_FILE="$KAOS_FINOPS_JSON_WEB"
           echo "Usando archivo de estructura: $STRUCTURE_FILE"
 
-          # Crear directorio para las secciones
           echo "Creando directorio de secciones: $KAOS_FINOPS_RESULTS_SECTION"
           mkdir -p "$KAOS_FINOPS_RESULTS_SECTION"
 
-          # Copiar plantilla base
-          echo "Copiando plantilla base desde: $KAOS_FINOPS_TEMPLATE/finops.html"
+          echo "Copiando navbar.html y navbar.js"
+          mkdir -p "$KAOS_FINOPS_STRUCTURE/js"
+          cp "$KAOS_FINOPS_TEMPLATE/navbar.html" "$KAOS_FINOPS_STRUCTURE/navbar.html"
+          cp "$KAOS_FINOPS/js/navbar.js" "$KAOS_FINOPS_STRUCTURE/js/navbar.js"
+
           cp "$KAOS_FINOPS_TEMPLATE/finops.html" "$KAOS_FINOPS_RESULTS_SECTION/template.html"
 
-          # Procesar cada sección
           jq -r '.sections[] | [.title, .datatemplate] | @tsv' "$STRUCTURE_FILE" | while IFS=$'\t' read -r section_title section_data; do
             echo "Generando HTML para sección: $section_title"
 
             SECTION_CONFIG="$KAOS_FINOPS/config/$section_data"
+            SECTION_HTML="$KAOS_FINOPS_RESULTS_SECTION/${section_title}.html"
 
             if [ -f "$SECTION_CONFIG" ]; then
-              SECTION_HTML="$KAOS_FINOPS_RESULTS_SECTION/${section_title}.html"
-              echo "→ Ruta del archivo HTML de salida: $SECTION_HTML"
-
               cp "$KAOS_FINOPS_TEMPLATE/finops.html" "$SECTION_HTML"
 
               SECTION_DESCRIPTION=$(jq -r '.description' "$SECTION_CONFIG")
@@ -74,6 +72,7 @@ jobs:
               echo "⚠️ Configuración no encontrada para '$section_title' ($SECTION_CONFIG)"
             fi
           done
+
 
       - id: upload-files
         name: Upload Files
