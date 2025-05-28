@@ -30,6 +30,11 @@ jobs:
     runs-on:
       group: ka0s
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
 
       - name: Crear archivos HTML para cada sección
         run: |
@@ -40,7 +45,7 @@ jobs:
           mkdir -p "${{ env.KAOS_FINOPS_RESULTS_SECTION }}"
           
           # Copiar la plantilla base de finops
-          cp "${{ env.KAOS_FINOPS_TEMPLATE }}finops.html" "{{ env.KAOS_FINOPS_RESULTS_SECTION }}template.html"
+          cp "core/config/finops/template/finops.html" "{{ env.KAOS_FINOPS_RESULTS_SECTION }}template.html"
           
           # Procesar cada sección del archivo webs.json
           jq -r '.sections[] | [.title, .datatemplate] | @tsv' "$STRUCTURE_FILE" | while IFS=$'\t' read -r section_title section_data; do
@@ -67,85 +72,7 @@ jobs:
             fi
           done
 
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
-      
-      - name: Copy web folder structure
-        run: |
-          # Crear directorios necesarios para FINOPS en la ubicación correcta
-          mkdir -p "data"
-          mkdir -p "js"
-          mkdir -p "section"
-          mkdir -p "js"
-          mkdir -p "template"
-          
-          # Copiar archivos de datos de finops
-          cp -r "${{ env.KAOS_FINOPS_JSON_DATA }}"* "${{ env.KAOS_FINOPS_DATA }}"
 
-          # Tenemos que añadir al proceso que sea capaz de leer + de un json de creación de webs
-          # si web esta creada la actualiza, sino la crea desde cero
-
-          # Read the structure.json file to get folder names
-          echo "0 - Reading structure.json file..."
-          STRUCTURE_FILE="${{ env.KAOS_JSON_WEB }}"
-          
-          # Extract title for main folder name
-          TITLE=$(cat $STRUCTURE_FILE | jq -r '.title')
-          echo "I - Main folder will be named: $TITLE"
-
-          # Create main directory
-          mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TITLE"
-          touch ${{ env.KAOS_WEB_STRUCTURE }}$TITLE/$TITLE".html"
-          mkdir -p "${{ env.KAOS_JSON_RESUME }}$TITLE"
-          touch ${{ env.KAOS_JSON_RESUME }}$TITLE/readme.txt
-
-          # Extract section information and create subfolders and HTML files in finops/section
-          jq -r 'to_entries | .[] | select(.key | startswith("section")) | [.key, .value.title, .value.icon, .value.data] | @tsv' $STRUCTURE_FILE | while IFS=$'\t' read -r section_key section_title section_icon section_data; do
-            echo "III - Creating subfolder for section: $section_key - $section_title"
-            mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/structure/$section_title"
-            touch ${{ env.KAOS_WEB_STRUCTURE }}$TITLE/structure/$section_title/$section_title".html"
-
-            # NEW: Also create HTML in finops/section
-            mkdir -p "core/results/webs/finops/section"
-            touch "core/results/webs/finops/section/$section_title.html"
-            echo "<html><head><title>$section_title</title></head><body><h1>$section_title</h1></body></html>" > "core/results/webs/finops/section/$section_title.html"
-
-            # Guardar la ruta del archivo JSON de datos para esta sección
-            if [ ! -z "$section_data" ]; then
-              if [ -f "$section_data" ]; then
-                cp "$section_data" "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/structure/$section_title/$section_title.json"
-                echo "    Data source: $section_data (copiado)"
-              else
-                echo "$section_data" > "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/structure/$section_title/$section_title.json"
-                echo "    Data source: $section_data (ruta guardada, archivo no encontrado)"
-              fi
-            fi
-          done
-          
-          # Create a JSON file with the structure information
-          echo "[" > ${{ env.KAOS_JSON_RESUME }}$TITLE/$TITLE"_resume.json"
-          # Find all files and directories
-          find ${{ env.KAOS_WEB_STRUCTURE }} -type f -o -type d | sort | while read path; do
-            if [ "$path" != "${{ env.KAOS_WEB_STRUCTURE }}" ]; then
-              # Get the type (file or directory)
-              if [ -d "$path" ]; then
-                TYPE="directory"
-              else
-                TYPE="file"
-              fi
-              # Get the name of the item (last part of path)
-              NAME=$(basename "$path")
-              # Create the JSON entry
-              echo "  {\"path\": \"$path\", \"name\": \"$NAME\", \"type\": \"$TYPE\"}," >> ${{ env.KAOS_JSON_RESUME }}$TITLE/$TITLE"_resume.json"
-            fi
-          done
-          # Remove the last comma and close the JSON array
-          sed -i '$ s/,$//' ${{ env.KAOS_JSON_RESUME }}$TITLE/$TITLE"_resume.json"
-          echo "]" >> ${{ env.KAOS_JSON_RESUME }}$TITLE/$TITLE"_resume.json"
-          echo "IV - Web folder structure copied successfully!"
           
       - id: upload-files
         name: Upload Files
