@@ -45,11 +45,11 @@ En cuanto a los ficheros que hay que modificar o agregar para crear esta web se 
 - Cada una de las secciones que se quieran agregar a la web: se configuran mediante un archivo JSON en el que se especifican el título, la descripción y los componentes que se le quiera añadir a cada una. 
 Estos componentes pueden ser: 
 
-    -NavBar: Se crea automáticamente recogiendo los títulos e iconos insertados en el JSON de configuración principal de la estructura de la web: webs.json.
-    -Métricas: Muestran datos relevantes del fichero de datos correspondiente.
-    -Lista: Muestra  los datos en forma de tablas con sus correspondientes columnas.
-    -Gráfico de Tarta: Muestra los datos en forma de gráfico fraccionado.
-    -Gráfico de Barras:Muestra los datos en forma de barras diferenciándose por la longitud de las mismas.
+  - **NavBar**: Se crea automáticamente recogiendo los títulos e iconos insertados en el JSON de configuración principal de la estructura de la web: webs.json.
+  - **Métricas**: Muestran datos relevantes del fichero de datos correspondiente.
+  - **Lista**: Muestra  los datos en forma de tablas con sus correspondientes columnas.
+  - **Gráfico de Tarta**: Muestra los datos en forma de gráfico fraccionado.
+  - **Gráfico de Barras**:Muestra los datos en forma de barras diferenciándose por la longitud de las mismas.
 Un ejemplo de cómo configurar una sección con estos componentes podría ser el siguiente:
 
 ```shell
@@ -281,12 +281,12 @@ Ka0s Dashboard nos permite también agregar métricas y datos relevantes para mo
         },
   ```
 Como vemos en el código, tenemos varios tipos de métrica para mostrar:
-**count** : Cuenta el número total de elementos.
-**rate** : Calcula porcentajes (como tasa de éxito).
-**average** : Calcula promedios (como tiempo medio).
-**latest** : Obtiene el valor más reciente.
-**max** : Encuentra el valor máximo agrupado por un campo (ej: producto más vendido).
-**sum** : Suma valores de un campo (ej: ingresos totales).
+- **count** : Cuenta el número total de elementos.
+- **rate** : Calcula porcentajes (como tasa de éxito).
+- **average** : Calcula promedios (como tiempo medio).
+- **latest** : Obtiene el valor más reciente.
+- **max** : Encuentra el valor máximo agrupado por un campo (ej: producto más vendido).
+- **sum** : Suma valores de un campo (ej: ingresos totales).
 
 Todo ello se verá en nuestra web de la siguiente manera.
 ![Ka0S](/core/imgs/metricas.png)
