@@ -130,40 +130,6 @@ jobs:
           echo "}" >> "${{ env.KAOS_JSON_RESUME }}$SAFE_TITLE/data-files-summary.json"
           
           echo "Data files summary generated at ${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
-      
-      - id: copy-json   
-        name: Copiar archivos JSON de config/webs a data
-        run: |
-          # Extraer título para el nombre de la carpeta principal desde el archivo de estructura
-          STRUCTURE_FILE="${{ env.KAOS_JSON_WEB }}"
-          TITLE=$(jq -r '.title' $STRUCTURE_FILE)
-          if [ -z "$TITLE" ]; then
-            TITLE="dashboard"
-            echo "Título no encontrado en el archivo JSON, usando el valor predeterminado: $TITLE"
-          else
-            echo "La carpeta principal se llama: $TITLE"
-          fi
-
-          # NUEVO: Copiar también los archivos JSON de finops al directorio de finops
-          echo "Copiando archivos JSON de core/config/finops a finops/data..."
-          mkdir -p "core/results/webs/finops/data"
-          
-          # Copiar todos los archivos JSON de core/config/finops/data
-          if [ -d "core/config/finops/data" ]; then
-            find core/config/finops/data -name "*.json" -type f | while read -r json_file; do
-              JSON_FILENAME=$(basename "$json_file")
-              echo "Copiando archivo JSON de finops: $json_file a finops/data directory"
-              cp "$json_file" "core/results/webs/finops/data/$JSON_FILENAME"
-            done
-          fi
-          
-          # Copiar también el webs.json principal de finops si existe
-          if [ -f "${{ env.KAOS_FINOPS_JSON_WEB }}" ]; then
-            echo "Copiando webs.json de finops..."
-            cp "${{ env.KAOS_FINOPS_JSON_WEB }}" "core/results/webs/finops/data/webs.json"
-          fi
-          
-          echo "Todos los archivos JSON de finops copiados exitosamente!"
 
       - name: Crear archivos HTML para cada sección
         run: |
