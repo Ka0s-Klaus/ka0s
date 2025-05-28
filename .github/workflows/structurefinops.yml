@@ -151,7 +151,7 @@ jobs:
           jq -r '.sections[] | [.title, .datatemplate] | @tsv' "$STRUCTURE_FILE" | while IFS=$'\t' read -r section_title section_data; do
             echo "Generando HTML para sección: $section_title"
 
-            SECTION_CONFIG="$KAOS_FINOPS/config/section/$section_data"
+            SECTION_CONFIG="$KAOS_FINOPS/config/$section_data"
 
             if [ -f "$SECTION_CONFIG" ]; then
               SECTION_HTML="$KAOS_FINOPS/${section_title}.html"
