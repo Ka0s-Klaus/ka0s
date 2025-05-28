@@ -76,7 +76,9 @@ jobs:
               # Reemplazar en el HTML final
               sed -i "s/SECTION_TITLE_PLACEHOLDER/$section_title/g" "$SECTION_HTML"
               sed -i "s/SECTION_DESCRIPTION_PLACEHOLDER/$SECTION_DESCRIPTION/g" "$SECTION_HTML"
-              sed -i "s|<div id=\"navbar-container\"></div>|${NAVBAR_HTML}|g" "$SECTION_HTML"
+              echo "$NAVBAR_HTML" > temp_navbar.html
+              sed -i -e '/<div id="navbar-container"><\/div>/{r temp_navbar.html' -e 'd}' "$SECTION_HTML"
+              rm temp_navbar.html
             else
               echo "⚠️ No se encontró configuración para '$section_title'"
             fi
