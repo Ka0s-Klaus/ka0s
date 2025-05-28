@@ -71,26 +71,40 @@ jobs:
               # Construir navbar para esta sección
               NAVBAR_HTML=$(<"$NAVBAR_BASE")
               NAVBAR_HTML="${NAVBAR_HTML//SECTION_TITLE_PLACEHOLDER/$section_title}"
-              NAVBAR_HTML="${NAVBAR_HTML//<!-- NAVBAR_SECTIONS_PLACEHOLDER -->/$NAVBAR_ITEMS}"
+              NAVBAR_HTML="${NAVBAR_HTML//<!-- NAVBAR_SECTIONS_PLACEHOLDER -->/
+              $NAVBAR_ITEMS}"
 
-              # Reemplazar en el HTML final
+              # Reemplazar título y descripción en el HTML final
               sed -i "s/SECTION_TITLE_PLACEHOLDER/$section_title/g" "$SECTION_HTML"
               sed -i "s/SECTION_DESCRIPTION_PLACEHOLDER/$SECTION_DESCRIPTION/g" "$SECTION_HTML"
-              
-              # Generar HTML de las secciones
-              SECTIONS_HTML=""
-              jq -r '.sections[] | [.title, .icon] | @tsv' "$STRUCTURE_FILE" | while IFS=$'\t' read -r title icon; do
-                SECTIONS_HTML+="<div class=\"section-item\"><i class=\"${icon} text-orange-300 group-hover:text-orange-500 text-xl\"></i><span class=\"flex-1 font-medium capitalize\">${title}</span></div>"
-              done
-              
-              # Reemplazar el marcador de posición de las secciones
-              echo "$SECTIONS_HTML" > temp_sections.html
-              sed -i -e '/<!-- Las secciones se insertarán aquí dinámicamente -->/{r temp_sections.html' -e 'd}' "$SECTION_HTML"
-              rm temp_sections.html
-              
+
+              # Insertar navbar en el HTML
               echo "$NAVBAR_HTML" > temp_navbar.html
               sed -i -e '/<div id="navbar-container"><\/div>/{r temp_navbar.html' -e 'd}' "$SECTION_HTML"
               rm temp_navbar.html
+
+              # Construir contenido dinámico de secciones para insertar en el placeholder
+              echo "Construyendo contenido de secciones para $section_title..."
+              SECTIONS_HTML=""
+              jq -c '.sections[]' "$STRUCTURE_FILE" | while read -r sec; do
+                sec_title=$(echo "$sec" | jq -r '.title')
+                sec_icon=$(echo "$sec" | jq -r '.icon')
+                sec_id=$(echo "$sec_title" | jq -sRr @uri)
+
+                SECTIONS_HTML+="<section id=\"$sec_id\" class=\"section-block\">\n"
+                SECTIONS_HTML+="  <h2><i class=\"$sec_icon\"></i> $sec_title</h2>\n"
+                SECTIONS_HTML+="  <!-- Contenido dinámico de $sec_title -->\n"
+                SECTIONS_HTML+="</section>\n"
+              done
+
+              # Insertar las secciones en el placeholder <!-- Las secciones se insertarán aquí dinámicamente -->
+              echo -e "$SECTIONS_HTML" > temp_sections.html
+              sed -i "/<!-- Las secciones se insertarán aquí dinámicamente -->/{
+                r temp_sections.html
+                d
+              }" "$SECTION_HTML"
+              rm temp_sections.html
+
             else
               echo "⚠️ No se encontró configuración para '$section_title'"
             fi
