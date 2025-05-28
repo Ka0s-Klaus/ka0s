@@ -50,7 +50,7 @@ jobs:
           NAVBAR_ITEMS=""
           jq -r '.sections[] | [.title, .icon] | @tsv' "$STRUCTURE_FILE" | while IFS=$'\t' read -r title icon; do
             anchor=$(echo "$title" | jq -sRr @uri)
-            NAVBAR_ITEMS+="<li><a href=\"/#$anchor\">$icon $title</a></li>"
+            NAVBAR_ITEMS+="<li><a href=\"#${anchor}\" class=\"nav-link flex items-center justify-center w-full py-3 text-gray-700 hover:bg-blue-50 rounded-lg transition-all duration-200 group relative\"><div class=\"flex items-center justify-center w-12\"><i class=\"${icon} text-orange-300 group-hover:text-orange-500 text-xl\"></i></div><span class=\"sidebar-text flex-1 font-medium capitalize\">${title}</span></a></li>"
           done
 
           echo "Procesando secciones..."
