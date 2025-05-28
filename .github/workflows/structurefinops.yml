@@ -76,6 +76,18 @@ jobs:
               # Reemplazar en el HTML final
               sed -i "s/SECTION_TITLE_PLACEHOLDER/$section_title/g" "$SECTION_HTML"
               sed -i "s/SECTION_DESCRIPTION_PLACEHOLDER/$SECTION_DESCRIPTION/g" "$SECTION_HTML"
+              
+              # Generar HTML de las secciones
+              SECTIONS_HTML=""
+              jq -r '.sections[] | [.title, .icon] | @tsv' "$STRUCTURE_FILE" | while IFS=$'\t' read -r title icon; do
+                SECTIONS_HTML+="<div class=\"section-item\"><i class=\"${icon} text-orange-300 group-hover:text-orange-500 text-xl\"></i><span class=\"flex-1 font-medium capitalize\">${title}</span></div>"
+              done
+              
+              # Reemplazar el marcador de posición de las secciones
+              echo "$SECTIONS_HTML" > temp_sections.html
+              sed -i -e '/<!-- Las secciones se insertarán aquí dinámicamente -->/{r temp_sections.html' -e 'd}' "$SECTION_HTML"
+              rm temp_sections.html
+              
               echo "$NAVBAR_HTML" > temp_navbar.html
               sed -i -e '/<div id="navbar-container"><\/div>/{r temp_navbar.html' -e 'd}' "$SECTION_HTML"
               rm temp_navbar.html
