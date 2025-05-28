@@ -36,101 +36,6 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.KAOS_REPO_TOKEN }}
 
-      - id: upload-files
-        name: Upload Files
-        run: |
-          echo "Uploading files to the repository..."
-          git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
-          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
-          git pull
-          # Asegurarse de que la carpeta web_structure se añade explicitamente (incluyendo finops)
-          git add ${{ env.KAOS_WEB_STRUCTURE }}*
-          git add ${{ env.KAOS_JSON_RESUME }}*
-          # Verificar si hay cambios para hacer commit
-          if git diff --staged --quiet; then
-            echo "No hay cambios para hacer commit"
-          else
-            git commit -m "[Ka0S] Uploading resume execution files and finops structure to the repository..."
-            git push origin ${{ env.KAOS_REF }}
-          fi
-          
-  job-data:
-    runs-on:
-      group: ka0s
-    needs: [job-core]
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
-      
-      - name: Copy data files to web structure
-        run: |
-          echo "Reading structure file..."
-          STRUCTURE_FILE="${{ env.KAOS_FINOPS_JSON_WEB }}"
-          echo "Structure file: $STRUCTURE_FILE"
-          
-          # Extract title for main folder name from structure file
-          TITLE=$(jq -r '.title' $STRUCTURE_FILE)
-          if [ -z "$TITLE" ]; then
-            TITLE="dashboard"
-            echo "Title not found in JSON file, using default: $TITLE"
-          else
-            echo "Main folder is named: $TITLE"
-          fi
-          
-          # Sanitize the title for directory names
-          SAFE_TITLE=$(echo "$TITLE" | sed 's/+/plus/g')
-          
-          # Create data directory if it doesn't exist
-          mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$SAFE_TITLE/data"
-          
-          # Copiar el archivo webs.json a la estructura
-          cp $STRUCTURE_FILE "core/results/webs/finops/data/webs.json"
-          echo "Copied webs.json to data directory"
-          
-          # Copiar los archivos de datatemplate de las secciones
-          echo "Copying section datatemplate files..."
-          jq -r '.sections[] | .datatemplate' $STRUCTURE_FILE | while read datatemplate_path; do
-            if [ ! -z "$datatemplate_path" ]; then
-              # Obtener el nombre del archivo
-              TEMPLATE_FILENAME=$(basename "$datatemplate_path")
-              echo "Copying section datatemplate file: $datatemplate_path to data directory"
-              cp "core/config/finops/config/$datatemplate_path" "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/data/$TEMPLATE_FILENAME"
-            fi
-          done
-          
-          # Copiar archivos de FinOps
-          echo "Copying FinOps data files..."
-          if [ -d "${{ env.KAOS_FINOPS_JSON_DATA }}" ]; then
-            find "${{ env.KAOS_FINOPS_JSON_DATA }}" -name "*.json" -type f | while read -r json_file; do
-              DATA_FILENAME=$(basename "$json_file")
-              echo "Copying FinOps data file: $json_file"
-              cp "$json_file" "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/data/$DATA_FILENAME"
-            done
-          fi
-          
-          # Create the directory before generating the summary
-          mkdir -p "${{ env.KAOS_JSON_RESUME }}$SAFE_TITLE"
-          
-          # Generate data files summary using SAFE_TITLE
-          echo "{" > "${{ env.KAOS_JSON_RESUME }}$SAFE_TITLE/data-files-summary.json"
-          echo "  \"dataFiles\": [" >> "${{ env.KAOS_JSON_RESUME }}$SAFE_TITLE/data-files-summary.json"
-          
-          # List all copied files
-          find "${{ env.KAOS_WEB_STRUCTURE }}$SAFE_TITLE/data" -type f | sort | while read -r file; do
-            RELATIVE_PATH="${file#${{ env.KAOS_WEB_STRUCTURE }}$SAFE_TITLE/}"
-            echo "    {\"path\": \"$RELATIVE_PATH\"}," >> "${{ env.KAOS_JSON_RESUME }}$SAFE_TITLE/data-files-summary.json"
-          done
-          
-          # Remove the last comma and close the JSON
-          sed -i '$ s/,$//' "${{ env.KAOS_JSON_RESUME }}$SAFE_TITLE/data-files-summary.json"
-          echo "  ]" >> "${{ env.KAOS_JSON_RESUME }}$SAFE_TITLE/data-files-summary.json"
-          echo "}" >> "${{ env.KAOS_JSON_RESUME }}$SAFE_TITLE/data-files-summary.json"
-          
-          echo "Data files summary generated at ${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
-
       - name: Crear archivos HTML para cada sección
         run: |
           echo "Directorio actual: $(pwd)"
@@ -154,7 +59,7 @@ jobs:
             SECTION_CONFIG="$KAOS_FINOPS/config/$section_data"
 
             if [ -f "$SECTION_CONFIG" ]; then
-              SECTION_HTML="$KAOS_FINOPS/${section_title}.html"
+              SECTION_HTML="$KAOS_FINOPS_RESULTS_SECTION/${section_title}.html"
               echo "→ Ruta del archivo HTML de salida: $SECTION_HTML"
 
               cp "$KAOS_FINOPS_TEMPLATE/finops.html" "$SECTION_HTML"
@@ -173,85 +78,25 @@ jobs:
       - id: upload-files
         name: Upload Files
         run: |
-          echo "Uploading data files to the repository..."
+          echo "Uploading files to the repository..."
           git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
           git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
           git pull
-          # Add the data files and summary (incluyendo finops)
-          git add ${{ env.KAOS_WEB_STRUCTURE }}**/data/*
+          # Asegurarse de que la carpeta web_structure se añade explicitamente (incluyendo finops)
+          git add ${{ env.KAOS_WEB_STRUCTURE }}*
           git add ${{ env.KAOS_JSON_RESUME }}*
-          # Verify if there are changes to commit
-          if git diff --staged --quiet; then
-            echo "No hay cambios para hacer commit"
-          else
-            git commit -m "[Ka0S] Uploading data files to web structure..."
-            git push origin ${{ env.KAOS_REF }}
-          fi
-      
-  job-design:
-    runs-on:
-      group: ka0s
-    needs: [job-core, job-data]
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
-      
-      - name: Preparar directorios y copiar archivos estáticos
-        run: |
-          # Configuración inicial
-          STRUCTURE_FILE="${{ env.KAOS_JSON_WEB }}"
-          TITLE=$(cat $STRUCTURE_FILE | jq -r '.title')
-          
-          # NUEVO: Asegurar que los directorios de finops existen
-          mkdir -p "core/results/webs/finops/js"
-          mkdir -p "core/results/webs/finops/templates"
-          
-          # NUEVO: Copiar plantillas específicas de finops si existen
-          if [ -d "core/config/finops/results/templates" ]; then
-            find core/config/finops/results/templates -type f -name "*.html" | while read -r template_file; do
-              TEMPLATE_FILENAME=$(basename "$template_file")
-              echo "Copiar plantilla de finops: $template_file a finops/templates directory"
-              cp "$template_file" "core/results/webs/finops/templates/$TEMPLATE_FILENAME"
-            done
-            echo "Todas las plantillas HTML de finops copiadas exitosamente!"
-          fi
-          
-          # Copiar archivos JS para finops
-          if [ -d "core/config/finops/webs/js" ]; then
-            find core/config/finops/webs/js -type f -name "*.js" | while read -r js_file; do
-              JS_FILENAME=$(basename "$js_file")
-              echo "Copiando archivo JS de finops: $js_file"
-              cp "$js_file" "core/results/webs/finops/js/$JS_FILENAME"
-            done
-            echo "Archivos JS copiados a finops exitosamente!"
-          fi
-          
-          # Hacer pull con estrategia de recursión para manejar conflictos
-          git pull --strategy-option=theirs
-
-
-      - name: Guardar cambios en el repositorio
-        run: |
-          # Añadir todos los archivos generados (incluyendo finops)
-          git add "core/results/webs/"
-          
           # Verificar si hay cambios para hacer commit
           if git diff --staged --quiet; then
             echo "No hay cambios para hacer commit"
           else
-            git commit -m "[Ka0S] Actualizando archivos de estructura web y finops"
+            git commit -m "[Ka0S] Uploading resume execution files and finops structure to the repository..."
             git push origin ${{ env.KAOS_REF }}
           fi
 
-      
-          
   handle-success:
     runs-on:
       group: ka0s
-    needs: [job-core, job-data, job-design]
+    needs: [job-core]
     if: ${{ success() }}
     steps:
       - id: repo
@@ -273,7 +118,7 @@ jobs:
   handle_failure:
     runs-on:
       group: ka0s
-    needs: [job-core, job-data, job-design, handle-success]
+    needs: [job-core, handle-success]
     if: ${{ failure() }}
     steps:
       - id: repo
@@ -298,7 +143,7 @@ jobs:
   end-workflow:
     runs-on:
       group: ka0s
-    needs: [job-core, job-data, job-design, handle-success, handle_failure]
+    needs: [job-core, handle-success, handle_failure]
     if: ${{ always() && !contains(github.event.head_commit.message, '[Ka0S] ') }}
     env:
         GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
