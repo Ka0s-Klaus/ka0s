@@ -53,7 +53,23 @@ jobs:
             NAVBAR_ITEMS+="<li><a href=\"#${anchor}\" class=\"nav-link flex items-center justify-center w-full py-3 text-gray-700 hover:bg-blue-50 rounded-lg transition-all duration-200 group relative\"><div class=\"flex items-center justify-center w-12\"><i class=\"${icon} text-orange-300 group-hover:text-orange-500 text-xl\"></i></div><span class=\"sidebar-text flex-1 font-medium capitalize\">${title}</span></a></li>"
           done
 
-          echo "Procesando secciones..."
+          echo "Construyendo el HTML con todas las secciones para insertar dinámicamente..."
+          SECTIONS_HTML=""
+          jq -c '.sections[]' "$STRUCTURE_FILE" | while read -r section; do
+            section_title=$(echo "$section" | jq -r '.title')
+            section_icon=$(echo "$section" | jq -r '.icon')
+
+            # Construir bloque HTML para cada sección
+            SECTIONS_HTML+="<section id=\"${section_title,,}\" class=\"section-block p-4 bg-white rounded-lg shadow mb-4\">"
+            SECTIONS_HTML+="<h2 class=\"text-xl font-semibold mb-2\"><i class=\"$section_icon mr-2\"></i> $section_title</h2>"
+            SECTIONS_HTML+="<!-- Contenido dinámico para $section_title -->"
+            SECTIONS_HTML+="</section>"
+          done
+
+          # Guardar el bloque completo en un archivo temporal
+          echo "$SECTIONS_HTML" > temp_sections.html
+
+          echo "Procesando secciones individuales..."
           jq -c '.sections[]' "$STRUCTURE_FILE" | while read -r section; do
             section_title=$(echo "$section" | jq -r '.title')
             section_data=$(echo "$section" | jq -r '.datatemplate')
@@ -71,44 +87,26 @@ jobs:
               # Construir navbar para esta sección
               NAVBAR_HTML=$(<"$NAVBAR_BASE")
               NAVBAR_HTML="${NAVBAR_HTML//SECTION_TITLE_PLACEHOLDER/$section_title}"
-              NAVBAR_HTML="${NAVBAR_HTML//<!-- NAVBAR_SECTIONS_PLACEHOLDER -->/
-              $NAVBAR_ITEMS}"
+              NAVBAR_HTML="${NAVBAR_HTML//<!-- NAVBAR_SECTIONS_PLACEHOLDER -->/$NAVBAR_ITEMS}"
 
-              # Reemplazar título y descripción en el HTML final
+              # Reemplazar placeholders en el HTML final
               sed -i "s/SECTION_TITLE_PLACEHOLDER/$section_title/g" "$SECTION_HTML"
               sed -i "s/SECTION_DESCRIPTION_PLACEHOLDER/$SECTION_DESCRIPTION/g" "$SECTION_HTML"
 
-              # Insertar navbar en el HTML
+              # Insertar navbar
               echo "$NAVBAR_HTML" > temp_navbar.html
               sed -i -e '/<div id="navbar-container"><\/div>/{r temp_navbar.html' -e 'd}' "$SECTION_HTML"
               rm temp_navbar.html
 
-              # Construir contenido dinámico de secciones para insertar en el placeholder
-              echo "Construyendo contenido de secciones para $section_title..."
-              SECTIONS_HTML=""
-              jq -c '.sections[]' "$STRUCTURE_FILE" | while read -r sec; do
-                sec_title=$(echo "$sec" | jq -r '.title')
-                sec_icon=$(echo "$sec" | jq -r '.icon')
-                sec_id=$(echo "$sec_title" | jq -sRr @uri)
-
-                SECTIONS_HTML+="<section id=\"$sec_id\" class=\"section-block\">\n"
-                SECTIONS_HTML+="  <h2><i class=\"$sec_icon\"></i> $sec_title</h2>\n"
-                SECTIONS_HTML+="  <!-- Contenido dinámico de $sec_title -->\n"
-                SECTIONS_HTML+="</section>\n"
-              done
-
-              # Insertar las secciones en el placeholder <!-- Las secciones se insertarán aquí dinámicamente -->
-              echo -e "$SECTIONS_HTML" > temp_sections.html
-              sed -i "/<!-- Las secciones se insertarán aquí dinámicamente -->/{
-                r temp_sections.html
-                d
-              }" "$SECTION_HTML"
-              rm temp_sections.html
+              # Insertar dinámicamente el bloque de todas las secciones dentro del div con id "content-container"
+              # Buscamos la línea con <div id="content-container"> y añadimos después el contenido de temp_sections.html
+              sed -i "/<div id=\"content-container\">/r temp_sections.html" "$SECTION_HTML"
 
             else
               echo "⚠️ No se encontró configuración para '$section_title'"
             fi
           done
+          rm temp_sections.html
 
 
       - id: upload-files
