@@ -7,8 +7,8 @@ Creación de páginas Web mediante ficheros json
 3. Usar js, json y html 
 
 # Pasos para creación de la Web
--- En primer lugar clonaremos la rama a nuestro local para poder trabajar con ella.
--- A continuacion deberemos establecer la estructura de la web en un JSON llamado **webs.json** ubicado en **core/web/data**, con la siguiente estructura de ejemplo:
+- En primer lugar clonaremos la rama a nuestro local para poder trabajar con ella.
+- A continuacion deberemos establecer la estructura de la web en un JSON llamado **webs.json** ubicado en **core/web/data**, con la siguiente estructura de ejemplo:
 ```shell
 {
     "title": "Tienda",
@@ -29,10 +29,10 @@ Creación de páginas Web mediante ficheros json
     ]
 }
 ```
--- El siguiente paso será copiar a la carpeta **core/web/data** los JSON con los datos que vamos a mostrar.
--- A continuacion crearemos los archivos JSON de cada seccion en la **core/web/data** con el mismo nombre que hemos establecido en "datatemplate".
--- Debemos copiar los archivos **navbar.html** de la carpeta **core/web/templates** y **orchestrator.js** de la carpeta **core/web/js** en nuestra estructura de carpetas.
--- Ahora debemos configurar cada archivo JSON de las secciones indicando si queremos mostrar métricas, gráficos o tablas. Para ello veamos un código de  se una sección completa:
+- El siguiente paso será copiar a la carpeta **core/web/data** los JSON con los datos que vamos a mostrar.
+- A continuacion crearemos los archivos JSON de cada seccion en la **core/web/data** con el mismo nombre que hemos establecido en "datatemplate".
+- Debemos copiar los archivos **navbar.html** de la carpeta **core/web/templates** y **orchestrator.js** de la carpeta **core/web/js** en nuestra estructura de carpetas.
+- Ahora debemos configurar cada archivo JSON de las secciones indicando si queremos mostrar métricas, gráficos o tablas. Para ello veamos un código de  se una sección completa:
 ```
 {
     "title": "Ventas",
@@ -163,15 +163,15 @@ Configuración básica:
 
 ### Gráfico de Barras
 Configuración específica:
--- `"xAxisLabel"`: Etiqueta del eje X
--- `"yAxisLabel"`: Etiqueta del eje Y
--- `"categoryField"`: Campo para categorías (eje X)
--- `"valueField"`: Campo para valores (eje Y)
--- Personalización: `"barColor"` y `"barBorderColor"`
+- `"xAxisLabel"`: Etiqueta del eje X
+- `"yAxisLabel"`: Etiqueta del eje Y
+- `"categoryField"`: Campo para categorías (eje X)
+- `"valueField"`: Campo para valores (eje Y)
+- Personalización: `"barColor"` y `"barBorderColor"`
 
 ### Gráfico Circular
 Configuración específica:
--- `"statusField"`: Campo para segmentos del gráfico
+- `"statusField"`: Campo para segmentos del gráfico
 
 
 Para añadir métricas:
@@ -194,7 +194,7 @@ Añadir `"metricsColors"` en la raíz del JSON con array de colores para cada m�
 
 
         
--- Una vez realizados los archivos de las secciones subiremos los cambios a nuestra rama.
--- Despues de que hayan sido subidos realizaremos una **pull request** y posteriormente un **Merge**
--- A continuación, en el **main**, ejecutaremos el action de **Ka0s Create structure for dashboard** y **Ka0s Deploy Webs (Dashboard y Test)**
--- Finalmente estos actions harán que nuestra web se suba al servidor.
+- Una vez realizados los archivos de las secciones subiremos los cambios a nuestra rama.
+- Despues de que hayan sido subidos realizaremos una **pull request** y posteriormente un **Merge**
+- A continuación, en el **main**, ejecutaremos el action de **Ka0s Create structure for dashboard** y **Ka0s Deploy Webs (Dashboard y Test)**
+- Finalmente estos actions harán que nuestra web se suba al servidor.
