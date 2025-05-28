@@ -667,11 +667,6 @@ jobs:
           STRUCTURE_FILE="${{ env.KAOS_JSON_WEB }}"
           TITLE=$(cat $STRUCTURE_FILE | jq -r '.title')
           
-          # Crear directorios necesarios
-          mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/js"
-          mkdir -p "core/results/webs/${TITLE}/templates"
-          mkdir -p "core/results/webs/${TITLE}/temp_sections"
-          
           # Copiar archivos de plantillas
           find core/web/templates -type f -name "*.html" | while read -r template_file; do
             # Obtener el nombre del archivo

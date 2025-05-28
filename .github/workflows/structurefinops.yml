@@ -19,13 +19,54 @@ env:
     KAOS_ACTOR: ${{ github.actor }}
 
     KAOS_FINOPS_STRUCTURE: "core/results/webs/finops/" # directorio para la estructura de finops - CORREGIDO
-    KAOS_FINOPS_JSON_WEB: "core/config/finops/results/data/webs.json" # archivo JSON principal de finops
+    KAOS_FINOPS_JSON_WEB: "core/config/finops/config/webs.json" # archivo JSON principal de finops
     KAOS_FINOPS_JSON_DATA: "core/config/finops/data" # directorio de datos JSON para finops
+    KAOS_FINOPS_TEMPLATE: "core/config/finops/template/" # directorio de datos JSON para finops
+    KAOS_FINOPS: "core/config/finops/" # directorio de la web
+    KAOS_FINOPS_RESULTS_SECTION: "core/results/webs/finops/section"
+
 jobs:
   job-core:
     runs-on:
       group: ka0s
     steps:
+
+      - name: Crear archivos HTML para cada sección
+        run: |
+          # Leer el archivo de configuración de webs
+          STRUCTURE_FILE="${{ env.KAOS_FINOPS_JSON_WEB }}"
+          
+          # Crear directorio para las secciones
+          mkdir -p "${{ env.KAOS_FINOPS_RESULTS_SECTION }}"
+          
+          # Copiar la plantilla base de finops
+          cp "${{ env.KAOS_FINOPS_TEMPLATE }}finops.html" "{{ env.KAOS_FINOPS_RESULTS_SECTION }}template.html"
+          
+          # Procesar cada sección del archivo webs.json
+          jq -r '.sections[] | [.title, .datatemplate] | @tsv' "$STRUCTURE_FILE" | while IFS=$'\t' read -r section_title section_data; do
+            echo "Generando HTML para sección: $section_title"
+            
+            # Leer la configuración de la sección
+            SECTION_CONFIG="{{ env.KAOS_FINOPS }}config/section/$section_data"
+            
+            if [ -f "$SECTION_CONFIG" ]; then
+              # Crear el archivo HTML para esta sección
+              SECTION_HTML="{{ env.KAOS_FINOPS }}section/${section_title}.html"
+              cp "{{ env.KAOS_FINOPS_TEMPLATE }}finops.html" "$SECTION_HTML"
+              
+              # Obtener descripción y título de la sección
+              SECTION_DESCRIPTION=$(jq -r '.description' "$SECTION_CONFIG")
+              
+              # Reemplazar placeholders en el template
+              sed -i "s/SECTION_TITLE_PLACEHOLDER/$section_title/g" "$SECTION_HTML"
+              sed -i "s/SECTION_DESCRIPTION_PLACEHOLDER/$SECTION_DESCRIPTION/g" "$SECTION_HTML"
+              
+              echo "HTML generado para $section_title en $SECTION_HTML"
+            else
+              echo "Archivo de configuración no encontrado para $section_title"
+            fi
+          done
+
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
@@ -35,26 +76,14 @@ jobs:
       - name: Copy web folder structure
         run: |
           # Crear directorios necesarios para FINOPS en la ubicación correcta
-          mkdir -p "core/results/webs/finops/data"
-          mkdir -p "core/results/webs/finops/js"
-          mkdir -p "core/results/webs/finops/results/data/section"
-          mkdir -p "core/results/webs/finops/webs/js"
-          mkdir -p "core/results/webs/finops/results/templates"
+          mkdir -p "data"
+          mkdir -p "js"
+          mkdir -p "section"
+          mkdir -p "js"
+          mkdir -p "template"
           
           # Copiar archivos de datos de finops
-          cp -r "core/config/finops/data/"* "core/results/webs/finops/data/"
-          
-          # Copiar archivos de configuración de finops
-          cp -r "core/config/finops/results/data/section/"* "core/results/webs/finops/results/data/section/"
-          cp "core/config/finops/results/data/webs.json" "core/results/webs/finops/results/data/webs.json"
-          
-          # Copiar archivos JS y templates de finops
-          if [ -d "core/config/finops/webs/js" ]; then
-            cp -r "core/config/finops/webs/js/"* "core/results/webs/finops/webs/js/"
-          fi
-          if [ -d "core/config/finops/results/templates" ]; then
-            cp -r "core/config/finops/results/templates/"* "core/results/webs/finops/results/templates/"
-          fi
+          cp -r "${{ env.KAOS_FINOPS_JSON_DATA }}"* "${{ env.KAOS_FINOPS_DATA }}"
 
           # Tenemos que añadir al proceso que sea capaz de leer + de un json de creación de webs
           # si web esta creada la actualiza, sino la crea desde cero
@@ -73,20 +102,23 @@ jobs:
           mkdir -p "${{ env.KAOS_JSON_RESUME }}$TITLE"
           touch ${{ env.KAOS_JSON_RESUME }}$TITLE/readme.txt
 
-          # Extract section information and create subfolders
+          # Extract section information and create subfolders and HTML files in finops/section
           jq -r 'to_entries | .[] | select(.key | startswith("section")) | [.key, .value.title, .value.icon, .value.data] | @tsv' $STRUCTURE_FILE | while IFS=$'\t' read -r section_key section_title section_icon section_data; do
             echo "III - Creating subfolder for section: $section_key - $section_title"
             mkdir -p "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/structure/$section_title"
             touch ${{ env.KAOS_WEB_STRUCTURE }}$TITLE/structure/$section_title/$section_title".html"
-            
+
+            # NEW: Also create HTML in finops/section
+            mkdir -p "core/results/webs/finops/section"
+            touch "core/results/webs/finops/section/$section_title.html"
+            echo "<html><head><title>$section_title</title></head><body><h1>$section_title</h1></body></html>" > "core/results/webs/finops/section/$section_title.html"
+
             # Guardar la ruta del archivo JSON de datos para esta sección
             if [ ! -z "$section_data" ]; then
-              # Copiar el contenido del archivo JSON en lugar de solo la ruta
               if [ -f "$section_data" ]; then
                 cp "$section_data" "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/structure/$section_title/$section_title.json"
                 echo "    Data source: $section_data (copiado)"
               else
-                # Si el archivo no existe, guardar al menos la ruta como referencia
                 echo "$section_data" > "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/structure/$section_title/$section_title.json"
                 echo "    Data source: $section_data (ruta guardada, archivo no encontrado)"
               fi
@@ -306,58 +338,6 @@ jobs:
           # Hacer pull con estrategia de recursión para manejar conflictos
           git pull --strategy-option=theirs
 
-      - name: Crear finops.html
-        run: |
-          FINOPS_STRUCTURE_FILE="${{ env.KAOS_FINOPS_JSON_WEB }}"
-          
-          # Verificar si el archivo existe, si no usar un título por defecto
-          if [ -f "$FINOPS_STRUCTURE_FILE" ]; then
-            TITLE=$(jq -r '.title' $FINOPS_STRUCTURE_FILE)
-          else
-            TITLE="FinOps Dashboard"
-            echo "Archivo de estructura de finops no encontrado, usando título por defecto: $TITLE"
-          fi
-          
-          # Crear el finops.html con todas las secciones concatenadas y la navbar
-          echo "<!DOCTYPE html>
-          <html lang=\"es\">
-          <head>
-              <meta charset=\"UTF-8\">
-              <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
-              <title>Ka0s Dashboard - ${TITLE}</title>
-              <script src=\"https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4\"></script>
-              <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css\">
-              <script src=\"https://cdn.jsdelivr.net/npm/chart.js\"></script>
-          </head>
-          <body class=\"bg-gray-100 min-h-screen\">
-              <div class=\"flex\">
-                  <!-- Incluir el navbar -->
-                  <div id=\"navbar-container\"></div>
-  
-                  <!-- Contenido principal -->
-                  <div class=\"ml-[260px] w-full transition-all duration-300 p-6\" id=\"main-content\">
-                      <header class=\"mb-8\">
-                          <h1 class=\"text-3xl font-bold text-gray-800\" id=\"section-title\">SECTION_TITLE_PLACEHOLDER</h1>
-                          <p class=\"text-gray-600 mt-2\" id=\"section-description\">SECTION_DESCRIPTION_PLACEHOLDER</p>
-                      </header>
-  
-                      <!-- Contenedor de plantillas - se generará dinámicamente -->
-                      <div id=\"content-container\">
-                          <!-- Las plantillas (gráficos, listas, etc.) se generarán dinámicamente según el JSON -->
-                      </div>
-                          
-                      </div>
-                  </div>
-              </div>
-  
-              <!-- Primero cargar templates.js -->
-              <script src=\"../webs/js/template.js\"></script>
-              <!-- Scripts -->
-              <script src=\"../webs/js/orchestrator.js\"></script>
-          </body>
-          </html>" > "core/results/webs/finops/results/finops.html"
-          
-          echo "Finops HTML generado correctamente en core/results/webs/finops/finops.html"
 
       - name: Guardar cambios en el repositorio
         run: |
@@ -371,6 +351,8 @@ jobs:
             git commit -m "[Ka0S] Actualizando archivos de estructura web y finops"
             git push origin ${{ env.KAOS_REF }}
           fi
+
+      
           
   handle-success:
     runs-on:

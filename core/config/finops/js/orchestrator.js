@@ -5,7 +5,7 @@ async function loadInitialConfig() {
         await loadNavbar();
         
         // Cargar el archivo de configuración webs.json
-        const response = await fetch('data/webs.json');
+        const response = await fetch('../config/webs.json');
         const config = await response.json();
         
         // Guardar la configuración global para uso posterior
@@ -133,7 +133,7 @@ async function loadNavbar() {
     const navbarContainer = document.getElementById('navbar-container');
     if (navbarContainer) {
         try {
-            const response = await fetch('templates/navbar.html');
+            const response = await fetch('template/navbar.html');
             const html = await response.text();
             navbarContainer.innerHTML = html;
             return true;
@@ -223,7 +223,7 @@ async function loadNavbar() {
     const navbarContainer = document.getElementById('navbar-container');
     if (navbarContainer) {
         try {
-            const response = await fetch('templates/navbar.html');
+            const response = await fetch('navbar.html');
             const html = await response.text();
             navbarContainer.innerHTML = html;
             return true;
