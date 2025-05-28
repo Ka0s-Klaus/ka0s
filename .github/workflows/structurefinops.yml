@@ -36,44 +36,6 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.KAOS_REPO_TOKEN }}
 
-      - name: Crear archivos HTML para cada sección
-        run: |
-          # Leer el archivo de configuración de webs
-          STRUCTURE_FILE="${{ env.KAOS_FINOPS_JSON_WEB }}"
-          
-          # Crear directorio para las secciones
-          mkdir -p "${{ env.KAOS_FINOPS_RESULTS_SECTION }}"
-          
-          # Copiar la plantilla base de finops
-          cp "core/config/finops/template/finops.html" "{{ env.KAOS_FINOPS_RESULTS_SECTION }}template.html"
-          
-          # Procesar cada sección del archivo webs.json
-          jq -r '.sections[] | [.title, .datatemplate] | @tsv' "$STRUCTURE_FILE" | while IFS=$'\t' read -r section_title section_data; do
-            echo "Generando HTML para sección: $section_title"
-            
-            # Leer la configuración de la sección
-            SECTION_CONFIG="{{ env.KAOS_FINOPS }}config/section/$section_data"
-            
-            if [ -f "$SECTION_CONFIG" ]; then
-              # Crear el archivo HTML para esta sección
-              SECTION_HTML="{{ env.KAOS_FINOPS }}section/${section_title}.html"
-              cp "{{ env.KAOS_FINOPS_TEMPLATE }}finops.html" "$SECTION_HTML"
-              
-              # Obtener descripción y título de la sección
-              SECTION_DESCRIPTION=$(jq -r '.description' "$SECTION_CONFIG")
-              
-              # Reemplazar placeholders en el template
-              sed -i "s/SECTION_TITLE_PLACEHOLDER/$section_title/g" "$SECTION_HTML"
-              sed -i "s/SECTION_DESCRIPTION_PLACEHOLDER/$SECTION_DESCRIPTION/g" "$SECTION_HTML"
-              
-              echo "HTML generado para $section_title en $SECTION_HTML"
-            else
-              echo "Archivo de configuración no encontrado para $section_title"
-            fi
-          done
-
-
-          
       - id: upload-files
         name: Upload Files
         run: |
@@ -135,7 +97,7 @@ jobs:
               # Obtener el nombre del archivo
               TEMPLATE_FILENAME=$(basename "$datatemplate_path")
               echo "Copying section datatemplate file: $datatemplate_path to data directory"
-              cp "core/config/finops/results/data/$datatemplate_path" "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/data/$TEMPLATE_FILENAME"
+              cp "core/config/finops/config/$datatemplate_path" "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/data/$TEMPLATE_FILENAME"
             fi
           done
           
@@ -202,6 +164,42 @@ jobs:
           fi
           
           echo "Todos los archivos JSON de finops copiados exitosamente!"
+
+      - name: Crear archivos HTML para cada sección
+        run: |
+          # Leer el archivo de configuración de webs
+          STRUCTURE_FILE="${{ env.KAOS_FINOPS_JSON_WEB }}"
+          
+          # Crear directorio para las secciones
+          mkdir -p "${{ env.KAOS_FINOPS_RESULTS_SECTION }}"
+          
+          # Copiar la plantilla base de finops
+          cp "core/config/finops/template/finops.html" "{{ env.KAOS_FINOPS_RESULTS_SECTION }}template.html"
+          
+          # Procesar cada sección del archivo webs.json
+          jq -r '.sections[] | [.title, .datatemplate] | @tsv' "$STRUCTURE_FILE" | while IFS=$'\t' read -r section_title section_data; do
+            echo "Generando HTML para sección: $section_title"
+            
+            # Leer la configuración de la sección
+            SECTION_CONFIG="{{ env.KAOS_FINOPS }}config/section/$section_data"
+            
+            if [ -f "$SECTION_CONFIG" ]; then
+              # Crear el archivo HTML para esta sección
+              SECTION_HTML="{{ env.KAOS_FINOPS }}section/${section_title}.html"
+              cp "{{ env.KAOS_FINOPS_TEMPLATE }}finops.html" "$SECTION_HTML"
+              
+              # Obtener descripción y título de la sección
+              SECTION_DESCRIPTION=$(jq -r '.description' "$SECTION_CONFIG")
+              
+              # Reemplazar placeholders en el template
+              sed -i "s/SECTION_TITLE_PLACEHOLDER/$section_title/g" "$SECTION_HTML"
+              sed -i "s/SECTION_DESCRIPTION_PLACEHOLDER/$SECTION_DESCRIPTION/g" "$SECTION_HTML"
+              
+              echo "HTML generado para $section_title en $SECTION_HTML"
+            else
+              echo "Archivo de configuración no encontrado para $section_title"
+            fi
+          done
 
       - id: upload-files
         name: Upload Files
