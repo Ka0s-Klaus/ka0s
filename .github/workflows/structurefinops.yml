@@ -67,7 +67,7 @@ jobs:
 
           NAVBAR_HTML=$(<"$NAVBAR_BASE")
 
-          # Corregir condición para comprobar que EXISTAN ambos placeholders
+          # Comprobar existencia de placeholders (corregido)
           if [[ "$NAVBAR_HTML" != *"SECTION_TITLE_PLACEHOLDER"* ]] || [[ "$NAVBAR_HTML" != *"<!-- NAVBAR_SECTIONS_PLACEHOLDER -->"* ]]; then
             echo "⚠️ WARNING: El archivo '$NAVBAR_BASE' no contiene los placeholders esperados."
             cat "$NAVBAR_BASE"
@@ -92,19 +92,15 @@ jobs:
             if [ -f "$SECTION_CONFIG" ]; then
               echo "✅ Generando sección: $section_title"
 
-              # Copiar plantilla base para esta sección
               cp "$TEMPLATE_FILE" "$SECTION_HTML"
 
-              # Reemplazar título y descripción
               sed -i "s/SECTION_TITLE_PLACEHOLDER/$section_title/g" "$SECTION_HTML"
               sed -i "s/SECTION_DESCRIPTION_PLACEHOLDER/$section_description/g" "$SECTION_HTML"
-
-              # Insertar navbar
               sed -i -e '/<div id="navbar-container"><\/div>/{r full_navbar.html' -e 'd}' "$SECTION_HTML"
 
-              # Generar contenido dinámico según templates dentro del JSON de configuración de la sección
               CONTENT=""
 
+              # Procesar templates de la sección
               while read -r template; do
                 tmpl_type=$(echo "$template" | jq -r '.type')
 
@@ -112,10 +108,15 @@ jobs:
                   "cost-chart")
                     title=$(echo "$template" | jq -r '.title // "Sin título"')
                     tipo=$(echo "$template" | jq -r '.tipo // "bar"')
-                    # Validar tipo para Chart.js: solo valores permitidos
-                    case "${tipo,,}" in
-                      bar|line|pie|doughnut|radar|polarArea)
-                        tipo="${tipo,,}"
+                    # Normalizar tipo a minúsculas y solo tipo de Chart.js válido
+                    tipo_lc=$(echo "$tipo" | tr '[:upper:]' '[:lower:]')
+
+                    case "$tipo_lc" in
+                      bar|line|pie|doughnut|radar|polararea)
+                        tipo="$tipo_lc"
+                        ;;
+                      barchart)
+                        tipo="bar"
                         ;;
                       *)
                         echo "⚠️ Tipo de gráfico inválido '$tipo', usando 'bar' por defecto"
@@ -138,19 +139,24 @@ jobs:
                       continue
                     fi
 
-                    labels=$(jq -r --arg groupBy "$groupBy" --arg orderBy "$orderBy" --arg orderDir "$orderDirection" --argjson limit "$limit" \
-                      'sort_by(.[$orderBy]) | if $orderDir=="desc" then reverse else . end | .[0:$limit] | map(.[ $groupBy ]) | @json' "$DATA_JSON_PATH")
+                    # Construir filtros jq para ordenar, limitar y agrupar
+                    # Ordenar
+                    SORTED=$(jq -c --arg orderBy "$orderBy" --arg orderDir "$orderDirection" --argjson limit "$limit" '
+                      sort_by(.[$orderBy]) | if $orderDir=="desc" then reverse else . end | .[0:$limit]
+                    ' "$DATA_JSON_PATH")
 
+                    # Obtener etiquetas (labels) agrupadas por groupBy
+                    labels=$(echo "$SORTED" | jq -r --arg groupBy "$groupBy" 'map(.[ $groupBy ]) | unique | @json')
+
+                    # Obtener datos reales y estimados ordenados y limitados
                     if [ -n "$realCostField" ]; then
-                      realCosts=$(jq -r --arg orderBy "$orderBy" --arg orderDir "$orderDirection" --argjson limit "$limit" --arg field "$realCostField" \
-                        'sort_by(.[$orderBy]) | if $orderDir=="desc" then reverse else . end | .[0:$limit] | map(.[ $field ]) | @json' "$DATA_JSON_PATH")
+                      realCosts=$(echo "$SORTED" | jq -r --arg field "$realCostField" 'map(.[ $field ]) | @json')
                     else
                       realCosts="[]"
                     fi
 
                     if [ -n "$estimatedCostField" ]; then
-                      estimatedCosts=$(jq -r --arg orderBy "$orderBy" --arg orderDir "$orderDirection" --argjson limit "$limit" --arg field "$estimatedCostField" \
-                        'sort_by(.[$orderBy]) | if $orderDir=="desc" then reverse else . end | .[0:$limit] | map(.[ $field ]) | @json' "$DATA_JSON_PATH")
+                      estimatedCosts=$(echo "$SORTED" | jq -r --arg field "$estimatedCostField" 'map(.[ $field ]) | @json')
                     else
                       estimatedCosts="[]"
                     fi
@@ -171,7 +177,9 @@ jobs:
                     CONTENT+="      datasets: ["
                     if [ "$realCosts" != "[]" ]; then
                       CONTENT+="{label:'Costo Real', data:$realCosts, backgroundColor:'rgba(255, 99, 132, 0.5)'}"
-                      [ "$estimatedCosts" != "[]" ] && CONTENT+=","
+                      if [ "$estimatedCosts" != "[]" ]; then
+                        CONTENT+=","
+                      fi
                     fi
                     if [ "$estimatedCosts" != "[]" ]; then
                       CONTENT+="{label:'Costo Estimado', data:$estimatedCosts, backgroundColor:'rgba(54, 162, 235, 0.5)'}"
@@ -186,7 +194,6 @@ jobs:
 
                   "table")
                     title=$(echo "$template" | jq -r '.title')
-                    # Podrías generar tablas dinámicas aquí también si quieres
                     CONTENT+="<section class=\"table-section p-4 bg-white rounded shadow mb-6\">"
                     CONTENT+="<h3 class=\"text-xl font-semibold mb-2\">$title</h3>"
                     CONTENT+="<table class=\"min-w-full border border-gray-300\">"
@@ -202,16 +209,13 @@ jobs:
                 esac
               done < <(jq -c '.templates[]' "$SECTION_CONFIG")
 
-              # Insertar el contenido dinámico justo donde está el placeholder <!-- Plantillas -->
               sed -i "/<!-- Plantillas -->/r /dev/stdin" "$SECTION_HTML" <<< "$CONTENT"
 
             else
               echo "⚠️ No se encontró configuración para '$section_title'"
             fi
           done
-
-
-
+          
       - id: upload-files
         name: Upload Files
         run: |
