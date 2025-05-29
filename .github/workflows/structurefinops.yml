@@ -47,7 +47,7 @@ jobs:
           mkdir -p "${{ env.KAOS_FINOPS_RESULTS_SECTION }}"
 
           echo "Construyendo items del navbar global..."
-          NAVBAR_ITEMS=""
+          NAVBAR_ITEMS="<ul id=\"navbar-sections\" class=\"flex flex-col gap-1\">"
           NAVBAR_ITEMS+="<div class=\"sections-container p-4\">"
 
           jq -r '.sections[] | [.title, .icon] | @tsv' "$STRUCTURE_FILE" | while IFS=$'\t' read -r title icon; do
@@ -57,9 +57,9 @@ jobs:
             NAVBAR_ITEMS+="<div class=\"flex items-center justify-center w-12\"><i class=\"${icon} text-orange-300 group-hover:text-orange-500 text-xl\"></i></div>"
             NAVBAR_ITEMS+="<span class=\"sidebar-text flex-1 font-medium capitalize\">${title}</span>"
             NAVBAR_ITEMS+="</a></li>"
-            # NAVBAR_ITEMS+="</div>"
-            echo "$NAVBAR_ITEMS"
           done
+
+          NAVBAR_ITEMS+="</div></ul>"
 
           # Validar que el archivo navbar base existe y no está vacío
           if [ ! -s "$NAVBAR_BASE" ]; then
