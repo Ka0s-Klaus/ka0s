@@ -57,10 +57,6 @@ jobs:
             NAVBAR_ITEMS+="<div class=\"flex items-center justify-center w-12\"><i class=\"${icon} text-orange-300 group-hover:text-orange-500 text-xl\"></i></div>"
             NAVBAR_ITEMS+="<span class=\"sidebar-text flex-1 font-medium capitalize\">${title}</span>"
             NAVBAR_ITEMS+="</a></li>"
-
-            echo "$NAVBAR_ITEMS"
-
-
           done
 
           NAVBAR_ITEMS+="</div>"
@@ -69,7 +65,10 @@ jobs:
           NAVBAR_HTML=$(<"$NAVBAR_BASE")
           NAVBAR_HTML="${NAVBAR_HTML//SECTION_TITLE_PLACEHOLDER/FinOps}"
           NAVBAR_HTML="${NAVBAR_HTML//<!-- NAVBAR_SECTIONS_PLACEHOLDER -->/$NAVBAR_ITEMS}"
+          echo "$NAVBAR_HTML"
+
           echo "$NAVBAR_HTML" > full_navbar.html
+
 
           echo "Procesando secciones..."
           jq -c '.sections[]' "$STRUCTURE_FILE" | while read -r section; do
@@ -98,7 +97,7 @@ jobs:
             fi
           done
 
-          rm -f full_navbar.html
+          # rm -f full_navbar.html
 
 
       - id: upload-files
