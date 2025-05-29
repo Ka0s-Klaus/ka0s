@@ -61,12 +61,36 @@ jobs:
 
           NAVBAR_ITEMS+="</div>"
 
-          # Preparamos navbar HTML completo una sola vez
-          NAVBAR_HTML="$NAVBAR_BASE"
+          # Validar que el archivo navbar base existe y no está vacío
+          if [ ! -s "$NAVBAR_BASE" ]; then
+            echo "❌ ERROR: El archivo navbar base '$NAVBAR_BASE' no existe o está vacío."
+            exit 1
+          else
+            echo "📄 Archivo navbar base encontrado: $NAVBAR_BASE"
+            echo "🔍 Primeras líneas del archivo:"
+            head -n 10 "$NAVBAR_BASE"
+          fi
+
+          # Leer el contenido del navbar base
+          NAVBAR_HTML=$(<"$NAVBAR_BASE")
+
+          # Asegurarnos de que contiene los placeholders esperados
+          if [[ "$NAVBAR_HTML" != *"SECTION_TITLE_PLACEHOLDER"* || "$NAVBAR_HTML" != *"NAVBAR_SECTIONS_PLACEHOLDER"* ]]; then
+            echo "⚠️ WARNING: El archivo '$NAVBAR_BASE' no contiene los placeholders esperados."
+            echo "Contenido completo del archivo:"
+            cat "$NAVBAR_BASE"
+            exit 1
+          fi
+
+          # Sustituimos marcadores
           NAVBAR_HTML="${NAVBAR_HTML//SECTION_TITLE_PLACEHOLDER/FinOps}"
           NAVBAR_HTML="${NAVBAR_HTML//<!-- NAVBAR_SECTIONS_PLACEHOLDER -->/$NAVBAR_ITEMS}"
-          echo "$NAVBAR_HTML"
 
+          # Verificamos el HTML generado
+          echo "📦 HTML generado del navbar:"
+          echo "$NAVBAR_HTML" | head -n 20
+
+          # Guardamos el resultado final
           echo "$NAVBAR_HTML" > full_navbar.html
 
 
