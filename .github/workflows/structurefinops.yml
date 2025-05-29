@@ -40,11 +40,11 @@ jobs:
         run: |
           echo "Directorio actual: $(pwd)"
 
-          STRUCTURE_FILE="$KAOS_FINOPS_JSON_WEB"
-          TEMPLATE_FILE="$KAOS_FINOPS_TEMPLATE/finops.html"
-          NAVBAR_BASE="$KAOS_FINOPS_TEMPLATE/navbar.html"
+          STRUCTURE_FILE="${{ env.KAOS_FINOPS_JSON_WEB }}"
+          TEMPLATE_FILE="${{ env.KAOS_FINOPS_TEMPLATE }}/finops.html"
+          NAVBAR_BASE="${{ env.KAOS_FINOPS_TEMPLATE }}/navbar.html"
 
-          mkdir -p "$KAOS_FINOPS_RESULTS_SECTION"
+          mkdir -p "${{ env.KAOS_FINOPS_RESULTS_SECTION }}"
 
           echo "Construyendo items del navbar global..."
           NAVBAR_ITEMS=""
@@ -73,8 +73,8 @@ jobs:
             section_data=$(echo "$section" | jq -r '.datatemplate')
             section_icon=$(echo "$section" | jq -r '.icon')
 
-            SECTION_CONFIG="$KAOS_FINOPS/config/$section_data"
-            SECTION_HTML="$KAOS_FINOPS_RESULTS_SECTION/${section_title}.html"
+            SECTION_CONFIG="${{ env.KAOS_FINOPS }}/config/$section_data"
+            SECTION_HTML="${{ env.KAOS_FINOPS_RESULTS_SECTION }}/${section_title}.html"
 
             if [ -f "$SECTION_CONFIG" ]; then
               echo "✅ Generando sección: $section_title"
