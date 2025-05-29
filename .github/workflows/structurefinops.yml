@@ -94,31 +94,51 @@ jobs:
               sed -i "s/SECTION_TITLE_PLACEHOLDER/$section_title/g" "$SECTION_HTML"
               sed -i "s/SECTION_DESCRIPTION_PLACEHOLDER/$SECTION_DESCRIPTION/g" "$SECTION_HTML"
 
-              # Generar HTML dinámico a partir de tarjetas
+              # Crear el contenido dinámico vacío
               SECTION_DYNAMIC_HTML=""
 
-              jq -c '.cards[]?' "$SECTION_CONFIG" | while read -r card; do
-                card_title=$(echo "$card" | jq -r '.title')
-                card_value=$(echo "$card" | jq -r '.value')
-                card_icon=$(echo "$card" | jq -r '.icon // "fa-solid fa-chart-bar"')
+              # Procesar cada template dentro del array 'templates'
+              jq -c '.templates[]' "$SECTION_CONFIG" | while read -r tmpl; do
+                tmpl_type=$(echo "$tmpl" | jq -r '.type')
 
-                SECTION_DYNAMIC_HTML+="<div class=\"card p-4 border rounded shadow mb-4\">"
-                SECTION_DYNAMIC_HTML+="<div class=\"text-lg font-bold\">$card_title</div>"
-                SECTION_DYNAMIC_HTML+="<div class=\"text-2xl text-blue-600\">$card_value</div>"
-                SECTION_DYNAMIC_HTML+="<div><i class=\"$card_icon\"></i></div>"
-                SECTION_DYNAMIC_HTML+="</div>"
+                case "$tmpl_type" in
+                  "cost-chart")
+                    title=$(echo "$tmpl" | jq -r '.title')
+                    tipo=$(echo "$tmpl" | jq -r '.tipo')
+                    dataSource=$(echo "$tmpl" | jq -r '.dataSource')
+                    realCostField=$(echo "$tmpl" | jq -r '.realCostField')
+                    estimatedCostField=$(echo "$tmpl" | jq -r '.estimatedCostField')
+                    groupBy=$(echo "$tmpl" | jq -r '.groupBy')
+                    aggregation=$(echo "$tmpl" | jq -r '.aggregation')
+                    limit=$(echo "$tmpl" | jq -r '.limit')
+                    orderBy=$(echo "$tmpl" | jq -r '.orderBy')
+                    orderDirection=$(echo "$tmpl" | jq -r '.orderDirection')
+
+                    # Aquí puedes insertar el HTML para el gráfico,
+                    # por ejemplo un div con atributos data- para que JS lo genere:
+                    SECTION_DYNAMIC_HTML+="<section class=\"cost-chart\">"
+                    SECTION_DYNAMIC_HTML+="<h3>$title</h3>"
+                    SECTION_DYNAMIC_HTML+="<div class=\"chart\" data-tipo=\"$tipo\" data-source=\"$dataSource\" data-real-cost-field=\"$realCostField\" data-estimated-cost-field=\"$estimatedCostField\" data-group-by=\"$groupBy\" data-aggregation=\"$aggregation\" data-limit=\"$limit\" data-order-by=\"$orderBy\" data-order-direction=\"$orderDirection\"></div>"
+                    SECTION_DYNAMIC_HTML+="</section>"
+                    ;;
+                    
+                  *)
+                    SECTION_DYNAMIC_HTML+="<p>Tipo de template '$tmpl_type' no soportado aún.</p>"
+                    ;;
+                esac
               done
 
               # Insertar navbar
-              sed -i -e '/<div id="navbar-container"><\/div>/{r full_navbar.html' -e 'd}' "$SECTION_HTML"
+              sed -i -e '/<nav id="navbar-container"><\/nav>/{r full_navbar.html' -e 'd}' "$SECTION_HTML"
 
-              # Insertar contenido dinámico
-              sed -i "/<!-- Plantillas -->/r /dev/stdin" "$SECTION_HTML" <<< "$SECTION_DYNAMIC_HTML"
+              # Insertar contenido dinámico donde esté el placeholder
+              sed -i "s|SECTION_DYNAMIC_CARDS_PLACEHOLDER|$SECTION_DYNAMIC_HTML|g" "$SECTION_HTML"
 
             else
               echo "⚠️ No se encontró configuración para '$section_title'"
             fi
           done
+
 
 
       - id: upload-files
