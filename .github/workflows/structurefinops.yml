@@ -50,6 +50,7 @@ jobs:
           NAVBAR_ITEMS+="<div class=\"sections-container p-4\">"
 
           while IFS=$'\t' read -r title icon; do
+            anchor=$(echo "$title" | jq -sRr @uri)
             NAVBAR_ITEMS+="<li>"
             NAVBAR_ITEMS+="<a href=\"${title}.html\" class=\"nav-link flex items-center p-3 text-gray-700 hover:bg-blue-50 rounded-lg transition-all duration-200 group\">"
             NAVBAR_ITEMS+="<div class=\"flex items-center justify-center w-12\"><i class=\"${icon} text-orange-300 group-hover:text-orange-500 text-xl\"></i></div>"
@@ -66,6 +67,7 @@ jobs:
 
           NAVBAR_HTML=$(<"$NAVBAR_BASE")
 
+          # Comprobar existencia de placeholders (corregido)
           if [[ "$NAVBAR_HTML" != *"SECTION_TITLE_PLACEHOLDER"* ]] || [[ "$NAVBAR_HTML" != *"<!-- NAVBAR_SECTIONS_PLACEHOLDER -->"* ]]; then
             echo "⚠️ WARNING: El archivo '$NAVBAR_BASE' no contiene los placeholders esperados."
             cat "$NAVBAR_BASE"
@@ -82,70 +84,82 @@ jobs:
             section_title=$(echo "$section" | jq -r '.title')
             section_description=$(echo "$section" | jq -r '.description // empty')
             section_data_template=$(echo "$section" | jq -r '.datatemplate')
+            section_icon=$(echo "$section" | jq -r '.icon')
 
             SECTION_CONFIG="${{ env.KAOS_FINOPS }}/config/$section_data_template"
             SECTION_HTML="${{ env.KAOS_FINOPS_RESULTS_SECTION }}/${section_title}.html"
 
             if [ -f "$SECTION_CONFIG" ]; then
               echo "✅ Generando sección: $section_title"
+
               cp "$TEMPLATE_FILE" "$SECTION_HTML"
+
               sed -i "s/SECTION_TITLE_PLACEHOLDER/$section_title/g" "$SECTION_HTML"
               sed -i "s/SECTION_DESCRIPTION_PLACEHOLDER/$section_description/g" "$SECTION_HTML"
               sed -i -e '/<div id="navbar-container"><\/div>/{r full_navbar.html' -e 'd}' "$SECTION_HTML"
 
               CONTENT=""
+
+              # Procesar templates de la sección
               while read -r template; do
                 tmpl_type=$(echo "$template" | jq -r '.type')
+
                 case "$tmpl_type" in
                   "cost-chart")
-                    title=$(echo "$template" | jq -r '.title')
-                    tipo=$(echo "$template" | jq -r '.tipo // "bar"' | tr '[:upper:]' '[:lower:]')
-                    case "$tipo" in
-                      bar|line|pie|doughnut|radar|polararea) ;;
-                      *) tipo="bar" ;;
+                    title=$(echo "$template" | jq -r '.title // "Sin título"')
+                    tipo=$(echo "$template" | jq -r '.tipo // "bar"')
+                    # Normalizar tipo a minúsculas y solo tipo de Chart.js válido
+                    tipo_lc=$(echo "$tipo" | tr '[:upper:]' '[:lower:]')
+
+                    case "$tipo_lc" in
+                      bar|line|pie|doughnut|radar|polararea)
+                        tipo="$tipo_lc"
+                        ;;
+                      barchart)
+                        tipo="bar"
+                        ;;
+                      *)
+                        echo "⚠️ Tipo de gráfico inválido '$tipo', usando 'bar' por defecto"
+                        tipo="bar"
+                        ;;
                     esac
 
                     dataSource=$(echo "$template" | jq -r '.dataSource')
                     realCostField=$(echo "$template" | jq -r '.realCostField // empty')
                     estimatedCostField=$(echo "$template" | jq -r '.estimatedCostField // empty')
                     groupBy=$(echo "$template" | jq -r '.groupBy')
-                    aggregation=$(echo "$template" | jq -r '.aggregation // "sum"' | tr '[:upper:]' '[:lower:]')
                     orderBy=$(echo "$template" | jq -r '.orderBy')
                     orderDirection=$(echo "$template" | jq -r '.orderDirection')
                     limit=$(echo "$template" | jq -r '.limit')
 
                     DATA_JSON_PATH="${{ env.KAOS_DATA_BQ }}/$(basename "$dataSource")"
+
                     if [ ! -f "$DATA_JSON_PATH" ]; then
                       echo "❌ No existe data source $DATA_JSON_PATH para $title"
                       continue
                     fi
 
-                    jq_script='
-                      group_by(.['\"$groupBy\"']) | 
-                      map({
-                        group: .[0]['\"$groupBy\"'],
-                        real: ('\"$aggregation\"' == "sum" ? map(.['\"$realCostField\"']) | add :
-                              '\"$aggregation\"' == "avg" ? (map(.['\"$realCostField\"']) | add / length) :
-                              '\"$aggregation\"' == "max" ? (map(.['\"$realCostField\"']) | max) :
-                              '\"$aggregation\"' == "min" ? (map(.['\"$realCostField\"']) | min) :
-                              null),
-                        est: ('\"$aggregation\"' == "sum" ? map(.['\"$estimatedCostField\"']) | add :
-                              '\"$aggregation\"' == "avg" ? (map(.['\"$estimatedCostField\"']) | add / length) :
-                              '\"$aggregation\"' == "max" ? (map(.['\"$estimatedCostField\"']) | max) :
-                              '\"$aggregation\"' == "min" ? (map(.['\"$estimatedCostField\"']) | min) :
-                              null)
-                      })'
-
-                    AGGREGATED=$(jq -r --arg groupBy "$groupBy" --arg realCostField "$realCostField" --arg estimatedCostField "$estimatedCostField" --arg aggregation "$aggregation" "$jq_script" "$DATA_JSON_PATH" | jq -s '.')
-
-                    # Ordenar, limitar
-                    SORTED=$(echo "$AGGREGATED" | jq --arg orderBy "$orderBy" --arg orderDir "$orderDirection" --argjson limit "$limit" '
+                    # Construir filtros jq para ordenar, limitar y agrupar
+                    # Ordenar
+                    SORTED=$(jq -c --arg orderBy "$orderBy" --arg orderDir "$orderDirection" --argjson limit "$limit" '
                       sort_by(.[$orderBy]) | if $orderDir=="desc" then reverse else . end | .[0:$limit]
-                    ')
+                    ' "$DATA_JSON_PATH")
 
-                    labels=$(echo "$SORTED" | jq '[.[].group] | @json')
-                    realCosts=$(echo "$SORTED" | jq '[.[].real] | @json')
-                    estimatedCosts=$(echo "$SORTED" | jq '[.[].est] | @json')
+                    # Obtener etiquetas (labels) agrupadas por groupBy
+                    labels=$(echo "$SORTED" | jq -r --arg groupBy "$groupBy" 'map(.[ $groupBy ]) | unique | @json')
+
+                    # Obtener datos reales y estimados ordenados y limitados
+                    if [ -n "$realCostField" ]; then
+                      realCosts=$(echo "$SORTED" | jq -r --arg field "$realCostField" 'map(.[ $field ]) | @json')
+                    else
+                      realCosts="[]"
+                    fi
+
+                    if [ -n "$estimatedCostField" ]; then
+                      estimatedCosts=$(echo "$SORTED" | jq -r --arg field "$estimatedCostField" 'map(.[ $field ]) | @json')
+                    else
+                      estimatedCosts="[]"
+                    fi
 
                     safe_title=$(echo "$title" | tr '[:upper:]' '[:lower:]' | tr ' ' '_' | tr -cd '[:alnum:]_')
                     chart_id="chart_${safe_title:-untitled}"
@@ -153,27 +167,41 @@ jobs:
                     CONTENT+="<section class=\"cost-chart p-4 bg-white rounded shadow mb-6\">"
                     CONTENT+="<h3 class=\"text-xl font-semibold mb-2\">$title</h3>"
                     CONTENT+="<canvas id=\"$chart_id\" height=\"150\"></canvas>"
-                    CONTENT+="<script>(function(){let ctx=document.getElementById('$chart_id').getContext('2d');"
-                    CONTENT+="new Chart(ctx,{type:'$tipo',data:{labels:$labels,datasets:["
-
+                    CONTENT+="<script>"
+                    CONTENT+="(function(){"
+                    CONTENT+="  let ctx = document.getElementById('$chart_id').getContext('2d');"
+                    CONTENT+="  new Chart(ctx, {"
+                    CONTENT+="    type: '$tipo',"
+                    CONTENT+="    data: {"
+                    CONTENT+="      labels: $labels,"
+                    CONTENT+="      datasets: ["
                     if [ "$realCosts" != "[]" ]; then
-                      CONTENT+="{label:'Costo Real',data:$realCosts,backgroundColor:'rgba(255,99,132,0.5)'}"
-                      [ "$estimatedCosts" != "[]" ] && CONTENT+=","
+                      CONTENT+="{label:'Costo Real', data:$realCosts, backgroundColor:'rgba(255, 99, 132, 0.5)'}"
+                      if [ "$estimatedCosts" != "[]" ]; then
+                        CONTENT+=","
+                      fi
                     fi
                     if [ "$estimatedCosts" != "[]" ]; then
-                      CONTENT+="{label:'Costo Estimado',data:$estimatedCosts,backgroundColor:'rgba(54,162,235,0.5)'}"
+                      CONTENT+="{label:'Costo Estimado', data:$estimatedCosts, backgroundColor:'rgba(54, 162, 235, 0.5)'}"
                     fi
-
-                    CONTENT+="]},options:{responsive:true,scales:{y:{beginAtZero:true}}}});})();</script>"
-                    CONTENT+="</section>"
+                    CONTENT+="      ]"
+                    CONTENT+="    },"
+                    CONTENT+="    options: { responsive:true, scales: { y: { beginAtZero: true } } }"
+                    CONTENT+="  });"
+                    CONTENT+="})();"
+                    CONTENT+="</script></section>"
                     ;;
 
                   "table")
                     title=$(echo "$template" | jq -r '.title')
                     CONTENT+="<section class=\"table-section p-4 bg-white rounded shadow mb-6\">"
                     CONTENT+="<h3 class=\"text-xl font-semibold mb-2\">$title</h3>"
-                    CONTENT+="<table class=\"min-w-full border border-gray-300\"><thead><tr><th class=\"border px-4 py-2\">Columna 1</th><th class=\"border px-4 py-2\">Columna 2</th></tr></thead>"
-                    CONTENT+="<tbody><tr><td class=\"border px-4 py-2\">Dato 1</td><td class=\"border px-4 py-2\">Dato 2</td></tr></tbody></table></section>"
+                    CONTENT+="<table class=\"min-w-full border border-gray-300\">"
+                    CONTENT+="<thead><tr><th class=\"border px-4 py-2\">Columna 1</th><th class=\"border px-4 py-2\">Columna 2</th></tr></thead>"
+                    CONTENT+="<tbody>"
+                    CONTENT+="<tr><td class=\"border px-4 py-2\">Dato 1</td><td class=\"border px-4 py-2\">Dato 2</td></tr>"
+                    CONTENT+="<tr><td class=\"border px-4 py-2\">Dato 3</td><td class=\"border px-4 py-2\">Dato 4</td></tr>"
+                    CONTENT+="</tbody></table></section>"
                     ;;
                   *)
                     CONTENT+="<p>Tipo de plantilla '$tmpl_type' no soportado.</p>"
@@ -187,7 +215,6 @@ jobs:
               echo "⚠️ No se encontró configuración para '$section_title'"
             fi
           done
-
       - id: upload-files
         name: Upload Files
         run: |
