@@ -107,16 +107,75 @@ jobs:
 
                 case "$tmpl_type" in
                   "cost-chart")
-                    title=$(echo "$template" | jq -r '.title')
-                    tipo=$(echo "$template" | jq -r '.tipo')
-                    dataSource=$(echo "$template" | jq -r '.dataSource')
+                  title=$(echo "$template" | jq -r '.title')
+                  tipo=$(echo "$template" | jq -r '.tipo')
+                  dataSource=$(echo "$template" | jq -r '.dataSource')
+                  realCostField=$(echo "$template" | jq -r '.realCostField // empty')
+                  estimatedCostField=$(echo "$template" | jq -r '.estimatedCostField // empty')
+                  groupBy=$(echo "$template" | jq -r '.groupBy')
+                  orderBy=$(echo "$template" | jq -r '.orderBy')
+                  orderDirection=$(echo "$template" | jq -r '.orderDirection')
+                  limit=$(echo "$template" | jq -r '.limit')
 
-                    CONTENT+="<section class=\"cost-chart p-4 bg-white rounded shadow mb-6\">"
-                    CONTENT+="<h3 class=\"text-xl font-semibold mb-2\">$title</h3>"
-                    CONTENT+="<div class=\"chart\" data-tipo=\"$tipo\" data-source=\"$dataSource\">"
-                    CONTENT+="<canvas></canvas>"
-                    CONTENT+="</div></section>"
-                    ;;
+                  # Leer JSON con jq, ordenar, limitar y extraer etiquetas y datasets
+                  # Nota: dataSource es relativo, debes adaptarlo al path base
+
+                  DATA_JSON_PATH="${{ env.KAOS_FINOPS_JSON_DATA }}/$(basename "$dataSource")"
+
+                  if [ ! -f "$DATA_JSON_PATH" ]; then
+                    echo "❌ No existe data source $DATA_JSON_PATH para $title"
+                    continue
+                  fi
+
+                  # Extraemos labels ordenados y limitados
+                  labels=$(jq -r --arg groupBy "$groupBy" --arg orderBy "$orderBy" --arg orderDir "$orderDirection" --argjson limit "$limit" \
+                    'sort_by(.[$orderBy]) | if $orderDir=="desc" then reverse else . end | .[0:$limit] | map(.[ $groupBy ]) | @json' "$DATA_JSON_PATH")
+
+                  # Extraemos costos reales
+                  if [ -n "$realCostField" ]; then
+                    realCosts=$(jq -r --arg orderBy "$orderBy" --arg orderDir "$orderDirection" --argjson limit "$limit" --arg field "$realCostField" \
+                      'sort_by(.[$orderBy]) | if $orderDir=="desc" then reverse else . end | .[0:$limit] | map(.[ $field ]) | @json' "$DATA_JSON_PATH")
+                  else
+                    realCosts="[]"
+                  fi
+
+                  # Extraemos costos estimados
+                  if [ -n "$estimatedCostField" ]; then
+                    estimatedCosts=$(jq -r --arg orderBy "$orderBy" --arg orderDir "$orderDirection" --argjson limit "$limit" --arg field "$estimatedCostField" \
+                      'sort_by(.[$orderBy]) | if $orderDir=="desc" then reverse else . end | .[0:$limit] | map(.[ $field ]) | @json' "$DATA_JSON_PATH")
+                  else
+                    estimatedCosts="[]"
+                  fi
+
+                  chart_id="chart-$(echo "$title" | tr ' ' '-' | tr -cd '[:alnum:]-')"
+
+                  CONTENT+="<section class=\"cost-chart p-4 bg-white rounded shadow mb-6\">"
+                  CONTENT+="<h3 class=\"text-xl font-semibold mb-2\">$title</h3>"
+                  CONTENT+="<canvas id=\"$chart_id\" height=\"150\"></canvas>"
+                  CONTENT+="<script>"
+                  CONTENT+="const ctx_${chart_id} = document.getElementById('$chart_id').getContext('2d');"
+                  CONTENT+="new Chart(ctx_${chart_id}, {"
+                  CONTENT+="type: '${tipo,,}',"
+                  CONTENT+="data: {"
+                  CONTENT+="labels: $labels,"
+                  CONTENT+="datasets: ["
+                  if [ "$realCosts" != "[]" ]; then
+                    CONTENT+="{label:'Costo Real', data:$realCosts, backgroundColor:'rgba(255, 99, 132, 0.5)'},"
+                  fi
+                  if [ "$estimatedCosts" != "[]" ]; then
+                    CONTENT+="{label:'Costo Estimado', data:$estimatedCosts, backgroundColor:'rgba(54, 162, 235, 0.5)'}"
+                  fi
+                  CONTENT+="]"
+                  CONTENT+="},"
+                  CONTENT+="options: {"
+                  CONTENT+="responsive:true,"
+                  CONTENT+="scales: { y: { beginAtZero: true } }"
+                  CONTENT+="}"
+                  CONTENT+="});"
+                  CONTENT+="</script>"
+                  CONTENT+="</section>"
+                  ;;
+
                   "table")
                     title=$(echo "$template" | jq -r '.title')
                     dataSource=$(echo "$template" | jq -r '.dataSource')
