@@ -48,40 +48,26 @@ jobs:
 
           echo "Construyendo items del navbar global..."
           NAVBAR_ITEMS=""
-          # Primero agregamos un contenedor para las secciones
           NAVBAR_ITEMS+="<div class=\"sections-container p-4\">"
-          
-          # Iteramos sobre las secciones para construir el navbar
+
           jq -r '.sections[] | [.title, .icon] | @tsv' "$STRUCTURE_FILE" | while IFS=$'\t' read -r title icon; do
-            anchor=$(echo "$title" | tr '[:upper:]' '[:lower:]' | sed 's/ /-/g')
-            NAVBAR_ITEMS+="<div class=\"section-item mb-2\">"
+            anchor=$(echo "$title" | jq -sRr @uri)
+            NAVBAR_ITEMS+="<li>"
             NAVBAR_ITEMS+="<a href=\"#${anchor}\" class=\"nav-link flex items-center p-3 text-gray-700 hover:bg-blue-50 rounded-lg transition-all duration-200 group\">"
             NAVBAR_ITEMS+="<div class=\"flex items-center justify-center w-12\"><i class=\"${icon} text-orange-300 group-hover:text-orange-500 text-xl\"></i></div>"
             NAVBAR_ITEMS+="<span class=\"sidebar-text flex-1 font-medium capitalize\">${title}</span>"
-            NAVBAR_ITEMS+="</a></div>"
+            NAVBAR_ITEMS+="</a></li>"
           done
-          
-          # Cerramos el contenedor de secciones
+
           NAVBAR_ITEMS+="</div>"
 
-          # Reemplazamos el comentario con las secciones generadas
-          sed -i "s/<!-- Las secciones se insertarán aquí dinámicamente -->/${NAVBAR_ITEMS}/" "$SECTION_HTML"
+          # Preparamos navbar HTML completo una sola vez
+          NAVBAR_HTML=$(<"$NAVBAR_BASE")
+          NAVBAR_HTML="${NAVBAR_HTML//SECTION_TITLE_PLACEHOLDER/FinOps}"
+          NAVBAR_HTML="${NAVBAR_HTML//<!-- NAVBAR_SECTIONS_PLACEHOLDER -->/$NAVBAR_ITEMS}"
+          echo "$NAVBAR_HTML" > full_navbar.html
+
           echo "Procesando secciones..."
-          jq -c '.sections[]' "$STRUCTURE_FILE" | while read -r section; do
-            section_title=$(echo "$section" | jq -r '.title')
-            section_icon=$(echo "$section" | jq -r '.icon')
-
-            # Construir bloque HTML para cada sección
-            SECTIONS_HTML+="<section id=\"${section_title,,}\" class=\"section-block p-4 bg-white rounded-lg shadow mb-4\">"
-            SECTIONS_HTML+="<h2 class=\"text-xl font-semibold mb-2\"><i class=\"$section_icon mr-2\"></i> $section_title</h2>"
-            SECTIONS_HTML+="<!-- Contenido dinámico para $section_title -->"
-            SECTIONS_HTML+="</section>"
-          done
-
-          # Guardar el bloque completo en un archivo temporal
-          echo "$SECTIONS_HTML" > temp_sections.html
-
-          echo "Procesando secciones individuales..."
           jq -c '.sections[]' "$STRUCTURE_FILE" | while read -r section; do
             section_title=$(echo "$section" | jq -r '.title')
             section_data=$(echo "$section" | jq -r '.datatemplate')
@@ -96,29 +82,19 @@ jobs:
               cp "$TEMPLATE_FILE" "$SECTION_HTML"
               SECTION_DESCRIPTION=$(jq -r '.description' "$SECTION_CONFIG")
 
-              # Construir navbar para esta sección
-              NAVBAR_HTML=$(<"$NAVBAR_BASE")
-              NAVBAR_HTML="${NAVBAR_HTML//SECTION_TITLE_PLACEHOLDER/$section_title}"
-              NAVBAR_HTML="${NAVBAR_HTML//<!-- NAVBAR_SECTIONS_PLACEHOLDER -->/$NAVBAR_ITEMS}"
-
-              # Reemplazar placeholders en el HTML final
+              # Sustituimos placeholders
               sed -i "s/SECTION_TITLE_PLACEHOLDER/$section_title/g" "$SECTION_HTML"
               sed -i "s/SECTION_DESCRIPTION_PLACEHOLDER/$SECTION_DESCRIPTION/g" "$SECTION_HTML"
 
-              # Insertar navbar
-              echo "$NAVBAR_HTML" > temp_navbar.html
-              sed -i -e '/<div id="navbar-container"><\/div>/{r temp_navbar.html' -e 'd}' "$SECTION_HTML"
-              rm temp_navbar.html
-
-              # Insertar dinámicamente el bloque de todas las secciones dentro del div con id "content-container"
-              # Buscamos la línea con <div id="content-container"> y añadimos después el contenido de temp_sections.html
-              sed -i "/<div id=\"content-container\">/r temp_sections.html" "$SECTION_HTML"
+              # Insertar navbar dinámico
+              sed -i -e '/<div id="navbar-container"><\/div>/{r full_navbar.html' -e 'd}' "$SECTION_HTML"
 
             else
               echo "⚠️ No se encontró configuración para '$section_title'"
             fi
           done
-          rm temp_sections.html
+
+          rm -f full_navbar.html
 
 
       - id: upload-files
