@@ -141,3 +141,4 @@
 - **Version**: 0.0.140 - **Description**: H1152 desarrollo inicio
 - **Version**: 0.0.141 - **Description**: H1149 desarrollo de orchestrator
 - **Version**: 0.0.142 - **Description**: H1183 personalización módulo finops
+- **Version**: 0.0.143 - **Description**: H1205 web creation
