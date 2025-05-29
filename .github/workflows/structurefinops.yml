@@ -105,9 +105,25 @@ jobs:
                 tmpl_type=$(echo "$template" | jq -r '.type')
 
                 case "$tmpl_type" in
-                  cost-chart)
+                  "cost-chart")
                     title=$(echo "$template" | jq -r '.title // "Sin título"')
                     tipo=$(echo "$template" | jq -r '.tipo // "bar"')
+                    # Normalizar tipo a minúsculas y solo tipo de Chart.js válido
+                    tipo_lc=$(echo "$tipo" | tr '[:upper:]' '[:lower:]')
+
+                    case "$tipo_lc" in
+                      bar|line|pie|doughnut|radar|polararea)
+                        tipo="$tipo_lc"
+                        ;;
+                      barchart)
+                        tipo="bar"
+                        ;;
+                      *)
+                        echo "⚠️ Tipo de gráfico inválido '$tipo', usando 'bar' por defecto"
+                        tipo="bar"
+                        ;;
+                    esac
+
                     dataSource=$(echo "$template" | jq -r '.dataSource')
                     realCostField=$(echo "$template" | jq -r '.realCostField // empty')
                     estimatedCostField=$(echo "$template" | jq -r '.estimatedCostField // empty')
@@ -117,26 +133,33 @@ jobs:
                     limit=$(echo "$template" | jq -r '.limit')
 
                     DATA_JSON_PATH="${{ env.KAOS_DATA_BQ }}/$(basename "$dataSource")"
+
                     if [ ! -f "$DATA_JSON_PATH" ]; then
                       echo "❌ No existe data source $DATA_JSON_PATH para $title"
                       continue
                     fi
 
-                    AGGREGATED=$(jq -c --arg groupBy "$groupBy" --arg realField "$realCostField" --arg estField "$estimatedCostField" --arg orderBy "$orderBy" --arg orderDir "$orderDirection" --argjson limit "$limit" '
-                      group_by(.[ $groupBy ]) |
-                      map({
-                        group: (.[0][$groupBy]),
-                        realSum: (map(.[ $realField ] // 0) | add),
-                        estimatedSum: (map(.[ $estField ] // 0) | add)
-                      }) |
-                      sort_by(.[$orderBy]) |
-                      if $orderDir == "desc" then reverse else . end |
-                      .[0:$limit]
+                    # Construir filtros jq para ordenar, limitar y agrupar
+                    # Ordenar
+                    SORTED=$(jq -c --arg orderBy "$orderBy" --arg orderDir "$orderDirection" --argjson limit "$limit" '
+                      sort_by(.[$orderBy]) | if $orderDir=="desc" then reverse else . end | .[0:$limit]
                     ' "$DATA_JSON_PATH")
 
-                    labels=$(echo "$AGGREGATED" | jq -r '[.[].group] | @json')
-                    realCosts=$(echo "$AGGREGATED" | jq -r '[.[].realSum] | @json')
-                    estimatedCosts=$(echo "$AGGREGATED" | jq -r '[.[].estimatedSum] | @json')
+                    # Obtener etiquetas (labels) agrupadas por groupBy
+                    labels=$(echo "$SORTED" | jq -r --arg groupBy "$groupBy" 'map(.[ $groupBy ]) | unique | @json')
+
+                    # Obtener datos reales y estimados ordenados y limitados
+                    if [ -n "$realCostField" ]; then
+                      realCosts=$(echo "$SORTED" | jq -r --arg field "$realCostField" 'map(.[ $field ]) | @json')
+                    else
+                      realCosts="[]"
+                    fi
+
+                    if [ -n "$estimatedCostField" ]; then
+                      estimatedCosts=$(echo "$SORTED" | jq -r --arg field "$estimatedCostField" 'map(.[ $field ]) | @json')
+                    else
+                      estimatedCosts="[]"
+                    fi
 
                     safe_title=$(echo "$title" | tr '[:upper:]' '[:lower:]' | tr ' ' '_' | tr -cd '[:alnum:]_')
                     chart_id="chart_${safe_title:-untitled}"
@@ -169,49 +192,31 @@ jobs:
                     CONTENT+="</script></section>"
                     ;;
 
-                  
-
-                  table)
-                    title=$(echo "$template" | jq -r '.title // "Tabla sin título"')
-                    dataSource=$(echo "$template" | jq -r '.dataSource')
-
-                    DATA_JSON_PATH="${{ env.KAOS_DATA_BQ }}/$(basename "$dataSource")"
-                    if [ ! -f "$DATA_JSON_PATH" ]; then
-                      echo "❌ No existe data source $DATA_JSON_PATH para tabla $title"
-                      continue
-                    fi
-
-                    # Tomar solo primeros 10 elementos para tabla (puedes ajustar)
-                    rows=$(jq '.[0:10]' "$DATA_JSON_PATH")
-
-                    # Obtener columnas dinámicamente (claves del primer objeto)
-                    columns=$(echo "$rows" | jq -r '.[0] | keys_unsorted | @tsv')
+                  "table")
+                    title=$(echo "$template" | jq -r '.title')
+                    table_id="table_$(echo "$title" | tr '[:upper:]' '[:lower:]' | tr ' ' '_' | tr -cd '[:alnum:]_')"
 
                     CONTENT+="<section class=\"table-section p-4 bg-white rounded shadow mb-6\">"
-                    CONTENT+="<h3 class=\"text-xl font-semibold mb-2\">$title</h3>"
-                    CONTENT+="<table class=\"min-w-full border border-gray-300\">"
-                    CONTENT+="<thead><tr>"
-                    for col in $columns; do
-                      CONTENT+="<th class=\"border px-4 py-2\">$col</th>"
-                    done
-                    CONTENT+="</tr></thead><tbody>"
+                    CONTENT+="<h3 class=\"text-xl font-semibold mb-4\">$title</h3>"
 
-                    row_count=$(echo "$rows" | jq 'length')
-                    for ((i=0; i<row_count; i++)); do
-                      CONTENT+="<tr>"
-                      for col in $columns; do
-                        val=$(echo "$rows" | jq -r ".[$i][\"$col\"] // \"\"")
-                        CONTENT+="<td class=\"border px-4 py-2\">$val</td>"
-                      done
-                      CONTENT+="</tr>"
-                    done
+                    CONTENT+="<div class=\"overflow-x-auto\">"
+                    CONTENT+="<table id=\"$table_id\" class=\"display nowrap min-w-full text-sm\">"
+                    CONTENT+="<thead><tr><th>Columna 1</th><th>Columna 2</th></tr></thead>"
+                    CONTENT+="<tbody>"
+                    CONTENT+="<tr><td>Dato 1</td><td>Dato 2</td></tr>"
+                    CONTENT+="<tr><td>Dato 3</td><td>Dato 4</td></tr>"
+                    CONTENT+="<tr><td>Dato 5</td><td>Dato 6</td></tr>"
+                    CONTENT+="<tr><td>Dato 7</td><td>Dato 8</td></tr>"
+                    CONTENT+="</tbody></table>"
+                    CONTENT+="</div>"
 
-                    CONTENT+="</tbody></table></section>"
+                    CONTENT+="<script src=\"https://code.jquery.com/jquery-3.7.1.min.js\"></script>"
+                    CONTENT+="<script src=\"https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js\"></script>"
+                    CONTENT+="<link rel=\"stylesheet\" href=\"https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css\" />"
+                    CONTENT+="<script>$(document).ready(function(){ $('#$table_id').DataTable({ paging: true, pageLength: 5 }); });</script>"
+                    CONTENT+="</section>"
                     ;;
 
-                  *)
-                    CONTENT+="<p>Tipo de plantilla '$tmpl_type' no soportado.</p>"
-                    ;;
                 esac
               done < <(jq -c '.templates[]' "$SECTION_CONFIG")
 
@@ -221,7 +226,6 @@ jobs:
               echo "⚠️ No se encontró configuración para '$section_title'"
             fi
           done
-
       - id: upload-files
         name: Upload Files
         run: |
