@@ -119,7 +119,7 @@ jobs:
                   orderDirection=$(echo "$template" | jq -r '.orderDirection')
                   limit=$(echo "$template" | jq -r '.limit')
 
-                  DATA_JSON_PATH="${{ env.KAOS_FINOPS_JSON_DATA }}/$(basename "$dataSource")"
+                  DATA_JSON_PATH="${{ env.KAOS_DATA_BQ }}/$(basename "$dataSource")"
 
                   if [ ! -f "$DATA_JSON_PATH" ]; then
                     echo "❌ No existe data source $DATA_JSON_PATH para $title"
