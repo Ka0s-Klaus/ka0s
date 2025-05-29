@@ -38,19 +38,15 @@ jobs:
 
       - name: Crear estructura FinOps HTML
         run: |
-          echo "Directorio actual: $(pwd)"
-
           STRUCTURE_FILE="${{ env.KAOS_FINOPS_JSON_WEB }}"
           TEMPLATE_FILE="${{ env.KAOS_FINOPS_TEMPLATE }}/finops.html"
           NAVBAR_BASE="${{ env.KAOS_FINOPS_TEMPLATE }}/navbar.html"
-
           mkdir -p "${{ env.KAOS_FINOPS_RESULTS_SECTION }}"
 
           echo "Construyendo items del navbar global..."
           NAVBAR_ITEMS="<ul id=\"navbar-sections\" class=\"flex flex-col gap-1\">"
           NAVBAR_ITEMS+="<div class=\"sections-container p-4\">"
 
-          # Use process substitution to avoid subshell
           while IFS=$'\t' read -r title icon; do
             anchor=$(echo "$title" | jq -sRr @uri)
             NAVBAR_ITEMS+="<li>"
@@ -62,38 +58,23 @@ jobs:
 
           NAVBAR_ITEMS+="</div></ul>"
 
-          # Validar que el archivo navbar base existe y no está vacío
           if [ ! -s "$NAVBAR_BASE" ]; then
             echo "❌ ERROR: El archivo navbar base '$NAVBAR_BASE' no existe o está vacío."
             exit 1
-          else
-            echo "📄 Archivo navbar base encontrado: $NAVBAR_BASE"
-            echo "🔍 Primeras líneas del archivo:"
-            head -n 10 "$NAVBAR_BASE"
           fi
 
-          # Leer el contenido del navbar base
           NAVBAR_HTML=$(<"$NAVBAR_BASE")
 
-          # Asegurarnos de que contiene los placeholders esperados
           if [[ "$NAVBAR_HTML" != *"SECTION_TITLE_PLACEHOLDER"* || "$NAVBAR_HTML" != *"NAVBAR_SECTIONS_PLACEHOLDER"* ]]; then
             echo "⚠️ WARNING: El archivo '$NAVBAR_BASE' no contiene los placeholders esperados."
-            echo "Contenido completo del archivo:"
             cat "$NAVBAR_BASE"
             exit 1
           fi
 
-          # Sustituimos marcadores
           NAVBAR_HTML="${NAVBAR_HTML//SECTION_TITLE_PLACEHOLDER/FinOps}"
           NAVBAR_HTML="${NAVBAR_HTML//<!-- NAVBAR_SECTIONS_PLACEHOLDER -->/$NAVBAR_ITEMS}"
 
-          # Verificamos el HTML generado
-          echo "📦 HTML generado del navbar:"
-          echo "$NAVBAR_HTML" | head -n 20
-
-          # Guardamos el resultado final
           echo "$NAVBAR_HTML" > full_navbar.html
-
 
           echo "Procesando secciones..."
           jq -c '.sections[]' "$STRUCTURE_FILE" | while read -r section; do
@@ -110,19 +91,34 @@ jobs:
               cp "$TEMPLATE_FILE" "$SECTION_HTML"
               SECTION_DESCRIPTION=$(jq -r '.description' "$SECTION_CONFIG")
 
-              # Sustituimos placeholders
               sed -i "s/SECTION_TITLE_PLACEHOLDER/$section_title/g" "$SECTION_HTML"
               sed -i "s/SECTION_DESCRIPTION_PLACEHOLDER/$SECTION_DESCRIPTION/g" "$SECTION_HTML"
 
-              # Insertar navbar dinámico
+              # Generar HTML dinámico a partir de tarjetas
+              SECTION_DYNAMIC_HTML=""
+
+              jq -c '.cards[]?' "$SECTION_CONFIG" | while read -r card; do
+                card_title=$(echo "$card" | jq -r '.title')
+                card_value=$(echo "$card" | jq -r '.value')
+                card_icon=$(echo "$card" | jq -r '.icon // "fa-solid fa-chart-bar"')
+
+                SECTION_DYNAMIC_HTML+="<div class=\"card p-4 border rounded shadow mb-4\">"
+                SECTION_DYNAMIC_HTML+="<div class=\"text-lg font-bold\">$card_title</div>"
+                SECTION_DYNAMIC_HTML+="<div class=\"text-2xl text-blue-600\">$card_value</div>"
+                SECTION_DYNAMIC_HTML+="<div><i class=\"$card_icon\"></i></div>"
+                SECTION_DYNAMIC_HTML+="</div>"
+              done
+
+              # Insertar navbar
               sed -i -e '/<div id="navbar-container"><\/div>/{r full_navbar.html' -e 'd}' "$SECTION_HTML"
+
+              # Insertar contenido dinámico
+              sed -i "/<!-- Plantillas -->/r /dev/stdin" "$SECTION_HTML" <<< "$SECTION_DYNAMIC_HTML"
 
             else
               echo "⚠️ No se encontró configuración para '$section_title'"
             fi
           done
-
-          # rm -f full_navbar.html
 
 
       - id: upload-files
