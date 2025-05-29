@@ -48,13 +48,23 @@ jobs:
 
           echo "Construyendo items del navbar global..."
           NAVBAR_ITEMS=""
+          # Primero agregamos un contenedor para las secciones
+          NAVBAR_ITEMS+="<div class=\"sections-container p-4\">"
+          
+          # Iteramos sobre las secciones para construir el navbar
           jq -r '.sections[] | [.title, .icon] | @tsv' "$STRUCTURE_FILE" | while IFS=$'\t' read -r title icon; do
             anchor=$(echo "$title" | jq -sRr @uri)
-            NAVBAR_ITEMS+="<li><a href=\"#${anchor}\" class=\"nav-link flex items-center justify-center w-full py-3 text-gray-700 hover:bg-blue-50 rounded-lg transition-all duration-200 group relative\"><div class=\"flex items-center justify-center w-12\"><i class=\"${icon} text-orange-300 group-hover:text-orange-500 text-xl\"></i></div><span class=\"sidebar-text flex-1 font-medium capitalize\">${title}</span></a></li>"
+            NAVBAR_ITEMS+="<div class=\"section-item mb-2\">"  # Agregamos margen inferior entre items
+            NAVBAR_ITEMS+="<a href=\"#${anchor}\" class=\"nav-link flex items-center p-3 text-gray-700 hover:bg-blue-50 rounded-lg transition-all duration-200 group\">"
+            NAVBAR_ITEMS+="<div class=\"flex items-center justify-center w-12\"><i class=\"${icon} text-orange-300 group-hover:text-orange-500 text-xl\"></i></div>"
+            NAVBAR_ITEMS+="<span class=\"sidebar-text flex-1 font-medium capitalize\">${title}</span>"
+            NAVBAR_ITEMS+="</a></div>"
           done
+          
+          # Cerramos el contenedor de secciones
+          NAVBAR_ITEMS+="</div>"
 
-          echo "Construyendo el HTML con todas las secciones para insertar dinámicamente..."
-          SECTIONS_HTML=""
+          echo "Procesando secciones..."
           jq -c '.sections[]' "$STRUCTURE_FILE" | while read -r section; do
             section_title=$(echo "$section" | jq -r '.title')
             section_icon=$(echo "$section" | jq -r '.icon')
