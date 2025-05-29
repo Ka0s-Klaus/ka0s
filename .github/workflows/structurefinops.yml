@@ -151,10 +151,13 @@ jobs:
                   CONTENT+="<h3 class=\"text-xl font-semibold mb-2\">$title</h3>"
                   CONTENT+="<canvas id=\"$chart_id\" height=\"150\"></canvas>"
                   CONTENT+="<script>"
-                  CONTENT+="let ctx = document.getElementById('$chart_id').getContext('2d');"
-                  CONTENT+="new Chart(ctx, {"
-                  CONTENT+="type: '${tipo,,}',"
-                  CONTENT+="data: { labels: $labels, datasets: ["
+                  CONTENT+="(function(){"
+                  CONTENT+="  let ctx = document.getElementById('$chart_id').getContext('2d');"
+                  CONTENT+="  new Chart(ctx, {"
+                  CONTENT+="    type: '${tipo,,}',"
+                  CONTENT+="    data: {"
+                  CONTENT+="      labels: $labels,"
+                  CONTENT+="      datasets: ["
                   if [ "$realCosts" != "[]" ]; then
                     CONTENT+="{label:'Costo Real', data:$realCosts, backgroundColor:'rgba(255, 99, 132, 0.5)'}"
                     [ "$estimatedCosts" != "[]" ] && CONTENT+=","
@@ -162,9 +165,11 @@ jobs:
                   if [ "$estimatedCosts" != "[]" ]; then
                     CONTENT+="{label:'Costo Estimado', data:$estimatedCosts, backgroundColor:'rgba(54, 162, 235, 0.5)'}"
                   fi
-                  CONTENT+="]},"
-                  CONTENT+="options: { responsive:true, scales: { y: { beginAtZero: true } } }"
-                  CONTENT+="});"
+                  CONTENT+="      ]"
+                  CONTENT+="    },"
+                  CONTENT+="    options: { responsive:true, scales: { y: { beginAtZero: true } } }"
+                  CONTENT+="  });"
+                  CONTENT+="})();"
                   CONTENT+="</script></section>"
                   ;;
 
