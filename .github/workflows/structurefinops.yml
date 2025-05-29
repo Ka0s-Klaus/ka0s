@@ -53,8 +53,8 @@ jobs:
           
           # Iteramos sobre las secciones para construir el navbar
           jq -r '.sections[] | [.title, .icon] | @tsv' "$STRUCTURE_FILE" | while IFS=$'\t' read -r title icon; do
-            anchor=$(echo "$title" | jq -sRr @uri)
-            NAVBAR_ITEMS+="<div class=\"section-item mb-2\">"  # Agregamos margen inferior entre items
+            anchor=$(echo "$title" | tr '[:upper:]' '[:lower:]' | sed 's/ /-/g')
+            NAVBAR_ITEMS+="<div class=\"section-item mb-2\">"
             NAVBAR_ITEMS+="<a href=\"#${anchor}\" class=\"nav-link flex items-center p-3 text-gray-700 hover:bg-blue-50 rounded-lg transition-all duration-200 group\">"
             NAVBAR_ITEMS+="<div class=\"flex items-center justify-center w-12\"><i class=\"${icon} text-orange-300 group-hover:text-orange-500 text-xl\"></i></div>"
             NAVBAR_ITEMS+="<span class=\"sidebar-text flex-1 font-medium capitalize\">${title}</span>"
@@ -64,6 +64,8 @@ jobs:
           # Cerramos el contenedor de secciones
           NAVBAR_ITEMS+="</div>"
 
+          # Reemplazamos el comentario con las secciones generadas
+          sed -i "s/<!-- Las secciones se insertarán aquí dinámicamente -->/${NAVBAR_ITEMS}/" "$SECTION_HTML"
           echo "Procesando secciones..."
           jq -c '.sections[]' "$STRUCTURE_FILE" | while read -r section; do
             section_title=$(echo "$section" | jq -r '.title')
