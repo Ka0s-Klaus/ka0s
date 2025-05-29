@@ -25,6 +25,8 @@ env:
     KAOS_FINOPS: "core/config/finops" # directorio de la web
     KAOS_FINOPS_RESULTS_SECTION: "core/results/webs/finops/section"
 
+    KAOS_DATA_BQ: "core/results/bq/data"
+
 jobs:
   job-core:
     runs-on:
@@ -120,7 +122,7 @@ jobs:
                   # Leer JSON con jq, ordenar, limitar y extraer etiquetas y datasets
                   # Nota: dataSource es relativo, debes adaptarlo al path base
 
-                  DATA_JSON_PATH="${{ env.KAOS_FINOPS_JSON_DATA }}/$(basename "$dataSource")"
+                  DATA_JSON_PATH="${{ env.KAOS_DATA_BQ }}/$(basename "$dataSource")"
 
                   if [ ! -f "$DATA_JSON_PATH" ]; then
                     echo "❌ No existe data source $DATA_JSON_PATH para $title"
