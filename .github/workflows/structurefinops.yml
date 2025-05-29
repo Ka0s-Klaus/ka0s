@@ -77,7 +77,7 @@ jobs:
           echo "$NAVBAR_HTML" > full_navbar.html
 
           echo "Procesando secciones..."
-          while read -r section; do
+          jq -c '.sections[]' "$STRUCTURE_FILE" | while read -r section; do
             section_title=$(echo "$section" | jq -r '.title')
             section_description=$(echo "$section" | jq -r '.description // empty')
             section_data_template=$(echo "$section" | jq -r '.datatemplate')
@@ -102,78 +102,85 @@ jobs:
               # Generar contenido dinámico según templates dentro del JSON de configuración de la sección
               CONTENT=""
 
-              # Leer las plantillas con otro while anidado con redirección
               while read -r template; do
                 tmpl_type=$(echo "$template" | jq -r '.type')
 
                 case "$tmpl_type" in
                   "cost-chart")
-                    title=$(echo "$template" | jq -r '.title')
-                    tipo=$(echo "$template" | jq -r '.tipo')
-                    dataSource=$(echo "$template" | jq -r '.dataSource')
-                    realCostField=$(echo "$template" | jq -r '.realCostField // empty')
-                    estimatedCostField=$(echo "$template" | jq -r '.estimatedCostField // empty')
-                    groupBy=$(echo "$template" | jq -r '.groupBy')
-                    orderBy=$(echo "$template" | jq -r '.orderBy')
-                    orderDirection=$(echo "$template" | jq -r '.orderDirection')
-                    limit=$(echo "$template" | jq -r '.limit')
+                  title=$(echo "$template" | jq -r '.title')
+                  tipo=$(echo "$template" | jq -r '.tipo')
+                  dataSource=$(echo "$template" | jq -r '.dataSource')
+                  realCostField=$(echo "$template" | jq -r '.realCostField // empty')
+                  estimatedCostField=$(echo "$template" | jq -r '.estimatedCostField // empty')
+                  groupBy=$(echo "$template" | jq -r '.groupBy')
+                  orderBy=$(echo "$template" | jq -r '.orderBy')
+                  orderDirection=$(echo "$template" | jq -r '.orderDirection')
+                  limit=$(echo "$template" | jq -r '.limit')
 
-                    DATA_JSON_PATH="${{ env.KAOS_FINOPS_JSON_DATA }}/$(basename "$dataSource")"
+                  # Leer JSON con jq, ordenar, limitar y extraer etiquetas y datasets
+                  # Nota: dataSource es relativo, debes adaptarlo al path base
 
-                    if [ ! -f "$DATA_JSON_PATH" ]; then
-                      echo "❌ No existe data source $DATA_JSON_PATH para $title"
-                      continue
-                    fi
+                  DATA_JSON_PATH="${{ env.KAOS_FINOPS_JSON_DATA }}/$(basename "$dataSource")"
 
-                    labels=$(jq -r --arg groupBy "$groupBy" --arg orderBy "$orderBy" --arg orderDir "$orderDirection" --argjson limit "$limit" \
-                      'sort_by(.[$orderBy]) | if $orderDir=="desc" then reverse else . end | .[0:$limit] | map(.[ $groupBy ]) | @json' "$DATA_JSON_PATH")
+                  if [ ! -f "$DATA_JSON_PATH" ]; then
+                    echo "❌ No existe data source $DATA_JSON_PATH para $title"
+                    continue
+                  fi
 
-                    if [ -n "$realCostField" ]; then
-                      realCosts=$(jq -r --arg orderBy "$orderBy" --arg orderDir "$orderDirection" --argjson limit "$limit" --arg field "$realCostField" \
-                        'sort_by(.[$orderBy]) | if $orderDir=="desc" then reverse else . end | .[0:$limit] | map(.[ $field ]) | @json' "$DATA_JSON_PATH")
-                    else
-                      realCosts="[]"
-                    fi
+                  # Extraemos labels ordenados y limitados
+                  labels=$(jq -r --arg groupBy "$groupBy" --arg orderBy "$orderBy" --arg orderDir "$orderDirection" --argjson limit "$limit" \
+                    'sort_by(.[$orderBy]) | if $orderDir=="desc" then reverse else . end | .[0:$limit] | map(.[ $groupBy ]) | @json' "$DATA_JSON_PATH")
 
-                    if [ -n "$estimatedCostField" ]; then
-                      estimatedCosts=$(jq -r --arg orderBy "$orderBy" --arg orderDir "$orderDirection" --argjson limit "$limit" --arg field "$estimatedCostField" \
-                        'sort_by(.[$orderBy]) | if $orderDir=="desc" then reverse else . end | .[0:$limit] | map(.[ $field ]) | @json' "$DATA_JSON_PATH")
-                    else
-                      estimatedCosts="[]"
-                    fi
+                  # Extraemos costos reales
+                  if [ -n "$realCostField" ]; then
+                    realCosts=$(jq -r --arg orderBy "$orderBy" --arg orderDir "$orderDirection" --argjson limit "$limit" --arg field "$realCostField" \
+                      'sort_by(.[$orderBy]) | if $orderDir=="desc" then reverse else . end | .[0:$limit] | map(.[ $field ]) | @json' "$DATA_JSON_PATH")
+                  else
+                    realCosts="[]"
+                  fi
 
-                    chart_id="chart-$(echo "$title" | tr ' ' '-' | tr -cd '[:alnum:]-')"
+                  # Extraemos costos estimados
+                  if [ -n "$estimatedCostField" ]; then
+                    estimatedCosts=$(jq -r --arg orderBy "$orderBy" --arg orderDir "$orderDirection" --argjson limit "$limit" --arg field "$estimatedCostField" \
+                      'sort_by(.[$orderBy]) | if $orderDir=="desc" then reverse else . end | .[0:$limit] | map(.[ $field ]) | @json' "$DATA_JSON_PATH")
+                  else
+                    estimatedCosts="[]"
+                  fi
 
-                    CONTENT+="<section class=\"cost-chart p-4 bg-white rounded shadow mb-6\">"
-                    CONTENT+="<h3 class=\"text-xl font-semibold mb-2\">$title</h3>"
-                    CONTENT+="<canvas id=\"$chart_id\" height=\"150\"></canvas>"
-                    CONTENT+="<script>"
-                    CONTENT+="const ctx_${chart_id} = document.getElementById('$chart_id').getContext('2d');"
-                    CONTENT+="new Chart(ctx_${chart_id}, {"
-                    CONTENT+="type: '${tipo,,}',"
-                    CONTENT+="data: {"
-                    CONTENT+="labels: $labels,"
-                    CONTENT+="datasets: ["
-                    if [ "$realCosts" != "[]" ]; then
-                      CONTENT+="{label:'Costo Real', data:$realCosts, backgroundColor:'rgba(255, 99, 132, 0.5)'}," 
-                    fi
-                    if [ "$estimatedCosts" != "[]" ]; then
-                      CONTENT+="{label:'Costo Estimado', data:$estimatedCosts, backgroundColor:'rgba(54, 162, 235, 0.5)'}"
-                    fi
-                    CONTENT+="]"
-                    CONTENT+="},"
-                    CONTENT+="options: {"
-                    CONTENT+="responsive:true,"
-                    CONTENT+="scales: { y: { beginAtZero: true } }"
-                    CONTENT+="}"
-                    CONTENT+="});"
-                    CONTENT+="</script>"
-                    CONTENT+="</section>"
-                    ;;
+                  chart_id="chart-$(echo "$title" | tr ' ' '-' | tr -cd '[:alnum:]-')"
+
+                  CONTENT+="<section class=\"cost-chart p-4 bg-white rounded shadow mb-6\">"
+                  CONTENT+="<h3 class=\"text-xl font-semibold mb-2\">$title</h3>"
+                  CONTENT+="<canvas id=\"$chart_id\" height=\"150\"></canvas>"
+                  CONTENT+="<script>"
+                  CONTENT+="const ctx_${chart_id} = document.getElementById('$chart_id').getContext('2d');"
+                  CONTENT+="new Chart(ctx_${chart_id}, {"
+                  CONTENT+="type: '${tipo,,}',"
+                  CONTENT+="data: {"
+                  CONTENT+="labels: $labels,"
+                  CONTENT+="datasets: ["
+                  if [ "$realCosts" != "[]" ]; then
+                    CONTENT+="{label:'Costo Real', data:$realCosts, backgroundColor:'rgba(255, 99, 132, 0.5)'},"
+                  fi
+                  if [ "$estimatedCosts" != "[]" ]; then
+                    CONTENT+="{label:'Costo Estimado', data:$estimatedCosts, backgroundColor:'rgba(54, 162, 235, 0.5)'}"
+                  fi
+                  CONTENT+="]"
+                  CONTENT+="},"
+                  CONTENT+="options: {"
+                  CONTENT+="responsive:true,"
+                  CONTENT+="scales: { y: { beginAtZero: true } }"
+                  CONTENT+="}"
+                  CONTENT+="});"
+                  CONTENT+="</script>"
+                  CONTENT+="</section>"
+                  ;;
+
                   "table")
                     title=$(echo "$template" | jq -r '.title')
                     dataSource=$(echo "$template" | jq -r '.dataSource')
 
+                    # Aquí generas una tabla básica con datos desde un archivo JSON externo o una estructura estática
                     CONTENT+="<section class=\"table-section p-4 bg-white rounded shadow mb-6\">"
                     CONTENT+="<h3 class=\"text-xl font-semibold mb-2\">$title</h3>"
                     CONTENT+="<table class=\"min-w-full border border-gray-300\">"
@@ -183,18 +190,13 @@ jobs:
                     CONTENT+="<tr><td class=\"border px-4 py-2\">Dato 3</td><td class=\"border px-4 py-2\">Dato 4</td></tr>"
                     CONTENT+="</tbody></table></section>"
                     ;;
+                  # Agrega más tipos de templates si quieres
+
                   *)
                     CONTENT+="<p>Tipo de plantilla '$tmpl_type' no soportado.</p>"
                     ;;
                 esac
               done < <(jq -c '.templates[]' "$SECTION_CONFIG")
-
-              sed -i "/<!-- Plantillas -->/r /dev/stdin" "$SECTION_HTML" <<< "$CONTENT"
-
-            else
-              echo "⚠️ No se encontró configuración para '$section_title'"
-            fi
-          done < <(jq -c '.sections[]' "$STRUCTURE_FILE")
 
               # Insertar el contenido dinámico justo donde está el placeholder <!-- Plantillas -->
               sed -i "/<!-- Plantillas -->/r /dev/stdin" "$SECTION_HTML" <<< "$CONTENT"
