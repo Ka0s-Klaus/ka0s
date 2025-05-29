@@ -50,14 +50,15 @@ jobs:
           NAVBAR_ITEMS="<ul id=\"navbar-sections\" class=\"flex flex-col gap-1\">"
           NAVBAR_ITEMS+="<div class=\"sections-container p-4\">"
 
-          jq -r '.sections[] | [.title, .icon] | @tsv' "$STRUCTURE_FILE" | while IFS=$'\t' read -r title icon; do
+          # Use process substitution to avoid subshell
+          while IFS=$'\t' read -r title icon; do
             anchor=$(echo "$title" | jq -sRr @uri)
             NAVBAR_ITEMS+="<li>"
             NAVBAR_ITEMS+="<a href=\"#${anchor}\" class=\"nav-link flex items-center p-3 text-gray-700 hover:bg-blue-50 rounded-lg transition-all duration-200 group\">"
             NAVBAR_ITEMS+="<div class=\"flex items-center justify-center w-12\"><i class=\"${icon} text-orange-300 group-hover:text-orange-500 text-xl\"></i></div>"
             NAVBAR_ITEMS+="<span class=\"sidebar-text flex-1 font-medium capitalize\">${title}</span>"
             NAVBAR_ITEMS+="</a></li>"
-          done
+          done < <(jq -r '.sections[] | [.title, .icon] | @tsv' "$STRUCTURE_FILE")
 
           NAVBAR_ITEMS+="</div></ul>"
 
