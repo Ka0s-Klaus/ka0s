@@ -4,18 +4,31 @@
     "templates": [
         {
             "type": "cost-chart",
-            "tipo": "barchart",
-            "title": "Costos por Servicio GCP",
+            "tipo": "linechart",
+            "title": "Análisis de Costos Diarios GCP",
             "dataSource": "gcp_anomalous_spending_query_results.json",
             "head": true,
-            "costReal": true,
-            "realCostField": "daily_cost",
-            "costEstimated": true,
-            "estimatedCostField": "avg_daily_cost",
-            "groupBy": "daily_cost", 
+            "metrics": [
+                {
+                    "field": "z_score",
+                    "label": "Z-Score",
+                    "type": "line"
+                },
+                {
+                    "field": "daily_cost",
+                    "label": "Costo Diario",
+                    "type": "bar"
+                },
+                {
+                    "field": "avg_daily_cost",
+                    "label": "Costo Promedio",
+                    "type": "line"
+                }
+            ],
+            "groupBy": "day",
             "aggregation": "sum",
-            "limit": 31,      
-            "orderBy": "day",  
+            "limit": 31,
+            "orderBy": "day",
             "orderDirection": "desc"
         },
         {
