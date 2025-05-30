@@ -43,12 +43,19 @@ jobs:
           STRUCTURE_FILE="${{ env.KAOS_FINOPS_JSON_WEB }}"
           TEMPLATE_FILE="${{ env.KAOS_FINOPS_TEMPLATE }}/finops.html"
           NAVBAR_BASE="${{ env.KAOS_FINOPS_TEMPLATE }}/navbar.html"
-          mkdir -p "${{ env.KAOS_FINOPS_RESULTS_SECTION }}"
+          RESULTS_DIR="${{ env.KAOS_FINOPS_RESULTS_SECTION }}"
+          CONFIG_DIR="${{ env.KAOS_FINOPS }}/config"
+          DATA_BQ_DIR="${{ env.KAOS_DATA_BQ }}"
+
+          mkdir -p "$RESULTS_DIR"
 
           echo "Construyendo items del navbar global..."
           NAVBAR_ITEMS="<ul id=\"navbar-sections\" class=\"flex flex-col gap-1\">"
           NAVBAR_ITEMS+="<div class=\"sections-container p-4\">"
 
+          # Depuración para ver qué sale del jq
+          echo "DEBUG: Extraer título e ícono de secciones:"
+          jq -r '.sections[] | [.title, .icon] | @tsv' "$STRUCTURE_FILE" | tee /dev/stderr | \
           while IFS=$'\t' read -r title icon; do
             anchor=$(echo "$title" | jq -sRr @uri)
             NAVBAR_ITEMS+="<li>"
@@ -56,7 +63,7 @@ jobs:
             NAVBAR_ITEMS+="<div class=\"flex items-center justify-center w-12\"><i class=\"${icon} text-orange-300 group-hover:text-orange-500 text-xl\"></i></div>"
             NAVBAR_ITEMS+="<span class=\"sidebar-text flex-1 font-medium capitalize\">${title}</span>"
             NAVBAR_ITEMS+="</a></li>"
-          done < <(jq -r '.sections[] | [.title, .icon] | @tsv' "$STRUCTURE_FILE")
+          done
 
           NAVBAR_ITEMS+="</div></ul>"
 
@@ -67,27 +74,40 @@ jobs:
 
           NAVBAR_HTML=$(<"$NAVBAR_BASE")
 
-          # Comprobar existencia de placeholders (corregido)
-          if [[ "$NAVBAR_HTML" != *"SECTION_TITLE_PLACEHOLDER"* ]] || [[ "$NAVBAR_HTML" != *"<!-- NAVBAR_SECTIONS_PLACEHOLDER -->"* ]]; then
+          # Cambiar || por && para validar correctamente ambos placeholders
+          if [[ "$NAVBAR_HTML" != *"SECTION_TITLE_PLACEHOLDER"* ]] && [[ "$NAVBAR_HTML" != *"<!-- NAVBAR_SECTIONS_PLACEHOLDER -->"* ]]; then
             echo "⚠️ WARNING: El archivo '$NAVBAR_BASE' no contiene los placeholders esperados."
             cat "$NAVBAR_BASE"
             exit 1
           fi
 
-          NAVBAR_HTML="${NAVBAR_HTML//SECTION_TITLE_PLACEHOLDER/FinOps}"
-          NAVBAR_HTML="${NAVBAR_HTML//<!-- NAVBAR_SECTIONS_PLACEHOLDER -->/$NAVBAR_ITEMS}"
+          # Reemplazo manual con printf para manejar saltos de línea correctamente
+          NAVBAR_HTML=$(printf '%s\n' "$NAVBAR_HTML" | sed "s/SECTION_TITLE_PLACEHOLDER/FinOps/g")
+
+          # Para insertar NAVBAR_ITEMS con sed, mejor hacerlo con un archivo temporal:
+          TMP_NAVBAR=$(mktemp)
+          echo "$NAVBAR_ITEMS" > "$TMP_NAVBAR"
+
+          # Insertar contenido en lugar del placeholder
+          NAVBAR_HTML=$(printf '%s\n' "$NAVBAR_HTML" | sed "/<!-- NAVBAR_SECTIONS_PLACEHOLDER -->/ {
+            r $TMP_NAVBAR
+            d
+          }")
+
+          rm "$TMP_NAVBAR"
 
           echo "$NAVBAR_HTML" > full_navbar.html
 
           echo "Procesando secciones..."
+
           jq -c '.sections[]' "$STRUCTURE_FILE" | while read -r section; do
             section_title=$(echo "$section" | jq -r '.title')
             section_description=$(echo "$section" | jq -r '.description // empty')
             section_data_template=$(echo "$section" | jq -r '.datatemplate')
             section_icon=$(echo "$section" | jq -r '.icon')
 
-            SECTION_CONFIG="${{ env.KAOS_FINOPS }}/config/$section_data_template"
-            SECTION_HTML="${{ env.KAOS_FINOPS_RESULTS_SECTION }}/${section_title}.html"
+            SECTION_CONFIG="$CONFIG_DIR/$section_data_template"
+            SECTION_HTML="$RESULTS_DIR/${section_title}.html"
 
             if [ -f "$SECTION_CONFIG" ]; then
               echo "✅ Generando sección: $section_title"
@@ -96,32 +116,29 @@ jobs:
 
               sed -i "s/SECTION_TITLE_PLACEHOLDER/$section_title/g" "$SECTION_HTML"
               sed -i "s/SECTION_DESCRIPTION_PLACEHOLDER/$section_description/g" "$SECTION_HTML"
-              sed -i -e '/<div id="navbar-container"><\/div>/{r full_navbar.html' -e 'd}' "$SECTION_HTML"
+
+              # Insertar navbar html
+              sed -i "/<div id=\"navbar-container\"><\/div>/ {
+                r full_navbar.html
+                d
+              }" "$SECTION_HTML"
 
               CONTENT=""
 
-              # Procesar templates de la sección
-              while read -r template; do
+              # Procesar templates dentro de la sección
+              jq -c '.templates[]' "$SECTION_CONFIG" | while read -r template; do
                 tmpl_type=$(echo "$template" | jq -r '.type')
 
                 case "$tmpl_type" in
                   "cost-chart")
                     title=$(echo "$template" | jq -r '.title // "Sin título"')
                     tipo=$(echo "$template" | jq -r '.tipo // "bar"')
-                    # Normalizar tipo a minúsculas y solo tipo de Chart.js válido
                     tipo_lc=$(echo "$tipo" | tr '[:upper:]' '[:lower:]')
 
                     case "$tipo_lc" in
-                      bar|line|pie|doughnut|radar|polararea)
-                        tipo="$tipo_lc"
-                        ;;
-                      barchart)
-                        tipo="bar"
-                        ;;
-                      *)
-                        echo "⚠️ Tipo de gráfico inválido '$tipo', usando 'bar' por defecto"
-                        tipo="bar"
-                        ;;
+                      bar|line|pie|doughnut|radar|polararea) tipo="$tipo_lc" ;;
+                      barchart) tipo="bar" ;;
+                      *) echo "⚠️ Tipo de gráfico inválido '$tipo', usando 'bar' por defecto"; tipo="bar" ;;
                     esac
 
                     dataSource=$(echo "$template" | jq -r '.dataSource')
@@ -132,23 +149,19 @@ jobs:
                     orderDirection=$(echo "$template" | jq -r '.orderDirection')
                     limit=$(echo "$template" | jq -r '.limit')
 
-                    DATA_JSON_PATH="${{ env.KAOS_DATA_BQ }}/$(basename "$dataSource")"
+                    DATA_JSON_PATH="$DATA_BQ_DIR/$(basename "$dataSource")"
 
                     if [ ! -f "$DATA_JSON_PATH" ]; then
                       echo "❌ No existe data source $DATA_JSON_PATH para $title"
                       continue
                     fi
 
-                    # Construir filtros jq para ordenar, limitar y agrupar
-                    # Ordenar
                     SORTED=$(jq -c --arg orderBy "$orderBy" --arg orderDir "$orderDirection" --argjson limit "$limit" '
                       sort_by(.[$orderBy]) | if $orderDir=="desc" then reverse else . end | .[0:$limit]
                     ' "$DATA_JSON_PATH")
 
-                    # Obtener etiquetas (labels) agrupadas por groupBy
                     labels=$(echo "$SORTED" | jq -r --arg groupBy "$groupBy" 'map(.[ $groupBy ]) | unique | @json')
 
-                    # Obtener datos reales y estimados ordenados y limitados
                     if [ -n "$realCostField" ]; then
                       realCosts=$(echo "$SORTED" | jq -r --arg field "$realCostField" 'map(.[ $field ]) | @json')
                     else
@@ -193,7 +206,7 @@ jobs:
                     ;;
 
                   "table")
-                    "title=$(echo \"$template\" | jq -r '.title')"
+                    title=$(echo "$template" | jq -r '.title')
                     CONTENT+="<section class=\"table-section p-4 bg-white rounded-2xl shadow mb-6\">"
                     CONTENT+="<h3 class=\"text-2xl font-semibold mb-4 text-gray-800\">$title</h3>"
                     CONTENT+="<div class=\"overflow-x-auto\">"
@@ -224,7 +237,14 @@ jobs:
                 esac
               done < <(jq -c '.templates[]' "$SECTION_CONFIG")
 
-              sed -i "/<!-- Plantillas -->/r /dev/stdin" "$SECTION_HTML" <<< "$CONTENT"
+              # Para insertar contenido en la sección
+              TMP_CONTENT=$(mktemp)
+              echo "$CONTENT" > "$TMP_CONTENT"
+              sed -i "/<!-- Plantillas -->/ {
+                r $TMP_CONTENT
+                d
+              }" "$SECTION_HTML"
+              rm "$TMP_CONTENT"
 
             else
               echo "⚠️ No se encontró configuración para '$section_title'"
