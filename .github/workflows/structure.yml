@@ -482,22 +482,22 @@ jobs:
           # Generate a summary of copied files
           echo "Generating data files summary..."
           echo "{" > "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
-          echo "  \"generated_at\": \"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\"," >> "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
-          echo "  \"title\": \"$TITLE\"," >> "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
-          echo "  \"files\": [" >> "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
+          echo "  \"generated_at\": \"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\"," >> "${{ env.KAOS_JSON_RESUME }}data-files-summary.json"
+          echo "  \"title\": \"$TITLE\"," >> "${{ env.KAOS_JSON_RESUME }}data-files-summary.json"
+          echo "  \"files\": [" >> "${{ env.KAOS_JSON_RESUME }}data-files-summary.json"
           
           # List all copied files
           find "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/data" -type f | sort | while read -r file; do
             RELATIVE_PATH="${file#${{ env.KAOS_WEB_STRUCTURE }}$TITLE/}"
-            echo "    {\"path\": \"$RELATIVE_PATH\"}," >> "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
+            echo "    {\"path\": \"$RELATIVE_PATH\"}," >> "${{ env.KAOS_JSON_RESUME }}data-files-summary.json"
           done
           
           # Remove the last comma and close the JSON
-          sed -i '$ s/,$//' "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
-          echo "  ]" >> "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
-          echo "}" >> "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
+          sed -i '$ s/,$//' "${{ env.KAOS_JSON_RESUME }}data-files-summary.json"
+          echo "  ]" >> "${{ env.KAOS_JSON_RESUME }}data-files-summary.json"
+          echo "}" >> "${{ env.KAOS_JSON_RESUME }}data-files-summary.json"
           
-          echo "Data files summary generated at ${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
+          echo "Data files summary generated at ${{ env.KAOS_JSON_RESUME }}data-files-summary.json"
           
           # NUEVA SECCIÓN: Copiar archivos de datos para el dashboard de test
           echo "Reading test data.json file..."
