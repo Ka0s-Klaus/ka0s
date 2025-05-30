@@ -1,128 +1,257 @@
-- name: Crear estructura FinOps HTML
-  run: |
-    STRUCTURE_FILE="${{ env.KAOS_FINOPS_JSON_WEB }}"
-    TEMPLATE_FILE="${{ env.KAOS_FINOPS_TEMPLATE }}/finops.html"
-    NAVBAR_BASE="${{ env.KAOS_FINOPS_TEMPLATE }}/navbar.html"
-    mkdir -p "${{ env.KAOS_FINOPS_RESULTS_SECTION }}"
+name: Ka0s Create structure for FinOps
+on:
+  push:
+    branches:
+      - 'H*'
+      - 'F*'
+      - 'RN*'
+    paths:
+      - 'core/config/finops/**'
+  workflow_dispatch:
+env:
+    KAOS_CODE: ${{ github.run_id }}
+    KAOS_EVENT_NAME: ${{ github.event_name }}
+    KAOS_ACTION: ${{ github.action }}
+    KAOS_REF: ${{ github.ref }}
+    KAOS_MODULE: "[Ka0S] Deploy Web Structure"
+    KAOS_JSON_RESUME: "core/outputs/webs/" # directorio que aloja los json de resultados de la operación 
+    KAOS_WEB_STRUCTURE: "core/results/webs/" # directorio donde se alojan las diferentes estructura de webs
+    KAOS_ACTOR: ${{ github.actor }}
 
-    echo "Construyendo items del navbar global..."
-    NAVBAR_ITEMS="<ul id=\"navbar-sections\" class=\"flex flex-col gap-1\">"
-    NAVBAR_ITEMS+="<div class=\"sections-container p-4\">"
+    KAOS_FINOPS_STRUCTURE: "core/results/webs/finops/" # directorio para la estructura de finops - CORREGIDO
+    KAOS_FINOPS_JSON_WEB: "core/config/finops/config/webs.json" # archivo JSON principal de finops
+    KAOS_FINOPS_JSON_DATA: "core/config/finops/data" # directorio de datos JSON para finops
+    KAOS_FINOPS_TEMPLATE: "core/config/finops/template" # directorio de datos JSON para finops
+    KAOS_FINOPS: "core/config/finops" # directorio de la web
+    KAOS_FINOPS_RESULTS_SECTION: "core/results/webs/finops/section"
 
-    while IFS=$'\t' read -r title icon; do
-      anchor=$(echo "$title" | jq -sRr @uri)
-      NAVBAR_ITEMS+="<li>"
-      NAVBAR_ITEMS+="<a href=\"${title}.html\" class=\"nav-link flex items-center p-3 text-gray-700 hover:bg-blue-50 rounded-lg transition-all duration-200 group\">"
-      NAVBAR_ITEMS+="<div class=\"flex items-center justify-center w-12\"><i class=\"${icon} text-orange-300 group-hover:text-orange-500 text-xl\"></i></div>"
-      NAVBAR_ITEMS+="<span class=\"sidebar-text flex-1 font-medium capitalize\">${title}</span>"
-      NAVBAR_ITEMS+="</a></li>"
-    done < <(jq -r '.sections[] | [.title, .icon] | @tsv' "$STRUCTURE_FILE")
+    KAOS_DATA_BQ: "core/results/bq/data"
 
-    NAVBAR_ITEMS+="</div></ul>"
+jobs:
+  job-core:
+    runs-on:
+      group: ka0s
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
 
-    if [ ! -s "$NAVBAR_BASE" ]; then
-      echo "❌ ERROR: El archivo navbar base '$NAVBAR_BASE' no existe o está vacío."
-      exit 1
-    fi
+      - name: Crear estructura FinOps HTML
+        run: |
+          STRUCTURE_FILE="${{ env.KAOS_FINOPS_JSON_WEB }}"
+          TEMPLATE_FILE="${{ env.KAOS_FINOPS_TEMPLATE }}/finops.html"
+          NAVBAR_BASE="${{ env.KAOS_FINOPS_TEMPLATE }}/navbar.html"
+          mkdir -p "${{ env.KAOS_FINOPS_RESULTS_SECTION }}"
 
-    NAVBAR_HTML=$(<"$NAVBAR_BASE")
+          echo "Construyendo items del navbar global..."
+          NAVBAR_ITEMS="<ul id=\"navbar-sections\" class=\"flex flex-col gap-1\">"
+          NAVBAR_ITEMS+="<div class=\"sections-container p-4\">"
 
-    if [[ "$NAVBAR_HTML" != *"SECTION_TITLE_PLACEHOLDER"* ]] || [[ "$NAVBAR_HTML" != *"<!-- NAVBAR_SECTIONS_PLACEHOLDER -->"* ]]; then
-      echo "⚠️ WARNING: El archivo '$NAVBAR_BASE' no contiene los placeholders esperados."
-      cat "$NAVBAR_BASE"
-      exit 1
-    fi
+          while IFS=$'\t' read -r title icon; do
+            anchor=$(echo "$title" | jq -sRr @uri)
+            NAVBAR_ITEMS+="<li>"
+            NAVBAR_ITEMS+="<a href=\"${title}.html\" class=\"nav-link flex items-center p-3 text-gray-700 hover:bg-blue-50 rounded-lg transition-all duration-200 group\">"
+            NAVBAR_ITEMS+="<div class=\"flex items-center justify-center w-12\"><i class=\"${icon} text-orange-300 group-hover:text-orange-500 text-xl\"></i></div>"
+            NAVBAR_ITEMS+="<span class=\"sidebar-text flex-1 font-medium capitalize\">${title}</span>"
+            NAVBAR_ITEMS+="</a></li>"
+          done < <(jq -r '.sections[] | [.title, .icon] | @tsv' "$STRUCTURE_FILE")
 
-    NAVBAR_HTML="${NAVBAR_HTML//SECTION_TITLE_PLACEHOLDER/FinOps}"
-    NAVBAR_HTML="${NAVBAR_HTML//<!-- NAVBAR_SECTIONS_PLACEHOLDER -->/$NAVBAR_ITEMS}"
+          NAVBAR_ITEMS+="</div></ul>"
 
-    echo "$NAVBAR_HTML" > full_navbar.html
+          if [ ! -s "$NAVBAR_BASE" ]; then
+            echo "❌ ERROR: El archivo navbar base '$NAVBAR_BASE' no existe o está vacío."
+            exit 1
+          fi
 
-    echo "Procesando secciones..."
-    jq -c '.sections[]' "$STRUCTURE_FILE" | while read -r section; do
-      section_title=$(echo "$section" | jq -r '.title')
-      section_description=$(echo "$section" | jq -r '.description // empty')
-      section_data_template=$(echo "$section" | jq -r '.datatemplate')
+          NAVBAR_HTML=$(<"$NAVBAR_BASE")
 
-      SECTION_CONFIG="${{ env.KAOS_FINOPS }}/config/$section_data_template"
-      SECTION_HTML="${{ env.KAOS_FINOPS_RESULTS_SECTION }}/${section_title}.html"
+          if [[ "$NAVBAR_HTML" != *"SECTION_TITLE_PLACEHOLDER"* ]] || [[ "$NAVBAR_HTML" != *"<!-- NAVBAR_SECTIONS_PLACEHOLDER -->"* ]]; then
+            echo "⚠️ WARNING: El archivo '$NAVBAR_BASE' no contiene los placeholders esperados."
+            cat "$NAVBAR_BASE"
+            exit 1
+          fi
 
-      if [ -f "$SECTION_CONFIG" ]; then
-        echo "✅ Generando sección: $section_title"
+          NAVBAR_HTML="${NAVBAR_HTML//SECTION_TITLE_PLACEHOLDER/FinOps}"
+          NAVBAR_HTML="${NAVBAR_HTML//<!-- NAVBAR_SECTIONS_PLACEHOLDER -->/$NAVBAR_ITEMS}"
 
-        cp "$TEMPLATE_FILE" "$SECTION_HTML"
+          echo "$NAVBAR_HTML" > full_navbar.html
 
-        sed -i "s/SECTION_TITLE_PLACEHOLDER/$section_title/g" "$SECTION_HTML"
-        sed -i "s/SECTION_DESCRIPTION_PLACEHOLDER/$section_description/g" "$SECTION_HTML"
-        sed -i -e '/<div id="navbar-container"><\/div>/{r full_navbar.html' -e 'd}' "$SECTION_HTML"
+          echo "Procesando secciones..."
+          jq -c '.sections[]' "$STRUCTURE_FILE" | while read -r section; do
+            section_title=$(echo "$section" | jq -r '.title')
+            section_description=$(echo "$section" | jq -r '.description // empty')
+            section_data_template=$(echo "$section" | jq -r '.datatemplate')
 
-        CONTENT=""
+            SECTION_CONFIG="${{ env.KAOS_FINOPS }}/config/$section_data_template"
+            SECTION_HTML="${{ env.KAOS_FINOPS_RESULTS_SECTION }}/${section_title}.html"
 
-        while read -r template; do
-          tmpl_type=$(echo "$template" | jq -r '.type')
+            if [ -f "$SECTION_CONFIG" ]; then
+              echo "✅ Generando sección: $section_title"
 
-          case "$tmpl_type" in
-            chart)
-              title=$(echo "$template" | jq -r '.title // "Sin título"')
-              tipo=$(echo "$template" | jq -r '.tipo // "bar"')
-              tipo_lc=$(echo "$tipo" | tr '[:upper:]' '[:lower:]')
-              case "$tipo_lc" in
-                bar|line|pie|doughnut|radar|polararea) tipo="$tipo_lc" ;;
-                barchart) tipo="bar" ;;
-                *) echo "⚠️ Tipo de gráfico inválido '$tipo', usando 'bar' por defecto"; tipo="bar" ;;
-              esac
+              cp "$TEMPLATE_FILE" "$SECTION_HTML"
 
-              dataSource=$(echo "$template" | jq -r '.dataSource')
-              realCostField=$(echo "$template" | jq -r '.realCostField // empty')
-              estimatedCostField=$(echo "$template" | jq -r '.estimatedCostField // empty')
-              groupBy=$(echo "$template" | jq -r '.groupBy')
-              orderBy=$(echo "$template" | jq -r '.orderBy')
-              orderDirection=$(echo "$template" | jq -r '.orderDirection')
-              limit=$(echo "$template" | jq -r '.limit')
+              sed -i "s/SECTION_TITLE_PLACEHOLDER/$section_title/g" "$SECTION_HTML"
+              sed -i "s/SECTION_DESCRIPTION_PLACEHOLDER/$section_description/g" "$SECTION_HTML"
+              sed -i -e '/<div id="navbar-container"><\/div>/{r full_navbar.html' -e 'd}' "$SECTION_HTML"
 
-              CONTENT+="<section class=\"cost-chart p-6 bg-white rounded-2xl shadow mb-6\">"
-              CONTENT+="<div class=\"flex items-center justify-between mb-4\">"
-              CONTENT+="  <h3 class=\"text-2xl font-semibold text-gray-800\">$title</h3>"
-              CONTENT+="  <div class=\"text-sm text-gray-500\">Tipo: $tipo</div>"
-              CONTENT+="</div>"
-              CONTENT+="<div class=\"relative w-full h-96\">"
-              CONTENT+="  <div class=\"cost-chart-container w-full h-full\""
-              CONTENT+=" data-title=\"$title\""
-              CONTENT+=" data-tipo=\"$tipo\""
-              CONTENT+=" data-datasource=\"$dataSource\""
-              [ -n "$realCostField" ] && CONTENT+=" data-real-cost-field=\"$realCostField\""
-              [ -n "$estimatedCostField" ] && CONTENT+=" data-estimated-cost-field=\"$estimatedCostField\""
-              [ -n "$groupBy" ] && CONTENT+=" data-group-by=\"$groupBy\""
-              [ -n "$orderBy" ] && CONTENT+=" data-order-by=\"$orderBy\""
-              [ -n "$orderDirection" ] && CONTENT+=" data-order-direction=\"$orderDirection\""
-              [ -n "$limit" ] && CONTENT+=" data-limit=\"$limit\""
-              CONTENT+="></div>"
-              CONTENT+="</div></section>"
-              ;;
+              CONTENT=""
 
-            table)
-              title=$(echo "$template" | jq -r '.title')
-              CONTENT+="<section class=\"table-section p-4 bg-white rounded-2xl shadow mb-6\">"
-              CONTENT+="<h3 class=\"text-2xl font-semibold mb-4 text-gray-800\">$title</h3>"
-              CONTENT+="<div class=\"overflow-x-auto\">"
-              CONTENT+="<table class=\"min-w-full border border-gray-200 divide-y divide-gray-200 text-sm\">"
-              CONTENT+="<thead class=\"bg-gray-50\">"
-              CONTENT+="<tr><th class=\"px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider\">Columna 1</th>"
-              CONTENT+="<th class=\"px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider\">Columna 2</th></tr>"
-              CONTENT+="</thead><tbody class=\"bg-white divide-y divide-gray-100\">"
-              CONTENT+="<tr><td class=\"px-6 py-4 text-gray-700\">Dato 1</td><td class=\"px-6 py-4 text-gray-700\">Dato 2</td></tr>"
-              CONTENT+="<tr><td class=\"px-6 py-4 text-gray-700\">Dato 3</td><td class=\"px-6 py-4 text-gray-700\">Dato 4</td></tr>"
-              CONTENT+="</tbody></table></div></section>"
-              ;;
+              while read -r template; do
+                tmpl_type=$(echo "$template" | jq -r '.type')
 
-            *)
-              CONTENT+="<p>Tipo de plantilla '$tmpl_type' no soportado.</p>"
-              ;;
-          esac
-        done < <(jq -c '.templates[]' "$SECTION_CONFIG")
+                case "$tmpl_type" in
+                  chart)
+                    title=$(echo "$template" | jq -r '.title // "Sin título"')
+                    tipo=$(echo "$template" | jq -r '.tipo // "bar"')
+                    tipo_lc=$(echo "$tipo" | tr '[:upper:]' '[:lower:]')
+                    case "$tipo_lc" in
+                      bar|line|pie|doughnut|radar|polararea) tipo="$tipo_lc" ;;
+                      barchart) tipo="bar" ;;
+                      *) echo "⚠️ Tipo de gráfico inválido '$tipo', usando 'bar' por defecto"; tipo="bar" ;;
+                    esac
 
-        sed -i "/<!-- Plantillas -->/r /dev/stdin" "$SECTION_HTML" <<< "$CONTENT"
-      else
-        echo "⚠️ No se encontró configuración para '$section_title'"
-      fi
-    done
+                    dataSource=$(echo "$template" | jq -r '.dataSource')
+                    realCostField=$(echo "$template" | jq -r '.realCostField // empty')
+                    estimatedCostField=$(echo "$template" | jq -r '.estimatedCostField // empty')
+                    groupBy=$(echo "$template" | jq -r '.groupBy')
+                    orderBy=$(echo "$template" | jq -r '.orderBy')
+                    orderDirection=$(echo "$template" | jq -r '.orderDirection')
+                    limit=$(echo "$template" | jq -r '.limit')
+
+                    CONTENT+="<section class=\"cost-chart p-6 bg-white rounded-2xl shadow mb-6\">"
+                    CONTENT+="<div class=\"flex items-center justify-between mb-4\">"
+                    CONTENT+="  <h3 class=\"text-2xl font-semibold text-gray-800\">$title</h3>"
+                    CONTENT+="  <div class=\"text-sm text-gray-500\">Tipo: $tipo</div>"
+                    CONTENT+="</div>"
+                    CONTENT+="<div class=\"relative w-full h-96\">"
+                    CONTENT+="  <div class=\"cost-chart-container w-full h-full\""
+                    CONTENT+=" data-title=\"$title\""
+                    CONTENT+=" data-tipo=\"$tipo\""
+                    CONTENT+=" data-datasource=\"$dataSource\""
+                    [ -n "$realCostField" ] && CONTENT+=" data-real-cost-field=\"$realCostField\""
+                    [ -n "$estimatedCostField" ] && CONTENT+=" data-estimated-cost-field=\"$estimatedCostField\""
+                    [ -n "$groupBy" ] && CONTENT+=" data-group-by=\"$groupBy\""
+                    [ -n "$orderBy" ] && CONTENT+=" data-order-by=\"$orderBy\""
+                    [ -n "$orderDirection" ] && CONTENT+=" data-order-direction=\"$orderDirection\""
+                    [ -n "$limit" ] && CONTENT+=" data-limit=\"$limit\""
+                    CONTENT+="></div>"
+                    CONTENT+="</div></section>"
+                    ;;
+
+                  table)
+                    title=$(echo "$template" | jq -r '.title')
+                    CONTENT+="<section class=\"table-section p-4 bg-white rounded-2xl shadow mb-6\">"
+                    CONTENT+="<h3 class=\"text-2xl font-semibold mb-4 text-gray-800\">$title</h3>"
+                    CONTENT+="<div class=\"overflow-x-auto\">"
+                    CONTENT+="<table class=\"min-w-full border border-gray-200 divide-y divide-gray-200 text-sm\">"
+                    CONTENT+="<thead class=\"bg-gray-50\">"
+                    CONTENT+="<tr><th class=\"px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider\">Columna 1</th>"
+                    CONTENT+="<th class=\"px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider\">Columna 2</th></tr>"
+                    CONTENT+="</thead><tbody class=\"bg-white divide-y divide-gray-100\">"
+                    CONTENT+="<tr><td class=\"px-6 py-4 text-gray-700\">Dato 1</td><td class=\"px-6 py-4 text-gray-700\">Dato 2</td></tr>"
+                    CONTENT+="<tr><td class=\"px-6 py-4 text-gray-700\">Dato 3</td><td class=\"px-6 py-4 text-gray-700\">Dato 4</td></tr>"
+                    CONTENT+="</tbody></table></div></section>"
+                    ;;
+
+                  *)
+                    CONTENT+="<p>Tipo de plantilla '$tmpl_type' no soportado.</p>"
+                    ;;
+                esac
+              done < <(jq -c '.templates[]' "$SECTION_CONFIG")
+
+              sed -i "/<!-- Plantillas -->/r /dev/stdin" "$SECTION_HTML" <<< "$CONTENT"
+            else
+              echo "⚠️ No se encontró configuración para '$section_title'"
+            fi
+          done
+
+      - id: upload-files
+        name: Upload Files
+        run: |
+          echo "Uploading files to the repository..."
+          git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
+          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
+          git pull
+          # Asegurarse de que la carpeta web_structure se añade explicitamente (incluyendo finops)
+          git add ${{ env.KAOS_WEB_STRUCTURE }}*
+          git add ${{ env.KAOS_JSON_RESUME }}*
+          # Verificar si hay cambios para hacer commit
+          if git diff --staged --quiet; then
+            echo "No hay cambios para hacer commit"
+          else
+            git commit -m "[Ka0S] Uploading resume execution files and finops structure to the repository..."
+            git push origin ${{ env.KAOS_REF }}
+          fi
+
+  handle-success:
+    runs-on:
+      group: ka0s
+    needs: [job-core]
+    if: ${{ success() }}
+    steps:
+      - id: repo
+        name: Checkout code
+        if: ${{ always() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+      - id: handle-success-execution
+        name: handle-success-execution
+        env:
+          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+        run: |
+          # RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
+          # gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data_${{ env.KAOS_CODE }}.log"
+          echo "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data_${{ env.KAOS_CODE }}.log"
+
+  handle_failure:
+    runs-on:
+      group: ka0s
+    needs: [job-core, handle-success]
+    if: ${{ failure() }}
+    steps:
+      - id: repo
+        name: Checkout code
+        if: ${{ always() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+      - id: handle-failure-execution
+        name: handle-failure-execution
+        env:
+          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+        run: |
+          echo "Error detected in process"
+          # RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
+          # gh issue comment $RNNUMBER --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
+          # Creamos la issue dado que ha fallado el modulo principal
+          gh issue create  --title "[Ka0S] Error detected in ${{ env.KAOS_MODULE }}" --body "Error detected in ${{ env.KAOS_MODULE }}. Please check the logs for ${{ github.run_id }} more information of error."
+          
+
+  end-workflow:
+    runs-on:
+      group: ka0s
+    needs: [job-core, handle-success, handle_failure]
+    if: ${{ always() && !contains(github.event.head_commit.message, '[Ka0S] ') }}
+    env:
+        GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+    steps:
+      - id: repo
+        name: Checkout code
+        if: ${{ always() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+      - id: end-process
+        name: Finaliza el workflow
+        run: |
+          echo "End process"
+          # RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
+          # gh issue comment $RNNUMBER --body "Se finaliza Ka0s ${{ env.KAOS_CODE }}"
+          echo "Se finaliza Ka0s ${{ env.KAOS_CODE }}"
+          gh workflow run inspector.yml --ref 'main' -f kaos-issue-id=$RNNUMBER -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start=""
