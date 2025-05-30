@@ -67,6 +67,7 @@ jobs:
 
           NAVBAR_HTML=$(<"$NAVBAR_BASE")
 
+          # Comprobar existencia de placeholders (corregido)
           if [[ "$NAVBAR_HTML" != *"SECTION_TITLE_PLACEHOLDER"* ]] || [[ "$NAVBAR_HTML" != *"<!-- NAVBAR_SECTIONS_PLACEHOLDER -->"* ]]; then
             echo "⚠️ WARNING: El archivo '$NAVBAR_BASE' no contiene los placeholders esperados."
             cat "$NAVBAR_BASE"
@@ -83,6 +84,7 @@ jobs:
             section_title=$(echo "$section" | jq -r '.title')
             section_description=$(echo "$section" | jq -r '.description // empty')
             section_data_template=$(echo "$section" | jq -r '.datatemplate')
+            section_icon=$(echo "$section" | jq -r '.icon')
 
             SECTION_CONFIG="${{ env.KAOS_FINOPS }}/config/$section_data_template"
             SECTION_HTML="${{ env.KAOS_FINOPS_RESULTS_SECTION }}/${section_title}.html"
@@ -98,19 +100,104 @@ jobs:
 
               CONTENT=""
 
+              # Procesar templates de la sección
               while read -r template; do
                 tmpl_type=$(echo "$template" | jq -r '.type')
 
                 case "$tmpl_type" in
-                  chart | cost-chart)
+                  "cost-chart")
                     title=$(echo "$template" | jq -r '.title // "Sin título"')
                     tipo=$(echo "$template" | jq -r '.tipo // "bar"')
+                    dataSource=$(echo "$template" | jq -r '.dataSource')
+                    
+                    # Nuevas configuraciones del template
+                    groupBy=$(echo "$template" | jq -r '.groupBy // empty')
+                    currentYear=$(echo "$template" | jq -r '.currentYear // false')
+                    costEstimated=$(echo "$template" | jq -r '.costEstimated // true')
+                    costReal=$(echo "$template" | jq -r '.costReal // true')
+                    
+                    DATA_JSON_PATH="${{ env.KAOS_DATA_BQ }}/$(basename "$dataSource")"
+                    
+                    # Procesamiento mejorado similar al template.js
+                    filteredData=$(jq --arg currentYear "$currentYear" '
+                        map(select(.month | if $currentYear == "true" then contains("2023") else true end))
+                    ' "$DATA_JSON_PATH")
+                    
+                    processedData=$(echo "$filteredData" | jq --arg groupBy "$groupBy" '
+                        if $groupBy != "" then
+                            group_by(.[$groupBy]) | map({
+                                ($groupBy): .[0][$groupBy],
+                                final_cost: (map(.final_cost | tonumber) | add),
+                                total_cost: (map(.total_cost | tonumber) | add)
+                            })
+                        else . end
+                    ')
+                    
+                    # Cálculo de totales
+                    totals=$(echo "$processedData" | jq '{
+                        real: [.[].final_cost] | add,
+                        estimated: [.[].total_cost] | add,
+                        net: ([.[].final_cost] | add) - ([.[].total_cost] | add)
+                    }')
+                    
+                    # Generar HTML del resumen
+                    CONTENT+="<div class=\"flex flex-col md:flex-row items-center justify-center gap-4 md:gap-16 w-full mb-8\">"
+                    CONTENT+="$(echo "$totals" | jq -r '
+                        "<div class=\"flex flex-col items-center\">"+
+                        "<span class=\"text-base text-gray-500\">Costo Real</span>"+
+                        "<span class=\"font-bold text-2xl\">€" + (.real | tostring) + "</span></div>"+
+                        "<div class=\"flex flex-col items-center\">"+
+                        "<span class=\"text-base text-gray-500\">Estimado</span>"+
+                        "<span class=\"font-bold text-2xl\">€" + (.estimated | tostring) + "</span></div>"
+                    ')"
+                    CONTENT+="</div>"
+                    
+                    # Generación del gráfico (se mantiene la existente)
+                    # Normalizar tipo a minúsculas y solo tipo de Chart.js válido
                     tipo_lc=$(echo "$tipo" | tr '[:upper:]' '[:lower:]')
+
                     case "$tipo_lc" in
-                      bar|line|pie|doughnut|radar|polararea) tipo="$tipo_lc" ;;
-                      barchart) tipo="bar" ;;
-                      *) echo "⚠️ Tipo de gráfico inválido '$tipo', usando 'bar' por defecto"; tipo="bar" ;;
+                      bar|line|pie|doughnut|radar|polararea)
+                        tipo="$tipo_lc"
+                        ;;
+                      barchart)
+                        tipo="bar"
+                        ;;
+                      doughnutchart)
+                        tipo="doughnut"
+                        ;;
+                      *)
+                        echo "⚠️ Tipo de gráfico inválido '$tipo', usando 'bar' por defecto"
+                        tipo="bar"
+                        ;;
                     esac
+
+                    # Configuración específica para doughnut
+                    if [ "$tipo" = "doughnut" ]; then
+                        DOUGHNUT_OPTS="cutoutPercentage: 70,"
+                    else
+                        DOUGHNUT_OPTS=""
+                    fi
+
+                    CONTENT+="new Chart(ctx, {"
+                    CONTENT+="type: '$tipo',"
+                    CONTENT+="data: {"
+                    CONTENT+="labels: $labels,"
+                    CONTENT+="datasets: ["
+                    CONTENT+="{label:'Costo Real', data:$realCosts, backgroundColor:'rgba(255, 99, 132, 0.5)'}"
+                    CONTENT+=","
+                    CONTENT+="{label:'Costo Estimado', data:$estimatedCosts, backgroundColor:'rgba(54, 162, 235, 0.5)'}"
+                    CONTENT+="]},"
+                    CONTENT+="options: {"
+                    CONTENT+="responsive:true,"
+                    CONTENT+="maintainAspectRatio: false,"
+                    CONTENT+="$DOUGHNUT_OPTS"
+                    CONTENT+="plugins: {"
+                    CONTENT+="legend: { position: 'top' },"
+                    CONTENT+="tooltip: { enabled: true }"
+                    CONTENT+="}"
+                    CONTENT+="}"
+                    CONTENT+="});"
 
                     dataSource=$(echo "$template" | jq -r '.dataSource')
                     realCostField=$(echo "$template" | jq -r '.realCostField // empty')
@@ -120,39 +207,90 @@ jobs:
                     orderDirection=$(echo "$template" | jq -r '.orderDirection')
                     limit=$(echo "$template" | jq -r '.limit')
 
-                    CONTENT+="<section class=\"cost-chart p-6 bg-white rounded-2xl shadow mb-6\">"
-                    CONTENT+="<div class=\"flex items-center justify-between mb-4\">"
-                    CONTENT+="  <h3 class=\"text-2xl font-semibold text-gray-800\">$title</h3>"
-                    CONTENT+="  <div class=\"text-sm text-gray-500\">Tipo: $tipo</div>"
-                    CONTENT+="</div>"
-                    CONTENT+="<div class=\"relative w-full h-96\">"
-                    CONTENT+="  <div class=\"cost-chart-container w-full h-full\""
-                    CONTENT+=" data-title=\"$title\""
-                    CONTENT+=" data-tipo=\"$tipo\""
-                    CONTENT+=" data-datasource=\"$dataSource\""
-                    [ -n "$realCostField" ] && CONTENT+=" data-real-cost-field=\"$realCostField\""
-                    [ -n "$estimatedCostField" ] && CONTENT+=" data-estimated-cost-field=\"$estimatedCostField\""
-                    [ -n "$groupBy" ] && CONTENT+=" data-group-by=\"$groupBy\""
-                    [ -n "$orderBy" ] && CONTENT+=" data-order-by=\"$orderBy\""
-                    [ -n "$orderDirection" ] && CONTENT+=" data-order-direction=\"$orderDirection\""
-                    [ -n "$limit" ] && CONTENT+=" data-limit=\"$limit\""
-                    CONTENT+="></div>"
-                    CONTENT+="</div></section>"
+                    DATA_JSON_PATH="${{ env.KAOS_DATA_BQ }}/$(basename "$dataSource")"
+
+                    if [ ! -f "$DATA_JSON_PATH" ]; then
+                      echo "❌ No existe data source $DATA_JSON_PATH para $title"
+                      continue
+                    fi
+
+                    # Construir filtros jq para ordenar, limitar y agrupar
+                    # Ordenar
+                    SORTED=$(jq -c --arg orderBy "$orderBy" --arg orderDir "$orderDirection" --argjson limit "$limit" '
+                      sort_by(.[$orderBy]) | if $orderDir=="desc" then reverse else . end | .[0:$limit]
+                    ' "$DATA_JSON_PATH")
+
+                    # Obtener etiquetas (labels) agrupadas por groupBy
+                    labels=$(echo "$SORTED" | jq -r --arg groupBy "$groupBy" 'map(.[ $groupBy ]) | unique | @json')
+
+                    # Obtener datos reales y estimados ordenados y limitados
+                    if [ -n "$realCostField" ]; then
+                      realCosts=$(echo "$SORTED" | jq -r --arg field "$realCostField" 'map(.[ $field ]) | @json')
+                    else
+                      realCosts="[]"
+                    fi
+
+                    if [ -n "$estimatedCostField" ]; then
+                      estimatedCosts=$(echo "$SORTED" | jq -r --arg field "$estimatedCostField" 'map(.[ $field ]) | @json')
+                    else
+                      estimatedCosts="[]"
+                    fi
+
+                    safe_title=$(echo "$title" | tr '[:upper:]' '[:lower:]' | tr ' ' '_' | tr -cd '[:alnum:]_')
+                    chart_id="chart_${safe_title:-untitled}"
+
+                    CONTENT+="<section class=\"cost-chart p-4 bg-white rounded shadow mb-6\">"
+                    CONTENT+="<h3 class=\"text-xl font-semibold mb-2\">$title</h3>"
+                    CONTENT+="<canvas id=\"$chart_id\" height=\"60\"></canvas>"
+                    CONTENT+="<script>"
+                    CONTENT+="(function(){"
+                    CONTENT+="  let ctx = document.getElementById('$chart_id').getContext('2d');"
+                    CONTENT+="  new Chart(ctx, {"
+                    CONTENT+="    type: '$tipo',"
+                    CONTENT+="    data: {"
+                    CONTENT+="      labels: $labels,"
+                    CONTENT+="      datasets: ["
+                    if [ "$realCosts" != "[]" ]; then
+                      CONTENT+="{label:'Costo Real', data:$realCosts, backgroundColor:'rgba(255, 99, 132, 0.5)'}"
+                      if [ "$estimatedCosts" != "[]" ]; then
+                        CONTENT+=","
+                      fi
+                    fi
+                    if [ "$estimatedCosts" != "[]" ]; then
+                      CONTENT+="{label:'Costo Estimado', data:$estimatedCosts, backgroundColor:'rgba(54, 162, 235, 0.5)'}"
+                    fi
+                    CONTENT+="      ]"
+                    CONTENT+="    },"
+                    CONTENT+="    options: { responsive:true, scales: { y: { beginAtZero: true } } }"
+                    CONTENT+="  });"
+                    CONTENT+="})();"
+                    CONTENT+="</script></section>"
                     ;;
 
-                  table)
-                    title=$(echo "$template" | jq -r '.title')
+                  "table")
+                    "title=$(echo \"$template\" | jq -r '.title')"
                     CONTENT+="<section class=\"table-section p-4 bg-white rounded-2xl shadow mb-6\">"
                     CONTENT+="<h3 class=\"text-2xl font-semibold mb-4 text-gray-800\">$title</h3>"
                     CONTENT+="<div class=\"overflow-x-auto\">"
                     CONTENT+="<table class=\"min-w-full border border-gray-200 divide-y divide-gray-200 text-sm\">"
                     CONTENT+="<thead class=\"bg-gray-50\">"
-                    CONTENT+="<tr><th class=\"px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider\">Columna 1</th>"
-                    CONTENT+="<th class=\"px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider\">Columna 2</th></tr>"
-                    CONTENT+="</thead><tbody class=\"bg-white divide-y divide-gray-100\">"
-                    CONTENT+="<tr><td class=\"px-6 py-4 text-gray-700\">Dato 1</td><td class=\"px-6 py-4 text-gray-700\">Dato 2</td></tr>"
-                    CONTENT+="<tr><td class=\"px-6 py-4 text-gray-700\">Dato 3</td><td class=\"px-6 py-4 text-gray-700\">Dato 4</td></tr>"
-                    CONTENT+="</tbody></table></div></section>"
+                    CONTENT+="<tr>"
+                    CONTENT+="<th class=\"px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider\">Columna 1</th>"
+                    CONTENT+="<th class=\"px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider\">Columna 2</th>"
+                    CONTENT+="</tr>"
+                    CONTENT+="</thead>"
+                    CONTENT+="<tbody class=\"bg-white divide-y divide-gray-100\">"
+                    CONTENT+="<tr>"
+                    CONTENT+="<td class=\"px-6 py-4 whitespace-nowrap text-gray-700\">Dato 1</td>"
+                    CONTENT+="<td class=\"px-6 py-4 whitespace-nowrap text-gray-700\">Dato 2</td>"
+                    CONTENT+="</tr>"
+                    CONTENT+="<tr>"
+                    CONTENT+="<td class=\"px-6 py-4 whitespace-nowrap text-gray-700\">Dato 3</td>"
+                    CONTENT+="<td class=\"px-6 py-4 whitespace-nowrap text-gray-700\">Dato 4</td>"
+                    CONTENT+="</tr>"
+                    CONTENT+="</tbody>"
+                    CONTENT+="</table>"
+                    CONTENT+="</div></section>"
                     ;;
 
                   *)
@@ -162,6 +300,7 @@ jobs:
               done < <(jq -c '.templates[]' "$SECTION_CONFIG")
 
               sed -i "/<!-- Plantillas -->/r /dev/stdin" "$SECTION_HTML" <<< "$CONTENT"
+
             else
               echo "⚠️ No se encontró configuración para '$section_title'"
             fi
@@ -227,7 +366,7 @@ jobs:
         run: |
           echo "Error detected in process"
           # RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
-          # gh issue comment $RNNUMBER --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
+          # gh issue comment $RNNUMBER --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event${{ env.KAOS_CODE }}.log"
           # Creamos la issue dado que ha fallado el modulo principal
           gh issue create  --title "[Ka0S] Error detected in ${{ env.KAOS_MODULE }}" --body "Error detected in ${{ env.KAOS_MODULE }}. Please check the logs for ${{ github.run_id }} more information of error."
           
