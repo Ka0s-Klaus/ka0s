@@ -3,8 +3,18 @@ const config = {
     itemsPerPage: 10,
     defaultArchive: 'data/kaos-workflows-available.json',
     defaultSection: 'Workflows',
-    defaultTemplate: 'data/section1.json'
+    defaultTemplate: null // Se asignará dinámicamente más adelante
 };
+
+// Inicializar defaultTemplate dinámicamente desde data/webs.json
+fetch('data/webs.json')
+  .then(response => response.json())
+  .then(websConfig => {
+    if (websConfig.sections && websConfig.sections.length > 0) {
+      config.defaultTemplate = websConfig.sections[0].datatemplate;
+      // Aquí puedes continuar la inicialización que dependa de defaultTemplate si lo necesitas
+    }
+  });
 
 // Variables globales iniciales
 let currentPage = 1;
