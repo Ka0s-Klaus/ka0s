@@ -156,9 +156,9 @@ jobs:
                     # Obtener etiquetas (labels) agrupadas por groupBy
                     labels=$(echo "$SORTED" | jq -r --arg groupBy "$groupBy" 'map(.[ $groupBy ]) | unique | @json')
 
-                    # Calcular totales usando operaciones aritméticas de bash
-                    totalReal=$(echo "$SORTED" | jq -r --arg field "$realCostField" 'map(.[$field] | tonumber) | add')
-                    totalEstimated=$(echo "$SORTED" | jq -r --arg field "$estimatedCostField" 'map(.[$field] | tonumber) | add')
+                    # Calcular totales usando operaciones aritméticas de bash con manejo de nulos
+                    totalReal=$(echo "$SORTED" | jq -r --arg field "$field" 'map(.[$field] | select(. != null) | tonumber // 0) | add // 0')
+                    totalEstimated=$(echo "$SORTED" | jq -r --arg field "$field" 'map(.[$field] | select(. != null) | tonumber // 0) | add // 0')
                     # Usar aritmética de bash en lugar de bc
                     netCost=$(awk "BEGIN {print $totalReal - $totalEstimated}")
 
