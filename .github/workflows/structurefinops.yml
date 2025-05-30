@@ -163,41 +163,11 @@ jobs:
                       barchart)
                         tipo="bar"
                         ;;
-                      doughnutchart)
-                        tipo="doughnut"
-                        ;;
                       *)
                         echo "⚠️ Tipo de gráfico inválido '$tipo', usando 'bar' por defecto"
                         tipo="bar"
                         ;;
                     esac
-
-                    # Configuración específica para doughnut
-                    if [ "$tipo" = "doughnut" ]; then
-                        DOUGHNUT_OPTS="cutoutPercentage: 70,"
-                    else
-                        DOUGHNUT_OPTS=""
-                    fi
-
-                    CONTENT+="new Chart(ctx, {"
-                    CONTENT+="type: '$tipo',"
-                    CONTENT+="data: {"
-                    CONTENT+="labels: $labels,"
-                    CONTENT+="datasets: ["
-                    CONTENT+="{label:'Costo Real', data:$realCosts, backgroundColor:'rgba(255, 99, 132, 0.5)'}"
-                    CONTENT+=","
-                    CONTENT+="{label:'Costo Estimado', data:$estimatedCosts, backgroundColor:'rgba(54, 162, 235, 0.5)'}"
-                    CONTENT+="]},"
-                    CONTENT+="options: {"
-                    CONTENT+="responsive:true,"
-                    CONTENT+="maintainAspectRatio: false,"
-                    CONTENT+="$DOUGHNUT_OPTS"
-                    CONTENT+="plugins: {"
-                    CONTENT+="legend: { position: 'top' },"
-                    CONTENT+="tooltip: { enabled: true }"
-                    CONTENT+="}"
-                    CONTENT+="}"
-                    CONTENT+="});"
 
                     dataSource=$(echo "$template" | jq -r '.dataSource')
                     realCostField=$(echo "$template" | jq -r '.realCostField // empty')
