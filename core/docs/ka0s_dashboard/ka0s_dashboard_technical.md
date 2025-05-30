@@ -193,7 +193,7 @@ Personalización de colores:
 Añadir `"metricsColors"` en la raíz del JSON con array de colores para cada métrica
 
 
-      
+# Pasos Finales
 - Una vez realizados los archivos de las secciones, hay que proceder con los cambios en github\workflows\deploy-dashboard.yml para que sea posible la subida de la web al servidor. Simplemente se tiene que añadir la ruta correspondiente con el título que se le haya asignado a la web en **pahts** en la linea 6 del deploy-dashboard.yml, ejemplo:
 ```shell
 paths:
