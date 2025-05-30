@@ -228,7 +228,7 @@ jobs:
                           CONTENT+=","
                         fi
                         
-                        data=$(echo "$SORTED" | jq -r --arg field "$field" 'map(.[$field]) | @json')
+                        data=$(echo "$SORTED" | jq -r --arg field "$field" 'map(.[$field] | select(. != null) | tonumber // 0) | @json')
                         
                         if [ "$type" = "line" ]; then
                           CONTENT+="{label:'$label', data:$data, type:'line', borderColor:'rgba(66, 133, 244, 1)', borderWidth:2, fill:false}"
@@ -352,7 +352,7 @@ jobs:
         run: |
           echo "Error detected in process"
           # RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
-          # gh issue comment $RNNUMBER --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
+          # gh issue comment $RNNUMBER --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event${{ env.KAOS_CODE }}.log"
           # Creamos la issue dado que ha fallado el modulo principal
           gh issue create  --title "[Ka0S] Error detected in ${{ env.KAOS_MODULE }}" --body "Error detected in ${{ env.KAOS_MODULE }}. Please check the logs for ${{ github.run_id }} more information of error."
           
