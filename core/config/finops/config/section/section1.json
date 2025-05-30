@@ -2,7 +2,34 @@
     "title": "Inicio",
     "description": "Bienvenido al dashboard de Ka0s",
     "templates": [
-        
+        {
+            "type": "cost-chart",
+            "tipo": "bar",
+            "title": "Análisis de Costos Diarios GCP",
+            "dataSource": "gcp_anomalous_spending_query_results.json",
+            "metrics": [
+                {
+                    "field": "z_score",
+                    "label": "Z-Score",
+                    "type": "line"
+                },
+                {
+                    "field": "daily_cost",
+                    "label": "Costo Diario",
+                    "type": "bar"
+                },
+                {
+                    "field": "avg_daily_cost",
+                    "label": "Costo Promedio",
+                    "type": "line"
+                }
+            ],
+            "groupBy": "day",
+            "aggregation": "sum",
+            "limit": 31,
+            "orderBy": "day",
+            "orderDirection": "desc"
+        },
         {
             "type": "cost-chart",
             "tipo": "barchart",
