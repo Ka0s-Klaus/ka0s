@@ -102,7 +102,7 @@ jobs:
                 tmpl_type=$(echo "$template" | jq -r '.type')
 
                 case "$tmpl_type" in
-                  chart)
+                  chart | cost-chart)
                     title=$(echo "$template" | jq -r '.title // "Sin título"')
                     tipo=$(echo "$template" | jq -r '.tipo // "bar"')
                     tipo_lc=$(echo "$tipo" | tr '[:upper:]' '[:lower:]')
