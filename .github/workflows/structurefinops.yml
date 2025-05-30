@@ -194,14 +194,46 @@ jobs:
 
                   "table")
                     title=$(echo "$template" | jq -r '.title')
-                    CONTENT+="<section class=\"table-section p-4 bg-white rounded shadow mb-6\">"
-                    CONTENT+="<h3 class=\"text-xl font-semibold mb-2\">$title</h3>"
-                    CONTENT+="<table class=\"min-w-full border border-gray-300\">"
-                    CONTENT+="<thead><tr><th class=\"border px-4 py-2\">Columna 1</th><th class=\"border px-4 py-2\">Columna 2</th></tr></thead>"
-                    CONTENT+="<tbody>"
-                    CONTENT+="<tr><td class=\"border px-4 py-2\">Dato 1</td><td class=\"border px-4 py-2\">Dato 2</td></tr>"
-                    CONTENT+="<tr><td class=\"border px-4 py-2\">Dato 3</td><td class=\"border px-4 py-2\">Dato 4</td></tr>"
-                    CONTENT+="</tbody></table></section>"
+                    # Dentro del case "table"
+                    dataSource=$(echo "$template" | jq -r '.dataSource')
+                    groupBy=$(echo "$template" | jq -r '.groupBy')
+                    displayFields=$(echo "$template" | jq -r '.displayFields | join(",")')
+                    
+                    DATA_JSON_PATH="${{ env.KAOS_DATA_BQ }}/$(basename "$dataSource")"
+                    
+                    TABLE_HEAD="<tr>"
+                    TABLE_BODY=""
+                    
+                    # Generar encabezados
+                    for field in ${displayFields//,/ };
+                    do
+                        TABLE_HEAD+="<th class=\"px-4 py-3 text-left text-sm font-medium text-blue-700 uppercase\">${field}</th>"
+                    done
+                    TABLE_HEAD+="</tr>"
+                    
+                    # Generar filas con datos
+                    while IFS='|' read -r -a fields;
+                    do
+                        TABLE_BODY+="<tr class=\"hover:bg-gray-50 even:bg-gray-50\">"
+                        for value in "${fields[@]}";
+                        do
+                            # Aplicar formato condicional para valores numéricos
+                            if [[ "$value" =~ ^[0-9]+([.][0-9]+)?$ ]]; then
+                                TABLE_BODY+="<td class=\"px-4 py-3 text-sm font-mono\">\${value}</td>"
+                            else
+                                TABLE_BODY+="<td class=\"px-4 py-3 text-sm text-gray-700\">\${value}</td>"
+                            fi
+                        done
+                        TABLE_BODY+="</tr>"
+                    done < <(jq -r --arg groupBy "$groupBy" --arg fields "$displayFields" 
+                        'map(select(.[$groupBy])) | unique_by(.[$groupBy]) | .[] | 
+                        [.[$fields]] | join("|")' "$DATA_JSON_PATH")
+                    
+                    CONTENT+="<div class=\"overflow-x-auto rounded-lg border border-gray-200\">"
+                    CONTENT+="<table class=\"min-w-full divide-y divide-gray-200\">"
+                    CONTENT+="<thead class=\"bg-blue-50\">$TABLE_HEAD</thead>"
+                    CONTENT+="<tbody class=\"bg-white divide-y divide-gray-200\">$TABLE_BODY</tbody>"
+                    CONTENT+="</table></div>"
                     ;;
 
                   *)
