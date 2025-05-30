@@ -228,7 +228,15 @@ jobs:
                           CONTENT+=","
                         fi
                         
-                        data=$(echo "$SORTED" | jq -r --arg field "$field" 'map(.[$field] | select(. != null) | tonumber // 0) | @json')
+                        # Updated jq command to handle null values
+                        data=$(echo "$SORTED" | jq -r --arg field "$field" 'map(
+                          .[$field] | 
+                          if . == null then 
+                            0 
+                          else 
+                            (. | tonumber? // 0)
+                          end
+                        ) | @json')
                         
                         if [ "$type" = "line" ]; then
                           CONTENT+="{label:'$label', data:$data, type:'line', borderColor:'rgba(66, 133, 244, 1)', borderWidth:2, fill:false}"
