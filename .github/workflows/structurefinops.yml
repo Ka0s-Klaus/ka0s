@@ -125,8 +125,28 @@ jobs:
                     esac
 
                     dataSource=$(echo "$template" | jq -r '.dataSource')
-                    realCostField=$(echo "$template" | jq -r '.realCostField // empty')
-                    estimatedCostField=$(echo "$template" | jq -r '.estimatedCostField // empty')
+                    realCostField=$(echo "$template" | jq -r '.realCostField // "final_cost"')
+                    estimatedCostField=$(echo "$template" | jq -r '.estimatedCostField // "total_cost"')
+                    
+                    # Calcular valores con protección contra null
+                    totalReal=$(echo "$SORTED" | jq -r --arg field "$realCostField" 'map(.[$field] // 0) | add | tostring')
+                    totalEstimated=$(echo "$SORTED" | jq -r --arg field "$estimatedCostField" 'map(.[$field] // 0) | add | tostring')
+                    
+                    # Nueva sección de resumen
+                    CONTENT+="<div class=\"flex flex-col md:flex-row items-center justify-center gap-4 md:gap-16 w-full mb-8\">"
+                    CONTENT+="$(cat <<EOF
+                      <div class=\"flex flex-col items-center mb-4 md:mb-0\">
+                        <span class=\"text-base text-gray-500 mb-1\">Costo Real</span>
+                        <span class=\"font-bold text-2xl\">€$(printf "%.2f" "$totalReal")</span>
+                      </div>
+                      <!-- Resto del template de resumen -->
+                    EOF
+                    )"
+                    
+                    # Configuración del gráfico actualizada
+                    CONTENT+="    datasets: ["
+                    CONTENT+="      {label:'Costo Real', data:$realCosts, backgroundColor:'rgba(66, 133, 244, 0.5)'},"
+                    CONTENT+="      {label:'Costo Estimado', data:$estimatedCosts, backgroundColor:'rgba(255, 209, 141, 0.5)'}"
                     groupBy=$(echo "$template" | jq -r '.groupBy')
                     orderBy=$(echo "$template" | jq -r '.orderBy')
                     orderDirection=$(echo "$template" | jq -r '.orderDirection')
