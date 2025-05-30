@@ -156,32 +156,33 @@ jobs:
                     # Obtener etiquetas (labels) agrupadas por groupBy
                     labels=$(echo "$SORTED" | jq -r --arg groupBy "$groupBy" 'map(.[ $groupBy ]) | unique | @json')
 
-                    # Calcular totales
+                    # Calcular totales usando operaciones aritméticas de bash
                     totalReal=$(echo "$SORTED" | jq -r --arg field "$realCostField" 'map(.[$field] | tonumber) | add')
                     totalEstimated=$(echo "$SORTED" | jq -r --arg field "$estimatedCostField" 'map(.[$field] | tonumber) | add')
-                    netCost=$(echo "$totalReal - $totalEstimated" | bc)
+                    # Usar aritmética de bash en lugar de bc
+                    netCost=$(awk "BEGIN {print $totalReal - $totalEstimated}")
 
-                    # Formatear valores para la visualización
+                    # Formatear valores para la visualización usando awk en lugar de bc
                     format_value() {
                       local value=$1
-                      if (( $(echo "$value >= 1000000" | bc -l) )); then
-                        printf "€%.2fM" $(echo "$value/1000000" | bc -l)
-                      elif (( $(echo "$value >= 1000" | bc -l) )); then
-                        printf "€%.1fk" $(echo "$value/1000" | bc -l)
+                      if (( $(awk "BEGIN {print ($value >= 1000000)}") )); then
+                        printf "€%.2fM" $(awk "BEGIN {print $value/1000000}")
+                      elif (( $(awk "BEGIN {print ($value >= 1000)}") )); then
+                        printf "€%.1fk" $(awk "BEGIN {print $value/1000}")
                       else
                         printf "€%.2f" $value
                       fi
                     }
 
-                    # Calcular comparación y estilo
+                    # Calcular comparación y estilo usando awk
                     if [ "$totalEstimated" != "0" ]; then
-                      diff=$(echo "$totalReal - $totalEstimated" | bc)
-                      percent=$(echo "scale=1; ($diff / $totalEstimated) * 100" | bc)
-                      if (( $(echo "$diff >= 0" | bc -l) )); then
+                      diff=$(awk "BEGIN {print $totalReal - $totalEstimated}")
+                      percent=$(awk "BEGIN {print ($diff / $totalEstimated) * 100}")
+                      if (( $(awk "BEGIN {print ($diff >= 0)}") )); then
                         comparison_text="↑ ${percent}% sobre estimado"
                         comparison_class="text-base text-red-500"
                       else
-                        percent=${percent#-}
+                        percent=$(awk "BEGIN {print -1 * $percent}")
                         comparison_text="↓ ${percent}% bajo estimado"
                         comparison_class="text-base text-green-500"
                       fi
