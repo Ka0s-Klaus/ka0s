@@ -15,7 +15,7 @@ env:
     KAOS_ACTION: ${{ github.action }}
     KAOS_REF: ${{ github.ref }}
     KAOS_MODULE: "[Ka0S] Deploy Web Structure"
-    KAOS_JSON_WEB: "core/config/webs/webs.json"
+    KAOS_JSON_WEB: "core/web/data/webs.json" 
     KAOS_JSON_RESUME: "core/outputs/webs/" # directorio que aloja los json de resultados de la operación 
     KAOS_JSON_DATA: "core/web/data/data.json" # directorio que aloja los json de datos de la operación
     KAOS_WEB_STRUCTURE: "core/results/webs/" # directorio donde se alojan las diferentes estructura de webs
@@ -481,23 +481,23 @@ jobs:
           
           # Generate a summary of copied files
           echo "Generating data files summary..."
-          echo "{" > "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
-          echo "  \"generated_at\": \"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\"," >> "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
-          echo "  \"title\": \"$TITLE\"," >> "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
-          echo "  \"files\": [" >> "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
+          echo "{" > "${{ env.KAOS_JSON_RESUME }}data-files-summary.json"
+          echo "  \"generated_at\": \"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\"," >> "${{ env.KAOS_JSON_RESUME }}data-files-summary.json"
+          echo "  \"title\": \"$TITLE\"," >> "${{ env.KAOS_JSON_RESUME }}data-files-summary.json"
+          echo "  \"files\": [" >> "${{ env.KAOS_JSON_RESUME }}data-files-summary.json"
           
           # List all copied files
           find "${{ env.KAOS_WEB_STRUCTURE }}$TITLE/data" -type f | sort | while read -r file; do
             RELATIVE_PATH="${file#${{ env.KAOS_WEB_STRUCTURE }}$TITLE/}"
-            echo "    {\"path\": \"$RELATIVE_PATH\"}," >> "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
+            echo "    {\"path\": \"$RELATIVE_PATH\"}," >> "${{ env.KAOS_JSON_RESUME }}data-files-summary.json"
           done
           
           # Remove the last comma and close the JSON
-          sed -i '$ s/,$//' "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
-          echo "  ]" >> "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
-          echo "}" >> "${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
+          sed -i '$ s/,$//' "${{ env.KAOS_JSON_RESUME }}data-files-summary.json"
+          echo "  ]" >> "${{ env.KAOS_JSON_RESUME }}data-files-summary.json"
+          echo "}" >> "${{ env.KAOS_JSON_RESUME }}data-files-summary.json"
           
-          echo "Data files summary generated at ${{ env.KAOS_JSON_RESUME }}$TITLE/data-files-summary.json"
+          echo "Data files summary generated at ${{ env.KAOS_JSON_RESUME }}data-files-summary.json"
           
           # NUEVA SECCIÓN: Copiar archivos de datos para el dashboard de test
           echo "Reading test data.json file..."
@@ -688,7 +688,7 @@ jobs:
 
       - name: Generar HTML de secciones
         run: |
-          STRUCTURE_FILE="core/config/webs/webs.json"
+          STRUCTURE_FILE="${KAOS_JSON_WEB}"
           TITLE=$(jq -r '.title' $STRUCTURE_FILE)
           echo "Generando HTML de secciones según su JSON para el título: ${TITLE}"
           
@@ -818,7 +818,7 @@ jobs:
       
       - name: Crear dashboard.html
         run: |
-          STRUCTURE_FILE="core/config/webs/webs.json"
+          STRUCTURE_FILE="${KAOS_JSON_WEB}"
           TITLE=$(jq -r '.title' $STRUCTURE_FILE)
           
           # Crear el dashboard.html con todas las secciones concatenadas y la navbar

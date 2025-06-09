@@ -8,7 +8,7 @@ Creación de páginas Web mediante ficheros json
 
 # Pasos para creación de la Web
 - En primer lugar clonaremos la rama a nuestro local para poder trabajar con ella.
-- A continuacion deberemos establecer la estructura de la web en un JSON llamado **webs.json** ubicado en **core/web/data**, con la siguiente estructura de ejemplo:
+- A continuacion deberemos establecer la estructura de la web en un JSON llamado **webs.json** ubicado en **core/web/data**, con la siguiente estructura de ejemplo (hay que tener presente que el título no puede tener espacios para que no de fallo al crear la carpeta de la estructura de la web con el nombre de dicho título):
 ```shell
 {
     "title": "Tienda",
@@ -193,8 +193,18 @@ Personalización de colores:
 Añadir `"metricsColors"` en la raíz del JSON con array de colores para cada métrica
 
 
-        
-- Una vez realizados los archivos de las secciones subiremos los cambios a nuestra rama.
-- Despues de que hayan sido subidos realizaremos una **pull request** y posteriormente un **Merge**
+# Pasos Finales
+- Una vez realizados los archivos de las secciones, hay que proceder con los cambios en github\workflows\deploy-dashboard.yml para que sea posible la subida de la web al servidor. Simplemente se tiene que añadir la ruta correspondiente con el título que se le haya asignado a la web en **pahts** en la linea 6 del deploy-dashboard.yml, ejemplo:
+```shell
+paths:
+      # Ajustar el path para incluir ambos dashboards
+      - 'core/results/webs/dashboard/**'
+      - 'core/results/webs/test/**'
+      - 'core/results/webs/tienda/**'
+```  
+y tras esto también se tiene que cambiar la ruta en la variable **KAOS_PATH_ORIGIN_DASHBOARD:** y **asignarle la añadida a paths pero sin los dos asteriscos finales** como sería por ejemplo en el caso de la web tienda:'core/results/webs/tienda/'
+- Posteriormente subiremos los cambios a nuestra rama.
+- Después de que hayan sido subidos realizaremos una **pull request** y posteriormente un **Merge**
 - A continuación, en el **main**, ejecutaremos el action de **Ka0s Create structure for dashboard** y **Ka0s Deploy Webs (Dashboard y Test)**
-- Finalmente estos actions harán que nuestra web se suba al servidor.
+- Estos actions harán que nuestra web se suba al servidor.
+- Finalmente la web se podrá consultar en la siguiente url: https://ka0s.io/dashboard/dashboard.html.
