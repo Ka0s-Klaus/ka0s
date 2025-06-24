@@ -1,0 +1,35 @@
+name: Initialize MongoDB Inspector Database
+
+on:
+  workflow_dispatch:
+
+env:
+    KAOS_PATH_MONGO: core/database/scripts/setup_mongo_inspector.sh 
+    HOST: ${{ secrets.MONGO_HOST }}
+    ADMIN_USER: ${{ secrets.MONGO_ADMIN_USER }}
+    ADMIN_PASS: ${{ secrets.MONGO_ADMIN_PASS }}
+    DB_NAME: db_inspector
+    DB_USER: db_inspector
+
+jobs:
+  setup-mongo:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.KAOS_REPO_TOKEN }}
+
+    - name: Setup MongoDB
+      run: |
+        ${{ env.KAOS_PATH_MONGO }} ${{ secrets.DB_INITIAL_PASSWORD }}
+
+    - name: Commit script changes
+      run: |
+        git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
+        git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
+        git add .
+        git commit -m '[Ka0s] Update MongoDB setup script' || echo 'No changes to commit'
+        git push

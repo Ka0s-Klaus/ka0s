@@ -1,0 +1,24 @@
+name: Ka0s SSH Configuration Check and Update
+
+on:
+  workflow_dispatch:
+
+env:
+  KAOS_CODE : ${{ github.run_id}}
+
+
+jobs:
+  execute-script:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout code
+        if: ${{ always() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+        
+      - name: Execute SSH Configuration
+        run: |
+          chmod +x core/hosts/configure_ssh.sh
+          ./core/hosts/configure_ssh.sh
