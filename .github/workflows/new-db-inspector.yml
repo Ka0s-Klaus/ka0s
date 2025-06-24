@@ -15,6 +15,7 @@ jobs:
   job-core:
     runs-on:
       group: ka0s
+    
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -22,9 +23,15 @@ jobs:
         fetch-depth: 0
         token: ${{ secrets.KAOS_REPO_TOKEN }}
 
+    - name: Install MongoDB Tools and jq
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y mongodb-org-tools jq
+
     - name: Setup MongoDB
       run: |
-        ${{ env.KAOS_PATH_MONGO }} ${{ secrets.DB_INITIAL_PASSWORD }}
+        chmod +x $KAOS_PATH_MONGO
+        $KAOS_PATH_MONGO ${{ secrets.DB_INITIAL_PASSWORD }}
 
     - name: Commit script changes
       run: |
