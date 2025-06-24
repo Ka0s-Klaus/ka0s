@@ -4,12 +4,8 @@ on:
   workflow_dispatch:
 
 env:
-    KAOS_PATH_MONGO: core/database/scripts/setup_mongo_inspector.sh 
-    HOST: ${{ secrets.MONGO_HOST }}
-    ADMIN_USER: ${{ secrets.MONGO_ADMIN_USER }}
-    ADMIN_PASS: ${{ secrets.MONGO_ADMIN_PASS }}
-    DB_NAME: db_inspector
-    DB_USER: db_inspector
+    KAOS_PATH_MONGO: core/database/scripts/setup_mongo_inspector.sh
+    MONGO_IMAGE: mongo:6.0
 
 jobs:
   job-core:
@@ -23,15 +19,19 @@ jobs:
         fetch-depth: 0
         token: ${{ secrets.KAOS_REPO_TOKEN }}
 
-    - name: Install MongoDB Tools and jq
+    - name: Run MongoDB Tools via Docker
       run: |
-        apt-get update
-        apt-get install -y mongodb-org-tools
-
-    - name: Setup MongoDB
-      run: |
-        chmod +x $KAOS_PATH_MONGO
-        $KAOS_PATH_MONGO ${{ secrets.DB_INITIAL_PASSWORD }}
+        docker run --rm -v \$PWD:/workspace \
+        -e HOST=${{ secrets.MONGO_HOST }} \
+        -e ADMIN_USER=${{ secrets.MONGO_ADMIN_USER }} \
+        -e ADMIN_PASS=${{ secrets.MONGO_ADMIN_PASS }} \
+        -e DB_NAME=db_inspector \
+        -e DB_USER=db_inspector \
+        ${{ env.MONGO_IMAGE }} bash -c \
+        "apt-get update -qq && \
+        apt-get install -y -qq jq && \
+        chmod +x /workspace/$KAOS_PATH_MONGO && \
+        /workspace/$KAOS_PATH_MONGO ${{ secrets.DB_INITIAL_PASSWORD }}"
 
     - name: Commit script changes
       run: |
