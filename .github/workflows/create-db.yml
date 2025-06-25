@@ -1,16 +1,43 @@
-name: MongoDB Setup
+name: Ka0s MongoDB New DB and Collection
 
-on: [workflow_dispatch]
+on: 
+    workflow_dispatch:
+        inputs:
+         db_name:
+           description: 'Name of the new database (use db.name)'
+           required: true
+         collection_name:
+           description: 'Name of the new collection (use col.name)'
+           required: true
+         db_user:
+           description: 'Name of the new user'
+           required: true
 
 env:
   PYTHON_VERSION: '3.9'
+  MONGO_SUPERUSER_CONNECTION: ${{ secrets.DB_CONNECTION_STRING}}
+  MONGO_NEW_DB: ${{ github.event.inputs.db_name }}
+  MONGO_COLLECTION_NAME: ${{ github.event.inputs.collection_name }}
+  MONGO_NEW_USER: ${{ github.event.inputs.db_user }}
+  MONGO_NEW_PASS: ${{ secrets.DB_INITIAL_PASSWORD }}
+  REPORT_PATH: ${{ github.workspace }}/reports
+  REPORT_FILENAME: mongo_setup_${{ github.run_id }}.json
 
 jobs:
-  mongo-config:
-    runs-on: ubuntu-latest
+  ob-core:
+    runs-on:
+      group: m0ng0
+    env:
+      GITHUB_OUTPUT: ""
+    if: ${{ !contains(github.event.head_commit.message, '[Ka0S] ') }} 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - id: repo
+        name: Checkout code
+        if: ${{ always() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -21,15 +48,10 @@ jobs:
         run: pip install pymongo
 
       - name: Configure MongoDB
-        env:
-          MONGO_SUPERUSER_CONNECTION: ${{ secrets.MONGO_SUPERUSER_CONNECTION }}
-          MONGO_NEW_DB: ${{ github.event.inputs.db_name }}
-          MONGO_NEW_USER: ${{ github.event.inputs.db_user }}
-          MONGO_NEW_PASS: ${{ secrets.MONGO_USER_PASSWORD }}
         run: python mongo_admin_ci.py
 
       - name: Upload report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: mongo-setup-report
           path: ${{ env.REPORT_PATH }}
