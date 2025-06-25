@@ -190,27 +190,24 @@ def main():
             })
         finally:
             # Generación garantizada del reporte
+            # Asegurar que todo el bloque finally esté correctamente alineado
             report['metadata']['end_time'] = datetime.now().isoformat()
-            # Corrección del cálculo de duración
+            
+            # Cálculo de duración sin indentación extra
             report['metadata']['duration'] = (
                 datetime.fromisoformat(report['metadata']['end_time']) -
                 datetime.fromisoformat(report['metadata']['start_time'])
             ).total_seconds()
             
-            # Asegurar imports necesarios en la parte superior
-            try:
-                from datetime import datetime
-            except ImportError as e:
-                report['errors'].append(f"Error crítico de importación: {str(e)}")
-                raise
-
-            report_path = os.path.join(
-                os.environ.get('REPORT_PATH', './'),
-                os.environ.get('REPORT_FILENAME', 'mongo_operations_report.json')
-            )
+            try:  # <-- Esta línea debe estar al mismo nivel que el bloque finally
+                report_path = os.path.join(
+                    os.environ.get('REPORT_PATH', './'),
+                    os.environ.get('REPORT_FILENAME', 'mongo_operations_report.json')
+                )
+                os.makedirs(os.path.dirname(report_path), exist_ok=True)
+                with open(report_path, 'w') as f:
+                    json.dump(report, f, indent=2, default=str)
+            except Exception as e:
+                print(f"Error generando reporte: {e}")
             
-            os.makedirs(os.path.dirname(report_path), exist_ok=True)
-            with open(report_path, 'w') as f:
-                json.dump(report, f, indent=2, default=str)
-
             return 0 if not report['errors'] else 1
