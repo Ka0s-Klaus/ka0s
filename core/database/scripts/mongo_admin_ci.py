@@ -190,16 +190,16 @@ def main():
             })
         finally:
             # Generación garantizada del reporte
-            # Asegurar que todo el bloque finally esté correctamente alineado
             report['metadata']['end_time'] = datetime.now().isoformat()
             
-            # Cálculo de duración sin indentación extra
+            # Cálculo de duración
             report['metadata']['duration'] = (
                 datetime.fromisoformat(report['metadata']['end_time']) -
                 datetime.fromisoformat(report['metadata']['start_time'])
             ).total_seconds()
-            
-            try:  # <-- Esta línea debe estar al mismo nivel que el bloque finally
+
+            # Bloque try para guardar reporte DEBE estar al mismo nivel
+            try:
                 report_path = os.path.join(
                     os.environ.get('REPORT_PATH', './'),
                     os.environ.get('REPORT_FILENAME', 'mongo_operations_report.json')
