@@ -34,6 +34,44 @@ def crear_entorno_mongo():
         client.close()
 
 def main():
+    report = {
+        'metadata': {
+            'start_time': datetime.now().isoformat(),
+            'script_version': '1.2',
+            'parameters': {}
+        },
+        'operations': [],
+        'errors': [],
+        'statistics': {}
+    }
+
+    # Bloque try principal correctamente indentado
+    try:
+        # [PASO 1] Conexión
+        print("Conectando a MongoDB...")
+        client = MongoClient(os.environ['MONGO_SUPERUSER_CONNECTION'])
+
+        # [PASO 2] Creación DB
+        if db_name not in client.list_database_names():
+            client[db_name].command('create')
+
+        # [PASO 3] Creación Colección
+        db = client[db_name]
+        if collection_name not in db.list_collection_names():
+            db.create_collection(collection_name)
+
+        # [PASO 4] Creación Usuario
+        db.command('createUser', username,
+                  pwd=password,
+                  roles=[{'role': 'dbOwner', 'db': db_name}])
+
+    except Exception as e:  # Este except debe alinearse con el try
+        print(f"Error: {str(e)}")
+
+    finally:
+        client.close()
+        print("Proceso completado")
+
     print("\n[INICIO] Ejecutando script de configuración MongoDB")
     print(f"Parámetros recibidos:\n- DB: {os.environ['MONGO_NEW_DB']}\n- Usuario: {os.environ['MONGO_NEW_USER']}\n- Colección: {os.environ.get('MONGO_COLLECTION_NAME')}")
 
