@@ -45,29 +45,26 @@ def main():
         'statistics': {}
     }
 
-    # Bloque try principal correctamente indentado
     try:
-        # [PASO 1] Conexión
-        print("Conectando a MongoDB...")
+        # Bloque principal correctamente indentado (4 espacios)
         client = MongoClient(os.environ['MONGO_SUPERUSER_CONNECTION'])
-
-        # [PASO 2] Creación DB
+        
+        # Operaciones con la base de datos
+        db_name = os.environ['MONGO_NEW_DB']
         if db_name not in client.list_database_names():
             client[db_name].command('create')
 
-        # [PASO 3] Creación Colección
-        db = client[db_name]
-        if collection_name not in db.list_collection_names():
-            db.create_collection(collection_name)
+        # Bloque interno correctamente anidado
+        try:
+            db = client[db_name]
+            collection_name = os.environ.get('MONGO_COLLECTION_NAME', 'default_collection')
+            if collection_name not in db.list_collection_names():
+                db.create_collection(collection_name)
+        except Exception as e:
+            print(f"Error creando colección: {e}")
 
-        # [PASO 4] Creación Usuario
-        db.command('createUser', username,
-                  pwd=password,
-                  roles=[{'role': 'dbOwner', 'db': db_name}])
-
-    except Exception as e:  # Este except debe alinearse con el try
-        print(f"Error: {str(e)}")
-
+    except Exception as e:
+        print(f"Error general: {e}")
     finally:
         client.close()
         print("Proceso completado")
