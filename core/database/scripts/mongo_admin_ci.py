@@ -2,6 +2,7 @@ import os
 from pymongo import MongoClient
 import json
 from datetime import datetime
+import sys
 
 def crear_entorno_mongo():
     # Obtener parámetros de GitHub Actions
@@ -75,8 +76,31 @@ def main():
         if collection_name in db.list_collection_names():
             print(f"⚠️  Colección ya existe. Usando: {collection_name}")
         else:
-            db.create_collection(collection_name)
-            print(f"✅ Colección creada: {collection_name}")
+            # Al inicio del script
+            print("🚀 Iniciando ejecución del script MongoDB Admin", flush=True)
+            
+            # En cada operación crítica
+            try:
+                print(f"🔗 Conectando a {mongo_uri[:25]}...", file=sys.stderr)
+                client = MongoClient(mongo_uri)
+                print("✅ Conexión exitosa", flush=True)
+            
+            except Exception as e:
+                print(f"❌ Error de conexión: {str(e)}", file=sys.stderr)
+                sys.exit(1)
+            
+            # Durante creación de colección
+            print(f"🛠 Creando colección '{collection_name}'...", end='', flush=True)
+            try:
+                db.create_collection(collection_name)
+                print(" ✓", flush=True)
+            
+            except Exception as e:
+                print(" ✗", flush=True)
+                print(f"\n⚠ Error creando colección: {e}", file=sys.stderr)
+            
+            # Al final
+            print(f"\n📋 Reporte generado en: {os.path.abspath(report_path)}", flush=True)
 
         # Creación de usuario
         print(f"\n[PASO 4] Creando usuario '{os.environ['MONGO_NEW_USER']}'")
