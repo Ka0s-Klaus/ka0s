@@ -1,0 +1,455 @@
+job-core	Set up job	﻿2025-06-25T16:50:47.1879908Z Current runner version: '2.325.0'
+job-core	Set up job	2025-06-25T16:50:47.1886877Z Runner name: 'ka0s-m0ng0-1'
+job-core	Set up job	2025-06-25T16:50:47.1888047Z Machine name: 'a4c7c7624224'
+job-core	Set up job	2025-06-25T16:50:47.1890939Z ##[group]GITHUB_TOKEN Permissions
+job-core	Set up job	2025-06-25T16:50:47.1893379Z Contents: read
+job-core	Set up job	2025-06-25T16:50:47.1893968Z Metadata: read
+job-core	Set up job	2025-06-25T16:50:47.1894655Z Packages: read
+job-core	Set up job	2025-06-25T16:50:47.1895166Z ##[endgroup]
+job-core	Set up job	2025-06-25T16:50:47.1897454Z Secret source: Actions
+job-core	Set up job	2025-06-25T16:50:47.1898275Z Prepare workflow directory
+job-core	Set up job	2025-06-25T16:50:47.2681294Z Prepare all required actions
+job-core	Set up job	2025-06-25T16:50:47.2725245Z Getting action download info
+job-core	Set up job	2025-06-25T16:50:47.8628665Z Download action repository 'actions/checkout@v4' (SHA:11bd71901bbe5b1630ceea73d27597364c9af683)
+job-core	Set up job	2025-06-25T16:50:48.6169438Z Download action repository 'actions/setup-python@v4' (SHA:7f4fc3e22c37d6ff65e88745f38bd3157c663f7c)
+job-core	Set up job	2025-06-25T16:50:49.4380665Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+job-core	Set up job	2025-06-25T16:50:50.5440161Z Complete job name: job-core
+job-core	Checkout code	﻿2025-06-25T16:50:50.5978890Z ##[group]Run actions/checkout@v4
+job-core	Checkout code	2025-06-25T16:50:50.5980232Z with:
+job-core	Checkout code	2025-06-25T16:50:50.5980865Z   fetch-depth: 0
+job-core	Checkout code	2025-06-25T16:50:50.5981985Z   token: ***
+job-core	Checkout code	2025-06-25T16:50:50.5982670Z   repository: Ka0s-Klaus/ka0s
+job-core	Checkout code	2025-06-25T16:50:50.5983464Z   ssh-strict: true
+job-core	Checkout code	2025-06-25T16:50:50.5984130Z   ssh-user: git
+job-core	Checkout code	2025-06-25T16:50:50.5984812Z   persist-credentials: true
+job-core	Checkout code	2025-06-25T16:50:50.5985565Z   clean: true
+job-core	Checkout code	2025-06-25T16:50:50.5986255Z   sparse-checkout-cone-mode: true
+job-core	Checkout code	2025-06-25T16:50:50.5987101Z   fetch-tags: false
+job-core	Checkout code	2025-06-25T16:50:50.5987791Z   show-progress: true
+job-core	Checkout code	2025-06-25T16:50:50.5988746Z   lfs: false
+job-core	Checkout code	2025-06-25T16:50:50.5989516Z   submodules: false
+job-core	Checkout code	2025-06-25T16:50:50.5990214Z   set-safe-directory: true
+job-core	Checkout code	2025-06-25T16:50:50.5991213Z env:
+job-core	Checkout code	2025-06-25T16:50:50.5991835Z   PYTHON_VERSION: 3.9
+job-core	Checkout code	2025-06-25T16:50:50.5993482Z   MONGO_SUPERUSER_CONNECTION: ***
+job-core	Checkout code	2025-06-25T16:50:50.5994345Z   MONGO_NEW_DB: db.github
+job-core	Checkout code	2025-06-25T16:50:50.5995158Z   MONGO_COLLECTION_NAME: col.repo
+job-core	Checkout code	2025-06-25T16:50:50.5996055Z   MONGO_NEW_USER: dbusergithub
+job-core	Checkout code	2025-06-25T16:50:50.5996987Z   MONGO_NEW_PASS: ***
+job-core	Checkout code	2025-06-25T16:50:50.5997942Z   MONGO_SCRIPT_PATH: core/database/scripts/mongo_admin_ci.py
+job-core	Checkout code	2025-06-25T16:50:50.5999104Z   KAOS_CODE: 15882311151
+job-core	Checkout code	2025-06-25T16:50:50.5999871Z   REPORT_PATH: audit/mongo
+job-core	Checkout code	2025-06-25T16:50:50.6000732Z   REPORT_FILENAME: mongo_setup_15882311151.json
+job-core	Checkout code	2025-06-25T16:50:50.6001700Z   GITHUB_OUTPUT: 
+job-core	Checkout code	2025-06-25T16:50:50.6002394Z ##[endgroup]
+job-core	Checkout code	2025-06-25T16:50:50.7190462Z Syncing repository: Ka0s-Klaus/ka0s
+job-core	Checkout code	2025-06-25T16:50:50.7193151Z ##[group]Getting Git version info
+job-core	Checkout code	2025-06-25T16:50:50.7194286Z Working directory is '/actions-runner/_work/ka0s/ka0s'
+job-core	Checkout code	2025-06-25T16:50:50.7195937Z [command]/usr/bin/git version
+job-core	Checkout code	2025-06-25T16:50:50.7196784Z git version 2.43.0
+job-core	Checkout code	2025-06-25T16:50:50.7202050Z ##[endgroup]
+job-core	Checkout code	2025-06-25T16:50:50.7220445Z Temporarily overriding HOME='/actions-runner/_work/_temp/62013b21-ba70-41d9-a242-0953e543eb87' before making global git config changes
+job-core	Checkout code	2025-06-25T16:50:50.7223269Z Adding repository directory to the temporary git global config as a safe directory
+job-core	Checkout code	2025-06-25T16:50:50.7227955Z [command]/usr/bin/git config --global --add safe.directory /actions-runner/_work/ka0s/ka0s
+job-core	Checkout code	2025-06-25T16:50:50.7269588Z [command]/usr/bin/git config --local --get remote.origin.url
+job-core	Checkout code	2025-06-25T16:50:50.7300029Z https://github.com/Ka0s-Klaus/ka0s
+job-core	Checkout code	2025-06-25T16:50:50.7320160Z ##[group]Removing previously created refs, to avoid conflicts
+job-core	Checkout code	2025-06-25T16:50:50.7325861Z [command]/usr/bin/git rev-parse --symbolic-full-name --verify --quiet HEAD
+job-core	Checkout code	2025-06-25T16:50:50.7348073Z refs/heads/main
+job-core	Checkout code	2025-06-25T16:50:50.7358062Z [command]/usr/bin/git checkout --detach
+job-core	Checkout code	2025-06-25T16:50:51.8617165Z HEAD is now at ab6d2594 Agnostizamos el script a ejecutar
+job-core	Checkout code	2025-06-25T16:50:51.8668017Z [command]/usr/bin/git branch --delete --force main
+job-core	Checkout code	2025-06-25T16:50:51.8700902Z Deleted branch main (was ab6d2594).
+job-core	Checkout code	2025-06-25T16:50:51.8782302Z ##[endgroup]
+job-core	Checkout code	2025-06-25T16:50:51.8785800Z [command]/usr/bin/git submodule status
+job-core	Checkout code	2025-06-25T16:50:51.9040459Z ##[group]Cleaning the repository
+job-core	Checkout code	2025-06-25T16:50:51.9045842Z [command]/usr/bin/git clean -ffdx
+job-core	Checkout code	2025-06-25T16:50:51.9129411Z [command]/usr/bin/git reset --hard HEAD
+job-core	Checkout code	2025-06-25T16:50:51.9425790Z HEAD is now at ab6d2594 Agnostizamos el script a ejecutar
+job-core	Checkout code	2025-06-25T16:50:51.9432182Z ##[endgroup]
+job-core	Checkout code	2025-06-25T16:50:51.9434010Z ##[group]Disabling automatic garbage collection
+job-core	Checkout code	2025-06-25T16:50:51.9438684Z [command]/usr/bin/git config --local gc.auto 0
+job-core	Checkout code	2025-06-25T16:50:51.9468506Z ##[endgroup]
+job-core	Checkout code	2025-06-25T16:50:51.9469358Z ##[group]Setting up auth
+job-core	Checkout code	2025-06-25T16:50:51.9476929Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+job-core	Checkout code	2025-06-25T16:50:51.9512301Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+job-core	Checkout code	2025-06-25T16:50:51.9775618Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+job-core	Checkout code	2025-06-25T16:50:51.9806517Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+job-core	Checkout code	2025-06-25T16:50:52.0063320Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+job-core	Checkout code	2025-06-25T16:50:52.0103571Z ##[endgroup]
+job-core	Checkout code	2025-06-25T16:50:52.0104070Z ##[group]Fetching the repository
+job-core	Checkout code	2025-06-25T16:50:52.0111715Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+job-core	Checkout code	2025-06-25T16:50:52.9384773Z From https://github.com/Ka0s-Klaus/ka0s
+job-core	Checkout code	2025-06-25T16:50:52.9385569Z    29242bb4..8756b676  H1224-new-module-mongodb -> origin/H1224-new-module-mongodb
+job-core	Checkout code	2025-06-25T16:50:52.9386304Z    ab6d2594..3996da1a  main       -> origin/main
+job-core	Checkout code	2025-06-25T16:50:52.9388799Z  * [new tag]           0.0.145    -> 0.0.145
+job-core	Checkout code	2025-06-25T16:50:52.9389213Z  * [new tag]           0.0.146    -> 0.0.146
+job-core	Checkout code	2025-06-25T16:50:52.9390626Z  * [new tag]           0.0.147    -> 0.0.147
+job-core	Checkout code	2025-06-25T16:50:52.9392200Z  * [new tag]           0.0.148    -> 0.0.148
+job-core	Checkout code	2025-06-25T16:50:52.9394485Z  * [new tag]           0.0.149    -> 0.0.149
+job-core	Checkout code	2025-06-25T16:50:52.9395011Z  * [new tag]           0.0.150    -> 0.0.150
+job-core	Checkout code	2025-06-25T16:50:52.9457913Z [command]/usr/bin/git branch --list --remote origin/main
+job-core	Checkout code	2025-06-25T16:50:52.9486685Z   origin/main
+job-core	Checkout code	2025-06-25T16:50:52.9494889Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+job-core	Checkout code	2025-06-25T16:50:52.9517435Z 3996da1a167cdcfcf13b3bbf46d4d42ca912e6e9
+job-core	Checkout code	2025-06-25T16:50:52.9522811Z ##[endgroup]
+job-core	Checkout code	2025-06-25T16:50:52.9523263Z ##[group]Determining the checkout info
+job-core	Checkout code	2025-06-25T16:50:52.9523858Z ##[endgroup]
+job-core	Checkout code	2025-06-25T16:50:52.9529250Z [command]/usr/bin/git sparse-checkout disable
+job-core	Checkout code	2025-06-25T16:50:52.9620799Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+job-core	Checkout code	2025-06-25T16:50:52.9652124Z ##[group]Checking out the ref
+job-core	Checkout code	2025-06-25T16:50:52.9656529Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+job-core	Checkout code	2025-06-25T16:50:52.9997705Z Previous HEAD position was ab6d2594 Agnostizamos el script a ejecutar
+job-core	Checkout code	2025-06-25T16:50:53.0011235Z Switched to a new branch 'main'
+job-core	Checkout code	2025-06-25T16:50:53.0011740Z branch 'main' set up to track 'origin/main'.
+job-core	Checkout code	2025-06-25T16:50:53.0020283Z ##[endgroup]
+job-core	Checkout code	2025-06-25T16:50:53.0064220Z [command]/usr/bin/git log -1 --format=%H
+job-core	Checkout code	2025-06-25T16:50:53.0092921Z 3996da1a167cdcfcf13b3bbf46d4d42ca912e6e9
+job-core	Set up Python	﻿2025-06-25T16:50:53.0379807Z ##[group]Run actions/setup-python@v4
+job-core	Set up Python	2025-06-25T16:50:53.0380111Z with:
+job-core	Set up Python	2025-06-25T16:50:53.0380296Z   python-version: 3.9
+job-core	Set up Python	2025-06-25T16:50:53.0380533Z   check-latest: false
+job-core	Set up Python	2025-06-25T16:50:53.0380904Z   token: ***
+job-core	Set up Python	2025-06-25T16:50:53.0381104Z   update-environment: true
+job-core	Set up Python	2025-06-25T16:50:53.0381337Z   allow-prereleases: false
+job-core	Set up Python	2025-06-25T16:50:53.0381544Z env:
+job-core	Set up Python	2025-06-25T16:50:53.0381720Z   PYTHON_VERSION: 3.9
+job-core	Set up Python	2025-06-25T16:50:53.0382214Z   MONGO_SUPERUSER_CONNECTION: ***
+job-core	Set up Python	2025-06-25T16:50:53.0382678Z   MONGO_NEW_DB: db.github
+job-core	Set up Python	2025-06-25T16:50:53.0382904Z   MONGO_COLLECTION_NAME: col.repo
+job-core	Set up Python	2025-06-25T16:50:53.0383142Z   MONGO_NEW_USER: dbusergithub
+job-core	Set up Python	2025-06-25T16:50:53.0383407Z   MONGO_NEW_PASS: ***
+job-core	Set up Python	2025-06-25T16:50:53.0383679Z   MONGO_SCRIPT_PATH: core/database/scripts/mongo_admin_ci.py
+job-core	Set up Python	2025-06-25T16:50:53.0383989Z   KAOS_CODE: 15882311151
+job-core	Set up Python	2025-06-25T16:50:53.0384203Z   REPORT_PATH: audit/mongo
+job-core	Set up Python	2025-06-25T16:50:53.0384447Z   REPORT_FILENAME: mongo_setup_15882311151.json
+job-core	Set up Python	2025-06-25T16:50:53.0384710Z   GITHUB_OUTPUT: 
+job-core	Set up Python	2025-06-25T16:50:53.0384938Z ##[endgroup]
+job-core	Set up Python	2025-06-25T16:50:53.2157828Z ##[group]Installed versions
+job-core	Set up Python	2025-06-25T16:50:53.2217193Z Successfully set up CPython (3.9.23)
+job-core	Set up Python	2025-06-25T16:50:53.2218214Z ##[endgroup]
+job-core	Install dependencies	﻿2025-06-25T16:50:53.2326784Z ##[group]Run pip install pymongo
+job-core	Install dependencies	2025-06-25T16:50:53.2327152Z [36;1mpip install pymongo[0m
+job-core	Install dependencies	2025-06-25T16:50:53.2339651Z shell: /usr/bin/bash -e {0}
+job-core	Install dependencies	2025-06-25T16:50:53.2339918Z env:
+job-core	Install dependencies	2025-06-25T16:50:53.2340225Z   PYTHON_VERSION: 3.9
+job-core	Install dependencies	2025-06-25T16:50:53.2340898Z   MONGO_SUPERUSER_CONNECTION: ***
+job-core	Install dependencies	2025-06-25T16:50:53.2341161Z   MONGO_NEW_DB: db.github
+job-core	Install dependencies	2025-06-25T16:50:53.2341388Z   MONGO_COLLECTION_NAME: col.repo
+job-core	Install dependencies	2025-06-25T16:50:53.2341638Z   MONGO_NEW_USER: dbusergithub
+job-core	Install dependencies	2025-06-25T16:50:53.2341899Z   MONGO_NEW_PASS: ***
+job-core	Install dependencies	2025-06-25T16:50:53.2342179Z   MONGO_SCRIPT_PATH: core/database/scripts/mongo_admin_ci.py
+job-core	Install dependencies	2025-06-25T16:50:53.2342501Z   KAOS_CODE: 15882311151
+job-core	Install dependencies	2025-06-25T16:50:53.2342721Z   REPORT_PATH: audit/mongo
+job-core	Install dependencies	2025-06-25T16:50:53.2342973Z   REPORT_FILENAME: mongo_setup_15882311151.json
+job-core	Install dependencies	2025-06-25T16:50:53.2343244Z   GITHUB_OUTPUT: 
+job-core	Install dependencies	2025-06-25T16:50:53.2343528Z   pythonLocation: /actions-runner/_work/_tool/Python/3.9.23/x64
+job-core	Install dependencies	2025-06-25T16:50:53.2343993Z   PKG_CONFIG_PATH: /actions-runner/_work/_tool/Python/3.9.23/x64/lib/pkgconfig
+job-core	Install dependencies	2025-06-25T16:50:53.2344473Z   Python_ROOT_DIR: /actions-runner/_work/_tool/Python/3.9.23/x64
+job-core	Install dependencies	2025-06-25T16:50:53.2344872Z   Python2_ROOT_DIR: /actions-runner/_work/_tool/Python/3.9.23/x64
+job-core	Install dependencies	2025-06-25T16:50:53.2345282Z   Python3_ROOT_DIR: /actions-runner/_work/_tool/Python/3.9.23/x64
+job-core	Install dependencies	2025-06-25T16:50:53.2345690Z   LD_LIBRARY_PATH: /actions-runner/_work/_tool/Python/3.9.23/x64/lib
+job-core	Install dependencies	2025-06-25T16:50:53.2346022Z ##[endgroup]
+job-core	Install dependencies	2025-06-25T16:50:53.5588078Z Requirement already satisfied: pymongo in /actions-runner/_work/_tool/Python/3.9.23/x64/lib/python3.9/site-packages (4.13.2)
+job-core	Install dependencies	2025-06-25T16:50:53.5668944Z Requirement already satisfied: dnspython<3.0.0,>=1.16.0 in /actions-runner/_work/_tool/Python/3.9.23/x64/lib/python3.9/site-packages (from pymongo) (2.7.0)
+job-core	Configure MongoDB	﻿2025-06-25T16:50:53.6331628Z ##[group]Run python core/database/scripts/mongo_admin_ci.py
+job-core	Configure MongoDB	2025-06-25T16:50:53.6332092Z [36;1mpython core/database/scripts/mongo_admin_ci.py[0m
+job-core	Configure MongoDB	2025-06-25T16:50:53.6351787Z shell: /usr/bin/bash -e {0}
+job-core	Configure MongoDB	2025-06-25T16:50:53.6352043Z env:
+job-core	Configure MongoDB	2025-06-25T16:50:53.6352365Z   PYTHON_VERSION: 3.9
+job-core	Configure MongoDB	2025-06-25T16:50:53.6352986Z   MONGO_SUPERUSER_CONNECTION: ***
+job-core	Configure MongoDB	2025-06-25T16:50:53.6353243Z   MONGO_NEW_DB: db.github
+job-core	Configure MongoDB	2025-06-25T16:50:53.6353484Z   MONGO_COLLECTION_NAME: col.repo
+job-core	Configure MongoDB	2025-06-25T16:50:53.6353728Z   MONGO_NEW_USER: dbusergithub
+job-core	Configure MongoDB	2025-06-25T16:50:53.6353984Z   MONGO_NEW_PASS: ***
+job-core	Configure MongoDB	2025-06-25T16:50:53.6354250Z   MONGO_SCRIPT_PATH: core/database/scripts/mongo_admin_ci.py
+job-core	Configure MongoDB	2025-06-25T16:50:53.6354561Z   KAOS_CODE: 15882311151
+job-core	Configure MongoDB	2025-06-25T16:50:53.6354774Z   REPORT_PATH: audit/mongo
+job-core	Configure MongoDB	2025-06-25T16:50:53.6355017Z   REPORT_FILENAME: mongo_setup_15882311151.json
+job-core	Configure MongoDB	2025-06-25T16:50:53.6355282Z   GITHUB_OUTPUT: 
+job-core	Configure MongoDB	2025-06-25T16:50:53.6355559Z   pythonLocation: /actions-runner/_work/_tool/Python/3.9.23/x64
+job-core	Configure MongoDB	2025-06-25T16:50:53.6356034Z   PKG_CONFIG_PATH: /actions-runner/_work/_tool/Python/3.9.23/x64/lib/pkgconfig
+job-core	Configure MongoDB	2025-06-25T16:50:53.6356470Z   Python_ROOT_DIR: /actions-runner/_work/_tool/Python/3.9.23/x64
+job-core	Configure MongoDB	2025-06-25T16:50:53.6356859Z   Python2_ROOT_DIR: /actions-runner/_work/_tool/Python/3.9.23/x64
+job-core	Configure MongoDB	2025-06-25T16:50:53.6357250Z   Python3_ROOT_DIR: /actions-runner/_work/_tool/Python/3.9.23/x64
+job-core	Configure MongoDB	2025-06-25T16:50:53.6357648Z   LD_LIBRARY_PATH: /actions-runner/_work/_tool/Python/3.9.23/x64/lib
+job-core	Configure MongoDB	2025-06-25T16:50:53.6358147Z ##[endgroup]
+job-core	Configure MongoDB	2025-06-25T16:50:53.6505465Z   File "/actions-runner/_work/ka0s/ka0s/core/database/scripts/mongo_admin_ci.py", line 120
+job-core	Configure MongoDB	2025-06-25T16:50:53.6506141Z     try:
+job-core	Configure MongoDB	2025-06-25T16:50:53.6506360Z IndentationError: unexpected indent
+job-core	Configure MongoDB	2025-06-25T16:50:53.6534482Z ##[error]Process completed with exit code 1.
+job-core	Post Checkout code	﻿2025-06-25T16:50:53.6632309Z Post job cleanup.
+job-core	Post Checkout code	2025-06-25T16:50:53.7629075Z [command]/usr/bin/git version
+job-core	Post Checkout code	2025-06-25T16:50:53.7665456Z git version 2.43.0
+job-core	Post Checkout code	2025-06-25T16:50:53.7713864Z Temporarily overriding HOME='/actions-runner/_work/_temp/d515c1d9-01ee-4371-b8b6-cdf950c2ee8a' before making global git config changes
+job-core	Post Checkout code	2025-06-25T16:50:53.7714827Z Adding repository directory to the temporary git global config as a safe directory
+job-core	Post Checkout code	2025-06-25T16:50:53.7719118Z [command]/usr/bin/git config --global --add safe.directory /actions-runner/_work/ka0s/ka0s
+job-core	Post Checkout code	2025-06-25T16:50:53.7756422Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+job-core	Post Checkout code	2025-06-25T16:50:53.7811804Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+job-core	Post Checkout code	2025-06-25T16:50:53.8087676Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+job-core	Post Checkout code	2025-06-25T16:50:53.8113037Z http.https://github.com/.extraheader
+job-core	Post Checkout code	2025-06-25T16:50:53.8126738Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+job-core	Post Checkout code	2025-06-25T16:50:53.8164853Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+job-core	Complete job	﻿2025-06-25T16:50:53.8562279Z Cleaning up orphan processes
+handle_failure	Set up job	﻿2025-06-25T16:50:59.7623296Z Current runner version: '2.325.0'
+handle_failure	Set up job	2025-06-25T16:50:59.7632164Z Runner name: 'ka0s-ka0s-1'
+handle_failure	Set up job	2025-06-25T16:50:59.7633345Z Machine name: '365e885ec1fe'
+handle_failure	Set up job	2025-06-25T16:50:59.7636351Z ##[group]GITHUB_TOKEN Permissions
+handle_failure	Set up job	2025-06-25T16:50:59.7639340Z Contents: read
+handle_failure	Set up job	2025-06-25T16:50:59.7640020Z Metadata: read
+handle_failure	Set up job	2025-06-25T16:50:59.7640576Z Packages: read
+handle_failure	Set up job	2025-06-25T16:50:59.7641098Z ##[endgroup]
+handle_failure	Set up job	2025-06-25T16:50:59.7643654Z Secret source: Actions
+handle_failure	Set up job	2025-06-25T16:50:59.7644403Z Prepare workflow directory
+handle_failure	Set up job	2025-06-25T16:50:59.8305031Z Prepare all required actions
+handle_failure	Set up job	2025-06-25T16:50:59.8345291Z Getting action download info
+handle_failure	Set up job	2025-06-25T16:51:00.3548014Z Download action repository 'actions/checkout@v4' (SHA:11bd71901bbe5b1630ceea73d27597364c9af683)
+handle_failure	Set up job	2025-06-25T16:51:01.1675787Z Complete job name: handle_failure
+handle_failure	Checkout code	﻿2025-06-25T16:51:01.2134063Z ##[group]Run actions/checkout@v4
+handle_failure	Checkout code	2025-06-25T16:51:01.2134880Z with:
+handle_failure	Checkout code	2025-06-25T16:51:01.2135248Z   fetch-depth: 0
+handle_failure	Checkout code	2025-06-25T16:51:01.2135845Z   token: ***
+handle_failure	Checkout code	2025-06-25T16:51:01.2136222Z   repository: Ka0s-Klaus/ka0s
+handle_failure	Checkout code	2025-06-25T16:51:01.2136712Z   ssh-strict: true
+handle_failure	Checkout code	2025-06-25T16:51:01.2137095Z   ssh-user: git
+handle_failure	Checkout code	2025-06-25T16:51:01.2137486Z   persist-credentials: true
+handle_failure	Checkout code	2025-06-25T16:51:01.2137923Z   clean: true
+handle_failure	Checkout code	2025-06-25T16:51:01.2138305Z   sparse-checkout-cone-mode: true
+handle_failure	Checkout code	2025-06-25T16:51:01.2138998Z   fetch-tags: false
+handle_failure	Checkout code	2025-06-25T16:51:01.2139405Z   show-progress: true
+handle_failure	Checkout code	2025-06-25T16:51:01.2139921Z   lfs: false
+handle_failure	Checkout code	2025-06-25T16:51:01.2140273Z   submodules: false
+handle_failure	Checkout code	2025-06-25T16:51:01.2140673Z   set-safe-directory: true
+handle_failure	Checkout code	2025-06-25T16:51:01.2141321Z env:
+handle_failure	Checkout code	2025-06-25T16:51:01.2141692Z   PYTHON_VERSION: 3.9
+handle_failure	Checkout code	2025-06-25T16:51:01.2142612Z   MONGO_SUPERUSER_CONNECTION: ***
+handle_failure	Checkout code	2025-06-25T16:51:01.2143096Z   MONGO_NEW_DB: db.github
+handle_failure	Checkout code	2025-06-25T16:51:01.2143532Z   MONGO_COLLECTION_NAME: col.repo
+handle_failure	Checkout code	2025-06-25T16:51:01.2144006Z   MONGO_NEW_USER: dbusergithub
+handle_failure	Checkout code	2025-06-25T16:51:01.2144519Z   MONGO_NEW_PASS: ***
+handle_failure	Checkout code	2025-06-25T16:51:01.2145033Z   MONGO_SCRIPT_PATH: core/database/scripts/mongo_admin_ci.py
+handle_failure	Checkout code	2025-06-25T16:51:01.2145629Z   KAOS_CODE: 15882311151
+handle_failure	Checkout code	2025-06-25T16:51:01.2146062Z   REPORT_PATH: audit/mongo
+handle_failure	Checkout code	2025-06-25T16:51:01.2146544Z   REPORT_FILENAME: mongo_setup_15882311151.json
+handle_failure	Checkout code	2025-06-25T16:51:01.2147058Z ##[endgroup]
+handle_failure	Checkout code	2025-06-25T16:51:01.3278267Z Syncing repository: Ka0s-Klaus/ka0s
+handle_failure	Checkout code	2025-06-25T16:51:01.3280377Z ##[group]Getting Git version info
+handle_failure	Checkout code	2025-06-25T16:51:01.3281058Z Working directory is '/actions-runner/_work/ka0s/ka0s'
+handle_failure	Checkout code	2025-06-25T16:51:01.3282100Z [command]/usr/bin/git version
+handle_failure	Checkout code	2025-06-25T16:51:01.3282612Z git version 2.43.0
+handle_failure	Checkout code	2025-06-25T16:51:01.3306559Z ##[endgroup]
+handle_failure	Checkout code	2025-06-25T16:51:01.3317580Z Copying '/home/kaos/.gitconfig' to '/actions-runner/_work/_temp/76b8cfc1-8e65-40b1-8c11-ae3e9e308581/.gitconfig'
+handle_failure	Checkout code	2025-06-25T16:51:01.3329579Z Temporarily overriding HOME='/actions-runner/_work/_temp/76b8cfc1-8e65-40b1-8c11-ae3e9e308581' before making global git config changes
+handle_failure	Checkout code	2025-06-25T16:51:01.3331114Z Adding repository directory to the temporary git global config as a safe directory
+handle_failure	Checkout code	2025-06-25T16:51:01.3335428Z [command]/usr/bin/git config --global --add safe.directory /actions-runner/_work/ka0s/ka0s
+handle_failure	Checkout code	2025-06-25T16:51:01.3378989Z [command]/usr/bin/git config --local --get remote.origin.url
+handle_failure	Checkout code	2025-06-25T16:51:01.3401405Z https://github.com/Ka0s-Klaus/ka0s
+handle_failure	Checkout code	2025-06-25T16:51:01.3420364Z ##[group]Removing previously created refs, to avoid conflicts
+handle_failure	Checkout code	2025-06-25T16:51:01.3425034Z [command]/usr/bin/git rev-parse --symbolic-full-name --verify --quiet HEAD
+handle_failure	Checkout code	2025-06-25T16:51:01.3447604Z HEAD
+handle_failure	Checkout code	2025-06-25T16:51:01.3560542Z ##[endgroup]
+handle_failure	Checkout code	2025-06-25T16:51:01.3561234Z [command]/usr/bin/git submodule status
+handle_failure	Checkout code	2025-06-25T16:51:01.3818767Z ##[group]Cleaning the repository
+handle_failure	Checkout code	2025-06-25T16:51:01.3822703Z [command]/usr/bin/git clean -ffdx
+handle_failure	Checkout code	2025-06-25T16:51:01.3908185Z [command]/usr/bin/git reset --hard HEAD
+handle_failure	Checkout code	2025-06-25T16:51:01.4265004Z HEAD is now at e2afd9e6 Merge bd9864065ebbc5ac926d7a6fa7df72ae58a3b8d0 into 1a44372f9cda29c9ca4274f33eca65a43e9ccaec
+handle_failure	Checkout code	2025-06-25T16:51:01.4272061Z ##[endgroup]
+handle_failure	Checkout code	2025-06-25T16:51:01.4273842Z ##[group]Disabling automatic garbage collection
+handle_failure	Checkout code	2025-06-25T16:51:01.4279443Z [command]/usr/bin/git config --local gc.auto 0
+handle_failure	Checkout code	2025-06-25T16:51:01.4311960Z ##[endgroup]
+handle_failure	Checkout code	2025-06-25T16:51:01.4312718Z ##[group]Setting up auth
+handle_failure	Checkout code	2025-06-25T16:51:01.4318333Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+handle_failure	Checkout code	2025-06-25T16:51:01.4352523Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+handle_failure	Checkout code	2025-06-25T16:51:01.4622592Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+handle_failure	Checkout code	2025-06-25T16:51:01.4656770Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+handle_failure	Checkout code	2025-06-25T16:51:01.4919140Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+handle_failure	Checkout code	2025-06-25T16:51:01.4964673Z ##[endgroup]
+handle_failure	Checkout code	2025-06-25T16:51:01.4965496Z ##[group]Fetching the repository
+handle_failure	Checkout code	2025-06-25T16:51:01.4973364Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+handle_failure	Checkout code	2025-06-25T16:51:02.3525537Z From https://github.com/Ka0s-Klaus/ka0s
+handle_failure	Checkout code	2025-06-25T16:51:02.3526668Z    1a44372f..3996da1a  main       -> origin/main
+handle_failure	Checkout code	2025-06-25T16:51:02.3587588Z [command]/usr/bin/git branch --list --remote origin/main
+handle_failure	Checkout code	2025-06-25T16:51:02.3617646Z   origin/main
+handle_failure	Checkout code	2025-06-25T16:51:02.3628265Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+handle_failure	Checkout code	2025-06-25T16:51:02.3651913Z 3996da1a167cdcfcf13b3bbf46d4d42ca912e6e9
+handle_failure	Checkout code	2025-06-25T16:51:02.3656166Z ##[endgroup]
+handle_failure	Checkout code	2025-06-25T16:51:02.3657046Z ##[group]Determining the checkout info
+handle_failure	Checkout code	2025-06-25T16:51:02.3658085Z ##[endgroup]
+handle_failure	Checkout code	2025-06-25T16:51:02.3661793Z [command]/usr/bin/git sparse-checkout disable
+handle_failure	Checkout code	2025-06-25T16:51:02.3744752Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+handle_failure	Checkout code	2025-06-25T16:51:02.3777458Z ##[group]Checking out the ref
+handle_failure	Checkout code	2025-06-25T16:51:02.3782061Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+handle_failure	Checkout code	2025-06-25T16:51:02.4034113Z Previous HEAD position was e2afd9e6 Merge bd9864065ebbc5ac926d7a6fa7df72ae58a3b8d0 into 1a44372f9cda29c9ca4274f33eca65a43e9ccaec
+handle_failure	Checkout code	2025-06-25T16:51:02.4042475Z Switched to a new branch 'main'
+handle_failure	Checkout code	2025-06-25T16:51:02.4043344Z branch 'main' set up to track 'origin/main'.
+handle_failure	Checkout code	2025-06-25T16:51:02.4052289Z ##[endgroup]
+handle_failure	Checkout code	2025-06-25T16:51:02.4097727Z [command]/usr/bin/git log -1 --format=%H
+handle_failure	Checkout code	2025-06-25T16:51:02.4127011Z 3996da1a167cdcfcf13b3bbf46d4d42ca912e6e9
+handle_failure	handle-failure-execution	﻿2025-06-25T16:51:02.4337650Z ##[group]Run echo "Error detected in process 15882311151" 
+handle_failure	handle-failure-execution	2025-06-25T16:51:02.4338985Z [36;1mecho "Error detected in process 15882311151" [0m
+handle_failure	handle-failure-execution	2025-06-25T16:51:02.4339817Z [36;1m# RNNUMBER=$(echo "refs/heads/main" | grep -o '[0-9]*')[0m
+handle_failure	handle-failure-execution	2025-06-25T16:51:02.4341396Z [36;1m# gh issue comment $RNNUMBER --body "El proceso no ha finalizado correctamente 15882311151. El resultado está en el fichero core/results/event_data_15882311151.log"[0m
+handle_failure	handle-failure-execution	2025-06-25T16:51:02.4352305Z shell: /usr/bin/bash -e {0}
+handle_failure	handle-failure-execution	2025-06-25T16:51:02.4352880Z env:
+handle_failure	handle-failure-execution	2025-06-25T16:51:02.4353312Z   PYTHON_VERSION: 3.9
+handle_failure	handle-failure-execution	2025-06-25T16:51:02.4354496Z   MONGO_SUPERUSER_CONNECTION: ***
+handle_failure	handle-failure-execution	2025-06-25T16:51:02.4355091Z   MONGO_NEW_DB: db.github
+handle_failure	handle-failure-execution	2025-06-25T16:51:02.4355625Z   MONGO_COLLECTION_NAME: col.repo
+handle_failure	handle-failure-execution	2025-06-25T16:51:02.4356215Z   MONGO_NEW_USER: dbusergithub
+handle_failure	handle-failure-execution	2025-06-25T16:51:02.4356843Z   MONGO_NEW_PASS: ***
+handle_failure	handle-failure-execution	2025-06-25T16:51:02.4357478Z   MONGO_SCRIPT_PATH: core/database/scripts/mongo_admin_ci.py
+handle_failure	handle-failure-execution	2025-06-25T16:51:02.4358200Z   KAOS_CODE: 15882311151
+handle_failure	handle-failure-execution	2025-06-25T16:51:02.4359171Z   REPORT_PATH: audit/mongo
+handle_failure	handle-failure-execution	2025-06-25T16:51:02.4359750Z   REPORT_FILENAME: mongo_setup_15882311151.json
+handle_failure	handle-failure-execution	2025-06-25T16:51:02.4360528Z   GH_TOKEN: ***
+handle_failure	handle-failure-execution	2025-06-25T16:51:02.4360983Z ##[endgroup]
+handle_failure	handle-failure-execution	2025-06-25T16:51:02.4412969Z Error detected in process 15882311151
+handle_failure	Post Checkout code	﻿2025-06-25T16:51:02.4543530Z Post job cleanup.
+handle_failure	Post Checkout code	2025-06-25T16:51:02.5531806Z [command]/usr/bin/git version
+handle_failure	Post Checkout code	2025-06-25T16:51:02.5571712Z git version 2.43.0
+handle_failure	Post Checkout code	2025-06-25T16:51:02.5612920Z Copying '/home/kaos/.gitconfig' to '/actions-runner/_work/_temp/5dd8e3c6-11ec-42cc-89ca-56f80c422c0c/.gitconfig'
+handle_failure	Post Checkout code	2025-06-25T16:51:02.5627895Z Temporarily overriding HOME='/actions-runner/_work/_temp/5dd8e3c6-11ec-42cc-89ca-56f80c422c0c' before making global git config changes
+handle_failure	Post Checkout code	2025-06-25T16:51:02.5629961Z Adding repository directory to the temporary git global config as a safe directory
+handle_failure	Post Checkout code	2025-06-25T16:51:02.5634401Z [command]/usr/bin/git config --global --add safe.directory /actions-runner/_work/ka0s/ka0s
+handle_failure	Post Checkout code	2025-06-25T16:51:02.5677279Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+handle_failure	Post Checkout code	2025-06-25T16:51:02.5730624Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+handle_failure	Post Checkout code	2025-06-25T16:51:02.5992863Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+handle_failure	Post Checkout code	2025-06-25T16:51:02.6018524Z http.https://github.com/.extraheader
+handle_failure	Post Checkout code	2025-06-25T16:51:02.6031835Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+handle_failure	Post Checkout code	2025-06-25T16:51:02.6070026Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+handle_failure	Complete job	﻿2025-06-25T16:51:02.6450288Z Cleaning up orphan processes
+end-workflow	Set up job	﻿2025-06-25T16:51:08.1693509Z Current runner version: '2.325.0'
+end-workflow	Set up job	2025-06-25T16:51:08.1700498Z Runner name: 'ka0s-ka0s-2'
+end-workflow	Set up job	2025-06-25T16:51:08.1701524Z Machine name: '6e01ed641e71'
+end-workflow	Set up job	2025-06-25T16:51:08.1704234Z ##[group]GITHUB_TOKEN Permissions
+end-workflow	Set up job	2025-06-25T16:51:08.1706539Z Contents: read
+end-workflow	Set up job	2025-06-25T16:51:08.1707092Z Metadata: read
+end-workflow	Set up job	2025-06-25T16:51:08.1707625Z Packages: read
+end-workflow	Set up job	2025-06-25T16:51:08.1708265Z ##[endgroup]
+end-workflow	Set up job	2025-06-25T16:51:08.1710527Z Secret source: Actions
+end-workflow	Set up job	2025-06-25T16:51:08.1711305Z Prepare workflow directory
+end-workflow	Set up job	2025-06-25T16:51:08.2344993Z Prepare all required actions
+end-workflow	Set up job	2025-06-25T16:51:08.2384704Z Getting action download info
+end-workflow	Set up job	2025-06-25T16:51:08.7766852Z Download action repository 'actions/checkout@v4' (SHA:11bd71901bbe5b1630ceea73d27597364c9af683)
+end-workflow	Set up job	2025-06-25T16:51:09.6120178Z Complete job name: end-workflow
+end-workflow	Checkout code	﻿2025-06-25T16:51:09.6617611Z ##[group]Run actions/checkout@v4
+end-workflow	Checkout code	2025-06-25T16:51:09.6618724Z with:
+end-workflow	Checkout code	2025-06-25T16:51:09.6619176Z   fetch-depth: 0
+end-workflow	Checkout code	2025-06-25T16:51:09.6619872Z   token: ***
+end-workflow	Checkout code	2025-06-25T16:51:09.6620333Z   repository: Ka0s-Klaus/ka0s
+end-workflow	Checkout code	2025-06-25T16:51:09.6620910Z   ssh-strict: true
+end-workflow	Checkout code	2025-06-25T16:51:09.6621356Z   ssh-user: git
+end-workflow	Checkout code	2025-06-25T16:51:09.6621819Z   persist-credentials: true
+end-workflow	Checkout code	2025-06-25T16:51:09.6622328Z   clean: true
+end-workflow	Checkout code	2025-06-25T16:51:09.6622792Z   sparse-checkout-cone-mode: true
+end-workflow	Checkout code	2025-06-25T16:51:09.6623353Z   fetch-tags: false
+end-workflow	Checkout code	2025-06-25T16:51:09.6623812Z   show-progress: true
+end-workflow	Checkout code	2025-06-25T16:51:09.6624282Z   lfs: false
+end-workflow	Checkout code	2025-06-25T16:51:09.6624709Z   submodules: false
+end-workflow	Checkout code	2025-06-25T16:51:09.6625201Z   set-safe-directory: true
+end-workflow	Checkout code	2025-06-25T16:51:09.6625958Z env:
+end-workflow	Checkout code	2025-06-25T16:51:09.6626399Z   PYTHON_VERSION: 3.9
+end-workflow	Checkout code	2025-06-25T16:51:09.6627473Z   MONGO_SUPERUSER_CONNECTION: ***
+end-workflow	Checkout code	2025-06-25T16:51:09.6628044Z   MONGO_NEW_DB: db.github
+end-workflow	Checkout code	2025-06-25T16:51:09.6628615Z   MONGO_COLLECTION_NAME: col.repo
+end-workflow	Checkout code	2025-06-25T16:51:09.6629185Z   MONGO_NEW_USER: dbusergithub
+end-workflow	Checkout code	2025-06-25T16:51:09.6629814Z   MONGO_NEW_PASS: ***
+end-workflow	Checkout code	2025-06-25T16:51:09.6630585Z   MONGO_SCRIPT_PATH: core/database/scripts/mongo_admin_ci.py
+end-workflow	Checkout code	2025-06-25T16:51:09.6631418Z   KAOS_CODE: 15882311151
+end-workflow	Checkout code	2025-06-25T16:51:09.6632194Z   REPORT_PATH: audit/mongo
+end-workflow	Checkout code	2025-06-25T16:51:09.6632757Z   REPORT_FILENAME: mongo_setup_15882311151.json
+end-workflow	Checkout code	2025-06-25T16:51:09.6633522Z   GH_TOKEN: ***
+end-workflow	Checkout code	2025-06-25T16:51:09.6633963Z ##[endgroup]
+end-workflow	Checkout code	2025-06-25T16:51:09.7772552Z Syncing repository: Ka0s-Klaus/ka0s
+end-workflow	Checkout code	2025-06-25T16:51:09.7774624Z ##[group]Getting Git version info
+end-workflow	Checkout code	2025-06-25T16:51:09.7775421Z Working directory is '/actions-runner/_work/ka0s/ka0s'
+end-workflow	Checkout code	2025-06-25T16:51:09.7776498Z [command]/usr/bin/git version
+end-workflow	Checkout code	2025-06-25T16:51:09.7777049Z git version 2.43.0
+end-workflow	Checkout code	2025-06-25T16:51:09.7795681Z ##[endgroup]
+end-workflow	Checkout code	2025-06-25T16:51:09.7807389Z Copying '/home/kaos/.gitconfig' to '/actions-runner/_work/_temp/63402706-0a79-410e-8c2a-afbfea6a8349/.gitconfig'
+end-workflow	Checkout code	2025-06-25T16:51:09.7818918Z Temporarily overriding HOME='/actions-runner/_work/_temp/63402706-0a79-410e-8c2a-afbfea6a8349' before making global git config changes
+end-workflow	Checkout code	2025-06-25T16:51:09.7820764Z Adding repository directory to the temporary git global config as a safe directory
+end-workflow	Checkout code	2025-06-25T16:51:09.7825296Z [command]/usr/bin/git config --global --add safe.directory /actions-runner/_work/ka0s/ka0s
+end-workflow	Checkout code	2025-06-25T16:51:09.7877566Z [command]/usr/bin/git config --local --get remote.origin.url
+end-workflow	Checkout code	2025-06-25T16:51:09.7900323Z https://github.com/Ka0s-Klaus/ka0s
+end-workflow	Checkout code	2025-06-25T16:51:09.7920217Z ##[group]Removing previously created refs, to avoid conflicts
+end-workflow	Checkout code	2025-06-25T16:51:09.7926166Z [command]/usr/bin/git rev-parse --symbolic-full-name --verify --quiet HEAD
+end-workflow	Checkout code	2025-06-25T16:51:09.7947803Z refs/heads/main
+end-workflow	Checkout code	2025-06-25T16:51:09.7958981Z [command]/usr/bin/git checkout --detach
+end-workflow	Checkout code	2025-06-25T16:51:09.8135473Z HEAD is now at b8b1224e Merge pull request #1231 from Ka0s-Klaus/H1224-new-module-mongodb
+end-workflow	Checkout code	2025-06-25T16:51:09.8183598Z [command]/usr/bin/git branch --delete --force main
+end-workflow	Checkout code	2025-06-25T16:51:09.8218114Z Deleted branch main (was b8b1224e).
+end-workflow	Checkout code	2025-06-25T16:51:09.8293160Z ##[endgroup]
+end-workflow	Checkout code	2025-06-25T16:51:09.8294488Z [command]/usr/bin/git submodule status
+end-workflow	Checkout code	2025-06-25T16:51:09.8551016Z ##[group]Cleaning the repository
+end-workflow	Checkout code	2025-06-25T16:51:09.8556063Z [command]/usr/bin/git clean -ffdx
+end-workflow	Checkout code	2025-06-25T16:51:09.8640234Z [command]/usr/bin/git reset --hard HEAD
+end-workflow	Checkout code	2025-06-25T16:51:09.8950044Z HEAD is now at b8b1224e Merge pull request #1231 from Ka0s-Klaus/H1224-new-module-mongodb
+end-workflow	Checkout code	2025-06-25T16:51:09.8957021Z ##[endgroup]
+end-workflow	Checkout code	2025-06-25T16:51:09.8958288Z ##[group]Disabling automatic garbage collection
+end-workflow	Checkout code	2025-06-25T16:51:09.8963966Z [command]/usr/bin/git config --local gc.auto 0
+end-workflow	Checkout code	2025-06-25T16:51:09.8996435Z ##[endgroup]
+end-workflow	Checkout code	2025-06-25T16:51:09.8997315Z ##[group]Setting up auth
+end-workflow	Checkout code	2025-06-25T16:51:09.9003920Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+end-workflow	Checkout code	2025-06-25T16:51:09.9047809Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+end-workflow	Checkout code	2025-06-25T16:51:09.9309952Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+end-workflow	Checkout code	2025-06-25T16:51:09.9342091Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+end-workflow	Checkout code	2025-06-25T16:51:09.9605009Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+end-workflow	Checkout code	2025-06-25T16:51:09.9646680Z ##[endgroup]
+end-workflow	Checkout code	2025-06-25T16:51:09.9647673Z ##[group]Fetching the repository
+end-workflow	Checkout code	2025-06-25T16:51:09.9655767Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+end-workflow	Checkout code	2025-06-25T16:51:10.8523157Z From https://github.com/Ka0s-Klaus/ka0s
+end-workflow	Checkout code	2025-06-25T16:51:10.8525059Z    cc71a69b..8756b676  H1224-new-module-mongodb -> origin/H1224-new-module-mongodb
+end-workflow	Checkout code	2025-06-25T16:51:10.8527019Z    b8b1224e..3996da1a  main       -> origin/main
+end-workflow	Checkout code	2025-06-25T16:51:10.8528377Z  * [new tag]           0.0.150    -> 0.0.150
+end-workflow	Checkout code	2025-06-25T16:51:10.8592673Z [command]/usr/bin/git branch --list --remote origin/main
+end-workflow	Checkout code	2025-06-25T16:51:10.8622524Z   origin/main
+end-workflow	Checkout code	2025-06-25T16:51:10.8632243Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+end-workflow	Checkout code	2025-06-25T16:51:10.8655365Z 3996da1a167cdcfcf13b3bbf46d4d42ca912e6e9
+end-workflow	Checkout code	2025-06-25T16:51:10.8660898Z ##[endgroup]
+end-workflow	Checkout code	2025-06-25T16:51:10.8662582Z ##[group]Determining the checkout info
+end-workflow	Checkout code	2025-06-25T16:51:10.8664548Z ##[endgroup]
+end-workflow	Checkout code	2025-06-25T16:51:10.8667118Z [command]/usr/bin/git sparse-checkout disable
+end-workflow	Checkout code	2025-06-25T16:51:10.8754659Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+end-workflow	Checkout code	2025-06-25T16:51:10.8786927Z ##[group]Checking out the ref
+end-workflow	Checkout code	2025-06-25T16:51:10.8789010Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+end-workflow	Checkout code	2025-06-25T16:51:10.9060646Z Previous HEAD position was b8b1224e Merge pull request #1231 from Ka0s-Klaus/H1224-new-module-mongodb
+end-workflow	Checkout code	2025-06-25T16:51:10.9068202Z Switched to a new branch 'main'
+end-workflow	Checkout code	2025-06-25T16:51:10.9071121Z branch 'main' set up to track 'origin/main'.
+end-workflow	Checkout code	2025-06-25T16:51:10.9079029Z ##[endgroup]
+end-workflow	Checkout code	2025-06-25T16:51:10.9121243Z [command]/usr/bin/git log -1 --format=%H
+end-workflow	Checkout code	2025-06-25T16:51:10.9148671Z 3996da1a167cdcfcf13b3bbf46d4d42ca912e6e9
+end-workflow	Finaliza el workflow	﻿2025-06-25T16:51:10.9384835Z ##[group]Run echo "End process 15882311151"
+end-workflow	Finaliza el workflow	2025-06-25T16:51:10.9386374Z [36;1mecho "End process 15882311151"[0m
+end-workflow	Finaliza el workflow	2025-06-25T16:51:10.9387977Z [36;1m# RNNUMBER=$(echo "refs/heads/main" | grep -o '[0-9]*')[0m
+end-workflow	Finaliza el workflow	2025-06-25T16:51:10.9390101Z [36;1m# gh issue comment $RNNUMBER --body "Se finaliza Ka0s 15882311151"[0m
+end-workflow	Finaliza el workflow	2025-06-25T16:51:10.9392993Z [36;1mgh workflow run inspector.yml --ref 'main' -f kaos-issue-id= -f kaos-workflow-id="15882311151" -f kaos-user-start=""[0m
+end-workflow	Finaliza el workflow	2025-06-25T16:51:10.9405540Z shell: /usr/bin/bash -e {0}
+end-workflow	Finaliza el workflow	2025-06-25T16:51:10.9406708Z env:
+end-workflow	Finaliza el workflow	2025-06-25T16:51:10.9407665Z   PYTHON_VERSION: 3.9
+end-workflow	Finaliza el workflow	2025-06-25T16:51:10.9410161Z   MONGO_SUPERUSER_CONNECTION: ***
+end-workflow	Finaliza el workflow	2025-06-25T16:51:10.9411432Z   MONGO_NEW_DB: db.github
+end-workflow	Finaliza el workflow	2025-06-25T16:51:10.9412567Z   MONGO_COLLECTION_NAME: col.repo
+end-workflow	Finaliza el workflow	2025-06-25T16:51:10.9413815Z   MONGO_NEW_USER: dbusergithub
+end-workflow	Finaliza el workflow	2025-06-25T16:51:10.9415366Z   MONGO_NEW_PASS: ***
+end-workflow	Finaliza el workflow	2025-06-25T16:51:10.9416697Z   MONGO_SCRIPT_PATH: core/database/scripts/mongo_admin_ci.py
+end-workflow	Finaliza el workflow	2025-06-25T16:51:10.9418299Z   KAOS_CODE: 15882311151
+end-workflow	Finaliza el workflow	2025-06-25T16:51:10.9419472Z   REPORT_PATH: audit/mongo
+end-workflow	Finaliza el workflow	2025-06-25T16:51:10.9420701Z   REPORT_FILENAME: mongo_setup_15882311151.json
+end-workflow	Finaliza el workflow	2025-06-25T16:51:10.9422341Z   GH_TOKEN: ***
+end-workflow	Finaliza el workflow	2025-06-25T16:51:10.9423285Z ##[endgroup]
+end-workflow	Finaliza el workflow	2025-06-25T16:51:10.9481536Z End process 15882311151
+end-workflow	Post Checkout code	﻿2025-06-25T16:51:11.6237354Z Post job cleanup.
+end-workflow	Post Checkout code	2025-06-25T16:51:11.7232706Z [command]/usr/bin/git version
+end-workflow	Post Checkout code	2025-06-25T16:51:11.7269749Z git version 2.43.0
+end-workflow	Post Checkout code	2025-06-25T16:51:11.7310124Z Copying '/home/kaos/.gitconfig' to '/actions-runner/_work/_temp/7b4bab78-d73f-4b88-aafd-e4a2305f8d9a/.gitconfig'
+end-workflow	Post Checkout code	2025-06-25T16:51:11.7323480Z Temporarily overriding HOME='/actions-runner/_work/_temp/7b4bab78-d73f-4b88-aafd-e4a2305f8d9a' before making global git config changes
+end-workflow	Post Checkout code	2025-06-25T16:51:11.7326841Z Adding repository directory to the temporary git global config as a safe directory
+end-workflow	Post Checkout code	2025-06-25T16:51:11.7329844Z [command]/usr/bin/git config --global --add safe.directory /actions-runner/_work/ka0s/ka0s
+end-workflow	Post Checkout code	2025-06-25T16:51:11.7368979Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+end-workflow	Post Checkout code	2025-06-25T16:51:11.7408178Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+end-workflow	Post Checkout code	2025-06-25T16:51:11.7669273Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+end-workflow	Post Checkout code	2025-06-25T16:51:11.7693231Z http.https://github.com/.extraheader
+end-workflow	Post Checkout code	2025-06-25T16:51:11.7707203Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+end-workflow	Post Checkout code	2025-06-25T16:51:11.7745032Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+end-workflow	Complete job	﻿2025-06-25T16:51:11.8137823Z Cleaning up orphan processes
