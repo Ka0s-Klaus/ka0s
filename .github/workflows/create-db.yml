@@ -20,7 +20,8 @@ env:
   MONGO_COLLECTION_NAME: ${{ github.event.inputs.collection_name }}
   MONGO_NEW_USER: ${{ github.event.inputs.db_user }}
   MONGO_NEW_PASS: ${{ secrets.DB_INITIAL_PASSWORD }}
-  REPORT_PATH: ${{ github.workspace }}/reports
+  MONGO_SCRIPT_PATH: core/database/scripts/mongo_admin_ci.py
+  REPORT_PATH: audit/mongo
   REPORT_FILENAME: mongo_setup_${{ github.run_id }}.json
 
 jobs:
@@ -48,7 +49,7 @@ jobs:
         run: pip install pymongo
 
       - name: Configure MongoDB
-        run: python mongo_admin_ci.py
+        run: python ${{ env.MONGO_SCRIPT_PATH }}
 
       - name: Upload report
         uses: actions/upload-artifact@v4
