@@ -3068,3 +3068,27 @@
   - core/web/data/yolanda_webs.json
   - version.txt
 ---------------------------------
+## Version 0.0.144
+- **Branch**: refs/pull/1226/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Wed Jun 25 12:21:56 UTC 2025
+- **Message**: H1224 new module mongodb
+- **Files Changed**:
+  - .github/workflows/create-db.yml
+  - .github/workflows/kaos.yml
+  - .github/workflows/version.yml
+  - core/database/README.md
+  - core/database/scripts/mongo_admin_ci.py
+  - core/results/k/event_data_*.json15875854919.json
+  - core/results/k/event_data_15876139151.json
+  - transfer/stats/github_stats.py
+  - transfer/stats/github_stats_v2.py
+  - transfer/stats/github_stats_v3.py
+  - transfer/stats/github_stats_v4.py
+  - transfer/stats/mermaid_stats-collector.md
+  - transfer/stats/mongo_admin_ci.py
+  - transfer/stats/mongodb_chart.js
+  - transfer/stats/stats-collector.yml
+  - version.txt
+---------------------------------

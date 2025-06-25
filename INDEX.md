@@ -142,3 +142,4 @@
 - **Version**: 0.0.141 - **Description**: H1149 desarrollo de orchestrator
 - **Version**: 0.0.142 - **Description**: H1183 personalización módulo finops
 - **Version**: 0.0.143 - **Description**: H1205 web creation
+- **Version**: 0.0.144 - **Description**: H1224 new module mongodb

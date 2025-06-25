@@ -113,7 +113,7 @@ jobs:
         git push origin "${{ steps.version.outputs.VERSION }}"
         if [ ! -f INDEX.md ]; then echo "# Version Index" > INDEX.md; fi
         echo "- **Version**: ${{ steps.version.outputs.VERSION }} - **Description**: ${{ steps.commit_details.outputs.COMMIT_MESSAGE }}" >> INDEX.md
-        git add *
+        git add INDEX.md CHANGELOG.md
         git commit -m "${{ env.KAOS_MODULE }}  Upload: CHANGELOG.md, INDEX.md with version ${{ steps.version.outputs.VERSION }}"
         git push origin HEAD:${{ github.head_ref }}
 
