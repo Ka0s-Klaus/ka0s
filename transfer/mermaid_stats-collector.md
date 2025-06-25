@@ -10,4 +10,11 @@ graph TD
     C --> I[MongoDB Atlas]
     I --> J[Almacenamiento Seguro]
     J --> K[Dashboards/BI]
-    
+crear usuario con roles especificos.
+{
+  "role": "readWrite",
+  "db": "github_stats",
+  "collections": ["repo_metrics", "workflow_metrics"]
+
+
+}
