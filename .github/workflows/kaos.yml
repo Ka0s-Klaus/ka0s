@@ -20,7 +20,7 @@ env:
     KAOS_REF: ${{ github.ref }}
     KAOS_MODULE: "[Ka0S] kaos"
     KAOS_PATH_RESUME: "core/results/k/"
-    KAOS_JSON: "core/results/k/event_data_*.json"
+    KAOS_JSON: "core/results/k/event_data_${{ github.run_id }}.json"
     KAOS_ACTOR: ${{ github.actor }}
 jobs: 
   job-core:
@@ -50,7 +50,7 @@ jobs:
         id: crear_json
         run: |
           # Create JSON structure using proper bash syntax
-          cat > ${{ env.KAOS_JSON }}${{ github.run_id }}.json << EOF
+          cat > ${{ env.KAOS_JSON }} << EOF
           {
             "event_type": "${{ env.KAOS_EVENT_NAME }}",
             "trigger_branch": "${{ github.ref }}",
@@ -83,7 +83,7 @@ jobs:
             echo "]" >> "$TEMP_COMMITS"
             
             # Insert commits into main JSON
-            sed -i.bak -e '/"commits": \[/r '$TEMP_COMMITS'' -e '/"commits": \[/d' ${{ env.KAOS_JSON }}${{ github.run_id }}.json
+            sed -i.bak -e '/"commits": \[/r '$TEMP_COMMITS'' -e '/"commits": \[/d' ${{ env.KAOS_JSON }}
             rm "$TEMP_COMMITS"
 
             # Add changed files
@@ -101,7 +101,7 @@ jobs:
             echo "]" >> "$TEMP_FILES"
             
             # Insert files into main JSON
-            sed -i.bak -e '/"files": \[/r '$TEMP_FILES'' -e '/"files": \[/d' ${{ env.KAOS_JSON }}${{ github.run_id }}.json
+            sed -i.bak -e '/"files": \[/r '$TEMP_FILES'' -e '/"files": \[/d' ${{ env.KAOS_JSON }}
             rm "$TEMP_FILES"
           elif [[ "${{ env.KAOS_EVENT_NAME }}" == "pull_request" ]]; then
             # Add pull request information
@@ -113,7 +113,7 @@ jobs:
               "title": "${{ github.event.pull_request.title }}"
             }
           EOF
-            sed -i.bak -e '/}$/r '$TEMP_PR'' ${{ env.KAOS_JSON }}${{ github.run_id }}.json
+            sed -i.bak -e '/}$/r '$TEMP_PR'' ${{ env.KAOS_JSON }}
             rm "$TEMP_PR"
           elif [[ "${{ env.KAOS_EVENT_NAME }}" == "issues" ]]; then
             # Add issue information
@@ -125,7 +125,7 @@ jobs:
               "title": "${{ github.event.issue.title }}"
             }
           EOF
-            sed -i.bak -e '/}$/r '$TEMP_ISSUE'' ${{ env.KAOS_JSON }}${{ github.run_id }}.json
+            sed -i.bak -e '/}$/r '$TEMP_ISSUE'' ${{ env.KAOS_JSON }}
             rm "$TEMP_ISSUE"
           fi
 
