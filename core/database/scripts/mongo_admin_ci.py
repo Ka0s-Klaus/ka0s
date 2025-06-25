@@ -2,6 +2,7 @@ import os
 from pymongo import MongoClient
 import json
 from datetime import datetime
+import sys
 
 def crear_entorno_mongo():
     # Obtener parámetros de GitHub Actions
@@ -75,8 +76,31 @@ def main():
         if collection_name in db.list_collection_names():
             print(f"⚠️  Colección ya existe. Usando: {collection_name}")
         else:
-            db.create_collection(collection_name)
-            print(f"✅ Colección creada: {collection_name}")
+            # Al inicio del script
+            print("🚀 Iniciando ejecución del script MongoDB Admin", flush=True)
+            
+            # En cada operación crítica
+            try:
+                print(f"🔗 Conectando a {mongo_uri[:25]}...", file=sys.stderr)
+                client = MongoClient(mongo_uri)
+                print("✅ Conexión exitosa", flush=True)
+            
+            except Exception as e:
+                print(f"❌ Error de conexión: {str(e)}", file=sys.stderr)
+                sys.exit(1)
+            
+            # Durante creación de colección
+            print(f"🛠 Creando colección '{collection_name}'...", end='', flush=True)
+            try:
+                db.create_collection(collection_name)
+                print(" ✓", flush=True)
+            
+            except Exception as e:
+                print(" ✗", flush=True)
+                print(f"\n⚠ Error creando colección: {e}", file=sys.stderr)
+            
+            # Al final
+            print(f"\n📋 Reporte generado en: {os.path.abspath(report_path)}", flush=True)
 
         # Creación de usuario
         print(f"\n[PASO 4] Creando usuario '{os.environ['MONGO_NEW_USER']}'")
@@ -93,14 +117,21 @@ def main():
             client.close()
         print("\n[FINAL] Generando reporte...")
         
-        report_path = os.path.join(
-            os.environ.get('REPORT_PATH', './'),
-            os.environ.get('REPORT_FILENAME', 'mongo_operations_report.json')
-        )
+        # En la sección de parámetros del reporte
+        report_data = {
+            'metadata': {
+                'report_filename': os.environ['REPORT_FILENAME'],
+                'report_path': os.environ.get('REPORT_PATH', './')
+            },
+        }
         
+        # En la generación del archivo
         try:
+            report_path = os.path.join(
+                os.environ.get('REPORT_PATH', './'), 
+                os.environ['REPORT_FILENAME']
+            )
             with open(report_path, 'w') as f:
-                json.dump(report, f, indent=2)
-            print(f"📄 Reporte generado en: {report_path}")
+                json.dump(report_data, f)
         except Exception as e:
             print(f"❌ Error guardando reporte: {str(e)}")
