@@ -93,14 +93,21 @@ def main():
             client.close()
         print("\n[FINAL] Generando reporte...")
         
-        report_path = os.path.join(
-            os.environ.get('REPORT_PATH', './'),
-            os.environ.get('REPORT_FILENAME', 'mongo_operations_report.json')
-        )
+        # En la sección de parámetros del reporte
+        report_data = {
+            'metadata': {
+                'report_filename': os.environ['REPORT_FILENAME'],
+                'report_path': os.environ.get('REPORT_PATH', './')
+            },
+        }
         
+        # En la generación del archivo
         try:
+            report_path = os.path.join(
+                os.environ.get('REPORT_PATH', './'), 
+                os.environ['REPORT_FILENAME']
+            )
             with open(report_path, 'w') as f:
-                json.dump(report, f, indent=2)
-            print(f"📄 Reporte generado en: {report_path}")
+                json.dump(report_data, f)
         except Exception as e:
             print(f"❌ Error guardando reporte: {str(e)}")
