@@ -150,3 +150,4 @@
 - **Version**: 0.0.149 - **Description**: H1224 new module mongodb
 - **Version**: 0.0.150 - **Description**: H1224 new module mongodb
 - **Version**: 0.0.151 - **Description**: H1224 new module mongodb
+- **Version**: 0.0.152 - **Description**: H1224 new module mongodb
