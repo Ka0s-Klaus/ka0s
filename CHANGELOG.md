@@ -3193,3 +3193,14 @@
   - core/results/k/event_data_15882989067.json
   - version.txt
 ---------------------------------
+## Version 0.0.154
+- **Branch**: refs/pull/1236/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Wed Jun 25 17:32:54 UTC 2025
+- **Message**: H1224 new module mongodb
+- **Files Changed**:
+  - core/database/scripts/mongo_admin_ci.py
+  - core/results/k/event_data_15883117739.json
+  - version.txt
+---------------------------------
