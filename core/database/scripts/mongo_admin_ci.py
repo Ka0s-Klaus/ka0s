@@ -119,9 +119,18 @@ def main():
     finally:
         # Generación garantizada del reporte
         report['metadata']['end_time'] = datetime.now().isoformat()
-        report['metadata']['duration'] = 
-            (datetime.fromisoformat(report['metadata']['end_time']) -
-             datetime.fromisoformat(report['metadata']['start_time'])).total_seconds()
+        # Corrección del cálculo de duración
+        report['metadata']['duration'] = (
+            datetime.fromisoformat(report['metadata']['end_time']) -
+            datetime.fromisoformat(report['metadata']['start_time'])
+        ).total_seconds()
+        
+        # Asegurar imports necesarios en la parte superior
+        try:
+            from datetime import datetime
+        except ImportError as e:
+            report['errors'].append(f"Error crítico de importación: {str(e)}")
+            raise
 
         report_path = os.path.join(
             os.environ.get('REPORT_PATH', './'),
