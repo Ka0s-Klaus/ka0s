@@ -34,111 +34,148 @@ def crear_entorno_mongo():
         client.close()
 
 def main():
-    report = {
-        'metadata': {
-            'start_time': datetime.now().isoformat(),
-            'script_version': '1.2',
-            'parameters': {}
-        },
-        'operations': [],
-        'errors': [],
-        'statistics': {}
-    }
+    print("\n[INICIO] Ejecutando script de configuración MongoDB")
+    print(f"Parámetros recibidos:\n- DB: {os.environ['MONGO_NEW_DB']}\n- Usuario: {os.environ['MONGO_NEW_USER']}\n- Colección: {os.environ.get('MONGO_COLLECTION_NAME')}")
 
     try:
-        # Recoger y registrar parámetros
-        params = {
-            'db_name': os.environ['MONGO_NEW_DB'],
-            'collection': os.environ.get('MONGO_COLLECTION_NAME', 'default_collection'),
-            'user': os.environ['MONGO_NEW_USER']
-        }
-        report['metadata']['parameters'] = params
+        # Conexión mejorada
+        print("\n[PASO 1] Conectando a MongoDB...")
+        client = MongoClient(os.environ['MONGO_SUPERUSER_CONNECTION'],
+                            serverSelectionTimeoutMS=5000,
+                            authMechanism='SCRAM-SHA-256')
+        client.server_info()
+        print("✅ Conexión exitosa")
 
-        client = MongoClient(os.environ['MONGO_SUPERUSER_CONNECTION'])
-        report['metadata']['mongo_server'] = {
-            'host': client.HOST,
-            'port': client.PORT,
-            'version': client.server_info()['version']
-        }
-
-        # Verificación de base de datos
-        if db_name in existing_dbs:
-            report['operations'].append({
-                'type': 'check_db',
-                'status': 'exists',
-                'message': f'Base de datos {db_name} ya existe',
-                'timestamp': datetime.now().isoformat()
-            })
+        # Creación/Verificación de DB
+        print(f"\n[PASO 2] Verificando base de datos '{db_name}'")
+        if db_name in client.list_database_names():
+            print(f"⚠️  Base de datos ya existe. Usando: {db_name}")
         else:
-            # Crear nueva base de datos
-            report['operations'].append({
-                'type': 'create_db', 
-                'status': 'success',
-                'timestamp': datetime.now().isoformat()
-            })
+            client[db_name].command('create')
+            print(f"✅ Base de datos creada: {db_name}")
 
-        # Verificación de colección
+        # Creación de colección
+        print(f"\n[PASO 3] Creando colección '{collection_name}'")
+        db = client[db_name]
+        if collection_name not in db.list_collection_names():
+            db.create_collection(collection_name)
+            print(f"✅ Colección creada: {collection_name}")
+        else:
+            print(f"⚠️  Colección ya existe. Usando: {collection_name}")
+
+    except Exception as e:
+        print(f"\n❌ ERROR CRÍTICO: {str(e)}")
+        raise
+
+    finally:
+        print("\n[FINAL] Generando reporte...")
+        print(f"📄 Ruta del reporte: {report_path}")
+
+    report = {
+            'metadata': {
+                'start_time': datetime.now().isoformat(),
+                'script_version': '1.2',
+                'parameters': {}
+            },
+            'operations': [],
+            'errors': [],
+            'statistics': {}
+        }
+
         try:
-            if collection_name in new_db.list_collection_names():
-                report['errors'].append(f'Colección {collection_name} ya existe en {db_name}')
-            else:
-                new_db.create_collection(collection_name)
+            # Recoger y registrar parámetros
+            params = {
+                'db_name': os.environ['MONGO_NEW_DB'],
+                'collection': os.environ.get('MONGO_COLLECTION_NAME', 'default_collection'),
+                'user': os.environ['MONGO_NEW_USER']
+            }
+            report['metadata']['parameters'] = params
+
+            client = MongoClient(os.environ['MONGO_SUPERUSER_CONNECTION'])
+            report['metadata']['mongo_server'] = {
+                'host': client.HOST,
+                'port': client.PORT,
+                'version': client.server_info()['version']
+            }
+
+            # Verificación de base de datos
+            if db_name in existing_dbs:
                 report['operations'].append({
-                    'type': 'create_collection',
+                    'type': 'check_db',
+                    'status': 'exists',
+                    'message': f'Base de datos {db_name} ya existe',
+                    'timestamp': datetime.now().isoformat()
+                })
+            else:
+                # Crear nueva base de datos
+                report['operations'].append({
+                    'type': 'create_db', 
                     'status': 'success',
                     'timestamp': datetime.now().isoformat()
                 })
+
+            # Verificación de colección
+            try:
+                if collection_name in new_db.list_collection_names():
+                    report['errors'].append(f'Colección {collection_name} ya existe en {db_name}')
+                else:
+                    new_db.create_collection(collection_name)
+                    report['operations'].append({
+                        'type': 'create_collection',
+                        'status': 'success',
+                        'timestamp': datetime.now().isoformat()
+                    })
+            except Exception as e:
+                report['errors'].append(str(e))
+
+            # Obtener variables actualizadas del workflow
+            try:
+                connection_string = os.environ['MONGO_SUPERUSER_CONNECTION']  # Nombre corregido
+                db_name = os.environ['MONGO_NEW_DB']
+                collection_name = os.environ.get('MONGO_COLLECTION_NAME', 'default_collection')
+                username = os.environ['MONGO_NEW_USER']
+                password = os.environ['MONGO_NEW_PASS']  # Nombre actualizado
+
+            except KeyError as e:
+                report['errors'].append(f"Falta variable de entorno: {e}")
+                return report
+
+            # Creación de usuario con variables actualizadas
+            admin_db.command('createUser', username,
+                            pwd=password,
+                            roles=[
+                                {'role': 'dbOwner', 'db': db_name},
+                                {'role': 'readWrite', 'db': db_name}
+                            ])
         except Exception as e:
-            report['errors'].append(str(e))
+            report['errors'].append({
+                'type': 'critical',
+                'message': str(e),
+                'stack_trace': traceback.format_exc()
+            })
+        finally:
+            # Generación garantizada del reporte
+            report['metadata']['end_time'] = datetime.now().isoformat()
+            # Corrección del cálculo de duración
+            report['metadata']['duration'] = (
+                datetime.fromisoformat(report['metadata']['end_time']) -
+                datetime.fromisoformat(report['metadata']['start_time'])
+            ).total_seconds()
+            
+            # Asegurar imports necesarios en la parte superior
+            try:
+                from datetime import datetime
+            except ImportError as e:
+                report['errors'].append(f"Error crítico de importación: {str(e)}")
+                raise
 
-        # Obtener variables actualizadas del workflow
-        try:
-            connection_string = os.environ['MONGO_SUPERUSER_CONNECTION']  # Nombre corregido
-            db_name = os.environ['MONGO_NEW_DB']
-            collection_name = os.environ.get('MONGO_COLLECTION_NAME', 'default_collection')
-            username = os.environ['MONGO_NEW_USER']
-            password = os.environ['MONGO_NEW_PASS']  # Nombre actualizado
+            report_path = os.path.join(
+                os.environ.get('REPORT_PATH', './'),
+                os.environ.get('REPORT_FILENAME', 'mongo_operations_report.json')
+            )
+            
+            os.makedirs(os.path.dirname(report_path), exist_ok=True)
+            with open(report_path, 'w') as f:
+                json.dump(report, f, indent=2, default=str)
 
-        except KeyError as e:
-            report['errors'].append(f"Falta variable de entorno: {e}")
-            return report
-
-        # Creación de usuario con variables actualizadas
-        admin_db.command('createUser', username,
-                        pwd=password,
-                        roles=[
-                            {'role': 'dbOwner', 'db': db_name},
-                            {'role': 'readWrite', 'db': db_name}
-                        ])
-    except Exception as e:
-        report['errors'].append({
-            'type': 'critical',
-            'message': str(e),
-            'stack_trace': traceback.format_exc()
-        })
-    finally:
-        # Generación garantizada del reporte
-        report['metadata']['end_time'] = datetime.now().isoformat()
-        # Corrección del cálculo de duración
-        report['metadata']['duration'] = (
-            datetime.fromisoformat(report['metadata']['end_time']) -
-            datetime.fromisoformat(report['metadata']['start_time'])
-        ).total_seconds()
-        
-        # Asegurar imports necesarios en la parte superior
-        try:
-            from datetime import datetime
-        except ImportError as e:
-            report['errors'].append(f"Error crítico de importación: {str(e)}")
-            raise
-
-        report_path = os.path.join(
-            os.environ.get('REPORT_PATH', './'),
-            os.environ.get('REPORT_FILENAME', 'mongo_operations_report.json')
-        )
-        
-        os.makedirs(os.path.dirname(report_path), exist_ok=True)
-        with open(report_path, 'w') as f:
-            json.dump(report, f, indent=2, default=str)
-
-        return 0 if not report['errors'] else 1
+            return 0 if not report['errors'] else 1
