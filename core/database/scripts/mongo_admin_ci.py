@@ -34,41 +34,73 @@ def crear_entorno_mongo():
         client.close()
 
 def main():
-    report = inicializar_reporte()
-    client = None
+    report = {
+        'metadata': {
+            'start_time': datetime.now().isoformat(),
+            'script_version': '1.2',
+            'parameters': {}
+        },
+        'operations': [],
+        'errors': [],
+        'statistics': {}
+    }
+
+    print("\n[INICIO] Ejecutando script de configuración MongoDB")
+    print(f"Parámetros recibidos:\n- DB: {os.environ['MONGO_NEW_DB']}\n- Usuario: {os.environ['MONGO_NEW_USER']}\n- Colección: {os.environ.get('MONGO_COLLECTION_NAME')}")
 
     try:
-        # Configuración inicial
-        params = obtener_parametros()
-        report['metadata']['parameters'] = params
+        # Conexión mejorada con controles
+        print("\n[PASO 1] Conectando a MongoDB...")
+        client = MongoClient(os.environ['MONGO_SUPERUSER_CONNECTION'],
+                             serverSelectionTimeoutMS=5000,
+                             authMechanism='SCRAM-SHA-256')
+        client.server_info()
+        print("✅ Conexión exitosa")
 
-        # Conexión y operaciones
-        with MongoClient(os.environ['MONGO_SUPERUSER_CONNECTION']) as client:
-            operaciones_mongodb(client, report)
+        # Creación/Verificación de DB
+        db_name = os.environ['MONGO_NEW_DB']
+        print(f"\n[PASO 2] Verificando base de datos '{db_name}'")
+        
+        if db_name in client.list_database_names():
+            print(f"⚠️  Base de datos ya existe. Usando: {db_name}")
+        else:
+            client[db_name].command('create')
+            print(f"✅ Base de datos creada: {db_name}")
+
+        # Creación de colección
+        collection_name = os.environ.get('MONGO_COLLECTION_NAME', 'default_collection')
+        print(f"\n[PASO 3] Creando colección '{collection_name}'")
+        
+        db = client[db_name]
+        if collection_name in db.list_collection_names():
+            print(f"⚠️  Colección ya existe. Usando: {collection_name}")
+        else:
+            db.create_collection(collection_name)
+            print(f"✅ Colección creada: {collection_name}")
+
+        # Creación de usuario
+        print(f"\n[PASO 4] Creando usuario '{os.environ['MONGO_NEW_USER']}'")
+        db.command('createUser', os.environ['MONGO_NEW_USER'],
+                   pwd=os.environ['MONGO_NEW_PASS'],
+                   roles=[{'role': 'dbOwner', 'db': db_name}])
+        print("✅ Usuario creado con éxito")
 
     except Exception as e:
-        registrar_error(report, e)
+        print(f"\n❌ ERROR CRÍTICO: {str(e)}")
+        report['errors'].append(str(e))
     finally:
-        if client:
+        if 'client' in locals():
             client.close()
-        generar_reporte(reporte=report)
-
-# Funciones auxiliares
-
-def operaciones_mongodb(client, report):
-    try:
-        db = client[report['metadata']['parameters']['db_name']]
-        crear_coleccion_si_no_existe(db, report)
-        crear_usuario(db, report)
-    except Exception as e:
-        raise RuntimeError(f"Error en operaciones MongoDB: {str(e)}")
-
-
-def generar_reporte(reporte):
-    # Lógica simplificada de generación de reporte
-    report_path = os.path.join(
-        os.environ.get('REPORT_PATH', './'),
-        os.environ.get('REPORT_FILENAME', 'mongo_operations_report.json')
-    )
-    with open(report_path, 'w') as f:
-        json.dump(reporte, f, indent=2)
+        print("\n[FINAL] Generando reporte...")
+        
+        report_path = os.path.join(
+            os.environ.get('REPORT_PATH', './'),
+            os.environ.get('REPORT_FILENAME', 'mongo_operations_report.json')
+        )
+        
+        try:
+            with open(report_path, 'w') as f:
+                json.dump(report, f, indent=2)
+            print(f"📄 Reporte generado en: {report_path}")
+        except Exception as e:
+            print(f"❌ Error guardando reporte: {str(e)}")
