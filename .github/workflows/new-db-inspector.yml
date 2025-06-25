@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 env:
-    KAOS_PATH_MONGO: core/database/scripts/setup_mongo_inspector.sh 
+    KAOS_PATH_MONGO: core/database/scripts/setup_mongo_inspector.sh
     HOST: ${{ secrets.MONGO_HOST }}
     ADMIN_USER: ${{ secrets.MONGO_ADMIN_USER }}
     ADMIN_PASS: ${{ secrets.MONGO_ADMIN_PASS }}
@@ -14,7 +14,8 @@ env:
 jobs:
   job-core:
     runs-on:
-      group: ka0s
+      group: m0ng0
+    
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -22,9 +23,44 @@ jobs:
         fetch-depth: 0
         token: ${{ secrets.KAOS_REPO_TOKEN }}
 
+    - name: Verify MongoDB Tools
+      run: |
+        if ! command -v mongo &> /dev/null; then
+            echo "Error: mongo command not found!"
+            exit 1
+        fi
+        mongo --version
+
     - name: Setup MongoDB
       run: |
-        ${{ env.KAOS_PATH_MONGO }} ${{ secrets.DB_INITIAL_PASSWORD }}
+        mongo "mongodb://${{ env.ADMIN_USER }}:${{ env.ADMIN_PASS }}@${{ env.HOST }}:27017/admin" <<EOF
+        use ${{ env.DB_NAME }}
+        db.createUser({
+          user: "${{ env.DB_USER }}",
+          pwd: "${{ secrets.DB_PASSWORD }}",
+          roles: [ { role: "dbOwner", db: "${{ env.DB_NAME }}" } ]
+        })
+        EOF
+
+        JSON_DIR="core/outputs/i"
+        find "$JSON_DIR" -name "*.json" | while read -r json_file; do
+          if [[ -f "\$json_file" ]]; then
+            dbid=\$(jq -r '.databaseId' "\$json_file")
+            count=\$(mongo --quiet "mongodb://${{ env.ADMIN_USER }}:${{ env.ADMIN_PASS }}@${{ env.HOST }}:27017/${{ env.DB_NAME }}" \
+              --eval "db.inspector_results.count({databaseId: \"\$dbid\"})")
+            
+            if [[ \$count -eq 0 ]]; then
+              echo "Importando: \$(basename "\$json_file")"
+              mongoimport --host ${{ env.HOST }} --username ${{ env.ADMIN_USER }} --password ${{ env.ADMIN_PASS }} \
+                --authenticationDatabase admin \
+                --db ${{ env.DB_NAME }} \
+                --collection inspector_results \
+                --file "\$json_file" --jsonArray
+            else
+              echo "Saltando duplicado: \$(basename "\$json_file")"
+            fi
+          fi
+        done
 
     - name: Commit script changes
       run: |
