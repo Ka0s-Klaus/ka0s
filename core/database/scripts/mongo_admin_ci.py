@@ -76,6 +76,8 @@ def main():
         if collection_name in db.list_collection_names():
             print(f"⚠️  Colección ya existe. Usando: {collection_name}")
         else:
+            import sys
+            
             # Al inicio del script
             print("🚀 Iniciando ejecución del script MongoDB Admin", flush=True)
             
@@ -135,3 +137,19 @@ def main():
                 json.dump(report_data, f)
         except Exception as e:
             print(f"❌ Error guardando reporte: {str(e)}")
+
+# Bloque final de reporte
+try:
+    report_path = os.path.join(os.environ.get('REPORT_PATH', '.'), os.environ['REPORT_FILENAME'])
+    with open(report_path, 'w') as f:
+        json.dump({
+            'status': 'completed',
+            'operations': operation_log
+        }, f)
+    print(f"Reporte generado en: {report_path}")
+
+except Exception as e:
+    print(f"Error generando reporte: {str(e)}", file=sys.stderr)
+
+finally:
+    print("Ejecución finalizada")
