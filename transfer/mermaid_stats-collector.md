@@ -1,3 +1,4 @@
+# Gráfico de Mermaid para el Collector de Stats
 graph TD
     A[GitHub Action Schedule] --> B[Ejecutar Workflow]
     B --> C[Python Script]
@@ -9,3 +10,4 @@ graph TD
     C --> I[MongoDB Atlas]
     I --> J[Almacenamiento Seguro]
     J --> K[Dashboards/BI]
+    

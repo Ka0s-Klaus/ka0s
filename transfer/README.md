@@ -1,1 +1,1 @@
-# Todo lo referencnte a transferencia entre sistemas
+# Todo lo referente a transferencia entre sistemas
