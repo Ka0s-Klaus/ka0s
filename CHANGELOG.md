@@ -3269,3 +3269,21 @@
   - monitoring/zabbix/docker/docker-compose.yml
   - version.txt
 ---------------------------------
+## Version 0.0.160
+- **Branch**: refs/pull/1242/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Thu Jun 26 08:50:45 UTC 2025
+- **Message**: H1224 new module mongodb
+- **Files Changed**:
+  - .github/workflows/create-db.yml
+  - core/database/scripts/db-create.md
+  - core/database/scripts/db-create.py
+  - core/database/scripts/db-list.md
+  - core/database/scripts/db-list.py
+  - core/results/k/event_data_15896748748.json
+  - core/results/k/event_data_15897002263.json
+  - core/results/k/event_data_15897171542.json
+  - core/results/k/event_data_15897238058.json
+  - version.txt
+---------------------------------
