@@ -3254,3 +3254,18 @@
   - core/results/k/event_data_15896029225.json
   - version.txt
 ---------------------------------
+## Version 0.0.159
+- **Branch**: refs/pull/1241/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Thu Jun 26 08:14:47 UTC 2025
+- **Message**: H1224 new module mongodb
+- **Files Changed**:
+  - .github/workflows/create-db.yml
+  - core/database/scripts/db-list.py
+  - core/results/k/event_data_15896517163.json
+  - monitoring/zabbix/README.md
+  - monitoring/zabbix/agent/agent.sh
+  - monitoring/zabbix/docker/docker-compose.yml
+  - version.txt
+---------------------------------
