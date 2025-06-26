@@ -42,7 +42,8 @@ try:
             })
 
     print(json.dumps(result, indent=2))
-
+    print("Ready report MongoDB!")
+    
 except KeyError:
     print("❌ MONGO_SUPERUSER_CONNECTION no está definida")
     exit(1)

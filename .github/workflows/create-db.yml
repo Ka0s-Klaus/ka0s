@@ -23,10 +23,12 @@ env:
   MONGO_SCRIPT_PATH: core/database/scripts/db-connect.py
   MONGO_SCRIPT_CHECK: core/database/scripts/db-check.py
   MONGO_SCRIPT_LIST: core/database/scripts/db-list.py
+  MONGO_SCRIPT_CREATE: core/database/scripts/db-create.py
   KAOS_CODE: ${{ github.run_id }}
   REPORT_PATH: audit/mongodb
   REPORT_FILENAME: mongo_setup_${{ github.run_id }}.json
-  REPORT_FILENAME_DB: mongo_list_${{ github.run_id }}.json
+  REPORT_FILENAME_LIST: mongo_list_${{ github.run_id }}.json
+  REPORT_FILENAME_DB: mongo_create_db_${{ github.run_id }}.json
 
 jobs:
   job-core:
@@ -56,10 +58,14 @@ jobs:
         run: python ${{ env.MONGO_SCRIPT_CHECK }}
 
       - name: List MongoDB Databases
-        run: python ${{ env.MONGO_SCRIPT_LIST }} >> ${{ env.REPORT_PATH }}/${{ env.REPORT_FILENAME_DB }}
+        run: python ${{ env.MONGO_SCRIPT_LIST }} >> ${{ env.REPORT_PATH }}/${{ env.REPORT_FILENAME_LIST }}
 
       - name: Configure MongoDB
         run: python ${{ env.MONGO_SCRIPT_PATH }}
+
+      - name: Create database MongoDB
+        if: ${{ github.event.inputs.db_name }} != ''
+        run: python ${{ env.MONGO_SCRIPT_CREATE }}
 
       - name: Upload report
         uses: actions/upload-artifact@v4
