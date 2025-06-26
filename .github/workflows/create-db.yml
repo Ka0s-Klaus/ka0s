@@ -26,7 +26,8 @@ env:
   KAOS_CODE: ${{ github.run_id }}
   REPORT_PATH: audit/mongodb
   REPORT_FILENAME: mongo_setup_${{ github.run_id }}.json
-  REPORT_FILENAME_DB: mongo_list_${{ github.run_id }}.json
+  REPORT_FILENAME_LIST: mongo_list_${{ github.run_id }}.json
+  REPORT_FILENAME_DB: mongo_create_db_${{ github.run_id }}.json
 
 jobs:
   job-core:
@@ -56,7 +57,7 @@ jobs:
         run: python ${{ env.MONGO_SCRIPT_CHECK }}
 
       - name: List MongoDB Databases
-        run: python ${{ env.MONGO_SCRIPT_LIST }} >> ${{ env.REPORT_PATH }}/${{ env.REPORT_FILENAME_DB }}
+        run: python ${{ env.MONGO_SCRIPT_LIST }} >> ${{ env.REPORT_PATH }}/${{ env.REPORT_FILENAME_LIST }}
 
       - name: Configure MongoDB
         run: python ${{ env.MONGO_SCRIPT_PATH }}
