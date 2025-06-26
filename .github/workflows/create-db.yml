@@ -21,6 +21,7 @@ env:
   MONGO_NEW_USER: ${{ github.event.inputs.db_user }}
   MONGO_NEW_PASS: ${{ secrets.DB_INITIAL_PASSWORD }}
   MONGO_SCRIPT_PATH: core/database/scripts/db-connect.py
+  MONGO_SCRIPT_CHECK: core/database/scripts/db-check.py
   KAOS_CODE: ${{ github.run_id }}
   REPORT_PATH: audit/mongodb
   REPORT_FILENAME: mongo_setup_${{ github.run_id }}.json
@@ -48,6 +49,9 @@ jobs:
 
       - name: Install dependencies
         run: pip install pymongo
+
+      - name: Check MongoDB Up/Down
+        run: python ${{ env.MONGO_SCRIPT_CHECK }}
 
       - name: Configure MongoDB
         run: python ${{ env.MONGO_SCRIPT_PATH }}
