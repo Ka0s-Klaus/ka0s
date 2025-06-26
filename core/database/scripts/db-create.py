@@ -25,7 +25,11 @@ try:
 
     # Paso 2: Crear base de datos
     if db_name not in client.list_database_names():
-        client[db_name].command('create')
+        # Crear una colección temporal para forzar la creación de la DB
+        db = client[db_name]
+        temp_collection = db['temp_init']
+        temp_collection.insert_one({'init': True})
+        temp_collection.drop()
         log['operations'].append({'step': 2, 'status': 'success', 'description': f'Base de datos {db_name} creada'})
     else:
         log['operations'].append({'step': 2, 'status': 'skipped', 'description': f'Base de datos {db_name} ya existe'})
