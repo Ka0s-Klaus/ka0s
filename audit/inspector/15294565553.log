@@ -1,0 +1,355 @@
+job-core	Set up job	﻿2025-05-28T07:49:45.7936215Z Current runner version: '2.324.0'
+job-core	Set up job	2025-05-28T07:49:45.7943213Z Runner name: 'ka0s-ka0s-4'
+job-core	Set up job	2025-05-28T07:49:45.7944230Z Machine name: 'ef411525c24f'
+job-core	Set up job	2025-05-28T07:49:45.7947095Z ##[group]GITHUB_TOKEN Permissions
+job-core	Set up job	2025-05-28T07:49:45.7949224Z Contents: read
+job-core	Set up job	2025-05-28T07:49:45.7949900Z Metadata: read
+job-core	Set up job	2025-05-28T07:49:45.7950454Z Packages: read
+job-core	Set up job	2025-05-28T07:49:45.7951086Z ##[endgroup]
+job-core	Set up job	2025-05-28T07:49:45.7953284Z Secret source: Actions
+job-core	Set up job	2025-05-28T07:49:45.7954021Z Prepare workflow directory
+job-core	Set up job	2025-05-28T07:49:45.8581488Z Prepare all required actions
+job-core	Set up job	2025-05-28T07:49:45.8621562Z Getting action download info
+job-core	Set up job	2025-05-28T07:49:46.4927387Z Download action repository 'actions/checkout@v3' (SHA:f43a0e5ff2bd294095638e18286ca9a3d1956744)
+job-core	Set up job	2025-05-28T07:49:47.2938424Z Complete job name: job-core
+job-core	Crear archivos HTML para cada sección	﻿2025-05-28T07:49:47.3422359Z ##[group]Run # Leer el archivo de configuración de webs
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3423326Z [36;1m# Leer el archivo de configuración de webs[0m
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3424068Z [36;1mSTRUCTURE_FILE="core/config/finops/config/webs.json"[0m
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3424966Z [36;1m[0m
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3425442Z [36;1m# Crear directorio para las secciones[0m
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3426231Z [36;1mmkdir -p "core/results/webs/finops/section"[0m
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3426824Z [36;1m[0m
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3427271Z [36;1m# Copiar la plantilla base de finops[0m
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3428241Z [36;1mcp "core/config/finops/template/finops.html" "{{ env.KAOS_FINOPS_RESULTS_SECTION }}template.html"[0m
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3429154Z [36;1m[0m
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3429637Z [36;1m# Procesar cada sección del archivo webs.json[0m
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3430694Z [36;1mjq -r '.sections[] | [.title, .datatemplate] | @tsv' "$STRUCTURE_FILE" | while IFS=$'\t' read -r section_title section_data; do[0m
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3431793Z [36;1m  echo "Generando HTML para sección: $section_title"[0m
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3432472Z [36;1m  [0m
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3432919Z [36;1m  # Leer la configuración de la sección[0m
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3433692Z [36;1m  SECTION_CONFIG="{{ env.KAOS_FINOPS }}config/section/$section_data"[0m
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3434390Z [36;1m  [0m
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3435131Z [36;1m  if [ -f "$SECTION_CONFIG" ]; then[0m
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3435749Z [36;1m    # Crear el archivo HTML para esta sección[0m
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3436513Z [36;1m    SECTION_HTML="{{ env.KAOS_FINOPS }}section/${section_title}.html"[0m
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3437360Z [36;1m    cp "{{ env.KAOS_FINOPS_TEMPLATE }}finops.html" "$SECTION_HTML"[0m
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3438028Z [36;1m    [0m
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3438519Z [36;1m    # Obtener descripción y título de la sección[0m
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3439302Z [36;1m    SECTION_DESCRIPTION=$(jq -r '.description' "$SECTION_CONFIG")[0m
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3439998Z [36;1m    [0m
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3440473Z [36;1m    # Reemplazar placeholders en el template[0m
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3441284Z [36;1m    sed -i "s/SECTION_TITLE_PLACEHOLDER/$section_title/g" "$SECTION_HTML"[0m
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3442320Z [36;1m    sed -i "s/SECTION_DESCRIPTION_PLACEHOLDER/$SECTION_DESCRIPTION/g" "$SECTION_HTML"[0m
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3443165Z [36;1m    [0m
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3443728Z [36;1m    echo "HTML generado para $section_title en $SECTION_HTML"[0m
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3444393Z [36;1m  else[0m
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3445386Z [36;1m    echo "Archivo de configuración no encontrado para $section_title"[0m
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3446350Z [36;1m  fi[0m
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3446757Z [36;1mdone[0m
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3457009Z shell: /usr/bin/bash -e {0}
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3457811Z env:
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3458231Z   KAOS_CODE: 15294565553
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3458713Z   KAOS_EVENT_NAME: workflow_dispatch
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3459238Z   KAOS_ACTION: 
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3459661Z   KAOS_REF: refs/heads/main
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3460218Z   KAOS_MODULE: [Ka0S] Deploy Web Structure
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3460790Z   KAOS_JSON_RESUME: core/outputs/webs/
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3461352Z   KAOS_WEB_STRUCTURE: core/results/webs/
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3462191Z   KAOS_ACTOR: jh0ny2k2
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3462709Z   KAOS_FINOPS_STRUCTURE: core/results/webs/finops/
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3463404Z   KAOS_FINOPS_JSON_WEB: core/config/finops/config/webs.json
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3464099Z   KAOS_FINOPS_JSON_DATA: core/config/finops/data
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3464955Z   KAOS_FINOPS_TEMPLATE: core/config/finops/template/
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3465709Z   KAOS_FINOPS: core/config/finops/
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3466365Z   KAOS_FINOPS_RESULTS_SECTION: core/results/webs/finops/section
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3467016Z ##[endgroup]
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3600203Z cp: cannot stat 'core/config/finops/template/finops.html': No such file or directory
+job-core	Crear archivos HTML para cada sección	2025-05-28T07:49:47.3614717Z ##[error]Process completed with exit code 1.
+job-core	Complete job	﻿2025-05-28T07:49:47.3754621Z Cleaning up orphan processes
+handle_failure	Set up job	﻿2025-05-28T07:49:53.1423568Z Current runner version: '2.324.0'
+handle_failure	Set up job	2025-05-28T07:49:53.1430437Z Runner name: 'ka0s-ka0s-1'
+handle_failure	Set up job	2025-05-28T07:49:53.1431553Z Machine name: '81c4cec2d52e'
+handle_failure	Set up job	2025-05-28T07:49:53.1434237Z ##[group]GITHUB_TOKEN Permissions
+handle_failure	Set up job	2025-05-28T07:49:53.1436529Z Contents: read
+handle_failure	Set up job	2025-05-28T07:49:53.1437084Z Metadata: read
+handle_failure	Set up job	2025-05-28T07:49:53.1437652Z Packages: read
+handle_failure	Set up job	2025-05-28T07:49:53.1438176Z ##[endgroup]
+handle_failure	Set up job	2025-05-28T07:49:53.1440437Z Secret source: Actions
+handle_failure	Set up job	2025-05-28T07:49:53.1441152Z Prepare workflow directory
+handle_failure	Set up job	2025-05-28T07:49:53.2073031Z Prepare all required actions
+handle_failure	Set up job	2025-05-28T07:49:53.2112090Z Getting action download info
+handle_failure	Set up job	2025-05-28T07:49:53.7697410Z Download action repository 'actions/checkout@v4' (SHA:11bd71901bbe5b1630ceea73d27597364c9af683)
+handle_failure	Set up job	2025-05-28T07:49:54.6007844Z Complete job name: handle_failure
+handle_failure	Checkout code	﻿2025-05-28T07:49:54.6467989Z ##[group]Run actions/checkout@v4
+handle_failure	Checkout code	2025-05-28T07:49:54.6468964Z with:
+handle_failure	Checkout code	2025-05-28T07:49:54.6469434Z   fetch-depth: 0
+handle_failure	Checkout code	2025-05-28T07:49:54.6470117Z   token: ***
+handle_failure	Checkout code	2025-05-28T07:49:54.6470565Z   repository: Ka0s-Klaus/ka0s
+handle_failure	Checkout code	2025-05-28T07:49:54.6471125Z   ssh-strict: true
+handle_failure	Checkout code	2025-05-28T07:49:54.6471555Z   ssh-user: git
+handle_failure	Checkout code	2025-05-28T07:49:54.6471994Z   persist-credentials: true
+handle_failure	Checkout code	2025-05-28T07:49:54.6472481Z   clean: true
+handle_failure	Checkout code	2025-05-28T07:49:54.6472912Z   sparse-checkout-cone-mode: true
+handle_failure	Checkout code	2025-05-28T07:49:54.6473452Z   fetch-tags: false
+handle_failure	Checkout code	2025-05-28T07:49:54.6473900Z   show-progress: true
+handle_failure	Checkout code	2025-05-28T07:49:54.6474344Z   lfs: false
+handle_failure	Checkout code	2025-05-28T07:49:54.6474943Z   submodules: false
+handle_failure	Checkout code	2025-05-28T07:49:54.6475546Z   set-safe-directory: true
+handle_failure	Checkout code	2025-05-28T07:49:54.6476271Z env:
+handle_failure	Checkout code	2025-05-28T07:49:54.6476686Z   KAOS_CODE: 15294565553
+handle_failure	Checkout code	2025-05-28T07:49:54.6477181Z   KAOS_EVENT_NAME: workflow_dispatch
+handle_failure	Checkout code	2025-05-28T07:49:54.6477719Z   KAOS_ACTION: 
+handle_failure	Checkout code	2025-05-28T07:49:54.6478141Z   KAOS_REF: refs/heads/main
+handle_failure	Checkout code	2025-05-28T07:49:54.6478670Z   KAOS_MODULE: [Ka0S] Deploy Web Structure
+handle_failure	Checkout code	2025-05-28T07:49:54.6479315Z   KAOS_JSON_RESUME: core/outputs/webs/
+handle_failure	Checkout code	2025-05-28T07:49:54.6479908Z   KAOS_WEB_STRUCTURE: core/results/webs/
+handle_failure	Checkout code	2025-05-28T07:49:54.6480470Z   KAOS_ACTOR: jh0ny2k2
+handle_failure	Checkout code	2025-05-28T07:49:54.6481050Z   KAOS_FINOPS_STRUCTURE: core/results/webs/finops/
+handle_failure	Checkout code	2025-05-28T07:49:54.6481828Z   KAOS_FINOPS_JSON_WEB: core/config/finops/config/webs.json
+handle_failure	Checkout code	2025-05-28T07:49:54.6482569Z   KAOS_FINOPS_JSON_DATA: core/config/finops/data
+handle_failure	Checkout code	2025-05-28T07:49:54.6483257Z   KAOS_FINOPS_TEMPLATE: core/config/finops/template/
+handle_failure	Checkout code	2025-05-28T07:49:54.6483926Z   KAOS_FINOPS: core/config/finops/
+handle_failure	Checkout code	2025-05-28T07:49:54.6484623Z   KAOS_FINOPS_RESULTS_SECTION: core/results/webs/finops/section
+handle_failure	Checkout code	2025-05-28T07:49:54.6485453Z ##[endgroup]
+handle_failure	Checkout code	2025-05-28T07:49:54.7636272Z Syncing repository: Ka0s-Klaus/ka0s
+handle_failure	Checkout code	2025-05-28T07:49:54.7638404Z ##[group]Getting Git version info
+handle_failure	Checkout code	2025-05-28T07:49:54.7639176Z Working directory is '/actions-runner/_work/ka0s/ka0s'
+handle_failure	Checkout code	2025-05-28T07:49:54.7640236Z [command]/usr/bin/git version
+handle_failure	Checkout code	2025-05-28T07:49:54.7640826Z git version 2.43.0
+handle_failure	Checkout code	2025-05-28T07:49:54.7658526Z ##[endgroup]
+handle_failure	Checkout code	2025-05-28T07:49:54.7670935Z Copying '/home/kaos/.gitconfig' to '/actions-runner/_work/_temp/2f3dd45b-811e-4dd2-b791-fe28ae701b3e/.gitconfig'
+handle_failure	Checkout code	2025-05-28T07:49:54.7684577Z Temporarily overriding HOME='/actions-runner/_work/_temp/2f3dd45b-811e-4dd2-b791-fe28ae701b3e' before making global git config changes
+handle_failure	Checkout code	2025-05-28T07:49:54.7686603Z Adding repository directory to the temporary git global config as a safe directory
+handle_failure	Checkout code	2025-05-28T07:49:54.7690049Z [command]/usr/bin/git config --global --add safe.directory /actions-runner/_work/ka0s/ka0s
+handle_failure	Checkout code	2025-05-28T07:49:54.7732850Z [command]/usr/bin/git config --local --get remote.origin.url
+handle_failure	Checkout code	2025-05-28T07:49:54.7763660Z https://github.com/Ka0s-Klaus/ka0s
+handle_failure	Checkout code	2025-05-28T07:49:54.7784052Z ##[group]Removing previously created refs, to avoid conflicts
+handle_failure	Checkout code	2025-05-28T07:49:54.7789059Z [command]/usr/bin/git rev-parse --symbolic-full-name --verify --quiet HEAD
+handle_failure	Checkout code	2025-05-28T07:49:54.7813220Z refs/heads/main
+handle_failure	Checkout code	2025-05-28T07:49:54.7823839Z [command]/usr/bin/git checkout --detach
+handle_failure	Checkout code	2025-05-28T07:49:54.7993098Z HEAD is now at fc6f6295 [Ka0S] Inspector uploading resume execution files to the repository...
+handle_failure	Checkout code	2025-05-28T07:49:54.8040878Z [command]/usr/bin/git branch --delete --force main
+handle_failure	Checkout code	2025-05-28T07:49:54.8075412Z Deleted branch main (was fc6f6295).
+handle_failure	Checkout code	2025-05-28T07:49:54.8148333Z ##[endgroup]
+handle_failure	Checkout code	2025-05-28T07:49:54.8149561Z [command]/usr/bin/git submodule status
+handle_failure	Checkout code	2025-05-28T07:49:54.8405881Z ##[group]Cleaning the repository
+handle_failure	Checkout code	2025-05-28T07:49:54.8411052Z [command]/usr/bin/git clean -ffdx
+handle_failure	Checkout code	2025-05-28T07:49:54.8499443Z Removing core/results/webs/dashboard/15278895272-dashboard-ftp-deploy-sync-state.json
+handle_failure	Checkout code	2025-05-28T07:49:54.8510016Z [command]/usr/bin/git reset --hard HEAD
+handle_failure	Checkout code	2025-05-28T07:49:54.8799989Z HEAD is now at fc6f6295 [Ka0S] Inspector uploading resume execution files to the repository...
+handle_failure	Checkout code	2025-05-28T07:49:54.8806921Z ##[endgroup]
+handle_failure	Checkout code	2025-05-28T07:49:54.8807748Z ##[group]Disabling automatic garbage collection
+handle_failure	Checkout code	2025-05-28T07:49:54.8812801Z [command]/usr/bin/git config --local gc.auto 0
+handle_failure	Checkout code	2025-05-28T07:49:54.8847303Z ##[endgroup]
+handle_failure	Checkout code	2025-05-28T07:49:54.8848211Z ##[group]Setting up auth
+handle_failure	Checkout code	2025-05-28T07:49:54.8854710Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+handle_failure	Checkout code	2025-05-28T07:49:54.8896227Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+handle_failure	Checkout code	2025-05-28T07:49:54.9160502Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+handle_failure	Checkout code	2025-05-28T07:49:54.9192811Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+handle_failure	Checkout code	2025-05-28T07:49:54.9468778Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+handle_failure	Checkout code	2025-05-28T07:49:54.9511158Z ##[endgroup]
+handle_failure	Checkout code	2025-05-28T07:49:54.9512073Z ##[group]Fetching the repository
+handle_failure	Checkout code	2025-05-28T07:49:54.9519434Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+handle_failure	Checkout code	2025-05-28T07:49:56.0412641Z From https://github.com/Ka0s-Klaus/ka0s
+handle_failure	Checkout code	2025-05-28T07:49:56.0431244Z    fc6f6295..a9e782b7  main       -> origin/main
+handle_failure	Checkout code	2025-05-28T07:49:56.0474550Z [command]/usr/bin/git branch --list --remote origin/main
+handle_failure	Checkout code	2025-05-28T07:49:56.0502680Z   origin/main
+handle_failure	Checkout code	2025-05-28T07:49:56.0513586Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+handle_failure	Checkout code	2025-05-28T07:49:56.0537065Z a9e782b7a8f7ae110bc1f6b149a2e5674c7a8120
+handle_failure	Checkout code	2025-05-28T07:49:56.0541677Z ##[endgroup]
+handle_failure	Checkout code	2025-05-28T07:49:56.0543435Z ##[group]Determining the checkout info
+handle_failure	Checkout code	2025-05-28T07:49:56.0545137Z ##[endgroup]
+handle_failure	Checkout code	2025-05-28T07:49:56.0548502Z [command]/usr/bin/git sparse-checkout disable
+handle_failure	Checkout code	2025-05-28T07:49:56.0632478Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+handle_failure	Checkout code	2025-05-28T07:49:56.0663045Z ##[group]Checking out the ref
+handle_failure	Checkout code	2025-05-28T07:49:56.0665684Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+handle_failure	Checkout code	2025-05-28T07:49:56.1272198Z Previous HEAD position was fc6f6295 [Ka0S] Inspector uploading resume execution files to the repository...
+handle_failure	Checkout code	2025-05-28T07:49:56.1280991Z Switched to a new branch 'main'
+handle_failure	Checkout code	2025-05-28T07:49:56.1282322Z branch 'main' set up to track 'origin/main'.
+handle_failure	Checkout code	2025-05-28T07:49:56.1300665Z ##[endgroup]
+handle_failure	Checkout code	2025-05-28T07:49:56.1341056Z [command]/usr/bin/git log -1 --format=%H
+handle_failure	Checkout code	2025-05-28T07:49:56.1368016Z a9e782b7a8f7ae110bc1f6b149a2e5674c7a8120
+handle_failure	handle-failure-execution	﻿2025-05-28T07:49:56.1616068Z ##[group]Run echo "Error detected in process"
+handle_failure	handle-failure-execution	2025-05-28T07:49:56.1617513Z [36;1mecho "Error detected in process"[0m
+handle_failure	handle-failure-execution	2025-05-28T07:49:56.1618933Z [36;1m# RNNUMBER=$(echo "refs/heads/main" | grep -o '[0-9]*')[0m
+handle_failure	handle-failure-execution	2025-05-28T07:49:56.1622063Z [36;1m# gh issue comment $RNNUMBER --body "El proceso no ha finalizado correctamente 15294565553. El resultado está en el fichero core/results/event_data15294565553.log"[0m
+handle_failure	handle-failure-execution	2025-05-28T07:49:56.1625287Z [36;1m# Creamos la issue dado que ha fallado el modulo principal[0m
+handle_failure	handle-failure-execution	2025-05-28T07:49:56.1629115Z [36;1mgh issue create  --title "[Ka0S] Error detected in [Ka0S] Deploy Web Structure" --body "Error detected in [Ka0S] Deploy Web Structure. Please check the logs for 15294565553 more information of error."[0m
+handle_failure	handle-failure-execution	2025-05-28T07:49:56.1644212Z shell: /usr/bin/bash -e {0}
+handle_failure	handle-failure-execution	2025-05-28T07:49:56.1645314Z env:
+handle_failure	handle-failure-execution	2025-05-28T07:49:56.1646077Z   KAOS_CODE: 15294565553
+handle_failure	handle-failure-execution	2025-05-28T07:49:56.1647052Z   KAOS_EVENT_NAME: workflow_dispatch
+handle_failure	handle-failure-execution	2025-05-28T07:49:56.1648122Z   KAOS_ACTION: 
+handle_failure	handle-failure-execution	2025-05-28T07:49:56.1649028Z   KAOS_REF: refs/heads/main
+handle_failure	handle-failure-execution	2025-05-28T07:49:56.1650057Z   KAOS_MODULE: [Ka0S] Deploy Web Structure
+handle_failure	handle-failure-execution	2025-05-28T07:49:56.1651248Z   KAOS_JSON_RESUME: core/outputs/webs/
+handle_failure	handle-failure-execution	2025-05-28T07:49:56.1652407Z   KAOS_WEB_STRUCTURE: core/results/webs/
+handle_failure	handle-failure-execution	2025-05-28T07:49:56.1653518Z   KAOS_ACTOR: jh0ny2k2
+handle_failure	handle-failure-execution	2025-05-28T07:49:56.1654552Z   KAOS_FINOPS_STRUCTURE: core/results/webs/finops/
+handle_failure	handle-failure-execution	2025-05-28T07:49:56.1656052Z   KAOS_FINOPS_JSON_WEB: core/config/finops/config/webs.json
+handle_failure	handle-failure-execution	2025-05-28T07:49:56.1657505Z   KAOS_FINOPS_JSON_DATA: core/config/finops/data
+handle_failure	handle-failure-execution	2025-05-28T07:49:56.1658871Z   KAOS_FINOPS_TEMPLATE: core/config/finops/template/
+handle_failure	handle-failure-execution	2025-05-28T07:49:56.1660181Z   KAOS_FINOPS: core/config/finops/
+handle_failure	handle-failure-execution	2025-05-28T07:49:56.1661553Z   KAOS_FINOPS_RESULTS_SECTION: core/results/webs/finops/section
+handle_failure	handle-failure-execution	2025-05-28T07:49:56.1663396Z   GH_TOKEN: ***
+handle_failure	handle-failure-execution	2025-05-28T07:49:56.1664226Z ##[endgroup]
+handle_failure	handle-failure-execution	2025-05-28T07:49:56.1722102Z Error detected in process
+handle_failure	handle-failure-execution	2025-05-28T07:49:57.2421572Z https://github.com/Ka0s-Klaus/ka0s/issues/1189
+handle_failure	Post Checkout code	﻿2025-05-28T07:49:57.2676598Z Post job cleanup.
+handle_failure	Post Checkout code	2025-05-28T07:49:57.3653130Z [command]/usr/bin/git version
+handle_failure	Post Checkout code	2025-05-28T07:49:57.3692458Z git version 2.43.0
+handle_failure	Post Checkout code	2025-05-28T07:49:57.3732315Z Copying '/home/kaos/.gitconfig' to '/actions-runner/_work/_temp/8039dc36-32f0-44c8-8528-9fcfd46ce935/.gitconfig'
+handle_failure	Post Checkout code	2025-05-28T07:49:57.3743864Z Temporarily overriding HOME='/actions-runner/_work/_temp/8039dc36-32f0-44c8-8528-9fcfd46ce935' before making global git config changes
+handle_failure	Post Checkout code	2025-05-28T07:49:57.3745193Z Adding repository directory to the temporary git global config as a safe directory
+handle_failure	Post Checkout code	2025-05-28T07:49:57.3750251Z [command]/usr/bin/git config --global --add safe.directory /actions-runner/_work/ka0s/ka0s
+handle_failure	Post Checkout code	2025-05-28T07:49:57.3791647Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+handle_failure	Post Checkout code	2025-05-28T07:49:57.3832907Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+handle_failure	Post Checkout code	2025-05-28T07:49:57.4103817Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+handle_failure	Post Checkout code	2025-05-28T07:49:57.4128491Z http.https://github.com/.extraheader
+handle_failure	Post Checkout code	2025-05-28T07:49:57.4141407Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+handle_failure	Post Checkout code	2025-05-28T07:49:57.4179782Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+handle_failure	Complete job	﻿2025-05-28T07:49:57.4590273Z Cleaning up orphan processes
+end-workflow	Set up job	﻿2025-05-28T07:50:02.8041156Z Current runner version: '2.324.0'
+end-workflow	Set up job	2025-05-28T07:50:02.8047787Z Runner name: 'ka0s-ka0s-4'
+end-workflow	Set up job	2025-05-28T07:50:02.8048754Z Machine name: 'ef411525c24f'
+end-workflow	Set up job	2025-05-28T07:50:02.8051369Z ##[group]GITHUB_TOKEN Permissions
+end-workflow	Set up job	2025-05-28T07:50:02.8053605Z Contents: read
+end-workflow	Set up job	2025-05-28T07:50:02.8054145Z Metadata: read
+end-workflow	Set up job	2025-05-28T07:50:02.8054905Z Packages: read
+end-workflow	Set up job	2025-05-28T07:50:02.8055506Z ##[endgroup]
+end-workflow	Set up job	2025-05-28T07:50:02.8057765Z Secret source: Actions
+end-workflow	Set up job	2025-05-28T07:50:02.8058454Z Prepare workflow directory
+end-workflow	Set up job	2025-05-28T07:50:02.8669643Z Prepare all required actions
+end-workflow	Set up job	2025-05-28T07:50:02.8709249Z Getting action download info
+end-workflow	Set up job	2025-05-28T07:50:03.4355450Z Download action repository 'actions/checkout@v4' (SHA:11bd71901bbe5b1630ceea73d27597364c9af683)
+end-workflow	Set up job	2025-05-28T07:50:04.3014781Z Complete job name: end-workflow
+end-workflow	Checkout code	﻿2025-05-28T07:50:04.3481241Z ##[group]Run actions/checkout@v4
+end-workflow	Checkout code	2025-05-28T07:50:04.3482225Z with:
+end-workflow	Checkout code	2025-05-28T07:50:04.3482682Z   fetch-depth: 0
+end-workflow	Checkout code	2025-05-28T07:50:04.3483377Z   token: ***
+end-workflow	Checkout code	2025-05-28T07:50:04.3483858Z   repository: Ka0s-Klaus/ka0s
+end-workflow	Checkout code	2025-05-28T07:50:04.3484419Z   ssh-strict: true
+end-workflow	Checkout code	2025-05-28T07:50:04.3485042Z   ssh-user: git
+end-workflow	Checkout code	2025-05-28T07:50:04.3485481Z   persist-credentials: true
+end-workflow	Checkout code	2025-05-28T07:50:04.3485964Z   clean: true
+end-workflow	Checkout code	2025-05-28T07:50:04.3486399Z   sparse-checkout-cone-mode: true
+end-workflow	Checkout code	2025-05-28T07:50:04.3486939Z   fetch-tags: false
+end-workflow	Checkout code	2025-05-28T07:50:04.3487388Z   show-progress: true
+end-workflow	Checkout code	2025-05-28T07:50:04.3487829Z   lfs: false
+end-workflow	Checkout code	2025-05-28T07:50:04.3488234Z   submodules: false
+end-workflow	Checkout code	2025-05-28T07:50:04.3488692Z   set-safe-directory: true
+end-workflow	Checkout code	2025-05-28T07:50:04.3489421Z env:
+end-workflow	Checkout code	2025-05-28T07:50:04.3489842Z   KAOS_CODE: 15294565553
+end-workflow	Checkout code	2025-05-28T07:50:04.3490330Z   KAOS_EVENT_NAME: workflow_dispatch
+end-workflow	Checkout code	2025-05-28T07:50:04.3490861Z   KAOS_ACTION: 
+end-workflow	Checkout code	2025-05-28T07:50:04.3491287Z   KAOS_REF: refs/heads/main
+end-workflow	Checkout code	2025-05-28T07:50:04.3491811Z   KAOS_MODULE: [Ka0S] Deploy Web Structure
+end-workflow	Checkout code	2025-05-28T07:50:04.3492449Z   KAOS_JSON_RESUME: core/outputs/webs/
+end-workflow	Checkout code	2025-05-28T07:50:04.3493031Z   KAOS_WEB_STRUCTURE: core/results/webs/
+end-workflow	Checkout code	2025-05-28T07:50:04.3493593Z   KAOS_ACTOR: jh0ny2k2
+end-workflow	Checkout code	2025-05-28T07:50:04.3494125Z   KAOS_FINOPS_STRUCTURE: core/results/webs/finops/
+end-workflow	Checkout code	2025-05-28T07:50:04.3494959Z   KAOS_FINOPS_JSON_WEB: core/config/finops/config/webs.json
+end-workflow	Checkout code	2025-05-28T07:50:04.3495702Z   KAOS_FINOPS_JSON_DATA: core/config/finops/data
+end-workflow	Checkout code	2025-05-28T07:50:04.3496388Z   KAOS_FINOPS_TEMPLATE: core/config/finops/template/
+end-workflow	Checkout code	2025-05-28T07:50:04.3497049Z   KAOS_FINOPS: core/config/finops/
+end-workflow	Checkout code	2025-05-28T07:50:04.3497749Z   KAOS_FINOPS_RESULTS_SECTION: core/results/webs/finops/section
+end-workflow	Checkout code	2025-05-28T07:50:04.3498605Z   GH_TOKEN: ***
+end-workflow	Checkout code	2025-05-28T07:50:04.3499032Z ##[endgroup]
+end-workflow	Checkout code	2025-05-28T07:50:04.4696547Z Syncing repository: Ka0s-Klaus/ka0s
+end-workflow	Checkout code	2025-05-28T07:50:04.4698658Z ##[group]Getting Git version info
+end-workflow	Checkout code	2025-05-28T07:50:04.4699425Z Working directory is '/actions-runner/_work/ka0s/ka0s'
+end-workflow	Checkout code	2025-05-28T07:50:04.4700516Z [command]/usr/bin/git version
+end-workflow	Checkout code	2025-05-28T07:50:04.4701048Z git version 2.43.0
+end-workflow	Checkout code	2025-05-28T07:50:04.4720646Z ##[endgroup]
+end-workflow	Checkout code	2025-05-28T07:50:04.4733788Z Copying '/home/kaos/.gitconfig' to '/actions-runner/_work/_temp/adf97e9c-6dfa-4f0d-a537-dd7a527f0e7f/.gitconfig'
+end-workflow	Checkout code	2025-05-28T07:50:04.4750260Z Temporarily overriding HOME='/actions-runner/_work/_temp/adf97e9c-6dfa-4f0d-a537-dd7a527f0e7f' before making global git config changes
+end-workflow	Checkout code	2025-05-28T07:50:04.4752081Z Adding repository directory to the temporary git global config as a safe directory
+end-workflow	Checkout code	2025-05-28T07:50:04.4756743Z [command]/usr/bin/git config --global --add safe.directory /actions-runner/_work/ka0s/ka0s
+end-workflow	Checkout code	2025-05-28T07:50:04.4802141Z [command]/usr/bin/git config --local --get remote.origin.url
+end-workflow	Checkout code	2025-05-28T07:50:04.4825591Z https://github.com/Ka0s-Klaus/ka0s
+end-workflow	Checkout code	2025-05-28T07:50:04.4845917Z ##[group]Removing previously created refs, to avoid conflicts
+end-workflow	Checkout code	2025-05-28T07:50:04.4850046Z [command]/usr/bin/git rev-parse --symbolic-full-name --verify --quiet HEAD
+end-workflow	Checkout code	2025-05-28T07:50:04.4873936Z refs/heads/main
+end-workflow	Checkout code	2025-05-28T07:50:04.4884365Z [command]/usr/bin/git checkout --detach
+end-workflow	Checkout code	2025-05-28T07:50:04.5195285Z HEAD is now at c936d063 Merge branch 'main' of https://github.com/Ka0s-Klaus/ka0s
+end-workflow	Checkout code	2025-05-28T07:50:04.5243590Z [command]/usr/bin/git branch --delete --force main
+end-workflow	Checkout code	2025-05-28T07:50:04.5278812Z Deleted branch main (was c936d063).
+end-workflow	Checkout code	2025-05-28T07:50:04.5353926Z ##[endgroup]
+end-workflow	Checkout code	2025-05-28T07:50:04.5355403Z [command]/usr/bin/git submodule status
+end-workflow	Checkout code	2025-05-28T07:50:04.5615339Z ##[group]Cleaning the repository
+end-workflow	Checkout code	2025-05-28T07:50:04.5620827Z [command]/usr/bin/git clean -ffdx
+end-workflow	Checkout code	2025-05-28T07:50:04.5693479Z Removing core/results/webs/finops/section/
+end-workflow	Checkout code	2025-05-28T07:50:04.5704838Z [command]/usr/bin/git reset --hard HEAD
+end-workflow	Checkout code	2025-05-28T07:50:04.5999970Z HEAD is now at c936d063 Merge branch 'main' of https://github.com/Ka0s-Klaus/ka0s
+end-workflow	Checkout code	2025-05-28T07:50:04.6006918Z ##[endgroup]
+end-workflow	Checkout code	2025-05-28T07:50:04.6007787Z ##[group]Disabling automatic garbage collection
+end-workflow	Checkout code	2025-05-28T07:50:04.6012562Z [command]/usr/bin/git config --local gc.auto 0
+end-workflow	Checkout code	2025-05-28T07:50:04.6043917Z ##[endgroup]
+end-workflow	Checkout code	2025-05-28T07:50:04.6045147Z ##[group]Setting up auth
+end-workflow	Checkout code	2025-05-28T07:50:04.6061138Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+end-workflow	Checkout code	2025-05-28T07:50:04.6096008Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+end-workflow	Checkout code	2025-05-28T07:50:04.6354462Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+end-workflow	Checkout code	2025-05-28T07:50:04.6389727Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+end-workflow	Checkout code	2025-05-28T07:50:04.6651442Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+end-workflow	Checkout code	2025-05-28T07:50:04.6693407Z ##[endgroup]
+end-workflow	Checkout code	2025-05-28T07:50:04.6695098Z ##[group]Fetching the repository
+end-workflow	Checkout code	2025-05-28T07:50:04.6701873Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+end-workflow	Checkout code	2025-05-28T07:50:05.6697283Z From https://github.com/Ka0s-Klaus/ka0s
+end-workflow	Checkout code	2025-05-28T07:50:05.6699165Z    c936d063..a9e782b7  main       -> origin/main
+end-workflow	Checkout code	2025-05-28T07:50:05.6755275Z [command]/usr/bin/git branch --list --remote origin/main
+end-workflow	Checkout code	2025-05-28T07:50:05.6784605Z   origin/main
+end-workflow	Checkout code	2025-05-28T07:50:05.6806473Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+end-workflow	Checkout code	2025-05-28T07:50:05.6820790Z a9e782b7a8f7ae110bc1f6b149a2e5674c7a8120
+end-workflow	Checkout code	2025-05-28T07:50:05.6825083Z ##[endgroup]
+end-workflow	Checkout code	2025-05-28T07:50:05.6826594Z ##[group]Determining the checkout info
+end-workflow	Checkout code	2025-05-28T07:50:05.6828132Z ##[endgroup]
+end-workflow	Checkout code	2025-05-28T07:50:05.6832488Z [command]/usr/bin/git sparse-checkout disable
+end-workflow	Checkout code	2025-05-28T07:50:05.6915371Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+end-workflow	Checkout code	2025-05-28T07:50:05.6947178Z ##[group]Checking out the ref
+end-workflow	Checkout code	2025-05-28T07:50:05.6949672Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+end-workflow	Checkout code	2025-05-28T07:50:05.7483382Z Previous HEAD position was c936d063 Merge branch 'main' of https://github.com/Ka0s-Klaus/ka0s
+end-workflow	Checkout code	2025-05-28T07:50:05.7492720Z Switched to a new branch 'main'
+end-workflow	Checkout code	2025-05-28T07:50:05.7494038Z branch 'main' set up to track 'origin/main'.
+end-workflow	Checkout code	2025-05-28T07:50:05.7503247Z ##[endgroup]
+end-workflow	Checkout code	2025-05-28T07:50:05.7544438Z [command]/usr/bin/git log -1 --format=%H
+end-workflow	Checkout code	2025-05-28T07:50:05.7573686Z a9e782b7a8f7ae110bc1f6b149a2e5674c7a8120
+end-workflow	Finaliza el workflow	﻿2025-05-28T07:50:05.7825554Z ##[group]Run echo "End process"
+end-workflow	Finaliza el workflow	2025-05-28T07:50:05.7826824Z [36;1mecho "End process"[0m
+end-workflow	Finaliza el workflow	2025-05-28T07:50:05.7828163Z [36;1m# RNNUMBER=$(echo "refs/heads/main" | grep -o '[0-9]*')[0m
+end-workflow	Finaliza el workflow	2025-05-28T07:50:05.7829988Z [36;1m# gh issue comment $RNNUMBER --body "Se finaliza Ka0s 15294565553"[0m
+end-workflow	Finaliza el workflow	2025-05-28T07:50:05.7831645Z [36;1mecho "Se finaliza Ka0s 15294565553"[0m
+end-workflow	Finaliza el workflow	2025-05-28T07:50:05.7834068Z [36;1mgh workflow run inspector.yml --ref 'main' -f kaos-issue-id=$RNNUMBER -f kaos-workflow-id="15294565553" -f kaos-user-start=""[0m
+end-workflow	Finaliza el workflow	2025-05-28T07:50:05.7846181Z shell: /usr/bin/bash -e {0}
+end-workflow	Finaliza el workflow	2025-05-28T07:50:05.7847216Z env:
+end-workflow	Finaliza el workflow	2025-05-28T07:50:05.7848300Z   KAOS_CODE: 15294565553
+end-workflow	Finaliza el workflow	2025-05-28T07:50:05.7849329Z   KAOS_EVENT_NAME: workflow_dispatch
+end-workflow	Finaliza el workflow	2025-05-28T07:50:05.7850459Z   KAOS_ACTION: 
+end-workflow	Finaliza el workflow	2025-05-28T07:50:05.7851340Z   KAOS_REF: refs/heads/main
+end-workflow	Finaliza el workflow	2025-05-28T07:50:05.7852424Z   KAOS_MODULE: [Ka0S] Deploy Web Structure
+end-workflow	Finaliza el workflow	2025-05-28T07:50:05.7853669Z   KAOS_JSON_RESUME: core/outputs/webs/
+end-workflow	Finaliza el workflow	2025-05-28T07:50:05.7854907Z   KAOS_WEB_STRUCTURE: core/results/webs/
+end-workflow	Finaliza el workflow	2025-05-28T07:50:05.7856134Z   KAOS_ACTOR: jh0ny2k2
+end-workflow	Finaliza el workflow	2025-05-28T07:50:05.7857215Z   KAOS_FINOPS_STRUCTURE: core/results/webs/finops/
+end-workflow	Finaliza el workflow	2025-05-28T07:50:05.7858993Z   KAOS_FINOPS_JSON_WEB: core/config/finops/config/webs.json
+end-workflow	Finaliza el workflow	2025-05-28T07:50:05.7860504Z   KAOS_FINOPS_JSON_DATA: core/config/finops/data
+end-workflow	Finaliza el workflow	2025-05-28T07:50:05.7861922Z   KAOS_FINOPS_TEMPLATE: core/config/finops/template/
+end-workflow	Finaliza el workflow	2025-05-28T07:50:05.7863270Z   KAOS_FINOPS: core/config/finops/
+end-workflow	Finaliza el workflow	2025-05-28T07:50:05.7864823Z   KAOS_FINOPS_RESULTS_SECTION: core/results/webs/finops/section
+end-workflow	Finaliza el workflow	2025-05-28T07:50:05.7866760Z   GH_TOKEN: ***
+end-workflow	Finaliza el workflow	2025-05-28T07:50:05.7867644Z ##[endgroup]
+end-workflow	Finaliza el workflow	2025-05-28T07:50:05.7924637Z End process
+end-workflow	Finaliza el workflow	2025-05-28T07:50:05.7926130Z Se finaliza Ka0s 15294565553
+end-workflow	Post Checkout code	﻿2025-05-28T07:50:06.8484993Z Post job cleanup.
+end-workflow	Post Checkout code	2025-05-28T07:50:06.9483047Z [command]/usr/bin/git version
+end-workflow	Post Checkout code	2025-05-28T07:50:06.9521368Z git version 2.43.0
+end-workflow	Post Checkout code	2025-05-28T07:50:06.9566449Z Copying '/home/kaos/.gitconfig' to '/actions-runner/_work/_temp/a8dda205-9b57-4401-97b7-ec6a7e9d3b87/.gitconfig'
+end-workflow	Post Checkout code	2025-05-28T07:50:06.9576192Z Temporarily overriding HOME='/actions-runner/_work/_temp/a8dda205-9b57-4401-97b7-ec6a7e9d3b87' before making global git config changes
+end-workflow	Post Checkout code	2025-05-28T07:50:06.9577355Z Adding repository directory to the temporary git global config as a safe directory
+end-workflow	Post Checkout code	2025-05-28T07:50:06.9584016Z [command]/usr/bin/git config --global --add safe.directory /actions-runner/_work/ka0s/ka0s
+end-workflow	Post Checkout code	2025-05-28T07:50:06.9628479Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+end-workflow	Post Checkout code	2025-05-28T07:50:06.9671604Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+end-workflow	Post Checkout code	2025-05-28T07:50:06.9932341Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+end-workflow	Post Checkout code	2025-05-28T07:50:06.9957503Z http.https://github.com/.extraheader
+end-workflow	Post Checkout code	2025-05-28T07:50:06.9970745Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+end-workflow	Post Checkout code	2025-05-28T07:50:07.0005782Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+end-workflow	Complete job	﻿2025-05-28T07:50:07.0394719Z Cleaning up orphan processes
