@@ -38,10 +38,15 @@ try:
             log['databases_created'] += 1
         
         # Procesar extensiones de archivos
-        extensions = {os.path.splitext(f)[1][1:] for f in files if os.path.isfile(os.path.join(root, f))}
+        # Crear DB (eliminar comando inválido)
+        # Eliminar esta línea: client[db_name].command('create')
+        
+        # Procesar extensiones como strings
+        extensions = {os.path.splitext(f)[1][1:] or 'no_extension' for f in files if os.path.isfile(os.path.join(root, f))}
         
         for ext in extensions:
-            collection = client[db_name][ext]
+            collection_name = f'col_{ext}'  # Prefijo para asegurar string
+            collection = client[db_name][collection_name]
             
             # Crear colección si no existe
             if ext not in client[db_name].list_collection_names():
