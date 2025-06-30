@@ -42,7 +42,7 @@ try:
         # Eliminar esta línea: client[db_name].command('create')
         
         # Procesar extensiones como strings
-        extensions = {os.path.splitext(f)[1][1:] or 'no_extension' for f in files if os.path.isfile(os.path.join(root, f))}
+        extensions = {str(os.path.splitext(f)[1][1:]) or 'no_extension' for f in files if os.path.isfile(os.path.join(root, f))}
         
         for ext in extensions:
             collection_name = f'col_{ext}'  # Prefijo para asegurar string
