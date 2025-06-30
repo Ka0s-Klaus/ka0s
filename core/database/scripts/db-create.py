@@ -37,7 +37,9 @@ try:
         if db_name not in client.list_database_names():
             print(f"[DEBUG] Si no existe la creamos: {db_name}")
             client[db_name].command('create')
+            print(f"[DEBUG] DB Creada: {db_name}")
             log['databases_created'] += 1
+            print(f"[DEBUG] Logs creados: {db_name}")
         
         # Procesar extensiones de archivos
         # Crear DB (eliminar comando inválido)
