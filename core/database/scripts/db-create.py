@@ -27,6 +27,7 @@ try:
 
     # Recorrer directorio audit
     for root, dirs, files in os.walk(scan_root):
+        print(f"[DEBUG] Procesamos el directorio: {scan_root}")
         if root == scan_root:  # Saltar el directorio raíz
             continue
             
