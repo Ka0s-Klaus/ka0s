@@ -43,12 +43,18 @@ try:
         
         # Procesar extensiones como strings
         extensions = {str(os.path.splitext(f)[1][1:]) or 'no_extension' for f in files if os.path.isfile(os.path.join(root, f))}
+        print(f"[DEBUG] Extensiones procesadas: {extensions}")
         
         for ext in extensions:
-            collection_name = f'col_{ext}'  # Aquí ext ya es string
+            print(f"[DEBUG] Tipo de ext: {type(ext)}, Valor: {ext}")
+            collection_name = f'col_{ext}'
+            print(f"[DEBUG] Creando colección: {collection_name}")
             collection = client[db_name][collection_name]
             
+            # Crear colección si no existe
+            print(f"[DEBUG] Verificando existencia de colección para ext: {ext}")
             if ext not in client[db_name].list_collection_names():
+                print(f"[DEBUG] Creando nueva colección: {collection_name}")
                 collection.insert_one({'init': True})
                 collection.delete_many({})
                 log['collections_created'] += 1
