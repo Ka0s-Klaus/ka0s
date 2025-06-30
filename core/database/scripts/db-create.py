@@ -36,8 +36,10 @@ try:
         # Crear DB si no existe
         if db_name not in client.list_database_names():
             print(f"[DEBUG] Si no existe la creamos: {db_name}")
-            client[db_name].command('create')
+            temp_col = client[db_name]['_init_temp']
             print(f"[DEBUG] DB Creada: {db_name}")
+            temp_col.insert_one({'__init__': True})
+            temp_col.drop()
             log['databases_created'] += 1
             print(f"[DEBUG] Logs creados: {db_name}")
         
