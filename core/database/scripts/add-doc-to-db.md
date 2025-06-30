@@ -1,12 +1,14 @@
 # add-doc-to-db.py - Cargador de Documentos MongoDB
 
 ## 🔍 Propósito
+
 Carga masiva de archivos en MongoDB organizados por:
 
 - Bases de datos: Directorios del filesystem
 - Colecciones: Extensiones de archivo
 
 ## 🛠️ Requisitos Técnicos
+
 ```python
 # Versiones compatibles
 Python >= 3.8
@@ -36,6 +38,7 @@ python3 add-doc-to-db.py
 ```
 
 ## 🛑 Códigos de Error
+
 | Código | Significado | Acción Recomendada |
 |--------|-------------|---------------------|
 | 1 | Variable faltante | Verificar variables de entorno |
@@ -44,6 +47,7 @@ python3 add-doc-to-db.py
 | 4 | Error genérico | Revisar stacktrace |
 
 ## 🔄 Integración con GitHub Actions
+
 ```yaml
 - name: Cargar Documentos
   env:
@@ -53,14 +57,12 @@ python3 add-doc-to-db.py
 ```
 
 ## 🔒 Consideraciones de Seguridad
+
 - 🔐 Acceso de solo escritura para el usuario
 - 📁 Validar rutas de escaneo
 - 🧮 Usar hashes MD5 para evitar duplicados
 
 ## 📚 Recursos
+
 - [MongoDB Bulk Writes](https://www.mongodb.com/docs/manual/core/bulk-write-operations/)
 - [PyMongo Indexing](https://pymongo.readthedocs.io/en/stable/tutorial.html#indexing)
-```
-
-Se mantuvo la estructura de `db-check.md` adaptando contenido al propósito específico del script.
-        
