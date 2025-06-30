@@ -66,5 +66,3 @@ python3 add-doc-to-db.py
 
 - [MongoDB Bulk Writes](https://www.mongodb.com/docs/manual/core/bulk-write-operations/)
 - [PyMongo Indexing](https://pymongo.readthedocs.io/en/stable/tutorial.html#indexing)
-
-Se mantuvo la estructura de `db-check.md` adaptando contenido al propósito específico del script.
