@@ -45,10 +45,9 @@ try:
         extensions = {str(os.path.splitext(f)[1][1:]) or 'no_extension' for f in files if os.path.isfile(os.path.join(root, f))}
         
         for ext in extensions:
-            collection_name = f'col_{ext}'  # Prefijo para asegurar string
+            collection_name = f'col_{ext}'  # Aquí ext ya es string
             collection = client[db_name][collection_name]
             
-            # Crear colección si no existe
             if ext not in client[db_name].list_collection_names():
                 collection.insert_one({'init': True})
                 collection.delete_many({})
