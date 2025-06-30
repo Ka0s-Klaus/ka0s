@@ -2,6 +2,7 @@
 
 ## 🔍 Propósito
 Carga masiva de archivos en MongoDB organizados por:
+
 - Bases de datos: Directorios del filesystem
 - Colecciones: Extensiones de archivo
 
