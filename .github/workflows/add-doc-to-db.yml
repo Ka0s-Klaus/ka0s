@@ -1,9 +1,10 @@
 name: Ka0s Autom add docs to MongoDB
 
-on: 
+on:
+  workflow_dispatch:
   push:
     paths:
-      - 'audit/*'
+      - 'audit/**'
 
 env:
   PYTHON_VERSION: '3.9'
@@ -44,12 +45,12 @@ jobs:
         run: |
          python ${{ env.MONGO_SCRIPT_CREATE }}
          echo "Uploading files to MongoDB update repository ..."
-          git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
-          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
-          git pull main
-          git add ${{ env.REPORT_SCAN }}
-          git commit -m "[Ka0S] Uploading files to MongoDB update repository ..."
-          git push origin main
+         git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
+         git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
+         git pull ${{ github.ref }}
+         git add ${{ env.REPORT_SCAN }}
+         git commit -m "[Ka0S] Uploading files to MongoDB update repository ..."
+         git push origin ${{ github.ref }}
 
       - name: Upload report
         uses: actions/upload-artifact@v4
