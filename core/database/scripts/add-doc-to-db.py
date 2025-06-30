@@ -95,6 +95,8 @@ try:
         if os.path.exists(scan_root):
             for root, _, files in os.walk(scan_root):
                 for file in files:
+                    if os.path.basename(file) == 'README.md':
+                        continue  # Saltar README.md
                     file_path = os.path.join(root, file)
                     os.remove(file_path)
             print(f"[DEBUG] Archivos eliminados en: {scan_root}")
