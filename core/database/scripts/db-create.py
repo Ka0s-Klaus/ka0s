@@ -32,9 +32,10 @@ try:
             continue
             
         db_name = os.path.basename(root)
-        
+        print(f"[DEBUG] Comprobamos el nombre DB: {db_name}")
         # Crear DB si no existe
         if db_name not in client.list_database_names():
+            print(f"[DEBUG] Si no existe la creamos: {db_name}")
             client[db_name].command('create')
             log['databases_created'] += 1
         
