@@ -90,6 +90,17 @@ try:
     with open(os.path.join(report_path, report_filename), 'w') as f:
         json.dump(log, f, indent=2)
     
+    # Eliminar solo archivos del directorio
+    try:
+        if os.path.exists(scan_root):
+            for root, _, files in os.walk(scan_root):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    os.remove(file_path)
+            print(f"[DEBUG] Archivos eliminados en: {scan_root}")
+    except Exception as e:
+        log['errors'].append(f"Error eliminando archivos: {str(e)}")
+    
     print(f"✅ Proceso completado: {log['documents_inserted']} documentos insertados")
     exit(0)
 
