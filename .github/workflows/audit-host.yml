@@ -38,7 +38,7 @@ jobs:
 
   handle-success:
     runs-on: 
-      group: ka0s
+      group: test
     needs: [end-execution]
     if: ${{ success() }}
     steps: 
@@ -50,7 +50,7 @@ jobs:
           
   handle_failure:
       runs-on: 
-        group: ka0s
+        group: test
       needs: [job-repo, job-audit]
       if: ${{ failure() }} 
       steps: 
@@ -61,7 +61,7 @@ jobs:
             
   end-workflow:
     runs-on: 
-      group: ka0s
+      group: test
     needs: [job-repo, job-audit, handle-success]
     if: ${{ always() }}
     steps:
