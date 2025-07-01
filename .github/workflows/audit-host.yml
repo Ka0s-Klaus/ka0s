@@ -1,0 +1,71 @@
+name: Ka0s ka0s Execution
+on:
+  push:
+    branches:
+      - main
+permissions:
+  contents: write
+  actions: write
+  issues: write
+  pull-requests: write
+env:
+  KAOS_MODULE: "[Ka0S] CORE IaC"
+  KAOS_PATH_RESUME: "audit/hosts/"
+  KAOS_FILE_HOST: ${{ github.run_id }}
+jobs:
+  job-repo:
+    runs-on: 
+      group: test
+    steps:
+      - id: repo
+        name: Checkout repository
+        if: ${{ success() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+
+  job-audit:
+    runs-on: 
+      group: test
+    needs: [job-repo]
+    steps:
+      - id: execute audit
+        name: Execute audit
+        if: ${{ success() }}
+        run: |
+            ssh -i ${{ secrets.KAOS_CORE_1_HOST_PRIV }} ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_HOSTPORT_1 }} "sudo lynis audit system --pentest --forensics"
+  handle-success:
+    runs-on: 
+      group: ka0s
+    needs: [end-execution]
+    if: ${{ success() }}
+    steps: 
+      - id: handle-success-execution
+        run: |
+          # Si todo ha iso correctamente pasamos la tarjeta a done
+          # Añadimos a cada paso el mensaje de éxito incluido en la issue original
+          echo "${{ env.KAOS_MODULE }} Success in runid ${{ github.run_id }} initiated."
+          
+  handle_failure:
+      runs-on: 
+        group: ka0s
+      needs: [job-repo, job-audit]
+      if: ${{ failure() }} 
+      steps: 
+        - id: check-execution
+          run: |
+            # si ha existido un error dejamos la tarjeta In Review
+            echo "Error detected in ${{ env.KAOS_MODULE }}, creating issue..."
+            
+  end-workflow:
+    runs-on: 
+      group: ka0s
+    needs: [job-repo, job-audit, handle-success]
+    if: ${{ always() }}
+    steps:
+      - id: end-process
+        name: Finaliza el workflow
+        run: |
+          echo "End process"
+          gh workflow run inspector.yaml --ref ${{ github.ref }} --f kaos-workflow-id="${{ env.KAOS_CODE }}" 
