@@ -13,7 +13,7 @@ env:
   KAOS_PATH_RESUME: "audit/hosts/"
   KAOS_FILE_HOST: ${{ github.run_id }}
   KAOS_CODE: ${{ github.run_id }}
-  
+
 jobs:
   job-core:
     runs-on: 
@@ -86,4 +86,4 @@ jobs:
         name: Finaliza el workflow
         run: |
           echo "End process"
-          gh workflow run inspector.yaml --ref ${{ github.ref }} -f kaos-workflow-id="${{ env.KAOS_CODE }}"
+          gh workflow run inspector.yml --ref ${{ github.ref }} -f kaos-workflow-id="${{ env.KAOS_CODE }}"
