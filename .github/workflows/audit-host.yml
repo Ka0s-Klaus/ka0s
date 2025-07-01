@@ -76,6 +76,8 @@ jobs:
       group: test
     needs: [job-core, job-audit, handle-success, handle_failure]
     if: ${{ always() }}
+    env:
+      GH_TOKEN: ${{ secrets.KAOS_ACTIONS_TOKEN }}
     steps:
       - id: end-process
         name: Finaliza el workflow
