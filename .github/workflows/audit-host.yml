@@ -1,8 +1,7 @@
-name: Ka0s ka0s Execution
+name: Ka0s C0re Host Audit logs
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+
 permissions:
   contents: write
   actions: write
@@ -34,7 +33,9 @@ jobs:
         name: Execute audit
         if: ${{ success() }}
         run: |
-            ssh -i ${{ secrets.KAOS_CORE_1_HOST_PRIV }} ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_HOSTPORT_1 }} "sudo lynis audit system --pentest --forensics"
+            ssh -i ${{ secrets.KAOS_CORE_1_HOST_PRIV }} ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_HOSTPORT_1 }} "sudo lynis audit system --pentest --forensics" | tee ${{ env.KAOS_PATH_RESUME}}${{ env.KAOS_FILE_HOST}}.txt
+            ssh -i ${{ secrets.KAOS_CORE_1_HOST_PRIV }} ${{ secrets.KAOS_USER_CONNECT }}@${{ secrets.KAOS_HOST_1}} -p ${{ secrets.KAOS_HOSTPORT_1 }} "sudo cat /var/log/lynis.log" | tee ${{ env.KAOS_PATH_RESUME}}${{ env.KAOS_FILE_HOST}}.log
+
   handle-success:
     runs-on: 
       group: ka0s
