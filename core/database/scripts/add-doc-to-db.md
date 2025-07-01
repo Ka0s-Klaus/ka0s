@@ -16,6 +16,9 @@ PyMongo >= 3.12
 
 ## 🚀 Ejecución Básica
 ```bash
+export REPORT_FILENAME_DB='informe.json'
+export REPORT_PATH='./logs'
+export REPORT_SCAN='./audit'
 export MONGO_SUPERUSER_CONNECTION='mongodb+srv://user:pass@cluster.example.com/admin?tls=true'
 export REPORT_SCAN='/ruta/directorio'
 python3 add-doc-to-db.py
@@ -26,6 +29,7 @@ python3 add-doc-to-db.py
 | Carga exitosa | `python3 add-doc-to-db.py` | `✅ Proceso completado: X documentos insertados` |
 | Directorio vacío | `python3 add-doc-to-db.py` | `❌ Error: No se encontraron archivos` |
 | Permisos insuficientes | `python3 add-doc-to-db.py` | `❌ Error de operación: not authorized` |
+| Eliminación de archivos | `python3 add-doc-to-db.py` | `[DEBUG] Archivos eliminados en: ...` |
 
 ## 📊 Métricas Recopiladas
 ```json
@@ -44,7 +48,7 @@ python3 add-doc-to-db.py
 | 1 | Variable faltante | Verificar variables de entorno |
 | 2 | Error conexión | Chequear URI MongoDB |
 | 3 | Error operación | Verificar permisos |
-| 4 | Error genérico | Revisar stacktrace |
+| 4 | Error inesperado | Verificar logs detallados |
 
 ## 🔄 Integración con GitHub Actions
 
@@ -66,3 +70,8 @@ python3 add-doc-to-db.py
 
 - [MongoDB Bulk Writes](https://www.mongodb.com/docs/manual/core/bulk-write-operations/)
 - [PyMongo Indexing](https://pymongo.readthedocs.io/en/stable/tutorial.html#indexing)
+
+
+## ⚠️ Excepciones
+- Los archivos README.md en cualquier directorio **no serán eliminados**
+- Los archivos con extensión .md se almacenarán en la colección `col_md`

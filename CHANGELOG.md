@@ -3516,3 +3516,78 @@
   - core/database/scripts/add-doc-to-db.py
   - version.txt
 ---------------------------------
+## Version 0.0.179
+- **Branch**: refs/pull/1264/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Tue Jul  1 06:09:29 UTC 2025
+- **Message**: H1224 new module mongodb
+- **Files Changed**:
+  - .github/workflows/add-doc-to-db.yml
+  - .github/workflows/mdlint.yml
+  - audit/kaos/15991023569.json
+  - audit/kaos/15991223485.json
+  - version.txt
+---------------------------------
+## Version 0.1.0
+- **Branch**: refs/pull/1265/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Tue Jul  1 09:02:08 UTC 2025
+- **Message**: F1224 new module mongodb
+- **Files Changed**:
+  - .github/workflows/mdlint.yml
+  - audit/kaos/15991458476.json
+  - audit/kaos/15991567297.json
+  - audit/kaos/15991596131.json
+  - core/database/scripts/add-doc-to-db.md
+  - core/database/scripts/add-doc-to-db.py
+  - secops/wazuh/README.md
+  - version.txt
+---------------------------------
+## Version 0.1.1
+- **Branch**: refs/pull/1266/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Tue Jul  1 10:42:16 UTC 2025
+- **Message**: H86 modulo wazuh
+- **Files Changed**:
+  - audit/kaos/15994723535.json
+  - audit/kaos/15994776545.json
+  - audit/kaos/15996892034.json
+  - core/database/scripts/add-doc-to-db.py
+  - secops/README.md
+  - secops/wazuh-single-node/README.md
+  - secops/wazuh-single-node/config/certs.yml
+  - secops/wazuh-single-node/config/wazuh_cluster/wazuh_manager.conf
+  - secops/wazuh-single-node/config/wazuh_dashboard/opensearch_dashboards.yml
+  - secops/wazuh-single-node/config/wazuh_dashboard/wazuh.yml
+  - secops/wazuh-single-node/config/wazuh_indexer/internal_users.yml
+  - secops/wazuh-single-node/config/wazuh_indexer/wazuh.indexer.yml
+  - secops/wazuh-single-node/docker-compose.yml
+  - secops/wazuh-single-node/generate-indexer-certs.yml
+  - version.txt
+---------------------------------
+## Version 0.2.0
+- **Branch**: refs/pull/1267/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Tue Jul  1 12:02:08 UTC 2025
+- **Message**: F1224 new module mongodb
+- **Files Changed**:
+  - .github/workflows/status-db.yml
+  - audit/kaos/15998517763.json
+  - core/database/scripts/mongodb_status_report.py
+  - version.txt
+---------------------------------
+## Version 0.3.0
+- **Branch**: refs/pull/1268/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Tue Jul  1 12:42:24 UTC 2025
+- **Message**: F1224 new module mongodb
+- **Files Changed**:
+  - audit/kaos/15999093539.json
+  - core/database/scripts/mongodb_status_report.md
+  - version.txt
+---------------------------------

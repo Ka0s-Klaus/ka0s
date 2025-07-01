@@ -43,10 +43,7 @@ try:
             log['databases_created'] += 1
             print(f"[DEBUG] Logs creados: {db_name}")
         
-        # Procesar extensiones de archivos
-        # Crear DB (eliminar comando inválido)
-        # Eliminar esta línea: client[db_name].command('create')
-        
+        # Eliminar esta sección que borra colecciones existentes
         # Procesar extensiones como strings
         extensions = {str(os.path.splitext(f)[1][1:]) or 'no_extension' for f in files if os.path.isfile(os.path.join(root, f))}
         print(f"[DEBUG] Extensiones procesadas: {extensions}")
@@ -57,15 +54,8 @@ try:
             print(f"[DEBUG] Creando colección: {collection_name}")
             collection = client[db_name][collection_name]
             
-            # Crear colección si no existe
-            print(f"[DEBUG] Verificando existencia de colección para ext: {ext}")
-            if ext not in client[db_name].list_collection_names():
-                print(f"[DEBUG] Creando nueva colección: {collection_name}")
-                collection.insert_one({'init': True})
-                collection.delete_many({})
-                log['collections_created'] += 1
-            
-            # Insertar documentos
+            # Eliminar esta parte que borra documentos existentes
+            # Solo insertar documentos nuevos basados en hash
             for file in [f for f in files if f.endswith(f'.{ext}')]:
                 file_path = os.path.join(root, file)
                 try:
@@ -118,6 +108,9 @@ except OperationFailure as e:
 except Exception as e:
     print(f"❌ Error inesperado: {str(e)}")
     exit(4)
+except ValueError as e:
+    print(f"❌ {str(e)}")
+    exit(5)
 finally:
     if 'client' in locals():
         client.close()
