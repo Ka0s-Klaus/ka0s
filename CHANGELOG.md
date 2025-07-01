@@ -3568,3 +3568,15 @@
   - secops/wazuh-single-node/generate-indexer-certs.yml
   - version.txt
 ---------------------------------
+## Version 0.2.0
+- **Branch**: refs/pull/1267/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Tue Jul  1 12:02:08 UTC 2025
+- **Message**: F1224 new module mongodb
+- **Files Changed**:
+  - .github/workflows/status-db.yml
+  - audit/kaos/15998517763.json
+  - core/database/scripts/mongodb_status_report.py
+  - version.txt
+---------------------------------
