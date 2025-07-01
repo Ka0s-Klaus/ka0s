@@ -57,10 +57,10 @@ jobs:
         run: |
             # Realizamos el check del documento md 
                 # Run markdownlint with the specified files and ignore rules
-                markdownlint-cli2 ${{ github.event.inputs.kaos-files }} --config ${{ env.KAOS_MD_CONFIG }} > ${{ env.KAOS_PATH_RESUME }}mdlint-results-${{ github.run_id }}.txt 2>&1 || true
+                markdownlint-cli2 ${{ github.event.inputs.kaos-files }} --config ${{ env.KAOS_MD_CONFIG }} > ${{ env.KAOS_PATH_RESUME }}${{ github.run_id }}.txt 2>&1 || true
                 # Check if exist errors in file
                 # Abre el fichero en modo lectura y lee todas las líneas
-                lines=$(cat ${{ env.KAOS_PATH_RESUME }}mdlint-results-${{ github.run_id }}.txt)
+                lines=$(cat ${{ env.KAOS_PATH_RESUME }}${{ github.run_id }}.txt)
                 # Inicializa la variable summary_value
                 summary_value=""
                 # Busca la línea que contiene "Summary:"
@@ -73,15 +73,15 @@ jobs:
                 done <<< "$lines"
                 # Comprueba si el valor es cero
                 if [ "$summary_value" == "0" ]; then
-                  echo "File ${{ env.KAOS_PATH_RESUME }}mdlint-results-${{ github.run_id }}.txt is empty and $file is content correct"
+                  echo "File ${{ env.KAOS_PATH_RESUME }}${{ github.run_id }}.txt is empty and $file is content correct"
                   KAOS_ISSUE_BODY="The ${{ env.KAOS_MODULE }} process (${{ github.event.inputs.kaos-origin }}) launch the check (${{ github.run_id }}) over file (${{ github.event.inputs.kaos-files }}) and its result has been SUCCESS. Please MERGE"
                   gh issue comment ${{ github.event.inputs.kaos-issue-id }} -b "$KAOS_ISSUE_BODY"
-                  gh issue comment  ${{ github.event.inputs.kaos-issue-id }} -F ${{ env.KAOS_PATH_RESUME }}mdlint-results-${{ github.run_id }}.txt
+                  gh issue comment  ${{ github.event.inputs.kaos-issue-id }} -F ${{ env.KAOS_PATH_RESUME }}${{ github.run_id }}.txt
                 else
-                  echo "File ${{ env.KAOS_PATH_RESUME }}mdlint-results-${{ github.run_id }}.txt is not empty and $file is content not correct and write commit info"
+                  echo "File ${{ env.KAOS_PATH_RESUME }}${{ github.run_id }}.txt is not empty and $file is content not correct and write commit info"
                   KAOS_ISSUE_BODY="The ${{ env.KAOS_MODULE }} process (${{ github.event.inputs.kaos-origin }}) launch the check (${{ github.run_id }}) over file (${{ github.event.inputs.kaos-files }}) and its result has been FAILED, please check and solved it"
                   gh issue comment ${{ github.event.inputs.kaos-issue-id }} -b "$KAOS_ISSUE_BODY"
-                  gh issue comment  ${{ github.event.inputs.kaos-issue-id }} -F ${{ env.KAOS_PATH_RESUME }}mdlint-results-${{ github.run_id }}.txt
+                  gh issue comment  ${{ github.event.inputs.kaos-issue-id }} -F ${{ env.KAOS_PATH_RESUME }}${{ github.run_id }}.txt
                 fi
   handle-success:
     runs-on:
@@ -101,6 +101,13 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
         run: |
+          echo "Uploading files to the repository..."
+          git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
+          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
+          git pull
+          git add ${{ env.KAOS_OUTPUT_EXECUTION }}
+          git commit -m "[Ka0S] Inspector uploading resume execution files to the repository..."
+          git push origin ${{ github.ref }}
           # Si todo ha ido correcto añadimos el contenido del fichero 
           RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
           gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
