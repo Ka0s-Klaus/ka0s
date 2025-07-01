@@ -39,7 +39,7 @@ jobs:
           key: ${{ secrets.KAOS_CORE_1_HOST_PRIV }}
           port: ${{ secrets.KAOS_PORT_1 }}
           script: |
-            sudo -S lynis audit system --pentest --forensics
+            sudo -S ${{ secrets.KAOS_SSH_PASS }} lynis audit system --pentest --forensics
         
   handle-success:
     runs-on: 
