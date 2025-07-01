@@ -182,3 +182,4 @@
 - **Version**: 0.1.1 - **Description**: H86 modulo wazuh
 - **Version**: 0.2.0 - **Description**: F1224 new module mongodb
 - **Version**: 0.3.0 - **Description**: F1224 new module mongodb
+- **Version**: 0.3.1 - **Description**: H1224 new module mongodb
