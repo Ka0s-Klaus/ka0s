@@ -39,7 +39,9 @@ jobs:
           key: ${{ secrets.KAOS_CORE_1_HOST_PRIV }}
           port: ${{ secrets.KAOS_PORT_1 }}
           script: |
-            echo "${{ secrets.KAOS_SSH_PASS }}" | sudo -S lynis audit system --pentest --forensics
+            echo "${{ secrets.KAOS_SSH_PASS }}" | sudo -S lynis audit system --pentest --forensics > /tmp/lynis-output.txt
+            cat /tmp/lynis-output.txt
+            cp /tmp/lynis-output.txt ${{ env.KAOS_PATH_RESUME }}${{ env.KAOS_FILE_HOST }}.log
         
   handle-success:
     runs-on: 
@@ -49,9 +51,16 @@ jobs:
     steps: 
       - id: handle-success-execution
         run: |
-          # Si todo ha iso correctamente pasamos la tarjeta a done
-          # Añadimos a cada paso el mensaje de éxito incluido en la issue original
+          # Subimos el fichero de auditoria
           echo "${{ env.KAOS_MODULE }} Success in runid ${{ github.run_id }} initiated."
+          echo "Uploading files to Audit update repository ..."
+          git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
+          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
+          git add ${{ env.KAOS_PATH_RESUME }}
+          if ! git diff --staged --quiet; then
+             git commit -m "Ka0S] Uploading files to udit update repository ..."
+             git push origin ${{ github.ref }}
+          fi
           
   handle_failure:
       runs-on: 
@@ -74,4 +83,4 @@ jobs:
         name: Finaliza el workflow
         run: |
           echo "End process"
-          gh workflow run inspector.yaml --ref ${{ github.ref }} -f kaos-workflow-id="${{ env.KAOS_CODE }}" 
+          gh workflow run inspector.yaml --ref ${{ github.ref }} -f kaos-workflow-id="${{ env.KAOS_CODE }}"
