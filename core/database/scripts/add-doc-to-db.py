@@ -118,6 +118,9 @@ except OperationFailure as e:
 except Exception as e:
     print(f"❌ Error inesperado: {str(e)}")
     exit(4)
+except ValueError as e:
+    print(f"❌ {str(e)}")
+    exit(5)
 finally:
     if 'client' in locals():
         client.close()
