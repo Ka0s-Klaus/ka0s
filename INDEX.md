@@ -184,3 +184,4 @@
 - **Version**: 0.3.0 - **Description**: F1224 new module mongodb
 - **Version**: 0.3.1 - **Description**: H1224 new module mongodb
 - **Version**: 0.3.2 - **Description**: H1272 new module audit
+- **Version**: 0.3.3 - **Description**: H1272 new module audit

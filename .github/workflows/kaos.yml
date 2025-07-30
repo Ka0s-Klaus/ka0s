@@ -131,9 +131,8 @@ jobs:
           # Delete the backup file
           rm "${{ env.KAOS_JSON }}.bak"
 
-          # Store the file path for later use
-          INVOLVED=${{ env.KAOS_PATH_RESUME }}files-in-commit-${{ github.run_id }}.txt
-          echo "INVOLVED=$INVOLVED" >> $GITHUB_ENV
+          # Stored files implicated in the commit
+          git diff --name-only ${{ github.event.before }} ${{ github.sha }} > ${{ env.KAOS_PATH_RESUME }}${{ env.KAOS_CODE }}-files-in-commit.txt
 
       - id: upload-files
         name: Upload Files
@@ -241,7 +240,7 @@ jobs:
         run: |
           # Si todo ha ido correcto añadimos el contenido del fichero 
           RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
-          gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data_${{ env.KAOS_CODE }}.log"
+          gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado de la ejecución se guardará en MongoDB"
   handle_failure:
     runs-on:
       group: ka0s
@@ -262,7 +261,7 @@ jobs:
         run: |
           echo "Error detected in process"
           RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
-          gh issue comment $RNNUMBER --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data_${{ env.KAOS_CODE }}.log"
+          gh issue comment $RNNUMBER --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}."
   end-workflow:
     runs-on:
       group: ka0s
