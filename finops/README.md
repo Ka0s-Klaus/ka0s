@@ -1,7 +1,6 @@
 # Module FinOps
 Un Portfolio de Producto que Transforma la Gestión de Costes en la Nube
 
-
 ## Introducción: El Despertar de una Nueva Era
 
 En un mundo donde la nube se ha convertido en el corazón pulsante de la innovación

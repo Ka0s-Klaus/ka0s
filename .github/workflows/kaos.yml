@@ -130,7 +130,7 @@ jobs:
           fi
 
           # Store the file path for later use
-          INVOLVED=${{ env.KAOS_PATH_RESUME }}files-in-commit-$KAOS_CODE_FILES.txt
+          INVOLVED=${{ env.KAOS_PATH_RESUME }}files-in-commit-${{ github.run_id }}.txt
           echo "INVOLVED=$INVOLVED" >> $GITHUB_ENV
 
       - id: upload-files
@@ -141,6 +141,7 @@ jobs:
           git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
           git pull
           git add ${{ env.KAOS_JSON }}
+          git add ${{ env.KAOS_PATH_RESUME }}*
           git commit -m "[Ka0S] Uploading resume execution files to the repository..."
           git push origin ${{ github.ref }} 
 
