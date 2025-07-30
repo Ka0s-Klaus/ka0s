@@ -3602,3 +3602,14 @@
   - audit/kaos/16001729249.json
   - version.txt
 ---------------------------------
+## Version 0.3.2
+- **Branch**: refs/pull/1273/merge
+- **Commit**: Eliminamos bak files
+- **Author**: Ka0s
+- **Date**: Wed Jul 30 11:36:10 UTC 2025
+- **Message**: H1272 new module audit
+- **Files Changed**:
+  - .github/workflows/kaos.yml
+  - audit/README.md
+  - version.txt
+---------------------------------
