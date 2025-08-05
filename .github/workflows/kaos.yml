@@ -49,7 +49,7 @@ jobs:
         id: crear_json
         run: |
           # Create JSON structure using proper bash syntax
-          echo "$PR_INFO" | jq '.' > ${{ env.KAOS_PATH_RESUME }}${{ env.KAOS_CODE }}-${TIMESTAMP}.json
+          echo "$PR_INFO" | jq '.' > ${{ env.KAOS_PATH_RESUME }}${{ env.KAOS_CODE }}.json
 
           # Stored files implicated in the commit
           git diff --name-only ${{ github.event.before }} ${{ github.sha }} > ${{ env.KAOS_PATH_RESUME }}${{ env.KAOS_CODE }}-files-in-commit.txt
@@ -57,10 +57,11 @@ jobs:
       - id: upload-files
         name: Upload Files
         run: |
-          echo "Uploading files to the repository..."
+          echo "Downloading files to the repository..."
           git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
           git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
           git pull
+          echo "Uploading files to the repository..."
           git add ${{ env.KAOS_PATH_RESUME }}*
           git commit -m "[Ka0S] Uploading resume execution files to the repository..."
           git push origin ${{ github.ref }} 
