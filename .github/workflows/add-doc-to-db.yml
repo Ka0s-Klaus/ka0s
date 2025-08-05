@@ -47,9 +47,11 @@ jobs:
       - name: Create database MongoDB
         run: |
          python ${{ env.MONGO_SCRIPT_CREATE }}
-         echo "Uploading files to MongoDB update repository ..."
+         echo "Downloading files to MongoDB update repository ..."
          git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
+         git pull
+         echo "Uploading files to MongoDB update repository ..."
          git add ${{ env.REPORT_SCAN }}
          if ! git diff --staged --quiet; then
             git commit -m "Ka0S] Uploading files to MongoDB update repository ..."
