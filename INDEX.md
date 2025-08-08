@@ -186,3 +186,4 @@
 - **Version**: 0.3.2 - **Description**: H1272 new module audit
 - **Version**: 0.3.3 - **Description**: H1272 new module audit
 - **Version**: 0.3.4 - **Description**: H1272 new module audit
+- **Version**: 0.3.5 - **Description**: H86 modulo wazuh

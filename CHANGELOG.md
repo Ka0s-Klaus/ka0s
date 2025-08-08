@@ -3639,3 +3639,24 @@
   - audit/kaos/16622528699.json
   - version.txt
 ---------------------------------
+## Version 0.3.5
+- **Branch**: refs/pull/1279/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Fri Aug  8 08:13:06 UTC 2025
+- **Message**: H86 modulo wazuh
+- **Files Changed**:
+  - audit/kaos/16001561506.json
+  - audit/kaos/16002551832.json
+  - audit/kaos/16825220901-files-in-commit.txt
+  - audit/kaos/16825220901.json
+  - secops/wazuh/CVE/remediar_cve-2016-20013.sh
+  - secops/wazuh/CVE/remediar_cve-2016-2568.sh
+  - secops/wazuh/CVE/remediar_cve-2021-3773.sh
+  - secops/wazuh/CVE/remediar_cve-2022-3219.sh
+  - secops/wazuh/CVE/remediar_cve-2024-10041.sh
+  - secops/wazuh/CVE/remediar_cve-2024-10963.sh
+  - secops/wazuh/CVE/remediar_cve-2024-56180.sh
+  - secops/wazuh/CVE/remediar_cve-2025-27558.sh
+  - version.txt
+---------------------------------
