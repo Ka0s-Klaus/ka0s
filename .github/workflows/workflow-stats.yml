@@ -4,15 +4,19 @@ on:
   schedule:
     - cron: '0 0 * * *'  # Run daily at midnight
   workflow_dispatch:  # Allow manual trigger
-
+  
+permissions:
+  contents: write
+  actions: write
+  issues: write
+  
 env:
     KAOS_CODE: ${{ github.run_id }}
     KAOS_EVENT_NAME: ${{ github.event_name }}
     KAOS_ACTION: ${{ github.action }}
     KAOS_REF: ${{ github.ref }}
     KAOS_MODULE: "[Ka0S] Workflow Statistics Summary"
-    KAOS_PATH_RESUME: "core/outputs/w/"
-    KAOS_JSON: "core/results/event_data_"
+    KAOS_PATH_RESUME: "audit/workflows/"
     KAOS_ACTOR: ${{ github.actor }}
     GH_REPO: "github.com/Ka0s-Klaus/ka0s"
 
@@ -295,4 +299,4 @@ jobs:
           # RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
           # gh issue comment $RNNUMBER --body "Se finaliza Ka0s ${{ env.KAOS_CODE }}"
           echo "Se finaliza Ka0s ${{ env.KAOS_CODE }}"
-          gh workflow run inspector.yml --ref 'main' -f kaos-issue-id=$RNNUMBER -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start=""
+          gh workflow run inspector.yml --ref 'main' -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start=""
