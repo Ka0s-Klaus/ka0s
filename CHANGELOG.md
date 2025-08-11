@@ -3660,3 +3660,29 @@
   - secops/wazuh/CVE/remediar_cve-2025-27558.sh
   - version.txt
 ---------------------------------
+## Version 0.3.6
+- **Branch**: refs/pull/1280/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Mon Aug 11 07:58:08 UTC 2025
+- **Message**: H86 modulo wazuh
+- **Files Changed**:
+  - .github/workflows/status-db.yml
+  - .gitignore
+  - audit/kaos/16873497000-files-in-commit.txt
+  - audit/kaos/16873497000.json
+  - audit/kaos/16873756456-files-in-commit.txt
+  - audit/kaos/16873756456.json
+  - audit/kaos/16874176763-files-in-commit.txt
+  - audit/kaos/16874176763.json
+  - security/wazuh/README.md
+  - security/wazuh/config/certs.yml
+  - security/wazuh/config/wazuh_cluster/wazuh_manager.conf
+  - security/wazuh/config/wazuh_dashboard/opensearch_dashboards.yml
+  - security/wazuh/config/wazuh_dashboard/wazuh.yml
+  - security/wazuh/config/wazuh_indexer/internal_users.yml
+  - security/wazuh/config/wazuh_indexer/wazuh.indexer.yml
+  - security/wazuh/docker-compose.yml
+  - security/wazuh/generate-indexer-certs.yml
+  - version.txt
+---------------------------------

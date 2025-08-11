@@ -3,7 +3,10 @@ name: Ka0s Status MongDB Report
 on:
   schedule:
     - cron: '10 * * * *'  # Ejecución cada hora en el minuto 10
-
+permissions:
+  issues: write
+  pull-requests: write
+  
 env:
   PYTHON_VERSION: '3.9'
   MONGO_SUPERUSER_CONNECTION: ${{ secrets.DB_CONNECTION_STRING}}
