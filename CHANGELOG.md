@@ -3702,3 +3702,17 @@
   - debug.log
   - version.txt
 ---------------------------------
+## Version 0.3.8
+- **Branch**: refs/pull/1283/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Tue Aug 12 08:37:00 UTC 2025
+- **Message**: H86 modulo wazuh
+- **Files Changed**:
+  - .github/workflows/workflow-stats.yml
+  - audit/kaos/16903394080-files-in-commit.txt
+  - audit/kaos/16903394080.json
+  - audit/kaos/16903549698-files-in-commit.txt
+  - audit/kaos/16903549698.json
+  - version.txt
+---------------------------------
