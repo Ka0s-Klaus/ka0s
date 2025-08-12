@@ -3686,3 +3686,19 @@
   - security/wazuh/generate-indexer-certs.yml
   - version.txt
 ---------------------------------
+## Version 0.3.7
+- **Branch**: refs/pull/1281/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Tue Aug 12 08:12:29 UTC 2025
+- **Message**: H86 modulo wazuh
+- **Files Changed**:
+  - .github/workflows/workflow-stats.yml
+  - audit/kaos/16902996206-files-in-commit.txt
+  - audit/kaos/16902996206.json
+  - audit/workflows/export_csv.sh
+  - audit/workflows/workflow_stats.csv
+  - core/scripts/export_csv.sh
+  - debug.log
+  - version.txt
+---------------------------------
