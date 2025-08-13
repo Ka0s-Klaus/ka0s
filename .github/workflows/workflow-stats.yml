@@ -147,7 +147,7 @@ jobs:
         run: |
           # Creamos el fichero de PR
           touch ${KAOS_PATH_RESUME}pr-log-${KAOS_CODE}.json
-          
+
           # Extraemos toda la información de las PR hasta el momento
           gh pr list --repo ${GH_REPO} --state all --limit 999 --json assignees,author,baseRefName,body,closed,closedAt,comments,createdAt,deletions,files,headRefName,id,isDraft,labels,mergeCommit,merged,mergedAt,mergedBy,number,reviewDecision,reviewRequests,reviews,state,title,updatedAt,url \
           | tee ${KAOS_PATH_RESUME}pr-log-${KAOS_CODE}.json \
@@ -185,6 +185,17 @@ jobs:
 
           # Formatear JSON final
           cat ${KAOS_PATH_RESUME}pr-log-${KAOS_CODE}.json | jq -s '.' > ${KAOS_PATH_RESUME}actually-pr.json
+
+      - name: Upload Files
+        run: |
+          echo "Downloading files to the repository..."
+          git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
+          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
+          git pull
+          echo "Uploading files to the repository..."
+          git add ${{ env.KAOS_PATH_RESUME }}*
+          git commit -m "[Ka0S] Uploading resume workflows execution files to the repository..."
+          git push origin ${{ github.ref }}
 
   handle-success:
     runs-on:
