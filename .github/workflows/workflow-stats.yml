@@ -45,106 +45,106 @@ jobs:
       group: ka0s
     needs: job-core
     steps:
-    - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
-
-    - name: Generate actually workflows
-      run: |
-        # Pull the latest changes
-        git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
-        git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
-        git pull
-
-        # Created files of actually workflows
-        gh workflow list -a --json id,name,path,state | tee >(jq . > ${{ env.KAOS_PATH_RESUME }}actually-workflows.json) | jq -r '
-            ["id", "name", "path", "state"],
-            (.[] | [
-              .id,
-              .name,
-              .path,
-              .state
-            ]) | @csv
-          ' > ${{ env.KAOS_PATH_RESUME }}actually-workflows.csv
-
-        # Created files of workflows executed up to the current extraction date
-        # Create a temporary file for workflow runs
-          touch ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json
+      - name: Checkout
+          uses: actions/checkout@v4
+          with:
+            fetch-depth: 0
+            token: ${{ secrets.KAOS_REPO_TOKEN }}
+  
+      - name: Generate actually workflows
+        run: |
+          # Pull the latest changes
+          git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
+          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
+          git pull
+  
+          # Created files of actually workflows
+          gh workflow list -a --json id,name,path,state | tee >(jq . > ${{ env.KAOS_PATH_RESUME }}actually-workflows.json) | jq -r '
+              ["id", "name", "path", "state"],
+              (.[] | [
+                .id,
+                .name,
+                .path,
+                .state
+              ]) | @csv
+            ' > ${{ env.KAOS_PATH_RESUME }}actually-workflows.csv
+  
+          # Created files of workflows executed up to the current extraction date
+          # Create a temporary file for workflow runs
+            touch ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json
+            
+          # Get workflows and process their runs
+          workflows=$(jq -r '.[].id' ${{ env.KAOS_PATH_RESUME }}actually-workflows.json)
           
-        # Get workflows and process their runs
-        workflows=$(jq -r '.[].id' ${{ env.KAOS_PATH_RESUME }}actually-workflows.json)
-        
-        # Initialize an empty array in the temporary file
-        echo '[]' > ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json
-        
-        # Iterate over each workflow and get runs with proper formatting
-        for workflow_id in $workflows; do
-          gh api repos/:owner/:repo/actions/workflows/$workflow_id/runs --paginate | \
-            jq '.workflow_runs[] | select(.id != null)' | \
-            jq -s '[ .[] | {
-              id,
-              name,
-              head_branch,
-              head_sha,
-              run_number,
-              event,
-              status,
-              conclusion,
-              workflow_id,
-              url,
-              created_at,
-              updated_at,
-              run_started_at
-            }]' >> ${{ env.KAOS_PATH_RESUME }}workflows-runs-temp-${{ env.KAOS_CODE }}.json
+          # Initialize an empty array in the temporary file
+          echo '[]' > ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json
           
-          # Merge the temporary results into the main file
-          jq -s 'add' \
-            ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json \
-            ${{ env.KAOS_PATH_RESUME }}workflows-runs-temp-${{ env.KAOS_CODE }}.json > \
-            ${{ env.KAOS_PATH_RESUME }}workflows-runs-merged-${{ env.KAOS_CODE }}.json
-          
-          mv ${{ env.KAOS_PATH_RESUME }}workflows-runs-merged-${{ env.KAOS_CODE }}.json \
-             ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json
-          rm -f ${{ env.KAOS_PATH_RESUME }}workflows-runs-temp-${{ env.KAOS_CODE }}.json
-        done
-          
-        # Format the final runs file as a proper JSON array
-        jq 'sort_by(.created_at) | reverse' \
-          ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json > \
-          ${{ env.KAOS_PATH_RESUME }}actually-workflows-runs.json
-
-        # Extraemos toda la información de las issues hasta el momento
-            touch ${{ env.KAOS_PATH_RESUME }}issue-log-${{ env.KAOS_CODE }}.json
-            gh issue list --repo ${{ env.GH_REPO }} --state all --limit 999 --json assignees,author,body,closed,closedAt,comments,createdAt,id,labels,milestone,number,projectCards,projectItems,reactionGroups,state,title,updatedAt,url \
-              | tee ${{ env.KAOS_PATH_RESUME }}issue-log-${{ env.KAOS_CODE }}.json \
-              | jq -r '
-                ["assignees", "author", "body", "closed", "closedAt", "comments", "createdAt", "id", "labels", "milestone", "number", "projectCards", "projectItems", "reactionGroups", "state", "title", "updatedAt", "url"],
-                (.[] | [
-                  .assignees,
-                  .author,
-                  .body,
-                  .closed,
-                  .closedAt,
-                  .comments,
-                  .createdAt,
-                  .id,
-                  .labels,
-                  .milestone,
-                  .number,
-                  .projectCards,
-                  .projectItems,
-                  .reactionGroups,
-                  .state,
-                  .title,
-                  .updatedAt,
-                  .url
-                ]) | @csv
-              ' > ${{ env.KAOS_PATH_RESUME }}actually-issue.csv
-
-            # Formatear el archivo JSON final
-            cat ${{ env.KAOS_PATH_RESUME }}issue-log-${{ env.KAOS_CODE }}.json | jq -s '.' > ${{ env.KAOS_PATH_RESUME }}actually-issue.json
+          # Iterate over each workflow and get runs with proper formatting
+          for workflow_id in $workflows; do
+            gh api repos/:owner/:repo/actions/workflows/$workflow_id/runs --paginate | \
+              jq '.workflow_runs[] | select(.id != null)' | \
+              jq -s '[ .[] | {
+                id,
+                name,
+                head_branch,
+                head_sha,
+                run_number,
+                event,
+                status,
+                conclusion,
+                workflow_id,
+                url,
+                created_at,
+                updated_at,
+                run_started_at
+              }]' >> ${{ env.KAOS_PATH_RESUME }}workflows-runs-temp-${{ env.KAOS_CODE }}.json
+            
+            # Merge the temporary results into the main file
+            jq -s 'add' \
+              ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json \
+              ${{ env.KAOS_PATH_RESUME }}workflows-runs-temp-${{ env.KAOS_CODE }}.json > \
+              ${{ env.KAOS_PATH_RESUME }}workflows-runs-merged-${{ env.KAOS_CODE }}.json
+            
+            mv ${{ env.KAOS_PATH_RESUME }}workflows-runs-merged-${{ env.KAOS_CODE }}.json \
+               ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json
+            rm -f ${{ env.KAOS_PATH_RESUME }}workflows-runs-temp-${{ env.KAOS_CODE }}.json
+          done
+            
+          # Format the final runs file as a proper JSON array
+          jq 'sort_by(.created_at) | reverse' \
+            ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json > \
+            ${{ env.KAOS_PATH_RESUME }}actually-workflows-runs.json
+  
+          # Extraemos toda la información de las issues hasta el momento
+              touch ${{ env.KAOS_PATH_RESUME }}issue-log-${{ env.KAOS_CODE }}.json
+              gh issue list --repo ${{ env.GH_REPO }} --state all --limit 999 --json assignees,author,body,closed,closedAt,comments,createdAt,id,labels,milestone,number,projectCards,projectItems,reactionGroups,state,title,updatedAt,url \
+                | tee ${{ env.KAOS_PATH_RESUME }}issue-log-${{ env.KAOS_CODE }}.json \
+                | jq -r '
+                  ["assignees", "author", "body", "closed", "closedAt", "comments", "createdAt", "id", "labels", "milestone", "number", "projectCards", "projectItems", "reactionGroups", "state", "title", "updatedAt", "url"],
+                  (.[] | [
+                    .assignees,
+                    .author,
+                    .body,
+                    .closed,
+                    .closedAt,
+                    .comments,
+                    .createdAt,
+                    .id,
+                    .labels,
+                    .milestone,
+                    .number,
+                    .projectCards,
+                    .projectItems,
+                    .reactionGroups,
+                    .state,
+                    .title,
+                    .updatedAt,
+                    .url
+                  ]) | @csv
+                ' > ${{ env.KAOS_PATH_RESUME }}actually-issue.csv
+  
+              # Formatear el archivo JSON final
+              cat ${{ env.KAOS_PATH_RESUME }}issue-log-${{ env.KAOS_CODE }}.json | jq -s '.' > ${{ env.KAOS_PATH_RESUME }}actually-issue.json
 
   handle-success:
     runs-on:
