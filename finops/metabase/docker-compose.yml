@@ -12,7 +12,7 @@ services:
     container_name: metabase
     hostname: metabase
     volumes:
-      - /dev/urandom:/dev/random:ro
+      - vol_persistente:/metabase-data/metabase.db
     ports:
       - 3000:3000
     environment:
@@ -30,6 +30,7 @@ services:
       interval: 15s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
   postgres:
     image: postgres:latest
@@ -42,3 +43,11 @@ services:
     networks:
       metabase:
         ipv4_address: 0.0.0.0
+    volumes:
+      - vol_persistente:/var/lib/postgresql/data
+    healthcheck:
+      test: pg_isready -U postgres
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
