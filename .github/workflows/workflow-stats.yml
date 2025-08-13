@@ -155,35 +155,54 @@ jobs:
           touch ${KAOS_PATH_RESUME}pr-log-${KAOS_CODE}.json
 
           # Extraemos toda la información de las PR hasta el momento
-          gh pr list --repo ${GH_REPO} --state all --limit 999 --json assignees,author,baseRefName,body,closed,closedAt,comments,createdAt,deletions,files,headRefName,id,isDraft,labels,mergeCommit,merged,mergedAt,mergedBy,number,reviewDecision,reviewRequests,reviews,state,title,updatedAt,url \
+          gh pr list --repo ${GH_REPO} --state all --limit 999 --json additions,assignees,author,autoMergeRequest,baseRefName,baseRefOid,body,changedFiles,closed,closedAt,comments,commits,createdAt,deletions,files,fullDatabaseId,headRefName,headRefOid,headRepository,headRepositoryOwner,id,isCrossRepository,isDraft,labels,latestReviews,maintainerCanModify,mergeCommit,mergeStateStatus,mergeable,mergedAt,mergedBy,milestone,number,potentialMergeCommit,projectCards,projectItems,reactionGroups,reviewDecision,reviewRequests,reviews,state,statusCheckRollup,title,updatedAt,url \
           | tee ${KAOS_PATH_RESUME}pr-log-${KAOS_CODE}.json \
           | jq -r '
-            ["assignees", "author", "baseRefName", "body", "closed", "closedAt", "comments", "createdAt", "deletions", "files", "headRefName", "id", "isDraft", "labels", "mergeCommit", "merged", "mergedAt", "mergedBy", "number", "reviewDecision", "reviewRequests", "reviews", "state", "title", "updatedAt", "url"],
+            ["additions", "assignees", "author", "autoMergeRequest", "baseRefName", "baseRefOid", "body", "changedFiles", "closed", "closedAt", "comments", "commits", "createdAt", "deletions", "files", "fullDatabaseId", "headRefName", "headRefOid", "headRepository", "headRepositoryOwner", "id", "isCrossRepository", "isDraft", "labels", "latestReviews", "maintainerCanModify", "mergeCommit", "mergeStateStatus", "mergeable", "mergedAt", "mergedBy", "milestone", "number", "potentialMergeCommit", "projectCards", "projectItems", "reactionGroups", "reviewDecision", "reviewRequests", "reviews", "state", "statusCheckRollup", "tite", "updatedAt", "url"],
             (.[] | [
+              .additions,
               .assignees,
               .author,
+              .autoMergeRequest,
               .baseRefName,
+              .baseRefOid,
               .body,
+              .changedFiles,
               .closed,
               .closedAt,
               .comments,
+              .commits,
               .createdAt,
               .deletions,
               .files,
+              .fullDatabaseId,
               .headRefName,
+              .headRefOid,
+              .headRepository,
+              .headRepositoryOwner,
               .id,
+              .isCrossRepository,
               .isDraft,
               .labels,
+              .latestReviews,
+              .maintainerCanModify,
               .mergeCommit,
-              .merged,
+              .mergeStateStatus,
+              .mergeable,
               .mergedAt,
               .mergedBy,
+              .milestone,
               .number,
+              .potentialMergeCommit,
+              .projectCards,
+              .projectItems,
+              .reactionGroups,
               .reviewDecision,
               .reviewRequests,
               .reviews,
               .state,
-              .title,
+              .statusCheckRollup,
+              .titl,
               .updatedAt,
               .url
             ]) | @csv
