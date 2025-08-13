@@ -122,7 +122,7 @@ jobs:
                 | tee ${{ env.KAOS_PATH_RESUME }}issue-log-${{ env.KAOS_CODE }}.json \
                 | jq -r '
                   ["assignees", "author", "body", "closed", "closedAt", "comments", "createdAt", "id", "labels", "milestone", "number", "projectCards", "projectItems", "reactionGroups", "state", "title", "updatedAt", "url"],
-                  (.[] | [
+                  (.[]? // [] | [
                     .assignees,
                     .author,
                     .body,
@@ -159,7 +159,7 @@ jobs:
           | tee ${KAOS_PATH_RESUME}pr-log-${KAOS_CODE}.json \
           | jq -r '
             ["additions", "assignees", "author", "autoMergeRequest", "baseRefName", "baseRefOid", "body", "changedFiles", "closed", "closedAt", "comments", "commits", "createdAt", "deletions", "files", "fullDatabaseId", "headRefName", "headRefOid", "headRepository", "headRepositoryOwner", "id", "isCrossRepository", "isDraft", "labels", "latestReviews", "maintainerCanModify", "mergeCommit", "mergeStateStatus", "mergeable", "mergedAt", "mergedBy", "milestone", "number", "potentialMergeCommit", "projectCards", "projectItems", "reactionGroups", "reviewDecision", "reviewRequests", "reviews", "state", "statusCheckRollup", "tite", "updatedAt", "url"],
-            (.[] | [
+            (.[]? // [] | [
               .additions,
               .assignees,
               .author,
