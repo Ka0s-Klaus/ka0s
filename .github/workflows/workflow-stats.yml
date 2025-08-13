@@ -121,33 +121,37 @@ jobs:
               gh issue list --repo ${{ env.GH_REPO }} --state all --limit 999 --json assignees,author,body,closed,closedAt,comments,createdAt,id,labels,milestone,number,projectCards,projectItems,reactionGroups,state,title,updatedAt,url \
                 | tee ${{ env.KAOS_PATH_RESUME }}issue-log-${{ env.KAOS_CODE }}.json \
                 | jq -r '
-                  ["assignees", "author", "body", "closed", "closedAt", "comments", "createdAt", "id", "labels", "milestone", "number", "projectCards", "projectItems", "reactionGroups", "state", "title", "updatedAt", "url"],
-                  (.[]? // [] | [
-                    .assignees,
-                    .author,
-                    .body,
-                    .closed,
-                    .closedAt,
-                    .comments,
-                    .createdAt,
-                    .id,
-                    .labels,
-                    .milestone,
-                    .number,
-                    .projectCards,
-                    .projectItems,
-                    .reactionGroups,
-                    .state,
-                    .title,
-                    .updatedAt,
-                    .url
-                  ]) | @csv
+                  if . == [] then
+                    ["assignees", "author", "body", "closed", "closedAt", "comments", "createdAt", "id", "labels", "milestone", "number", "projectCards", "projectItems", "reactionGroups", "state", "title", "updatedAt", "url"]
+                  else
+                    ["assignees", "author", "body", "closed", "closedAt", "comments", "createdAt", "id", "labels", "milestone", "number", "projectCards", "projectItems", "reactionGroups", "state", "title", "updatedAt", "url"],
+                    (.[] | [
+                      .assignees,
+                      .author,
+                      .body,
+                      .closed,
+                      .closedAt,
+                      .comments,
+                      .createdAt,
+                      .id,
+                      .labels,
+                      .milestone,
+                      .number,
+                      .projectCards,
+                      .projectItems,
+                      .reactionGroups,
+                      .state,
+                      .title,
+                      .updatedAt,
+                      .url
+                    ])
+                  end | @csv
                 ' > ${{ env.KAOS_PATH_RESUME }}actually-issue.csv
   
               # Formatear el archivo JSON final
+              echo "Formateamos el fichero de JSON"
               cat ${{ env.KAOS_PATH_RESUME }}issue-log-${{ env.KAOS_CODE }}.json | jq -s '.' > ${{ env.KAOS_PATH_RESUME }}actually-issue.json
               echo "Mostramos el contenido del fichero"
-              #cat ${{ env.KAOS_PATH_RESUME }}actually-issue.json
 
       - name: Pull Request
         run: |
