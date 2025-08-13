@@ -143,6 +143,49 @@ jobs:
               # Formatear el archivo JSON final
               cat ${{ env.KAOS_PATH_RESUME }}issue-log-${{ env.KAOS_CODE }}.json | jq -s '.' > ${{ env.KAOS_PATH_RESUME }}actually-issue.json
 
+      - name: Pull Request
+        run: |
+          # Creamos el fichero de PR
+          touch ${KAOS_PATH_RESUME}pr-log-${KAOS_CODE}.json
+          
+          # Extraemos toda la información de las PR hasta el momento
+          gh pr list --repo ${GH_REPO} --state all --limit 999 --json assignees,author,baseRefName,body,closed,closedAt,comments,createdAt,deletions,files,headRefName,id,isDraft,labels,mergeCommit,merged,mergedAt,mergedBy,number,reviewDecision,reviewRequests,reviews,state,title,updatedAt,url \
+          | tee ${KAOS_PATH_RESUME}pr-log-${KAOS_CODE}.json \
+          | jq -r '
+            ["assignees", "author", "baseRefName", "body", "closed", "closedAt", "comments", "createdAt", "deletions", "files", "headRefName", "id", "isDraft", "labels", "mergeCommit", "merged", "mergedAt", "mergedBy", "number", "reviewDecision", "reviewRequests", "reviews", "state", "title", "updatedAt", "url"],
+            (.[] | [
+              .assignees,
+              .author,
+              .baseRefName,
+              .body,
+              .closed,
+              .closedAt,
+              .comments,
+              .createdAt,
+              .deletions,
+              .files,
+              .headRefName,
+              .id,
+              .isDraft,
+              .labels,
+              .mergeCommit,
+              .merged,
+              .mergedAt,
+              .mergedBy,
+              .number,
+              .reviewDecision,
+              .reviewRequests,
+              .reviews,
+              .state,
+              .title,
+              .updatedAt,
+              .url
+            ]) | @csv
+          ' > ${KAOS_PATH_RESUME}actually-pr.csv
+
+          # Formatear JSON final
+          cat ${KAOS_PATH_RESUME}pr-log-${KAOS_CODE}.json | jq -s '.' > ${KAOS_PATH_RESUME}actually-pr.json
+
   handle-success:
     runs-on:
       group: ka0s
