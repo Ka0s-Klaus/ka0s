@@ -31,24 +31,50 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.KAOS_REPO_TOKEN }}
 
-      - name: Collect workflow statistics
-        env:
-          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+      - name: Commit and push changes
         run: |
-          # Generate file with available workflows in repo with proper formatting
-          gh workflow list --all --limit 999 --json id,name,path,state | \
-            jq -r '[ .[] | {id,name,path,state} ] | sort_by(.name)' > \
-            ${{ env.KAOS_PATH_RESUME }}workflows-available-${{ env.KAOS_CODE }}.json
-          
-          # Create the final formatted workflows file
-          jq '.' ${{ env.KAOS_PATH_RESUME }}workflows-available-${{ env.KAOS_CODE }}.json > \
-            ${{ env.KAOS_PATH_RESUME }}kaos-workflows-available.json
-          
+          git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
+          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
+          git pull
+          git add ${{ env.KAOS_PATH_RESUME }}*.json
+          git commit -m "[Ka0S] Update workflow resume files" || exit 0
+          git push
+
+  job-stats-workflows:
+    runs-on:
+      group: ka0s
+    needs: job-core
+    steps:
+      - name: Checkout
+          uses: actions/checkout@v4
+          with:
+            fetch-depth: 0
+            token: ${{ secrets.KAOS_REPO_TOKEN }}
+  
+      - name: Generate actually workflows
+        run: |
+          # Pull the latest changes
+          git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
+          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
+          git pull
+  
+          # Created files of actually workflows
+          gh workflow list -a --json id,name,path,state | tee >(jq . > ${{ env.KAOS_PATH_RESUME }}actually-workflows.json) | jq -r '
+              ["id", "name", "path", "state"],
+              (.[] | [
+                .id,
+                .name,
+                .path,
+                .state
+              ]) | @csv
+            ' > ${{ env.KAOS_PATH_RESUME }}actually-workflows.csv
+  
+          # Created files of workflows executed up to the current extraction date
           # Create a temporary file for workflow runs
-          touch ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json
-          
+            touch ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json
+            
           # Get workflows and process their runs
-          workflows=$(jq -r '.[].id' ${{ env.KAOS_PATH_RESUME }}kaos-workflows-available.json)
+          workflows=$(jq -r '.[].id' ${{ env.KAOS_PATH_RESUME }}actually-workflows.json)
           
           # Initialize an empty array in the temporary file
           echo '[]' > ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json
@@ -83,153 +109,42 @@ jobs:
                ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json
             rm -f ${{ env.KAOS_PATH_RESUME }}workflows-runs-temp-${{ env.KAOS_CODE }}.json
           done
-          
+            
           # Format the final runs file as a proper JSON array
           jq 'sort_by(.created_at) | reverse' \
             ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json > \
-            ${{ env.KAOS_PATH_RESUME }}kaos-workflows-runs.json
-      
-      - name: Commit and push changes
-        run: |
-          git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
-          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
-          git pull
-          git add ${{ env.KAOS_PATH_RESUME }}*.json
-          git commit -m "[Ka0S] Update workflow resume files" || exit 0
-          git push
-
-  job-stats:
-    needs: job-core
-    runs-on:
-      group: ka0s
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
-
-      - name: Generate workflow names
-        run: |
-          # Pull the latest changes
-          git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
-          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
-          git pull
-          
-          # Get workflows and process their runs
-          workflows=$(jq -r '.[].id' ${{ env.KAOS_PATH_RESUME }}kaos-workflows-available.json)
-
-          # Generate workflow statistics
-          for work_id in $workflows; do
-              jq -r '[.[] | select(.run_started_at != null and .updated_at != null and .workflow_id == '$work_id') | {
-                name,
-                event,
-                conclusion,
-                duration: (if (.run_started_at != null and .updated_at != null) then
-                  ((.updated_at | fromdateiso8601) - (.run_started_at | fromdateiso8601))
-                else
-                  0
-                end)
-              }] | reduce .[] as $run ({
-                "total_runs": 0,
-                "successful_runs": 0,
-                "failed_runs": 0,
-                "cancelled_runs": 0,
-                "total_duration": 0,
-                "success_duration": 0,
-                "failed_duration": 0,
-                "cancelled_duration": 0,
-                "workflow_stats": {},
-                "events": {}
-              };
-                .total_runs += 1
-                | .total_duration += $run.duration
-                | if $run.conclusion == "success" then
-                    .successful_runs += 1
-                    | .success_duration += $run.duration
-                  elif $run.conclusion == "failure" then
-                    .failed_runs += 1
-                    | .failed_duration += $run.duration
-                  elif $run.conclusion == "cancelled" then
-                    .cancelled_runs += 1
-                    | .cancelled_duration += $run.duration
-                  else . end
-                | .workflow_stats[$run.name] += 1
-                | .events[$run.event] += 1
-              ) | {
-                "summary": {
-                  "total_runs": .total_runs,
-                  "successful_runs": .successful_runs,
-                  "failed_runs": .failed_runs,
-                  "cancelled_runs": .cancelled_runs,
-                  "success_rate": (if .total_runs > 0 then (.successful_runs / .total_runs) * 100 | floor else 0 end),
-                  "failure_rate": (if .total_runs > 0 then (.failed_runs / .total_runs) * 100 | floor else 0 end),
-                  "average_duration": (if .total_runs > 0 then .total_duration / .total_runs else 0 end),
-                  "average_success_duration": (if .successful_runs > 0 then .success_duration / .successful_runs else 0 end),
-                  "average_failed_duration": (if .failed_runs > 0 then .failed_duration / .failed_runs else 0 end),
-                  "average_cancelled_duration": (if .cancelled_runs > 0 then .cancelled_duration / .cancelled_runs else 0 end)
-                },
-                "workflow_distribution": .workflow_stats,
-                "event_distribution": .events
-              }
-              ' ${{ env.KAOS_PATH_RESUME }}kaos-workflows-runs.json > \
-              ${{ env.KAOS_PATH_RESUME }}kaos-$work_id-statistics.json
-          done
-          ./core/scripts/export_csv.sh
-
-      - name: Generate repository statistics
-        run: |
-          # Function to escape JSON strings
-          escape_json() {
-              echo "$1" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | sed 's/\n/\\n/g'
-          }
-
-          # Get total number of commits
-          total_commits=$(git rev-list --count HEAD)
-
-          # Get commits in last 30 days
-          recent_commits=$(git rev-list --count HEAD --since="30 days ago")
-
-          # Get author statistics          
-          author_stats=$(git shortlog -sn --no-merges | while read commits author; do
-            echo "{\"commits\": $commits, \"author\": \"$author\"}"
-          done | paste -sd "," -)
-          echo "Author statistics: $author_stats"
-
-          # Save author statistics to separate file
-          cat << EOF > ${{ env.KAOS_PATH_RESUME }}kaos-repository-author-statistics.json
-          $author_stats
-          EOF
-
-          # Generate JSON output
-          cat << EOF > ${{ env.KAOS_PATH_RESUME }}kaos-repository-global-statistics.json
-          {
-            "generated_at": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
-            "repository": "$(git config --get remote.origin.url)",
-            "statistics": {
-              "total_commits": $total_commits,
-              "recent_commits": $recent_commits
-            }
-          }
-          EOF
-
-      - name: Generate Issues Summary
-        env:
-          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }} 
-        run: |
-            #  Extraemos toda la información de las issues hasta el momento
-            touch ${{ env.KAOS_PATH_RESUME }}issue-log-${{ env.KAOS_CODE }}.json
-            gh issue list --repo ${{ env.GH_REPO }} --state all --limit 999 --json assignees,author,body,closed,closedAt,comments,createdAt,id,labels,milestone,number,projectCards,projectItems,reactionGroups,state,title,updatedAt,url > ${{ env.KAOS_PATH_RESUME }}issue-log-${{ env.KAOS_CODE }}.json
-            # Formatear el archivo JSON final
-            cat ${{ env.KAOS_PATH_RESUME }}issue-log-${{ env.KAOS_CODE }}.json | jq -s '.' > ${{ env.KAOS_PATH_RESUME }}kaos-issue.json
-
-      - name: Commit statistics
-        run: |
-          git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
-          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
-          git add ${{ env.KAOS_PATH_RESUME }}kaos-*.json
-          git commit -m "[Ka0S] Update workflow statistics" || exit 0
-          git push
+            ${{ env.KAOS_PATH_RESUME }}actually-workflows-runs.json
+  
+          # Extraemos toda la información de las issues hasta el momento
+              touch ${{ env.KAOS_PATH_RESUME }}issue-log-${{ env.KAOS_CODE }}.json
+              gh issue list --repo ${{ env.GH_REPO }} --state all --limit 999 --json assignees,author,body,closed,closedAt,comments,createdAt,id,labels,milestone,number,projectCards,projectItems,reactionGroups,state,title,updatedAt,url \
+                | tee ${{ env.KAOS_PATH_RESUME }}issue-log-${{ env.KAOS_CODE }}.json \
+                | jq -r '
+                  ["assignees", "author", "body", "closed", "closedAt", "comments", "createdAt", "id", "labels", "milestone", "number", "projectCards", "projectItems", "reactionGroups", "state", "title", "updatedAt", "url"],
+                  (.[] | [
+                    .assignees,
+                    .author,
+                    .body,
+                    .closed,
+                    .closedAt,
+                    .comments,
+                    .createdAt,
+                    .id,
+                    .labels,
+                    .milestone,
+                    .number,
+                    .projectCards,
+                    .projectItems,
+                    .reactionGroups,
+                    .state,
+                    .title,
+                    .updatedAt,
+                    .url
+                  ]) | @csv
+                ' > ${{ env.KAOS_PATH_RESUME }}actually-issue.csv
+  
+              # Formatear el archivo JSON final
+              cat ${{ env.KAOS_PATH_RESUME }}issue-log-${{ env.KAOS_CODE }}.json | jq -s '.' > ${{ env.KAOS_PATH_RESUME }}actually-issue.json
 
   handle-success:
     runs-on:
@@ -277,7 +192,6 @@ jobs:
           # Creamos la issue dado que ha fallado el modulo principal
           gh issue create  --title "[Ka0S] Error detected in ${{ env.KAOS_MODULE }}" --body "Error detected in ${{ env.KAOS_MODULE }}. Please check the logs for ${{ github.run_id }} more information of error."
           
-
   end-workflow:
     runs-on:
       group: ka0s
