@@ -87,47 +87,51 @@ jobs:
           # Get workflows and process their runs
           workflows=$(jq -r '(.workflows // [])[].id' ${{ env.KAOS_PATH_RESUME }}actually-workflows.json)
           
-          # Initialize an empty array in the temporary file
-          # echo '[]' > ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json
+          # Inicializar archivo principal con array vacío
+          echo '[]' > ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json
           
-          # Iterate over each workflow and get runs with proper formatting
           for workflow_id in $workflows; do
+            # Obtener datos con manejo explícito de errores
             gh api -H "Accept: application/vnd.github+json" \
               /repos/${{ github.repository }}/actions/workflows/$workflow_id/runs \
-              --paginate | jq -c '.workflow_runs[]' | while read -r run; do
-              echo "$run" | jq '{
+              --paginate --jq '.workflow_runs' > raw_runs.json
+            
+            # Procesar con validación JSON
+            if jq -e '.' raw_runs.json >/dev/null 2>&1; then
+              jq -c 'map({
                 id: .id,
-                name: .name,
-                head_branch: .head_branch,
-                head_sha: .head_sha,
-                run_number: .run_number,
-                event: .event,
-                status: .status,
-                conclusion: (.conclusion // ""),
-                workflow_id: .workflow_id,
-                url: .url,
-                created_at: .created_at,
-                updated_at: .updated_at,
-                run_started_at: .run_started_at
-              }' >> ${{ env.KAOS_PATH_RESUME }}workflows-runs-temp-${{ env.KAOS_CODE }}.json
-            done
-            
-            # Convertir a array y fusionar
-            jq -s '.' ${{ env.KAOS_PATH_RESUME }}workflows-runs-temp-${{ env.KAOS_CODE }}.json > temp_merged.json
-            jq -s 'add | unique' \
-              ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json \
-              temp_merged.json > final_merged.json
-            
-            mv final_merged.json ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json
-            rm -f temp_merged.json
+                name: .name // "",
+                head_branch: .head_branch // "",
+                head_sha: .head_sha // "",
+                run_number: .run_number // 0,
+                event: .event // "",
+                status: .status // "",
+                conclusion: .conclusion // "",
+                workflow_id: .workflow_id // "",
+                url: .url // "",
+                created_at: .created_at // "",
+                updated_at: .updated_at // "",
+                run_started_at: .run_started_at // ""
+              })' raw_runs.json > processed_runs.json
+              
+              # Combinar resultados
+              jq -s 'add | unique_by(.id)' \
+                ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json \
+                processed_runs.json > merged.json
+                
+              mv merged.json ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json
+            else
+              echo "Error: Invalid JSON response for workflow $workflow_id"
+            fi
           done
-            
-          # Format the final runs file as a proper JSON array
-          jq 'sort_by(.created_at) | reverse' \
-            ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json > \
-            ${{ env.KAOS_PATH_RESUME }}actually-workflows-runs.json
-            echo "Mostramos el contenido del fichero"
-            #cat ${{ env.KAOS_PATH_RESUME }}actually-workflows-runs.json
+          
+          # Generar archivo final
+          jq 'sort_by(.created_at | sub("\\D"; "-") | fromdateiso8601) | reverse' \
+            ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json \
+            > ${{ env.KAOS_PATH_RESUME }}actually-workflows-runs.json
+          
+          # Limpieza
+          rm -f raw_runs.json processed_runs.json
 
       - name: Generate actually issues
         run: |
