@@ -79,12 +79,6 @@ jobs:
 
       - name: Generate actually workflows executed up to the current extraction date
         run: |
-          set -exo pipefail
-          
-          # Configuración inicial con validación
-          mkdir -p $(dirname ${{ env.KAOS_PATH_RESUME }})
-          echo '[]' > ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json
-          
           # Obtener workflows activos
           workflows=$(jq -r '.workflows[] | select(.state == "active") | .id' ${{ env.KAOS_PATH_RESUME }}actually-workflows.json)
           
@@ -92,7 +86,7 @@ jobs:
             # 1. Obtener datos con autenticación explícita
             gh api -H "Accept: application/vnd.github+json" \
               -H "Authorization: Bearer ${{ github.token }}" \
-              "/repos/${{ github.repository }}/actions/workflows/$workflow_id/runs?per_page=100" \
+              "/repos/${{ env.GH_REPO }}/actions/workflows/$workflow_id/runs?per_page=100" \
               --paginate --jq '.workflow_runs' > raw.json
             
             # 2. Validar y transformar datos
