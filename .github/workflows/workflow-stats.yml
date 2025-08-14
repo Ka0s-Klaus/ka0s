@@ -92,33 +92,34 @@ jobs:
           
           # Iterate over each workflow and get runs with proper formatting
           for workflow_id in $workflows; do
-            gh api repos/:owner/:repo/actions/workflows/$workflow_id/runs --paginate | \
-              jq '.workflow_runs[] | select(.id != null)' | \
-              jq -s '[ .[] | {
-                id,
-                name,
-                head_branch,
-                head_sha,
-                run_number,
-                event,
-                status,
-                conclusion,
-                workflow_id,
-                url,
-                created_at,
-                updated_at,
-                run_started_at
-              }]' >> ${{ env.KAOS_PATH_RESUME }}workflows-runs-temp-${{ env.KAOS_CODE }}.json
+            gh api -H "Accept: application/vnd.github+json" \
+              /repos/${{ github.repository }}/actions/workflows/$workflow_id/runs \
+              --paginate | jq -c '.workflow_runs[]' | while read -r run; do
+              echo "$run" | jq '{
+                id: .id,
+                name: .name,
+                head_branch: .head_branch,
+                head_sha: .head_sha,
+                run_number: .run_number,
+                event: .event,
+                status: .status,
+                conclusion: (.conclusion // ""),
+                workflow_id: .workflow_id,
+                url: .url,
+                created_at: .created_at,
+                updated_at: .updated_at,
+                run_started_at: .run_started_at
+              }' >> ${{ env.KAOS_PATH_RESUME }}workflows-runs-temp-${{ env.KAOS_CODE }}.json
+            done
             
-            # Merge the temporary results into the main file
-            jq -s 'add' \
+            # Convertir a array y fusionar
+            jq -s '.' ${{ env.KAOS_PATH_RESUME }}workflows-runs-temp-${{ env.KAOS_CODE }}.json > temp_merged.json
+            jq -s 'add | unique' \
               ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json \
-              ${{ env.KAOS_PATH_RESUME }}workflows-runs-temp-${{ env.KAOS_CODE }}.json > \
-              ${{ env.KAOS_PATH_RESUME }}workflows-runs-merged-${{ env.KAOS_CODE }}.json
+              temp_merged.json > final_merged.json
             
-            mv ${{ env.KAOS_PATH_RESUME }}workflows-runs-merged-${{ env.KAOS_CODE }}.json \
-               ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json
-            rm -f ${{ env.KAOS_PATH_RESUME }}workflows-runs-temp-${{ env.KAOS_CODE }}.json
+            mv final_merged.json ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json
+            rm -f temp_merged.json
           done
             
           # Format the final runs file as a proper JSON array
