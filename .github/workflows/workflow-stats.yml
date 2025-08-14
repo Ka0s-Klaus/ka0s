@@ -123,7 +123,29 @@ jobs:
           # Extraemos toda la información de las issues hasta el momento
           echo "Extraemos toda la información de las issues hasta el momento"
               touch ${{ env.KAOS_PATH_RESUME }}issue-log-${{ env.KAOS_CODE }}.json
-              gh issue list --repo ${{ env.GH_REPO }} --state all --paginate --json assignees,author,body,closed,closedAt,comments,createdAt,id,labels,milestone,number,projectCards,projectItems,reactionGroups,state,title,updatedAt,url \
+              gh api \
+                "/repos/${{ env.GH_REPO }}/issues?state=all&filter=issues&per_page=100" \
+                --paginate \
+                --jq '[.[] | select(.pull_request == null) | {
+                  assignees,
+                  author: .user,
+                  body,
+                  closed: (.state == "closed"),
+                  closedAt: .closed_at,
+                  comments,
+                  createdAt: .created_at,
+                  id,
+                  labels,
+                  milestone,
+                  number,
+                  projectCards: .project_cards,
+                  projectItems: .project_items,
+                  reactionGroups: .reactions,
+                  state,
+                  title,
+                  updatedAt: .updated_at,
+                  url: .html_url
+                }]' \
                 | tee ${{ env.KAOS_PATH_RESUME }}issue-log-${{ env.KAOS_CODE }}.json \
                 | jq -r '
                   if . == [] then
