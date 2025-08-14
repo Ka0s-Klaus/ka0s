@@ -79,59 +79,57 @@ jobs:
 
       - name: Generate actually workflows executed up to the current extraction date
         run: |
-          # Created files of workflows executed up to the current extraction date
-          echo "Created files of workflows executed up to the current extraction date"
-          # Create a temporary file for workflow runs
-          touch ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json
-            
-          # Get workflows and process their runs
-          workflows=$(jq -r '(.workflows // [])[].id' ${{ env.KAOS_PATH_RESUME }}actually-workflows.json)
+          set -exo pipefail
           
-          # Inicializar archivo principal con array vacío
+          # Configuración inicial con validación
+          mkdir -p $(dirname ${{ env.KAOS_PATH_RESUME }})
           echo '[]' > ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json
           
+          # Obtener workflows activos
+          workflows=$(jq -r '.workflows[] | select(.state == "active") | .id' ${{ env.KAOS_PATH_RESUME }}actually-workflows.json)
+          
           for workflow_id in $workflows; do
-            # Obtener datos con manejo explícito de errores
+            # 1. Obtener datos con autenticación explícita
             gh api -H "Accept: application/vnd.github+json" \
-              /repos/${{ github.repository }}/actions/workflows/$workflow_id/runs \
-              --paginate --jq '.workflow_runs' > raw_runs.json
+              -H "Authorization: Bearer ${{ github.token }}" \
+              "/repos/${{ github.repository }}/actions/workflows/$workflow_id/runs?per_page=100" \
+              --paginate --jq '.workflow_runs' > raw.json
             
-            # Procesar con validación JSON
-            if jq -e '.' raw_runs.json >/dev/null 2>&1; then
+            # 2. Validar y transformar datos
+            if jq -e 'length > 0' raw.json >/dev/null; then
               jq -c 'map({
                 id: .id,
-                name: .name // "",
-                head_branch: .head_branch // "",
-                head_sha: .head_sha // "",
-                run_number: .run_number // 0,
-                event: .event // "",
-                status: .status // "",
-                conclusion: .conclusion // "",
-                workflow_id: .workflow_id // "",
-                url: .url // "",
-                created_at: .created_at // "",
-                updated_at: .updated_at // "",
-                run_started_at: .run_started_at // ""
-              })' raw_runs.json > processed_runs.json
+                name: .name,
+                head_branch: .head_branch,
+                head_sha: .head_sha,
+                run_number,
+                event,
+                status,
+                conclusion: (.conclusion // "unknown"),
+                workflow_id,
+                url,
+                created_at: (.created_at | fromdateiso8601 // 0),
+                updated_at: (.updated_at | fromdateiso8601 // 0),
+                run_started_at: (.run_started_at | fromdateiso8601 // 0)
+              })' raw.json > processed.json
               
-              # Combinar resultados
-              jq -s 'add | unique_by(.id)' \
+              # 3. Combinación atómica
+              jq -s 'add | unique_by(.id) | sort_by(-.created_at)' \
                 ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json \
-                processed_runs.json > merged.json
+                processed.json > merged.json
                 
               mv merged.json ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json
             else
-              echo "Error: Invalid JSON response for workflow $workflow_id"
+              echo "Warning: No runs found for workflow $workflow_id"
             fi
           done
           
           # Generar archivo final
-          jq 'sort_by(.created_at | sub("\\D"; "-") | fromdateiso8601) | reverse' \
-            ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json \
+          jq '.' ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json \
             > ${{ env.KAOS_PATH_RESUME }}actually-workflows-runs.json
           
-          # Limpieza
-          rm -f raw_runs.json processed_runs.json
+          # Limpieza verificada
+          rm -f raw.json processed.json
 
       - name: Generate actually issues
         run: |
