@@ -48,7 +48,7 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.KAOS_REPO_TOKEN }}
   
-      - name: Generate actually workflows
+      - name: Generate actually workflows names
         run: |
           # Pull the latest changes
           git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
@@ -66,7 +66,9 @@ jobs:
                 .state
               ]) | @csv
             ' > ${{ env.KAOS_PATH_RESUME }}actually-workflows.csv
-  
+
+      - name: Generate actually workflows executed up to the current extraction date
+        run: |
           # Created files of workflows executed up to the current extraction date
           echo "Created files of workflows executed up to the current extraction date"
           # Create a temporary file for workflow runs
@@ -115,7 +117,9 @@ jobs:
             ${{ env.KAOS_PATH_RESUME }}actually-workflows-runs.json
             echo "Mostramos el contenido del fichero"
             #cat ${{ env.KAOS_PATH_RESUME }}actually-workflows-runs.json
-  
+
+      - name: Generate actually issues
+        run: |
           # Extraemos toda la información de las issues hasta el momento
           echo "Extraemos toda la información de las issues hasta el momento"
               touch ${{ env.KAOS_PATH_RESUME }}issue-log-${{ env.KAOS_CODE }}.json
