@@ -120,60 +120,76 @@ jobs:
 
       - name: Generate actually issues
         run: |
-          # Extraemos toda la información de las issues hasta el momento
-          echo "Extraemos toda la información de las issues hasta el momento"
-              touch ${{ env.KAOS_PATH_RESUME }}issue-log-${{ env.KAOS_CODE }}.json
-              gh api \
-                "/repos/${{ env.GH_REPO }}/issues?state=all&filter=issues&per_page=100" \
-                --paginate \
-                --jq '[.[] | select(.pull_request == null) | {
-                  assignees,
-                  author: .user,
-                  body,
-                  closed: (.state == "closed"),
-                  closedAt: .closed_at,
-                  comments,
-                  createdAt: .created_at,
-                  id,
-                  labels,
-                  milestone,
-                  number,
-                  projectCards: .project_cards,
-                  projectItems: .project_items,
-                  reactionGroups: .reactions,
-                  state,
-                  title,
-                  updatedAt: .updated_at,
-                  url: .html_url
-                }]' \
-                | tee ${{ env.KAOS_PATH_RESUME }}issue-log-${{ env.KAOS_CODE }}.json \
-                | jq -r '
-                  if . == [] then
-                    ["assignees", "author", "body", "closed", "closedAt", "comments", "createdAt", "id", "labels", "milestone", "number", "projectCards", "projectItems", "reactionGroups", "state", "title", "updatedAt", "url"]
-                  else
-                    ["assignees", "author", "body", "closed", "closedAt", "comments", "createdAt", "id", "labels", "milestone", "number", "projectCards", "projectItems", "reactionGroups", "state", "title", "updatedAt", "url"],
-                    (.[] | [
-                      .assignees,
-                      .author,
-                      .body,
-                      .closed,
-                      .closedAt,
-                      .comments,
-                      .createdAt,
-                      .id,
-                      .labels,
-                      .milestone,
-                      .number,
-                      .projectCards,
-                      .projectItems,
-                      .reactionGroups,
-                      .state,
-                      .title,
-                      .updatedAt,
-                      .url
-                    ])
-                  end | @csv
-                ' > ${{ env.KAOS_PATH_RESUME }}actually-issue.csv
+          gh api \
+            "/repos/${{ env.GH_REPO }}/issues?state=all&filter=all&per_page=100" \
+            --paginate \
+            --jq '[.[] | select(.pull_request == null) | {
+              assignees: (.assignees | map(.login) | join(";")),
+              author: .user.login,
+              body,
+              closed: (.state == "closed"),
+              closedAt: .closed_at,
+              comments: .comments,
+              createdAt: .created_at,
+              id,
+              labels: (.labels | map(.name) | join(";")),
+              milestone: (.milestone.title // ""),
+              number,
+              projectCards: (.project_cards | map(.url) | join(";")),
+              projectItems: (.project_items | map(.url) | join(";")),
+              reactionGroups: (.reactions | to_entries | map("\(.key)=\(.value)") | join(";")),
+              state,
+              title,
+              updatedAt: .updated_at,
+              url: .html_url
+            }]' \
+            | tee ${KAOS_PATH_RESUME}issue-log-${KAOS_CODE}.json \
+            | jq -r '
+              (if type == "array" and length > 0 then
+                [
+                  "assignees",
+                  "author",
+                  "body",
+                  "closed",
+                  "closedAt",
+                  "comments",
+                  "createdAt",
+                  "id",
+                  "labels",
+                  "milestone",
+                  "number",
+                  "projectCards",
+                  "projectItems",
+                  "reactionGroups",
+                  "state",
+                  "title",
+                  "updatedAt",
+                  "url"
+                ],
+                (.[] | [
+                  .assignees,
+                  .author,
+                  .body,
+                  .closed,
+                  .closedAt,
+                  .comments,
+                  .createdAt,
+                  .id,
+                  .labels,
+                  .milestone,
+                  .number,
+                  .projectCards,
+                  .projectItems,
+                  .reactionGroups,
+                  .state,
+                  .title,
+                  .updatedAt,
+                  .url
+                ])
+              else
+                empty
+              end) | @csv
+            ' > ${KAOS_PATH_RESUME}actually-issue.csv
   
               # Formatear el archivo JSON final
               echo "Formateamos el fichero de JSON"
