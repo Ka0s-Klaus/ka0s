@@ -119,7 +119,7 @@ jobs:
           # Extraemos toda la información de las issues hasta el momento
           echo "Extraemos toda la información de las issues hasta el momento"
               touch ${{ env.KAOS_PATH_RESUME }}issue-log-${{ env.KAOS_CODE }}.json
-              gh issue list --repo ${{ env.GH_REPO }} --state all --limit 999 --json assignees,author,body,closed,closedAt,comments,createdAt,id,labels,milestone,number,projectCards,projectItems,reactionGroups,state,title,updatedAt,url \
+              gh issue list --repo ${{ env.GH_REPO }} --state all --paginate --json assignees,author,body,closed,closedAt,comments,createdAt,id,labels,milestone,number,projectCards,projectItems,reactionGroups,state,title,updatedAt,url \
                 | tee ${{ env.KAOS_PATH_RESUME }}issue-log-${{ env.KAOS_CODE }}.json \
                 | jq -r '
                   if . == [] then
@@ -161,10 +161,10 @@ jobs:
 
           # Extraemos toda la información de las PR hasta el momento
           echo "Extraemos toda la información de las PR hasta el momento"
-          gh pr list --repo ${GH_REPO} --state all --limit 999 --json additions,assignees,author,autoMergeRequest,baseRefName,baseRefOid,body,changedFiles,closed,closedAt,comments,commits,createdAt,deletions,files,fullDatabaseId,headRefName,headRefOid,headRepository,headRepositoryOwner,id,isCrossRepository,isDraft,labels,latestReviews,maintainerCanModify,mergeCommit,mergeStateStatus,mergeable,mergedAt,mergedBy,milestone,number,potentialMergeCommit,projectCards,projectItems,reactionGroups,reviewDecision,reviewRequests,reviews,state,statusCheckRollup,title,updatedAt,url \
+          gh pr list --repo ${GH_REPO} --state all --paginate --json additions,assignees,author,autoMergeRequest,baseRefName,body,changedFiles,closed,closedAt,comments,commits,createdAt,deletions,files,fullDatabaseId,headRefName,headRefOid,headRepository,headRepositoryOwner,id,isCrossRepository,isDraft,labels,latestReviews,maintainerCanModify,mergeCommit,mergeStateStatus,mergeable,mergedAt,mergedBy,milestone,number,potentialMergeCommit,projectCards,projectItems,reactionGroups,reviewDecision,reviewRequests,reviews,state,statusCheckRollup,title,updatedAt,url \
           | tee ${KAOS_PATH_RESUME}pr-log-${KAOS_CODE}.json \
           | jq -r '
-            ["additions", "assignees", "author", "autoMergeRequest", "baseRefName", "baseRefOid", "body", "changedFiles", "closed", "closedAt", "comments", "commits", "createdAt", "deletions", "files", "fullDatabaseId", "headRefName", "headRefOid", "headRepository", "headRepositoryOwner", "id", "isCrossRepository", "isDraft", "labels", "latestReviews", "maintainerCanModify", "mergeCommit", "mergeStateStatus", "mergeable", "mergedAt", "mergedBy", "milestone", "number", "potentialMergeCommit", "projectCards", "projectItems", "reactionGroups", "reviewDecision", "reviewRequests", "reviews", "state", "statusCheckRollup", "tite", "updatedAt", "url"],
+            ["additions", "assignees", "author", "autoMergeRequest", "baseRefName", "body", "changedFiles", "closed", "closedAt", "comments", "commits", "createdAt", "deletions", "files", "fullDatabaseId", "headRefName", "headRefOid", "headRepository", "headRepositoryOwner", "id", "isCrossRepository", "isDraft", "labels", "latestReviews", "maintainerCanModify", "mergeCommit", "mergeStateStatus", "mergeable", "mergedAt", "mergedBy", "milestone", "number", "potentialMergeCommit", "projectCards", "projectItems", "reactionGroups", "reviewDecision", "reviewRequests", "reviews", "state", "statusCheckRollup", "tite", "updatedAt", "url"],
             (.[]? // [] | [
               .additions,
               .assignees,
@@ -183,7 +183,6 @@ jobs:
               .files,
               .fullDatabaseId,
               .headRefName,
-              .headRefOid,
               .headRepository,
               .headRepositoryOwner,
               .id,
@@ -219,7 +218,6 @@ jobs:
           echo "Mostramos el contenido del fichero"
           #cat ${{ env.KAOS_PATH_RESUME }}actually-pr.json
           
-
       - name: Upload Files
         run: |
           echo "Downloading files to the repository..."
