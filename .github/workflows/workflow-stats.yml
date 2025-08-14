@@ -85,7 +85,7 @@ jobs:
           touch ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json
             
           # Get workflows and process their runs
-          workflows=$(jq -r '.workflows[].id' ${{ env.KAOS_PATH_RESUME }}actually-workflows.json)
+          workflows=$(jq -r '(.workflows // [])[].id' ${{ env.KAOS_PATH_RESUME }}actually-workflows.json)
           
           # Initialize an empty array in the temporary file
           # echo '[]' > ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json
