@@ -2,7 +2,7 @@ name: Ka0s Workflow Statistics Summary
 
 on:
   schedule:
-    - cron: '0 * * * *'  # Ejecución cada hora en el minuto 0
+    # - cron: '0 * * * *'  # Ejecución cada hora en el minuto 0
   workflow_dispatch:  # Allow manual trigger
   
 permissions:
@@ -58,6 +58,7 @@ jobs:
           git pull
   
           # Created files of actually workflows
+          echo "Created files of actually workflows"
           gh workflow list -a --json id,name,path,state | tee > ${{ env.KAOS_PATH_RESUME }}actually-workflows.json | jq -r '
               ["id", "name", "path", "state"],
               (.[]? // [] | [
@@ -69,8 +70,9 @@ jobs:
             ' > ${{ env.KAOS_PATH_RESUME }}actually-workflows.csv
   
           # Created files of workflows executed up to the current extraction date
+          echo "Created files of workflows executed up to the current extraction date"
           # Create a temporary file for workflow runs
-            touch ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json
+          touch ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json
             
           # Get workflows and process their runs
           workflows=$(jq -r '.[].id' ${{ env.KAOS_PATH_RESUME }}actually-workflows.json)
@@ -117,6 +119,7 @@ jobs:
             #cat ${{ env.KAOS_PATH_RESUME }}actually-workflows-runs.json
   
           # Extraemos toda la información de las issues hasta el momento
+          echo "Extraemos toda la información de las issues hasta el momento"
               touch ${{ env.KAOS_PATH_RESUME }}issue-log-${{ env.KAOS_CODE }}.json
               gh issue list --repo ${{ env.GH_REPO }} --state all --limit 999 --json assignees,author,body,closed,closedAt,comments,createdAt,id,labels,milestone,number,projectCards,projectItems,reactionGroups,state,title,updatedAt,url \
                 | tee ${{ env.KAOS_PATH_RESUME }}issue-log-${{ env.KAOS_CODE }}.json \
@@ -159,6 +162,7 @@ jobs:
           touch ${KAOS_PATH_RESUME}pr-log-${KAOS_CODE}.json
 
           # Extraemos toda la información de las PR hasta el momento
+          echo "Extraemos toda la información de las PR hasta el momento"
           gh pr list --repo ${GH_REPO} --state all --limit 999 --json additions,assignees,author,autoMergeRequest,baseRefName,baseRefOid,body,changedFiles,closed,closedAt,comments,commits,createdAt,deletions,files,fullDatabaseId,headRefName,headRefOid,headRepository,headRepositoryOwner,id,isCrossRepository,isDraft,labels,latestReviews,maintainerCanModify,mergeCommit,mergeStateStatus,mergeable,mergedAt,mergedBy,milestone,number,potentialMergeCommit,projectCards,projectItems,reactionGroups,reviewDecision,reviewRequests,reviews,state,statusCheckRollup,title,updatedAt,url \
           | tee ${KAOS_PATH_RESUME}pr-log-${KAOS_CODE}.json \
           | jq -r '
