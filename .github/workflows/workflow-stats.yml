@@ -78,26 +78,20 @@ jobs:
 
       - name: Generate actually workflows executed up to the current extraction date
         run: |
-          set -euo pipefail
-          # Inicialización segura
-          echo '[]' | jq '.' > ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json
+            # Mostramos el fichero del que tenemos que partir
+            cat ${KAOS_PATH_RESUME}actually-workflows.json
+            
+            jq -r '.workflows // [] | .[].id' ${{ env.KAOS_PATH_RESUME }}actually-workflows.json | while read -r workflow_id; do
+            # 1. Obtener datos paginados
+            TEMP_RAW=$(mktemp)
+            gh api --paginate \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${{ github.token }}" \
+              "/repos/${{ env.GH_REPO }}/actions/workflows/$workflow_id/runs?per_page=100" \
+              --jq '.workflow_runs' > "$TEMP_RAW"
 
-          jq -r '.workflows // [] | .[].id' ${{ env.KAOS_PATH_RESUME }}actually-workflows.json | while read -r workflow_id; do
-            PAGE=1
-            while true; do
-              TEMP_PAGE=$(mktemp)
-              # Obtención paginada con timeout
-              gh api -H "Accept: application/vnd.github+json" \
-                -H "Authorization: Bearer ${{ github.token }}" \
-                "/repos/${{ env.GH_REPO }}/actions/workflows/$workflow_id/runs?page=$PAGE&per_page=100" \
-                --jq '.workflow_runs' > "$TEMP_PAGE" || break
-
-              # Salir si no hay más datos
-              if ! [ -s "$TEMP_PAGE" ] || jq -e 'length == 0' "$TEMP_PAGE" >/dev/null; then
-                break
-              fi
-
-              # Procesamiento completo manteniendo todos los campos
+            # 2. Procesar con todos los campos requeridos
+            if [ -s "$TEMP_RAW" ]; then
               jq -c 'map({
                 id,
                 name,
@@ -112,22 +106,27 @@ jobs:
                 created_at: (.created_at | fromdateiso8601 // 0),
                 updated_at: (.updated_at | fromdateiso8601 // 0),
                 run_started_at: (.run_started_at | fromdateiso8601 // 0)
-              })' "$TEMP_PAGE" > processed.json
+              }) | select(. != null)' "$TEMP_RAW" > processed.json
 
-              # Combinación atómica
-              jq -s 'add | unique_by(.id) | sort_by(-.created_at)' \
-                ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json \
-                processed.json > merged.json
-              
-              mv merged.json ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json
-              PAGE=$((PAGE+1))
-            done
-            rm -f "$TEMP_PAGE" processed.json
+              # 3. Combinación segura
+              if [ -s processed.json ]; then
+                jq -s 'add | unique_by(.id) | sort_by(-.created_at)' \
+                  ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json \
+                  processed.json > merged.json
+                
+                mv merged.json ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json
+              fi
+            fi
+            rm -f "$TEMP_RAW" processed.json
           done
 
-          # Generar archivo final
-          jq 'sort_by(-.created_at)' ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json \
-            > ${{ env.KAOS_PATH_RESUME }}actually-workflows-runs.json
+          # 4. Generar output final
+          if [ -s ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json ]; then
+            jq 'sort_by(-.created_at)' ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json \
+              > ${{ env.KAOS_PATH_RESUME }}actually-workflows-runs.json
+          else
+            echo '[]' > ${{ env.KAOS_PATH_RESUME }}actually-workflows-runs.json
+          fi
 
       - name: Generate actually issues
         run: |
