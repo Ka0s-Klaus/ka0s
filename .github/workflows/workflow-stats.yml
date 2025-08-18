@@ -61,20 +61,19 @@ jobs:
             "/repos/${{ env.GH_REPO }}/actions/workflows?per_page=100" \
             --paginate \
             --jq '.workflows[] | {id, name, path, state}' \
-            | tee ${KAOS_PATH_RESUME}actually-workflows.json \
-            | jq -r -s '
+          | tee ${KAOS_PATH_RESUME}actually-workflows.json \
+          | jq -r --raw-input --slurp '
+              split("\n") |
+              map(select(. != "") | fromjson) |
               [
-                "id",
-                "name",
-                "path",
-                "state"
-              ],
-              (.[] | [
-                .id // "",
-                .name // "",
-                .path // "",
-                .state // ""
-              ]) | @csv
+                ["id", "name", "path", "state"],
+                (.[] | [
+                  .id // "",
+                  .name // "",
+                  .path // "",
+                  .state // ""
+                ])
+              ] | .[] | @csv
             ' > ${KAOS_PATH_RESUME}actually-workflows.csv
 
       - name: Generate actually workflows executed up to the current extraction date
