@@ -78,8 +78,9 @@ jobs:
 
       - name: Generate actually workflows executed up to the current extraction date
         run: |
-          workflows=$(jq -r '.workflows // [] | map(select(.state == "active")) | .[].id' ${{ env.KAOS_PATH_RESUME }}actually-workflows.json)
-          
+          # Obtener todos los workflows
+          workflows=$(jq -r '.workflows // [] | .[].id' ${{ env.KAOS_PATH_RESUME }}actually-workflows.json)
+          # Comprobamos que el contenido no sea vacio
           if [ -z "$workflows" ]; then
             echo "No se encontraron workflows activos"
             exit 0
