@@ -78,9 +78,12 @@ jobs:
 
       - name: Generate actually workflows executed up to the current extraction date
         run: |
-          # Obtener workflows activos
-          workflows=$(jq -r '.workflows[] | select(.state == "active") | .id' ${{ env.KAOS_PATH_RESUME }}actually-workflows.json)
+          workflows=$(jq -r '.workflows // [] | map(select(.state == "active")) | .[].id' ${{ env.KAOS_PATH_RESUME }}actually-workflows.json)
           
+          if [ -z "$workflows" ]; then
+            echo "No se encontraron workflows activos"
+            exit 0
+          fi
           for workflow_id in $workflows; do
             # 1. Obtener datos con autenticación explícita
             gh api -H "Accept: application/vnd.github+json" \
