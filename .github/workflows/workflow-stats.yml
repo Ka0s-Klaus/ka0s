@@ -83,24 +83,33 @@ jobs:
           echo '[]' > ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json
 
           jq -r '.workflows // [] | .[].id' ${{ env.KAOS_PATH_RESUME }}actually-workflows.json | while read -r workflow_id; do
-            # Verificar existencia del workflow
-            if ! gh workflow view "$workflow_id" --repo ${{ env.GH_REPO }} >/dev/null 2>&1; then
-              echo "Warning: Workflow $workflow_id no existe, omitiendo"
-              continue
-            fi
-
-            # Obtener runs con manejo de paginación
+            # 1. Obtener datos paginados
+            TEMP_RAW=$(mktemp)
             gh api --paginate \
               -H "Accept: application/vnd.github+json" \
               -H "Authorization: Bearer ${{ github.token }}" \
               "/repos/${{ env.GH_REPO }}/actions/workflows/$workflow_id/runs?per_page=100" \
-              --jq '.workflow_runs' > raw.json
+              --jq '.workflow_runs' > "$TEMP_RAW"
 
-            # Procesar solo si hay datos
-            if [ -s raw.json ] && jq -e '. | length > 0' raw.json >/dev/null; then
-              jq -c 'map(select(. != null)) | if length > 0 then . else empty end' raw.json > processed.json
-              
-              # Combinación segura
+            # 2. Procesar con todos los campos requeridos
+            if [ -s "$TEMP_RAW" ]; then
+              jq -c 'map({
+                id,
+                name,
+                head_branch,
+                head_sha,
+                run_number,
+                event,
+                status,
+                conclusion: (.conclusion // "unknown"),
+                workflow_id,
+                url,
+                created_at: (.created_at | fromdateiso8601 // 0),
+                updated_at: (.updated_at | fromdateiso8601 // 0),
+                run_started_at: (.run_started_at | fromdateiso8601 // 0)
+              }) | select(. != null)' "$TEMP_RAW" > processed.json
+
+              # 3. Combinación segura
               if [ -s processed.json ]; then
                 jq -s 'add | unique_by(.id) | sort_by(-.created_at)' \
                   ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json \
@@ -109,17 +118,16 @@ jobs:
                 mv merged.json ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json
               fi
             fi
+            rm -f "$TEMP_RAW" processed.json
           done
 
-          # Generar output final incluso si está vacío
-          if [ -f ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json ]; then
-            jq '.' ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json \
+          # 4. Generar output final
+          if [ -s ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json ]; then
+            jq 'sort_by(-.created_at)' ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json \
               > ${{ env.KAOS_PATH_RESUME }}actually-workflows-runs.json
           else
             echo '[]' > ${{ env.KAOS_PATH_RESUME }}actually-workflows-runs.json
           fi
-
-          rm -f raw.json processed.json
 
       - name: Generate actually issues
         run: |
