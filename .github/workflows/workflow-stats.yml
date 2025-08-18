@@ -73,8 +73,7 @@ jobs:
                   .path // "",
                   .state // ""
                 ])
-              ] | .[] | @csv
-            ' > ${KAOS_PATH_RESUME}actually-workflows.csv
+              ] | .[] | @csv ' > ${KAOS_PATH_RESUME}actually-workflows.csv
 
       - name: Generate actually workflows executed up to the current extraction date
         run: |
@@ -118,7 +117,7 @@ jobs:
               fi
             fi
             rm -f "$TEMP_RAW" processed.json
-            done
+          done
 
           # 4. Generar output final
           if [ -s ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json ]; then
