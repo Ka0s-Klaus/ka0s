@@ -59,6 +59,8 @@ jobs:
           # Create JSON structure using proper bash syntax
           echo "${{ toJSON(github.event) }}" | jq '.' > ${{ env.KAOS_PATH_RESUME }}${{ env.KAOS_CODE }}.json
 
+      - name: Files in Commit
+        run: |
           # Stored files implicated in the commit
           git diff --name-only ${{ github.event.before }} ${{ github.sha }} > ${{ env.KAOS_PATH_RESUME }}${{ env.KAOS_CODE }}-files-in-commit.txt
 
