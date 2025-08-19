@@ -56,7 +56,7 @@ jobs:
 
           # Created files of actually workflows
           echo "Created files of actually workflows"
-          # gh workflow list -a --json id,name,path,state | tee > audit/workflows/actually-workflows.json | jq -r '["id", "name", "path", "state"],(.[]? // [] | [.id,.name,.path,.state]) | @csv' > audit/workflows/actually-workflows.csv
+          gh workflow list -a --json id,name,path,state | tee > audit/workflows/actually-workflows.json | jq -r '["id", "name", "path", "state"],(.[]? // [] | [.id,.name,.path,.state]) | @csv' > audit/workflows/actually-workflows.csv
 
       - name: Generate executed
         run: |
