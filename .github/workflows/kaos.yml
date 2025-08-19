@@ -56,8 +56,8 @@ jobs:
       - name: Crear JSON
         id: crear_json
         run: |
-          # Generar JSON con sanitización de números
-          echo "${{ toJSON(github.event) }}" > ${{ env.KAOS_PATH_RESUME }}${{ env.KAOS_CODE }}.json
+          # Generar JSON válido con comillas escapadas
+          echo '${{ toJSON(github.event) }}' | jq -c 'walk(if type == "number" then tostring | sub("^0+"; "") else . end)' > ${{ env.KAOS_PATH_RESUME }}${{ env.KAOS_CODE }}.json
 
       - name: Files in Commit
         run: |
