@@ -191,3 +191,4 @@
 - **Version**: 0.3.7 - **Description**: H86 modulo wazuh
 - **Version**: 0.3.8 - **Description**: H86 modulo wazuh
 - **Version**: 0.3.9 - **Description**: H86 modulo wazuh
+- **Version**: 0.3.10 - **Description**: H330 documentacion release klaus
