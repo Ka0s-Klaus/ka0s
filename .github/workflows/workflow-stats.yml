@@ -48,7 +48,7 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.KAOS_REPO_TOKEN }}
   
-      - name: Generate actually workflows names
+      - name: Generate names
         run: |
           git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
           git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
@@ -58,7 +58,7 @@ jobs:
           echo "Created files of actually workflows"
           # gh workflow list -a --json id,name,path,state | tee > audit/workflows/actually-workflows.json | jq -r '["id", "name", "path", "state"],(.[]? // [] | [.id,.name,.path,.state]) | @csv' > audit/workflows/actually-workflows.csv
 
-      - name: Generate actually workflows executed
+      - name: Generate executed
         run: |
             # Mostramos el fichero del que tenemos que partir
             cat ${KAOS_PATH_RESUME}actually-workflows.json
