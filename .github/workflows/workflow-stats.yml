@@ -60,6 +60,9 @@ jobs:
 
       - name: Generate executed
         run: |
+          # Inicializar archivo si no existe
+          [ -f "${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json" ] || echo '[]' > "${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json"
+          
           # Mostramos el fichero del que tenemos que partir
           jq -r '.[].id' ${{ env.KAOS_PATH_RESUME }}actually-workflows.json | while read -r workflow_id; do
             # 1. Obtener datos paginados
