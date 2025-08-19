@@ -42,6 +42,13 @@ jobs:
           GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
         run: |
           # Nueva ejecución
+          IFS=',' read -r -a extensions <<< "${{ secrets.KAOS_CORE_FILES }}"
+          for file in $(git diff --name-only HEAD~1 HEAD); do
+            extension="${file##*.}"
+            if [[ ! " ${extensions[@]} " =~ " ${extension} " ]]; then
+              echo "File $file has an invalid extension: $extension"
+            fi
+          done
           RNNUMBER=$(echo "${{ github.ref_name }}" | grep -o '[0-9]*')
           gh issue comment $RNNUMBER --body "Se inicia Ka0s ${{ env.KAOS_CODE }} "
           
