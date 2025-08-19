@@ -3755,3 +3755,21 @@
   - core/docs/ka0s_release/release.md
   - version.txt
 ---------------------------------
+## Version 0.3.11
+- **Branch**: refs/pull/1336/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Tue Aug 19 10:55:40 UTC 2025
+- **Message**: H1335 revision modulo yamllint
+- **Files Changed**:
+  - .github/workflows/mdlint.yml
+  - .github/workflows/yamllint.yml
+  - audit/kaos/17067317228-files-in-commit.txt
+  - audit/kaos/17067317228.json
+  - audit/kaos/17067350072-files-in-commit.txt
+  - audit/kaos/17067350072.json
+  - audit/kaos/17067414126-files-in-commit.txt
+  - audit/kaos/17067414126.json
+  - core/test/correct-file1.yaml
+  - version.txt
+---------------------------------
