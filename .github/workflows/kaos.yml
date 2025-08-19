@@ -56,8 +56,8 @@ jobs:
       - name: Crear JSON
         id: crear_json
         run: |
-          # Create JSON structure using proper bash syntax
-          echo "${{ toJSON(github.event) }}" | jq '.' > ${{ env.KAOS_PATH_RESUME }}${{ env.KAOS_CODE }}.json
+          # Generar JSON con sanitización de números
+          echo "${{ toJSON(github.event) }}" | jq 'walk(if type == "number" then tostring | sub("^0+"; "") else . end)' > ${{ env.KAOS_PATH_RESUME }}${{ env.KAOS_CODE }}.json
 
       - name: Files in Commit
         run: |
