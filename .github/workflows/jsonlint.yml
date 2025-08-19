@@ -83,7 +83,7 @@ jobs:
               jsonlint --version >> ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt
               # añadimos el nombre del fichero que vamos a comprobar
               echo "Finding: ${{ github.event.inputs.kaos-files }}" >> ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt
-              gh issue comment  ${{ github.event.inputs.kaos-issue-id }} -f kaos-issue-body="$KAOS_ISSUE_BODY" 
+              gh issue comment  ${{ github.event.inputs.kaos-issue-id }} -b kaos-issue-body="$KAOS_ISSUE_BODY" 
             else
               cat ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt
               echo "File ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt is not empty and is content not correct and write commit info"
@@ -92,7 +92,7 @@ jobs:
               # jsonlint --version || true >> ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt
               # añadimos el nombre del fichero que vamos a comprobar
               echo "Finding: ${{ github.event.inputs.kaos-files }}" >> ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt
-              gh issue comment  ${{ github.event.inputs.kaos-issue-id }} -f kaos-issue-body="$KAOS_ISSUE_BODY" 
+              gh issue comment  ${{ github.event.inputs.kaos-issue-id }} -b kaos-issue-body="$KAOS_ISSUE_BODY" 
             fi
             echo "Uploading files to the repository..."
             git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
