@@ -195,3 +195,4 @@
 - **Version**: 0.3.11 - **Description**: H1335 revision modulo yamllint
 - **Version**: 0.3.12 - **Description**: H1335 revision modulo yamllint
 - **Version**: 0.3.13 - **Description**: H1335 revision modulo yamllint
+- **Version**: 0.3.14 - **Description**: H1335 revision modulo yamllint
