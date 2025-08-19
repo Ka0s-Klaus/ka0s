@@ -193,3 +193,4 @@
 - **Version**: 0.3.9 - **Description**: H86 modulo wazuh
 - **Version**: 0.3.10 - **Description**: H330 documentacion release klaus
 - **Version**: 0.3.11 - **Description**: H1335 revision modulo yamllint
+- **Version**: 0.3.12 - **Description**: H1335 revision modulo yamllint
