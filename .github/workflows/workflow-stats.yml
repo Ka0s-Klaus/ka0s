@@ -107,6 +107,7 @@ jobs:
 
           # 4. Generar output final
           jq 'sort_by(-.created_at)' ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json > ${{ env.KAOS_PATH_RESUME }}actually-workflows-runs.json
+          jq -r '["id" , "name, "head_branch" , "head_sha" , "run_number" , "event" , "status" , "conclusion" , "workflow_id" , "url" , "created_at" , "updated_at" , "run_started_at"],(.[]? // [] | ["id" , "name, "head_branch" , "head_sha" , "run_number" , "event" , "status" , "conclusion" , "workflow_id" , "url" , "created_at" , "updated_at" , "run_started_at"]) | @csv' > ${{ env.KAOS_PATH_RESUME }}actually-workflows-runs.csv
 
       - name: Generate actually issues
         run: |
