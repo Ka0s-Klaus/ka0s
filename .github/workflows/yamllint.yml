@@ -87,6 +87,15 @@ jobs:
                 gh issue comment  ${{ github.event.inputs.kaos-issue-id }} -F ${{ env.KAOS_PATH_RESUME }}yaml-lint-results-${{ github.run_id }}.txt
                 # una vez finalizado este proceso, en funcion del modulo donde esta ubicado el ficher que se ha comprobado ejecutara un jobs u otro 
               fi
+            echo "Uploading files to the repository..."
+            git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
+            git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
+            git pull
+            git add ${{ env.KAOS_PATH_RESUME }}*
+            if ! git diff --staged --quiet; then
+              git commit -m "[Ka0S] Uploading yamllint resume execution files to the repository..."
+              git push origin ${{ github.ref }}
+            fi
   handle-success:
     runs-on:
       group: ka0s
