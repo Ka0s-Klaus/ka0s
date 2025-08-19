@@ -57,22 +57,23 @@ jobs:
           # Created files of actually workflows
           echo "Created files of actually workflows"
           gh api \
-            "/repos/Ka0s-Klaus/ka0s/actions/workflows?per_page=100" \
+            "/repos/${{ env.GH_REPO }}/actions/workflows?per_page=100" \
             --paginate \
             --jq '.workflows[] | {id, name, path, state}' \
-          | tee ${KAOS_PATH_RESUME}actually-workflows.json \
-          | jq -r --raw-input --slurp '
-              split("\n") |
-              map(select(. != "") | fromjson) |
+            | tee ${KAOS_PATH_RESUME}actually-workflows.json \
+            | jq -r -s '
               [
-                ["id", "name", "path", "state"],
-                (.[] | [
-                  .id // "",
-                  .name // "",
-                  .path // "",
-                  .state // ""
-                ])
-              ] | .[] | @csv
+                "id",
+                "name",
+                "path",
+                "state"
+              ],
+              (.[] | [
+                .id // "",
+                .name // "",
+                .path // "",
+                .state // ""
+              ]) | @csv
             ' > ${KAOS_PATH_RESUME}actually-workflows.csv
 
       - name: Generate actually workflows executed up to the current extraction date
