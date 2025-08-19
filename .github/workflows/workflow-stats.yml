@@ -58,7 +58,7 @@ jobs:
           echo "Created files of actually workflows"
           gh workflow list -a --json id,name,path,state | tee > audit/workflows/actually-workflows.json | jq -r '["id", "name", "path", "state"],(.[]? // [] | [.id,.name,.path,.state]) | @csv' > audit/workflows/actually-workflows.csv
 
-      - name: Generate actually workflows executed up to the current extraction date
+      - name: Generate actually workflows executed
         run: |
             # Mostramos el fichero del que tenemos que partir
             cat ${KAOS_PATH_RESUME}actually-workflows.json
