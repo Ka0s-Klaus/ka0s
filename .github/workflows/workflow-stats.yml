@@ -63,7 +63,7 @@ jobs:
           # Mostramos el fichero del que tenemos que partir
           cat ${KAOS_PATH_RESUME}actually-workflows.json
           
-          jq -r '.workflows // [] | .[].id' ${{ env.KAOS_PATH_RESUME }}actually-workflows.json | while read -r workflow_id; do
+          jq -r '.[].id' ${{ env.KAOS_PATH_RESUME }}actually-workflows.json | while read -r workflow_id; do
             # 1. Obtener datos paginados
             TEMP_RAW=$(mktemp)
             gh api --paginate \
