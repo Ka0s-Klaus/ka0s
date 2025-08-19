@@ -95,8 +95,17 @@ jobs:
               # jsonlint --version || true >> ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt
               # añadimos el nombre del fichero que vamos a comprobar
               echo "Finding: ${{ github.event.inputs.kaos-files }}" >> ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt
-              # gh workflow run issue.yaml --ref ${{ env.KAOS_REF_BRANCH }} -f kaos-issue-title="" -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=comment -f kaos-issue-tag="" -f kaos-issue-id=${{ github.event.inputs.kaos-issue-id }} 
+              # gh workflow run issue.yaml --ref ${{ env.KAOS_REF_BRANCH }} -f kaos-issue-title="" -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=comment -f kaos-issue-tag="" -f kaos-issue-id=${{ github.event.inputs.kaos-issue-id }} 
               gh issue comment  ${{ github.event.inputs.kaos-issue-id }} -F ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt
+            fi
+            echo "Uploading files to the repository..."
+            git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
+            git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
+            git pull
+            git add ${{ env.KAOS_PATH_RESUME }}*
+            if ! git diff --staged --quiet; then
+              git commit -m "[Ka0S] Uploading jsonlint resume execution files to the repository..."
+              git push origin ${{ github.ref }}
             fi
   handle-success:
      runs-on:
@@ -118,7 +127,7 @@ jobs:
          run: |
            # Si todo ha ido correcto añadimos el contenido del fichero 
            RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
-           gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
+           gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero ${{ env.KAOS_CODE }}.log"
   handle_failure:
     runs-on:
       group: ka0s
@@ -139,7 +148,7 @@ jobs:
         run: |
           echo "Error detected in process"
           RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
-          gh issue comment $RNNUMBER --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
+          gh issue comment $RNNUMBER --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero ${{ env.KAOS_CODE }}.log"
   end-workflow:
     runs-on:
       group: ka0s
