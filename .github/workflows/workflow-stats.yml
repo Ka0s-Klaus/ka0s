@@ -60,10 +60,10 @@ jobs:
 
       - name: Generate executed
         run: |
-            # Mostramos el fichero del que tenemos que partir
-            cat ${KAOS_PATH_RESUME}actually-workflows.json
-            
-            jq -r '.workflows // [] | .[].id' ${{ env.KAOS_PATH_RESUME }}actually-workflows.json | while read -r workflow_id; do
+          # Mostramos el fichero del que tenemos que partir
+          cat ${KAOS_PATH_RESUME}actually-workflows.json
+          
+          jq -r '.workflows // [] | .[].id' ${{ env.KAOS_PATH_RESUME }}actually-workflows.json | while read -r workflow_id; do
             # 1. Obtener datos paginados
             TEMP_RAW=$(mktemp)
             gh api --paginate \
@@ -103,12 +103,7 @@ jobs:
           done
 
           # 4. Generar output final
-          if [ -s ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json ]; then
-            jq 'sort_by(-.created_at)' ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json \
-              > ${{ env.KAOS_PATH_RESUME }}actually-workflows-runs.json
-          else
-            echo '[]' > ${{ env.KAOS_PATH_RESUME }}actually-workflows-runs.json
-          fi
+          jq 'sort_by(-.created_at)' ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json > ${{ env.KAOS_PATH_RESUME }}actually-workflows-runs.json
 
       - name: Generate actually issues
         run: |
