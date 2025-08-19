@@ -36,21 +36,31 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.KAOS_REPO_TOKEN }}
+          
       - id: validate
         name: Validate file extensions
         env:
           GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
         run: |
           # Nueva ejecución
+          IFS=',' read -r -a extensions <<< "${{ secrets.KAOS_CORE_FILES }}"
+          for file in $(git diff --name-only HEAD~1 HEAD); do
+            extension="${file##*.}"
+            if [[ ! " ${extensions[@]} " =~ " ${extension} " ]]; then
+              echo "File $file has an invalid extension: $extension"
+            fi
+          done
           RNNUMBER=$(echo "${{ github.ref_name }}" | grep -o '[0-9]*')
           gh issue comment $RNNUMBER --body "Se inicia Ka0s ${{ env.KAOS_CODE }} "
           
       - name: Crear JSON
         id: crear_json
         run: |
-          # Create JSON structure using proper bash syntax
-          echo "$PR_INFO" | jq '.' > ${{ env.KAOS_PATH_RESUME }}${{ env.KAOS_CODE }}.json
+          # Generar JSON válido con comillas escapadas
+          echo '${{ toJSON(github.event) }}' | jq -c 'walk(if type == "number" then tostring | sub("^0+"; "") else . end)' > ${{ env.KAOS_PATH_RESUME }}${{ env.KAOS_CODE }}.json
 
+      - name: Files in Commit
+        run: |
           # Stored files implicated in the commit
           git diff --name-only ${{ github.event.before }} ${{ github.sha }} > ${{ env.KAOS_PATH_RESUME }}${{ env.KAOS_CODE }}-files-in-commit.txt
 
