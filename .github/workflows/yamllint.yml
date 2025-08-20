@@ -73,7 +73,7 @@ jobs:
                 # añadimos el nombre del fichero que vamos a comprobar
                 echo "Finding: ${{ github.event.inputs.kaos-files }}" >> ${{ env.KAOS_PATH_RESUME }}yaml-lint-results-${{ github.run_id }}.txt
                 KAOS_ISSUE_BODY="The ${{ env.KAOS_MODULE }} process (${{ github.event.inputs.kaos-origin }}) launch the check (${{ github.run_id }}) over file (${{ github.event.inputs.kaos-files }}) and its result has been SUCCESS. Please review all files implicated in pull request and approve to merge"
-                gh issue comment  ${{ github.event.inputs.kaos-issue-id }} -f kaos-issue-body="$KAOS_ISSUE_BODY" 
+                gh issue comment  ${{ github.event.inputs.kaos-issue-id }} -b "$KAOS_ISSUE_BODY" 
                 # una vez finalizado este proceso, en funcion del modulo donde esta ubicado el fichero que se ha comprobado ejecutara un jobs u otro                
               else
                 # Algo no ha salido bien, añadimos el comentario a la issue y saltamos al siguiente paso
@@ -82,7 +82,7 @@ jobs:
                 # añadimos el nombre del fichero que vamos a comprobar
                 echo "Finding: ${{ github.event.inputs.kaos-files }}" >> ${{ env.KAOS_PATH_RESUME }}yaml-lint-results-${{ github.run_id }}.txt
                 KAOS_ISSUE_BODY="The ${{ env.KAOS_MODULE }} process (${{ github.event.inputs.kaos-origin }}) launch the check (${{ github.run_id }}) over file (${{ github.event.inputs.kaos-files }}) and its result has been FAILED, please check and solved it"
-                gh issue comment  ${{ github.event.inputs.kaos-issue-id }} -f kaos-issue-body="$KAOS_ISSUE_BODY"
+                gh issue comment  ${{ github.event.inputs.kaos-issue-id }} -b "$KAOS_ISSUE_BODY"
                 # una vez finalizado este proceso, en funcion del modulo donde esta ubicado el ficher que se ha comprobado ejecutara un jobs u otro 
               fi
             echo "Uploading files to the repository..."
