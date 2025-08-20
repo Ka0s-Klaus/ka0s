@@ -71,7 +71,7 @@ jobs:
             # Generamos el fichero de resultados vacio
             touch ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt
             # Realizamos el check del documento json 
-            jsonlint ${{ github.event.inputs.kaos-files }} > ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt || true
+            jsonlint --pretty-print ${{ github.event.inputs.kaos-files }} > ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt || true
             # Check if exist errors in file
             if [ ! -s ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt ]; then
               echo "File ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt is empty and is content correct"
@@ -86,7 +86,7 @@ jobs:
               echo "File ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt is not empty and is content not correct and write commit info"
               KAOS_ISSUE_BODY="The ${{ env.KAOS_MODULE }} process (${{ github.event.inputs.kaos-origin }}) launch the check (${{ github.run_id }}) over file (${{ github.event.inputs.kaos-files }}) and its result has been FAILED, please check and solved it"
               # Añadimos la versión de jsonlint con la que se realiza la comprobacion
-              # jsonlint --version || true >> ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt
+              jsonlint --version || true >> ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt
               # añadimos el nombre del fichero que vamos a comprobar
               echo "Finding: ${{ github.event.inputs.kaos-files }}" >> ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt
               gh issue comment  ${{ github.event.inputs.kaos-issue-id }} -b "$KAOS_ISSUE_BODY" 
