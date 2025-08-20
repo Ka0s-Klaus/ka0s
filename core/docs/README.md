@@ -30,25 +30,24 @@ Si, parece increible pero hemos decidido en el equipo usar una terminología "es
 
 ## Módulos de Ka0s
 
-- [ka0s.yml:](./core/docs/ka0s_core/ka0s_core.md)
-- inspector.yml
-- version.yml
-- execution.yml
-- mdlint.yml
-- jsonlint.yml
-- yamllint.yml
-- pylint.yml
-- jslint.yml
-- core.yml
-- docker.yml
-- release.yml
-- summary.yml
+- [ka0s.yml:](./ka0s_core/ka0s_core.md)
+- [inspector.yml](./ka0s_inspector/ka0s_inspector.md)
+- [version.yml](./ka0s_version/ka0s_version.md)
+- [execution.yml](./ka0s_execution/ka0s_execution.md)
+- [mdlint.yml](./ka0s_md/ka0s_md.md)
+- [jsonlint.yml](./ka0s_json/ka0s_json.md)
+- [yamllint.yml](./ka0s_yaml/ka0s_yaml.md)
+- [docker.yml](./ka0s_docker/docker.md)
+- [release.yml](./ka0s_release/kaos-klaus.md)
+- [summary.yml](./ka0s_summary/ka0s_summary.md)
+- [pylint.yml](./ka0s_pylint/ka0s_pylint.md)
+- [jslint.yml](./ka0s_jslint/ka0s_jslint.md)
 
 ## Releases
 
->-[Ka0s - Klaus](/core/docs/ka0s/ka0s_release_klaus.md)
+>-[Ka0s - Klaus](./ka0s_release/kaos-klaus.md)
 >-Ka0s - Proyecto D
 
 ## Nuestra metodología
 
-La mejor manera de explicarla esta [aquí](/core/docs/ka0s/ka0s_metodologia.md)
+La mejor manera de explicarla esta [aquí](./ka0s/ka0s_metodologia.md)

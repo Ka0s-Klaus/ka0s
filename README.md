@@ -65,6 +65,10 @@ Pero podemos anticiparos que estamos buscando colaboraciones en los siguiente pr
 - Grafana, Loki, CaDvisor, Prometheus
 - Kubernetes
 
+## Realeses
+
+[Release Ka0s-Klaus](core/docs/ka0s_release/kaos-klaus.md)
+
 ## Licencia
 
 Information about the [license](./LICENSE) under which the project is distributed.
