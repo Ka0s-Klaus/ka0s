@@ -72,9 +72,6 @@ jobs:
             touch ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt
             # Realizamos el check del documento json 
             jsonlint ${{ github.event.inputs.kaos-files }} > ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt || true
-            # esto es un workarround importante que hay que retirar
-            #rm -rf ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt
-            # a retirar
             # Check if exist errors in file
             if [ ! -s ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt ]; then
               echo "File ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt is empty and is content correct"
