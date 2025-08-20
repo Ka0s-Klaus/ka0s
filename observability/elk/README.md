@@ -118,7 +118,6 @@ output {
   }
 }
 
-
 filter {
   mutate {
     remove_field => ["_id"]
