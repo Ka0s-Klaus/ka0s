@@ -199,15 +199,13 @@ PUT _ingest/pipeline/mongo_content_parser
   ]
 }
 
-
-
 POST _reindex
 {
   "source": {
-    "index": "mongo_data"
+    "index": "mongo_data1"
   },
   "dest": {
-    "index": "mongo_data",
+    "index": "mongo_data_parsed",
     "pipeline": "mongo_content_parser"
   }
 }
