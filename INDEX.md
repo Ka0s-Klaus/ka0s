@@ -199,3 +199,4 @@
 - **Version**: 0.3.15 - **Description**: H1335 revision modulo yamllint
 - **Version**: 0.3.16 - **Description**: H1335 revision modulo yamllint
 - **Version**: 0.3.17 - **Description**: H1335 revision modulo yamllint
+- **Version**: 0.4.0 - **Description**: F1404 pruebas de funcionalidad

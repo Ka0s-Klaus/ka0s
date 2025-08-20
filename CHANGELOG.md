@@ -3900,3 +3900,54 @@
   - core/test/correct-file1.yaml
   - version.txt
 ---------------------------------
+## Version 0.4.0
+- **Branch**: refs/pull/1409/merge
+- **Commit**: [Ka0S] Uploading mdlint resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Wed Aug 20 10:05:37 UTC 2025
+- **Message**: F1404 pruebas de funcionalidad
+- **Files Changed**:
+  - README.md
+  - audit/jsonlint/jsonlint-results-17092583579.txt
+  - audit/kaos/17092579163-files-in-commit.txt
+  - audit/kaos/17092579163.json
+  - audit/kaos/17093158278-files-in-commit.txt
+  - audit/kaos/17093158278.json
+  - audit/kaos/17093963421-files-in-commit.txt
+  - audit/kaos/17093963421.json
+  - audit/kaos/17094141686-files-in-commit.txt
+  - audit/kaos/17094141686.json
+  - audit/kaos/17095124176-files-in-commit.txt
+  - audit/kaos/17095124176.json
+  - audit/mdlint/17093163084.txt
+  - audit/mdlint/17093971259.txt
+  - audit/mdlint/17094145457.txt
+  - audit/mdlint/17094145864.txt
+  - audit/mdlint/17095128604.txt
+  - audit/mdlint/17095128912.txt
+  - audit/mdlint/17095129148.txt
+  - audit/mdlint/17095129651.txt
+  - audit/mdlint/17095130206.txt
+  - core/docs/.DS_Store
+  - core/docs/README.md
+  - core/docs/ka0s/ka0s_release_klaus.md
+  - core/docs/ka0s_inspector/ka0s_inspector.md
+  - core/docs/ka0s_issue/ka0s_issue.md
+  - core/docs/ka0s_json/ka0s_json.md
+  - core/docs/ka0s_md/ka0s_md.md
+  - core/docs/ka0s_mongo/ka0s_mongo.md
+  - core/docs/ka0s_release/fig-1.png
+  - core/docs/ka0s_release/fig-2.png
+  - core/docs/ka0s_release/fig-3.png
+  - core/docs/ka0s_release/fig-4.png
+  - core/docs/ka0s_release/fig-5.png
+  - core/docs/ka0s_release/fig-6.png
+  - core/docs/ka0s_release/fig-7.png
+  - core/docs/ka0s_release/kaos-klaus.md
+  - core/docs/ka0s_release/release.md
+  - core/docs/ka0s_summary/ka0s_summary.md
+  - core/docs/ka0s_version/ka0s_version.md
+  - core/docs/ka0s_yaml/ka0s_yaml.md
+  - core/test/correct-file.json
+  - version.txt
+---------------------------------
