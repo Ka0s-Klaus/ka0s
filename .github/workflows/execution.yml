@@ -48,6 +48,13 @@ jobs:
       group: execution
     needs: job-repo
     steps:
+      - id: repo
+        name: Checkout repository
+        if: ${{ success() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
       - id: check-info
         name: Check Info
         if: ${{ success() }}
@@ -71,6 +78,13 @@ jobs:
       KAOS_EXECUTION_VARS: ${{ steps.extract.outputs.KAOS_EXECUTION_VARS }}
     if: ${{ success() }}
     steps:
+      - id: repo
+        name: Checkout repository
+        if: ${{ success() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
       - id: extract
         name: extract data
         if: ${{ success() }}
@@ -117,6 +131,13 @@ jobs:
       group: execution
     needs: check-data
     steps:
+      - id: repo
+        name: Checkout repository
+        if: ${{ success() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
       - id: show
         name: Show data
         if: ${{ success() }}
@@ -138,6 +159,13 @@ jobs:
         KAOS_EXECUTION_STATUS: ${{ steps.execution.outputs.KAOS_EXECUTION_STATUS }}
         KAOS_EXECUTION_RUN_ID: ${{ steps.type.outputs.RUN_ID }}
     steps:
+      - id: repo
+        name: Checkout repository
+        if: ${{ success() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
       - id: execution
         name: Start execution
         if: ${{ success() }}
@@ -177,6 +205,13 @@ jobs:
       group: execution
     needs: [start-execution]
     steps:
+      - id: repo
+        name: Checkout repository
+        if: ${{ success() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
       - id: end
         name: End execution
         if: ${{ success() }}
@@ -189,6 +224,13 @@ jobs:
     needs: [end-execution]
     if: ${{ success() }}
     steps: 
+      - id: repo
+        name: Checkout repository
+        if: ${{ success() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
       - id: handle-success-execution
         run: |
           # Si todo ha ido correcto añadimos el contenido del fichero 
@@ -199,6 +241,13 @@ jobs:
       needs: [job-repo, check-issue, check-data, show-data, start-execution, end-execution]
       if: ${{ failure() }} 
       steps: 
+        - id: repo
+          name: Checkout repository
+          if: ${{ success() }}
+          uses: actions/checkout@v4
+          with:
+            fetch-depth: 0
+            token: ${{ secrets.KAOS_REPO_TOKEN }}
         - id: check-execution
           run: |
             echo "Error detected in process"
@@ -212,6 +261,13 @@ jobs:
     needs: [job-repo, check-issue, check-data, show-data, start-execution, end-execution, handle-success, handle_failure]
     # if: ${{ always() }}
     steps:
+      - id: repo
+        name: Checkout repository
+        if: ${{ success() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
       - id: end-process
         name: Finaliza el workflow
         run: |
