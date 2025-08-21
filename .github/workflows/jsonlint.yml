@@ -64,6 +64,7 @@ jobs:
             mkdir -p ${{ env.KAOS_PATH_RESUME }}
       - id: check-json
         name: Check JSON
+        if: ${{ contains(github.event.inputs.kaos-files, '.json') && github.workspace }}/${{ github.event.inputs.kaos-files }}
         run: |
             # Invocamos la primera comprobación de base, sino se supera el proceso no continua
             # Extraemos el nombre del fichero
