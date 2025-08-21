@@ -117,6 +117,7 @@ jobs:
             # Eliminar el último punto y coma
             REMAINING_VALUES=${REMAINING_VALUES%?}            
             # Asignar el valor de la primera clave a una variable
+            echo "El primer valor de la ejecucion es $FIRST_VALUE"
             echo "KAOS_EXECUTION_TYPE=$FIRST_VALUE" >> $GITHUB_OUTPUT
             gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'Se han extraido los datos de la tarjeta #${{ env.KAOS_ISSUE_NUMBER }}."'
       - id: data
@@ -126,7 +127,6 @@ jobs:
             echo "Check lógical data"
             # Cambiamos de Backlog a In Progress
             gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'Se comprobado los datos asociados a la tarjeta #${{ env.KAOS_ISSUE_NUMBER }}."'
-            echo " Se va a ejecutar el workflow ${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }}.yml"
   show-data:
     runs-on: 
       group: execution
@@ -181,6 +181,7 @@ jobs:
         if: ${{ success() }}
         run: |
           echo "Check type"
+          echo " Se va a ejecutar el workflow ${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }}.yml"
           # Buscar el valorexecution en el formato JSON de la ejecución
           RESULT=$(jq -r --arg valorexecution "${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }}" '.[] | select(.module == $valorexecution) | .active' "${{ env.KAOS_AUTOMATION_COMPLIANCE}}")
           # Evaluar el resultado
