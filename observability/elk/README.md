@@ -64,27 +64,6 @@ services:
       elk:
         ipv4_address: 172.20.0.3
 
-  fleet-server:
-    image: docker.elastic.co/beats/elastic-agent:8.13.0
-    container_name: fleet-server
-    environment:
-      - FLEET_SERVER_ENABLE=1
-      - FLEET_SERVER_ELASTICSEARCH_HOST=http://elasticsearch:9200
-      - FLEET_SERVER_ELASTICSEARCH_USERNAME=elastic
-      - FLEET_SERVER_ELASTICSEARCH_PASSWORD=changeme
-      - FLEET_SERVER_POLICY_ID=fleet-server-policy
-      - KIBANA_HOST=http://kibana:5601
-      - KIBANA_USERNAME=user_kibana
-      - KIBANA_PASSWORD=changeme
-    ports:
-      - 8220:8220
-    depends_on:
-      - elasticsearch
-      - kibana
-    networks:
-      elk:
-        ipv4_address: 172.20.0.5
-
 volumes:
   esdata:
     driver: local
@@ -104,23 +83,45 @@ input {
   mongodb {
     uri => 'mongodb://Admin:Password@192.168.1.35:27017/inspector?authSource=admin'
     placeholder_db_dir => '/opt/logstash-mongodb'
-    placeholder_db_name => 'logstash_sqlite.db'
+    placeholder_db_name => 'col_json.db'
     collection => 'col_json'
     batch_size => 500
+    tags => ["col_json"]
   }
-}
 
-output {
-  elasticsearch {
-    hosts => ["http://172.20.0.2:9200"]
-    index => "mongo_data"
-    ssl => false
+  mongodb {
+    uri => 'mongodb://Admin:Password@192.168.1.35:27017/inspector?authSource=admin'
+    placeholder_db_dir => '/opt/logstash-mongodb/'
+    placeholder_db_name => 'col_log.db'
+    collection => 'col_log'
+    batch_size => 500
+    tags => ["col_log"]
   }
 }
 
 filter {
   mutate {
     remove_field => ["_id"]
+  }
+
+  if "col_json" in [tags] {
+    mutate {
+      add_field => { "collection" => "col_json" }
+    }
+  }
+
+  if "col_log" in [tags] {
+    mutate {
+      add_field => { "collection" => "col_log" }
+    }
+  }
+}
+
+output {
+  elasticsearch {
+    hosts => ["http://172.20.0.2:9200"]
+    index => "%{collection}" # Campo para diferenciar índices
+    ssl => false
   }
 }
 
