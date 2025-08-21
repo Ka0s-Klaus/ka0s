@@ -41,7 +41,7 @@ jobs:
         if: ${{ success() }}
         run: |
           echo "Init repository"
-          gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'Se ha iniciado la ejecución ${{ env.KAOS_CODE}} a través de la tarjeta #${{ env.KAOS_ISSUE_NUMBER }}.'
+          gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'Se ha iniciado la ejecución #${{ env.KAOS_CODE}} a través de la tarjeta #${{ env.KAOS_ISSUE_NUMBER }}.'
           gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'Se ha iniciado el Repositorio.' 
   check-issue:
     runs-on: 
@@ -147,7 +147,7 @@ jobs:
           echo "KAOS_ISSUE_NUMBER: $KAOS_ISSUE_NUMBER" 
           echo "KAOS_ISSUE_TITLE: $KAOS_ISSUE_TITLE"
           echo "KAOS_ISSUE_BODY: $KAOS_ISSUE_BODY"
-          gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'Estos son los datos de la ejecucion ${{ env.KAOS_CODE}} de la tarjeta ${{ env.KAOS_ISSUE_NUMBER }}.\
+          gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'Estos son los datos de la ejecucion #${{ env.KAOS_CODE}} de la tarjeta #${{ env.KAOS_ISSUE_NUMBER }}.\
               KAOS_ISSUE_NUMBER: ${{ env.KAOS_ISSUE_NUMBER }}  \
               KAOS_ISSUE_TITLE: ${{ env.KAOS_ISSUE_TITLE }}  \
               KAOS_ISSUE_BODY: ${{ env.KAOS_ISSUE_BODY }} '
@@ -192,8 +192,9 @@ jobs:
               # en esta parte de la ejecucion tenemos que tener en cuenta que podemos iniciar un workflow
               gh workflow run "${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }}.yml"
               RUN_ID=$(gh run list --workflow="${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }}.yml" --limit=1 --json databaseId --jq '.[0].databaseId')
+              echo "El valor de RUN_ID=$RUN_ID"
               # echo "RUN_ID=$RUN_ID" >> $GITHUB_OUTPUT
-              gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'Se ha lanzado la ejecución de #${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }} con run_id: $RUN_ID y con las variables {${{ needs.check-data.outputs.KAOS_EXECUTION_VARS }}}'
+              gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'Se ha lanzado la ejecución de #${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }} con run_id: #$RUN_ID y con las variables {${{ needs.check-data.outputs.KAOS_EXECUTION_VARS }}}'
               ;;
             "false")
               gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'El modulo ${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }} está inactivo y necesita autorización para su ejecución'
