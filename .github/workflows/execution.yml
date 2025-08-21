@@ -42,7 +42,7 @@ jobs:
         run: |
           echo "Init repository"
           gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'Se ha iniciado la ejecución ${{ env.KAOS_CODE}} a través de la tarjeta #${{ env.KAOS_ISSUE_NUMBER }}.'
-          gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'Se ha iniciado el Repositorio."' 
+          gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'Se ha iniciado el Repositorio.' 
   check-issue:
     runs-on: 
       group: execution
@@ -147,10 +147,10 @@ jobs:
           echo "KAOS_ISSUE_NUMBER: $KAOS_ISSUE_NUMBER" 
           echo "KAOS_ISSUE_TITLE: $KAOS_ISSUE_TITLE"
           echo "KAOS_ISSUE_BODY: $KAOS_ISSUE_BODY"
-          gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'Estos son los datos de la ejecucion ${{ env.KAOS_CODE}} de la tarjeta ${{ env.KAOS_ISSUE_NUMBER }}.\n \
-              KAOS_ISSUE_NUMBER: $KAOS_ISSUE_NUMBER \n \
-              KAOS_ISSUE_TITLE: $KAOS_ISSUE_TITLE \n \
-              KAOS_ISSUE_BODY: $KAOS_ISSUE_BODY \n'
+          gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'Estos son los datos de la ejecucion ${{ env.KAOS_CODE}} de la tarjeta ${{ env.KAOS_ISSUE_NUMBER }}.\
+              KAOS_ISSUE_NUMBER: ${{ env.KAOS_ISSUE_NUMBER }}  \
+              KAOS_ISSUE_TITLE: ${{ env.KAOS_ISSUE_TITLE }}  \
+              KAOS_ISSUE_BODY: ${{ env.KAOS_ISSUE_BODY }} '
   start-execution:
     runs-on: 
       group: execution
@@ -193,10 +193,10 @@ jobs:
               gh workflow run "${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }}.yml"
               RUN_ID=$(gh run list --workflow="${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }}.yml" --limit=1 --json databaseId --jq '.[0].databaseId')
               echo "RUN_ID=$RUN_ID" >> $GITHUB_OUTPUT
-              gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'Se ha lanzado la ejecución de #${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }} con run_id: $RUN_ID. con las variables {${{ needs.check-data.outputs.KAOS_EXECUTION_VARS }}}"'
+              gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'Se ha lanzado la ejecución de #${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }} con run_id: $RUN_ID. con las variables {${{ needs.check-data.outputs.KAOS_EXECUTION_VARS }}}'
               ;;
             "false")
-              gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'echo "El modulo ${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }} está inactivo y necesita autorización para su ejecución"'
+              gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'El modulo ${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }} está inactivo y necesita autorización para su ejecución'
               ;;
             *)
               gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'El módulo solicitado#${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }} no está definido"'
@@ -219,7 +219,7 @@ jobs:
         if: ${{ success() }}
         run: |
           echo "End execution"
-          gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'El resultado de la ejecución se añade a la tajeta #${{ env.KAOS_ISSUE_NUMBER }}, ha finalizado con el resultado SUCCESS."'        
+          gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'El resultado de la ejecución se añade a la tajeta #${{ env.KAOS_ISSUE_NUMBER }}, ha finalizado con el resultado SUCCESS.'        
   handle-success:
     runs-on: 
       group: execution
