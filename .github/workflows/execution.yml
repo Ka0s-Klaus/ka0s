@@ -41,8 +41,8 @@ jobs:
         if: ${{ success() }}
         run: |
           echo "Init repository"
-          gh issue comment $KAOS_ISSUE_NUMBER --body 'Se ha iniciado la ejecución ${{ env.KAOS_CODE}} a través de la tarjeta #${{ env.KAOS_ISSUE_NUMBER }}."'
-          gh issue comment $KAOS_ISSUE_NUMBER --body 'Se ha iniciado el Repositorio."' 
+          gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'Se ha iniciado la ejecución ${{ env.KAOS_CODE}} a través de la tarjeta #${{ env.KAOS_ISSUE_NUMBER }}."'
+          gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'Se ha iniciado el Repositorio."' 
   check-issue:
     runs-on: 
       group: execution
@@ -53,7 +53,7 @@ jobs:
         if: ${{ success() }}
         run: |
             echo "Check issue for execution $KAOS_ISSUE_NUMBER"
-            gh issue comment $KAOS_ISSUE_NUMBER --body 'Se ha comprobado que la tarjeta #${{ env.KAOS_ISSUE_NUMBER }} se puede ejecutar."'     
+            gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'Se ha comprobado que la tarjeta #${{ env.KAOS_ISSUE_NUMBER }} se puede ejecutar."'     
       - id: check-kaos
         name: Check Kaos
         if: ${{ success() }}
@@ -104,14 +104,14 @@ jobs:
             REMAINING_VALUES=${REMAINING_VALUES%?}            
             # Asignar el valor de la primera clave a una variable
             echo "KAOS_EXECUTION_TYPE=$FIRST_VALUE" >> $GITHUB_OUTPUT
-            gh issue comment $KAOS_ISSUE_NUMBER --body 'Se han extraido los datos de la tarjeta #${{ env.KAOS_ISSUE_NUMBER }}."'
+            gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'Se han extraido los datos de la tarjeta #${{ env.KAOS_ISSUE_NUMBER }}."'
       - id: data
         name: Check data
         if: ${{ success() }}
         run: |
             echo "Check lógical data"
             # Cambiamos de Backlog a In Progress
-            gh issue comment $KAOS_ISSUE_NUMBER --body 'Se comprobado los datos asociados a la tarjeta #${{ env.KAOS_ISSUE_NUMBER }}."'
+            gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'Se comprobado los datos asociados a la tarjeta #${{ env.KAOS_ISSUE_NUMBER }}."'
   show-data:
     runs-on: 
       group: execution
@@ -125,7 +125,7 @@ jobs:
           echo "KAOS_ISSUE_NUMBER: $KAOS_ISSUE_NUMBER" 
           echo "KAOS_ISSUE_TITLE: $KAOS_ISSUE_TITLE"
           echo "KAOS_ISSUE_BODY: $KAOS_ISSUE_BODY"
-          gh issue comment $KAOS_ISSUE_NUMBER --body 'Estos son los datos de la ejecucion ${{ env.KAOS_CODE}} de la tarjeta #${{ env.KAOS_ISSUE_NUMBER }}."'
+          gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'Estos son los datos de la ejecucion ${{ env.KAOS_CODE}} de la tarjeta ${{ env.KAOS_ISSUE_NUMBER }}."'
           echo "KAOS_ISSUE_NUMBER: $KAOS_ISSUE_NUMBER" 
           echo "KAOS_ISSUE_TITLE: $KAOS_ISSUE_TITLE" 
           echo "KAOS_ISSUE_BODY: $KAOS_ISSUE_BODY" 
@@ -144,7 +144,7 @@ jobs:
         run: |
           # Sección donde definimos como será la ejecución
           echo "Start execution"
-          gh issue comment $KAOS_ISSUE_NUMBER --body 'Se ha iniciado la ejecución de la tarjeta #${{ env.KAOS_ISSUE_NUMBER }}."'
+          gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'Se ha iniciado la ejecución de la tarjeta #${{ env.KAOS_ISSUE_NUMBER }}."'
           echo "KAOS_EXECUTION_RESULT=fichero_de_resultado" >> $GITHUB_OUTPUT
           echo "KAOS_EXECUTION_STATUS=success" >> $GITHUB_OUTPUT
       - id: type
@@ -163,13 +163,13 @@ jobs:
               gh workflow run "${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }}.yml"
               RUN_ID=$(gh run list --workflow="${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }}.yml" --limit=1 --json databaseId --jq '.[0].databaseId')
               echo "RUN_ID=$RUN_ID" >> $GITHUB_OUTPUT
-              gh issue comment $KAOS_ISSUE_NUMBER --body 'Se ha lanzado la ejecución de #${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }} con run_id: $RUN_ID. con las variables {${{ needs.check-data.outputs.KAOS_EXECUTION_VARS }}}"'
+              gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'Se ha lanzado la ejecución de #${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }} con run_id: $RUN_ID. con las variables {${{ needs.check-data.outputs.KAOS_EXECUTION_VARS }}}"'
               ;;
             "false")
-              gh issue comment $KAOS_ISSUE_NUMBER --body 'echo "El modulo ${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }} está inactivo y necesita autorización para su ejecución"'
+              gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'echo "El modulo ${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }} está inactivo y necesita autorización para su ejecución"'
               ;;
             *)
-              gh issue comment $KAOS_ISSUE_NUMBER --body 'El módulo solicitado#${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }} no está definido"'
+              gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'El módulo solicitado#${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }} no está definido"'
               ;;
           esac
   end-execution:
@@ -182,7 +182,7 @@ jobs:
         if: ${{ success() }}
         run: |
           echo "End execution"
-          gh issue comment $KAOS_ISSUE_NUMBER --body 'El resultado de la ejecución se añade a la tajeta #${{ env.KAOS_ISSUE_NUMBER }}, ha finalizado con el resultado SUCCESS."'        
+          gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'El resultado de la ejecución se añade a la tajeta #${{ env.KAOS_ISSUE_NUMBER }}, ha finalizado con el resultado SUCCESS."'        
   handle-success:
     runs-on: 
       group: execution
@@ -192,7 +192,7 @@ jobs:
       - id: handle-success-execution
         run: |
           # Si todo ha ido correcto añadimos el contenido del fichero 
-          gh issue comment $KAOS_ISSUE_NUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado de la ejecución se guardará en MongoDB"
+          gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado de la ejecución se guardará en MongoDB"
   handle_failure:
       runs-on: 
         group: execution
@@ -205,7 +205,7 @@ jobs:
             echo "Created issue"
             gh issue create  --title "[Ka0S] Error detected in ${{ env.KAOS_MODULE }}" --label "bug" --body "Error detected in ${{ env.KAOS_MODULE }}. Please check the logs for ${{ github.run_id }} more information of error."
             echo "Add comment to origin target"
-            gh issue comment $KAOS_ISSUE_NUMBER --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero ${{ env.KAOS_CODE }}.log"
+            gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero ${{ env.KAOS_CODE }}.log"
   end-workflow:
     runs-on: 
       group: execution
@@ -216,5 +216,5 @@ jobs:
         name: Finaliza el workflow
         run: |
           echo "End process"
-          gh issue comment $KAOS_ISSUE_NUMBER --body "Se finaliza Ka0s ${{ env.KAOS_CODE }}"
+          gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body "Se finaliza Ka0s ${{ env.KAOS_CODE }}"
           gh workflow run inspector.yml --ref 'main' -f kaos-issue-id=$KAOS_ISSUE_NUMBER -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start=""
