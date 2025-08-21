@@ -200,3 +200,4 @@
 - **Version**: 0.3.16 - **Description**: H1335 revision modulo yamllint
 - **Version**: 0.3.17 - **Description**: H1335 revision modulo yamllint
 - **Version**: 0.4.0 - **Description**: F1404 pruebas de funcionalidad
+- **Version**: 0.4.1 - **Description**: H1411 kaos error detected in kaos jsonlint
