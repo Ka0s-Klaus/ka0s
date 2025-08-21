@@ -41,7 +41,7 @@ jobs:
         if: ${{ success() }}
         run: |
           echo "Init repository"
-          gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'Se ha iniciado la ejecución ${{ env.KAOS_CODE}} a través de la tarjeta #${{ env.KAOS_ISSUE_NUMBER }}."'
+          gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'Se ha iniciado la ejecución ${{ env.KAOS_CODE}} a través de la tarjeta #${{ env.KAOS_ISSUE_NUMBER }}.'
           gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'Se ha iniciado el Repositorio."' 
   check-issue:
     runs-on: 
@@ -119,14 +119,14 @@ jobs:
             # Asignar el valor de la primera clave a una variable
             echo "El primer valor de la ejecucion es $FIRST_VALUE"
             echo "KAOS_EXECUTION_TYPE=$FIRST_VALUE" >> $GITHUB_OUTPUT
-            gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'Se han extraido los datos de la tarjeta #${{ env.KAOS_ISSUE_NUMBER }}."'
+            gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'Se han extraido los datos de la tarjeta #${{ env.KAOS_ISSUE_NUMBER }}.'
       - id: data
         name: Check data
         if: ${{ success() }}
         run: |
             echo "Check lógical data"
             # Cambiamos de Backlog a In Progress
-            gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'Se comprobado los datos asociados a la tarjeta #${{ env.KAOS_ISSUE_NUMBER }}."'
+            gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'Se comprobado los datos asociados a la tarjeta #${{ env.KAOS_ISSUE_NUMBER }}.'
   show-data:
     runs-on: 
       group: execution
@@ -147,10 +147,10 @@ jobs:
           echo "KAOS_ISSUE_NUMBER: $KAOS_ISSUE_NUMBER" 
           echo "KAOS_ISSUE_TITLE: $KAOS_ISSUE_TITLE"
           echo "KAOS_ISSUE_BODY: $KAOS_ISSUE_BODY"
-          gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'Estos son los datos de la ejecucion ${{ env.KAOS_CODE}} de la tarjeta ${{ env.KAOS_ISSUE_NUMBER }}."'
-          echo "KAOS_ISSUE_NUMBER: $KAOS_ISSUE_NUMBER" 
-          echo "KAOS_ISSUE_TITLE: $KAOS_ISSUE_TITLE" 
-          echo "KAOS_ISSUE_BODY: $KAOS_ISSUE_BODY" 
+          gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'Estos son los datos de la ejecucion ${{ env.KAOS_CODE}} de la tarjeta ${{ env.KAOS_ISSUE_NUMBER }}.\n \
+              KAOS_ISSUE_NUMBER: $KAOS_ISSUE_NUMBER \n \
+              KAOS_ISSUE_TITLE: $KAOS_ISSUE_TITLE \n \
+              KAOS_ISSUE_BODY: $KAOS_ISSUE_BODY \n'
   start-execution:
     runs-on: 
       group: execution
@@ -173,7 +173,7 @@ jobs:
         run: |
           # Sección donde definimos como será la ejecución
           echo "Start execution"
-          gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'Se ha iniciado la ejecución de la tarjeta #${{ env.KAOS_ISSUE_NUMBER }}."'
+          gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'Se ha iniciado la ejecución de la tarjeta #${{ env.KAOS_ISSUE_NUMBER }}.'
           echo "KAOS_EXECUTION_RESULT=fichero_de_resultado" >> $GITHUB_OUTPUT
           echo "KAOS_EXECUTION_STATUS=success" >> $GITHUB_OUTPUT
       - id: type
