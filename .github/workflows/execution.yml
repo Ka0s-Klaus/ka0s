@@ -192,8 +192,8 @@ jobs:
               # en esta parte de la ejecucion tenemos que tener en cuenta que podemos iniciar un workflow
               gh workflow run "${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }}.yml"
               RUN_ID=$(gh run list --workflow="${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }}.yml" --limit=1 --json databaseId --jq '.[0].databaseId')
-              echo "RUN_ID=$RUN_ID" >> $GITHUB_OUTPUT
-              gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'Se ha lanzado la ejecución de #${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }} con run_id: $RUN_ID. con las variables {${{ needs.check-data.outputs.KAOS_EXECUTION_VARS }}}'
+              # echo "RUN_ID=$RUN_ID" >> $GITHUB_OUTPUT
+              gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'Se ha lanzado la ejecución de #${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }} con run_id: $RUN_ID y con las variables {${{ needs.check-data.outputs.KAOS_EXECUTION_VARS }}}'
               ;;
             "false")
               gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'El modulo ${{ needs.check-data.outputs.KAOS_EXECUTION_TYPE }} está inactivo y necesita autorización para su ejecución'
