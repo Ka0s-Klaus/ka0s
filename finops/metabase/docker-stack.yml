@@ -1,0 +1,78 @@
+version: '3.8'
+
+networks:
+  metabase:
+    driver: overlay
+    attachable: true
+
+volumes:
+  metabase_data:
+    driver: local
+  postgres_data:
+    driver: local
+
+secrets:
+  db_user:
+    external: true
+  db_password:
+    external: true
+
+configs:
+  db_name:
+    external: true
+
+services:
+  metabase:
+    image: metabase/metabase:latest
+    ports:
+      - target: 3000
+        published: 3000
+        protocol: tcp
+        mode: host
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME_FILE: /run/secrets/db_name
+      MB_DB_PORT: 5432
+      MB_DB_USER_FILE: /run/secrets/db_user
+      MB_DB_PASS_FILE: /run/secrets/db_password
+      MB_DB_HOST: postgres
+    networks:
+      - metabase
+    configs:
+      - source: db_name
+        target: /run/secrets/db_name
+    secrets:
+      - source: db_user
+        target: db_user
+      - source: db_password
+        target: db_password
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER_FILE: /run/secrets/db_user
+      POSTGRES_DB_FILE: /run/secrets/db_name
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+    networks:
+      - metabase
+    secrets:
+      - source: db_user
+        target: db_user
+      - source: db_password
+        target: db_password
+    configs:
+      - source: db_name
+        target: /run/secrets/db_name
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
