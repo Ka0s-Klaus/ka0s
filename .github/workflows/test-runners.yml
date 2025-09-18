@@ -1,0 +1,24 @@
+name: 'Test Swarm Runners'
+
+on:
+  workflow_dispatch: # Permite la ejecución manual desde la pestaña "Actions"
+
+jobs:
+  test-runner:
+    name: 'Run a test job on a Swarm runner'
+    
+    # ¡Esta es la parte más importante!
+    # El trabajo solo se ejecutará en un runner que tenga TODAS estas etiquetas.
+    runs-on: [self-hosted, linux, x64, swarm-runner]
+
+    steps:
+      - name: 'Checkout code'
+        uses: actions/checkout@v4
+
+      - name: 'Show runner hostname and working directory'
+        run: |
+          echo "¡Hola desde un runner autoescalado en Docker Swarm!"
+          echo "El hostname de este runner es: $(hostname)"
+          echo "Estoy ejecutando el trabajo en el directorio:"
+          pwd
+          ls -la

@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  github-actions-manager:
+    image: alpine:latest
+    environment:
+      # --- CONFIGURACIÓN OBLIGATORIA ---
+      - GITHUB_PAT=${GITHUB_PAT} # Tu Token de Acceso Personal
+      - GITHUB_SCOPE=${GITHUB_SCOPE} # Ej: "tu-usuario/tu-repositorio"
+      - RUNNER_SERVICE_NAME=docker-stack_github-actions-runner # Nombre completo del servicio de runners
+      # --- CONFIGURACIÓN OPCIONAL ---
+      - MAX_RUNNERS=30 # Número máximo de runners simultáneos
+      - RUNNER_LABELS=self-hosted,linux,x64 # Etiquetas para los runners
+      - DOCKER_SOCKET_PATH=/var/run/docker.sock
+      - LOOP_INTERVAL=10 # Segundos entre cada comprobación de trabajos
+    command: >
+      sh -c "
+        apk add --no-cache curl jq &&
+        chmod +x /scripts/manager.sh &&
+        /scripts/manager.sh
+      "
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./scripts:/scripts # Montamos el script del manager
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: [node.role == manager] # Asegura que solo se ejecute en un nodo manager de Swarm
+
+  github-actions-runner:
+    image: ghcr.io/tu-usuario/ka0s-runners:latest # <-- ¡IMPORTANTE! Cambia esto por la ruta a tu imagen
+    environment:
+      - GITHUB_SCOPE=${GITHUB_SCOPE}
+      - RUNNER_EPHEMERAL=true # Asegura que el runner se elimine tras un trabajo
+      - RUNNER_LABELS=self-hosted,linux,x64 # Las mismas etiquetas que en el manager
+    deploy:
+      mode: replicated
+      replicas: 0 # Empezamos con 0 runners. El manager los escalará.
+    depends_on:
+      - github-actions-manager
