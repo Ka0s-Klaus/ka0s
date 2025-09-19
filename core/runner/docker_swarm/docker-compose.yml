@@ -2,40 +2,74 @@ version: '3.8'
 
 services:
   github-actions-manager:
+    # ... sin cambios ...
     image: alpine:latest
     environment:
-      # --- CONFIGURACIÓN OBLIGATORIA ---
-      - GITHUB_PAT=${GITHUB_PAT} # Tu Token de Acceso Personal
-      - GITHUB_SCOPE=${GITHUB_SCOPE} # Ej: "tu-usuario/tu-repositorio"
-      - RUNNER_SERVICE_NAME=docker-stack_github-actions-runner # Nombre completo del servicio de runners
-      # --- CONFIGURACIÓN OPCIONAL ---
-      - MAX_RUNNERS=30 # Número máximo de runners simultáneos
-      - RUNNER_LABELS=self-hosted,linux,x64 # Etiquetas para los runners
-      - DOCKER_SOCKET_PATH=/var/run/docker.sock
-      - LOOP_INTERVAL=10 # Segundos entre cada comprobación de trabajos
+      - RUNNER_SERVICE_NAME=kaosrunner_github-actions-runner
+      - MAX_RUNNERS=30
+      - LOOP_INTERVAL=15
     command: >
       sh -c "
-        apk add --no-cache curl jq &&
-        chmod +x /scripts/manager.sh &&
-        /scripts/manager.sh
+        apk add --no-cache curl jq docker-cli openssl coreutils &&
+        sh /manager.sh
       "
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./scripts:/scripts # Montamos el script del manager
+    configs:
+      - source: manager_script
+        target: /manager.sh
+    secrets:
+      - github_app_id
+      - github_installation_id
+      - github_app_private_key
+      - github_scope
     deploy:
       mode: replicated
       replicas: 1
       placement:
-        constraints: [node.role == manager] # Asegura que solo se ejecute en un nodo manager de Swarm
+        constraints: [node.role == manager]
 
   github-actions-runner:
-    image: ghcr.io/tu-usuario/ka0s-runners:latest # <-- ¡IMPORTANTE! Cambia esto por la ruta a tu imagen
+    image: ghcr.io/actions/actions-runner:latest
     environment:
-      - GITHUB_SCOPE=${GITHUB_SCOPE}
-      - RUNNER_EPHEMERAL=true # Asegura que el runner se elimine tras un trabajo
-      - RUNNER_LABELS=self-hosted,linux,x64 # Las mismas etiquetas que en el manager
+      - REPO_URL=https://github.com/Ka0s-Klaus/ka0s
+      - RUNNER_LABELS=self-hosted,linux,x64,swarm-runner
+      - EPHEMERAL=true
+    
+    command:
+      - "sh"
+      - "-c"
+      - |
+        RUNNER_NAME="swarm-runner-$(hostname )"
+        echo "--- Configurando el runner ${RUNNER_NAME} ---"
+
+        # --- ¡TU CORRECCIÓN APLICADA! Sin comillas innecesarias ---
+        ./config.sh --unattended --replace \
+          --url https://github.com/Ka0s-Klaus/ka0s \
+          --token BO7XQANZ6B5WM5T66FW5WV3IZUKT4 \
+          --labels swarm-runner \
+          --runnergroup swarm-runner \
+          --ephemeral
+          
+        echo "--- Configuración completada. Ejecutando el runner. ---"
+        
+        ./run.sh
     deploy:
       mode: replicated
-      replicas: 0 # Empezamos con 0 runners. El manager los escalará.
-    depends_on:
-      - github-actions-manager
+      replicas: 0
+
+# ... (secrets y configs sin cambios)
+secrets:
+  github_app_id:
+    external: true
+  github_installation_id:
+    external: true
+  github_app_private_key:
+    external: true
+  github_scope:
+    external: true
+
+configs:
+  manager_script:
+    external: true
+

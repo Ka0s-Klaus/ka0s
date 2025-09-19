@@ -25,7 +25,7 @@ env:
 jobs:
   job-core:
     runs-on:
-      group: inspector
+      group: swarm-runners
     steps:
       - id: repo
         name: Checkout Repository
@@ -54,7 +54,7 @@ jobs:
           git push origin ${{ github.ref }} --force-with-lease
   handle-success:
     runs-on:
-      group: inspector
+      group: swarm-runners
     needs: [job-core]
     if: ${{ success() }}
     steps: 
@@ -73,7 +73,7 @@ jobs:
           fi       
   handle_failure:
     runs-on:
-      group: inspector
+      group: swarm-runners
     needs: [job-core, handle-success]
     if: ${{ failure() }}
     steps:
