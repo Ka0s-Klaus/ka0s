@@ -44,18 +44,10 @@ services:
       - "-c"
       - |
         echo "--- Iniciando como usuario `whoami` ---"
-
-        # --- FASE 1: INSTALACIÓN CON SUDO ---
-        # Creamos un bloque de script que se ejecutará enteramente con sudo.
-        # Hereda las variables de entorno, por lo que PACKAGES_TO_INSTALL funciona.
         
-        # --- FASE 2: CONFIGURACIÓN Y EJECUCIÓN COMO 'runner' ---
-        # El script principal continúa aquí, como el usuario 'runner' original.
-        echo "--- Volviendo al contexto del usuario `whoami` ---"
-        
-        # 4. Configurar y ejecutar el runner (ya somos el usuario correcto )
+        # 1. Ejecutar el runner (ya somos el usuario correcto )
         RUNNER_NAME="swarm-runner-`hostname`"
-        echo "--- Configurando el runner ${RUNNER_NAME} ---"
+        echo "--- Ejecutado el runner ${RUNNER_NAME} ---"
         
         # Usamos el token dinámico inyectado por el manager
         ./config.sh --unattended --replace \
