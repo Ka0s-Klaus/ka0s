@@ -24,7 +24,7 @@ env:
 jobs: 
   job-core:
     runs-on:
-      group: ka0s
+      group: swarm-runners
     env:
       GITHUB_OUTPUT: ""
     if: ${{ !contains(github.event.head_commit.message, '[Ka0S] ') }} 
@@ -152,7 +152,7 @@ jobs:
           done < files-in-commit.txt      
   handle-success:
     runs-on:
-      group: ka0s
+      group: swarm-runners
     needs: [job-core]
     if: ${{ success() }}
     steps:
@@ -173,7 +173,7 @@ jobs:
           gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado de la ejecución se guardará en MongoDB"
   handle_failure:
     runs-on:
-      group: ka0s
+      group: swarm-runners
     needs: [job-core, handle-success]
     if: ${{ failure() }} 
     steps:
@@ -197,7 +197,7 @@ jobs:
           gh issue comment $RNNUMBER --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero ${{ env.KAOS_CODE }}.log"
   end-workflow:
     runs-on:
-      group: ka0s
+      group: swarm-runners
     needs: [job-core, handle-success, handle_failure]
     if: ${{ always() && !contains(github.event.head_commit.message, '[Ka0S] ') }} 
     env:
