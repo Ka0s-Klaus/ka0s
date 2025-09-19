@@ -1,4 +1,4 @@
-name: Ka0s Autom add docs to MongoDB
+name: swarm-runners Autom add docs to MongoDB
 
 on:
   schedule:
@@ -14,7 +14,7 @@ env:
   MONGO_NEW_PASS: ${{ secrets.DB_INITIAL_PASSWORD }}
   MONGO_SCRIPT_CREATE: core/database/scripts/add-doc-to-db.py
   KAOS_CODE: ${{ github.run_id }}
-  KAOS_MODULE: "[Ka0s] MongoDB"
+  KAOS_MODULE: "[swarm-runners] MongoDB"
   REPORT_SCAN: "audit/"
   REPORT_PATH: audit/mongodb/
   REPORT_FILENAME: mongo_setup_${{ github.run_id }}.json
@@ -24,10 +24,10 @@ env:
 jobs:
   job-core:
     runs-on:
-      group: m0ng0
+      group: swarm-runners
     env:
       GITHUB_OUTPUT: ""
-    if: ${{ !contains(github.event.head_commit.message, '[Ka0S] ') }}  
+    if: ${{ !contains(github.event.head_commit.message, '[swarm-runners] ') }}  
     steps:
       - id: repo
         name: Checkout code
@@ -55,7 +55,7 @@ jobs:
          echo "Uploading files to MongoDB update repository ..."
          git add ${{ env.REPORT_SCAN }}
          if ! git diff --staged --quiet; then
-            git commit -m "Ka0S] Uploading files to MongoDB update repository ..."
+            git commit -m "swarm-runners] Uploading files to MongoDB update repository ..."
             git push origin ${{ github.ref }}
           fi
 
@@ -68,7 +68,7 @@ jobs:
 
   handle-success:
     runs-on:
-      group: ka0s
+      group: swarm-runners
     needs: [job-core]
     if: ${{ success() }}
     steps:
@@ -90,7 +90,7 @@ jobs:
           # gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data_${{ env.KAOS_CODE }}.log"
   handle_failure:
     runs-on:
-      group: ka0s
+      group: swarm-runners
     needs: [job-core, handle-success]
     if: ${{ failure() }} 
     steps:
@@ -108,10 +108,10 @@ jobs:
         run: |
           echo "Error detected in process"
           echo "Created issue"
-          gh issue create  --title "[Ka0S] Error detected in ${{ env.KAOS_MODULE }}" --label "bug" --body "Error detected in ${{ env.KAOS_MODULE }}. Please check the logs for ${{ github.run_id }} more information of error."
+          gh issue create  --title "[swarm-runners] Error detected in ${{ env.KAOS_MODULE }}" --label "bug" --body "Error detected in ${{ env.KAOS_MODULE }}. Please check the logs for ${{ github.run_id }} more information of error."
   end-workflow:
     runs-on:
-      group: ka0s
+      group: swarm-runners
     needs: [job-core, handle-success, handle_failure]
     if: ${{ always() }} 
     env:
@@ -129,6 +129,6 @@ jobs:
         run: |
           echo "End process ${{ env.KAOS_CODE }}"
           # RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
-          # gh issue comment $RNNUMBER --body "Se finaliza Ka0s ${{ env.KAOS_CODE }}"
+          # gh issue comment $RNNUMBER --body "Se finaliza swarm-runners ${{ env.KAOS_CODE }}"
           # gh workflow run inspector.yml --ref 'main' -f kaos-issue-id= -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start=""
         
