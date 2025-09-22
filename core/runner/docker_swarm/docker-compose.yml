@@ -6,10 +6,14 @@ services:
     image: alpine:latest
     environment:
       - RUNNER_SERVICE_NAME=kaosrunner_github-actions-runner
-      - MAX_RUNNERS=30
-      - LOOP_INTERVAL=15
+      - MAX_RUNNERS=10
+      - LOOP_INTERVAL=1
+      - TZ=Europe/Madrid
     command: >
-      sh -c "apk add --no-cache curl jq docker-cli openssl coreutils && sh /manager.sh"
+      sh -c "
+        apk add --no-cache curl jq docker-cli openssl coreutils &&
+        sh /manager.sh
+      "
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     configs:
@@ -28,35 +32,26 @@ services:
 
   github-actions-runner:
     image: ghcr.io/actions/actions-runner:latest
-    # --- ¡CAMBIO CLAVE! El usuario de inicio es root ---
     environment:
       - REPO_URL=https://github.com/Ka0s-Klaus
       - RUNNER_LABELS=self-hosted,linux,x64,swarm-runner
       - EPHEMERAL=true
     
-    # --- ¡CAMBIO CLAVE! El runner ahora leerá el config de paquetes ---
-    configs:
-      - source: runner_packages
-        target: /home/runner/runner_packages.list
-
     command:
       - "sh"
       - "-c"
       - |
-        echo "--- Iniciando como usuario `whoami` ---"
-        
-        # 1. Ejecutar el runner (ya somos el usuario correcto )
-        RUNNER_NAME="swarm-runner-`hostname`"
-        echo "--- Ejecutado el runner ${RUNNER_NAME} ---"
-        
-        # Usamos el token dinámico inyectado por el manager
+        RUNNER_NAME="swarm-runner-$(hostname )"
+        echo "--- Configurando el runner ${RUNNER_NAME} ---"
+
+        # --- ¡TU CORRECCIÓN APLICADA! Sin comillas innecesarias ---
         ./config.sh --unattended --replace \
-          --url https://github.com/Ka0s-Klaus \
-          --token BO7XQAO5DGKIWVI2XTD2RVDIZU6KK \
+          --url https://github.com/Ka0s-Klaus/ka0s \
+          --token BO7XQANZ6B5WM5T66FW5WV3IZUKT4 \
           --labels swarm-runner \
           --runnergroup swarm-runners \
           --ephemeral
-        sleep 5  
+          
         echo "--- Configuración completada. Ejecutando el runner. ---"
         sleep 5
         ./run.sh
