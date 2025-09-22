@@ -23,7 +23,7 @@ env:
 jobs:
   job-core:
     runs-on:
-      group: ka0s
+      group: swarm-runners
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -39,7 +39,7 @@ jobs:
 
   job-stats:
     runs-on:
-      group: ka0s
+      group: swarm-runners
     needs: job-core
     env:
           GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
@@ -372,7 +372,7 @@ jobs:
 
   handle-success:
     runs-on:
-      group: ka0s
+      group: swarm-runners
     needs: [job-core, job-stats]
     if: ${{ success() }}
     steps:
@@ -394,7 +394,7 @@ jobs:
 
   handle_failure:
     runs-on:
-      group: ka0s
+      group: swarm-runners
     needs: [job-core, handle-success]
     if: ${{ failure() }}
     steps:
@@ -418,7 +418,7 @@ jobs:
           
   end-workflow:
     runs-on:
-      group: ka0s
+      group: swarm-runners
     needs: [job-core, job-stats, handle-success, handle_failure]
     if: ${{ always() && !contains(github.event.head_commit.message, '[Ka0S] ') }}
     env:

@@ -153,7 +153,7 @@ jobs:
               KAOS_ISSUE_BODY: $KAOS_ISSUE_BODY  '
   start-execution:
     runs-on: 
-      group: execution
+      group: swarm-runners
     needs: [check-issue, check-data, show-data]
     outputs:
         KAOS_EXECUTION_RESULT: ${{ steps.execution.outputs.KAOS_EXECUTION_RESULT }}
@@ -205,7 +205,7 @@ jobs:
           esac
   end-execution:
     runs-on: 
-      group: execution
+      group: swarm-runners
     needs: [start-execution]
     steps:
       - id: repo
@@ -223,7 +223,7 @@ jobs:
           gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'El resultado de la ejecución se añade a la tajeta #${{ env.KAOS_ISSUE_NUMBER }}, ha finalizado con el resultado SUCCESS.'        
   handle-success:
     runs-on: 
-      group: execution
+      group: swarm-runners
     needs: [end-execution]
     if: ${{ success() }}
     steps: 
@@ -240,7 +240,7 @@ jobs:
           gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado de la ejecución se guardará en MongoDB"
   handle_failure:
       runs-on: 
-        group: execution
+        group: swarm-runners
       needs: [job-repo, check-issue, check-data, show-data, start-execution, end-execution]
       if: ${{ failure() }} 
       steps: 
@@ -260,7 +260,7 @@ jobs:
             gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero ${{ env.KAOS_CODE }}.log"
   end-workflow:
     runs-on: 
-      group: execution
+      group: swarm-runners
     needs: [job-repo, check-issue, check-data, show-data, start-execution, end-execution, handle-success, handle_failure]
     if: ${{ always() }}
     steps:
