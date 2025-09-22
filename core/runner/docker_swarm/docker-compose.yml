@@ -2,17 +2,15 @@ version: '3.8'
 
 services:
   github-actions-manager:
-    # ... sin cambios ...
+    # --- SIN CAMBIOS ---
     image: alpine:latest
     environment:
       - RUNNER_SERVICE_NAME=kaosrunner_github-actions-runner
-      - MAX_RUNNERS=30
-      - LOOP_INTERVAL=15
+      - MAX_RUNNERS=10
+      - LOOP_INTERVAL=1
+      - TZ=Europe/Madrid
     command: >
-      sh -c "
-        apk add --no-cache curl jq docker-cli openssl coreutils &&
-        sh /manager.sh
-      "
+      sh -c "apk add --no-cache curl jq docker-cli openssl coreutils tzdata && sh /manager.sh"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     configs:
@@ -30,35 +28,42 @@ services:
         constraints: [node.role == manager]
 
   github-actions-runner:
-    image: ghcr.io/actions/actions-runner:latest
+    image: ka0score/actions-runner:1.0.1
+    # --- ¡VARIABLES DE ENTORNO! ---
     environment:
-      - REPO_URL=https://github.com/Ka0s-Klaus/ka0s
+      - REPO_URL=https://github.com/Ka0s-Klaus
       - RUNNER_LABELS=self-hosted,linux,x64,swarm-runner
       - EPHEMERAL=true
-    
+      - TZ=Europe/Madrid
+    configs:
+      - source: runner_packages
+        target: /home/runner/runner_packages.list
     command:
       - "sh"
       - "-c"
       - |
-        RUNNER_NAME="swarm-runner-$(hostname )"
-        echo "--- Configurando el runner ${RUNNER_NAME} ---"
-
-        # --- ¡TU CORRECCIÓN APLICADA! Sin comillas innecesarias ---
+        apk -add --no-cache tzdata
+        echo "--- Iniciando como usuario `whoami` $$GITHUB_TOKEN ---"
+        
+        RUNNER_NAME="swarm-runner-`hostname`"
+        echo "--- Ejecutado el runner $$RUNNER_NAME ---"
+        
         ./config.sh --unattended --replace \
-          --url https://github.com/Ka0s-Klaus/ka0s \
-          --token BO7XQANZ6B5WM5T66FW5WV3IZUKT4 \
+          --url https://github.com/Ka0s-Klaus \
+          --token $$GITHUB_TOKEN \
           --labels swarm-runner \
-          --runnergroup swarm-runner \
+          --runnergroup swarm-runners \
           --ephemeral
           
+        sleep 5  
         echo "--- Configuración completada. Ejecutando el runner. ---"
-        
+        sleep 5
         ./run.sh
     deploy:
       mode: replicated
       replicas: 0
 
-# ... (secrets y configs sin cambios)
+# ... (secrets y manager_script sin cambios) ...
 secrets:
   github_app_id:
     external: true
@@ -72,4 +77,6 @@ secrets:
 configs:
   manager_script:
     external: true
-
+  # --- ¡NUEVO! Declaramos el config de paquetes ---
+  runner_packages:
+    external: true

@@ -7,8 +7,8 @@ log() { echo "$(date -u +'%Y-%m-%dT%H:%M:%SZ') - $1"; }
 # --- CONFIGURACIÓN ---
 export DOCKER_HOST=unix:///var/run/docker.sock
 RUNNER_SERVICE_NAME=${RUNNER_SERVICE_NAME:-"kaosrunner_github-actions-runner"}
-MAX_RUNNERS=${MAX_RUNNERS:-30}
-LOOP_INTERVAL=${LOOP_INTERVAL:-15}
+MAX_RUNNERS=${MAX_RUNNERS}
+LOOP_INTERVAL=${LOOP_INTERVAL}
 
 # --- LEER SECRETOS (sin cambios) ---
 APP_ID=$(cat /run/secrets/github_app_id)
@@ -19,6 +19,7 @@ REPO_FULL_NAME=$(cat /run/secrets/github_scope)
 # --- LÓGICA DE AUTENTICACIÓN (sin cambios) ---
 ACCESS_TOKEN=""
 TOKEN_EXPIRES_AT=0
+# Modificamos la sección de actualización del token
 get_access_token() {
   log "Generando token de acceso..."
   now=$(date +%s); iat=$((${now} - 60)); exp=$((${now} + 540))
@@ -26,13 +27,38 @@ get_access_token() {
   payload_b64=$(printf '{"iat":%s,"exp":%s,"iss":"%s"}' "${iat}" "${exp}" "${APP_ID}" | openssl base64 -e -A | tr '+/' '-_' | tr -d '=')
   signature=$(echo -n "${header_b64}.${payload_b64}" | openssl dgst -sha256 -sign "${PRIVATE_KEY_PATH}" | openssl base64 -e -A | tr '+/' '-_' | tr -d '=')
   JWT="${header_b64}.${payload_b64}.${signature}"
-  token_response=$(curl -s -X POST -H "Authorization: Bearer ${JWT}" -H "Accept: application/vnd.github.v3+json" "https://api.github.com/app/installations/${INSTALLATION_ID}/access_tokens" )
-  ACCESS_TOKEN=$(echo "${token_response}" | jq -r .token)
-  expires_at_str=$(echo "${token_response}" | jq -r .expires_at)
-  if [ -z "$ACCESS_TOKEN" ] || [ "$ACCESS_TOKEN" = "null" ]; then log "ERROR al obtener token: ${token_response}"; return 1; fi
-  TOKEN_EXPIRES_AT=$(date -d "${expires_at_str}" +%s)
-  log "Token obtenido con éxito."
+  
+  # Primero obtenemos el token de instalación
+  token_response=$(curl -s -X POST -H "Authorization: Bearer ${JWT}" -H "Accept: application/vnd.github+json" "https://api.github.com/app/installations/${INSTALLATION_ID}/access_tokens")
+  temp_token=$(echo "${token_response}" | jq -r .token)
+  
+  # Añadir después de leer REPO_FULL_NAME
+  ORG_NAME=$(echo "${REPO_FULL_NAME}" | cut -d'/' -f1)
+  
+  # Luego usamos ese token para obtener el token de registro del runner
+  registration_response=$(curl -s -X POST \
+    -H "Authorization: Bearer ${temp_token}" \
+    -H "Accept: application/vnd.github+json" \
+    "https://api.github.com/orgs/${ORG_NAME}/actions/runners/registration-token")
+  
+  ACCESS_TOKEN=$(echo "${registration_response}" | jq -r .token)
+  if [ -z "$ACCESS_TOKEN" ] || [ "$ACCESS_TOKEN" = "null" ]; then 
+    log "ERROR al obtener token de registro: ${registration_response}"
+    return 1
+  fi
+  
+  TOKEN_EXPIRES_AT=$((now + 3600)) # Los tokens de registro expiran en 1 hora
+  log "Token de registro obtenido con éxito."
+  log "-------------------------------------"
+  log "Token de runners obtenido con éxito. "
   return 0
+}
+
+# Eliminamos la sección de eliminación y creación del secreto
+# y la reemplazamos por una actualización del servicio
+update_runner_token() {
+  docker service update --env-add "GITHUB_TOKEN=${ACCESS_TOKEN}" "${RUNNER_SERVICE_NAME}" || true
+  log "Se ha actualizado el GITHUB_TOKEN, ${ACCESS_TOKEN} ..."
 }
 
 # --- BUCLE PRINCIPAL ---
@@ -42,10 +68,15 @@ API_URL_RUNS="https://api.github.com/repos/${REPO_FULL_NAME}/actions/runs"
 while true; do
   now=$(date +%s )
   if [ -z "$ACCESS_TOKEN" ] || [ "$now" -ge "$((TOKEN_EXPIRES_AT - 300))" ]; then
-    if ! get_access_token; then log "Fallo al refrescar token, reintentando..."; sleep 60; continue; fi
+    if ! get_access_token; then
+      log "Fallo al refrescar token, reintentando..."
+      sleep 60
+      continue
+    fi
+    update_runner_token
   fi
 
-  AUTH_HEADER="Authorization: Bearer ${ACCESS_TOKEN}"
+  AUTH_HEADER="Authorization: Bearer ${JWT}"
   
   response=$(curl -s -H "${AUTH_HEADER}" -H "Accept: application/vnd.github.v3+json" "${API_URL_RUNS}?status=queued")
   queued_jobs=$(echo "$response" | jq '.total_count // 0')
@@ -55,20 +86,11 @@ while true; do
   active_runners=$(echo "${active_runners_raw}" | cut -d'/' -f1); active_runners=${active_runners:-0}
   log "Runners activos en Swarm: ${active_runners}"
 
-  needed_runners=$((queued_jobs))
-  if [ "$needed_runners" -gt "$MAX_RUNNERS" ]; then needed_runners=$MAX_RUNNERS; fi
-
-  if [ "$needed_runners" -gt "$active_runners" ]; then
-    log "Escalando hacia arriba: ${active_runners} -> ${needed_runners} réplicas..."
-    # --- ¡CAMBIO CLAVE! ---
-    # Usamos un solo comando 'update' para escalar y añadir la variable de entorno
-    docker service update --replicas "${needed_runners}" --env-add "GITHUB_TOKEN=${ACCESS_TOKEN}" "${RUNNER_SERVICE_NAME}"
-  elif [ "$needed_runners" -lt "$active_runners" ]; then
-    log "Escalando hacia abajo: ${active_runners} -> ${needed_runners} réplicas..."
-    docker service update --replicas "${needed_runners}" --env-rm "GITHUB_TOKEN" "${RUNNER_SERVICE_NAME}"
-  else
-    log "No se necesita ajuste de escala."
+  needed_runners=$((queued_jobs + active_runners - 1))
+  log "Total de réplicas (cola + activos): ${needed_runners}"
+  if [ "$queued_jobs" -gt 1 ] && [ "$needed_runners" -gt "$active_runners" ]; then
+    docker service update --replicas "${needed_runners}" "${RUNNER_SERVICE_NAME}"
   fi
-
+  log "Siguiente escalado/desescalado en: ${LOOP_INTERVAL}"
   sleep "${LOOP_INTERVAL}"
 done
