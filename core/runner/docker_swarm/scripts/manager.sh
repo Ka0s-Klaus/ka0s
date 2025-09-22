@@ -50,7 +50,8 @@ get_access_token() {
   TOKEN_EXPIRES_AT=$((now + 3600)) # Los tokens de registro expiran en 1 hora
   log "Token de registro obtenido con éxito."
   log "-------------------------------------"
-  log "Token de runners obtenido con éxito. "
+  docker service update --env-add "GITHUB_TOKEN=${ACCESS_TOKEN}" "${RUNNER_SERVICE_NAME}" || true
+  log "Token de runners actualizado con éxito. "
   return 0
 }
 
@@ -87,9 +88,8 @@ while true; do
   log "Runners activos en Swarm: ${active_runners}"
 
   needed_runners=$((queued_jobs + active_runners - 1))
-  log "Total de réplicas (cola + activos): ${needed_runners}"
   if [ "$queued_jobs" -gt 1 ] && [ "$needed_runners" -gt "$active_runners" ]; then
-    docker service update --replicas "${needed_runners}" "${RUNNER_SERVICE_NAME}"
+    docker service update --replicas "${needed_runners}" --env-add "GITHUB_TOKEN=${ACCESS_TOKEN}" "${RUNNER_SERVICE_NAME}"
   fi
   log "Siguiente escalado/desescalado en: ${LOOP_INTERVAL}"
   sleep "${LOOP_INTERVAL}"
