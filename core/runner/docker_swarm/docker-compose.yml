@@ -7,9 +7,8 @@ services:
     user: root
     environment:
       - RUNNER_SERVICE_NAME=kaosrunner_github-actions-runner
-      - MAX_RUNNERS=0
+      - MAX_RUNNERS=10
       - LOOP_INTERVAL=30
-      - TZ=Europe/Madrid
     command:
       - "sh"
       - "-c"
@@ -27,6 +26,7 @@ services:
       - github_installation_id
       - github_app_private_key
       - github_scope
+      - github_scope_org
     deploy:
       mode: replicated
       replicas: 1
@@ -40,7 +40,6 @@ services:
       - REPO_URL=https://github.com/Ka0s-Klaus
       - RUNNER_LABELS=self-hosted,linux,x64,swarm-runner
       - EPHEMERAL=true
-      - TZ=Europe/Madrid
     configs:
       - source: runner_packages
         target: /home/runner/runner_packages.list
@@ -58,7 +57,6 @@ services:
           --labels swarm-runner \
           --runnergroup swarm-runners \
           --ephemeral
-          --disableupdate
           
         sleep 5  
         echo "--- Configuración completada. Ejecutando el runner. ---"
@@ -77,6 +75,8 @@ secrets:
   github_app_private_key:
     external: true
   github_scope:
+    external: true
+  github_scope_org:
     external: true
 
 configs:
