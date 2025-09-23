@@ -58,19 +58,19 @@ jobs:
         if: success()
         run: |
           # Convertir la lista de IDs en un array
-          read -r -a RUNNER_IDS <<< "${{ steps.get-runners.outputs.runner_names }}"
+          read -r -a runner_name <<< "${{ steps.get-runners.outputs.runner_names }}"
           
           # Eliminar cada runner y registrar el resultado
           echo "\nResultados de la eliminación:" >> runner_results/delete_runners_report.txt
-          for runner_id in "${RUNNER_IDS[@]}"; do
-            echo "Eliminando runner $runner_id..."
+          while IFS=, read -r -a runner_name <<< "${{ steps.get-runners.outputs.runner_names }}"; do
+            echo "Eliminando runner $runner_name..."
             if gh api \
               --method DELETE \
               -H "Accept: application/vnd.github+json" \
-              "/orgs/${{ github.repository_owner }}/actions/runners/$runner_id"; then
-              echo "✓ Runner $runner_id eliminado exitosamente" 
+              "/orgs/${{ github.repository_owner }}/actions/runners/$runner_name"; then
+              echo "✓ Runner $runner_name eliminado exitosamente" 
             else
-              echo "✗ Error al eliminar runner $runner_id" 
+              echo "✗ Error al eliminar runner $runner_name" 
             fi
           done
 
