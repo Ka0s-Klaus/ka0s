@@ -76,7 +76,7 @@ while true; do
     update_runner_token
   fi
 
-  AUTH_HEADER="Authorization: Bearer ${JWT}"
+  AUTH_HEADER="Authorization: Bearer ${temp_token}"
   
   response=$(curl -s -H "${AUTH_HEADER}" -H "Accept: application/vnd.github.v3+json" "${API_URL_RUNS}?status=queued")
   queued_jobs=$(echo "$response" | jq '.total_count // 0')
