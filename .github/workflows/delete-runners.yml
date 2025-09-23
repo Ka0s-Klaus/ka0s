@@ -42,7 +42,7 @@ jobs:
             -H "Accept: application/vnd.github+json" \
             /orgs/${{ github.repository_owner }}/actions/runners \
             --paginate \
-            --jq '.runners[] | select(.runner_group_name == "${{ inputs.runner_group }}") | .id' \
+            --jq '.runners[] | select(.runner_group_name == ${{ toJSON(inputs.runner_group) }}) | .name' \
             | tr -d '\r' \
             | tr '\n' ' ')
           
