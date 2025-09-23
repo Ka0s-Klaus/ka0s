@@ -26,15 +26,18 @@ jobs:
       - name: Get Runners
         id: get-runners
         run: |
+          # Crear el directorio para los resultados
+          mkdir -p runner_results
+
           # Mostrar todos los grupos de runners de la organización
-          echo "Grupos de runners disponibles:"
+          echo "Grupos de runners disponibles:" | tee -a runner_results/delete_runners_report.txt
           gh api \
             -H "Accept: application/vnd.github+json" \
             /orgs/${{ github.repository_owner }}/actions/runner-groups \
-            --jq '.runner_groups[]'
+            --jq '.runner_groups[]' | tee -a runner_results/delete_runners_report.txt
 
           # Obtener la lista de runners del grupo especificado
-          echo "Obtener la lista de runners del grupo especificado: ${{ inputs.runner_group }}"
+          echo "Obtener la lista de runners del grupo especificado: ${{ inputs.runner_group }}" | tee -a runner_results/delete_runners_report.txt
           RUNNERS=$(gh api \
             -H "Accept: application/vnd.github+json" \
             /orgs/${{ github.repository_owner }}/actions/runners \
@@ -45,8 +48,10 @@ jobs:
           
           if [ -n "$RUNNERS" ]; then
             echo "runner_names=$RUNNERS" >> $GITHUB_OUTPUT
+            echo "Runners encontrados: $RUNNERS" >> runner_results/delete_runners_report.txt
           else
             echo "runner_names=" >> $GITHUB_OUTPUT
+            echo "No se encontraron runners" >> runner_results/delete_runners_report.txt
           fi
 
       - name: Delete Runners
