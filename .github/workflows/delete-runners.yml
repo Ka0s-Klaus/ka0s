@@ -29,7 +29,7 @@ jobs:
           gh api \
             -H "Accept: application/vnd.github+json" \
             /orgs/${{ github.repository_owner }}/actions/runner-groups \
-            --jq '.runner_groups[] | {name: .name, id: .id, runners_count: .runners_count}'
+            --jq '.runner_groups[]'
 
           # Obtener la lista de runners del grupo especificado
           RUNNERS=$(gh api \
