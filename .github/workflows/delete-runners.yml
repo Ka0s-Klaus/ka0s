@@ -57,25 +57,17 @@ jobs:
           IFS=$'\n' read -r -a RUNNER_NAMES <<< "${{ steps.get-runners.outputs.runner_names }}"
           
           # Eliminar cada runner y registrar el resultado
-          echo "\nResultados de la eliminación:" >> runner_results/delete_runners_report.txt
           for runner_name in "${RUNNER_NAMES[@]}"; do
             echo "Eliminando runner $runner_name..."
             if gh api \
               --method DELETE \
               -H "Accept: application/vnd.github+json" \
               "/orgs/${{ github.repository_owner }}/actions/runners/$runner_name"; then
-              echo "✓ Runner $runner_name eliminado exitosamente" >> runner_results/delete_runners_report.txt
+              echo "✓ Runner $runner_name eliminado exitosamente" 
             else
-              echo "✗ Error al eliminar runner $runner_name" >> runner_results/delete_runners_report.txt
+              echo "✗ Error al eliminar runner $runner_name"
             fi
           done
-
-      - name: Upload Results
-        uses: actions/upload-artifact@v4
-        with:
-          name: runner-deletion-report
-          path: runner_results/delete_runners_report.txt
-          retention-days: 30
 
       - name: Check Results
         run: |
