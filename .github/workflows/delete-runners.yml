@@ -55,7 +55,7 @@ jobs:
           fi
 
       - name: Delete Runners
-        if: steps.get-runners.outputs.runner_ids != ''
+        if: steps.get-runners.outputs.runner_names != ''
         run: |
           # Convertir la lista de IDs en un array
           read -r -a RUNNER_IDS <<< "${{ steps.get-runners.outputs.runner_ids }}"
