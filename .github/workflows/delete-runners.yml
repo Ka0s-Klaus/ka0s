@@ -42,7 +42,7 @@ jobs:
             -H "Accept: application/vnd.github+json" \
             /orgs/${{ github.repository_owner }}/actions/runners \
             --paginate \
-            --jq '.runners[]')
+            --jq '.runners[] | .name')
 
           echo "$RUNNERS" 
           if [ -n "$RUNNERS" ]; then
