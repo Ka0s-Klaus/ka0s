@@ -28,8 +28,29 @@ jobs:
           RUNNERS=$(gh api \
             -H "Accept: application/vnd.github+json" \
             /orgs/${{ github.repository_owner }}/actions/runners \
-            --jq '.runners // [] | map(select(.group_name=="${{ inputs.runner_group }}")) | map(.id) | join("\n")' || echo "")
-          echo "runner_ids=$RUNNERS" >> $GITHUB_OUTPUT
+            --paginate \
+            --jq '.runners[] | select(.group_name=="${{ inputs.runner_group }}") | .id')
+          
+          if [ -n "$RUNNERS" ]; then
+            echo "runner_ids<<EOF" >> $GITHUB_OUTPUT
+            echo "$RUNNERS" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "runner_ids=" >> $GITHUB_OUTPUT
+          fi
+          
+          # Crear directorio para resultados
+          mkdir -p runner_results
+          
+          # Generar archivo de resultados con información detallada
+          echo "Resultados de la eliminación de runners - $(date)" > runner_results/delete_runners_report.txt
+          echo "Grupo de runners: ${{ inputs.runner_group }}" >> runner_results/delete_runners_report.txt
+          echo "\nRunners encontrados:" >> runner_results/delete_runners_report.txt
+          if [ -n "$RUNNERS" ]; then
+            echo "$RUNNERS" >> runner_results/delete_runners_report.txt
+          else
+            echo "No se encontraron runners en el grupo especificado" >> runner_results/delete_runners_report.txt
+          fi
 
       - name: Delete Runners
         if: steps.get-runners.outputs.runner_ids != ''
@@ -37,14 +58,26 @@ jobs:
           # Convertir la lista de IDs en un array
           IFS=$'\n' read -r -a RUNNER_IDS <<< "${{ steps.get-runners.outputs.runner_ids }}"
           
-          # Eliminar cada runner
+          # Eliminar cada runner y registrar el resultado
+          echo "\nResultados de la eliminación:" >> runner_results/delete_runners_report.txt
           for runner_id in "${RUNNER_IDS[@]}"; do
             echo "Eliminando runner $runner_id..."
-            gh api \
+            if gh api \
               --method DELETE \
               -H "Accept: application/vnd.github+json" \
-              /orgs/${{ github.repository_owner }}/actions/runners/$runner_id
+              /orgs/${{ github.repository_owner }}/actions/runners/$runner_id; then
+              echo "✓ Runner $runner_id eliminado exitosamente" >> runner_results/delete_runners_report.txt
+            else
+              echo "✗ Error al eliminar runner $runner_id" >> runner_results/delete_runners_report.txt
+            fi
           done
+
+      - name: Upload Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: runner-deletion-report
+          path: runner_results/delete_runners_report.txt
+          retention-days: 30
 
       - name: Check Results
         run: |
