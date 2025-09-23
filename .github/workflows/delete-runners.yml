@@ -63,18 +63,25 @@ jobs:
           # Eliminar cada runner y registrar el resultado
           echo "\nResultados de la eliminación:" >> runner_results/delete_runners_report.txt
           for runner_name in "${RUNNER_NAMES[@]}"; do
+            # Ignorar elementos vacíos
+            if [ -z "$runner_name" ]; then
+              continue
+            fi
+            echo "Eliminando runner $runner_name..."
+            
+            # Capturar tanto la salida como el código de estado
             RESPONSE=$(gh api \
               --method DELETE \
               -H "Accept: application/vnd.github+json" \
-              "/orgs/${{ github.repository_owner }}/actions/runners/$runner_name")
-            echo "Eliminando runner $runner_name... status $RESPONSE"
-            if gh api \
-              --method DELETE \
-              -H "Accept: application/vnd.github+json" \
-              "/orgs/${{ github.repository_owner }}/actions/runners/$runner_name"; then
+              "/orgs/${{ github.repository_owner }}/actions/runners/$runner_name" 2>&1)
+            STATUS=$?
+            
+            if [ $STATUS -eq 0 ]; then
               echo "✓ Runner $runner_name eliminado exitosamente" 
+              echo "Respuesta de la API: $RESPONSE"
             else
               echo "✗ Error al eliminar runner $runner_name" 
+              echo "Error de la API: $RESPONSE"
             fi
           done
 
