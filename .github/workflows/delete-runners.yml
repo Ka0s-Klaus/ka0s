@@ -42,41 +42,41 @@ jobs:
             -H "Accept: application/vnd.github+json" \
             /orgs/${{ github.repository_owner }}/actions/runners \
             --paginate \
-            --jq '.runners[] | .name' \
+            --jq '.runners[] | select(.runner_group_name == "${{ inputs.runner_group }}") | .id' \
             | tr -d '\r' \
             | tr '\n' ' ')
           
           if [ -n "$RUNNERS" ]; then
-            echo "runner_names=$RUNNERS" >> $GITHUB_OUTPUT
+            echo "runner_ids=$RUNNERS" >> $GITHUB_OUTPUT
             echo "Runners encontrados: $RUNNERS" >> runner_results/delete_runners_report.txt
           else
-            echo "runner_names=" >> $GITHUB_OUTPUT
+            echo "runner_ids=" >> $GITHUB_OUTPUT
             echo "No se encontraron runners" >> runner_results/delete_runners_report.txt
           fi
 
       - name: Delete Runners
-        if: steps.get-runners.outputs.runner_names != ''
+        if: steps.get-runners.outputs.runner_ids != ''
         run: |
-          # Convertir la lista de nombres en un array
-          read -r -a RUNNER_NAMES <<< "${{ steps.get-runners.outputs.runner_names }}"
+          # Convertir la lista de IDs en un array
+          read -r -a RUNNER_IDS <<< "${{ steps.get-runners.outputs.runner_ids }}"
           
           # Eliminar cada runner y registrar el resultado
           echo "\nResultados de la eliminación:" >> runner_results/delete_runners_report.txt
-          for runner_name in "${RUNNER_NAMES[@]}"; do
-            echo "Eliminando runner $runner_name..."
+          for runner_id in "${RUNNER_IDS[@]}"; do
+            echo "Eliminando runner $runner_id..."
             if gh api \
               --method DELETE \
               -H "Accept: application/vnd.github+json" \
-              "/orgs/${{ github.repository_owner }}/actions/runners/$runner_name"; then
-              echo "✓ Runner $runner_name eliminado exitosamente" >> runner_results/delete_runners_report.txt
+              "/orgs/${{ github.repository_owner }}/actions/runners/$runner_id"; then
+              echo "✓ Runner $runner_id eliminado exitosamente" >> runner_results/delete_runners_report.txt
             else
-              echo "✗ Error al eliminar runner $runner_name" >> runner_results/delete_runners_report.txt
+              echo "✗ Error al eliminar runner $runner_id" >> runner_results/delete_runners_report.txt
             fi
           done
 
       - name: Check Results
         run: |
-          if [[ -z "${{ steps.get-runners.outputs.runner_ids }}" ]]; then
+          if [[ -z "${{ steps.get-runners.outputs.runner_names }}" ]]; then
             echo "No se encontraron runners en el grupo ${{ inputs.runner_group }}"
           else
             echo "Runners eliminados exitosamente del grupo ${{ inputs.runner_group }}"
