@@ -69,19 +69,19 @@ jobs:
             fi
             echo "Eliminando runner $runner_name..."
             
-            # Capturar tanto la salida como el código de estado
-            RESPONSE=$(gh api \
+            # Capturar el código de estado HTTP
+            STATUS_CODE=$(gh api \
               --method DELETE \
               -H "Accept: application/vnd.github+json" \
-              "/orgs/${{ github.repository_owner }}/actions/runners/$runner_name" 2>&1)
-            STATUS=$?
+              "/orgs/${{ github.repository_owner }}/actions/runners/$runner_name" \
+              --silent -I | grep -i '^HTTP' | awk '{print $2}')
             
-            if [ $STATUS -eq 0 ]; then
+            if [ "$STATUS_CODE" = "204" ]; then
               echo "✓ Runner $runner_name eliminado exitosamente"
-              echo "Respuesta de la API: $RESPONSE"
+              echo "Código de estado HTTP: $STATUS_CODE"
             else
               echo "✗ Error al eliminar runner $runner_name"
-              echo "Error: $RESPONSE"
+              echo "Código de estado HTTP: $STATUS_CODE"
               exit 1
             fi
           done
