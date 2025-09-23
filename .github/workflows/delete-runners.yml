@@ -42,15 +42,15 @@ jobs:
             -H "Accept: application/vnd.github+json" \
             /orgs/${{ github.repository_owner }}/actions/runners \
             --paginate \
-            --jq '.runners[] | select(.runner_group_name == ${{ toJSON(inputs.runner_group) }}) | .name' \
+            --jq '.runners[] | .name' \
             | tr -d '\r' \
             | tr '\n' ' ')
           
           if [ -n "$RUNNERS" ]; then
-            echo "runner_ids=$RUNNERS" >> $GITHUB_OUTPUT
+            echo "runner_names=$RUNNERS" >> $GITHUB_OUTPUT
             echo "Runners encontrados: $RUNNERS" >> runner_results/delete_runners_report.txt
           else
-            echo "runner_ids=" >> $GITHUB_OUTPUT
+            echo "runner_names=" >> $GITHUB_OUTPUT
             echo "No se encontraron runners" >> runner_results/delete_runners_report.txt
           fi
 
