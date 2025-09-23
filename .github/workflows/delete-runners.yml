@@ -28,7 +28,7 @@ jobs:
           RUNNERS=$(gh api \
             -H "Accept: application/vnd.github+json" \
             /orgs/${{ github.repository_owner }}/actions/runners \
-            --jq '.runners[] | select(.group_name=="${{ inputs.runner_group }}") | .id')
+            --jq '.runners // [] | map(select(.group_name=="${{ inputs.runner_group }}")) | map(.id) | join("\n")' || echo "")
           echo "runner_ids=$RUNNERS" >> $GITHUB_OUTPUT
 
       - name: Delete Runners
