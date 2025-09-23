@@ -10,6 +10,8 @@ on:
 
 env:
   GITHUB_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+  KAOS_MODULE: "[Ka0s] Delete Swarm Runners"
+  KAOS_CODE: ${{ github.run_id }}
 
 permissions:
   actions: write      # needed for runner operations
@@ -94,7 +96,6 @@ jobs:
             echo "Runners eliminados exitosamente del grupo ${{ inputs.runner_group }}"
           fi
   
-
   handle-success:
     runs-on:
       group: swarm-runners
