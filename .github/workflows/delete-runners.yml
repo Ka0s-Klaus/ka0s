@@ -34,11 +34,12 @@ jobs:
             --jq '.runner_groups[]'
 
           # Obtener la lista de runners del grupo especificado
+          echo "Obtener la lista de runners del grupo especificado: ${{ inputs.runner_group }}"
           RUNNERS=$(gh api \
             -H "Accept: application/vnd.github+json" \
             /orgs/${{ github.repository_owner }}/actions/runners \
             --paginate \
-            --jq '.runners[]'
+            --jq '.'
           # ' | select(.name=="${{ inputs.runner_group }}")')
           
           if [ -n "$RUNNERS" ]; then
