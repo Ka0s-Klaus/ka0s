@@ -15,6 +15,7 @@ APP_ID=$(cat /run/secrets/github_app_id)
 INSTALLATION_ID=$(cat /run/secrets/github_installation_id)
 PRIVATE_KEY_PATH="/run/secrets/github_app_private_key"
 REPO_FULL_NAME=$(cat /run/secrets/github_scope)
+ORG_FULL_NAME=$(cat /run/secrets/github_scope_org)
 
 # --- LÓGICA DE AUTENTICACIÓN (sin cambios) ---
 ACCESS_TOKEN=""
@@ -32,14 +33,11 @@ get_access_token() {
   token_response=$(curl -s -X POST -H "Authorization: Bearer ${JWT}" -H "Accept: application/vnd.github+json" "https://api.github.com/app/installations/${INSTALLATION_ID}/access_tokens")
   temp_token=$(echo "${token_response}" | jq -r .token)
   
-  # Añadir después de leer REPO_FULL_NAME
-  ORG_NAME=$(echo "${REPO_FULL_NAME}" | cut -d'/' -f1)
-  
   # Luego usamos ese token para obtener el token de registro del runner
   registration_response=$(curl -s -X POST \
     -H "Authorization: Bearer ${temp_token}" \
     -H "Accept: application/vnd.github+json" \
-    "https://api.github.com/orgs/${ORG_NAME}/actions/runners/registration-token")
+    "https://api.github.com/orgs/${ORG_FULL_NAME}/actions/runners/registration-token")
   
   ACCESS_TOKEN=$(echo "${registration_response}" | jq -r .token)
   if [ -z "$ACCESS_TOKEN" ] || [ "$ACCESS_TOKEN" = "null" ]; then 
@@ -50,8 +48,9 @@ get_access_token() {
   TOKEN_EXPIRES_AT=$((now + 3600)) # Los tokens de registro expiran en 1 hora
   log "Token de registro obtenido con éxito."
   log "-------------------------------------"
-  docker service update --env-add "GITHUB_TOKEN=${ACCESS_TOKEN}" "${RUNNER_SERVICE_NAME}" || true
-  log "Token de runners actualizado con éxito. "
+  update_runner_token
+  log "Token de registro actualizado con éxito."
+  log "----------------------------------------"
   return 0
 }
 
@@ -91,6 +90,9 @@ while true; do
   if [ "$queued_jobs" -gt 1 ] && [ "$needed_runners" -gt "$active_runners" ]; then
     docker service update --replicas "${needed_runners}" --env-add "GITHUB_TOKEN=${ACCESS_TOKEN}" "${RUNNER_SERVICE_NAME}"
   fi
+  log "En cola detectados: ${queued_jobs}"
+  log "Activos en Swarm: ${active_runners}"
+  log "Escalado en Swarm: ${needed_runners}"
   log "Siguiente escalado/desescalado en: ${LOOP_INTERVAL}"
   sleep "${LOOP_INTERVAL}"
 done
