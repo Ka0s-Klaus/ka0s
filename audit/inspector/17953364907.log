@@ -1,0 +1,1486 @@
+job-core	Set up job	﻿2025-09-23T16:57:52.7760242Z Current runner version: '2.328.0'
+job-core	Set up job	2025-09-23T16:57:52.7768896Z Runner name: 'c68a931b0999'
+job-core	Set up job	2025-09-23T16:57:52.7770248Z Runner group name: 'swarm-runners'
+job-core	Set up job	2025-09-23T16:57:52.7771304Z Machine name: 'c68a931b0999'
+job-core	Set up job	2025-09-23T16:57:52.7774638Z ##[group]GITHUB_TOKEN Permissions
+job-core	Set up job	2025-09-23T16:57:52.7777751Z Actions: write
+job-core	Set up job	2025-09-23T16:57:52.7778352Z Contents: read
+job-core	Set up job	2025-09-23T16:57:52.7778825Z Issues: write
+job-core	Set up job	2025-09-23T16:57:52.7779457Z Metadata: read
+job-core	Set up job	2025-09-23T16:57:52.7779936Z ##[endgroup]
+job-core	Set up job	2025-09-23T16:57:52.7782299Z Secret source: Actions
+job-core	Set up job	2025-09-23T16:57:52.7783332Z Prepare workflow directory
+job-core	Set up job	2025-09-23T16:57:52.8362914Z Prepare all required actions
+job-core	Set up job	2025-09-23T16:57:52.8426052Z Complete job name: job-core
+job-core	Get Runners	﻿2025-09-23T16:57:52.9034283Z ##[group]Run # Crear el directorio para los resultados
+job-core	Get Runners	2025-09-23T16:57:52.9035356Z [36;1m# Crear el directorio para los resultados[0m
+job-core	Get Runners	2025-09-23T16:57:52.9035971Z [36;1mmkdir -p runner_results[0m
+job-core	Get Runners	2025-09-23T16:57:52.9036470Z [36;1m[0m
+job-core	Get Runners	2025-09-23T16:57:52.9036999Z [36;1m# Mostrar todos los grupos de runners de la organización[0m
+job-core	Get Runners	2025-09-23T16:57:52.9038034Z [36;1mecho "Grupos de runners disponibles:" | tee -a runner_results/delete_runners_report.txt[0m
+job-core	Get Runners	2025-09-23T16:57:52.9038857Z [36;1mgh api \[0m
+job-core	Get Runners	2025-09-23T16:57:52.9039351Z [36;1m  -H "Accept: application/vnd.github+json" \[0m
+job-core	Get Runners	2025-09-23T16:57:52.9040006Z [36;1m  /orgs/Ka0s-Klaus/actions/runner-groups \[0m
+job-core	Get Runners	2025-09-23T16:57:52.9040602Z [36;1m  --jq '.runner_groups[]'[0m
+job-core	Get Runners	2025-09-23T16:57:52.9041090Z [36;1m[0m
+job-core	Get Runners	2025-09-23T16:57:52.9041603Z [36;1m# Obtener la lista de runners del grupo especificado[0m
+job-core	Get Runners	2025-09-23T16:57:52.9042747Z [36;1mecho "Obtener la lista de runners del grupo especificado: swarm-test-old" | tee -a runner_results/delete_runners_report.txt[0m
+job-core	Get Runners	2025-09-23T16:57:52.9043817Z [36;1mRUNNERS=$(gh api \[0m
+job-core	Get Runners	2025-09-23T16:57:52.9044379Z [36;1m  -H "Accept: application/vnd.github+json" \[0m
+job-core	Get Runners	2025-09-23T16:57:52.9044992Z [36;1m  /orgs/Ka0s-Klaus/actions/runners \[0m
+job-core	Get Runners	2025-09-23T16:57:52.9045667Z [36;1m  --paginate \[0m
+job-core	Get Runners	2025-09-23T16:57:52.9046161Z [36;1m  --jq '.runners[] | .name'\[0m
+job-core	Get Runners	2025-09-23T16:57:52.9046671Z [36;1m  | tr '\n' ',')[0m
+job-core	Get Runners	2025-09-23T16:57:52.9047318Z [36;1m[0m
+job-core	Get Runners	2025-09-23T16:57:52.9047713Z [36;1mecho "$RUNNERS" [0m
+job-core	Get Runners	2025-09-23T16:57:52.9048172Z [36;1mif [ -n "$RUNNERS" ]; then[0m
+job-core	Get Runners	2025-09-23T16:57:52.9048771Z [36;1m  echo "runner_names=$RUNNERS" >> $GITHUB_OUTPUT[0m
+job-core	Get Runners	2025-09-23T16:57:52.9049411Z [36;1m  echo "Runners encontrados: $RUNNERS" [0m
+job-core	Get Runners	2025-09-23T16:57:52.9049956Z [36;1melse[0m
+job-core	Get Runners	2025-09-23T16:57:52.9050392Z [36;1m  echo "runner_names=" >> $GITHUB_OUTPUT[0m
+job-core	Get Runners	2025-09-23T16:57:52.9050990Z [36;1m  echo "No se encontraron runners" [0m
+job-core	Get Runners	2025-09-23T16:57:52.9051512Z [36;1mfi[0m
+job-core	Get Runners	2025-09-23T16:57:52.9084409Z shell: /usr/bin/bash -e {0}
+job-core	Get Runners	2025-09-23T16:57:52.9085378Z env:
+job-core	Get Runners	2025-09-23T16:57:52.9086069Z   GITHUB_TOKEN: ***
+job-core	Get Runners	2025-09-23T16:57:52.9086514Z   KAOS_MODULE: [Ka0s] Delete Swarm Runners
+job-core	Get Runners	2025-09-23T16:57:52.9087032Z   KAOS_CODE: 17953364907
+job-core	Get Runners	2025-09-23T16:57:52.9087452Z ##[endgroup]
+job-core	Get Runners	2025-09-23T16:57:52.9384421Z Grupos de runners disponibles:
+job-core	Get Runners	2025-09-23T16:57:53.3602418Z {"allows_public_repositories":false,"default":true,"hosted_runners_url":"https://api.github.com/orgs/Ka0s-Klaus/actions/runner-groups/1/hosted-runners","id":1,"inherited":false,"name":"Default","restricted_to_workflows":false,"runners_url":"https://api.github.com/orgs/Ka0s-Klaus/actions/runner-groups/1/runners","selected_workflows":[],"visibility":"all","workflow_restrictions_read_only":false}
+job-core	Get Runners	2025-09-23T16:57:53.3615767Z {"allows_public_repositories":true,"default":false,"hosted_runners_url":"https://api.github.com/orgs/Ka0s-Klaus/actions/runner-groups/13/hosted-runners","id":13,"inherited":false,"name":"swarm-test-old","restricted_to_workflows":false,"runners_url":"https://api.github.com/orgs/Ka0s-Klaus/actions/runner-groups/13/runners","selected_repositories_url":"https://api.github.com/orgs/Ka0s-Klaus/actions/runner-groups/13/repositories","selected_workflows":[],"visibility":"selected","workflow_restrictions_read_only":false}
+job-core	Get Runners	2025-09-23T16:57:53.3632532Z {"allows_public_repositories":true,"default":false,"hosted_runners_url":"https://api.github.com/orgs/Ka0s-Klaus/actions/runner-groups/14/hosted-runners","id":14,"inherited":false,"name":"swarm-runners","restricted_to_workflows":false,"runners_url":"https://api.github.com/orgs/Ka0s-Klaus/actions/runner-groups/14/runners","selected_repositories_url":"https://api.github.com/orgs/Ka0s-Klaus/actions/runner-groups/14/repositories","selected_workflows":[],"visibility":"selected","workflow_restrictions_read_only":false}
+job-core	Get Runners	2025-09-23T16:57:53.3650040Z Obtener la lista de runners del grupo especificado: swarm-test-old
+job-core	Get Runners	2025-09-23T16:57:54.7798532Z 01766f54179f,02c874731438,063dd49e6d36,048c4d28c18c,08cf4c22dfd7,047db721b19c,0913af7e4c3a,0d94a58ff0b9,0d09aa96590b,0963d0e77c19,0a214a6b5683,0d8b6a42e5ff,0a83541c2220,0ad6c6d074e5,173f48abe644,16d787e33bde,11b6046abff1,145480e6270c,1cfcf2301ae7,1e3e7ba4d8cd,1d28c1709302,103a6d2c34d0,15279d716f0a,215c26334034,10d173a2fefa,171d111ca8d0,1735f6e511bc,1bd0b4688a36,14fd140c9c59,1bd9ba0d8da4,316190dc586b,29b62d279107,239e40cab997,2f5c7febebe3,22d313448389,2c8acd1aa4e7,3314adfd2309,3044f5f4c7fb,2bb9889969aa,2a9c74aa53a5,34fe8768d091,2928e3ae5673,30a4266de7fc,224a4ab307fa,2fc07e8d7ed8,22be5aefc683,2b52c78c26af,2b108be8c915,34eb1b427b60,271f7a1b84d7,2cec761fd680,342f2bf103ca,23918f4bd657,2fba2bcb9129,2b3deaf42ace,2d5851a7e15b,30423d2d7ede,2c54efb5c7be,2b3bf7e51b56,2d4706f0c744,373150f564a7,2531ed5cf6f9,58c08359ba6c,48d802a5e05e,405a61ff5a7d,3c6e750ce84c,45bf479a01a6,3fef19cfe181,525e16c40371,40a224235cb2,4af634d12be1,4fde840f1b8b,465c75a6c7a7,45c6f8ecb7a9,42f42e70b1ec,58025a5431b2,386adf592004,3807103f4db1,3d89fd1c9d8c,3d7fbdb194a0,4cb4c9764b0e,47ca9af32b0c,52e7144ececf,541fd515ae64,4106256bf0ea,4e7baf27ce0a,44d36472d91f,473c2e275787,3f6a33253c8b,49434089fd58,44c543e89f4e,56274be3872c,3dd557778f36,41a1395917cd,5717165c652b,429e5c231477,485efe5187c7,50621eaecded,41e0e8af749f,46e94f5d95d7,59e642af1708,59f5e60adf7f,5abb0698bd6e,5b96c832c382,5a3cac187bf5,5bbab2634b61,611af6787e2b,5ceac11ab67a,5c0aee8b5ccf,5c0c3fc15775,5e3fe8c6505d,5e2566f0e39b,5f031b6c6f4d,5d0c537c9f7a,6f40e8240232,707a410cc835,63c9629419a2,6669d6f6857c,67eb0df46c0c,6404980e7043,635c5294c777,67ab45f6add2,62900e294ffd,6246d8c557d6,65fa76402093,6e92ed135c55,65796e32aed2,6e803017be4b,6cb1ed62dd86,6c8420e6b671,79cf1d5861c2,74811d37f9af,756b4f778e02,75c0845929e5,74deb311660d,83d328fbec50,87ea49ea5602,73f3c7256562,77e8ba16119c,7e256170c950,85752ac8e76c,88475ad486c8,88e66b6cf18b,7eeb9d4221d2,713f4093b24b,8314875cb714,8178ea528532,711907d2c8a3,8a7db79146cb,7f6b92a68789,815c1f66bda3,86d5e02bb9a8,836f12411377,7e96a3c3269e,7c2a1b481cbe,7e2f54c8158c,89814e6c3030,7356e29ed340,87a4470de6ed,71bf1d567ee7,87b34b141663,7e5f503f4ec5,945016e5b77a,921b0d0b7699,9ddb3007a131,9d860eaa6519,948b90ed1518,a23489dad1a7,a2122d98857a,9821e7653fb0,946dbdccf764,9913ebfb82ee,9347b8f9791a,a3b4249c832a,99736000a6ed,8d9a4f0d6307,9ba0ddb21512,a3ab0273ed24,939f81aa0713,969392f9aee2,a760c454973f,99cc2a6c1325,a2cdbe73665e,9a24bf7bc198,8d62a5cf09cf,a23d8940d3f4,a65012b86c32,98b3e89d0448,a1a0d9222a25,8f52a28dc00c,a0fe5b4f1c5d,9c344b39b5d0,91e476637a40,a2e0ea3c6515,9a11c6692a13,97919cc191c8,a89532fafe8e,9786b5b9e717,999661432fef,932f368a7d2e,a8e247d0fd2b,a8ef89396367,a9a66893e6b9,a9ef887e0904,ab3103bb13b5,aad756f01b6d,af9cfb330451,b0f3e6f6e2f2,ad3355b612e8,ae6f785f1636,ac8135910fb7,abfb3820cd05,b06dd1ff615c,b258ac8a36d8,b5d1ef9250db,b9bcbd8c0b1d,bc12dd677bfc,b4a73b29f1e1,b46347b284a8,b4aa65fd8168,bb523d3ad7a2,b4f2dc1ca985,b3c3db899a0a,b91288f17e5b,bd51bea206e3,b85f3fd2e173,bbd31c2f9412,b7d40476e0ce,b556c645c0a0,b5434781f3db,df1128e06bd9,dea608fc6ad0,c85a13acc386,bfadebc398c9,cc209dc896e4,c08c6ead6e27,beb10e2f6a52,be365b24ee80,d99a5358860b,d23731e0b6c2,d139a967a0ec,c901454408df,d79bff9f152a,d7f173ff2cff,dd9bda0bbf95,bf8223726515,cff7aeb73249,dfc71e1551a2,cee320361eb4,be191ec5b7ea,d0dff4df93bc,cd5698c3c6a6,ca25804a1e91,dbfaa40c579d,ce5d90554da6,ccbebcca8a97,c630d106fa94,dbaebd7b78d5,c1ec4e8d2e98,d2796124548c,d4808bc7a06c,c68a931b0999,dfd44aa64e00,f77c59f54cd4,fb6f6504ca67,f95647575c47,eb1b71308952,fb502fbe798d,e91d5e18b428,e1b2fa6f9072,f06d30bb5a5a,ea64c9162d92,e31c467e8497,f5f61dfd674a,f9dcfc1dd594,e81ef2305993,f22a5c3f8422,e50b8190d793,f701b078fa5f,f0be1d613f58,f866b92b5be5,f3a52909802d,f69fe35fd7ed,ecaba8e9ca30,e4147c968a8a,f78ac99f530c,e30b97f11678,eb7675d5201a,fcf22abc2281,f72073389a49,f8359686f144,f299e17982f5,f14f6d5d3a0f,f356cc345e2f,fc54d160814c,eb409cda163f,eb9431b6e0b1,f238d09bd420,ee18c9390340,ed982937b08d,fd8e3b0e0c3c,fdcf4baf1efd,ff9a4133e942,fe8106062893,ff0b44941d04,ff26970b16c1,
+job-core	Get Runners	2025-09-23T16:57:54.8238928Z Runners encontrados: 01766f54179f,02c874731438,063dd49e6d36,048c4d28c18c,08cf4c22dfd7,047db721b19c,0913af7e4c3a,0d94a58ff0b9,0d09aa96590b,0963d0e77c19,0a214a6b5683,0d8b6a42e5ff,0a83541c2220,0ad6c6d074e5,173f48abe644,16d787e33bde,11b6046abff1,145480e6270c,1cfcf2301ae7,1e3e7ba4d8cd,1d28c1709302,103a6d2c34d0,15279d716f0a,215c26334034,10d173a2fefa,171d111ca8d0,1735f6e511bc,1bd0b4688a36,14fd140c9c59,1bd9ba0d8da4,316190dc586b,29b62d279107,239e40cab997,2f5c7febebe3,22d313448389,2c8acd1aa4e7,3314adfd2309,3044f5f4c7fb,2bb9889969aa,2a9c74aa53a5,34fe8768d091,2928e3ae5673,30a4266de7fc,224a4ab307fa,2fc07e8d7ed8,22be5aefc683,2b52c78c26af,2b108be8c915,34eb1b427b60,271f7a1b84d7,2cec761fd680,342f2bf103ca,23918f4bd657,2fba2bcb9129,2b3deaf42ace,2d5851a7e15b,30423d2d7ede,2c54efb5c7be,2b3bf7e51b56,2d4706f0c744,373150f564a7,2531ed5cf6f9,58c08359ba6c,48d802a5e05e,405a61ff5a7d,3c6e750ce84c,45bf479a01a6,3fef19cfe181,525e16c40371,40a224235cb2,4af634d12be1,4fde840f1b8b,465c75a6c7a7,45c6f8ecb7a9,42f42e70b1ec,58025a5431b2,386adf592004,3807103f4db1,3d89fd1c9d8c,3d7fbdb194a0,4cb4c9764b0e,47ca9af32b0c,52e7144ececf,541fd515ae64,4106256bf0ea,4e7baf27ce0a,44d36472d91f,473c2e275787,3f6a33253c8b,49434089fd58,44c543e89f4e,56274be3872c,3dd557778f36,41a1395917cd,5717165c652b,429e5c231477,485efe5187c7,50621eaecded,41e0e8af749f,46e94f5d95d7,59e642af1708,59f5e60adf7f,5abb0698bd6e,5b96c832c382,5a3cac187bf5,5bbab2634b61,611af6787e2b,5ceac11ab67a,5c0aee8b5ccf,5c0c3fc15775,5e3fe8c6505d,5e2566f0e39b,5f031b6c6f4d,5d0c537c9f7a,6f40e8240232,707a410cc835,63c9629419a2,6669d6f6857c,67eb0df46c0c,6404980e7043,635c5294c777,67ab45f6add2,62900e294ffd,6246d8c557d6,65fa76402093,6e92ed135c55,65796e32aed2,6e803017be4b,6cb1ed62dd86,6c8420e6b671,79cf1d5861c2,74811d37f9af,756b4f778e02,75c0845929e5,74deb311660d,83d328fbec50,87ea49ea5602,73f3c7256562,77e8ba16119c,7e256170c950,85752ac8e76c,88475ad486c8,88e66b6cf18b,7eeb9d4221d2,713f4093b24b,8314875cb714,8178ea528532,711907d2c8a3,8a7db79146cb,7f6b92a68789,815c1f66bda3,86d5e02bb9a8,836f12411377,7e96a3c3269e,7c2a1b481cbe,7e2f54c8158c,89814e6c3030,7356e29ed340,87a4470de6ed,71bf1d567ee7,87b34b141663,7e5f503f4ec5,945016e5b77a,921b0d0b7699,9ddb3007a131,9d860eaa6519,948b90ed1518,a23489dad1a7,a2122d98857a,9821e7653fb0,946dbdccf764,9913ebfb82ee,9347b8f9791a,a3b4249c832a,99736000a6ed,8d9a4f0d6307,9ba0ddb21512,a3ab0273ed24,939f81aa0713,969392f9aee2,a760c454973f,99cc2a6c1325,a2cdbe73665e,9a24bf7bc198,8d62a5cf09cf,a23d8940d3f4,a65012b86c32,98b3e89d0448,a1a0d9222a25,8f52a28dc00c,a0fe5b4f1c5d,9c344b39b5d0,91e476637a40,a2e0ea3c6515,9a11c6692a13,97919cc191c8,a89532fafe8e,9786b5b9e717,999661432fef,932f368a7d2e,a8e247d0fd2b,a8ef89396367,a9a66893e6b9,a9ef887e0904,ab3103bb13b5,aad756f01b6d,af9cfb330451,b0f3e6f6e2f2,ad3355b612e8,ae6f785f1636,ac8135910fb7,abfb3820cd05,b06dd1ff615c,b258ac8a36d8,b5d1ef9250db,b9bcbd8c0b1d,bc12dd677bfc,b4a73b29f1e1,b46347b284a8,b4aa65fd8168,bb523d3ad7a2,b4f2dc1ca985,b3c3db899a0a,b91288f17e5b,bd51bea206e3,b85f3fd2e173,bbd31c2f9412,b7d40476e0ce,b556c645c0a0,b5434781f3db,df1128e06bd9,dea608fc6ad0,c85a13acc386,bfadebc398c9,cc209dc896e4,c08c6ead6e27,beb10e2f6a52,be365b24ee80,d99a5358860b,d23731e0b6c2,d139a967a0ec,c901454408df,d79bff9f152a,d7f173ff2cff,dd9bda0bbf95,bf8223726515,cff7aeb73249,dfc71e1551a2,cee320361eb4,be191ec5b7ea,d0dff4df93bc,cd5698c3c6a6,ca25804a1e91,dbfaa40c579d,ce5d90554da6,ccbebcca8a97,c630d106fa94,dbaebd7b78d5,c1ec4e8d2e98,d2796124548c,d4808bc7a06c,c68a931b0999,dfd44aa64e00,f77c59f54cd4,fb6f6504ca67,f95647575c47,eb1b71308952,fb502fbe798d,e91d5e18b428,e1b2fa6f9072,f06d30bb5a5a,ea64c9162d92,e31c467e8497,f5f61dfd674a,f9dcfc1dd594,e81ef2305993,f22a5c3f8422,e50b8190d793,f701b078fa5f,f0be1d613f58,f866b92b5be5,f3a52909802d,f69fe35fd7ed,ecaba8e9ca30,e4147c968a8a,f78ac99f530c,e30b97f11678,eb7675d5201a,fcf22abc2281,f72073389a49,f8359686f144,f299e17982f5,f14f6d5d3a0f,f356cc345e2f,fc54d160814c,eb409cda163f,eb9431b6e0b1,f238d09bd420,ee18c9390340,ed982937b08d,fd8e3b0e0c3c,fdcf4baf1efd,ff9a4133e942,fe8106062893,ff0b44941d04,ff26970b16c1,
+job-core	Delete Runners	﻿2025-09-23T16:57:54.8581083Z ##[group]Run # Convertir la lista de runners en un array
+job-core	Delete Runners	2025-09-23T16:57:54.8583010Z [36;1m# Convertir la lista de runners en un array[0m
+job-core	Delete Runners	2025-09-23T16:57:54.8793117Z [36;1mIFS=',' read -r -a RUNNER_NAMES <<< "01766f54179f,02c874731438,063dd49e6d36,048c4d28c18c,08cf4c22dfd7,047db721b19c,0913af7e4c3a,0d94a58ff0b9,0d09aa96590b,0963d0e77c19,0a214a6b5683,0d8b6a42e5ff,0a83541c2220,0ad6c6d074e5,173f48abe644,16d787e33bde,11b6046abff1,145480e6270c,1cfcf2301ae7,1e3e7ba4d8cd,1d28c1709302,103a6d2c34d0,15279d716f0a,215c26334034,10d173a2fefa,171d111ca8d0,1735f6e511bc,1bd0b4688a36,14fd140c9c59,1bd9ba0d8da4,316190dc586b,29b62d279107,239e40cab997,2f5c7febebe3,22d313448389,2c8acd1aa4e7,3314adfd2309,3044f5f4c7fb,2bb9889969aa,2a9c74aa53a5,34fe8768d091,2928e3ae5673,30a4266de7fc,224a4ab307fa,2fc07e8d7ed8,22be5aefc683,2b52c78c26af,2b108be8c915,34eb1b427b60,271f7a1b84d7,2cec761fd680,342f2bf103ca,23918f4bd657,2fba2bcb9129,2b3deaf42ace,2d5851a7e15b,30423d2d7ede,2c54efb5c7be,2b3bf7e51b56,2d4706f0c744,373150f564a7,2531ed5cf6f9,58c08359ba6c,48d802a5e05e,405a61ff5a7d,3c6e750ce84c,45bf479a01a6,3fef19cfe181,525e16c40371,40a224235cb2,4af634d12be1,4fde840f1b8b,465c75a6c7a7,45c6f8ecb7a9,42f42e70b1ec,58025a5431b2,386adf592004,3807103f4db1,3d89fd1c9d8c,3d7fbdb194a0,4cb4c9764b0e,47ca9af32b0c,52e7144ececf,541fd515ae64,4106256bf0ea,4e7baf27ce0a,44d36472d91f,473c2e275787,3f6a33253c8b,49434089fd58,44c543e89f4e,56274be3872c,3dd557778f36,41a1395917cd,5717165c652b,429e5c231477,485efe5187c7,50621eaecded,41e0e8af749f,46e94f5d95d7,59e642af1708,59f5e60adf7f,5abb0698bd6e,5b96c832c382,5a3cac187bf5,5bbab2634b61,611af6787e2b,5ceac11ab67a,5c0aee8b5ccf,5c0c3fc15775,5e3fe8c6505d,5e2566f0e39b,5f031b6c6f4d,5d0c537c9f7a,6f40e8240232,707a410cc835,63c9629419a2,6669d6f6857c,67eb0df46c0c,6404980e7043,635c5294c777,67ab45f6add2,62900e294ffd,6246d8c557d6,65fa76402093,6e92ed135c55,65796e32aed2,6e803017be4b,6cb1ed62dd86,6c8420e6b671,79cf1d5861c2,74811d37f9af,756b4f778e02,75c0845929e5,74deb311660d,83d328fbec50,87ea49ea5602,73f3c7256562,77e8ba16119c,7e256170c950,85752ac8e76c,88475ad486c8,88e66b6cf18b,7eeb9d4221d2,713f4093b24b,8314875cb714,8178ea528532,711907d2c8a3,8a7db79146cb,7f6b92a68789,815c1f66bda3,86d5e02bb9a8,836f12411377,7e96a3c3269e,7c2a1b481cbe,7e2f54c8158c,89814e6c3030,7356e29ed340,87a4470de6ed,71bf1d567ee7,87b34b141663,7e5f503f4ec5,945016e5b77a,921b0d0b7699,9ddb3007a131,9d860eaa6519,948b90ed1518,a23489dad1a7,a2122d98857a,9821e7653fb0,946dbdccf764,9913ebfb82ee,9347b8f9791a,a3b4249c832a,99736000a6ed,8d9a4f0d6307,9ba0ddb21512,a3ab0273ed24,939f81aa0713,969392f9aee2,a760c454973f,99cc2a6c1325,a2cdbe73665e,9a24bf7bc198,8d62a5cf09cf,a23d8940d3f4,a65012b86c32,98b3e89d0448,a1a0d9222a25,8f52a28dc00c,a0fe5b4f1c5d,9c344b39b5d0,91e476637a40,a2e0ea3c6515,9a11c6692a13,97919cc191c8,a89532fafe8e,9786b5b9e717,999661432fef,932f368a7d2e,a8e247d0fd2b,a8ef89396367,a9a66893e6b9,a9ef887e0904,ab3103bb13b5,aad756f01b6d,af9cfb330451,b0f3e6f6e2f2,ad3355b612e8,ae6f785f1636,ac8135910fb7,abfb3820cd05,b06dd1ff615c,b258ac8a36d8,b5d1ef9250db,b9bcbd8c0b1d,bc12dd677bfc,b4a73b29f1e1,b46347b284a8,b4aa65fd8168,bb523d3ad7a2,b4f2dc1ca985,b3c3db899a0a,b91288f17e5b,bd51bea206e3,b85f3fd2e173,bbd31c2f9412,b7d40476e0ce,b556c645c0a0,b5434781f3db,df1128e06bd9,dea608fc6ad0,c85a13acc386,bfadebc398c9,cc209dc896e4,c08c6ead6e27,beb10e2f6a52,be365b24ee80,d99a5358860b,d23731e0b6c2,d139a967a0ec,c901454408df,d79bff9f152a,d7f173ff2cff,dd9bda0bbf95,bf8223726515,cff7aeb73249,dfc71e1551a2,cee320361eb4,be191ec5b7ea,d0dff4df93bc,cd5698c3c6a6,ca25804a1e91,dbfaa40c579d,ce5d90554da6,ccbebcca8a97,c630d106fa94,dbaebd7b78d5,c1ec4e8d2e98,d2796124548c,d4808bc7a06c,c68a931b0999,dfd44aa64e00,f77c59f54cd4,fb6f6504ca67,f95647575c47,eb1b71308952,fb502fbe798d,e91d5e18b428,e1b2fa6f9072,f06d30bb5a5a,ea64c9162d92,e31c467e8497,f5f61dfd674a,f9dcfc1dd594,e81ef2305993,f22a5c3f8422,e50b8190d793,f701b078fa5f,f0be1d613f58,f866b92b5be5,f3a52909802d,f69fe35fd7ed,ecaba8e9ca30,e4147c968a8a,f78ac99f530c,e30b97f11678,eb7675d5201a,fcf22abc2281,f72073389a49,f8359686f144,f299e17982f5,f14f6d5d3a0f,f356cc345e2f,fc54d160814c,eb409cda163f,eb9431b6e0b1,f238d09bd420,ee18c9390340,ed982937b08d,fd8e3b0e0c3c,fdcf4baf1efd,ff9a4133e942,fe8106062893,ff0b44941d04,ff26970b16c1,"[0m
+job-core	Delete Runners	2025-09-23T16:57:54.8998288Z [36;1m[0m
+job-core	Delete Runners	2025-09-23T16:57:54.8999414Z [36;1m# Eliminar cada runner y registrar el resultado[0m
+job-core	Delete Runners	2025-09-23T16:57:54.9001208Z [36;1mecho "\nResultados de la eliminación:" >> runner_results/delete_runners_report.txt[0m
+job-core	Delete Runners	2025-09-23T16:57:54.9002959Z [36;1mfor runner_name in "${RUNNER_NAMES[@]}"; do[0m
+job-core	Delete Runners	2025-09-23T16:57:54.9004312Z [36;1m  echo "Eliminando runner $runner_name..."[0m
+job-core	Delete Runners	2025-09-23T16:57:54.9005626Z [36;1m  if gh api \[0m
+job-core	Delete Runners	2025-09-23T16:57:54.9006666Z [36;1m    --method DELETE \[0m
+job-core	Delete Runners	2025-09-23T16:57:54.9007875Z [36;1m    -H "Accept: application/vnd.github+json" \[0m
+job-core	Delete Runners	2025-09-23T16:57:54.9009343Z [36;1m    "/orgs/Ka0s-Klaus/actions/runners/$runner_name"; then[0m
+job-core	Delete Runners	2025-09-23T16:57:54.9010896Z [36;1m    echo "✓ Runner $runner_name eliminado exitosamente" [0m
+job-core	Delete Runners	2025-09-23T16:57:54.9012247Z [36;1m  else[0m
+job-core	Delete Runners	2025-09-23T16:57:54.9013319Z [36;1m    echo "✗ Error al eliminar runner $runner_name" [0m
+job-core	Delete Runners	2025-09-23T16:57:54.9014595Z [36;1m  fi[0m
+job-core	Delete Runners	2025-09-23T16:57:54.9015529Z [36;1mdone[0m
+job-core	Delete Runners	2025-09-23T16:57:54.9027411Z shell: /usr/bin/bash -e {0}
+job-core	Delete Runners	2025-09-23T16:57:54.9028830Z env:
+job-core	Delete Runners	2025-09-23T16:57:54.9030418Z   GITHUB_TOKEN: ***
+job-core	Delete Runners	2025-09-23T16:57:54.9031561Z   KAOS_MODULE: [Ka0s] Delete Swarm Runners
+job-core	Delete Runners	2025-09-23T16:57:54.9032683Z   KAOS_CODE: 17953364907
+job-core	Delete Runners	2025-09-23T16:57:54.9033605Z ##[endgroup]
+job-core	Delete Runners	2025-09-23T16:57:54.9127981Z Eliminando runner 01766f54179f...
+job-core	Delete Runners	2025-09-23T16:57:55.3633109Z ✓ Runner 01766f54179f eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:57:55.3634501Z Eliminando runner 02c874731438...
+job-core	Delete Runners	2025-09-23T16:57:55.8046728Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:57:55.8076746Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 02c874731438
+job-core	Delete Runners	2025-09-23T16:57:55.8078440Z Eliminando runner 063dd49e6d36...
+job-core	Delete Runners	2025-09-23T16:57:56.2234414Z ✓ Runner 063dd49e6d36 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:57:56.2237096Z Eliminando runner 048c4d28c18c...
+job-core	Delete Runners	2025-09-23T16:57:56.6569793Z ✓ Runner 048c4d28c18c eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:57:56.6571774Z Eliminando runner 08cf4c22dfd7...
+job-core	Delete Runners	2025-09-23T16:57:57.1475779Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:57:57.1527570Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 08cf4c22dfd7
+job-core	Delete Runners	2025-09-23T16:57:57.1533058Z Eliminando runner 047db721b19c...
+job-core	Delete Runners	2025-09-23T16:57:57.5810530Z ✓ Runner 047db721b19c eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:57:57.5812238Z Eliminando runner 0913af7e4c3a...
+job-core	Delete Runners	2025-09-23T16:57:58.0240569Z ✓ Runner 0913af7e4c3a eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:57:58.0242999Z Eliminando runner 0d94a58ff0b9...
+job-core	Delete Runners	2025-09-23T16:57:58.4960928Z ✓ Runner 0d94a58ff0b9 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:57:58.4962885Z Eliminando runner 0d09aa96590b...
+job-core	Delete Runners	2025-09-23T16:57:58.9404915Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:57:58.9454407Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 0d09aa96590b
+job-core	Delete Runners	2025-09-23T16:57:58.9456553Z Eliminando runner 0963d0e77c19...
+job-core	Delete Runners	2025-09-23T16:57:59.4991568Z ✓ Runner 0963d0e77c19 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:57:59.4993373Z Eliminando runner 0a214a6b5683...
+job-core	Delete Runners	2025-09-23T16:57:59.9223314Z ✓ Runner 0a214a6b5683 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:57:59.9224887Z Eliminando runner 0d8b6a42e5ff...
+job-core	Delete Runners	2025-09-23T16:58:00.3938125Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:00.3991437Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 0d8b6a42e5ff
+job-core	Delete Runners	2025-09-23T16:58:00.3992870Z Eliminando runner 0a83541c2220...
+job-core	Delete Runners	2025-09-23T16:58:00.8270777Z ✓ Runner 0a83541c2220 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:00.8272513Z Eliminando runner 0ad6c6d074e5...
+job-core	Delete Runners	2025-09-23T16:58:01.3152504Z ✓ Runner 0ad6c6d074e5 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:01.3154098Z Eliminando runner 173f48abe644...
+job-core	Delete Runners	2025-09-23T16:58:01.7307541Z ✓ Runner 173f48abe644 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:01.7309259Z Eliminando runner 16d787e33bde...
+job-core	Delete Runners	2025-09-23T16:58:02.2360021Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:02.2410073Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 16d787e33bde
+job-core	Delete Runners	2025-09-23T16:58:02.2415790Z Eliminando runner 11b6046abff1...
+job-core	Delete Runners	2025-09-23T16:58:02.7140903Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:02.7192125Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 11b6046abff1
+job-core	Delete Runners	2025-09-23T16:58:02.7197789Z Eliminando runner 145480e6270c...
+job-core	Delete Runners	2025-09-23T16:58:03.1518573Z ✓ Runner 145480e6270c eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:03.1520421Z Eliminando runner 1cfcf2301ae7...
+job-core	Delete Runners	2025-09-23T16:58:03.6426734Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:03.6477927Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 1cfcf2301ae7
+job-core	Delete Runners	2025-09-23T16:58:03.6483327Z Eliminando runner 1e3e7ba4d8cd...
+job-core	Delete Runners	2025-09-23T16:58:04.0814371Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:04.0876109Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 1e3e7ba4d8cd
+job-core	Delete Runners	2025-09-23T16:58:04.0881882Z Eliminando runner 1d28c1709302...
+job-core	Delete Runners	2025-09-23T16:58:04.5754071Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:04.5807067Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 1d28c1709302
+job-core	Delete Runners	2025-09-23T16:58:04.5812737Z Eliminando runner 103a6d2c34d0...
+job-core	Delete Runners	2025-09-23T16:58:05.0488059Z ✓ Runner 103a6d2c34d0 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:05.0489954Z Eliminando runner 15279d716f0a...
+job-core	Delete Runners	2025-09-23T16:58:05.5043275Z ✓ Runner 15279d716f0a eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:05.5043639Z Eliminando runner 215c26334034...
+job-core	Delete Runners	2025-09-23T16:58:05.8760557Z ✓ Runner 215c26334034 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:05.8761361Z Eliminando runner 10d173a2fefa...
+job-core	Delete Runners	2025-09-23T16:58:06.5048470Z ✓ Runner 10d173a2fefa eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:06.5052506Z Eliminando runner 171d111ca8d0...
+job-core	Delete Runners	2025-09-23T16:58:06.9465865Z ✓ Runner 171d111ca8d0 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:06.9466258Z Eliminando runner 1735f6e511bc...
+job-core	Delete Runners	2025-09-23T16:58:07.4031956Z ✓ Runner 1735f6e511bc eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:07.4033457Z Eliminando runner 1bd0b4688a36...
+job-core	Delete Runners	2025-09-23T16:58:07.8756815Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:07.8776852Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 1bd0b4688a36
+job-core	Delete Runners	2025-09-23T16:58:07.8780868Z Eliminando runner 14fd140c9c59...
+job-core	Delete Runners	2025-09-23T16:58:08.3026392Z ✓ Runner 14fd140c9c59 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:08.3026790Z Eliminando runner 1bd9ba0d8da4...
+job-core	Delete Runners	2025-09-23T16:58:08.7581000Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:08.7635825Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 1bd9ba0d8da4
+job-core	Delete Runners	2025-09-23T16:58:08.7641215Z Eliminando runner 316190dc586b...
+job-core	Delete Runners	2025-09-23T16:58:09.4021531Z ✓ Runner 316190dc586b eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:09.4023044Z Eliminando runner 29b62d279107...
+job-core	Delete Runners	2025-09-23T16:58:09.8488722Z ✓ Runner 29b62d279107 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:09.8490231Z Eliminando runner 239e40cab997...
+job-core	Delete Runners	2025-09-23T16:58:10.2793899Z ✓ Runner 239e40cab997 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:10.2795918Z Eliminando runner 2f5c7febebe3...
+job-core	Delete Runners	2025-09-23T16:58:10.7523456Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:10.7573707Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 2f5c7febebe3
+job-core	Delete Runners	2025-09-23T16:58:10.7574915Z Eliminando runner 22d313448389...
+job-core	Delete Runners	2025-09-23T16:58:11.1498131Z ✓ Runner 22d313448389 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:11.1499760Z Eliminando runner 2c8acd1aa4e7...
+job-core	Delete Runners	2025-09-23T16:58:11.6092269Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:11.6144439Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 2c8acd1aa4e7
+job-core	Delete Runners	2025-09-23T16:58:11.6150035Z Eliminando runner 3314adfd2309...
+job-core	Delete Runners	2025-09-23T16:58:12.0743806Z ✓ Runner 3314adfd2309 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:12.0745530Z Eliminando runner 3044f5f4c7fb...
+job-core	Delete Runners	2025-09-23T16:58:12.6803861Z ✓ Runner 3044f5f4c7fb eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:12.6804231Z Eliminando runner 2bb9889969aa...
+job-core	Delete Runners	2025-09-23T16:58:13.1831713Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:13.1878554Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 2bb9889969aa
+job-core	Delete Runners	2025-09-23T16:58:13.1882270Z Eliminando runner 2a9c74aa53a5...
+job-core	Delete Runners	2025-09-23T16:58:13.6733837Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:13.6786841Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 2a9c74aa53a5
+job-core	Delete Runners	2025-09-23T16:58:13.6793256Z Eliminando runner 34fe8768d091...
+job-core	Delete Runners	2025-09-23T16:58:14.1841875Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:14.1901947Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 34fe8768d091
+job-core	Delete Runners	2025-09-23T16:58:14.1908737Z Eliminando runner 2928e3ae5673...
+job-core	Delete Runners	2025-09-23T16:58:14.6240113Z ✓ Runner 2928e3ae5673 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:14.6248292Z Eliminando runner 30a4266de7fc...
+job-core	Delete Runners	2025-09-23T16:58:15.0937952Z ✓ Runner 30a4266de7fc eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:15.0939473Z Eliminando runner 224a4ab307fa...
+job-core	Delete Runners	2025-09-23T16:58:15.5496704Z ✓ Runner 224a4ab307fa eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:15.5498325Z Eliminando runner 2fc07e8d7ed8...
+job-core	Delete Runners	2025-09-23T16:58:15.9655906Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:15.9707570Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 2fc07e8d7ed8
+job-core	Delete Runners	2025-09-23T16:58:15.9712837Z Eliminando runner 22be5aefc683...
+job-core	Delete Runners	2025-09-23T16:58:16.4108311Z ✓ Runner 22be5aefc683 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:16.4109816Z Eliminando runner 2b52c78c26af...
+job-core	Delete Runners	2025-09-23T16:58:16.8994611Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:16.9044748Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 2b52c78c26af
+job-core	Delete Runners	2025-09-23T16:58:16.9050617Z Eliminando runner 2b108be8c915...
+job-core	Delete Runners	2025-09-23T16:58:17.3620931Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:17.3672652Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 2b108be8c915
+job-core	Delete Runners	2025-09-23T16:58:17.3678250Z Eliminando runner 34eb1b427b60...
+job-core	Delete Runners	2025-09-23T16:58:17.8263309Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:17.8306613Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 34eb1b427b60
+job-core	Delete Runners	2025-09-23T16:58:17.8307913Z Eliminando runner 271f7a1b84d7...
+job-core	Delete Runners	2025-09-23T16:58:18.2442470Z ✓ Runner 271f7a1b84d7 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:18.2443991Z Eliminando runner 2cec761fd680...
+job-core	Delete Runners	2025-09-23T16:58:18.6834675Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:18.6885977Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 2cec761fd680
+job-core	Delete Runners	2025-09-23T16:58:18.6887279Z Eliminando runner 342f2bf103ca...
+job-core	Delete Runners	2025-09-23T16:58:19.1382455Z ✓ Runner 342f2bf103ca eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:19.1383955Z Eliminando runner 23918f4bd657...
+job-core	Delete Runners	2025-09-23T16:58:19.5706613Z ✓ Runner 23918f4bd657 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:19.5707194Z Eliminando runner 2fba2bcb9129...
+job-core	Delete Runners	2025-09-23T16:58:19.9949638Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:20.0005989Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 2fba2bcb9129
+job-core	Delete Runners	2025-09-23T16:58:20.0011330Z Eliminando runner 2b3deaf42ace...
+job-core	Delete Runners	2025-09-23T16:58:20.6588299Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:20.6638066Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 2b3deaf42ace
+job-core	Delete Runners	2025-09-23T16:58:20.6643291Z Eliminando runner 2d5851a7e15b...
+job-core	Delete Runners	2025-09-23T16:58:21.0739977Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:21.0798398Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 2d5851a7e15b
+job-core	Delete Runners	2025-09-23T16:58:21.0804676Z Eliminando runner 30423d2d7ede...
+job-core	Delete Runners	2025-09-23T16:58:21.5240215Z ✓ Runner 30423d2d7ede eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:21.5241713Z Eliminando runner 2c54efb5c7be...
+job-core	Delete Runners	2025-09-23T16:58:21.9584786Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:21.9600525Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 2c54efb5c7be
+job-core	Delete Runners	2025-09-23T16:58:21.9601817Z Eliminando runner 2b3bf7e51b56...
+job-core	Delete Runners	2025-09-23T16:58:22.4378963Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:22.4428363Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 2b3bf7e51b56
+job-core	Delete Runners	2025-09-23T16:58:22.4429560Z Eliminando runner 2d4706f0c744...
+job-core	Delete Runners	2025-09-23T16:58:22.8886681Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:22.8906386Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 2d4706f0c744
+job-core	Delete Runners	2025-09-23T16:58:22.8908053Z Eliminando runner 373150f564a7...
+job-core	Delete Runners	2025-09-23T16:58:23.3533992Z ✓ Runner 373150f564a7 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:23.3535884Z Eliminando runner 2531ed5cf6f9...
+job-core	Delete Runners	2025-09-23T16:58:23.8246685Z ✓ Runner 2531ed5cf6f9 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:23.8247557Z Eliminando runner 58c08359ba6c...
+job-core	Delete Runners	2025-09-23T16:58:24.3670095Z ✓ Runner 58c08359ba6c eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:24.3671598Z Eliminando runner 48d802a5e05e...
+job-core	Delete Runners	2025-09-23T16:58:24.7941431Z ✓ Runner 48d802a5e05e eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:24.7942958Z Eliminando runner 405a61ff5a7d...
+job-core	Delete Runners	2025-09-23T16:58:25.2540278Z ✓ Runner 405a61ff5a7d eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:25.2541770Z Eliminando runner 3c6e750ce84c...
+job-core	Delete Runners	2025-09-23T16:58:25.7496487Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:25.7539083Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 3c6e750ce84c
+job-core	Delete Runners	2025-09-23T16:58:25.7540249Z Eliminando runner 45bf479a01a6...
+job-core	Delete Runners	2025-09-23T16:58:26.3378071Z ✓ Runner 45bf479a01a6 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:26.3380672Z Eliminando runner 3fef19cfe181...
+job-core	Delete Runners	2025-09-23T16:58:26.7640798Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:26.7690351Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 3fef19cfe181
+job-core	Delete Runners	2025-09-23T16:58:26.7696078Z Eliminando runner 525e16c40371...
+job-core	Delete Runners	2025-09-23T16:58:27.1872859Z ✓ Runner 525e16c40371 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:27.1874385Z Eliminando runner 40a224235cb2...
+job-core	Delete Runners	2025-09-23T16:58:27.6165794Z ✓ Runner 40a224235cb2 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:27.6167305Z Eliminando runner 4af634d12be1...
+job-core	Delete Runners	2025-09-23T16:58:28.3453049Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:28.3509101Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 4af634d12be1
+job-core	Delete Runners	2025-09-23T16:58:28.3514426Z Eliminando runner 4fde840f1b8b...
+job-core	Delete Runners	2025-09-23T16:58:28.7322554Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:28.7373470Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 4fde840f1b8b
+job-core	Delete Runners	2025-09-23T16:58:28.7379053Z Eliminando runner 465c75a6c7a7...
+job-core	Delete Runners	2025-09-23T16:58:29.2028211Z ✓ Runner 465c75a6c7a7 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:29.2029707Z Eliminando runner 45c6f8ecb7a9...
+job-core	Delete Runners	2025-09-23T16:58:29.7005741Z ✓ Runner 45c6f8ecb7a9 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:29.7007239Z Eliminando runner 42f42e70b1ec...
+job-core	Delete Runners	2025-09-23T16:58:30.0973948Z ✓ Runner 42f42e70b1ec eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:30.0975733Z Eliminando runner 58025a5431b2...
+job-core	Delete Runners	2025-09-23T16:58:30.5323903Z ✓ Runner 58025a5431b2 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:30.5328482Z Eliminando runner 386adf592004...
+job-core	Delete Runners	2025-09-23T16:58:30.9710564Z ✓ Runner 386adf592004 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:30.9712056Z Eliminando runner 3807103f4db1...
+job-core	Delete Runners	2025-09-23T16:58:31.4073156Z ✓ Runner 3807103f4db1 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:31.4074650Z Eliminando runner 3d89fd1c9d8c...
+job-core	Delete Runners	2025-09-23T16:58:31.8769117Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:31.8819176Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 3d89fd1c9d8c
+job-core	Delete Runners	2025-09-23T16:58:31.8820496Z Eliminando runner 3d7fbdb194a0...
+job-core	Delete Runners	2025-09-23T16:58:32.3390972Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:32.3441408Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 3d7fbdb194a0
+job-core	Delete Runners	2025-09-23T16:58:32.3446879Z Eliminando runner 4cb4c9764b0e...
+job-core	Delete Runners	2025-09-23T16:58:32.9929023Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:32.9983765Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 4cb4c9764b0e
+job-core	Delete Runners	2025-09-23T16:58:32.9989241Z Eliminando runner 47ca9af32b0c...
+job-core	Delete Runners	2025-09-23T16:58:33.4512584Z ✓ Runner 47ca9af32b0c eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:33.4515559Z Eliminando runner 52e7144ececf...
+job-core	Delete Runners	2025-09-23T16:58:33.9075706Z ✓ Runner 52e7144ececf eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:33.9076741Z Eliminando runner 541fd515ae64...
+job-core	Delete Runners	2025-09-23T16:58:34.6230940Z ✓ Runner 541fd515ae64 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:34.6231327Z Eliminando runner 4106256bf0ea...
+job-core	Delete Runners	2025-09-23T16:58:35.0456419Z ✓ Runner 4106256bf0ea eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:35.0457990Z Eliminando runner 4e7baf27ce0a...
+job-core	Delete Runners	2025-09-23T16:58:35.5126539Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:35.5176022Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 4e7baf27ce0a
+job-core	Delete Runners	2025-09-23T16:58:35.5181263Z Eliminando runner 44d36472d91f...
+job-core	Delete Runners	2025-09-23T16:58:35.9396055Z ✓ Runner 44d36472d91f eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:35.9397556Z Eliminando runner 473c2e275787...
+job-core	Delete Runners	2025-09-23T16:58:36.3683660Z ✓ Runner 473c2e275787 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:36.3685387Z Eliminando runner 3f6a33253c8b...
+job-core	Delete Runners	2025-09-23T16:58:36.9203310Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:36.9253223Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 3f6a33253c8b
+job-core	Delete Runners	2025-09-23T16:58:36.9258796Z Eliminando runner 49434089fd58...
+job-core	Delete Runners	2025-09-23T16:58:37.3712985Z ✓ Runner 49434089fd58 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:37.3714529Z Eliminando runner 44c543e89f4e...
+job-core	Delete Runners	2025-09-23T16:58:37.9751265Z ✓ Runner 44c543e89f4e eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:37.9751647Z Eliminando runner 56274be3872c...
+job-core	Delete Runners	2025-09-23T16:58:38.4025594Z ✓ Runner 56274be3872c eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:38.4027112Z Eliminando runner 3dd557778f36...
+job-core	Delete Runners	2025-09-23T16:58:38.8179328Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:38.8230678Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 3dd557778f36
+job-core	Delete Runners	2025-09-23T16:58:38.8236317Z Eliminando runner 41a1395917cd...
+job-core	Delete Runners	2025-09-23T16:58:39.2850183Z ✓ Runner 41a1395917cd eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:39.2851770Z Eliminando runner 5717165c652b...
+job-core	Delete Runners	2025-09-23T16:58:39.8537466Z ✓ Runner 5717165c652b eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:39.8538965Z Eliminando runner 429e5c231477...
+job-core	Delete Runners	2025-09-23T16:58:40.5121962Z ✓ Runner 429e5c231477 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:40.5123457Z Eliminando runner 485efe5187c7...
+job-core	Delete Runners	2025-09-23T16:58:41.0826460Z ✓ Runner 485efe5187c7 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:41.0827961Z Eliminando runner 50621eaecded...
+job-core	Delete Runners	2025-09-23T16:58:41.5438597Z ✓ Runner 50621eaecded eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:41.5440102Z Eliminando runner 41e0e8af749f...
+job-core	Delete Runners	2025-09-23T16:58:41.9314082Z ✓ Runner 41e0e8af749f eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:41.9316714Z Eliminando runner 46e94f5d95d7...
+job-core	Delete Runners	2025-09-23T16:58:42.4034596Z ✓ Runner 46e94f5d95d7 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:42.4035005Z Eliminando runner 59e642af1708...
+job-core	Delete Runners	2025-09-23T16:58:42.8294824Z ✓ Runner 59e642af1708 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:42.8296605Z Eliminando runner 59f5e60adf7f...
+job-core	Delete Runners	2025-09-23T16:58:43.2511012Z ✓ Runner 59f5e60adf7f eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:43.2512552Z Eliminando runner 5abb0698bd6e...
+job-core	Delete Runners	2025-09-23T16:58:43.7345103Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:43.7396588Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 5abb0698bd6e
+job-core	Delete Runners	2025-09-23T16:58:43.7402892Z Eliminando runner 5b96c832c382...
+job-core	Delete Runners	2025-09-23T16:58:44.1883243Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:44.1935098Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 5b96c832c382
+job-core	Delete Runners	2025-09-23T16:58:44.1941875Z Eliminando runner 5a3cac187bf5...
+job-core	Delete Runners	2025-09-23T16:58:44.6529294Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:44.6581063Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 5a3cac187bf5
+job-core	Delete Runners	2025-09-23T16:58:44.6587085Z Eliminando runner 5bbab2634b61...
+job-core	Delete Runners	2025-09-23T16:58:45.0973172Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:45.1022946Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 5bbab2634b61
+job-core	Delete Runners	2025-09-23T16:58:45.1028451Z Eliminando runner 611af6787e2b...
+job-core	Delete Runners	2025-09-23T16:58:45.7620980Z ✓ Runner 611af6787e2b eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:45.7621367Z Eliminando runner 5ceac11ab67a...
+job-core	Delete Runners	2025-09-23T16:58:46.1876216Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:46.1912174Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 5ceac11ab67a
+job-core	Delete Runners	2025-09-23T16:58:46.1916460Z Eliminando runner 5c0aee8b5ccf...
+job-core	Delete Runners	2025-09-23T16:58:46.6477662Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:46.6528962Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 5c0aee8b5ccf
+job-core	Delete Runners	2025-09-23T16:58:46.6534296Z Eliminando runner 5c0c3fc15775...
+job-core	Delete Runners	2025-09-23T16:58:47.0458027Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:47.0482417Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 5c0c3fc15775
+job-core	Delete Runners	2025-09-23T16:58:47.0484885Z Eliminando runner 5e3fe8c6505d...
+job-core	Delete Runners	2025-09-23T16:58:47.4762318Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:47.4802946Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 5e3fe8c6505d
+job-core	Delete Runners	2025-09-23T16:58:47.4804216Z Eliminando runner 5e2566f0e39b...
+job-core	Delete Runners	2025-09-23T16:58:47.9399342Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:47.9450674Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 5e2566f0e39b
+job-core	Delete Runners	2025-09-23T16:58:47.9456228Z Eliminando runner 5f031b6c6f4d...
+job-core	Delete Runners	2025-09-23T16:58:48.3699063Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:48.3749439Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 5f031b6c6f4d
+job-core	Delete Runners	2025-09-23T16:58:48.3754649Z Eliminando runner 5d0c537c9f7a...
+job-core	Delete Runners	2025-09-23T16:58:48.8363452Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:58:48.8416000Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 5d0c537c9f7a
+job-core	Delete Runners	2025-09-23T16:58:48.8421228Z Eliminando runner 6f40e8240232...
+job-core	Delete Runners	2025-09-23T16:58:49.2902211Z ✓ Runner 6f40e8240232 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:49.2902908Z Eliminando runner 707a410cc835...
+job-core	Delete Runners	2025-09-23T16:58:49.7173083Z ✓ Runner 707a410cc835 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:49.7173459Z Eliminando runner 63c9629419a2...
+job-core	Delete Runners	2025-09-23T16:58:50.1387807Z ✓ Runner 63c9629419a2 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:50.1389319Z Eliminando runner 6669d6f6857c...
+job-core	Delete Runners	2025-09-23T16:58:50.5521629Z ✓ Runner 6669d6f6857c eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:50.5523150Z Eliminando runner 67eb0df46c0c...
+job-core	Delete Runners	2025-09-23T16:58:51.0095471Z ✓ Runner 67eb0df46c0c eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:51.0095848Z Eliminando runner 6404980e7043...
+job-core	Delete Runners	2025-09-23T16:58:51.4320550Z ✓ Runner 6404980e7043 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:51.4323191Z Eliminando runner 635c5294c777...
+job-core	Delete Runners	2025-09-23T16:58:51.9119522Z ✓ Runner 635c5294c777 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:51.9121022Z Eliminando runner 67ab45f6add2...
+job-core	Delete Runners	2025-09-23T16:58:52.3304470Z ✓ Runner 67ab45f6add2 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:52.3306309Z Eliminando runner 62900e294ffd...
+job-core	Delete Runners	2025-09-23T16:58:52.7570259Z ✓ Runner 62900e294ffd eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:52.7571837Z Eliminando runner 6246d8c557d6...
+job-core	Delete Runners	2025-09-23T16:58:53.1698381Z ✓ Runner 6246d8c557d6 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:53.1699862Z Eliminando runner 65fa76402093...
+job-core	Delete Runners	2025-09-23T16:58:53.6410368Z ✓ Runner 65fa76402093 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:53.6411851Z Eliminando runner 6e92ed135c55...
+job-core	Delete Runners	2025-09-23T16:58:54.0909162Z ✓ Runner 6e92ed135c55 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:54.0910663Z Eliminando runner 65796e32aed2...
+job-core	Delete Runners	2025-09-23T16:58:54.5336208Z ✓ Runner 65796e32aed2 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:54.5337791Z Eliminando runner 6e803017be4b...
+job-core	Delete Runners	2025-09-23T16:58:54.9822971Z ✓ Runner 6e803017be4b eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:54.9823368Z Eliminando runner 6cb1ed62dd86...
+job-core	Delete Runners	2025-09-23T16:58:55.4252733Z ✓ Runner 6cb1ed62dd86 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:55.4254239Z Eliminando runner 6c8420e6b671...
+job-core	Delete Runners	2025-09-23T16:58:55.8391710Z ✓ Runner 6c8420e6b671 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:55.8393217Z Eliminando runner 79cf1d5861c2...
+job-core	Delete Runners	2025-09-23T16:58:56.2972265Z ✓ Runner 79cf1d5861c2 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:56.2973776Z Eliminando runner 74811d37f9af...
+job-core	Delete Runners	2025-09-23T16:58:56.7692878Z ✓ Runner 74811d37f9af eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:56.7694412Z Eliminando runner 756b4f778e02...
+job-core	Delete Runners	2025-09-23T16:58:57.1808869Z ✓ Runner 756b4f778e02 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:57.1810359Z Eliminando runner 75c0845929e5...
+job-core	Delete Runners	2025-09-23T16:58:57.6244362Z ✓ Runner 75c0845929e5 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:57.6246331Z Eliminando runner 74deb311660d...
+job-core	Delete Runners	2025-09-23T16:58:58.0896964Z ✓ Runner 74deb311660d eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:58.0898488Z Eliminando runner 83d328fbec50...
+job-core	Delete Runners	2025-09-23T16:58:58.5540249Z ✓ Runner 83d328fbec50 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:58.5540644Z Eliminando runner 87ea49ea5602...
+job-core	Delete Runners	2025-09-23T16:58:59.0137824Z ✓ Runner 87ea49ea5602 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:59.0138214Z Eliminando runner 73f3c7256562...
+job-core	Delete Runners	2025-09-23T16:58:59.4078307Z ✓ Runner 73f3c7256562 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:59.4081485Z Eliminando runner 77e8ba16119c...
+job-core	Delete Runners	2025-09-23T16:58:59.8584875Z ✓ Runner 77e8ba16119c eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:58:59.8586512Z Eliminando runner 7e256170c950...
+job-core	Delete Runners	2025-09-23T16:59:00.3104962Z ✓ Runner 7e256170c950 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:00.3105428Z Eliminando runner 85752ac8e76c...
+job-core	Delete Runners	2025-09-23T16:59:00.7510769Z ✓ Runner 85752ac8e76c eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:00.7512291Z Eliminando runner 88475ad486c8...
+job-core	Delete Runners	2025-09-23T16:59:01.1996669Z ✓ Runner 88475ad486c8 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:01.1997589Z Eliminando runner 88e66b6cf18b...
+job-core	Delete Runners	2025-09-23T16:59:01.6258176Z ✓ Runner 88e66b6cf18b eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:01.6259705Z Eliminando runner 7eeb9d4221d2...
+job-core	Delete Runners	2025-09-23T16:59:02.0619581Z ✓ Runner 7eeb9d4221d2 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:02.0621086Z Eliminando runner 713f4093b24b...
+job-core	Delete Runners	2025-09-23T16:59:02.5206690Z ✓ Runner 713f4093b24b eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:02.5208187Z Eliminando runner 8314875cb714...
+job-core	Delete Runners	2025-09-23T16:59:02.9812323Z ✓ Runner 8314875cb714 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:02.9813837Z Eliminando runner 8178ea528532...
+job-core	Delete Runners	2025-09-23T16:59:03.4487297Z ✓ Runner 8178ea528532 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:03.4488813Z Eliminando runner 711907d2c8a3...
+job-core	Delete Runners	2025-09-23T16:59:03.9334012Z ✓ Runner 711907d2c8a3 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:03.9336045Z Eliminando runner 8a7db79146cb...
+job-core	Delete Runners	2025-09-23T16:59:04.4085710Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:59:04.4139805Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 8a7db79146cb
+job-core	Delete Runners	2025-09-23T16:59:04.4145002Z Eliminando runner 7f6b92a68789...
+job-core	Delete Runners	2025-09-23T16:59:04.8730993Z ✓ Runner 7f6b92a68789 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:04.8732527Z Eliminando runner 815c1f66bda3...
+job-core	Delete Runners	2025-09-23T16:59:05.3161747Z ✓ Runner 815c1f66bda3 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:05.3163260Z Eliminando runner 86d5e02bb9a8...
+job-core	Delete Runners	2025-09-23T16:59:05.7691047Z ✓ Runner 86d5e02bb9a8 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:05.7692555Z Eliminando runner 836f12411377...
+job-core	Delete Runners	2025-09-23T16:59:06.2312340Z ✓ Runner 836f12411377 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:06.2320726Z Eliminando runner 7e96a3c3269e...
+job-core	Delete Runners	2025-09-23T16:59:06.7153955Z ✓ Runner 7e96a3c3269e eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:06.7155721Z Eliminando runner 7c2a1b481cbe...
+job-core	Delete Runners	2025-09-23T16:59:07.1780946Z ✓ Runner 7c2a1b481cbe eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:07.1782479Z Eliminando runner 7e2f54c8158c...
+job-core	Delete Runners	2025-09-23T16:59:07.6568386Z ✓ Runner 7e2f54c8158c eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:07.6569900Z Eliminando runner 89814e6c3030...
+job-core	Delete Runners	2025-09-23T16:59:08.1649684Z ✓ Runner 89814e6c3030 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:08.1651202Z Eliminando runner 7356e29ed340...
+job-core	Delete Runners	2025-09-23T16:59:08.6325860Z ✓ Runner 7356e29ed340 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:08.6327451Z Eliminando runner 87a4470de6ed...
+job-core	Delete Runners	2025-09-23T16:59:09.1274728Z ✓ Runner 87a4470de6ed eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:09.1276889Z Eliminando runner 71bf1d567ee7...
+job-core	Delete Runners	2025-09-23T16:59:09.6318527Z ✓ Runner 71bf1d567ee7 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:09.6320039Z Eliminando runner 87b34b141663...
+job-core	Delete Runners	2025-09-23T16:59:10.1293929Z ✓ Runner 87b34b141663 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:10.1296017Z Eliminando runner 7e5f503f4ec5...
+job-core	Delete Runners	2025-09-23T16:59:10.6106479Z ✓ Runner 7e5f503f4ec5 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:10.6108079Z Eliminando runner 945016e5b77a...
+job-core	Delete Runners	2025-09-23T16:59:11.1178652Z ✓ Runner 945016e5b77a eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:11.1181175Z Eliminando runner 921b0d0b7699...
+job-core	Delete Runners	2025-09-23T16:59:11.5241165Z ✓ Runner 921b0d0b7699 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:11.5242661Z Eliminando runner 9ddb3007a131...
+job-core	Delete Runners	2025-09-23T16:59:11.9646854Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:59:11.9665599Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 9ddb3007a131
+job-core	Delete Runners	2025-09-23T16:59:11.9667076Z Eliminando runner 9d860eaa6519...
+job-core	Delete Runners	2025-09-23T16:59:12.3637257Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:59:12.3689797Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 9d860eaa6519
+job-core	Delete Runners	2025-09-23T16:59:12.3696534Z Eliminando runner 948b90ed1518...
+job-core	Delete Runners	2025-09-23T16:59:12.8068157Z ✓ Runner 948b90ed1518 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:12.8069637Z Eliminando runner a23489dad1a7...
+job-core	Delete Runners	2025-09-23T16:59:13.2487826Z ✓ Runner a23489dad1a7 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:13.2489418Z Eliminando runner a2122d98857a...
+job-core	Delete Runners	2025-09-23T16:59:13.6777563Z ✓ Runner a2122d98857a eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:13.6779081Z Eliminando runner 9821e7653fb0...
+job-core	Delete Runners	2025-09-23T16:59:14.1446927Z ✓ Runner 9821e7653fb0 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:14.1448478Z Eliminando runner 946dbdccf764...
+job-core	Delete Runners	2025-09-23T16:59:14.5846614Z ✓ Runner 946dbdccf764 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:14.5848134Z Eliminando runner 9913ebfb82ee...
+job-core	Delete Runners	2025-09-23T16:59:15.0593307Z ✓ Runner 9913ebfb82ee eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:15.0594929Z Eliminando runner 9347b8f9791a...
+job-core	Delete Runners	2025-09-23T16:59:15.5246096Z ✓ Runner 9347b8f9791a eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:15.5247639Z Eliminando runner a3b4249c832a...
+job-core	Delete Runners	2025-09-23T16:59:16.0441957Z ✓ Runner a3b4249c832a eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:16.0443440Z Eliminando runner 99736000a6ed...
+job-core	Delete Runners	2025-09-23T16:59:16.4918911Z ✓ Runner 99736000a6ed eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:16.4920403Z Eliminando runner 8d9a4f0d6307...
+job-core	Delete Runners	2025-09-23T16:59:16.9200498Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:59:16.9251670Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 8d9a4f0d6307
+job-core	Delete Runners	2025-09-23T16:59:16.9257583Z Eliminando runner 9ba0ddb21512...
+job-core	Delete Runners	2025-09-23T16:59:17.5686140Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:59:17.5738411Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 9ba0ddb21512
+job-core	Delete Runners	2025-09-23T16:59:17.5743669Z Eliminando runner a3ab0273ed24...
+job-core	Delete Runners	2025-09-23T16:59:18.0219093Z ✓ Runner a3ab0273ed24 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:18.0220669Z Eliminando runner 939f81aa0713...
+job-core	Delete Runners	2025-09-23T16:59:18.4536736Z ✓ Runner 939f81aa0713 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:18.4537107Z Eliminando runner 969392f9aee2...
+job-core	Delete Runners	2025-09-23T16:59:19.0522233Z ✓ Runner 969392f9aee2 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:19.0523759Z Eliminando runner a760c454973f...
+job-core	Delete Runners	2025-09-23T16:59:19.5450863Z ✓ Runner a760c454973f eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:19.5451257Z Eliminando runner 99cc2a6c1325...
+job-core	Delete Runners	2025-09-23T16:59:20.0373419Z ✓ Runner 99cc2a6c1325 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:20.0375003Z Eliminando runner a2cdbe73665e...
+job-core	Delete Runners	2025-09-23T16:59:20.5258474Z ✓ Runner a2cdbe73665e eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:20.9632816Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:59:20.9634912Z Eliminando runner 9a24bf7bc198...
+job-core	Delete Runners	2025-09-23T16:59:20.9689722Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 9a24bf7bc198
+job-core	Delete Runners	2025-09-23T16:59:20.9696331Z Eliminando runner 8d62a5cf09cf...
+job-core	Delete Runners	2025-09-23T16:59:21.4233119Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:59:21.4293399Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 8d62a5cf09cf
+job-core	Delete Runners	2025-09-23T16:59:21.4299968Z Eliminando runner a23d8940d3f4...
+job-core	Delete Runners	2025-09-23T16:59:21.9078228Z ✓ Runner a23d8940d3f4 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:21.9080684Z Eliminando runner a65012b86c32...
+job-core	Delete Runners	2025-09-23T16:59:22.3383859Z ✓ Runner a65012b86c32 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:22.3385931Z Eliminando runner 98b3e89d0448...
+job-core	Delete Runners	2025-09-23T16:59:22.7521838Z ✓ Runner 98b3e89d0448 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:22.7523406Z Eliminando runner a1a0d9222a25...
+job-core	Delete Runners	2025-09-23T16:59:23.1601597Z ✓ Runner a1a0d9222a25 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:23.1603118Z Eliminando runner 8f52a28dc00c...
+job-core	Delete Runners	2025-09-23T16:59:23.6528352Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:59:23.6579787Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 8f52a28dc00c
+job-core	Delete Runners	2025-09-23T16:59:23.6585118Z Eliminando runner a0fe5b4f1c5d...
+job-core	Delete Runners	2025-09-23T16:59:24.0698701Z ✓ Runner a0fe5b4f1c5d eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:24.0700211Z Eliminando runner 9c344b39b5d0...
+job-core	Delete Runners	2025-09-23T16:59:24.5398662Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:59:24.5448619Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 9c344b39b5d0
+job-core	Delete Runners	2025-09-23T16:59:24.5453907Z Eliminando runner 91e476637a40...
+job-core	Delete Runners	2025-09-23T16:59:25.0032651Z ✓ Runner 91e476637a40 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:25.0043597Z Eliminando runner a2e0ea3c6515...
+job-core	Delete Runners	2025-09-23T16:59:25.5306555Z ✓ Runner a2e0ea3c6515 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:25.5308061Z Eliminando runner 9a11c6692a13...
+job-core	Delete Runners	2025-09-23T16:59:25.9914184Z gh: Invalid Argument - Runner group 2 is virtual and cannot be modified. (HTTP 422)
+job-core	Delete Runners	2025-09-23T16:59:25.9958917Z {"message":"Invalid Argument - Runner group 2 is virtual and cannot be modified.","documentation_url":"https://docs.github.com/rest/actions/self-hosted-runners#delete-a-self-hosted-runner-from-an-organization","status":"422"}✗ Error al eliminar runner 9a11c6692a13
+job-core	Delete Runners	2025-09-23T16:59:25.9960370Z Eliminando runner 97919cc191c8...
+job-core	Delete Runners	2025-09-23T16:59:26.4267006Z ✓ Runner 97919cc191c8 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:26.4268616Z Eliminando runner a89532fafe8e...
+job-core	Delete Runners	2025-09-23T16:59:26.9031135Z ✓ Runner a89532fafe8e eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:26.9032656Z Eliminando runner 9786b5b9e717...
+job-core	Delete Runners	2025-09-23T16:59:27.3648392Z ✓ Runner 9786b5b9e717 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:27.3649882Z Eliminando runner 999661432fef...
+job-core	Delete Runners	2025-09-23T16:59:27.7801639Z ✓ Runner 999661432fef eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:27.7803116Z Eliminando runner 932f368a7d2e...
+job-core	Delete Runners	2025-09-23T16:59:28.3019652Z ✓ Runner 932f368a7d2e eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:28.3021258Z Eliminando runner a8e247d0fd2b...
+job-core	Delete Runners	2025-09-23T16:59:28.7378714Z ✓ Runner a8e247d0fd2b eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:28.7380219Z Eliminando runner a8ef89396367...
+job-core	Delete Runners	2025-09-23T16:59:29.2970897Z ✓ Runner a8ef89396367 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:29.2972396Z Eliminando runner a9a66893e6b9...
+job-core	Delete Runners	2025-09-23T16:59:29.7488690Z ✓ Runner a9a66893e6b9 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:29.7489077Z Eliminando runner a9ef887e0904...
+job-core	Delete Runners	2025-09-23T16:59:30.1437910Z ✓ Runner a9ef887e0904 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:30.1439436Z Eliminando runner ab3103bb13b5...
+job-core	Delete Runners	2025-09-23T16:59:30.5927417Z ✓ Runner ab3103bb13b5 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:30.5928937Z Eliminando runner aad756f01b6d...
+job-core	Delete Runners	2025-09-23T16:59:31.0398545Z ✓ Runner aad756f01b6d eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:31.0399250Z Eliminando runner af9cfb330451...
+job-core	Delete Runners	2025-09-23T16:59:31.4741236Z ✓ Runner af9cfb330451 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:31.4743910Z Eliminando runner b0f3e6f6e2f2...
+job-core	Delete Runners	2025-09-23T16:59:31.8716784Z ✓ Runner b0f3e6f6e2f2 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:31.8718298Z Eliminando runner ad3355b612e8...
+job-core	Delete Runners	2025-09-23T16:59:32.3660094Z ✓ Runner ad3355b612e8 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:32.3661610Z Eliminando runner ae6f785f1636...
+job-core	Delete Runners	2025-09-23T16:59:33.0323171Z ✓ Runner ae6f785f1636 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:33.0324643Z Eliminando runner ac8135910fb7...
+job-core	Delete Runners	2025-09-23T16:59:33.4763884Z ✓ Runner ac8135910fb7 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:33.4766254Z Eliminando runner abfb3820cd05...
+job-core	Delete Runners	2025-09-23T16:59:33.8740998Z ✓ Runner abfb3820cd05 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:33.8742511Z Eliminando runner b06dd1ff615c...
+job-core	Delete Runners	2025-09-23T16:59:34.2779327Z ✓ Runner b06dd1ff615c eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:34.2780862Z Eliminando runner b258ac8a36d8...
+job-core	Delete Runners	2025-09-23T16:59:34.7393342Z ✓ Runner b258ac8a36d8 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:34.7394864Z Eliminando runner b5d1ef9250db...
+job-core	Delete Runners	2025-09-23T16:59:35.1763918Z ✓ Runner b5d1ef9250db eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:35.1765938Z Eliminando runner b9bcbd8c0b1d...
+job-core	Delete Runners	2025-09-23T16:59:35.6332753Z ✓ Runner b9bcbd8c0b1d eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:35.6334258Z Eliminando runner bc12dd677bfc...
+job-core	Delete Runners	2025-09-23T16:59:36.0864880Z ✓ Runner bc12dd677bfc eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:36.0866671Z Eliminando runner b4a73b29f1e1...
+job-core	Delete Runners	2025-09-23T16:59:36.4598019Z ✓ Runner b4a73b29f1e1 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:36.4599649Z Eliminando runner b46347b284a8...
+job-core	Delete Runners	2025-09-23T16:59:36.9382100Z ✓ Runner b46347b284a8 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:36.9383607Z Eliminando runner b4aa65fd8168...
+job-core	Delete Runners	2025-09-23T16:59:37.4403547Z ✓ Runner b4aa65fd8168 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:37.4405063Z Eliminando runner bb523d3ad7a2...
+job-core	Delete Runners	2025-09-23T16:59:37.9653629Z ✓ Runner bb523d3ad7a2 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:37.9654831Z Eliminando runner b4f2dc1ca985...
+job-core	Delete Runners	2025-09-23T16:59:38.3518106Z ✓ Runner b4f2dc1ca985 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:38.3519717Z Eliminando runner b3c3db899a0a...
+job-core	Delete Runners	2025-09-23T16:59:38.8528729Z ✓ Runner b3c3db899a0a eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:38.8530263Z Eliminando runner b91288f17e5b...
+job-core	Delete Runners	2025-09-23T16:59:39.2908512Z ✓ Runner b91288f17e5b eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:39.2908899Z Eliminando runner bd51bea206e3...
+job-core	Delete Runners	2025-09-23T16:59:39.6739954Z ✓ Runner bd51bea206e3 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:39.6741514Z Eliminando runner b85f3fd2e173...
+job-core	Delete Runners	2025-09-23T16:59:40.1377677Z ✓ Runner b85f3fd2e173 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:40.1379279Z Eliminando runner bbd31c2f9412...
+job-core	Delete Runners	2025-09-23T16:59:40.5964443Z ✓ Runner bbd31c2f9412 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:40.5966387Z Eliminando runner b7d40476e0ce...
+job-core	Delete Runners	2025-09-23T16:59:41.0223615Z ✓ Runner b7d40476e0ce eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:41.0224060Z Eliminando runner b556c645c0a0...
+job-core	Delete Runners	2025-09-23T16:59:41.4396350Z ✓ Runner b556c645c0a0 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:41.4397885Z Eliminando runner b5434781f3db...
+job-core	Delete Runners	2025-09-23T16:59:41.9010467Z ✓ Runner b5434781f3db eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:41.9011981Z Eliminando runner df1128e06bd9...
+job-core	Delete Runners	2025-09-23T16:59:42.3101318Z ✓ Runner df1128e06bd9 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:42.3102818Z Eliminando runner dea608fc6ad0...
+job-core	Delete Runners	2025-09-23T16:59:42.7438701Z ✓ Runner dea608fc6ad0 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:42.7440208Z Eliminando runner c85a13acc386...
+job-core	Delete Runners	2025-09-23T16:59:43.2188861Z ✓ Runner c85a13acc386 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:43.2191537Z Eliminando runner bfadebc398c9...
+job-core	Delete Runners	2025-09-23T16:59:43.6327463Z ✓ Runner bfadebc398c9 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:43.6328962Z Eliminando runner cc209dc896e4...
+job-core	Delete Runners	2025-09-23T16:59:44.0710885Z ✓ Runner cc209dc896e4 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:44.0711487Z Eliminando runner c08c6ead6e27...
+job-core	Delete Runners	2025-09-23T16:59:44.4959787Z ✓ Runner c08c6ead6e27 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:44.4961323Z Eliminando runner beb10e2f6a52...
+job-core	Delete Runners	2025-09-23T16:59:44.9205718Z ✓ Runner beb10e2f6a52 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:44.9206570Z Eliminando runner be365b24ee80...
+job-core	Delete Runners	2025-09-23T16:59:45.3429198Z ✓ Runner be365b24ee80 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:45.3430728Z Eliminando runner d99a5358860b...
+job-core	Delete Runners	2025-09-23T16:59:45.7934053Z ✓ Runner d99a5358860b eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:45.7936113Z Eliminando runner d23731e0b6c2...
+job-core	Delete Runners	2025-09-23T16:59:46.1889779Z ✓ Runner d23731e0b6c2 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:46.1890269Z Eliminando runner d139a967a0ec...
+job-core	Delete Runners	2025-09-23T16:59:46.6329607Z ✓ Runner d139a967a0ec eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:46.6347521Z Eliminando runner c901454408df...
+job-core	Delete Runners	2025-09-23T16:59:47.1853983Z ✓ Runner c901454408df eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:47.1855876Z Eliminando runner d79bff9f152a...
+job-core	Delete Runners	2025-09-23T16:59:47.6009109Z ✓ Runner d79bff9f152a eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:47.6010642Z Eliminando runner d7f173ff2cff...
+job-core	Delete Runners	2025-09-23T16:59:48.1221773Z ✓ Runner d7f173ff2cff eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:48.1223317Z Eliminando runner dd9bda0bbf95...
+job-core	Delete Runners	2025-09-23T16:59:48.5941586Z ✓ Runner dd9bda0bbf95 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:48.5941971Z Eliminando runner bf8223726515...
+job-core	Delete Runners	2025-09-23T16:59:49.0130360Z ✓ Runner bf8223726515 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:49.0130863Z Eliminando runner cff7aeb73249...
+job-core	Delete Runners	2025-09-23T16:59:49.4290029Z ✓ Runner cff7aeb73249 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:49.4291537Z Eliminando runner dfc71e1551a2...
+job-core	Delete Runners	2025-09-23T16:59:49.8451308Z ✓ Runner dfc71e1551a2 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:49.8452860Z Eliminando runner cee320361eb4...
+job-core	Delete Runners	2025-09-23T16:59:50.2921703Z ✓ Runner cee320361eb4 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:50.2924296Z Eliminando runner be191ec5b7ea...
+job-core	Delete Runners	2025-09-23T16:59:50.6600668Z ✓ Runner be191ec5b7ea eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:50.6602181Z Eliminando runner d0dff4df93bc...
+job-core	Delete Runners	2025-09-23T16:59:51.1013623Z ✓ Runner d0dff4df93bc eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:51.1015472Z Eliminando runner cd5698c3c6a6...
+job-core	Delete Runners	2025-09-23T16:59:51.6189028Z ✓ Runner cd5698c3c6a6 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:51.6190639Z Eliminando runner ca25804a1e91...
+job-core	Delete Runners	2025-09-23T16:59:52.0901878Z ✓ Runner ca25804a1e91 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:52.0902257Z Eliminando runner dbfaa40c579d...
+job-core	Delete Runners	2025-09-23T16:59:52.4875819Z ✓ Runner dbfaa40c579d eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:52.4877367Z Eliminando runner ce5d90554da6...
+job-core	Delete Runners	2025-09-23T16:59:52.9159838Z ✓ Runner ce5d90554da6 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:52.9160234Z Eliminando runner ccbebcca8a97...
+job-core	Delete Runners	2025-09-23T16:59:53.3211488Z ✓ Runner ccbebcca8a97 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:53.3213038Z Eliminando runner c630d106fa94...
+job-core	Delete Runners	2025-09-23T16:59:53.7693399Z ✓ Runner c630d106fa94 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:53.7695858Z Eliminando runner dbaebd7b78d5...
+job-core	Delete Runners	2025-09-23T16:59:54.1932596Z ✓ Runner dbaebd7b78d5 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:54.1934114Z Eliminando runner c1ec4e8d2e98...
+job-core	Delete Runners	2025-09-23T16:59:54.8817168Z ✓ Runner c1ec4e8d2e98 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:54.8818714Z Eliminando runner d2796124548c...
+job-core	Delete Runners	2025-09-23T16:59:55.2946450Z ✓ Runner d2796124548c eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:55.2947966Z Eliminando runner d4808bc7a06c...
+job-core	Delete Runners	2025-09-23T16:59:55.7149451Z ✓ Runner d4808bc7a06c eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:55.7150976Z Eliminando runner c68a931b0999...
+job-core	Delete Runners	2025-09-23T16:59:56.1708982Z ✓ Runner c68a931b0999 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:56.1710889Z Eliminando runner dfd44aa64e00...
+job-core	Delete Runners	2025-09-23T16:59:56.6318006Z ✓ Runner dfd44aa64e00 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:56.6320673Z Eliminando runner f77c59f54cd4...
+job-core	Delete Runners	2025-09-23T16:59:57.0585876Z ✓ Runner f77c59f54cd4 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:57.0587407Z Eliminando runner fb6f6504ca67...
+job-core	Delete Runners	2025-09-23T16:59:57.5070470Z ✓ Runner fb6f6504ca67 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:57.5071945Z Eliminando runner f95647575c47...
+job-core	Delete Runners	2025-09-23T16:59:57.9194816Z ✓ Runner f95647575c47 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:57.9196612Z Eliminando runner eb1b71308952...
+job-core	Delete Runners	2025-09-23T16:59:58.3194817Z ✓ Runner eb1b71308952 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:58.3197700Z Eliminando runner fb502fbe798d...
+job-core	Delete Runners	2025-09-23T16:59:58.7150438Z ✓ Runner fb502fbe798d eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:58.7151962Z Eliminando runner e91d5e18b428...
+job-core	Delete Runners	2025-09-23T16:59:59.1232347Z ✓ Runner e91d5e18b428 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:59.1233060Z Eliminando runner e1b2fa6f9072...
+job-core	Delete Runners	2025-09-23T16:59:59.7336108Z ✓ Runner e1b2fa6f9072 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T16:59:59.7336481Z Eliminando runner f06d30bb5a5a...
+job-core	Delete Runners	2025-09-23T17:00:00.1362279Z ✓ Runner f06d30bb5a5a eliminado exitosamente
+job-core	Delete Runners	2025-09-23T17:00:00.1363778Z Eliminando runner ea64c9162d92...
+job-core	Delete Runners	2025-09-23T17:00:00.5817197Z ✓ Runner ea64c9162d92 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T17:00:00.5818678Z Eliminando runner e31c467e8497...
+job-core	Delete Runners	2025-09-23T17:00:01.1746412Z ✓ Runner e31c467e8497 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T17:00:01.1746963Z Eliminando runner f5f61dfd674a...
+job-core	Delete Runners	2025-09-23T17:00:01.5468721Z ✓ Runner f5f61dfd674a eliminado exitosamente
+job-core	Delete Runners	2025-09-23T17:00:01.5470234Z Eliminando runner f9dcfc1dd594...
+job-core	Delete Runners	2025-09-23T17:00:02.0170868Z ✓ Runner f9dcfc1dd594 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T17:00:02.0171390Z Eliminando runner e81ef2305993...
+job-core	Delete Runners	2025-09-23T17:00:02.4424128Z ✓ Runner e81ef2305993 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T17:00:02.4424521Z Eliminando runner f22a5c3f8422...
+job-core	Delete Runners	2025-09-23T17:00:02.9273046Z ✓ Runner f22a5c3f8422 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T17:00:02.9274560Z Eliminando runner e50b8190d793...
+job-core	Delete Runners	2025-09-23T17:00:03.4437522Z ✓ Runner e50b8190d793 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T17:00:03.4439116Z Eliminando runner f701b078fa5f...
+job-core	Delete Runners	2025-09-23T17:00:03.8936951Z ✓ Runner f701b078fa5f eliminado exitosamente
+job-core	Delete Runners	2025-09-23T17:00:03.8938432Z Eliminando runner f0be1d613f58...
+job-core	Delete Runners	2025-09-23T17:00:04.3154580Z ✓ Runner f0be1d613f58 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T17:00:04.3156364Z Eliminando runner f866b92b5be5...
+job-core	Delete Runners	2025-09-23T17:00:04.7706724Z ✓ Runner f866b92b5be5 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T17:00:04.7708242Z Eliminando runner f3a52909802d...
+job-core	Delete Runners	2025-09-23T17:00:05.1780631Z ✓ Runner f3a52909802d eliminado exitosamente
+job-core	Delete Runners	2025-09-23T17:00:05.1782230Z Eliminando runner f69fe35fd7ed...
+job-core	Delete Runners	2025-09-23T17:00:05.6807807Z ✓ Runner f69fe35fd7ed eliminado exitosamente
+job-core	Delete Runners	2025-09-23T17:00:05.6809366Z Eliminando runner ecaba8e9ca30...
+job-core	Delete Runners	2025-09-23T17:00:06.0978698Z ✓ Runner ecaba8e9ca30 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T17:00:06.0980229Z Eliminando runner e4147c968a8a...
+job-core	Delete Runners	2025-09-23T17:00:06.5933663Z ✓ Runner e4147c968a8a eliminado exitosamente
+job-core	Delete Runners	2025-09-23T17:00:06.5935439Z Eliminando runner f78ac99f530c...
+job-core	Delete Runners	2025-09-23T17:00:07.0591839Z ✓ Runner f78ac99f530c eliminado exitosamente
+job-core	Delete Runners	2025-09-23T17:00:07.0593329Z Eliminando runner e30b97f11678...
+job-core	Delete Runners	2025-09-23T17:00:07.5340402Z ✓ Runner e30b97f11678 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T17:00:07.5341916Z Eliminando runner eb7675d5201a...
+job-core	Delete Runners	2025-09-23T17:00:08.0306366Z ✓ Runner eb7675d5201a eliminado exitosamente
+job-core	Delete Runners	2025-09-23T17:00:08.0307898Z Eliminando runner fcf22abc2281...
+job-core	Delete Runners	2025-09-23T17:00:08.4962892Z ✓ Runner fcf22abc2281 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T17:00:08.4963609Z Eliminando runner f72073389a49...
+job-core	Delete Runners	2025-09-23T17:00:08.9312508Z ✓ Runner f72073389a49 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T17:00:08.9314036Z Eliminando runner f8359686f144...
+job-core	Delete Runners	2025-09-23T17:00:09.3444399Z ✓ Runner f8359686f144 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T17:00:09.3446462Z Eliminando runner f299e17982f5...
+job-core	Delete Runners	2025-09-23T17:00:09.8458979Z ✓ Runner f299e17982f5 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T17:00:09.8460487Z Eliminando runner f14f6d5d3a0f...
+job-core	Delete Runners	2025-09-23T17:00:10.3118758Z ✓ Runner f14f6d5d3a0f eliminado exitosamente
+job-core	Delete Runners	2025-09-23T17:00:10.3121393Z Eliminando runner f356cc345e2f...
+job-core	Delete Runners	2025-09-23T17:00:10.7964408Z ✓ Runner f356cc345e2f eliminado exitosamente
+job-core	Delete Runners	2025-09-23T17:00:10.7966470Z Eliminando runner fc54d160814c...
+job-core	Delete Runners	2025-09-23T17:00:11.4509019Z ✓ Runner fc54d160814c eliminado exitosamente
+job-core	Delete Runners	2025-09-23T17:00:11.4510529Z Eliminando runner eb409cda163f...
+job-core	Delete Runners	2025-09-23T17:00:11.9903653Z ✓ Runner eb409cda163f eliminado exitosamente
+job-core	Delete Runners	2025-09-23T17:00:11.9904362Z Eliminando runner eb9431b6e0b1...
+job-core	Delete Runners	2025-09-23T17:00:12.4179157Z ✓ Runner eb9431b6e0b1 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T17:00:12.4181776Z Eliminando runner f238d09bd420...
+job-core	Delete Runners	2025-09-23T17:00:12.9147292Z ✓ Runner f238d09bd420 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T17:00:12.9147676Z Eliminando runner ee18c9390340...
+job-core	Delete Runners	2025-09-23T17:00:13.3995540Z ✓ Runner ee18c9390340 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T17:00:13.3997081Z Eliminando runner ed982937b08d...
+job-core	Delete Runners	2025-09-23T17:00:14.2667759Z ✓ Runner ed982937b08d eliminado exitosamente
+job-core	Delete Runners	2025-09-23T17:00:14.2669249Z Eliminando runner fd8e3b0e0c3c...
+job-core	Delete Runners	2025-09-23T17:00:14.6858320Z ✓ Runner fd8e3b0e0c3c eliminado exitosamente
+job-core	Delete Runners	2025-09-23T17:00:14.6859862Z Eliminando runner fdcf4baf1efd...
+job-core	Delete Runners	2025-09-23T17:00:15.3689747Z ✓ Runner fdcf4baf1efd eliminado exitosamente
+job-core	Delete Runners	2025-09-23T17:00:15.3691256Z Eliminando runner ff9a4133e942...
+job-core	Delete Runners	2025-09-23T17:00:16.0113209Z ✓ Runner ff9a4133e942 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T17:00:16.0113596Z Eliminando runner fe8106062893...
+job-core	Delete Runners	2025-09-23T17:00:16.5048361Z ✓ Runner fe8106062893 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T17:00:16.5049873Z Eliminando runner ff0b44941d04...
+job-core	Delete Runners	2025-09-23T17:00:16.9317233Z ✓ Runner ff0b44941d04 eliminado exitosamente
+job-core	Delete Runners	2025-09-23T17:00:16.9318720Z Eliminando runner ff26970b16c1...
+job-core	Delete Runners	2025-09-23T17:00:17.4331443Z ✓ Runner ff26970b16c1 eliminado exitosamente
+job-core	Check Results	﻿2025-09-23T17:00:17.4506807Z ##[group]Run if [[ -z "01766f54179f,02c874731438,063dd49e6d36,048c4d28c18c,08cf4c22dfd7,047db721b19c,0913af7e4c3a,0d94a58ff0b9,0d09aa96590b,0963d0e77c19,0a214a6b5683,0d8b6a42e5ff,0a83541c2220,0ad6c6d074e5,173f48abe644,16d787e33bde,11b6046abff1,145480e6270c,1cfcf2301ae7,1e3e7ba4d8cd,1d28c1709302,103a6d2c34d0,15279d716f0a,215c26334034,10d173a2fefa,171d111ca8d0,1735f6e511bc,1bd0b4688a36,14fd140c9c59,1bd9ba0d8da4,316190dc586b,29b62d279107,239e40cab997,2f5c7febebe3,22d313448389,2c8acd1aa4e7,3314adfd2309,3044f5f4c7fb,2bb9889969aa,2a9c74aa53a5,34fe8768d091,2928e3ae5673,30a4266de7fc,224a4ab307fa,2fc07e8d7ed8,22be5aefc683,2b52c78c26af,2b108be8c915,34eb1b427b60,271f7a1b84d7,2cec761fd680,342f2bf103ca,23918f4bd657,2fba2bcb9129,2b3deaf42ace,2d5851a7e15b,30423d2d7ede,2c54efb5c7be,2b3bf7e51b56,2d4706f0c744,373150f564a7,2531ed5cf6f9,58c08359ba6c,48d802a5e05e,405a61ff5a7d,3c6e750ce84c,45bf479a01a6,3fef19cfe181,525e16c40371,40a224235cb2,4af634d12be1,4fde840f1b8b,465c75a6c7a7,45c6f8ecb7a9,42f42e70b1ec,58025a5431b2,386adf592004,3807103f4db1,3d89fd1c9d8c,3d7fbdb194a0,4cb4c9764b0e,47ca9af32b0c,52e7144ececf,541fd515ae64,4106256bf0ea,4e7baf27ce0a,44d36472d91f,473c2e275787,3f6a33253c8b,49434089fd58,44c543e89f4e,56274be3872c,3dd557778f36,41a1395917cd,5717165c652b,429e5c231477,485efe5187c7,50621eaecded,41e0e8af749f,46e94f5d95d7,59e642af1708,59f5e60adf7f,5abb0698bd6e,5b96c832c382,5a3cac187bf5,5bbab2634b61,611af6787e2b,5ceac11ab67a,5c0aee8b5ccf,5c0c3fc15775,5e3fe8c6505d,5e2566f0e39b,5f031b6c6f4d,5d0c537c9f7a,6f40e8240232,707a410cc835,63c9629419a2,6669d6f6857c,67eb0df46c0c,6404980e7043,635c5294c777,67ab45f6add2,62900e294ffd,6246d8c557d6,65fa76402093,6e92ed135c55,65796e32aed2,6e803017be4b,6cb1ed62dd86,6c8420e6b671,79cf1d5861c2,74811d37f9af,756b4f778e02,75c0845929e5,74deb311660d,83d328fbec50,87ea49ea5602,73f3c7256562,77e8ba16119c,7e256170c950,85752ac8e76c,88475ad486c8,88e66b6cf18b,7eeb9d4221d2,713f4093b24b,8314875cb714,8178ea528532,711907d2c8a3,8a7db79146cb,7f6b92a68789,815c1f66bda3,86d5e02bb9a8,836f12411377,7e96a3c3269e,7c2a1b481cbe,7e2f54c8158c,89814e6c3030,7356e29ed340,87a4470de6ed,71bf1d567ee7,87b34b141663,7e5f503f4ec5,945016e5b77a,921b0d0b7699,9ddb3007a131,9d860eaa6519,948b90ed1518,a23489dad1a7,a2122d98857a,9821e7653fb0,946dbdccf764,9913ebfb82ee,9347b8f9791a,a3b4249c832a,99736000a6ed,8d9a4f0d6307,9ba0ddb21512,a3ab0273ed24,939f81aa0713,969392f9aee2,a760c454973f,99cc2a6c1325,a2cdbe73665e,9a24bf7bc198,8d62a5cf09cf,a23d8940d3f4,a65012b86c32,98b3e89d0448,a1a0d9222a25,8f52a28dc00c,a0fe5b4f1c5d,9c344b39b5d0,91e476637a40,a2e0ea3c6515,9a11c6692a13,97919cc191c8,a89532fafe8e,9786b5b9e717,999661432fef,932f368a7d2e,a8e247d0fd2b,a8ef89396367,a9a66893e6b9,a9ef887e0904,ab3103bb13b5,aad756f01b6d,af9cfb330451,b0f3e6f6e2f2,ad3355b612e8,ae6f785f1636,ac8135910fb7,abfb3820cd05,b06dd1ff615c,b258ac8a36d8,b5d1ef9250db,b9bcbd8c0b1d,bc12dd677bfc,b4a73b29f1e1,b46347b284a8,b4aa65fd8168,bb523d3ad7a2,b4f2dc1ca985,b3c3db899a0a,b91288f17e5b,bd51bea206e3,b85f3fd2e173,bbd31c2f9412,b7d40476e0ce,b556c645c0a0,b5434781f3db,df1128e06bd9,dea608fc6ad0,c85a13acc386,bfadebc398c9,cc209dc896e4,c08c6ead6e27,beb10e2f6a52,be365b24ee80,d99a5358860b,d23731e0b6c2,d139a967a0ec,c901454408df,d79bff9f152a,d7f173ff2cff,dd9bda0bbf95,bf8223726515,cff7aeb73249,dfc71e1551a2,cee320361eb4,be191ec5b7ea,d0dff4df93bc,cd5698c3c6a6,ca25804a1e91,dbfaa40c579d,ce5d90554da6,ccbebcca8a97,c630d106fa94,dbaebd7b78d5,c1ec4e8d2e98,d2796124548c,d4808bc7a06c,c68a931b0999,dfd44aa64e00,f77c59f54cd4,fb6f6504ca67,f95647575c47,eb1b71308952,fb502fbe798d,e91d5e18b428,e1b2fa6f9072,f06d30bb5a5a,ea64c9162d92,e31c467e8497,f5f61dfd674a,f9dcfc1dd594,e81ef2305993,f22a5c3f8422,e50b8190d793,f701b078fa5f,f0be1d613f58,f866b92b5be5,f3a52909802d,f69fe35fd7ed,ecaba8e9ca30,e4147c968a8a,f78ac99f530c,e30b97f11678,eb7675d5201a,fcf22abc2281,f72073389a49,f8359686f144,f299e17982f5,f14f6d5d3a0f,f356cc345e2f,fc54d160814c,eb409cda163f,eb9431b6e0b1,f238d09bd420,ee18c9390340,ed982937b08d,fd8e3b0e0c3c,fdcf4baf1efd,ff9a4133e942,fe8106062893,ff0b44941d04,ff26970b16c1," ]]; then
+job-core	Check Results	2025-09-23T17:00:17.4687061Z [36;1mif [[ -z "01766f54179f,02c874731438,063dd49e6d36,048c4d28c18c,08cf4c22dfd7,047db721b19c,0913af7e4c3a,0d94a58ff0b9,0d09aa96590b,0963d0e77c19,0a214a6b5683,0d8b6a42e5ff,0a83541c2220,0ad6c6d074e5,173f48abe644,16d787e33bde,11b6046abff1,145480e6270c,1cfcf2301ae7,1e3e7ba4d8cd,1d28c1709302,103a6d2c34d0,15279d716f0a,215c26334034,10d173a2fefa,171d111ca8d0,1735f6e511bc,1bd0b4688a36,14fd140c9c59,1bd9ba0d8da4,316190dc586b,29b62d279107,239e40cab997,2f5c7febebe3,22d313448389,2c8acd1aa4e7,3314adfd2309,3044f5f4c7fb,2bb9889969aa,2a9c74aa53a5,34fe8768d091,2928e3ae5673,30a4266de7fc,224a4ab307fa,2fc07e8d7ed8,22be5aefc683,2b52c78c26af,2b108be8c915,34eb1b427b60,271f7a1b84d7,2cec761fd680,342f2bf103ca,23918f4bd657,2fba2bcb9129,2b3deaf42ace,2d5851a7e15b,30423d2d7ede,2c54efb5c7be,2b3bf7e51b56,2d4706f0c744,373150f564a7,2531ed5cf6f9,58c08359ba6c,48d802a5e05e,405a61ff5a7d,3c6e750ce84c,45bf479a01a6,3fef19cfe181,525e16c40371,40a224235cb2,4af634d12be1,4fde840f1b8b,465c75a6c7a7,45c6f8ecb7a9,42f42e70b1ec,58025a5431b2,386adf592004,3807103f4db1,3d89fd1c9d8c,3d7fbdb194a0,4cb4c9764b0e,47ca9af32b0c,52e7144ececf,541fd515ae64,4106256bf0ea,4e7baf27ce0a,44d36472d91f,473c2e275787,3f6a33253c8b,49434089fd58,44c543e89f4e,56274be3872c,3dd557778f36,41a1395917cd,5717165c652b,429e5c231477,485efe5187c7,50621eaecded,41e0e8af749f,46e94f5d95d7,59e642af1708,59f5e60adf7f,5abb0698bd6e,5b96c832c382,5a3cac187bf5,5bbab2634b61,611af6787e2b,5ceac11ab67a,5c0aee8b5ccf,5c0c3fc15775,5e3fe8c6505d,5e2566f0e39b,5f031b6c6f4d,5d0c537c9f7a,6f40e8240232,707a410cc835,63c9629419a2,6669d6f6857c,67eb0df46c0c,6404980e7043,635c5294c777,67ab45f6add2,62900e294ffd,6246d8c557d6,65fa76402093,6e92ed135c55,65796e32aed2,6e803017be4b,6cb1ed62dd86,6c8420e6b671,79cf1d5861c2,74811d37f9af,756b4f778e02,75c0845929e5,74deb311660d,83d328fbec50,87ea49ea5602,73f3c7256562,77e8ba16119c,7e256170c950,85752ac8e76c,88475ad486c8,88e66b6cf18b,7eeb9d4221d2,713f4093b24b,8314875cb714,8178ea528532,711907d2c8a3,8a7db79146cb,7f6b92a68789,815c1f66bda3,86d5e02bb9a8,836f12411377,7e96a3c3269e,7c2a1b481cbe,7e2f54c8158c,89814e6c3030,7356e29ed340,87a4470de6ed,71bf1d567ee7,87b34b141663,7e5f503f4ec5,945016e5b77a,921b0d0b7699,9ddb3007a131,9d860eaa6519,948b90ed1518,a23489dad1a7,a2122d98857a,9821e7653fb0,946dbdccf764,9913ebfb82ee,9347b8f9791a,a3b4249c832a,99736000a6ed,8d9a4f0d6307,9ba0ddb21512,a3ab0273ed24,939f81aa0713,969392f9aee2,a760c454973f,99cc2a6c1325,a2cdbe73665e,9a24bf7bc198,8d62a5cf09cf,a23d8940d3f4,a65012b86c32,98b3e89d0448,a1a0d9222a25,8f52a28dc00c,a0fe5b4f1c5d,9c344b39b5d0,91e476637a40,a2e0ea3c6515,9a11c6692a13,97919cc191c8,a89532fafe8e,9786b5b9e717,999661432fef,932f368a7d2e,a8e247d0fd2b,a8ef89396367,a9a66893e6b9,a9ef887e0904,ab3103bb13b5,aad756f01b6d,af9cfb330451,b0f3e6f6e2f2,ad3355b612e8,ae6f785f1636,ac8135910fb7,abfb3820cd05,b06dd1ff615c,b258ac8a36d8,b5d1ef9250db,b9bcbd8c0b1d,bc12dd677bfc,b4a73b29f1e1,b46347b284a8,b4aa65fd8168,bb523d3ad7a2,b4f2dc1ca985,b3c3db899a0a,b91288f17e5b,bd51bea206e3,b85f3fd2e173,bbd31c2f9412,b7d40476e0ce,b556c645c0a0,b5434781f3db,df1128e06bd9,dea608fc6ad0,c85a13acc386,bfadebc398c9,cc209dc896e4,c08c6ead6e27,beb10e2f6a52,be365b24ee80,d99a5358860b,d23731e0b6c2,d139a967a0ec,c901454408df,d79bff9f152a,d7f173ff2cff,dd9bda0bbf95,bf8223726515,cff7aeb73249,dfc71e1551a2,cee320361eb4,be191ec5b7ea,d0dff4df93bc,cd5698c3c6a6,ca25804a1e91,dbfaa40c579d,ce5d90554da6,ccbebcca8a97,c630d106fa94,dbaebd7b78d5,c1ec4e8d2e98,d2796124548c,d4808bc7a06c,c68a931b0999,dfd44aa64e00,f77c59f54cd4,fb6f6504ca67,f95647575c47,eb1b71308952,fb502fbe798d,e91d5e18b428,e1b2fa6f9072,f06d30bb5a5a,ea64c9162d92,e31c467e8497,f5f61dfd674a,f9dcfc1dd594,e81ef2305993,f22a5c3f8422,e50b8190d793,f701b078fa5f,f0be1d613f58,f866b92b5be5,f3a52909802d,f69fe35fd7ed,ecaba8e9ca30,e4147c968a8a,f78ac99f530c,e30b97f11678,eb7675d5201a,fcf22abc2281,f72073389a49,f8359686f144,f299e17982f5,f14f6d5d3a0f,f356cc345e2f,fc54d160814c,eb409cda163f,eb9431b6e0b1,f238d09bd420,ee18c9390340,ed982937b08d,fd8e3b0e0c3c,fdcf4baf1efd,ff9a4133e942,fe8106062893,ff0b44941d04,ff26970b16c1," ]]; then[0m
+job-core	Check Results	2025-09-23T17:00:17.4768534Z [36;1m  echo "No se encontraron runners en el grupo swarm-test-old"[0m
+job-core	Check Results	2025-09-23T17:00:17.4768857Z [36;1melse[0m
+job-core	Check Results	2025-09-23T17:00:17.4769279Z [36;1m  echo "Runners eliminados exitosamente del grupo swarm-test-old"[0m
+job-core	Check Results	2025-09-23T17:00:17.4769619Z [36;1mfi[0m
+job-core	Check Results	2025-09-23T17:00:17.4779073Z shell: /usr/bin/bash -e {0}
+job-core	Check Results	2025-09-23T17:00:17.4779505Z env:
+job-core	Check Results	2025-09-23T17:00:17.4780261Z   GITHUB_TOKEN: ***
+job-core	Check Results	2025-09-23T17:00:17.4780491Z   KAOS_MODULE: [Ka0s] Delete Swarm Runners
+job-core	Check Results	2025-09-23T17:00:17.4780766Z   KAOS_CODE: 17953364907
+job-core	Check Results	2025-09-23T17:00:17.4781085Z ##[endgroup]
+job-core	Check Results	2025-09-23T17:00:17.4816556Z Runners eliminados exitosamente del grupo swarm-test-old
+job-core	Complete job	﻿2025-09-23T17:00:17.4892732Z Cleaning up orphan processes
+handle-success	Set up job	﻿2025-09-23T17:00:24.1933178Z Current runner version: '2.328.0'
+handle-success	Set up job	2025-09-23T17:00:24.1945834Z Runner name: '5d0c537c9f7a'
+handle-success	Set up job	2025-09-23T17:00:24.1947337Z Runner group name: 'swarm-runners'
+handle-success	Set up job	2025-09-23T17:00:24.1948512Z Machine name: '5d0c537c9f7a'
+handle-success	Set up job	2025-09-23T17:00:24.1955359Z ##[group]GITHUB_TOKEN Permissions
+handle-success	Set up job	2025-09-23T17:00:24.1959075Z Actions: write
+handle-success	Set up job	2025-09-23T17:00:24.1960333Z Contents: read
+handle-success	Set up job	2025-09-23T17:00:24.1961039Z Issues: write
+handle-success	Set up job	2025-09-23T17:00:24.1961762Z Metadata: read
+handle-success	Set up job	2025-09-23T17:00:24.1962411Z ##[endgroup]
+handle-success	Set up job	2025-09-23T17:00:24.1966311Z Secret source: Actions
+handle-success	Set up job	2025-09-23T17:00:24.1967420Z Prepare workflow directory
+handle-success	Set up job	2025-09-23T17:00:24.2922837Z Prepare all required actions
+handle-success	Set up job	2025-09-23T17:00:24.3005774Z Getting action download info
+handle-success	Set up job	2025-09-23T17:00:24.9766752Z Download action repository 'actions/checkout@v4' (SHA:08eba0b27e820071cde6df949e0beb9ba4906955)
+handle-success	Set up job	2025-09-23T17:00:25.9716246Z Complete job name: handle-success
+handle-success	Checkout code	﻿2025-09-23T17:00:26.0726570Z ##[group]Run actions/checkout@v4
+handle-success	Checkout code	2025-09-23T17:00:26.0728278Z with:
+handle-success	Checkout code	2025-09-23T17:00:26.0729011Z   fetch-depth: 0
+handle-success	Checkout code	2025-09-23T17:00:26.0730160Z   token: ***
+handle-success	Checkout code	2025-09-23T17:00:26.0730831Z   repository: Ka0s-Klaus/ka0s
+handle-success	Checkout code	2025-09-23T17:00:26.0731580Z   ssh-strict: true
+handle-success	Checkout code	2025-09-23T17:00:26.0732224Z   ssh-user: git
+handle-success	Checkout code	2025-09-23T17:00:26.0732922Z   persist-credentials: true
+handle-success	Checkout code	2025-09-23T17:00:26.0733773Z   clean: true
+handle-success	Checkout code	2025-09-23T17:00:26.0734409Z   sparse-checkout-cone-mode: true
+handle-success	Checkout code	2025-09-23T17:00:26.0735167Z   fetch-tags: false
+handle-success	Checkout code	2025-09-23T17:00:26.0735811Z   show-progress: true
+handle-success	Checkout code	2025-09-23T17:00:26.0736441Z   lfs: false
+handle-success	Checkout code	2025-09-23T17:00:26.0737009Z   submodules: false
+handle-success	Checkout code	2025-09-23T17:00:26.0737673Z   set-safe-directory: true
+handle-success	Checkout code	2025-09-23T17:00:26.0738754Z env:
+handle-success	Checkout code	2025-09-23T17:00:26.0739982Z   GITHUB_TOKEN: ***
+handle-success	Checkout code	2025-09-23T17:00:26.0740854Z   KAOS_MODULE: [Ka0s] Delete Swarm Runners
+handle-success	Checkout code	2025-09-23T17:00:26.0741646Z   KAOS_CODE: 17953364907
+handle-success	Checkout code	2025-09-23T17:00:26.0742294Z ##[endgroup]
+handle-success	Checkout code	2025-09-23T17:00:26.2380415Z Syncing repository: Ka0s-Klaus/ka0s
+handle-success	Checkout code	2025-09-23T17:00:26.2383563Z ##[group]Getting Git version info
+handle-success	Checkout code	2025-09-23T17:00:26.2384670Z Working directory is '/home/runner/_work/ka0s/ka0s'
+handle-success	Checkout code	2025-09-23T17:00:26.2386123Z [command]/usr/bin/git version
+handle-success	Checkout code	2025-09-23T17:00:26.2386884Z git version 2.51.0
+handle-success	Checkout code	2025-09-23T17:00:26.2400308Z ##[endgroup]
+handle-success	Checkout code	2025-09-23T17:00:26.2422804Z Temporarily overriding HOME='/home/runner/_work/_temp/31240210-9ee1-4aa1-a670-86d5baa3a19e' before making global git config changes
+handle-success	Checkout code	2025-09-23T17:00:26.2425210Z Adding repository directory to the temporary git global config as a safe directory
+handle-success	Checkout code	2025-09-23T17:00:26.2432119Z [command]/usr/bin/git config --global --add safe.directory /home/runner/_work/ka0s/ka0s
+handle-success	Checkout code	2025-09-23T17:00:26.2493606Z Deleting the contents of '/home/runner/_work/ka0s/ka0s'
+handle-success	Checkout code	2025-09-23T17:00:26.2500707Z ##[group]Initializing the repository
+handle-success	Checkout code	2025-09-23T17:00:26.2507616Z [command]/usr/bin/git init /home/runner/_work/ka0s/ka0s
+handle-success	Checkout code	2025-09-23T17:00:26.2565133Z hint: Using 'master' as the name for the initial branch. This default branch name
+handle-success	Checkout code	2025-09-23T17:00:26.2569294Z hint: is subject to change. To configure the initial branch name to use in all
+handle-success	Checkout code	2025-09-23T17:00:26.2573850Z hint: of your new repositories, which will suppress this warning, call:
+handle-success	Checkout code	2025-09-23T17:00:26.2576596Z hint:
+handle-success	Checkout code	2025-09-23T17:00:26.2577978Z hint: 	git config --global init.defaultBranch <name>
+handle-success	Checkout code	2025-09-23T17:00:26.2580206Z hint:
+handle-success	Checkout code	2025-09-23T17:00:26.2581740Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+handle-success	Checkout code	2025-09-23T17:00:26.2584854Z hint: 'development'. The just-created branch can be renamed via this command:
+handle-success	Checkout code	2025-09-23T17:00:26.2587521Z hint:
+handle-success	Checkout code	2025-09-23T17:00:26.2588736Z hint: 	git branch -m <name>
+handle-success	Checkout code	2025-09-23T17:00:26.2590398Z hint:
+handle-success	Checkout code	2025-09-23T17:00:26.2594756Z hint: Disable this message with "git config set advice.defaultBranchName false"
+handle-success	Checkout code	2025-09-23T17:00:26.2600365Z Initialized empty Git repository in /home/runner/_work/ka0s/ka0s/.git/
+handle-success	Checkout code	2025-09-23T17:00:26.2602978Z [command]/usr/bin/git remote add origin https://github.com/Ka0s-Klaus/ka0s
+handle-success	Checkout code	2025-09-23T17:00:26.2636537Z ##[endgroup]
+handle-success	Checkout code	2025-09-23T17:00:26.2639030Z ##[group]Disabling automatic garbage collection
+handle-success	Checkout code	2025-09-23T17:00:26.2643353Z [command]/usr/bin/git config --local gc.auto 0
+handle-success	Checkout code	2025-09-23T17:00:26.2691711Z ##[endgroup]
+handle-success	Checkout code	2025-09-23T17:00:26.2693825Z ##[group]Setting up auth
+handle-success	Checkout code	2025-09-23T17:00:26.2703415Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+handle-success	Checkout code	2025-09-23T17:00:26.2751946Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+handle-success	Checkout code	2025-09-23T17:00:26.3089849Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+handle-success	Checkout code	2025-09-23T17:00:26.3136821Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+handle-success	Checkout code	2025-09-23T17:00:26.3497241Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+handle-success	Checkout code	2025-09-23T17:00:26.3558410Z ##[endgroup]
+handle-success	Checkout code	2025-09-23T17:00:26.3560817Z ##[group]Fetching the repository
+handle-success	Checkout code	2025-09-23T17:00:26.3573629Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+handle-success	Checkout code	2025-09-23T17:00:39.2896193Z From https://github.com/Ka0s-Klaus/ka0s
+handle-success	Checkout code	2025-09-23T17:00:39.2898000Z  * [new branch]        F1149-desarrollo-de-orchestrator -> origin/F1149-desarrollo-de-orchestrator
+handle-success	Checkout code	2025-09-23T17:00:39.2900962Z  * [new branch]        F1183-personalización-módulo-finops -> origin/F1183-personalización-módulo-finops
+handle-success	Checkout code	2025-09-23T17:00:39.2903017Z  * [new branch]        F1224-new-module-mongodb -> origin/F1224-new-module-mongodb
+handle-success	Checkout code	2025-09-23T17:00:39.2904772Z  * [new branch]        F220-web-de-resultados  -> origin/F220-web-de-resultados
+handle-success	Checkout code	2025-09-23T17:00:39.2907229Z  * [new branch]        F227-despliegue-de-kube-independiente-del-clouder -> origin/F227-despliegue-de-kube-independiente-del-clouder
+handle-success	Checkout code	2025-09-23T17:00:39.2910450Z  * [new branch]        F329-documentacion-metodologia-de-kaos -> origin/F329-documentacion-metodologia-de-kaos
+handle-success	Checkout code	2025-09-23T17:00:39.2913170Z  * [new branch]        F44-creación-módulo-versionado -> origin/F44-creación-módulo-versionado
+handle-success	Checkout code	2025-09-23T17:00:39.2915515Z  * [new branch]        H1128-módulo-de-observabilidad -> origin/H1128-módulo-de-observabilidad
+handle-success	Checkout code	2025-09-23T17:00:39.2917610Z  * [new branch]        H1139-como-instalar-arc-control -> origin/H1139-como-instalar-arc-control
+handle-success	Checkout code	2025-09-23T17:00:39.2919981Z  * [new branch]        H1149-desarrollo-de-orchestrator -> origin/H1149-desarrollo-de-orchestrator
+handle-success	Checkout code	2025-09-23T17:00:39.2922294Z  * [new branch]        H1150-desarrollo-de-secciones -> origin/H1150-desarrollo-de-secciones
+handle-success	Checkout code	2025-09-23T17:00:39.2924946Z  * [new branch]        H1151-desarrollo-de-secciones-ii -> origin/H1151-desarrollo-de-secciones-ii
+handle-success	Checkout code	2025-09-23T17:00:39.2926752Z  * [new branch]        H1152-desarrollo-inicio -> origin/H1152-desarrollo-inicio
+handle-success	Checkout code	2025-09-23T17:00:39.2929461Z  * [new branch]        H1183-personalización-módulo-finops -> origin/H1183-personalización-módulo-finops
+handle-success	Checkout code	2025-09-23T17:00:39.2952405Z  * [new branch]        H1193-ejemplo-web-documentacion -> origin/H1193-ejemplo-web-documentacion
+handle-success	Checkout code	2025-09-23T17:00:39.2954277Z  * [new branch]        H1205-web-creation      -> origin/H1205-web-creation
+handle-success	Checkout code	2025-09-23T17:00:39.2955778Z  * [new branch]        H1224-new-module-mongodb -> origin/H1224-new-module-mongodb
+handle-success	Checkout code	2025-09-23T17:00:39.2957164Z  * [new branch]        H1410-modulo-execution  -> origin/H1410-modulo-execution
+handle-success	Checkout code	2025-09-23T17:00:39.2959202Z  * [new branch]        H1514-new-swarm-deployment-stack-with-actions-runners-autoscale -> origin/H1514-new-swarm-deployment-stack-with-actions-runners-autoscale
+handle-success	Checkout code	2025-09-23T17:00:39.2961466Z  * [new branch]        H215-modulo-de-summary  -> origin/H215-modulo-de-summary
+handle-success	Checkout code	2025-09-23T17:00:39.2963117Z  * [new branch]        H220-web-de-resultados  -> origin/H220-web-de-resultados
+handle-success	Checkout code	2025-09-23T17:00:39.2965145Z  * [new branch]        H227-despliegue-de-kube-independiente-del-clouder -> origin/H227-despliegue-de-kube-independiente-del-clouder
+handle-success	Checkout code	2025-09-23T17:00:39.2967886Z  * [new branch]        H306-ficheros-de-estadisticas -> origin/H306-ficheros-de-estadisticas
+handle-success	Checkout code	2025-09-23T17:00:39.2969984Z  * [new branch]        H328-documentacion-modulo-principal-de-kaos -> origin/H328-documentacion-modulo-principal-de-kaos
+handle-success	Checkout code	2025-09-23T17:00:39.2972135Z  * [new branch]        H329-documentacion-metodologia-de-kaos -> origin/H329-documentacion-metodologia-de-kaos
+handle-success	Checkout code	2025-09-23T17:00:39.2974367Z  * [new branch]        H338-relanzador-de-jobs-en-caso-de-pattern -> origin/H338-relanzador-de-jobs-en-caso-de-pattern
+handle-success	Checkout code	2025-09-23T17:00:39.2976645Z  * [new branch]        H38-documentacion-basica-del-proyecto -> origin/H38-documentacion-basica-del-proyecto
+handle-success	Checkout code	2025-09-23T17:00:39.2979681Z  * [new branch]        H44-creación-módulo-versionado -> origin/H44-creación-módulo-versionado
+handle-success	Checkout code	2025-09-23T17:00:39.2982165Z  * [new branch]        RN1149-desarrollo-de-orchestrator -> origin/RN1149-desarrollo-de-orchestrator
+handle-success	Checkout code	2025-09-23T17:00:39.2984617Z  * [new branch]        RN1183-personalización-módulo-finops -> origin/RN1183-personalización-módulo-finops
+handle-success	Checkout code	2025-09-23T17:00:39.2987355Z  * [new branch]        RN1282-ka0s-error-detected-in-ka0s-workflow-statistics-summary -> origin/RN1282-ka0s-error-detected-in-ka0s-workflow-statistics-summary
+handle-success	Checkout code	2025-09-23T17:00:39.2989905Z  * [new branch]        RN220-web-de-resultados -> origin/RN220-web-de-resultados
+handle-success	Checkout code	2025-09-23T17:00:39.2991989Z  * [new branch]        RN227-despliegue-de-kube-independiente-del-clouder -> origin/RN227-despliegue-de-kube-independiente-del-clouder
+handle-success	Checkout code	2025-09-23T17:00:39.2994498Z  * [new branch]        RN329-documentacion-metodologia-de-kaos -> origin/RN329-documentacion-metodologia-de-kaos
+handle-success	Checkout code	2025-09-23T17:00:39.2996099Z  * [new branch]        main                    -> origin/main
+handle-success	Checkout code	2025-09-23T17:00:39.2997089Z  * [new tag]           0.0.0                   -> 0.0.0
+handle-success	Checkout code	2025-09-23T17:00:39.2998174Z  * [new tag]           0.0.1                   -> 0.0.1
+handle-success	Checkout code	2025-09-23T17:00:39.2999191Z  * [new tag]           0.0.10                  -> 0.0.10
+handle-success	Checkout code	2025-09-23T17:00:39.3000242Z  * [new tag]           0.0.100                 -> 0.0.100
+handle-success	Checkout code	2025-09-23T17:00:39.3001233Z  * [new tag]           0.0.101                 -> 0.0.101
+handle-success	Checkout code	2025-09-23T17:00:39.3002189Z  * [new tag]           0.0.102                 -> 0.0.102
+handle-success	Checkout code	2025-09-23T17:00:39.3003061Z  * [new tag]           0.0.103                 -> 0.0.103
+handle-success	Checkout code	2025-09-23T17:00:39.3003974Z  * [new tag]           0.0.104                 -> 0.0.104
+handle-success	Checkout code	2025-09-23T17:00:39.3004944Z  * [new tag]           0.0.105                 -> 0.0.105
+handle-success	Checkout code	2025-09-23T17:00:39.3005967Z  * [new tag]           0.0.106                 -> 0.0.106
+handle-success	Checkout code	2025-09-23T17:00:39.3006915Z  * [new tag]           0.0.107                 -> 0.0.107
+handle-success	Checkout code	2025-09-23T17:00:39.3008428Z  * [new tag]           0.0.108                 -> 0.0.108
+handle-success	Checkout code	2025-09-23T17:00:39.3009991Z  * [new tag]           0.0.109                 -> 0.0.109
+handle-success	Checkout code	2025-09-23T17:00:39.3010991Z  * [new tag]           0.0.11                  -> 0.0.11
+handle-success	Checkout code	2025-09-23T17:00:39.3012006Z  * [new tag]           0.0.110                 -> 0.0.110
+handle-success	Checkout code	2025-09-23T17:00:39.3012959Z  * [new tag]           0.0.111                 -> 0.0.111
+handle-success	Checkout code	2025-09-23T17:00:39.3014027Z  * [new tag]           0.0.112                 -> 0.0.112
+handle-success	Checkout code	2025-09-23T17:00:39.3015491Z  * [new tag]           0.0.113                 -> 0.0.113
+handle-success	Checkout code	2025-09-23T17:00:39.3017016Z  * [new tag]           0.0.114                 -> 0.0.114
+handle-success	Checkout code	2025-09-23T17:00:39.3018536Z  * [new tag]           0.0.115                 -> 0.0.115
+handle-success	Checkout code	2025-09-23T17:00:39.3020139Z  * [new tag]           0.0.116                 -> 0.0.116
+handle-success	Checkout code	2025-09-23T17:00:39.3021672Z  * [new tag]           0.0.117                 -> 0.0.117
+handle-success	Checkout code	2025-09-23T17:00:39.3023181Z  * [new tag]           0.0.118                 -> 0.0.118
+handle-success	Checkout code	2025-09-23T17:00:39.3024688Z  * [new tag]           0.0.119                 -> 0.0.119
+handle-success	Checkout code	2025-09-23T17:00:39.3025869Z  * [new tag]           0.0.12                  -> 0.0.12
+handle-success	Checkout code	2025-09-23T17:00:39.3027069Z  * [new tag]           0.0.120                 -> 0.0.120
+handle-success	Checkout code	2025-09-23T17:00:39.3028837Z  * [new tag]           0.0.121                 -> 0.0.121
+handle-success	Checkout code	2025-09-23T17:00:39.3030033Z  * [new tag]           0.0.122                 -> 0.0.122
+handle-success	Checkout code	2025-09-23T17:00:39.3031591Z  * [new tag]           0.0.123                 -> 0.0.123
+handle-success	Checkout code	2025-09-23T17:00:39.3033100Z  * [new tag]           0.0.124                 -> 0.0.124
+handle-success	Checkout code	2025-09-23T17:00:39.3034604Z  * [new tag]           0.0.125                 -> 0.0.125
+handle-success	Checkout code	2025-09-23T17:00:39.3036113Z  * [new tag]           0.0.126                 -> 0.0.126
+handle-success	Checkout code	2025-09-23T17:00:39.3037618Z  * [new tag]           0.0.127                 -> 0.0.127
+handle-success	Checkout code	2025-09-23T17:00:39.3039133Z  * [new tag]           0.0.128                 -> 0.0.128
+handle-success	Checkout code	2025-09-23T17:00:39.3040010Z  * [new tag]           0.0.129                 -> 0.0.129
+handle-success	Checkout code	2025-09-23T17:00:39.3040523Z  * [new tag]           0.0.13                  -> 0.0.13
+handle-success	Checkout code	2025-09-23T17:00:39.3041264Z  * [new tag]           0.0.130                 -> 0.0.130
+handle-success	Checkout code	2025-09-23T17:00:39.3041777Z  * [new tag]           0.0.131                 -> 0.0.131
+handle-success	Checkout code	2025-09-23T17:00:39.3042281Z  * [new tag]           0.0.132                 -> 0.0.132
+handle-success	Checkout code	2025-09-23T17:00:39.3042779Z  * [new tag]           0.0.133                 -> 0.0.133
+handle-success	Checkout code	2025-09-23T17:00:39.3043277Z  * [new tag]           0.0.134                 -> 0.0.134
+handle-success	Checkout code	2025-09-23T17:00:39.3043767Z  * [new tag]           0.0.135                 -> 0.0.135
+handle-success	Checkout code	2025-09-23T17:00:39.3044268Z  * [new tag]           0.0.136                 -> 0.0.136
+handle-success	Checkout code	2025-09-23T17:00:39.3044771Z  * [new tag]           0.0.137                 -> 0.0.137
+handle-success	Checkout code	2025-09-23T17:00:39.3045265Z  * [new tag]           0.0.138                 -> 0.0.138
+handle-success	Checkout code	2025-09-23T17:00:39.3045762Z  * [new tag]           0.0.139                 -> 0.0.139
+handle-success	Checkout code	2025-09-23T17:00:39.3046258Z  * [new tag]           0.0.14                  -> 0.0.14
+handle-success	Checkout code	2025-09-23T17:00:39.3046759Z  * [new tag]           0.0.140                 -> 0.0.140
+handle-success	Checkout code	2025-09-23T17:00:39.3047267Z  * [new tag]           0.0.141                 -> 0.0.141
+handle-success	Checkout code	2025-09-23T17:00:39.3047780Z  * [new tag]           0.0.142                 -> 0.0.142
+handle-success	Checkout code	2025-09-23T17:00:39.3048284Z  * [new tag]           0.0.143                 -> 0.0.143
+handle-success	Checkout code	2025-09-23T17:00:39.3048777Z  * [new tag]           0.0.144                 -> 0.0.144
+handle-success	Checkout code	2025-09-23T17:00:39.3049279Z  * [new tag]           0.0.145                 -> 0.0.145
+handle-success	Checkout code	2025-09-23T17:00:39.3050104Z  * [new tag]           0.0.146                 -> 0.0.146
+handle-success	Checkout code	2025-09-23T17:00:39.3050612Z  * [new tag]           0.0.147                 -> 0.0.147
+handle-success	Checkout code	2025-09-23T17:00:39.3051109Z  * [new tag]           0.0.148                 -> 0.0.148
+handle-success	Checkout code	2025-09-23T17:00:39.3051604Z  * [new tag]           0.0.149                 -> 0.0.149
+handle-success	Checkout code	2025-09-23T17:00:39.3052101Z  * [new tag]           0.0.15                  -> 0.0.15
+handle-success	Checkout code	2025-09-23T17:00:39.3052600Z  * [new tag]           0.0.150                 -> 0.0.150
+handle-success	Checkout code	2025-09-23T17:00:39.3053099Z  * [new tag]           0.0.151                 -> 0.0.151
+handle-success	Checkout code	2025-09-23T17:00:39.3053611Z  * [new tag]           0.0.152                 -> 0.0.152
+handle-success	Checkout code	2025-09-23T17:00:39.3054151Z  * [new tag]           0.0.153                 -> 0.0.153
+handle-success	Checkout code	2025-09-23T17:00:39.3054653Z  * [new tag]           0.0.154                 -> 0.0.154
+handle-success	Checkout code	2025-09-23T17:00:39.3055160Z  * [new tag]           0.0.155                 -> 0.0.155
+handle-success	Checkout code	2025-09-23T17:00:39.3055658Z  * [new tag]           0.0.156                 -> 0.0.156
+handle-success	Checkout code	2025-09-23T17:00:39.3056156Z  * [new tag]           0.0.157                 -> 0.0.157
+handle-success	Checkout code	2025-09-23T17:00:39.3056647Z  * [new tag]           0.0.158                 -> 0.0.158
+handle-success	Checkout code	2025-09-23T17:00:39.3057148Z  * [new tag]           0.0.159                 -> 0.0.159
+handle-success	Checkout code	2025-09-23T17:00:39.3057652Z  * [new tag]           0.0.16                  -> 0.0.16
+handle-success	Checkout code	2025-09-23T17:00:39.3058145Z  * [new tag]           0.0.160                 -> 0.0.160
+handle-success	Checkout code	2025-09-23T17:00:39.3058650Z  * [new tag]           0.0.161                 -> 0.0.161
+handle-success	Checkout code	2025-09-23T17:00:39.3059149Z  * [new tag]           0.0.162                 -> 0.0.162
+handle-success	Checkout code	2025-09-23T17:00:39.3059804Z  * [new tag]           0.0.163                 -> 0.0.163
+handle-success	Checkout code	2025-09-23T17:00:39.3060512Z  * [new tag]           0.0.164                 -> 0.0.164
+handle-success	Checkout code	2025-09-23T17:00:39.3061004Z  * [new tag]           0.0.165                 -> 0.0.165
+handle-success	Checkout code	2025-09-23T17:00:39.3061503Z  * [new tag]           0.0.166                 -> 0.0.166
+handle-success	Checkout code	2025-09-23T17:00:39.3061986Z  * [new tag]           0.0.167                 -> 0.0.167
+handle-success	Checkout code	2025-09-23T17:00:39.3062477Z  * [new tag]           0.0.168                 -> 0.0.168
+handle-success	Checkout code	2025-09-23T17:00:39.3062972Z  * [new tag]           0.0.169                 -> 0.0.169
+handle-success	Checkout code	2025-09-23T17:00:39.3063468Z  * [new tag]           0.0.17                  -> 0.0.17
+handle-success	Checkout code	2025-09-23T17:00:39.3063955Z  * [new tag]           0.0.170                 -> 0.0.170
+handle-success	Checkout code	2025-09-23T17:00:39.3064451Z  * [new tag]           0.0.171                 -> 0.0.171
+handle-success	Checkout code	2025-09-23T17:00:39.3064950Z  * [new tag]           0.0.172                 -> 0.0.172
+handle-success	Checkout code	2025-09-23T17:00:39.3065450Z  * [new tag]           0.0.173                 -> 0.0.173
+handle-success	Checkout code	2025-09-23T17:00:39.3066195Z  * [new tag]           0.0.174                 -> 0.0.174
+handle-success	Checkout code	2025-09-23T17:00:39.3066703Z  * [new tag]           0.0.175                 -> 0.0.175
+handle-success	Checkout code	2025-09-23T17:00:39.3067196Z  * [new tag]           0.0.176                 -> 0.0.176
+handle-success	Checkout code	2025-09-23T17:00:39.3067690Z  * [new tag]           0.0.177                 -> 0.0.177
+handle-success	Checkout code	2025-09-23T17:00:39.3068185Z  * [new tag]           0.0.178                 -> 0.0.178
+handle-success	Checkout code	2025-09-23T17:00:39.3068676Z  * [new tag]           0.0.179                 -> 0.0.179
+handle-success	Checkout code	2025-09-23T17:00:39.3069168Z  * [new tag]           0.0.18                  -> 0.0.18
+handle-success	Checkout code	2025-09-23T17:00:39.3069723Z  * [new tag]           0.0.19                  -> 0.0.19
+handle-success	Checkout code	2025-09-23T17:00:39.3070218Z  * [new tag]           0.0.2                   -> 0.0.2
+handle-success	Checkout code	2025-09-23T17:00:39.3070696Z  * [new tag]           0.0.20                  -> 0.0.20
+handle-success	Checkout code	2025-09-23T17:00:39.3071176Z  * [new tag]           0.0.21                  -> 0.0.21
+handle-success	Checkout code	2025-09-23T17:00:39.3071672Z  * [new tag]           0.0.22                  -> 0.0.22
+handle-success	Checkout code	2025-09-23T17:00:39.3072165Z  * [new tag]           0.0.23                  -> 0.0.23
+handle-success	Checkout code	2025-09-23T17:00:39.3072643Z  * [new tag]           0.0.24                  -> 0.0.24
+handle-success	Checkout code	2025-09-23T17:00:39.3073120Z  * [new tag]           0.0.25                  -> 0.0.25
+handle-success	Checkout code	2025-09-23T17:00:39.3073599Z  * [new tag]           0.0.26                  -> 0.0.26
+handle-success	Checkout code	2025-09-23T17:00:39.3074074Z  * [new tag]           0.0.27                  -> 0.0.27
+handle-success	Checkout code	2025-09-23T17:00:39.3074717Z  * [new tag]           0.0.28                  -> 0.0.28
+handle-success	Checkout code	2025-09-23T17:00:39.3075199Z  * [new tag]           0.0.29                  -> 0.0.29
+handle-success	Checkout code	2025-09-23T17:00:39.3075682Z  * [new tag]           0.0.3                   -> 0.0.3
+handle-success	Checkout code	2025-09-23T17:00:39.3076165Z  * [new tag]           0.0.30                  -> 0.0.30
+handle-success	Checkout code	2025-09-23T17:00:39.3076646Z  * [new tag]           0.0.31                  -> 0.0.31
+handle-success	Checkout code	2025-09-23T17:00:39.3077130Z  * [new tag]           0.0.32                  -> 0.0.32
+handle-success	Checkout code	2025-09-23T17:00:39.3077621Z  * [new tag]           0.0.33                  -> 0.0.33
+handle-success	Checkout code	2025-09-23T17:00:39.3078108Z  * [new tag]           0.0.34                  -> 0.0.34
+handle-success	Checkout code	2025-09-23T17:00:39.3078592Z  * [new tag]           0.0.35                  -> 0.0.35
+handle-success	Checkout code	2025-09-23T17:00:39.3079074Z  * [new tag]           0.0.36                  -> 0.0.36
+handle-success	Checkout code	2025-09-23T17:00:39.3079614Z  * [new tag]           0.0.37                  -> 0.0.37
+handle-success	Checkout code	2025-09-23T17:00:39.3080106Z  * [new tag]           0.0.38                  -> 0.0.38
+handle-success	Checkout code	2025-09-23T17:00:39.3080588Z  * [new tag]           0.0.39                  -> 0.0.39
+handle-success	Checkout code	2025-09-23T17:00:39.3081571Z  * [new tag]           0.0.4                   -> 0.0.4
+handle-success	Checkout code	2025-09-23T17:00:39.3082050Z  * [new tag]           0.0.40                  -> 0.0.40
+handle-success	Checkout code	2025-09-23T17:00:39.3082530Z  * [new tag]           0.0.41                  -> 0.0.41
+handle-success	Checkout code	2025-09-23T17:00:39.3083015Z  * [new tag]           0.0.42                  -> 0.0.42
+handle-success	Checkout code	2025-09-23T17:00:39.3083496Z  * [new tag]           0.0.43                  -> 0.0.43
+handle-success	Checkout code	2025-09-23T17:00:39.3083992Z  * [new tag]           0.0.44                  -> 0.0.44
+handle-success	Checkout code	2025-09-23T17:00:39.3084668Z  * [new tag]           0.0.45                  -> 0.0.45
+handle-success	Checkout code	2025-09-23T17:00:39.3085158Z  * [new tag]           0.0.46                  -> 0.0.46
+handle-success	Checkout code	2025-09-23T17:00:39.3085635Z  * [new tag]           0.0.47                  -> 0.0.47
+handle-success	Checkout code	2025-09-23T17:00:39.3086120Z  * [new tag]           0.0.48                  -> 0.0.48
+handle-success	Checkout code	2025-09-23T17:00:39.3086601Z  * [new tag]           0.0.49                  -> 0.0.49
+handle-success	Checkout code	2025-09-23T17:00:39.3087076Z  * [new tag]           0.0.5                   -> 0.0.5
+handle-success	Checkout code	2025-09-23T17:00:39.3087564Z  * [new tag]           0.0.50                  -> 0.0.50
+handle-success	Checkout code	2025-09-23T17:00:39.3088048Z  * [new tag]           0.0.51                  -> 0.0.51
+handle-success	Checkout code	2025-09-23T17:00:39.3088525Z  * [new tag]           0.0.52                  -> 0.0.52
+handle-success	Checkout code	2025-09-23T17:00:39.3089006Z  * [new tag]           0.0.53                  -> 0.0.53
+handle-success	Checkout code	2025-09-23T17:00:39.3089483Z  * [new tag]           0.0.54                  -> 0.0.54
+handle-success	Checkout code	2025-09-23T17:00:39.3090186Z  * [new tag]           0.0.55                  -> 0.0.55
+handle-success	Checkout code	2025-09-23T17:00:39.3090687Z  * [new tag]           0.0.56                  -> 0.0.56
+handle-success	Checkout code	2025-09-23T17:00:39.3091174Z  * [new tag]           0.0.57                  -> 0.0.57
+handle-success	Checkout code	2025-09-23T17:00:39.3091659Z  * [new tag]           0.0.58                  -> 0.0.58
+handle-success	Checkout code	2025-09-23T17:00:39.3092133Z  * [new tag]           0.0.59                  -> 0.0.59
+handle-success	Checkout code	2025-09-23T17:00:39.3092613Z  * [new tag]           0.0.6                   -> 0.0.6
+handle-success	Checkout code	2025-09-23T17:00:39.3093092Z  * [new tag]           0.0.60                  -> 0.0.60
+handle-success	Checkout code	2025-09-23T17:00:39.3093575Z  * [new tag]           0.0.61                  -> 0.0.61
+handle-success	Checkout code	2025-09-23T17:00:39.3094054Z  * [new tag]           0.0.62                  -> 0.0.62
+handle-success	Checkout code	2025-09-23T17:00:39.3094539Z  * [new tag]           0.0.63                  -> 0.0.63
+handle-success	Checkout code	2025-09-23T17:00:39.3095024Z  * [new tag]           0.0.64                  -> 0.0.64
+handle-success	Checkout code	2025-09-23T17:00:39.3095509Z  * [new tag]           0.0.65                  -> 0.0.65
+handle-success	Checkout code	2025-09-23T17:00:39.3096005Z  * [new tag]           0.0.66                  -> 0.0.66
+handle-success	Checkout code	2025-09-23T17:00:39.3096515Z  * [new tag]           0.0.67                  -> 0.0.67
+handle-success	Checkout code	2025-09-23T17:00:39.3097000Z  * [new tag]           0.0.68                  -> 0.0.68
+handle-success	Checkout code	2025-09-23T17:00:39.3097479Z  * [new tag]           0.0.69                  -> 0.0.69
+handle-success	Checkout code	2025-09-23T17:00:39.3097965Z  * [new tag]           0.0.7                   -> 0.0.7
+handle-success	Checkout code	2025-09-23T17:00:39.3098448Z  * [new tag]           0.0.70                  -> 0.0.70
+handle-success	Checkout code	2025-09-23T17:00:39.3098930Z  * [new tag]           0.0.71                  -> 0.0.71
+handle-success	Checkout code	2025-09-23T17:00:39.3099422Z  * [new tag]           0.0.72                  -> 0.0.72
+handle-success	Checkout code	2025-09-23T17:00:39.3100095Z  * [new tag]           0.0.73                  -> 0.0.73
+handle-success	Checkout code	2025-09-23T17:00:39.3100582Z  * [new tag]           0.0.74                  -> 0.0.74
+handle-success	Checkout code	2025-09-23T17:00:39.3101065Z  * [new tag]           0.0.75                  -> 0.0.75
+handle-success	Checkout code	2025-09-23T17:00:39.3101546Z  * [new tag]           0.0.76                  -> 0.0.76
+handle-success	Checkout code	2025-09-23T17:00:39.3102047Z  * [new tag]           0.0.77                  -> 0.0.77
+handle-success	Checkout code	2025-09-23T17:00:39.3102540Z  * [new tag]           0.0.78                  -> 0.0.78
+handle-success	Checkout code	2025-09-23T17:00:39.3103024Z  * [new tag]           0.0.79                  -> 0.0.79
+handle-success	Checkout code	2025-09-23T17:00:39.3103510Z  * [new tag]           0.0.8                   -> 0.0.8
+handle-success	Checkout code	2025-09-23T17:00:39.3103988Z  * [new tag]           0.0.80                  -> 0.0.80
+handle-success	Checkout code	2025-09-23T17:00:39.3104468Z  * [new tag]           0.0.81                  -> 0.0.81
+handle-success	Checkout code	2025-09-23T17:00:39.3104956Z  * [new tag]           0.0.82                  -> 0.0.82
+handle-success	Checkout code	2025-09-23T17:00:39.3105444Z  * [new tag]           0.0.83                  -> 0.0.83
+handle-success	Checkout code	2025-09-23T17:00:39.3105921Z  * [new tag]           0.0.84                  -> 0.0.84
+handle-success	Checkout code	2025-09-23T17:00:39.3106429Z  * [new tag]           0.0.85                  -> 0.0.85
+handle-success	Checkout code	2025-09-23T17:00:39.3106918Z  * [new tag]           0.0.86                  -> 0.0.86
+handle-success	Checkout code	2025-09-23T17:00:39.3107396Z  * [new tag]           0.0.87                  -> 0.0.87
+handle-success	Checkout code	2025-09-23T17:00:39.3107889Z  * [new tag]           0.0.88                  -> 0.0.88
+handle-success	Checkout code	2025-09-23T17:00:39.3108565Z  * [new tag]           0.0.89                  -> 0.0.89
+handle-success	Checkout code	2025-09-23T17:00:39.3109045Z  * [new tag]           0.0.9                   -> 0.0.9
+handle-success	Checkout code	2025-09-23T17:00:39.3109528Z  * [new tag]           0.0.90                  -> 0.0.90
+handle-success	Checkout code	2025-09-23T17:00:39.3110077Z  * [new tag]           0.0.91                  -> 0.0.91
+handle-success	Checkout code	2025-09-23T17:00:39.3110560Z  * [new tag]           0.0.92                  -> 0.0.92
+handle-success	Checkout code	2025-09-23T17:00:39.3111035Z  * [new tag]           0.0.93                  -> 0.0.93
+handle-success	Checkout code	2025-09-23T17:00:39.3111520Z  * [new tag]           0.0.94                  -> 0.0.94
+handle-success	Checkout code	2025-09-23T17:00:39.3112009Z  * [new tag]           0.0.95                  -> 0.0.95
+handle-success	Checkout code	2025-09-23T17:00:39.3112577Z  * [new tag]           0.0.96                  -> 0.0.96
+handle-success	Checkout code	2025-09-23T17:00:39.3113062Z  * [new tag]           0.0.97                  -> 0.0.97
+handle-success	Checkout code	2025-09-23T17:00:39.3113540Z  * [new tag]           0.0.98                  -> 0.0.98
+handle-success	Checkout code	2025-09-23T17:00:39.3114192Z  * [new tag]           0.0.99                  -> 0.0.99
+handle-success	Checkout code	2025-09-23T17:00:39.3114683Z  * [new tag]           0.1.0                   -> 0.1.0
+handle-success	Checkout code	2025-09-23T17:00:39.3115167Z  * [new tag]           0.1.1                   -> 0.1.1
+handle-success	Checkout code	2025-09-23T17:00:39.3115645Z  * [new tag]           0.2.0                   -> 0.2.0
+handle-success	Checkout code	2025-09-23T17:00:39.3116196Z  * [new tag]           0.3.0                   -> 0.3.0
+handle-success	Checkout code	2025-09-23T17:00:39.3117727Z  * [new tag]           0.3.1                   -> 0.3.1
+handle-success	Checkout code	2025-09-23T17:00:39.3119268Z  * [new tag]           0.3.10                  -> 0.3.10
+handle-success	Checkout code	2025-09-23T17:00:39.3120119Z  * [new tag]           0.3.11                  -> 0.3.11
+handle-success	Checkout code	2025-09-23T17:00:39.3120614Z  * [new tag]           0.3.12                  -> 0.3.12
+handle-success	Checkout code	2025-09-23T17:00:39.3121093Z  * [new tag]           0.3.13                  -> 0.3.13
+handle-success	Checkout code	2025-09-23T17:00:39.3121608Z  * [new tag]           0.3.14                  -> 0.3.14
+handle-success	Checkout code	2025-09-23T17:00:39.3122090Z  * [new tag]           0.3.15                  -> 0.3.15
+handle-success	Checkout code	2025-09-23T17:00:39.3122589Z  * [new tag]           0.3.16                  -> 0.3.16
+handle-success	Checkout code	2025-09-23T17:00:39.3123081Z  * [new tag]           0.3.17                  -> 0.3.17
+handle-success	Checkout code	2025-09-23T17:00:39.3123567Z  * [new tag]           0.3.2                   -> 0.3.2
+handle-success	Checkout code	2025-09-23T17:00:39.3124050Z  * [new tag]           0.3.3                   -> 0.3.3
+handle-success	Checkout code	2025-09-23T17:00:39.3124531Z  * [new tag]           0.3.4                   -> 0.3.4
+handle-success	Checkout code	2025-09-23T17:00:39.3125019Z  * [new tag]           0.3.5                   -> 0.3.5
+handle-success	Checkout code	2025-09-23T17:00:39.3125499Z  * [new tag]           0.3.6                   -> 0.3.6
+handle-success	Checkout code	2025-09-23T17:00:39.3125977Z  * [new tag]           0.3.7                   -> 0.3.7
+handle-success	Checkout code	2025-09-23T17:00:39.3126454Z  * [new tag]           0.3.8                   -> 0.3.8
+handle-success	Checkout code	2025-09-23T17:00:39.3126935Z  * [new tag]           0.3.9                   -> 0.3.9
+handle-success	Checkout code	2025-09-23T17:00:39.3127418Z  * [new tag]           0.4.0                   -> 0.4.0
+handle-success	Checkout code	2025-09-23T17:00:39.3127894Z  * [new tag]           0.4.1                   -> 0.4.1
+handle-success	Checkout code	2025-09-23T17:00:39.3128460Z  * [new tag]           0.4.2                   -> 0.4.2
+handle-success	Checkout code	2025-09-23T17:00:39.3128953Z  * [new tag]           0.4.3                   -> 0.4.3
+handle-success	Checkout code	2025-09-23T17:00:39.3129429Z  * [new tag]           0.4.4                   -> 0.4.4
+handle-success	Checkout code	2025-09-23T17:00:39.3129973Z  * [new tag]           0.4.5                   -> 0.4.5
+handle-success	Checkout code	2025-09-23T17:00:39.3130455Z  * [new tag]           0.4.6                   -> 0.4.6
+handle-success	Checkout code	2025-09-23T17:00:39.3377543Z [command]/usr/bin/git branch --list --remote origin/main
+handle-success	Checkout code	2025-09-23T17:00:39.3453878Z   origin/main
+handle-success	Checkout code	2025-09-23T17:00:39.3469268Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+handle-success	Checkout code	2025-09-23T17:00:39.3497420Z 107b683e0d7aaaad86b6f8cdf2f58288cd57fc4b
+handle-success	Checkout code	2025-09-23T17:00:39.3505571Z ##[endgroup]
+handle-success	Checkout code	2025-09-23T17:00:39.3506660Z ##[group]Determining the checkout info
+handle-success	Checkout code	2025-09-23T17:00:39.3507949Z ##[endgroup]
+handle-success	Checkout code	2025-09-23T17:00:39.3515554Z [command]/usr/bin/git sparse-checkout disable
+handle-success	Checkout code	2025-09-23T17:00:39.3579015Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+handle-success	Checkout code	2025-09-23T17:00:39.3616538Z ##[group]Checking out the ref
+handle-success	Checkout code	2025-09-23T17:00:39.3623834Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+handle-success	Checkout code	2025-09-23T17:00:40.2891280Z Switched to a new branch 'main'
+handle-success	Checkout code	2025-09-23T17:00:40.2894919Z branch 'main' set up to track 'origin/main'.
+handle-success	Checkout code	2025-09-23T17:00:40.3012896Z ##[endgroup]
+handle-success	Checkout code	2025-09-23T17:00:40.3067835Z [command]/usr/bin/git log -1 --format=%H
+handle-success	Checkout code	2025-09-23T17:00:40.3101130Z 107b683e0d7aaaad86b6f8cdf2f58288cd57fc4b
+handle-success	handle-success-execution	﻿2025-09-23T17:00:40.3423449Z ##[group]Run # RNNUMBER=$(echo "refs/heads/main" | grep -o '[0-9]*')
+handle-success	handle-success-execution	2025-09-23T17:00:40.3425097Z [36;1m# RNNUMBER=$(echo "refs/heads/main" | grep -o '[0-9]*')[0m
+handle-success	handle-success-execution	2025-09-23T17:00:40.3427696Z [36;1m# gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente 17953364907. El resultado está en el fichero core/results/event_data_17953364907.log"[0m
+handle-success	handle-success-execution	2025-09-23T17:00:40.3430237Z [36;1mecho "El proceso ha finalizado correctamente 17953364907. El resultado está en el fichero core/results/event_data_17953364907.log"[0m
+handle-success	handle-success-execution	2025-09-23T17:00:40.3451222Z shell: /usr/bin/bash -e {0}
+handle-success	handle-success-execution	2025-09-23T17:00:40.3451602Z env:
+handle-success	handle-success-execution	2025-09-23T17:00:40.3452251Z   GITHUB_TOKEN: ***
+handle-success	handle-success-execution	2025-09-23T17:00:40.3452542Z   KAOS_MODULE: [Ka0s] Delete Swarm Runners
+handle-success	handle-success-execution	2025-09-23T17:00:40.3452873Z   KAOS_CODE: 17953364907
+handle-success	handle-success-execution	2025-09-23T17:00:40.3453244Z   GH_TOKEN: ***
+handle-success	handle-success-execution	2025-09-23T17:00:40.3453480Z ##[endgroup]
+handle-success	handle-success-execution	2025-09-23T17:00:40.3545732Z El proceso ha finalizado correctamente 17953364907. El resultado está en el fichero core/results/event_data_17953364907.log
+handle-success	Post Checkout code	﻿2025-09-23T17:00:40.3769217Z Post job cleanup.
+handle-success	Post Checkout code	2025-09-23T17:00:40.5135635Z [command]/usr/bin/git version
+handle-success	Post Checkout code	2025-09-23T17:00:40.5205968Z git version 2.51.0
+handle-success	Post Checkout code	2025-09-23T17:00:40.5296177Z Temporarily overriding HOME='/home/runner/_work/_temp/f09e72d2-b1a5-4de9-99d7-0f56457c6010' before making global git config changes
+handle-success	Post Checkout code	2025-09-23T17:00:40.5298461Z Adding repository directory to the temporary git global config as a safe directory
+handle-success	Post Checkout code	2025-09-23T17:00:40.5309414Z [command]/usr/bin/git config --global --add safe.directory /home/runner/_work/ka0s/ka0s
+handle-success	Post Checkout code	2025-09-23T17:00:40.5359168Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+handle-success	Post Checkout code	2025-09-23T17:00:40.5422356Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+handle-success	Post Checkout code	2025-09-23T17:00:40.5750513Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+handle-success	Post Checkout code	2025-09-23T17:00:40.5780837Z http.https://github.com/.extraheader
+handle-success	Post Checkout code	2025-09-23T17:00:40.5805346Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+handle-success	Post Checkout code	2025-09-23T17:00:40.5843611Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+handle-success	Complete job	﻿2025-09-23T17:00:40.6330904Z Cleaning up orphan processes
+end-workflow	Set up job	﻿2025-09-23T17:00:46.9889957Z Current runner version: '2.328.0'
+end-workflow	Set up job	2025-09-23T17:00:46.9897502Z Runner name: '46e94f5d95d7'
+end-workflow	Set up job	2025-09-23T17:00:46.9898540Z Runner group name: 'swarm-runners'
+end-workflow	Set up job	2025-09-23T17:00:46.9899608Z Machine name: '46e94f5d95d7'
+end-workflow	Set up job	2025-09-23T17:00:46.9902948Z ##[group]GITHUB_TOKEN Permissions
+end-workflow	Set up job	2025-09-23T17:00:46.9906053Z Actions: write
+end-workflow	Set up job	2025-09-23T17:00:46.9906655Z Contents: read
+end-workflow	Set up job	2025-09-23T17:00:46.9907123Z Issues: write
+end-workflow	Set up job	2025-09-23T17:00:46.9907766Z Metadata: read
+end-workflow	Set up job	2025-09-23T17:00:46.9908295Z ##[endgroup]
+end-workflow	Set up job	2025-09-23T17:00:46.9910599Z Secret source: Actions
+end-workflow	Set up job	2025-09-23T17:00:46.9911617Z Prepare workflow directory
+end-workflow	Set up job	2025-09-23T17:00:47.0476285Z Prepare all required actions
+end-workflow	Set up job	2025-09-23T17:00:47.0516422Z Getting action download info
+end-workflow	Set up job	2025-09-23T17:00:47.6734347Z Download action repository 'actions/checkout@v4' (SHA:08eba0b27e820071cde6df949e0beb9ba4906955)
+end-workflow	Set up job	2025-09-23T17:00:48.4556505Z Complete job name: end-workflow
+end-workflow	Checkout code	﻿2025-09-23T17:00:48.5131430Z ##[group]Run actions/checkout@v4
+end-workflow	Checkout code	2025-09-23T17:00:48.5132386Z with:
+end-workflow	Checkout code	2025-09-23T17:00:48.5132872Z   fetch-depth: 0
+end-workflow	Checkout code	2025-09-23T17:00:48.5133584Z   token: ***
+end-workflow	Checkout code	2025-09-23T17:00:48.5134031Z   repository: Ka0s-Klaus/ka0s
+end-workflow	Checkout code	2025-09-23T17:00:48.5134549Z   ssh-strict: true
+end-workflow	Checkout code	2025-09-23T17:00:48.5134984Z   ssh-user: git
+end-workflow	Checkout code	2025-09-23T17:00:48.5135776Z   persist-credentials: true
+end-workflow	Checkout code	2025-09-23T17:00:48.5136278Z   clean: true
+end-workflow	Checkout code	2025-09-23T17:00:48.5136729Z   sparse-checkout-cone-mode: true
+end-workflow	Checkout code	2025-09-23T17:00:48.5137280Z   fetch-tags: false
+end-workflow	Checkout code	2025-09-23T17:00:48.5137742Z   show-progress: true
+end-workflow	Checkout code	2025-09-23T17:00:48.5138201Z   lfs: false
+end-workflow	Checkout code	2025-09-23T17:00:48.5138609Z   submodules: false
+end-workflow	Checkout code	2025-09-23T17:00:48.5139096Z   set-safe-directory: true
+end-workflow	Checkout code	2025-09-23T17:00:48.5139833Z env:
+end-workflow	Checkout code	2025-09-23T17:00:48.5140473Z   GITHUB_TOKEN: ***
+end-workflow	Checkout code	2025-09-23T17:00:48.5140970Z   KAOS_MODULE: [Ka0s] Delete Swarm Runners
+end-workflow	Checkout code	2025-09-23T17:00:48.5141550Z   KAOS_CODE: 17953364907
+end-workflow	Checkout code	2025-09-23T17:00:48.5142166Z   GH_TOKEN: ***
+end-workflow	Checkout code	2025-09-23T17:00:48.5142601Z ##[endgroup]
+end-workflow	Checkout code	2025-09-23T17:00:48.6306906Z Syncing repository: Ka0s-Klaus/ka0s
+end-workflow	Checkout code	2025-09-23T17:00:48.6309017Z ##[group]Getting Git version info
+end-workflow	Checkout code	2025-09-23T17:00:48.6309801Z Working directory is '/home/runner/_work/ka0s/ka0s'
+end-workflow	Checkout code	2025-09-23T17:00:48.6310804Z [command]/usr/bin/git version
+end-workflow	Checkout code	2025-09-23T17:00:48.6311321Z git version 2.51.0
+end-workflow	Checkout code	2025-09-23T17:00:48.6326129Z ##[endgroup]
+end-workflow	Checkout code	2025-09-23T17:00:48.6343219Z Temporarily overriding HOME='/home/runner/_work/_temp/de50af81-5d73-4429-bc10-117e1c1ae5bf' before making global git config changes
+end-workflow	Checkout code	2025-09-23T17:00:48.6349790Z Adding repository directory to the temporary git global config as a safe directory
+end-workflow	Checkout code	2025-09-23T17:00:48.6351087Z [command]/usr/bin/git config --global --add safe.directory /home/runner/_work/ka0s/ka0s
+end-workflow	Checkout code	2025-09-23T17:00:48.6395607Z Deleting the contents of '/home/runner/_work/ka0s/ka0s'
+end-workflow	Checkout code	2025-09-23T17:00:48.6400276Z ##[group]Initializing the repository
+end-workflow	Checkout code	2025-09-23T17:00:48.6404450Z [command]/usr/bin/git init /home/runner/_work/ka0s/ka0s
+end-workflow	Checkout code	2025-09-23T17:00:48.6447779Z hint: Using 'master' as the name for the initial branch. This default branch name
+end-workflow	Checkout code	2025-09-23T17:00:48.6449229Z hint: is subject to change. To configure the initial branch name to use in all
+end-workflow	Checkout code	2025-09-23T17:00:48.6450434Z hint: of your new repositories, which will suppress this warning, call:
+end-workflow	Checkout code	2025-09-23T17:00:48.6451325Z hint:
+end-workflow	Checkout code	2025-09-23T17:00:48.6451978Z hint: 	git config --global init.defaultBranch <name>
+end-workflow	Checkout code	2025-09-23T17:00:48.6452624Z hint:
+end-workflow	Checkout code	2025-09-23T17:00:48.6453374Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+end-workflow	Checkout code	2025-09-23T17:00:48.6454588Z hint: 'development'. The just-created branch can be renamed via this command:
+end-workflow	Checkout code	2025-09-23T17:00:48.6455514Z hint:
+end-workflow	Checkout code	2025-09-23T17:00:48.6456109Z hint: 	git branch -m <name>
+end-workflow	Checkout code	2025-09-23T17:00:48.6456614Z hint:
+end-workflow	Checkout code	2025-09-23T17:00:48.6457278Z hint: Disable this message with "git config set advice.defaultBranchName false"
+end-workflow	Checkout code	2025-09-23T17:00:48.6458533Z Initialized empty Git repository in /home/runner/_work/ka0s/ka0s/.git/
+end-workflow	Checkout code	2025-09-23T17:00:48.6461263Z [command]/usr/bin/git remote add origin https://github.com/Ka0s-Klaus/ka0s
+end-workflow	Checkout code	2025-09-23T17:00:48.6501100Z ##[endgroup]
+end-workflow	Checkout code	2025-09-23T17:00:48.6502484Z ##[group]Disabling automatic garbage collection
+end-workflow	Checkout code	2025-09-23T17:00:48.6503385Z [command]/usr/bin/git config --local gc.auto 0
+end-workflow	Checkout code	2025-09-23T17:00:48.6536815Z ##[endgroup]
+end-workflow	Checkout code	2025-09-23T17:00:48.6538257Z ##[group]Setting up auth
+end-workflow	Checkout code	2025-09-23T17:00:48.6540971Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+end-workflow	Checkout code	2025-09-23T17:00:48.6575957Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+end-workflow	Checkout code	2025-09-23T17:00:48.6823645Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+end-workflow	Checkout code	2025-09-23T17:00:48.6855584Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+end-workflow	Checkout code	2025-09-23T17:00:48.7105110Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+end-workflow	Checkout code	2025-09-23T17:00:48.7147516Z ##[endgroup]
+end-workflow	Checkout code	2025-09-23T17:00:48.7148591Z ##[group]Fetching the repository
+end-workflow	Checkout code	2025-09-23T17:00:48.7156039Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+end-workflow	Checkout code	2025-09-23T17:00:57.1005725Z From https://github.com/Ka0s-Klaus/ka0s
+end-workflow	Checkout code	2025-09-23T17:00:57.1007350Z  * [new branch]        F1149-desarrollo-de-orchestrator -> origin/F1149-desarrollo-de-orchestrator
+end-workflow	Checkout code	2025-09-23T17:00:57.1008543Z  * [new branch]        F1183-personalización-módulo-finops -> origin/F1183-personalización-módulo-finops
+end-workflow	Checkout code	2025-09-23T17:00:57.1009276Z  * [new branch]        F1224-new-module-mongodb -> origin/F1224-new-module-mongodb
+end-workflow	Checkout code	2025-09-23T17:00:57.1010126Z  * [new branch]        F220-web-de-resultados  -> origin/F220-web-de-resultados
+end-workflow	Checkout code	2025-09-23T17:00:57.1011032Z  * [new branch]        F227-despliegue-de-kube-independiente-del-clouder -> origin/F227-despliegue-de-kube-independiente-del-clouder
+end-workflow	Checkout code	2025-09-23T17:00:57.1012165Z  * [new branch]        F329-documentacion-metodologia-de-kaos -> origin/F329-documentacion-metodologia-de-kaos
+end-workflow	Checkout code	2025-09-23T17:00:57.1013097Z  * [new branch]        F44-creación-módulo-versionado -> origin/F44-creación-módulo-versionado
+end-workflow	Checkout code	2025-09-23T17:00:57.1013911Z  * [new branch]        H1128-módulo-de-observabilidad -> origin/H1128-módulo-de-observabilidad
+end-workflow	Checkout code	2025-09-23T17:00:57.1014655Z  * [new branch]        H1139-como-instalar-arc-control -> origin/H1139-como-instalar-arc-control
+end-workflow	Checkout code	2025-09-23T17:00:57.1015539Z  * [new branch]        H1149-desarrollo-de-orchestrator -> origin/H1149-desarrollo-de-orchestrator
+end-workflow	Checkout code	2025-09-23T17:00:57.1016298Z  * [new branch]        H1150-desarrollo-de-secciones -> origin/H1150-desarrollo-de-secciones
+end-workflow	Checkout code	2025-09-23T17:00:57.1017049Z  * [new branch]        H1151-desarrollo-de-secciones-ii -> origin/H1151-desarrollo-de-secciones-ii
+end-workflow	Checkout code	2025-09-23T17:00:57.1017778Z  * [new branch]        H1152-desarrollo-inicio -> origin/H1152-desarrollo-inicio
+end-workflow	Checkout code	2025-09-23T17:00:57.1036675Z  * [new branch]        H1183-personalización-módulo-finops -> origin/H1183-personalización-módulo-finops
+end-workflow	Checkout code	2025-09-23T17:00:57.1037664Z  * [new branch]        H1193-ejemplo-web-documentacion -> origin/H1193-ejemplo-web-documentacion
+end-workflow	Checkout code	2025-09-23T17:00:57.1038322Z  * [new branch]        H1205-web-creation      -> origin/H1205-web-creation
+end-workflow	Checkout code	2025-09-23T17:00:57.1038915Z  * [new branch]        H1224-new-module-mongodb -> origin/H1224-new-module-mongodb
+end-workflow	Checkout code	2025-09-23T17:00:57.1039510Z  * [new branch]        H1410-modulo-execution  -> origin/H1410-modulo-execution
+end-workflow	Checkout code	2025-09-23T17:00:57.1040530Z  * [new branch]        H1514-new-swarm-deployment-stack-with-actions-runners-autoscale -> origin/H1514-new-swarm-deployment-stack-with-actions-runners-autoscale
+end-workflow	Checkout code	2025-09-23T17:00:57.1041528Z  * [new branch]        H215-modulo-de-summary  -> origin/H215-modulo-de-summary
+end-workflow	Checkout code	2025-09-23T17:00:57.1042107Z  * [new branch]        H220-web-de-resultados  -> origin/H220-web-de-resultados
+end-workflow	Checkout code	2025-09-23T17:00:57.1043588Z  * [new branch]        H227-despliegue-de-kube-independiente-del-clouder -> origin/H227-despliegue-de-kube-independiente-del-clouder
+end-workflow	Checkout code	2025-09-23T17:00:57.1044497Z  * [new branch]        H306-ficheros-de-estadisticas -> origin/H306-ficheros-de-estadisticas
+end-workflow	Checkout code	2025-09-23T17:00:57.1057149Z  * [new branch]        H328-documentacion-modulo-principal-de-kaos -> origin/H328-documentacion-modulo-principal-de-kaos
+end-workflow	Checkout code	2025-09-23T17:00:57.1058315Z  * [new branch]        H329-documentacion-metodologia-de-kaos -> origin/H329-documentacion-metodologia-de-kaos
+end-workflow	Checkout code	2025-09-23T17:00:57.1059401Z  * [new branch]        H338-relanzador-de-jobs-en-caso-de-pattern -> origin/H338-relanzador-de-jobs-en-caso-de-pattern
+end-workflow	Checkout code	2025-09-23T17:00:57.1060451Z  * [new branch]        H38-documentacion-basica-del-proyecto -> origin/H38-documentacion-basica-del-proyecto
+end-workflow	Checkout code	2025-09-23T17:00:57.1061464Z  * [new branch]        H44-creación-módulo-versionado -> origin/H44-creación-módulo-versionado
+end-workflow	Checkout code	2025-09-23T17:00:57.1062778Z  * [new branch]        RN1149-desarrollo-de-orchestrator -> origin/RN1149-desarrollo-de-orchestrator
+end-workflow	Checkout code	2025-09-23T17:00:57.1064061Z  * [new branch]        RN1183-personalización-módulo-finops -> origin/RN1183-personalización-módulo-finops
+end-workflow	Checkout code	2025-09-23T17:00:57.1065283Z  * [new branch]        RN1282-ka0s-error-detected-in-ka0s-workflow-statistics-summary -> origin/RN1282-ka0s-error-detected-in-ka0s-workflow-statistics-summary
+end-workflow	Checkout code	2025-09-23T17:00:57.1066472Z  * [new branch]        RN220-web-de-resultados -> origin/RN220-web-de-resultados
+end-workflow	Checkout code	2025-09-23T17:00:57.1067296Z  * [new branch]        RN227-despliegue-de-kube-independiente-del-clouder -> origin/RN227-despliegue-de-kube-independiente-del-clouder
+end-workflow	Checkout code	2025-09-23T17:00:57.1068254Z  * [new branch]        RN329-documentacion-metodologia-de-kaos -> origin/RN329-documentacion-metodologia-de-kaos
+end-workflow	Checkout code	2025-09-23T17:00:57.1068896Z  * [new branch]        main                    -> origin/main
+end-workflow	Checkout code	2025-09-23T17:00:57.1069301Z  * [new tag]           0.0.0                   -> 0.0.0
+end-workflow	Checkout code	2025-09-23T17:00:57.1069719Z  * [new tag]           0.0.1                   -> 0.0.1
+end-workflow	Checkout code	2025-09-23T17:00:57.1070136Z  * [new tag]           0.0.10                  -> 0.0.10
+end-workflow	Checkout code	2025-09-23T17:00:57.1070520Z  * [new tag]           0.0.100                 -> 0.0.100
+end-workflow	Checkout code	2025-09-23T17:00:57.1070897Z  * [new tag]           0.0.101                 -> 0.0.101
+end-workflow	Checkout code	2025-09-23T17:00:57.1071283Z  * [new tag]           0.0.102                 -> 0.0.102
+end-workflow	Checkout code	2025-09-23T17:00:57.1071663Z  * [new tag]           0.0.103                 -> 0.0.103
+end-workflow	Checkout code	2025-09-23T17:00:57.1072046Z  * [new tag]           0.0.104                 -> 0.0.104
+end-workflow	Checkout code	2025-09-23T17:00:57.1072421Z  * [new tag]           0.0.105                 -> 0.0.105
+end-workflow	Checkout code	2025-09-23T17:00:57.1072798Z  * [new tag]           0.0.106                 -> 0.0.106
+end-workflow	Checkout code	2025-09-23T17:00:57.1073177Z  * [new tag]           0.0.107                 -> 0.0.107
+end-workflow	Checkout code	2025-09-23T17:00:57.1073551Z  * [new tag]           0.0.108                 -> 0.0.108
+end-workflow	Checkout code	2025-09-23T17:00:57.1073942Z  * [new tag]           0.0.109                 -> 0.0.109
+end-workflow	Checkout code	2025-09-23T17:00:57.1074334Z  * [new tag]           0.0.11                  -> 0.0.11
+end-workflow	Checkout code	2025-09-23T17:00:57.1074718Z  * [new tag]           0.0.110                 -> 0.0.110
+end-workflow	Checkout code	2025-09-23T17:00:57.1075093Z  * [new tag]           0.0.111                 -> 0.0.111
+end-workflow	Checkout code	2025-09-23T17:00:57.1075962Z  * [new tag]           0.0.112                 -> 0.0.112
+end-workflow	Checkout code	2025-09-23T17:00:57.1076362Z  * [new tag]           0.0.113                 -> 0.0.113
+end-workflow	Checkout code	2025-09-23T17:00:57.1076749Z  * [new tag]           0.0.114                 -> 0.0.114
+end-workflow	Checkout code	2025-09-23T17:00:57.1077142Z  * [new tag]           0.0.115                 -> 0.0.115
+end-workflow	Checkout code	2025-09-23T17:00:57.1077532Z  * [new tag]           0.0.116                 -> 0.0.116
+end-workflow	Checkout code	2025-09-23T17:00:57.1077922Z  * [new tag]           0.0.117                 -> 0.0.117
+end-workflow	Checkout code	2025-09-23T17:00:57.1078311Z  * [new tag]           0.0.118                 -> 0.0.118
+end-workflow	Checkout code	2025-09-23T17:00:57.1078707Z  * [new tag]           0.0.119                 -> 0.0.119
+end-workflow	Checkout code	2025-09-23T17:00:57.1079127Z  * [new tag]           0.0.12                  -> 0.0.12
+end-workflow	Checkout code	2025-09-23T17:00:57.1079692Z  * [new tag]           0.0.120                 -> 0.0.120
+end-workflow	Checkout code	2025-09-23T17:00:57.1080091Z  * [new tag]           0.0.121                 -> 0.0.121
+end-workflow	Checkout code	2025-09-23T17:00:57.1080486Z  * [new tag]           0.0.122                 -> 0.0.122
+end-workflow	Checkout code	2025-09-23T17:00:57.1080878Z  * [new tag]           0.0.123                 -> 0.0.123
+end-workflow	Checkout code	2025-09-23T17:00:57.1081293Z  * [new tag]           0.0.124                 -> 0.0.124
+end-workflow	Checkout code	2025-09-23T17:00:57.1081749Z  * [new tag]           0.0.125                 -> 0.0.125
+end-workflow	Checkout code	2025-09-23T17:00:57.1082139Z  * [new tag]           0.0.126                 -> 0.0.126
+end-workflow	Checkout code	2025-09-23T17:00:57.1082531Z  * [new tag]           0.0.127                 -> 0.0.127
+end-workflow	Checkout code	2025-09-23T17:00:57.1082916Z  * [new tag]           0.0.128                 -> 0.0.128
+end-workflow	Checkout code	2025-09-23T17:00:57.1083313Z  * [new tag]           0.0.129                 -> 0.0.129
+end-workflow	Checkout code	2025-09-23T17:00:57.1083711Z  * [new tag]           0.0.13                  -> 0.0.13
+end-workflow	Checkout code	2025-09-23T17:00:57.1084287Z  * [new tag]           0.0.130                 -> 0.0.130
+end-workflow	Checkout code	2025-09-23T17:00:57.1084700Z  * [new tag]           0.0.131                 -> 0.0.131
+end-workflow	Checkout code	2025-09-23T17:00:57.1085102Z  * [new tag]           0.0.132                 -> 0.0.132
+end-workflow	Checkout code	2025-09-23T17:00:57.1085873Z  * [new tag]           0.0.133                 -> 0.0.133
+end-workflow	Checkout code	2025-09-23T17:00:57.1086278Z  * [new tag]           0.0.134                 -> 0.0.134
+end-workflow	Checkout code	2025-09-23T17:00:57.1086802Z  * [new tag]           0.0.135                 -> 0.0.135
+end-workflow	Checkout code	2025-09-23T17:00:57.1087201Z  * [new tag]           0.0.136                 -> 0.0.136
+end-workflow	Checkout code	2025-09-23T17:00:57.1087595Z  * [new tag]           0.0.137                 -> 0.0.137
+end-workflow	Checkout code	2025-09-23T17:00:57.1088001Z  * [new tag]           0.0.138                 -> 0.0.138
+end-workflow	Checkout code	2025-09-23T17:00:57.1088403Z  * [new tag]           0.0.139                 -> 0.0.139
+end-workflow	Checkout code	2025-09-23T17:00:57.1088801Z  * [new tag]           0.0.14                  -> 0.0.14
+end-workflow	Checkout code	2025-09-23T17:00:57.1089196Z  * [new tag]           0.0.140                 -> 0.0.140
+end-workflow	Checkout code	2025-09-23T17:00:57.1089605Z  * [new tag]           0.0.141                 -> 0.0.141
+end-workflow	Checkout code	2025-09-23T17:00:57.1090012Z  * [new tag]           0.0.142                 -> 0.0.142
+end-workflow	Checkout code	2025-09-23T17:00:57.1090404Z  * [new tag]           0.0.143                 -> 0.0.143
+end-workflow	Checkout code	2025-09-23T17:00:57.1090801Z  * [new tag]           0.0.144                 -> 0.0.144
+end-workflow	Checkout code	2025-09-23T17:00:57.1091197Z  * [new tag]           0.0.145                 -> 0.0.145
+end-workflow	Checkout code	2025-09-23T17:00:57.1091595Z  * [new tag]           0.0.146                 -> 0.0.146
+end-workflow	Checkout code	2025-09-23T17:00:57.1091993Z  * [new tag]           0.0.147                 -> 0.0.147
+end-workflow	Checkout code	2025-09-23T17:00:57.1092392Z  * [new tag]           0.0.148                 -> 0.0.148
+end-workflow	Checkout code	2025-09-23T17:00:57.1092789Z  * [new tag]           0.0.149                 -> 0.0.149
+end-workflow	Checkout code	2025-09-23T17:00:57.1093183Z  * [new tag]           0.0.15                  -> 0.0.15
+end-workflow	Checkout code	2025-09-23T17:00:57.1093584Z  * [new tag]           0.0.150                 -> 0.0.150
+end-workflow	Checkout code	2025-09-23T17:00:57.1093981Z  * [new tag]           0.0.151                 -> 0.0.151
+end-workflow	Checkout code	2025-09-23T17:00:57.1094376Z  * [new tag]           0.0.152                 -> 0.0.152
+end-workflow	Checkout code	2025-09-23T17:00:57.1094782Z  * [new tag]           0.0.153                 -> 0.0.153
+end-workflow	Checkout code	2025-09-23T17:00:57.1095228Z  * [new tag]           0.0.154                 -> 0.0.154
+end-workflow	Checkout code	2025-09-23T17:00:57.1096166Z  * [new tag]           0.0.155                 -> 0.0.155
+end-workflow	Checkout code	2025-09-23T17:00:57.1096559Z  * [new tag]           0.0.156                 -> 0.0.156
+end-workflow	Checkout code	2025-09-23T17:00:57.1096955Z  * [new tag]           0.0.157                 -> 0.0.157
+end-workflow	Checkout code	2025-09-23T17:00:57.1097352Z  * [new tag]           0.0.158                 -> 0.0.158
+end-workflow	Checkout code	2025-09-23T17:00:57.1097745Z  * [new tag]           0.0.159                 -> 0.0.159
+end-workflow	Checkout code	2025-09-23T17:00:57.1098144Z  * [new tag]           0.0.16                  -> 0.0.16
+end-workflow	Checkout code	2025-09-23T17:00:57.1098538Z  * [new tag]           0.0.160                 -> 0.0.160
+end-workflow	Checkout code	2025-09-23T17:00:57.1098936Z  * [new tag]           0.0.161                 -> 0.0.161
+end-workflow	Checkout code	2025-09-23T17:00:57.1099339Z  * [new tag]           0.0.162                 -> 0.0.162
+end-workflow	Checkout code	2025-09-23T17:00:57.1099871Z  * [new tag]           0.0.163                 -> 0.0.163
+end-workflow	Checkout code	2025-09-23T17:00:57.1100271Z  * [new tag]           0.0.164                 -> 0.0.164
+end-workflow	Checkout code	2025-09-23T17:00:57.1100659Z  * [new tag]           0.0.165                 -> 0.0.165
+end-workflow	Checkout code	2025-09-23T17:00:57.1101052Z  * [new tag]           0.0.166                 -> 0.0.166
+end-workflow	Checkout code	2025-09-23T17:00:57.1101448Z  * [new tag]           0.0.167                 -> 0.0.167
+end-workflow	Checkout code	2025-09-23T17:00:57.1101841Z  * [new tag]           0.0.168                 -> 0.0.168
+end-workflow	Checkout code	2025-09-23T17:00:57.1102234Z  * [new tag]           0.0.169                 -> 0.0.169
+end-workflow	Checkout code	2025-09-23T17:00:57.1102631Z  * [new tag]           0.0.17                  -> 0.0.17
+end-workflow	Checkout code	2025-09-23T17:00:57.1103022Z  * [new tag]           0.0.170                 -> 0.0.170
+end-workflow	Checkout code	2025-09-23T17:00:57.1103413Z  * [new tag]           0.0.171                 -> 0.0.171
+end-workflow	Checkout code	2025-09-23T17:00:57.1103807Z  * [new tag]           0.0.172                 -> 0.0.172
+end-workflow	Checkout code	2025-09-23T17:00:57.1104324Z  * [new tag]           0.0.173                 -> 0.0.173
+end-workflow	Checkout code	2025-09-23T17:00:57.1104722Z  * [new tag]           0.0.174                 -> 0.0.174
+end-workflow	Checkout code	2025-09-23T17:00:57.1105117Z  * [new tag]           0.0.175                 -> 0.0.175
+end-workflow	Checkout code	2025-09-23T17:00:57.1105995Z  * [new tag]           0.0.176                 -> 0.0.176
+end-workflow	Checkout code	2025-09-23T17:00:57.1106521Z  * [new tag]           0.0.177                 -> 0.0.177
+end-workflow	Checkout code	2025-09-23T17:00:57.1106911Z  * [new tag]           0.0.178                 -> 0.0.178
+end-workflow	Checkout code	2025-09-23T17:00:57.1107304Z  * [new tag]           0.0.179                 -> 0.0.179
+end-workflow	Checkout code	2025-09-23T17:00:57.1107699Z  * [new tag]           0.0.18                  -> 0.0.18
+end-workflow	Checkout code	2025-09-23T17:00:57.1108082Z  * [new tag]           0.0.19                  -> 0.0.19
+end-workflow	Checkout code	2025-09-23T17:00:57.1108464Z  * [new tag]           0.0.2                   -> 0.0.2
+end-workflow	Checkout code	2025-09-23T17:00:57.1108847Z  * [new tag]           0.0.20                  -> 0.0.20
+end-workflow	Checkout code	2025-09-23T17:00:57.1109233Z  * [new tag]           0.0.21                  -> 0.0.21
+end-workflow	Checkout code	2025-09-23T17:00:57.1109626Z  * [new tag]           0.0.22                  -> 0.0.22
+end-workflow	Checkout code	2025-09-23T17:00:57.1110019Z  * [new tag]           0.0.23                  -> 0.0.23
+end-workflow	Checkout code	2025-09-23T17:00:57.1110404Z  * [new tag]           0.0.24                  -> 0.0.24
+end-workflow	Checkout code	2025-09-23T17:00:57.1110781Z  * [new tag]           0.0.25                  -> 0.0.25
+end-workflow	Checkout code	2025-09-23T17:00:57.1111168Z  * [new tag]           0.0.26                  -> 0.0.26
+end-workflow	Checkout code	2025-09-23T17:00:57.1111549Z  * [new tag]           0.0.27                  -> 0.0.27
+end-workflow	Checkout code	2025-09-23T17:00:57.1111932Z  * [new tag]           0.0.28                  -> 0.0.28
+end-workflow	Checkout code	2025-09-23T17:00:57.1112312Z  * [new tag]           0.0.29                  -> 0.0.29
+end-workflow	Checkout code	2025-09-23T17:00:57.1112693Z  * [new tag]           0.0.3                   -> 0.0.3
+end-workflow	Checkout code	2025-09-23T17:00:57.1113076Z  * [new tag]           0.0.30                  -> 0.0.30
+end-workflow	Checkout code	2025-09-23T17:00:57.1113457Z  * [new tag]           0.0.31                  -> 0.0.31
+end-workflow	Checkout code	2025-09-23T17:00:57.1113844Z  * [new tag]           0.0.32                  -> 0.0.32
+end-workflow	Checkout code	2025-09-23T17:00:57.1114235Z  * [new tag]           0.0.33                  -> 0.0.33
+end-workflow	Checkout code	2025-09-23T17:00:57.1114623Z  * [new tag]           0.0.34                  -> 0.0.34
+end-workflow	Checkout code	2025-09-23T17:00:57.1115216Z  * [new tag]           0.0.35                  -> 0.0.35
+end-workflow	Checkout code	2025-09-23T17:00:57.1115611Z  * [new tag]           0.0.36                  -> 0.0.36
+end-workflow	Checkout code	2025-09-23T17:00:57.1115999Z  * [new tag]           0.0.37                  -> 0.0.37
+end-workflow	Checkout code	2025-09-23T17:00:57.1116380Z  * [new tag]           0.0.38                  -> 0.0.38
+end-workflow	Checkout code	2025-09-23T17:00:57.1116757Z  * [new tag]           0.0.39                  -> 0.0.39
+end-workflow	Checkout code	2025-09-23T17:00:57.1117140Z  * [new tag]           0.0.4                   -> 0.0.4
+end-workflow	Checkout code	2025-09-23T17:00:57.1117524Z  * [new tag]           0.0.40                  -> 0.0.40
+end-workflow	Checkout code	2025-09-23T17:00:57.1117904Z  * [new tag]           0.0.41                  -> 0.0.41
+end-workflow	Checkout code	2025-09-23T17:00:57.1118291Z  * [new tag]           0.0.42                  -> 0.0.42
+end-workflow	Checkout code	2025-09-23T17:00:57.1118672Z  * [new tag]           0.0.43                  -> 0.0.43
+end-workflow	Checkout code	2025-09-23T17:00:57.1119070Z  * [new tag]           0.0.44                  -> 0.0.44
+end-workflow	Checkout code	2025-09-23T17:00:57.1119616Z  * [new tag]           0.0.45                  -> 0.0.45
+end-workflow	Checkout code	2025-09-23T17:00:57.1120180Z  * [new tag]           0.0.46                  -> 0.0.46
+end-workflow	Checkout code	2025-09-23T17:00:57.1120692Z  * [new tag]           0.0.47                  -> 0.0.47
+end-workflow	Checkout code	2025-09-23T17:00:57.1121068Z  * [new tag]           0.0.48                  -> 0.0.48
+end-workflow	Checkout code	2025-09-23T17:00:57.1121449Z  * [new tag]           0.0.49                  -> 0.0.49
+end-workflow	Checkout code	2025-09-23T17:00:57.1121829Z  * [new tag]           0.0.5                   -> 0.0.5
+end-workflow	Checkout code	2025-09-23T17:00:57.1122216Z  * [new tag]           0.0.50                  -> 0.0.50
+end-workflow	Checkout code	2025-09-23T17:00:57.1122593Z  * [new tag]           0.0.51                  -> 0.0.51
+end-workflow	Checkout code	2025-09-23T17:00:57.1122975Z  * [new tag]           0.0.52                  -> 0.0.52
+end-workflow	Checkout code	2025-09-23T17:00:57.1123357Z  * [new tag]           0.0.53                  -> 0.0.53
+end-workflow	Checkout code	2025-09-23T17:00:57.1123734Z  * [new tag]           0.0.54                  -> 0.0.54
+end-workflow	Checkout code	2025-09-23T17:00:57.1124242Z  * [new tag]           0.0.55                  -> 0.0.55
+end-workflow	Checkout code	2025-09-23T17:00:57.1124636Z  * [new tag]           0.0.56                  -> 0.0.56
+end-workflow	Checkout code	2025-09-23T17:00:57.1125015Z  * [new tag]           0.0.57                  -> 0.0.57
+end-workflow	Checkout code	2025-09-23T17:00:57.1125726Z  * [new tag]           0.0.58                  -> 0.0.58
+end-workflow	Checkout code	2025-09-23T17:00:57.1126111Z  * [new tag]           0.0.59                  -> 0.0.59
+end-workflow	Checkout code	2025-09-23T17:00:57.1126494Z  * [new tag]           0.0.6                   -> 0.0.6
+end-workflow	Checkout code	2025-09-23T17:00:57.1126877Z  * [new tag]           0.0.60                  -> 0.0.60
+end-workflow	Checkout code	2025-09-23T17:00:57.1127261Z  * [new tag]           0.0.61                  -> 0.0.61
+end-workflow	Checkout code	2025-09-23T17:00:57.1127641Z  * [new tag]           0.0.62                  -> 0.0.62
+end-workflow	Checkout code	2025-09-23T17:00:57.1128017Z  * [new tag]           0.0.63                  -> 0.0.63
+end-workflow	Checkout code	2025-09-23T17:00:57.1128396Z  * [new tag]           0.0.64                  -> 0.0.64
+end-workflow	Checkout code	2025-09-23T17:00:57.1128773Z  * [new tag]           0.0.65                  -> 0.0.65
+end-workflow	Checkout code	2025-09-23T17:00:57.1129166Z  * [new tag]           0.0.66                  -> 0.0.66
+end-workflow	Checkout code	2025-09-23T17:00:57.1129551Z  * [new tag]           0.0.67                  -> 0.0.67
+end-workflow	Checkout code	2025-09-23T17:00:57.1129934Z  * [new tag]           0.0.68                  -> 0.0.68
+end-workflow	Checkout code	2025-09-23T17:00:57.1130318Z  * [new tag]           0.0.69                  -> 0.0.69
+end-workflow	Checkout code	2025-09-23T17:00:57.1130696Z  * [new tag]           0.0.7                   -> 0.0.7
+end-workflow	Checkout code	2025-09-23T17:00:57.1131081Z  * [new tag]           0.0.70                  -> 0.0.70
+end-workflow	Checkout code	2025-09-23T17:00:57.1131467Z  * [new tag]           0.0.71                  -> 0.0.71
+end-workflow	Checkout code	2025-09-23T17:00:57.1131843Z  * [new tag]           0.0.72                  -> 0.0.72
+end-workflow	Checkout code	2025-09-23T17:00:57.1132226Z  * [new tag]           0.0.73                  -> 0.0.73
+end-workflow	Checkout code	2025-09-23T17:00:57.1132612Z  * [new tag]           0.0.74                  -> 0.0.74
+end-workflow	Checkout code	2025-09-23T17:00:57.1132996Z  * [new tag]           0.0.75                  -> 0.0.75
+end-workflow	Checkout code	2025-09-23T17:00:57.1133386Z  * [new tag]           0.0.76                  -> 0.0.76
+end-workflow	Checkout code	2025-09-23T17:00:57.1133772Z  * [new tag]           0.0.77                  -> 0.0.77
+end-workflow	Checkout code	2025-09-23T17:00:57.1134166Z  * [new tag]           0.0.78                  -> 0.0.78
+end-workflow	Checkout code	2025-09-23T17:00:57.1134567Z  * [new tag]           0.0.79                  -> 0.0.79
+end-workflow	Checkout code	2025-09-23T17:00:57.1134957Z  * [new tag]           0.0.8                   -> 0.0.8
+end-workflow	Checkout code	2025-09-23T17:00:57.1135522Z  * [new tag]           0.0.80                  -> 0.0.80
+end-workflow	Checkout code	2025-09-23T17:00:57.1135920Z  * [new tag]           0.0.81                  -> 0.0.81
+end-workflow	Checkout code	2025-09-23T17:00:57.1136453Z  * [new tag]           0.0.82                  -> 0.0.82
+end-workflow	Checkout code	2025-09-23T17:00:57.1136830Z  * [new tag]           0.0.83                  -> 0.0.83
+end-workflow	Checkout code	2025-09-23T17:00:57.1137213Z  * [new tag]           0.0.84                  -> 0.0.84
+end-workflow	Checkout code	2025-09-23T17:00:57.1137596Z  * [new tag]           0.0.85                  -> 0.0.85
+end-workflow	Checkout code	2025-09-23T17:00:57.1137982Z  * [new tag]           0.0.86                  -> 0.0.86
+end-workflow	Checkout code	2025-09-23T17:00:57.1138373Z  * [new tag]           0.0.87                  -> 0.0.87
+end-workflow	Checkout code	2025-09-23T17:00:57.1138889Z  * [new tag]           0.0.88                  -> 0.0.88
+end-workflow	Checkout code	2025-09-23T17:00:57.1139270Z  * [new tag]           0.0.89                  -> 0.0.89
+end-workflow	Checkout code	2025-09-23T17:00:57.1139646Z  * [new tag]           0.0.9                   -> 0.0.9
+end-workflow	Checkout code	2025-09-23T17:00:57.1140029Z  * [new tag]           0.0.90                  -> 0.0.90
+end-workflow	Checkout code	2025-09-23T17:00:57.1140413Z  * [new tag]           0.0.91                  -> 0.0.91
+end-workflow	Checkout code	2025-09-23T17:00:57.1140787Z  * [new tag]           0.0.92                  -> 0.0.92
+end-workflow	Checkout code	2025-09-23T17:00:57.1141167Z  * [new tag]           0.0.93                  -> 0.0.93
+end-workflow	Checkout code	2025-09-23T17:00:57.1141544Z  * [new tag]           0.0.94                  -> 0.0.94
+end-workflow	Checkout code	2025-09-23T17:00:57.1141928Z  * [new tag]           0.0.95                  -> 0.0.95
+end-workflow	Checkout code	2025-09-23T17:00:57.1142301Z  * [new tag]           0.0.96                  -> 0.0.96
+end-workflow	Checkout code	2025-09-23T17:00:57.1142681Z  * [new tag]           0.0.97                  -> 0.0.97
+end-workflow	Checkout code	2025-09-23T17:00:57.1143186Z  * [new tag]           0.0.98                  -> 0.0.98
+end-workflow	Checkout code	2025-09-23T17:00:57.1143572Z  * [new tag]           0.0.99                  -> 0.0.99
+end-workflow	Checkout code	2025-09-23T17:00:57.1143954Z  * [new tag]           0.1.0                   -> 0.1.0
+end-workflow	Checkout code	2025-09-23T17:00:57.1144338Z  * [new tag]           0.1.1                   -> 0.1.1
+end-workflow	Checkout code	2025-09-23T17:00:57.1144713Z  * [new tag]           0.2.0                   -> 0.2.0
+end-workflow	Checkout code	2025-09-23T17:00:57.1145083Z  * [new tag]           0.3.0                   -> 0.3.0
+end-workflow	Checkout code	2025-09-23T17:00:57.1145655Z  * [new tag]           0.3.1                   -> 0.3.1
+end-workflow	Checkout code	2025-09-23T17:00:57.1146160Z  * [new tag]           0.3.10                  -> 0.3.10
+end-workflow	Checkout code	2025-09-23T17:00:57.1146537Z  * [new tag]           0.3.11                  -> 0.3.11
+end-workflow	Checkout code	2025-09-23T17:00:57.1146918Z  * [new tag]           0.3.12                  -> 0.3.12
+end-workflow	Checkout code	2025-09-23T17:00:57.1147296Z  * [new tag]           0.3.13                  -> 0.3.13
+end-workflow	Checkout code	2025-09-23T17:00:57.1147667Z  * [new tag]           0.3.14                  -> 0.3.14
+end-workflow	Checkout code	2025-09-23T17:00:57.1148056Z  * [new tag]           0.3.15                  -> 0.3.15
+end-workflow	Checkout code	2025-09-23T17:00:57.1148444Z  * [new tag]           0.3.16                  -> 0.3.16
+end-workflow	Checkout code	2025-09-23T17:00:57.1148823Z  * [new tag]           0.3.17                  -> 0.3.17
+end-workflow	Checkout code	2025-09-23T17:00:57.1149198Z  * [new tag]           0.3.2                   -> 0.3.2
+end-workflow	Checkout code	2025-09-23T17:00:57.1149574Z  * [new tag]           0.3.3                   -> 0.3.3
+end-workflow	Checkout code	2025-09-23T17:00:57.1149950Z  * [new tag]           0.3.4                   -> 0.3.4
+end-workflow	Checkout code	2025-09-23T17:00:57.1150321Z  * [new tag]           0.3.5                   -> 0.3.5
+end-workflow	Checkout code	2025-09-23T17:00:57.1150697Z  * [new tag]           0.3.6                   -> 0.3.6
+end-workflow	Checkout code	2025-09-23T17:00:57.1151073Z  * [new tag]           0.3.7                   -> 0.3.7
+end-workflow	Checkout code	2025-09-23T17:00:57.1151448Z  * [new tag]           0.3.8                   -> 0.3.8
+end-workflow	Checkout code	2025-09-23T17:00:57.1151819Z  * [new tag]           0.3.9                   -> 0.3.9
+end-workflow	Checkout code	2025-09-23T17:00:57.1152193Z  * [new tag]           0.4.0                   -> 0.4.0
+end-workflow	Checkout code	2025-09-23T17:00:57.1152577Z  * [new tag]           0.4.1                   -> 0.4.1
+end-workflow	Checkout code	2025-09-23T17:00:57.1152957Z  * [new tag]           0.4.2                   -> 0.4.2
+end-workflow	Checkout code	2025-09-23T17:00:57.1153334Z  * [new tag]           0.4.3                   -> 0.4.3
+end-workflow	Checkout code	2025-09-23T17:00:57.1153710Z  * [new tag]           0.4.4                   -> 0.4.4
+end-workflow	Checkout code	2025-09-23T17:00:57.1154085Z  * [new tag]           0.4.5                   -> 0.4.5
+end-workflow	Checkout code	2025-09-23T17:00:57.1154459Z  * [new tag]           0.4.6                   -> 0.4.6
+end-workflow	Checkout code	2025-09-23T17:00:57.1346749Z [command]/usr/bin/git branch --list --remote origin/main
+end-workflow	Checkout code	2025-09-23T17:00:57.1407274Z   origin/main
+end-workflow	Checkout code	2025-09-23T17:00:57.1417224Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+end-workflow	Checkout code	2025-09-23T17:00:57.1441643Z 107b683e0d7aaaad86b6f8cdf2f58288cd57fc4b
+end-workflow	Checkout code	2025-09-23T17:00:57.1446587Z ##[endgroup]
+end-workflow	Checkout code	2025-09-23T17:00:57.1447073Z ##[group]Determining the checkout info
+end-workflow	Checkout code	2025-09-23T17:00:57.1448560Z ##[endgroup]
+end-workflow	Checkout code	2025-09-23T17:00:57.1453970Z [command]/usr/bin/git sparse-checkout disable
+end-workflow	Checkout code	2025-09-23T17:00:57.1507886Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+end-workflow	Checkout code	2025-09-23T17:00:57.1537691Z ##[group]Checking out the ref
+end-workflow	Checkout code	2025-09-23T17:00:57.1542798Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+end-workflow	Checkout code	2025-09-23T17:00:57.8990084Z Switched to a new branch 'main'
+end-workflow	Checkout code	2025-09-23T17:00:57.8997715Z branch 'main' set up to track 'origin/main'.
+end-workflow	Checkout code	2025-09-23T17:00:57.9101635Z ##[endgroup]
+end-workflow	Checkout code	2025-09-23T17:00:57.9141162Z [command]/usr/bin/git log -1 --format=%H
+end-workflow	Checkout code	2025-09-23T17:00:57.9168103Z 107b683e0d7aaaad86b6f8cdf2f58288cd57fc4b
+end-workflow	Finaliza el workflow	﻿2025-09-23T17:00:57.9434032Z ##[group]Run echo "End process"
+end-workflow	Finaliza el workflow	2025-09-23T17:00:57.9434424Z [36;1mecho "End process"[0m
+end-workflow	Finaliza el workflow	2025-09-23T17:00:57.9434780Z [36;1m# RNNUMBER=$(echo "refs/heads/main" | grep -o '[0-9]*')[0m
+end-workflow	Finaliza el workflow	2025-09-23T17:00:57.9435411Z [36;1m# gh issue comment $RNNUMBER --body "Se finaliza Ka0s 17953364907"[0m
+end-workflow	Finaliza el workflow	2025-09-23T17:00:57.9435809Z [36;1mecho "Se finaliza Ka0s 17953364907"[0m
+end-workflow	Finaliza el workflow	2025-09-23T17:00:57.9436320Z [36;1mgh workflow run inspector.yml --ref 'main' -f kaos-workflow-id="17953364907" -f kaos-user-start=""[0m
+end-workflow	Finaliza el workflow	2025-09-23T17:00:57.9448824Z shell: /usr/bin/bash -e {0}
+end-workflow	Finaliza el workflow	2025-09-23T17:00:57.9449100Z env:
+end-workflow	Finaliza el workflow	2025-09-23T17:00:57.9449644Z   GITHUB_TOKEN: ***
+end-workflow	Finaliza el workflow	2025-09-23T17:00:57.9449883Z   KAOS_MODULE: [Ka0s] Delete Swarm Runners
+end-workflow	Finaliza el workflow	2025-09-23T17:00:57.9450167Z   KAOS_CODE: 17953364907
+end-workflow	Finaliza el workflow	2025-09-23T17:00:57.9450476Z   GH_TOKEN: ***
+end-workflow	Finaliza el workflow	2025-09-23T17:00:57.9450667Z ##[endgroup]
+end-workflow	Finaliza el workflow	2025-09-23T17:00:57.9506581Z End process
+end-workflow	Finaliza el workflow	2025-09-23T17:00:57.9506847Z Se finaliza Ka0s 17953364907
+end-workflow	Post Checkout code	﻿2025-09-23T17:00:58.5884782Z Post job cleanup.
+end-workflow	Post Checkout code	2025-09-23T17:00:58.6851893Z [command]/usr/bin/git version
+end-workflow	Post Checkout code	2025-09-23T17:00:58.6891647Z git version 2.51.0
+end-workflow	Post Checkout code	2025-09-23T17:00:58.6943535Z Temporarily overriding HOME='/home/runner/_work/_temp/7a1b460e-9c5d-4eed-aaad-d7e25b33d1c6' before making global git config changes
+end-workflow	Post Checkout code	2025-09-23T17:00:58.6944719Z Adding repository directory to the temporary git global config as a safe directory
+end-workflow	Post Checkout code	2025-09-23T17:00:58.6949814Z [command]/usr/bin/git config --global --add safe.directory /home/runner/_work/ka0s/ka0s
+end-workflow	Post Checkout code	2025-09-23T17:00:58.6995691Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+end-workflow	Post Checkout code	2025-09-23T17:00:58.7030736Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+end-workflow	Post Checkout code	2025-09-23T17:00:58.7282097Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+end-workflow	Post Checkout code	2025-09-23T17:00:58.7306649Z http.https://github.com/.extraheader
+end-workflow	Post Checkout code	2025-09-23T17:00:58.7319415Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+end-workflow	Post Checkout code	2025-09-23T17:00:58.7353739Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+end-workflow	Complete job	﻿2025-09-23T17:00:58.7722304Z Cleaning up orphan processes
