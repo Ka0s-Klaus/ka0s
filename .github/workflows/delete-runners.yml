@@ -58,7 +58,7 @@ jobs:
         if: success()
         run: |
           # Convertir la lista de runners en un array
-          read -r -a RUNNER_NAMES <<< "${{ steps.get-runners.outputs.runner_names }}"
+          IFS=',' read -r -a RUNNER_NAMES <<< "${{ steps.get-runners.outputs.runner_names }}"
           
           # Eliminar cada runner y registrar el resultado
           echo "\nResultados de la eliminación:" >> runner_results/delete_runners_report.txt
