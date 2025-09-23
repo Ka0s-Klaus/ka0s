@@ -1,0 +1,797 @@
+job-core	Set up job	﻿2025-09-23T16:03:36.1198832Z Current runner version: '2.328.0'
+job-core	Set up job	2025-09-23T16:03:36.1206459Z Runner name: '2143f2341a6a'
+job-core	Set up job	2025-09-23T16:03:36.1207458Z Runner group name: 'swarm-runners'
+job-core	Set up job	2025-09-23T16:03:36.1208528Z Machine name: '2143f2341a6a'
+job-core	Set up job	2025-09-23T16:03:36.1211884Z ##[group]GITHUB_TOKEN Permissions
+job-core	Set up job	2025-09-23T16:03:36.1214546Z Actions: write
+job-core	Set up job	2025-09-23T16:03:36.1215115Z Contents: read
+job-core	Set up job	2025-09-23T16:03:36.1216093Z Issues: write
+job-core	Set up job	2025-09-23T16:03:36.1216729Z Metadata: read
+job-core	Set up job	2025-09-23T16:03:36.1217331Z ##[endgroup]
+job-core	Set up job	2025-09-23T16:03:36.1219880Z Secret source: Actions
+job-core	Set up job	2025-09-23T16:03:36.1220862Z Prepare workflow directory
+job-core	Set up job	2025-09-23T16:03:36.1794717Z Prepare all required actions
+job-core	Set up job	2025-09-23T16:03:36.1859623Z Complete job name: job-core
+job-core	Get Runners	﻿2025-09-23T16:03:36.2450998Z ##[group]Run # Crear el directorio para los resultados
+job-core	Get Runners	2025-09-23T16:03:36.2451861Z [36;1m# Crear el directorio para los resultados[0m
+job-core	Get Runners	2025-09-23T16:03:36.2452471Z [36;1mmkdir -p runner_results[0m
+job-core	Get Runners	2025-09-23T16:03:36.2452959Z [36;1m[0m
+job-core	Get Runners	2025-09-23T16:03:36.2453483Z [36;1m# Mostrar todos los grupos de runners de la organización[0m
+job-core	Get Runners	2025-09-23T16:03:36.2454517Z [36;1mecho "Grupos de runners disponibles:" | tee -a runner_results/delete_runners_report.txt[0m
+job-core	Get Runners	2025-09-23T16:03:36.2455511Z [36;1mgh api \[0m
+job-core	Get Runners	2025-09-23T16:03:36.2455989Z [36;1m  -H "Accept: application/vnd.github+json" \[0m
+job-core	Get Runners	2025-09-23T16:03:36.2456613Z [36;1m  /orgs/Ka0s-Klaus/actions/runner-groups \[0m
+job-core	Get Runners	2025-09-23T16:03:36.2457355Z [36;1m  --jq '.runner_groups[]' | tee -a runner_results/delete_runners_report.txt[0m
+job-core	Get Runners	2025-09-23T16:03:36.2458032Z [36;1m[0m
+job-core	Get Runners	2025-09-23T16:03:36.2458509Z [36;1m# Obtener la lista de runners del grupo especificado[0m
+job-core	Get Runners	2025-09-23T16:03:36.2459590Z [36;1mecho "Obtener la lista de runners del grupo especificado: swarm-test-old" | tee -a runner_results/delete_runners_report.txt[0m
+job-core	Get Runners	2025-09-23T16:03:36.2460606Z [36;1mRUNNERS=$(gh api \[0m
+job-core	Get Runners	2025-09-23T16:03:36.2461143Z [36;1m  -H "Accept: application/vnd.github+json" \[0m
+job-core	Get Runners	2025-09-23T16:03:36.2461742Z [36;1m  /orgs/Ka0s-Klaus/actions/runners \[0m
+job-core	Get Runners	2025-09-23T16:03:36.2462292Z [36;1m  --paginate \[0m
+job-core	Get Runners	2025-09-23T16:03:36.2462921Z [36;1m  --jq '.runners[] | select(.runner_group_name == "swarm-test-old") | .id' \[0m
+job-core	Get Runners	2025-09-23T16:03:36.2463614Z [36;1m  | tr -d '\r' \[0m
+job-core	Get Runners	2025-09-23T16:03:36.2464173Z [36;1m  | tr '\n' ' ')[0m
+job-core	Get Runners	2025-09-23T16:03:36.2464599Z [36;1m[0m
+job-core	Get Runners	2025-09-23T16:03:36.2464975Z [36;1mif [ -n "$RUNNERS" ]; then[0m
+job-core	Get Runners	2025-09-23T16:03:36.2466022Z [36;1m  echo "runner_ids=$RUNNERS" >> $GITHUB_OUTPUT[0m
+job-core	Get Runners	2025-09-23T16:03:36.2466820Z [36;1m  echo "Runners encontrados: $RUNNERS" >> runner_results/delete_runners_report.txt[0m
+job-core	Get Runners	2025-09-23T16:03:36.2467535Z [36;1melse[0m
+job-core	Get Runners	2025-09-23T16:03:36.2467946Z [36;1m  echo "runner_ids=" >> $GITHUB_OUTPUT[0m
+job-core	Get Runners	2025-09-23T16:03:36.2468689Z [36;1m  echo "No se encontraron runners" >> runner_results/delete_runners_report.txt[0m
+job-core	Get Runners	2025-09-23T16:03:36.2469374Z [36;1mfi[0m
+job-core	Get Runners	2025-09-23T16:03:36.2491145Z shell: /usr/bin/bash -e {0}
+job-core	Get Runners	2025-09-23T16:03:36.2492291Z env:
+job-core	Get Runners	2025-09-23T16:03:36.2492949Z   GITHUB_TOKEN: ***
+job-core	Get Runners	2025-09-23T16:03:36.2493375Z   KAOS_MODULE: [Ka0s] Delete Swarm Runners
+job-core	Get Runners	2025-09-23T16:03:36.2493869Z   KAOS_CODE: 17951893865
+job-core	Get Runners	2025-09-23T16:03:36.2494272Z ##[endgroup]
+job-core	Get Runners	2025-09-23T16:03:36.2674682Z Grupos de runners disponibles:
+job-core	Get Runners	2025-09-23T16:03:36.6971748Z {"allows_public_repositories":false,"default":true,"hosted_runners_url":"https://api.github.com/orgs/Ka0s-Klaus/actions/runner-groups/1/hosted-runners","id":1,"inherited":false,"name":"Default","restricted_to_workflows":false,"runners_url":"https://api.github.com/orgs/Ka0s-Klaus/actions/runner-groups/1/runners","selected_workflows":[],"visibility":"all","workflow_restrictions_read_only":false}
+job-core	Get Runners	2025-09-23T16:03:36.6977636Z {"allows_public_repositories":true,"default":false,"hosted_runners_url":"https://api.github.com/orgs/Ka0s-Klaus/actions/runner-groups/13/hosted-runners","id":13,"inherited":false,"name":"swarm-test-old","restricted_to_workflows":false,"runners_url":"https://api.github.com/orgs/Ka0s-Klaus/actions/runner-groups/13/runners","selected_repositories_url":"https://api.github.com/orgs/Ka0s-Klaus/actions/runner-groups/13/repositories","selected_workflows":[],"visibility":"selected","workflow_restrictions_read_only":false}
+job-core	Get Runners	2025-09-23T16:03:36.6984883Z {"allows_public_repositories":true,"default":false,"hosted_runners_url":"https://api.github.com/orgs/Ka0s-Klaus/actions/runner-groups/14/hosted-runners","id":14,"inherited":false,"name":"swarm-runners","restricted_to_workflows":false,"runners_url":"https://api.github.com/orgs/Ka0s-Klaus/actions/runner-groups/14/runners","selected_repositories_url":"https://api.github.com/orgs/Ka0s-Klaus/actions/runner-groups/14/repositories","selected_workflows":[],"visibility":"selected","workflow_restrictions_read_only":false}
+job-core	Get Runners	2025-09-23T16:03:36.6996209Z Obtener la lista de runners del grupo especificado: swarm-test-old
+job-core	Check Results	﻿2025-09-23T16:03:38.1960023Z ##[group]Run if [[ -z "" ]]; then
+job-core	Check Results	2025-09-23T16:03:38.1961143Z [36;1mif [[ -z "" ]]; then[0m
+job-core	Check Results	2025-09-23T16:03:38.1962300Z [36;1m  echo "No se encontraron runners en el grupo swarm-test-old"[0m
+job-core	Check Results	2025-09-23T16:03:38.1963533Z [36;1melse[0m
+job-core	Check Results	2025-09-23T16:03:38.1964602Z [36;1m  echo "Runners eliminados exitosamente del grupo swarm-test-old"[0m
+job-core	Check Results	2025-09-23T16:03:38.1965951Z [36;1mfi[0m
+job-core	Check Results	2025-09-23T16:03:38.1977160Z shell: /usr/bin/bash -e {0}
+job-core	Check Results	2025-09-23T16:03:38.1978039Z env:
+job-core	Check Results	2025-09-23T16:03:38.1979137Z   GITHUB_TOKEN: ***
+job-core	Check Results	2025-09-23T16:03:38.1979933Z   KAOS_MODULE: [Ka0s] Delete Swarm Runners
+job-core	Check Results	2025-09-23T16:03:38.1980898Z   KAOS_CODE: 17951893865
+job-core	Check Results	2025-09-23T16:03:38.1981663Z ##[endgroup]
+job-core	Check Results	2025-09-23T16:03:38.2024466Z No se encontraron runners en el grupo swarm-test-old
+job-core	Complete job	﻿2025-09-23T16:03:38.2090073Z Cleaning up orphan processes
+handle-success	Set up job	﻿2025-09-23T16:04:08.3937629Z Current runner version: '2.328.0'
+handle-success	Set up job	2025-09-23T16:04:08.3945428Z Runner name: '2aac0851d76d'
+handle-success	Set up job	2025-09-23T16:04:08.3946490Z Runner group name: 'swarm-runners'
+handle-success	Set up job	2025-09-23T16:04:08.3947406Z Machine name: '2aac0851d76d'
+handle-success	Set up job	2025-09-23T16:04:08.3950770Z ##[group]GITHUB_TOKEN Permissions
+handle-success	Set up job	2025-09-23T16:04:08.3953421Z Actions: write
+handle-success	Set up job	2025-09-23T16:04:08.3954099Z Contents: read
+handle-success	Set up job	2025-09-23T16:04:08.3954635Z Issues: write
+handle-success	Set up job	2025-09-23T16:04:08.3955192Z Metadata: read
+handle-success	Set up job	2025-09-23T16:04:08.3956346Z ##[endgroup]
+handle-success	Set up job	2025-09-23T16:04:08.3958620Z Secret source: Actions
+handle-success	Set up job	2025-09-23T16:04:08.3959569Z Prepare workflow directory
+handle-success	Set up job	2025-09-23T16:04:08.4495674Z Prepare all required actions
+handle-success	Set up job	2025-09-23T16:04:08.4534287Z Getting action download info
+handle-success	Set up job	2025-09-23T16:04:09.0613587Z Download action repository 'actions/checkout@v4' (SHA:08eba0b27e820071cde6df949e0beb9ba4906955)
+handle-success	Set up job	2025-09-23T16:04:09.9559894Z Complete job name: handle-success
+handle-success	Checkout code	﻿2025-09-23T16:04:10.0121781Z ##[group]Run actions/checkout@v4
+handle-success	Checkout code	2025-09-23T16:04:10.0122779Z with:
+handle-success	Checkout code	2025-09-23T16:04:10.0123305Z   fetch-depth: 0
+handle-success	Checkout code	2025-09-23T16:04:10.0124047Z   token: ***
+handle-success	Checkout code	2025-09-23T16:04:10.0124524Z   repository: Ka0s-Klaus/ka0s
+handle-success	Checkout code	2025-09-23T16:04:10.0125061Z   ssh-strict: true
+handle-success	Checkout code	2025-09-23T16:04:10.0125705Z   ssh-user: git
+handle-success	Checkout code	2025-09-23T16:04:10.0126160Z   persist-credentials: true
+handle-success	Checkout code	2025-09-23T16:04:10.0126672Z   clean: true
+handle-success	Checkout code	2025-09-23T16:04:10.0127132Z   sparse-checkout-cone-mode: true
+handle-success	Checkout code	2025-09-23T16:04:10.0127698Z   fetch-tags: false
+handle-success	Checkout code	2025-09-23T16:04:10.0128162Z   show-progress: true
+handle-success	Checkout code	2025-09-23T16:04:10.0128622Z   lfs: false
+handle-success	Checkout code	2025-09-23T16:04:10.0129051Z   submodules: false
+handle-success	Checkout code	2025-09-23T16:04:10.0129545Z   set-safe-directory: true
+handle-success	Checkout code	2025-09-23T16:04:10.0130317Z env:
+handle-success	Checkout code	2025-09-23T16:04:10.0130965Z   GITHUB_TOKEN: ***
+handle-success	Checkout code	2025-09-23T16:04:10.0131471Z   KAOS_MODULE: [Ka0s] Delete Swarm Runners
+handle-success	Checkout code	2025-09-23T16:04:10.0132057Z   KAOS_CODE: 17951893865
+handle-success	Checkout code	2025-09-23T16:04:10.0132550Z ##[endgroup]
+handle-success	Checkout code	2025-09-23T16:04:10.1308504Z Syncing repository: Ka0s-Klaus/ka0s
+handle-success	Checkout code	2025-09-23T16:04:10.1310664Z ##[group]Getting Git version info
+handle-success	Checkout code	2025-09-23T16:04:10.1311414Z Working directory is '/home/runner/_work/ka0s/ka0s'
+handle-success	Checkout code	2025-09-23T16:04:10.1312416Z [command]/usr/bin/git version
+handle-success	Checkout code	2025-09-23T16:04:10.1312945Z git version 2.51.0
+handle-success	Checkout code	2025-09-23T16:04:10.1327297Z ##[endgroup]
+handle-success	Checkout code	2025-09-23T16:04:10.1344102Z Temporarily overriding HOME='/home/runner/_work/_temp/8b7b7400-fa3e-4062-9c44-0ffdd33964f3' before making global git config changes
+handle-success	Checkout code	2025-09-23T16:04:10.1346006Z Adding repository directory to the temporary git global config as a safe directory
+handle-success	Checkout code	2025-09-23T16:04:10.1351148Z [command]/usr/bin/git config --global --add safe.directory /home/runner/_work/ka0s/ka0s
+handle-success	Checkout code	2025-09-23T16:04:10.1389652Z Deleting the contents of '/home/runner/_work/ka0s/ka0s'
+handle-success	Checkout code	2025-09-23T16:04:10.1394391Z ##[group]Initializing the repository
+handle-success	Checkout code	2025-09-23T16:04:10.1399969Z [command]/usr/bin/git init /home/runner/_work/ka0s/ka0s
+handle-success	Checkout code	2025-09-23T16:04:10.1447133Z hint: Using 'master' as the name for the initial branch. This default branch name
+handle-success	Checkout code	2025-09-23T16:04:10.1448906Z hint: is subject to change. To configure the initial branch name to use in all
+handle-success	Checkout code	2025-09-23T16:04:10.1450359Z hint: of your new repositories, which will suppress this warning, call:
+handle-success	Checkout code	2025-09-23T16:04:10.1451233Z hint:
+handle-success	Checkout code	2025-09-23T16:04:10.1451898Z hint: 	git config --global init.defaultBranch <name>
+handle-success	Checkout code	2025-09-23T16:04:10.1452641Z hint:
+handle-success	Checkout code	2025-09-23T16:04:10.1453382Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+handle-success	Checkout code	2025-09-23T16:04:10.1454671Z hint: 'development'. The just-created branch can be renamed via this command:
+handle-success	Checkout code	2025-09-23T16:04:10.1455636Z hint:
+handle-success	Checkout code	2025-09-23T16:04:10.1456105Z hint: 	git branch -m <name>
+handle-success	Checkout code	2025-09-23T16:04:10.1456638Z hint:
+handle-success	Checkout code	2025-09-23T16:04:10.1457343Z hint: Disable this message with "git config set advice.defaultBranchName false"
+handle-success	Checkout code	2025-09-23T16:04:10.1458570Z Initialized empty Git repository in /home/runner/_work/ka0s/ka0s/.git/
+handle-success	Checkout code	2025-09-23T16:04:10.1460613Z [command]/usr/bin/git remote add origin https://github.com/Ka0s-Klaus/ka0s
+handle-success	Checkout code	2025-09-23T16:04:10.1494067Z ##[endgroup]
+handle-success	Checkout code	2025-09-23T16:04:10.1495006Z ##[group]Disabling automatic garbage collection
+handle-success	Checkout code	2025-09-23T16:04:10.1497529Z [command]/usr/bin/git config --local gc.auto 0
+handle-success	Checkout code	2025-09-23T16:04:10.1531786Z ##[endgroup]
+handle-success	Checkout code	2025-09-23T16:04:10.1532663Z ##[group]Setting up auth
+handle-success	Checkout code	2025-09-23T16:04:10.1539465Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+handle-success	Checkout code	2025-09-23T16:04:10.1575521Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+handle-success	Checkout code	2025-09-23T16:04:10.1828493Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+handle-success	Checkout code	2025-09-23T16:04:10.1860655Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+handle-success	Checkout code	2025-09-23T16:04:10.2114442Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+handle-success	Checkout code	2025-09-23T16:04:10.2156217Z ##[endgroup]
+handle-success	Checkout code	2025-09-23T16:04:10.2157170Z ##[group]Fetching the repository
+handle-success	Checkout code	2025-09-23T16:04:10.2165078Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+handle-success	Checkout code	2025-09-23T16:04:18.5895896Z From https://github.com/Ka0s-Klaus/ka0s
+handle-success	Checkout code	2025-09-23T16:04:18.5896832Z  * [new branch]        F1149-desarrollo-de-orchestrator -> origin/F1149-desarrollo-de-orchestrator
+handle-success	Checkout code	2025-09-23T16:04:18.5898016Z  * [new branch]        F1183-personalización-módulo-finops -> origin/F1183-personalización-módulo-finops
+handle-success	Checkout code	2025-09-23T16:04:18.5898778Z  * [new branch]        F1224-new-module-mongodb -> origin/F1224-new-module-mongodb
+handle-success	Checkout code	2025-09-23T16:04:18.5899694Z  * [new branch]        F220-web-de-resultados  -> origin/F220-web-de-resultados
+handle-success	Checkout code	2025-09-23T16:04:18.5900678Z  * [new branch]        F227-despliegue-de-kube-independiente-del-clouder -> origin/F227-despliegue-de-kube-independiente-del-clouder
+handle-success	Checkout code	2025-09-23T16:04:18.5901854Z  * [new branch]        F329-documentacion-metodologia-de-kaos -> origin/F329-documentacion-metodologia-de-kaos
+handle-success	Checkout code	2025-09-23T16:04:18.5906503Z  * [new branch]        F44-creación-módulo-versionado -> origin/F44-creación-módulo-versionado
+handle-success	Checkout code	2025-09-23T16:04:18.5907847Z  * [new branch]        H1128-módulo-de-observabilidad -> origin/H1128-módulo-de-observabilidad
+handle-success	Checkout code	2025-09-23T16:04:18.5908602Z  * [new branch]        H1139-como-instalar-arc-control -> origin/H1139-como-instalar-arc-control
+handle-success	Checkout code	2025-09-23T16:04:18.5909378Z  * [new branch]        H1149-desarrollo-de-orchestrator -> origin/H1149-desarrollo-de-orchestrator
+handle-success	Checkout code	2025-09-23T16:04:18.5910133Z  * [new branch]        H1150-desarrollo-de-secciones -> origin/H1150-desarrollo-de-secciones
+handle-success	Checkout code	2025-09-23T16:04:18.5910874Z  * [new branch]        H1151-desarrollo-de-secciones-ii -> origin/H1151-desarrollo-de-secciones-ii
+handle-success	Checkout code	2025-09-23T16:04:18.5911551Z  * [new branch]        H1152-desarrollo-inicio -> origin/H1152-desarrollo-inicio
+handle-success	Checkout code	2025-09-23T16:04:18.5930202Z  * [new branch]        H1183-personalización-módulo-finops -> origin/H1183-personalización-módulo-finops
+handle-success	Checkout code	2025-09-23T16:04:18.5931477Z  * [new branch]        H1193-ejemplo-web-documentacion -> origin/H1193-ejemplo-web-documentacion
+handle-success	Checkout code	2025-09-23T16:04:18.5932165Z  * [new branch]        H1205-web-creation      -> origin/H1205-web-creation
+handle-success	Checkout code	2025-09-23T16:04:18.5932763Z  * [new branch]        H1224-new-module-mongodb -> origin/H1224-new-module-mongodb
+handle-success	Checkout code	2025-09-23T16:04:18.5933381Z  * [new branch]        H1410-modulo-execution  -> origin/H1410-modulo-execution
+handle-success	Checkout code	2025-09-23T16:04:18.5934424Z  * [new branch]        H1514-new-swarm-deployment-stack-with-actions-runners-autoscale -> origin/H1514-new-swarm-deployment-stack-with-actions-runners-autoscale
+handle-success	Checkout code	2025-09-23T16:04:18.5935572Z  * [new branch]        H215-modulo-de-summary  -> origin/H215-modulo-de-summary
+handle-success	Checkout code	2025-09-23T16:04:18.5936161Z  * [new branch]        H220-web-de-resultados  -> origin/H220-web-de-resultados
+handle-success	Checkout code	2025-09-23T16:04:18.5937036Z  * [new branch]        H227-despliegue-de-kube-independiente-del-clouder -> origin/H227-despliegue-de-kube-independiente-del-clouder
+handle-success	Checkout code	2025-09-23T16:04:18.5938517Z  * [new branch]        H306-ficheros-de-estadisticas -> origin/H306-ficheros-de-estadisticas
+handle-success	Checkout code	2025-09-23T16:04:18.5939394Z  * [new branch]        H328-documentacion-modulo-principal-de-kaos -> origin/H328-documentacion-modulo-principal-de-kaos
+handle-success	Checkout code	2025-09-23T16:04:18.5940367Z  * [new branch]        H329-documentacion-metodologia-de-kaos -> origin/H329-documentacion-metodologia-de-kaos
+handle-success	Checkout code	2025-09-23T16:04:18.5941337Z  * [new branch]        H338-relanzador-de-jobs-en-caso-de-pattern -> origin/H338-relanzador-de-jobs-en-caso-de-pattern
+handle-success	Checkout code	2025-09-23T16:04:18.5942286Z  * [new branch]        H38-documentacion-basica-del-proyecto -> origin/H38-documentacion-basica-del-proyecto
+handle-success	Checkout code	2025-09-23T16:04:18.5943328Z  * [new branch]        H44-creación-módulo-versionado -> origin/H44-creación-módulo-versionado
+handle-success	Checkout code	2025-09-23T16:04:18.5944420Z  * [new branch]        RN1149-desarrollo-de-orchestrator -> origin/RN1149-desarrollo-de-orchestrator
+handle-success	Checkout code	2025-09-23T16:04:18.5945480Z  * [new branch]        RN1183-personalización-módulo-finops -> origin/RN1183-personalización-módulo-finops
+handle-success	Checkout code	2025-09-23T16:04:18.5946597Z  * [new branch]        RN1282-ka0s-error-detected-in-ka0s-workflow-statistics-summary -> origin/RN1282-ka0s-error-detected-in-ka0s-workflow-statistics-summary
+handle-success	Checkout code	2025-09-23T16:04:18.5947583Z  * [new branch]        RN220-web-de-resultados -> origin/RN220-web-de-resultados
+handle-success	Checkout code	2025-09-23T16:04:18.5948454Z  * [new branch]        RN227-despliegue-de-kube-independiente-del-clouder -> origin/RN227-despliegue-de-kube-independiente-del-clouder
+handle-success	Checkout code	2025-09-23T16:04:18.5949467Z  * [new branch]        RN329-documentacion-metodologia-de-kaos -> origin/RN329-documentacion-metodologia-de-kaos
+handle-success	Checkout code	2025-09-23T16:04:18.5950265Z  * [new branch]        main                    -> origin/main
+handle-success	Checkout code	2025-09-23T16:04:18.5950678Z  * [new tag]           0.0.0                   -> 0.0.0
+handle-success	Checkout code	2025-09-23T16:04:18.5951079Z  * [new tag]           0.0.1                   -> 0.0.1
+handle-success	Checkout code	2025-09-23T16:04:18.5951482Z  * [new tag]           0.0.10                  -> 0.0.10
+handle-success	Checkout code	2025-09-23T16:04:18.5951873Z  * [new tag]           0.0.100                 -> 0.0.100
+handle-success	Checkout code	2025-09-23T16:04:18.5952275Z  * [new tag]           0.0.101                 -> 0.0.101
+handle-success	Checkout code	2025-09-23T16:04:18.5952672Z  * [new tag]           0.0.102                 -> 0.0.102
+handle-success	Checkout code	2025-09-23T16:04:18.5953477Z  * [new tag]           0.0.103                 -> 0.0.103
+handle-success	Checkout code	2025-09-23T16:04:18.5953889Z  * [new tag]           0.0.104                 -> 0.0.104
+handle-success	Checkout code	2025-09-23T16:04:18.5954284Z  * [new tag]           0.0.105                 -> 0.0.105
+handle-success	Checkout code	2025-09-23T16:04:18.5954690Z  * [new tag]           0.0.106                 -> 0.0.106
+handle-success	Checkout code	2025-09-23T16:04:18.5955100Z  * [new tag]           0.0.107                 -> 0.0.107
+handle-success	Checkout code	2025-09-23T16:04:18.5955691Z  * [new tag]           0.0.108                 -> 0.0.108
+handle-success	Checkout code	2025-09-23T16:04:18.5956086Z  * [new tag]           0.0.109                 -> 0.0.109
+handle-success	Checkout code	2025-09-23T16:04:18.5956619Z  * [new tag]           0.0.11                  -> 0.0.11
+handle-success	Checkout code	2025-09-23T16:04:18.5957009Z  * [new tag]           0.0.110                 -> 0.0.110
+handle-success	Checkout code	2025-09-23T16:04:18.5957382Z  * [new tag]           0.0.111                 -> 0.0.111
+handle-success	Checkout code	2025-09-23T16:04:18.5957764Z  * [new tag]           0.0.112                 -> 0.0.112
+handle-success	Checkout code	2025-09-23T16:04:18.5958153Z  * [new tag]           0.0.113                 -> 0.0.113
+handle-success	Checkout code	2025-09-23T16:04:18.5958537Z  * [new tag]           0.0.114                 -> 0.0.114
+handle-success	Checkout code	2025-09-23T16:04:18.5958924Z  * [new tag]           0.0.115                 -> 0.0.115
+handle-success	Checkout code	2025-09-23T16:04:18.5959312Z  * [new tag]           0.0.116                 -> 0.0.116
+handle-success	Checkout code	2025-09-23T16:04:18.5959708Z  * [new tag]           0.0.117                 -> 0.0.117
+handle-success	Checkout code	2025-09-23T16:04:18.5960090Z  * [new tag]           0.0.118                 -> 0.0.118
+handle-success	Checkout code	2025-09-23T16:04:18.5960481Z  * [new tag]           0.0.119                 -> 0.0.119
+handle-success	Checkout code	2025-09-23T16:04:18.5960871Z  * [new tag]           0.0.12                  -> 0.0.12
+handle-success	Checkout code	2025-09-23T16:04:18.5961295Z  * [new tag]           0.0.120                 -> 0.0.120
+handle-success	Checkout code	2025-09-23T16:04:18.5961895Z  * [new tag]           0.0.121                 -> 0.0.121
+handle-success	Checkout code	2025-09-23T16:04:18.5962291Z  * [new tag]           0.0.122                 -> 0.0.122
+handle-success	Checkout code	2025-09-23T16:04:18.5962681Z  * [new tag]           0.0.123                 -> 0.0.123
+handle-success	Checkout code	2025-09-23T16:04:18.5963102Z  * [new tag]           0.0.124                 -> 0.0.124
+handle-success	Checkout code	2025-09-23T16:04:18.5963556Z  * [new tag]           0.0.125                 -> 0.0.125
+handle-success	Checkout code	2025-09-23T16:04:18.5963950Z  * [new tag]           0.0.126                 -> 0.0.126
+handle-success	Checkout code	2025-09-23T16:04:18.5964339Z  * [new tag]           0.0.127                 -> 0.0.127
+handle-success	Checkout code	2025-09-23T16:04:18.5964891Z  * [new tag]           0.0.128                 -> 0.0.128
+handle-success	Checkout code	2025-09-23T16:04:18.5965539Z  * [new tag]           0.0.129                 -> 0.0.129
+handle-success	Checkout code	2025-09-23T16:04:18.5966188Z  * [new tag]           0.0.13                  -> 0.0.13
+handle-success	Checkout code	2025-09-23T16:04:18.5966749Z  * [new tag]           0.0.130                 -> 0.0.130
+handle-success	Checkout code	2025-09-23T16:04:18.5967162Z  * [new tag]           0.0.131                 -> 0.0.131
+handle-success	Checkout code	2025-09-23T16:04:18.5967550Z  * [new tag]           0.0.132                 -> 0.0.132
+handle-success	Checkout code	2025-09-23T16:04:18.5967946Z  * [new tag]           0.0.133                 -> 0.0.133
+handle-success	Checkout code	2025-09-23T16:04:18.5968342Z  * [new tag]           0.0.134                 -> 0.0.134
+handle-success	Checkout code	2025-09-23T16:04:18.5968741Z  * [new tag]           0.0.135                 -> 0.0.135
+handle-success	Checkout code	2025-09-23T16:04:18.5969129Z  * [new tag]           0.0.136                 -> 0.0.136
+handle-success	Checkout code	2025-09-23T16:04:18.5969526Z  * [new tag]           0.0.137                 -> 0.0.137
+handle-success	Checkout code	2025-09-23T16:04:18.5969933Z  * [new tag]           0.0.138                 -> 0.0.138
+handle-success	Checkout code	2025-09-23T16:04:18.5970325Z  * [new tag]           0.0.139                 -> 0.0.139
+handle-success	Checkout code	2025-09-23T16:04:18.5970723Z  * [new tag]           0.0.14                  -> 0.0.14
+handle-success	Checkout code	2025-09-23T16:04:18.5971121Z  * [new tag]           0.0.140                 -> 0.0.140
+handle-success	Checkout code	2025-09-23T16:04:18.5971532Z  * [new tag]           0.0.141                 -> 0.0.141
+handle-success	Checkout code	2025-09-23T16:04:18.5971935Z  * [new tag]           0.0.142                 -> 0.0.142
+handle-success	Checkout code	2025-09-23T16:04:18.5972337Z  * [new tag]           0.0.143                 -> 0.0.143
+handle-success	Checkout code	2025-09-23T16:04:18.5972736Z  * [new tag]           0.0.144                 -> 0.0.144
+handle-success	Checkout code	2025-09-23T16:04:18.5973130Z  * [new tag]           0.0.145                 -> 0.0.145
+handle-success	Checkout code	2025-09-23T16:04:18.5973529Z  * [new tag]           0.0.146                 -> 0.0.146
+handle-success	Checkout code	2025-09-23T16:04:18.5973926Z  * [new tag]           0.0.147                 -> 0.0.147
+handle-success	Checkout code	2025-09-23T16:04:18.5974324Z  * [new tag]           0.0.148                 -> 0.0.148
+handle-success	Checkout code	2025-09-23T16:04:18.5974717Z  * [new tag]           0.0.149                 -> 0.0.149
+handle-success	Checkout code	2025-09-23T16:04:18.5975115Z  * [new tag]           0.0.15                  -> 0.0.15
+handle-success	Checkout code	2025-09-23T16:04:18.5975857Z  * [new tag]           0.0.150                 -> 0.0.150
+handle-success	Checkout code	2025-09-23T16:04:18.5976251Z  * [new tag]           0.0.151                 -> 0.0.151
+handle-success	Checkout code	2025-09-23T16:04:18.5976658Z  * [new tag]           0.0.152                 -> 0.0.152
+handle-success	Checkout code	2025-09-23T16:04:18.5977064Z  * [new tag]           0.0.153                 -> 0.0.153
+handle-success	Checkout code	2025-09-23T16:04:18.5977460Z  * [new tag]           0.0.154                 -> 0.0.154
+handle-success	Checkout code	2025-09-23T16:04:18.5977854Z  * [new tag]           0.0.155                 -> 0.0.155
+handle-success	Checkout code	2025-09-23T16:04:18.5978253Z  * [new tag]           0.0.156                 -> 0.0.156
+handle-success	Checkout code	2025-09-23T16:04:18.5978649Z  * [new tag]           0.0.157                 -> 0.0.157
+handle-success	Checkout code	2025-09-23T16:04:18.5979038Z  * [new tag]           0.0.158                 -> 0.0.158
+handle-success	Checkout code	2025-09-23T16:04:18.5979436Z  * [new tag]           0.0.159                 -> 0.0.159
+handle-success	Checkout code	2025-09-23T16:04:18.5979832Z  * [new tag]           0.0.16                  -> 0.0.16
+handle-success	Checkout code	2025-09-23T16:04:18.5980223Z  * [new tag]           0.0.160                 -> 0.0.160
+handle-success	Checkout code	2025-09-23T16:04:18.5980629Z  * [new tag]           0.0.161                 -> 0.0.161
+handle-success	Checkout code	2025-09-23T16:04:18.5981024Z  * [new tag]           0.0.162                 -> 0.0.162
+handle-success	Checkout code	2025-09-23T16:04:18.5981429Z  * [new tag]           0.0.163                 -> 0.0.163
+handle-success	Checkout code	2025-09-23T16:04:18.5981953Z  * [new tag]           0.0.164                 -> 0.0.164
+handle-success	Checkout code	2025-09-23T16:04:18.5982353Z  * [new tag]           0.0.165                 -> 0.0.165
+handle-success	Checkout code	2025-09-23T16:04:18.5982750Z  * [new tag]           0.0.166                 -> 0.0.166
+handle-success	Checkout code	2025-09-23T16:04:18.5983142Z  * [new tag]           0.0.167                 -> 0.0.167
+handle-success	Checkout code	2025-09-23T16:04:18.5983540Z  * [new tag]           0.0.168                 -> 0.0.168
+handle-success	Checkout code	2025-09-23T16:04:18.5983937Z  * [new tag]           0.0.169                 -> 0.0.169
+handle-success	Checkout code	2025-09-23T16:04:18.5984329Z  * [new tag]           0.0.17                  -> 0.0.17
+handle-success	Checkout code	2025-09-23T16:04:18.5984720Z  * [new tag]           0.0.170                 -> 0.0.170
+handle-success	Checkout code	2025-09-23T16:04:18.5985116Z  * [new tag]           0.0.171                 -> 0.0.171
+handle-success	Checkout code	2025-09-23T16:04:18.5985850Z  * [new tag]           0.0.172                 -> 0.0.172
+handle-success	Checkout code	2025-09-23T16:04:18.5986246Z  * [new tag]           0.0.173                 -> 0.0.173
+handle-success	Checkout code	2025-09-23T16:04:18.5986768Z  * [new tag]           0.0.174                 -> 0.0.174
+handle-success	Checkout code	2025-09-23T16:04:18.5987172Z  * [new tag]           0.0.175                 -> 0.0.175
+handle-success	Checkout code	2025-09-23T16:04:18.5987566Z  * [new tag]           0.0.176                 -> 0.0.176
+handle-success	Checkout code	2025-09-23T16:04:18.5987955Z  * [new tag]           0.0.177                 -> 0.0.177
+handle-success	Checkout code	2025-09-23T16:04:18.5988351Z  * [new tag]           0.0.178                 -> 0.0.178
+handle-success	Checkout code	2025-09-23T16:04:18.5988745Z  * [new tag]           0.0.179                 -> 0.0.179
+handle-success	Checkout code	2025-09-23T16:04:18.5989132Z  * [new tag]           0.0.18                  -> 0.0.18
+handle-success	Checkout code	2025-09-23T16:04:18.5989524Z  * [new tag]           0.0.19                  -> 0.0.19
+handle-success	Checkout code	2025-09-23T16:04:18.5989908Z  * [new tag]           0.0.2                   -> 0.0.2
+handle-success	Checkout code	2025-09-23T16:04:18.5990288Z  * [new tag]           0.0.20                  -> 0.0.20
+handle-success	Checkout code	2025-09-23T16:04:18.5990811Z  * [new tag]           0.0.21                  -> 0.0.21
+handle-success	Checkout code	2025-09-23T16:04:18.5991223Z  * [new tag]           0.0.22                  -> 0.0.22
+handle-success	Checkout code	2025-09-23T16:04:18.5991747Z  * [new tag]           0.0.23                  -> 0.0.23
+handle-success	Checkout code	2025-09-23T16:04:18.5992124Z  * [new tag]           0.0.24                  -> 0.0.24
+handle-success	Checkout code	2025-09-23T16:04:18.5992509Z  * [new tag]           0.0.25                  -> 0.0.25
+handle-success	Checkout code	2025-09-23T16:04:18.5992894Z  * [new tag]           0.0.26                  -> 0.0.26
+handle-success	Checkout code	2025-09-23T16:04:18.5993276Z  * [new tag]           0.0.27                  -> 0.0.27
+handle-success	Checkout code	2025-09-23T16:04:18.5993656Z  * [new tag]           0.0.28                  -> 0.0.28
+handle-success	Checkout code	2025-09-23T16:04:18.5994039Z  * [new tag]           0.0.29                  -> 0.0.29
+handle-success	Checkout code	2025-09-23T16:04:18.5994417Z  * [new tag]           0.0.3                   -> 0.0.3
+handle-success	Checkout code	2025-09-23T16:04:18.5994796Z  * [new tag]           0.0.30                  -> 0.0.30
+handle-success	Checkout code	2025-09-23T16:04:18.5995216Z  * [new tag]           0.0.31                  -> 0.0.31
+handle-success	Checkout code	2025-09-23T16:04:18.5996046Z  * [new tag]           0.0.32                  -> 0.0.32
+handle-success	Checkout code	2025-09-23T16:04:18.5996438Z  * [new tag]           0.0.33                  -> 0.0.33
+handle-success	Checkout code	2025-09-23T16:04:18.5996830Z  * [new tag]           0.0.34                  -> 0.0.34
+handle-success	Checkout code	2025-09-23T16:04:18.5997213Z  * [new tag]           0.0.35                  -> 0.0.35
+handle-success	Checkout code	2025-09-23T16:04:18.5997595Z  * [new tag]           0.0.36                  -> 0.0.36
+handle-success	Checkout code	2025-09-23T16:04:18.5997974Z  * [new tag]           0.0.37                  -> 0.0.37
+handle-success	Checkout code	2025-09-23T16:04:18.5998354Z  * [new tag]           0.0.38                  -> 0.0.38
+handle-success	Checkout code	2025-09-23T16:04:18.5998733Z  * [new tag]           0.0.39                  -> 0.0.39
+handle-success	Checkout code	2025-09-23T16:04:18.5999112Z  * [new tag]           0.0.4                   -> 0.0.4
+handle-success	Checkout code	2025-09-23T16:04:18.5999494Z  * [new tag]           0.0.40                  -> 0.0.40
+handle-success	Checkout code	2025-09-23T16:04:18.5999880Z  * [new tag]           0.0.41                  -> 0.0.41
+handle-success	Checkout code	2025-09-23T16:04:18.6000261Z  * [new tag]           0.0.42                  -> 0.0.42
+handle-success	Checkout code	2025-09-23T16:04:18.6000642Z  * [new tag]           0.0.43                  -> 0.0.43
+handle-success	Checkout code	2025-09-23T16:04:18.6001033Z  * [new tag]           0.0.44                  -> 0.0.44
+handle-success	Checkout code	2025-09-23T16:04:18.6001545Z  * [new tag]           0.0.45                  -> 0.0.45
+handle-success	Checkout code	2025-09-23T16:04:18.6001931Z  * [new tag]           0.0.46                  -> 0.0.46
+handle-success	Checkout code	2025-09-23T16:04:18.6002313Z  * [new tag]           0.0.47                  -> 0.0.47
+handle-success	Checkout code	2025-09-23T16:04:18.6002695Z  * [new tag]           0.0.48                  -> 0.0.48
+handle-success	Checkout code	2025-09-23T16:04:18.6003082Z  * [new tag]           0.0.49                  -> 0.0.49
+handle-success	Checkout code	2025-09-23T16:04:18.6003462Z  * [new tag]           0.0.5                   -> 0.0.5
+handle-success	Checkout code	2025-09-23T16:04:18.6003844Z  * [new tag]           0.0.50                  -> 0.0.50
+handle-success	Checkout code	2025-09-23T16:04:18.6004226Z  * [new tag]           0.0.51                  -> 0.0.51
+handle-success	Checkout code	2025-09-23T16:04:18.6004602Z  * [new tag]           0.0.52                  -> 0.0.52
+handle-success	Checkout code	2025-09-23T16:04:18.6004985Z  * [new tag]           0.0.53                  -> 0.0.53
+handle-success	Checkout code	2025-09-23T16:04:18.6005585Z  * [new tag]           0.0.54                  -> 0.0.54
+handle-success	Checkout code	2025-09-23T16:04:18.6006358Z  * [new tag]           0.0.55                  -> 0.0.55
+handle-success	Checkout code	2025-09-23T16:04:18.6006748Z  * [new tag]           0.0.56                  -> 0.0.56
+handle-success	Checkout code	2025-09-23T16:04:18.6007133Z  * [new tag]           0.0.57                  -> 0.0.57
+handle-success	Checkout code	2025-09-23T16:04:18.6007512Z  * [new tag]           0.0.58                  -> 0.0.58
+handle-success	Checkout code	2025-09-23T16:04:18.6007899Z  * [new tag]           0.0.59                  -> 0.0.59
+handle-success	Checkout code	2025-09-23T16:04:18.6008282Z  * [new tag]           0.0.6                   -> 0.0.6
+handle-success	Checkout code	2025-09-23T16:04:18.6008662Z  * [new tag]           0.0.60                  -> 0.0.60
+handle-success	Checkout code	2025-09-23T16:04:18.6009046Z  * [new tag]           0.0.61                  -> 0.0.61
+handle-success	Checkout code	2025-09-23T16:04:18.6009430Z  * [new tag]           0.0.62                  -> 0.0.62
+handle-success	Checkout code	2025-09-23T16:04:18.6009818Z  * [new tag]           0.0.63                  -> 0.0.63
+handle-success	Checkout code	2025-09-23T16:04:18.6010199Z  * [new tag]           0.0.64                  -> 0.0.64
+handle-success	Checkout code	2025-09-23T16:04:18.6010582Z  * [new tag]           0.0.65                  -> 0.0.65
+handle-success	Checkout code	2025-09-23T16:04:18.6010980Z  * [new tag]           0.0.66                  -> 0.0.66
+handle-success	Checkout code	2025-09-23T16:04:18.6011369Z  * [new tag]           0.0.67                  -> 0.0.67
+handle-success	Checkout code	2025-09-23T16:04:18.6011748Z  * [new tag]           0.0.68                  -> 0.0.68
+handle-success	Checkout code	2025-09-23T16:04:18.6012129Z  * [new tag]           0.0.69                  -> 0.0.69
+handle-success	Checkout code	2025-09-23T16:04:18.6012508Z  * [new tag]           0.0.7                   -> 0.0.7
+handle-success	Checkout code	2025-09-23T16:04:18.6012889Z  * [new tag]           0.0.70                  -> 0.0.70
+handle-success	Checkout code	2025-09-23T16:04:18.6013274Z  * [new tag]           0.0.71                  -> 0.0.71
+handle-success	Checkout code	2025-09-23T16:04:18.6013658Z  * [new tag]           0.0.72                  -> 0.0.72
+handle-success	Checkout code	2025-09-23T16:04:18.6014042Z  * [new tag]           0.0.73                  -> 0.0.73
+handle-success	Checkout code	2025-09-23T16:04:18.6014421Z  * [new tag]           0.0.74                  -> 0.0.74
+handle-success	Checkout code	2025-09-23T16:04:18.6014808Z  * [new tag]           0.0.75                  -> 0.0.75
+handle-success	Checkout code	2025-09-23T16:04:18.6015394Z  * [new tag]           0.0.76                  -> 0.0.76
+handle-success	Checkout code	2025-09-23T16:04:18.6016045Z  * [new tag]           0.0.77                  -> 0.0.77
+handle-success	Checkout code	2025-09-23T16:04:18.6016441Z  * [new tag]           0.0.78                  -> 0.0.78
+handle-success	Checkout code	2025-09-23T16:04:18.6016841Z  * [new tag]           0.0.79                  -> 0.0.79
+handle-success	Checkout code	2025-09-23T16:04:18.6017230Z  * [new tag]           0.0.8                   -> 0.0.8
+handle-success	Checkout code	2025-09-23T16:04:18.6017613Z  * [new tag]           0.0.80                  -> 0.0.80
+handle-success	Checkout code	2025-09-23T16:04:18.6017994Z  * [new tag]           0.0.81                  -> 0.0.81
+handle-success	Checkout code	2025-09-23T16:04:18.6018390Z  * [new tag]           0.0.82                  -> 0.0.82
+handle-success	Checkout code	2025-09-23T16:04:18.6018785Z  * [new tag]           0.0.83                  -> 0.0.83
+handle-success	Checkout code	2025-09-23T16:04:18.6019171Z  * [new tag]           0.0.84                  -> 0.0.84
+handle-success	Checkout code	2025-09-23T16:04:18.6019553Z  * [new tag]           0.0.85                  -> 0.0.85
+handle-success	Checkout code	2025-09-23T16:04:18.6019932Z  * [new tag]           0.0.86                  -> 0.0.86
+handle-success	Checkout code	2025-09-23T16:04:18.6020314Z  * [new tag]           0.0.87                  -> 0.0.87
+handle-success	Checkout code	2025-09-23T16:04:18.6020703Z  * [new tag]           0.0.88                  -> 0.0.88
+handle-success	Checkout code	2025-09-23T16:04:18.6021212Z  * [new tag]           0.0.89                  -> 0.0.89
+handle-success	Checkout code	2025-09-23T16:04:18.6021592Z  * [new tag]           0.0.9                   -> 0.0.9
+handle-success	Checkout code	2025-09-23T16:04:18.6021974Z  * [new tag]           0.0.90                  -> 0.0.90
+handle-success	Checkout code	2025-09-23T16:04:18.6022351Z  * [new tag]           0.0.91                  -> 0.0.91
+handle-success	Checkout code	2025-09-23T16:04:18.6022731Z  * [new tag]           0.0.92                  -> 0.0.92
+handle-success	Checkout code	2025-09-23T16:04:18.6023112Z  * [new tag]           0.0.93                  -> 0.0.93
+handle-success	Checkout code	2025-09-23T16:04:18.6023491Z  * [new tag]           0.0.94                  -> 0.0.94
+handle-success	Checkout code	2025-09-23T16:04:18.6023865Z  * [new tag]           0.0.95                  -> 0.0.95
+handle-success	Checkout code	2025-09-23T16:04:18.6024247Z  * [new tag]           0.0.96                  -> 0.0.96
+handle-success	Checkout code	2025-09-23T16:04:18.6024628Z  * [new tag]           0.0.97                  -> 0.0.97
+handle-success	Checkout code	2025-09-23T16:04:18.6025006Z  * [new tag]           0.0.98                  -> 0.0.98
+handle-success	Checkout code	2025-09-23T16:04:18.6025755Z  * [new tag]           0.0.99                  -> 0.0.99
+handle-success	Checkout code	2025-09-23T16:04:18.6026156Z  * [new tag]           0.1.0                   -> 0.1.0
+handle-success	Checkout code	2025-09-23T16:04:18.6026664Z  * [new tag]           0.1.1                   -> 0.1.1
+handle-success	Checkout code	2025-09-23T16:04:18.6027036Z  * [new tag]           0.2.0                   -> 0.2.0
+handle-success	Checkout code	2025-09-23T16:04:18.6027412Z  * [new tag]           0.3.0                   -> 0.3.0
+handle-success	Checkout code	2025-09-23T16:04:18.6027792Z  * [new tag]           0.3.1                   -> 0.3.1
+handle-success	Checkout code	2025-09-23T16:04:18.6028166Z  * [new tag]           0.3.10                  -> 0.3.10
+handle-success	Checkout code	2025-09-23T16:04:18.6028547Z  * [new tag]           0.3.11                  -> 0.3.11
+handle-success	Checkout code	2025-09-23T16:04:18.6028930Z  * [new tag]           0.3.12                  -> 0.3.12
+handle-success	Checkout code	2025-09-23T16:04:18.6029310Z  * [new tag]           0.3.13                  -> 0.3.13
+handle-success	Checkout code	2025-09-23T16:04:18.6029684Z  * [new tag]           0.3.14                  -> 0.3.14
+handle-success	Checkout code	2025-09-23T16:04:18.6030068Z  * [new tag]           0.3.15                  -> 0.3.15
+handle-success	Checkout code	2025-09-23T16:04:18.6030457Z  * [new tag]           0.3.16                  -> 0.3.16
+handle-success	Checkout code	2025-09-23T16:04:18.6030839Z  * [new tag]           0.3.17                  -> 0.3.17
+handle-success	Checkout code	2025-09-23T16:04:18.6031221Z  * [new tag]           0.3.2                   -> 0.3.2
+handle-success	Checkout code	2025-09-23T16:04:18.6031600Z  * [new tag]           0.3.3                   -> 0.3.3
+handle-success	Checkout code	2025-09-23T16:04:18.6031967Z  * [new tag]           0.3.4                   -> 0.3.4
+handle-success	Checkout code	2025-09-23T16:04:18.6032343Z  * [new tag]           0.3.5                   -> 0.3.5
+handle-success	Checkout code	2025-09-23T16:04:18.6032720Z  * [new tag]           0.3.6                   -> 0.3.6
+handle-success	Checkout code	2025-09-23T16:04:18.6033096Z  * [new tag]           0.3.7                   -> 0.3.7
+handle-success	Checkout code	2025-09-23T16:04:18.6033466Z  * [new tag]           0.3.8                   -> 0.3.8
+handle-success	Checkout code	2025-09-23T16:04:18.6033840Z  * [new tag]           0.3.9                   -> 0.3.9
+handle-success	Checkout code	2025-09-23T16:04:18.6034216Z  * [new tag]           0.4.0                   -> 0.4.0
+handle-success	Checkout code	2025-09-23T16:04:18.6034586Z  * [new tag]           0.4.1                   -> 0.4.1
+handle-success	Checkout code	2025-09-23T16:04:18.6034975Z  * [new tag]           0.4.2                   -> 0.4.2
+handle-success	Checkout code	2025-09-23T16:04:18.6035545Z  * [new tag]           0.4.3                   -> 0.4.3
+handle-success	Checkout code	2025-09-23T16:04:18.6036044Z  * [new tag]           0.4.4                   -> 0.4.4
+handle-success	Checkout code	2025-09-23T16:04:18.6036416Z  * [new tag]           0.4.5                   -> 0.4.5
+handle-success	Checkout code	2025-09-23T16:04:18.6036792Z  * [new tag]           0.4.6                   -> 0.4.6
+handle-success	Checkout code	2025-09-23T16:04:18.6234184Z [command]/usr/bin/git branch --list --remote origin/main
+handle-success	Checkout code	2025-09-23T16:04:18.6294875Z   origin/main
+handle-success	Checkout code	2025-09-23T16:04:18.6304666Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+handle-success	Checkout code	2025-09-23T16:04:18.6328558Z 3500adc1388ea2692784b73e359f59a9fe80f4b5
+handle-success	Checkout code	2025-09-23T16:04:18.6341509Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules origin +2472f129174a0427369a933745f4575d5510d79b:refs/remotes/origin/main
+handle-success	Checkout code	2025-09-23T16:04:18.6497092Z From https://github.com/Ka0s-Klaus/ka0s
+handle-success	Checkout code	2025-09-23T16:04:18.6498042Z  + 3500adc1...2472f129 2472f129174a0427369a933745f4575d5510d79b -> origin/main  (forced update)
+handle-success	Checkout code	2025-09-23T16:04:18.6526617Z ##[endgroup]
+handle-success	Checkout code	2025-09-23T16:04:18.6527361Z ##[group]Determining the checkout info
+handle-success	Checkout code	2025-09-23T16:04:18.6527947Z ##[endgroup]
+handle-success	Checkout code	2025-09-23T16:04:18.6533709Z [command]/usr/bin/git sparse-checkout disable
+handle-success	Checkout code	2025-09-23T16:04:18.6574821Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+handle-success	Checkout code	2025-09-23T16:04:18.6609114Z ##[group]Checking out the ref
+handle-success	Checkout code	2025-09-23T16:04:18.6613285Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+handle-success	Checkout code	2025-09-23T16:04:19.4059962Z Switched to a new branch 'main'
+handle-success	Checkout code	2025-09-23T16:04:19.4061694Z branch 'main' set up to track 'origin/main'.
+handle-success	Checkout code	2025-09-23T16:04:19.4175631Z ##[endgroup]
+handle-success	Checkout code	2025-09-23T16:04:19.4219628Z [command]/usr/bin/git log -1 --format=%H
+handle-success	Checkout code	2025-09-23T16:04:19.4247444Z 2472f129174a0427369a933745f4575d5510d79b
+handle-success	handle-success-execution	﻿2025-09-23T16:04:19.4551172Z ##[group]Run # RNNUMBER=$(echo "refs/heads/main" | grep -o '[0-9]*')
+handle-success	handle-success-execution	2025-09-23T16:04:19.4551739Z [36;1m# RNNUMBER=$(echo "refs/heads/main" | grep -o '[0-9]*')[0m
+handle-success	handle-success-execution	2025-09-23T16:04:19.4552531Z [36;1m# gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente 17951893865. El resultado está en el fichero core/results/event_data_17951893865.log"[0m
+handle-success	handle-success-execution	2025-09-23T16:04:19.4553532Z [36;1mecho "El proceso ha finalizado correctamente 17951893865. El resultado está en el fichero core/results/event_data_17951893865.log"[0m
+handle-success	handle-success-execution	2025-09-23T16:04:19.4567711Z shell: /usr/bin/bash -e {0}
+handle-success	handle-success-execution	2025-09-23T16:04:19.4567992Z env:
+handle-success	handle-success-execution	2025-09-23T16:04:19.4568662Z   GITHUB_TOKEN: ***
+handle-success	handle-success-execution	2025-09-23T16:04:19.4568889Z   KAOS_MODULE: [Ka0s] Delete Swarm Runners
+handle-success	handle-success-execution	2025-09-23T16:04:19.4569151Z   KAOS_CODE: 17951893865
+handle-success	handle-success-execution	2025-09-23T16:04:19.4569448Z   GH_TOKEN: ***
+handle-success	handle-success-execution	2025-09-23T16:04:19.4569636Z ##[endgroup]
+handle-success	handle-success-execution	2025-09-23T16:04:19.4627733Z El proceso ha finalizado correctamente 17951893865. El resultado está en el fichero core/results/event_data_17951893865.log
+handle-success	Post Checkout code	﻿2025-09-23T16:04:19.4751624Z Post job cleanup.
+handle-success	Post Checkout code	2025-09-23T16:04:19.5725059Z [command]/usr/bin/git version
+handle-success	Post Checkout code	2025-09-23T16:04:19.5764353Z git version 2.51.0
+handle-success	Post Checkout code	2025-09-23T16:04:19.5812858Z Temporarily overriding HOME='/home/runner/_work/_temp/10aeba7f-ce76-458e-9cf1-456c35c8e40f' before making global git config changes
+handle-success	Post Checkout code	2025-09-23T16:04:19.5813730Z Adding repository directory to the temporary git global config as a safe directory
+handle-success	Post Checkout code	2025-09-23T16:04:19.5819877Z [command]/usr/bin/git config --global --add safe.directory /home/runner/_work/ka0s/ka0s
+handle-success	Post Checkout code	2025-09-23T16:04:19.5857793Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+handle-success	Post Checkout code	2025-09-23T16:04:19.5895960Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+handle-success	Post Checkout code	2025-09-23T16:04:19.6145550Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+handle-success	Post Checkout code	2025-09-23T16:04:19.6170380Z http.https://github.com/.extraheader
+handle-success	Post Checkout code	2025-09-23T16:04:19.6183104Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+handle-success	Post Checkout code	2025-09-23T16:04:19.6216319Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+handle-success	Complete job	﻿2025-09-23T16:04:19.6594742Z Cleaning up orphan processes
+end-workflow	Set up job	﻿2025-09-23T16:04:50.8359267Z Current runner version: '2.328.0'
+end-workflow	Set up job	2025-09-23T16:04:50.8367009Z Runner name: '55966d8e4661'
+end-workflow	Set up job	2025-09-23T16:04:50.8368116Z Runner group name: 'swarm-runners'
+end-workflow	Set up job	2025-09-23T16:04:50.8369352Z Machine name: '55966d8e4661'
+end-workflow	Set up job	2025-09-23T16:04:50.8372238Z ##[group]GITHUB_TOKEN Permissions
+end-workflow	Set up job	2025-09-23T16:04:50.8374511Z Actions: write
+end-workflow	Set up job	2025-09-23T16:04:50.8375078Z Contents: read
+end-workflow	Set up job	2025-09-23T16:04:50.8376347Z Issues: write
+end-workflow	Set up job	2025-09-23T16:04:50.8377006Z Metadata: read
+end-workflow	Set up job	2025-09-23T16:04:50.8377532Z ##[endgroup]
+end-workflow	Set up job	2025-09-23T16:04:50.8380194Z Secret source: Actions
+end-workflow	Set up job	2025-09-23T16:04:50.8381251Z Prepare workflow directory
+end-workflow	Set up job	2025-09-23T16:04:50.8914235Z Prepare all required actions
+end-workflow	Set up job	2025-09-23T16:04:50.8951880Z Getting action download info
+end-workflow	Set up job	2025-09-23T16:04:51.4990487Z Download action repository 'actions/checkout@v4' (SHA:08eba0b27e820071cde6df949e0beb9ba4906955)
+end-workflow	Set up job	2025-09-23T16:04:52.3730163Z Complete job name: end-workflow
+end-workflow	Checkout code	﻿2025-09-23T16:04:52.4233623Z ##[group]Run actions/checkout@v4
+end-workflow	Checkout code	2025-09-23T16:04:52.4234510Z with:
+end-workflow	Checkout code	2025-09-23T16:04:52.4234952Z   fetch-depth: 0
+end-workflow	Checkout code	2025-09-23T16:04:52.4235818Z   token: ***
+end-workflow	Checkout code	2025-09-23T16:04:52.4236216Z   repository: Ka0s-Klaus/ka0s
+end-workflow	Checkout code	2025-09-23T16:04:52.4236671Z   ssh-strict: true
+end-workflow	Checkout code	2025-09-23T16:04:52.4237058Z   ssh-user: git
+end-workflow	Checkout code	2025-09-23T16:04:52.4237453Z   persist-credentials: true
+end-workflow	Checkout code	2025-09-23T16:04:52.4237890Z   clean: true
+end-workflow	Checkout code	2025-09-23T16:04:52.4238286Z   sparse-checkout-cone-mode: true
+end-workflow	Checkout code	2025-09-23T16:04:52.4238757Z   fetch-tags: false
+end-workflow	Checkout code	2025-09-23T16:04:52.4239152Z   show-progress: true
+end-workflow	Checkout code	2025-09-23T16:04:52.4239545Z   lfs: false
+end-workflow	Checkout code	2025-09-23T16:04:52.4239905Z   submodules: false
+end-workflow	Checkout code	2025-09-23T16:04:52.4240310Z   set-safe-directory: true
+end-workflow	Checkout code	2025-09-23T16:04:52.4240980Z env:
+end-workflow	Checkout code	2025-09-23T16:04:52.4241527Z   GITHUB_TOKEN: ***
+end-workflow	Checkout code	2025-09-23T16:04:52.4241952Z   KAOS_MODULE: [Ka0s] Delete Swarm Runners
+end-workflow	Checkout code	2025-09-23T16:04:52.4242461Z   KAOS_CODE: 17951893865
+end-workflow	Checkout code	2025-09-23T16:04:52.4242984Z   GH_TOKEN: ***
+end-workflow	Checkout code	2025-09-23T16:04:52.4243355Z ##[endgroup]
+end-workflow	Checkout code	2025-09-23T16:04:52.5421092Z Syncing repository: Ka0s-Klaus/ka0s
+end-workflow	Checkout code	2025-09-23T16:04:52.5423162Z ##[group]Getting Git version info
+end-workflow	Checkout code	2025-09-23T16:04:52.5423821Z Working directory is '/home/runner/_work/ka0s/ka0s'
+end-workflow	Checkout code	2025-09-23T16:04:52.5424673Z [command]/usr/bin/git version
+end-workflow	Checkout code	2025-09-23T16:04:52.5425221Z git version 2.51.0
+end-workflow	Checkout code	2025-09-23T16:04:52.5449059Z ##[endgroup]
+end-workflow	Checkout code	2025-09-23T16:04:52.5465950Z Temporarily overriding HOME='/home/runner/_work/_temp/44c022eb-83aa-4441-885f-7a715b87f73a' before making global git config changes
+end-workflow	Checkout code	2025-09-23T16:04:52.5467526Z Adding repository directory to the temporary git global config as a safe directory
+end-workflow	Checkout code	2025-09-23T16:04:52.5472708Z [command]/usr/bin/git config --global --add safe.directory /home/runner/_work/ka0s/ka0s
+end-workflow	Checkout code	2025-09-23T16:04:52.5510934Z Deleting the contents of '/home/runner/_work/ka0s/ka0s'
+end-workflow	Checkout code	2025-09-23T16:04:52.5514933Z ##[group]Initializing the repository
+end-workflow	Checkout code	2025-09-23T16:04:52.5519752Z [command]/usr/bin/git init /home/runner/_work/ka0s/ka0s
+end-workflow	Checkout code	2025-09-23T16:04:52.5563576Z hint: Using 'master' as the name for the initial branch. This default branch name
+end-workflow	Checkout code	2025-09-23T16:04:52.5564770Z hint: is subject to change. To configure the initial branch name to use in all
+end-workflow	Checkout code	2025-09-23T16:04:52.5565940Z hint: of your new repositories, which will suppress this warning, call:
+end-workflow	Checkout code	2025-09-23T16:04:52.5567027Z hint:
+end-workflow	Checkout code	2025-09-23T16:04:52.5567625Z hint: 	git config --global init.defaultBranch <name>
+end-workflow	Checkout code	2025-09-23T16:04:52.5568190Z hint:
+end-workflow	Checkout code	2025-09-23T16:04:52.5568728Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+end-workflow	Checkout code	2025-09-23T16:04:52.5569975Z hint: 'development'. The just-created branch can be renamed via this command:
+end-workflow	Checkout code	2025-09-23T16:04:52.5571053Z hint:
+end-workflow	Checkout code	2025-09-23T16:04:52.5571432Z hint: 	git branch -m <name>
+end-workflow	Checkout code	2025-09-23T16:04:52.5571883Z hint:
+end-workflow	Checkout code	2025-09-23T16:04:52.5572468Z hint: Disable this message with "git config set advice.defaultBranchName false"
+end-workflow	Checkout code	2025-09-23T16:04:52.5573441Z Initialized empty Git repository in /home/runner/_work/ka0s/ka0s/.git/
+end-workflow	Checkout code	2025-09-23T16:04:52.5577615Z [command]/usr/bin/git remote add origin https://github.com/Ka0s-Klaus/ka0s
+end-workflow	Checkout code	2025-09-23T16:04:52.5616591Z ##[endgroup]
+end-workflow	Checkout code	2025-09-23T16:04:52.5617942Z ##[group]Disabling automatic garbage collection
+end-workflow	Checkout code	2025-09-23T16:04:52.5618632Z [command]/usr/bin/git config --local gc.auto 0
+end-workflow	Checkout code	2025-09-23T16:04:52.5650732Z ##[endgroup]
+end-workflow	Checkout code	2025-09-23T16:04:52.5651566Z ##[group]Setting up auth
+end-workflow	Checkout code	2025-09-23T16:04:52.5658903Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+end-workflow	Checkout code	2025-09-23T16:04:52.5695042Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+end-workflow	Checkout code	2025-09-23T16:04:52.5947638Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+end-workflow	Checkout code	2025-09-23T16:04:52.5980572Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+end-workflow	Checkout code	2025-09-23T16:04:52.6234443Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+end-workflow	Checkout code	2025-09-23T16:04:52.6277862Z ##[endgroup]
+end-workflow	Checkout code	2025-09-23T16:04:52.6278802Z ##[group]Fetching the repository
+end-workflow	Checkout code	2025-09-23T16:04:52.6286268Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+end-workflow	Checkout code	2025-09-23T16:05:02.0042126Z From https://github.com/Ka0s-Klaus/ka0s
+end-workflow	Checkout code	2025-09-23T16:05:02.0044209Z  * [new branch]        F1149-desarrollo-de-orchestrator -> origin/F1149-desarrollo-de-orchestrator
+end-workflow	Checkout code	2025-09-23T16:05:02.0047263Z  * [new branch]        F1183-personalización-módulo-finops -> origin/F1183-personalización-módulo-finops
+end-workflow	Checkout code	2025-09-23T16:05:02.0049723Z  * [new branch]        F1224-new-module-mongodb -> origin/F1224-new-module-mongodb
+end-workflow	Checkout code	2025-09-23T16:05:02.0067245Z  * [new branch]        F220-web-de-resultados  -> origin/F220-web-de-resultados
+end-workflow	Checkout code	2025-09-23T16:05:02.0070105Z  * [new branch]        F227-despliegue-de-kube-independiente-del-clouder -> origin/F227-despliegue-de-kube-independiente-del-clouder
+end-workflow	Checkout code	2025-09-23T16:05:02.0073481Z  * [new branch]        F329-documentacion-metodologia-de-kaos -> origin/F329-documentacion-metodologia-de-kaos
+end-workflow	Checkout code	2025-09-23T16:05:02.0076429Z  * [new branch]        F44-creación-módulo-versionado -> origin/F44-creación-módulo-versionado
+end-workflow	Checkout code	2025-09-23T16:05:02.0078812Z  * [new branch]        H1128-módulo-de-observabilidad -> origin/H1128-módulo-de-observabilidad
+end-workflow	Checkout code	2025-09-23T16:05:02.0081344Z  * [new branch]        H1139-como-instalar-arc-control -> origin/H1139-como-instalar-arc-control
+end-workflow	Checkout code	2025-09-23T16:05:02.0083799Z  * [new branch]        H1149-desarrollo-de-orchestrator -> origin/H1149-desarrollo-de-orchestrator
+end-workflow	Checkout code	2025-09-23T16:05:02.0086526Z  * [new branch]        H1150-desarrollo-de-secciones -> origin/H1150-desarrollo-de-secciones
+end-workflow	Checkout code	2025-09-23T16:05:02.0120434Z  * [new branch]        H1151-desarrollo-de-secciones-ii -> origin/H1151-desarrollo-de-secciones-ii
+end-workflow	Checkout code	2025-09-23T16:05:02.0124356Z  * [new branch]        H1152-desarrollo-inicio -> origin/H1152-desarrollo-inicio
+end-workflow	Checkout code	2025-09-23T16:05:02.0127828Z  * [new branch]        H1183-personalización-módulo-finops -> origin/H1183-personalización-módulo-finops
+end-workflow	Checkout code	2025-09-23T16:05:02.0130501Z  * [new branch]        H1193-ejemplo-web-documentacion -> origin/H1193-ejemplo-web-documentacion
+end-workflow	Checkout code	2025-09-23T16:05:02.0132779Z  * [new branch]        H1205-web-creation      -> origin/H1205-web-creation
+end-workflow	Checkout code	2025-09-23T16:05:02.0134702Z  * [new branch]        H1224-new-module-mongodb -> origin/H1224-new-module-mongodb
+end-workflow	Checkout code	2025-09-23T16:05:02.0137101Z  * [new branch]        H1410-modulo-execution  -> origin/H1410-modulo-execution
+end-workflow	Checkout code	2025-09-23T16:05:02.0141154Z  * [new branch]        H1514-new-swarm-deployment-stack-with-actions-runners-autoscale -> origin/H1514-new-swarm-deployment-stack-with-actions-runners-autoscale
+end-workflow	Checkout code	2025-09-23T16:05:02.0144946Z  * [new branch]        H215-modulo-de-summary  -> origin/H215-modulo-de-summary
+end-workflow	Checkout code	2025-09-23T16:05:02.0147182Z  * [new branch]        H220-web-de-resultados  -> origin/H220-web-de-resultados
+end-workflow	Checkout code	2025-09-23T16:05:02.0150727Z  * [new branch]        H227-despliegue-de-kube-independiente-del-clouder -> origin/H227-despliegue-de-kube-independiente-del-clouder
+end-workflow	Checkout code	2025-09-23T16:05:02.0154289Z  * [new branch]        H306-ficheros-de-estadisticas -> origin/H306-ficheros-de-estadisticas
+end-workflow	Checkout code	2025-09-23T16:05:02.0157548Z  * [new branch]        H328-documentacion-modulo-principal-de-kaos -> origin/H328-documentacion-modulo-principal-de-kaos
+end-workflow	Checkout code	2025-09-23T16:05:02.0161238Z  * [new branch]        H329-documentacion-metodologia-de-kaos -> origin/H329-documentacion-metodologia-de-kaos
+end-workflow	Checkout code	2025-09-23T16:05:02.0164850Z  * [new branch]        H338-relanzador-de-jobs-en-caso-de-pattern -> origin/H338-relanzador-de-jobs-en-caso-de-pattern
+end-workflow	Checkout code	2025-09-23T16:05:02.0168972Z  * [new branch]        H38-documentacion-basica-del-proyecto -> origin/H38-documentacion-basica-del-proyecto
+end-workflow	Checkout code	2025-09-23T16:05:02.0172204Z  * [new branch]        H44-creación-módulo-versionado -> origin/H44-creación-módulo-versionado
+end-workflow	Checkout code	2025-09-23T16:05:02.0175445Z  * [new branch]        RN1149-desarrollo-de-orchestrator -> origin/RN1149-desarrollo-de-orchestrator
+end-workflow	Checkout code	2025-09-23T16:05:02.0178590Z  * [new branch]        RN1183-personalización-módulo-finops -> origin/RN1183-personalización-módulo-finops
+end-workflow	Checkout code	2025-09-23T16:05:02.0182575Z  * [new branch]        RN1282-ka0s-error-detected-in-ka0s-workflow-statistics-summary -> origin/RN1282-ka0s-error-detected-in-ka0s-workflow-statistics-summary
+end-workflow	Checkout code	2025-09-23T16:05:02.0186256Z  * [new branch]        RN220-web-de-resultados -> origin/RN220-web-de-resultados
+end-workflow	Checkout code	2025-09-23T16:05:02.0189415Z  * [new branch]        RN227-despliegue-de-kube-independiente-del-clouder -> origin/RN227-despliegue-de-kube-independiente-del-clouder
+end-workflow	Checkout code	2025-09-23T16:05:02.0193192Z  * [new branch]        RN329-documentacion-metodologia-de-kaos -> origin/RN329-documentacion-metodologia-de-kaos
+end-workflow	Checkout code	2025-09-23T16:05:02.0195766Z  * [new branch]        main                    -> origin/main
+end-workflow	Checkout code	2025-09-23T16:05:02.0197373Z  * [new tag]           0.0.0                   -> 0.0.0
+end-workflow	Checkout code	2025-09-23T16:05:02.0198762Z  * [new tag]           0.0.1                   -> 0.0.1
+end-workflow	Checkout code	2025-09-23T16:05:02.0200164Z  * [new tag]           0.0.10                  -> 0.0.10
+end-workflow	Checkout code	2025-09-23T16:05:02.0201813Z  * [new tag]           0.0.100                 -> 0.0.100
+end-workflow	Checkout code	2025-09-23T16:05:02.0203199Z  * [new tag]           0.0.101                 -> 0.0.101
+end-workflow	Checkout code	2025-09-23T16:05:02.0204569Z  * [new tag]           0.0.102                 -> 0.0.102
+end-workflow	Checkout code	2025-09-23T16:05:02.0206521Z  * [new tag]           0.0.103                 -> 0.0.103
+end-workflow	Checkout code	2025-09-23T16:05:02.0207904Z  * [new tag]           0.0.104                 -> 0.0.104
+end-workflow	Checkout code	2025-09-23T16:05:02.0209280Z  * [new tag]           0.0.105                 -> 0.0.105
+end-workflow	Checkout code	2025-09-23T16:05:02.0210672Z  * [new tag]           0.0.106                 -> 0.0.106
+end-workflow	Checkout code	2025-09-23T16:05:02.0212153Z  * [new tag]           0.0.107                 -> 0.0.107
+end-workflow	Checkout code	2025-09-23T16:05:02.0213491Z  * [new tag]           0.0.108                 -> 0.0.108
+end-workflow	Checkout code	2025-09-23T16:05:02.0214842Z  * [new tag]           0.0.109                 -> 0.0.109
+end-workflow	Checkout code	2025-09-23T16:05:02.0216676Z  * [new tag]           0.0.11                  -> 0.0.11
+end-workflow	Checkout code	2025-09-23T16:05:02.0217979Z  * [new tag]           0.0.110                 -> 0.0.110
+end-workflow	Checkout code	2025-09-23T16:05:02.0219259Z  * [new tag]           0.0.111                 -> 0.0.111
+end-workflow	Checkout code	2025-09-23T16:05:02.0220556Z  * [new tag]           0.0.112                 -> 0.0.112
+end-workflow	Checkout code	2025-09-23T16:05:02.0221834Z  * [new tag]           0.0.113                 -> 0.0.113
+end-workflow	Checkout code	2025-09-23T16:05:02.0223127Z  * [new tag]           0.0.114                 -> 0.0.114
+end-workflow	Checkout code	2025-09-23T16:05:02.0224420Z  * [new tag]           0.0.115                 -> 0.0.115
+end-workflow	Checkout code	2025-09-23T16:05:02.0226164Z  * [new tag]           0.0.116                 -> 0.0.116
+end-workflow	Checkout code	2025-09-23T16:05:02.0227559Z  * [new tag]           0.0.117                 -> 0.0.117
+end-workflow	Checkout code	2025-09-23T16:05:02.0228803Z  * [new tag]           0.0.118                 -> 0.0.118
+end-workflow	Checkout code	2025-09-23T16:05:02.0230054Z  * [new tag]           0.0.119                 -> 0.0.119
+end-workflow	Checkout code	2025-09-23T16:05:02.0231335Z  * [new tag]           0.0.12                  -> 0.0.12
+end-workflow	Checkout code	2025-09-23T16:05:02.0232803Z  * [new tag]           0.0.120                 -> 0.0.120
+end-workflow	Checkout code	2025-09-23T16:05:02.0234049Z  * [new tag]           0.0.121                 -> 0.0.121
+end-workflow	Checkout code	2025-09-23T16:05:02.0235490Z  * [new tag]           0.0.122                 -> 0.0.122
+end-workflow	Checkout code	2025-09-23T16:05:02.0236868Z  * [new tag]           0.0.123                 -> 0.0.123
+end-workflow	Checkout code	2025-09-23T16:05:02.0238150Z  * [new tag]           0.0.124                 -> 0.0.124
+end-workflow	Checkout code	2025-09-23T16:05:02.0239429Z  * [new tag]           0.0.125                 -> 0.0.125
+end-workflow	Checkout code	2025-09-23T16:05:02.0240686Z  * [new tag]           0.0.126                 -> 0.0.126
+end-workflow	Checkout code	2025-09-23T16:05:02.0241931Z  * [new tag]           0.0.127                 -> 0.0.127
+end-workflow	Checkout code	2025-09-23T16:05:02.0243177Z  * [new tag]           0.0.128                 -> 0.0.128
+end-workflow	Checkout code	2025-09-23T16:05:02.0244427Z  * [new tag]           0.0.129                 -> 0.0.129
+end-workflow	Checkout code	2025-09-23T16:05:02.0246257Z  * [new tag]           0.0.13                  -> 0.0.13
+end-workflow	Checkout code	2025-09-23T16:05:02.0247692Z  * [new tag]           0.0.130                 -> 0.0.130
+end-workflow	Checkout code	2025-09-23T16:05:02.0248951Z  * [new tag]           0.0.131                 -> 0.0.131
+end-workflow	Checkout code	2025-09-23T16:05:02.0250194Z  * [new tag]           0.0.132                 -> 0.0.132
+end-workflow	Checkout code	2025-09-23T16:05:02.0251445Z  * [new tag]           0.0.133                 -> 0.0.133
+end-workflow	Checkout code	2025-09-23T16:05:02.0252686Z  * [new tag]           0.0.134                 -> 0.0.134
+end-workflow	Checkout code	2025-09-23T16:05:02.0254192Z  * [new tag]           0.0.135                 -> 0.0.135
+end-workflow	Checkout code	2025-09-23T16:05:02.0255745Z  * [new tag]           0.0.136                 -> 0.0.136
+end-workflow	Checkout code	2025-09-23T16:05:02.0257001Z  * [new tag]           0.0.137                 -> 0.0.137
+end-workflow	Checkout code	2025-09-23T16:05:02.0258242Z  * [new tag]           0.0.138                 -> 0.0.138
+end-workflow	Checkout code	2025-09-23T16:05:02.0259480Z  * [new tag]           0.0.139                 -> 0.0.139
+end-workflow	Checkout code	2025-09-23T16:05:02.0260736Z  * [new tag]           0.0.14                  -> 0.0.14
+end-workflow	Checkout code	2025-09-23T16:05:02.0261969Z  * [new tag]           0.0.140                 -> 0.0.140
+end-workflow	Checkout code	2025-09-23T16:05:02.0263221Z  * [new tag]           0.0.141                 -> 0.0.141
+end-workflow	Checkout code	2025-09-23T16:05:02.0264464Z  * [new tag]           0.0.142                 -> 0.0.142
+end-workflow	Checkout code	2025-09-23T16:05:02.0266285Z  * [new tag]           0.0.143                 -> 0.0.143
+end-workflow	Checkout code	2025-09-23T16:05:02.0267522Z  * [new tag]           0.0.144                 -> 0.0.144
+end-workflow	Checkout code	2025-09-23T16:05:02.0268753Z  * [new tag]           0.0.145                 -> 0.0.145
+end-workflow	Checkout code	2025-09-23T16:05:02.0269988Z  * [new tag]           0.0.146                 -> 0.0.146
+end-workflow	Checkout code	2025-09-23T16:05:02.0271242Z  * [new tag]           0.0.147                 -> 0.0.147
+end-workflow	Checkout code	2025-09-23T16:05:02.0272475Z  * [new tag]           0.0.148                 -> 0.0.148
+end-workflow	Checkout code	2025-09-23T16:05:02.0273702Z  * [new tag]           0.0.149                 -> 0.0.149
+end-workflow	Checkout code	2025-09-23T16:05:02.0274926Z  * [new tag]           0.0.15                  -> 0.0.15
+end-workflow	Checkout code	2025-09-23T16:05:02.0276482Z  * [new tag]           0.0.150                 -> 0.0.150
+end-workflow	Checkout code	2025-09-23T16:05:02.0277698Z  * [new tag]           0.0.151                 -> 0.0.151
+end-workflow	Checkout code	2025-09-23T16:05:02.0278930Z  * [new tag]           0.0.152                 -> 0.0.152
+end-workflow	Checkout code	2025-09-23T16:05:02.0280170Z  * [new tag]           0.0.153                 -> 0.0.153
+end-workflow	Checkout code	2025-09-23T16:05:02.0281385Z  * [new tag]           0.0.154                 -> 0.0.154
+end-workflow	Checkout code	2025-09-23T16:05:02.0282589Z  * [new tag]           0.0.155                 -> 0.0.155
+end-workflow	Checkout code	2025-09-23T16:05:02.0283774Z  * [new tag]           0.0.156                 -> 0.0.156
+end-workflow	Checkout code	2025-09-23T16:05:02.0284964Z  * [new tag]           0.0.157                 -> 0.0.157
+end-workflow	Checkout code	2025-09-23T16:05:02.0286603Z  * [new tag]           0.0.158                 -> 0.0.158
+end-workflow	Checkout code	2025-09-23T16:05:02.0287799Z  * [new tag]           0.0.159                 -> 0.0.159
+end-workflow	Checkout code	2025-09-23T16:05:02.0288983Z  * [new tag]           0.0.16                  -> 0.0.16
+end-workflow	Checkout code	2025-09-23T16:05:02.0290157Z  * [new tag]           0.0.160                 -> 0.0.160
+end-workflow	Checkout code	2025-09-23T16:05:02.0291341Z  * [new tag]           0.0.161                 -> 0.0.161
+end-workflow	Checkout code	2025-09-23T16:05:02.0292518Z  * [new tag]           0.0.162                 -> 0.0.162
+end-workflow	Checkout code	2025-09-23T16:05:02.0294020Z  * [new tag]           0.0.163                 -> 0.0.163
+end-workflow	Checkout code	2025-09-23T16:05:02.0295422Z  * [new tag]           0.0.164                 -> 0.0.164
+end-workflow	Checkout code	2025-09-23T16:05:02.0296873Z  * [new tag]           0.0.165                 -> 0.0.165
+end-workflow	Checkout code	2025-09-23T16:05:02.0298046Z  * [new tag]           0.0.166                 -> 0.0.166
+end-workflow	Checkout code	2025-09-23T16:05:02.0299209Z  * [new tag]           0.0.167                 -> 0.0.167
+end-workflow	Checkout code	2025-09-23T16:05:02.0300372Z  * [new tag]           0.0.168                 -> 0.0.168
+end-workflow	Checkout code	2025-09-23T16:05:02.0301527Z  * [new tag]           0.0.169                 -> 0.0.169
+end-workflow	Checkout code	2025-09-23T16:05:02.0302679Z  * [new tag]           0.0.17                  -> 0.0.17
+end-workflow	Checkout code	2025-09-23T16:05:02.0303828Z  * [new tag]           0.0.170                 -> 0.0.170
+end-workflow	Checkout code	2025-09-23T16:05:02.0304975Z  * [new tag]           0.0.171                 -> 0.0.171
+end-workflow	Checkout code	2025-09-23T16:05:02.0306444Z  * [new tag]           0.0.172                 -> 0.0.172
+end-workflow	Checkout code	2025-09-23T16:05:02.0307745Z  * [new tag]           0.0.173                 -> 0.0.173
+end-workflow	Checkout code	2025-09-23T16:05:02.0308917Z  * [new tag]           0.0.174                 -> 0.0.174
+end-workflow	Checkout code	2025-09-23T16:05:02.0310055Z  * [new tag]           0.0.175                 -> 0.0.175
+end-workflow	Checkout code	2025-09-23T16:05:02.0311199Z  * [new tag]           0.0.176                 -> 0.0.176
+end-workflow	Checkout code	2025-09-23T16:05:02.0312338Z  * [new tag]           0.0.177                 -> 0.0.177
+end-workflow	Checkout code	2025-09-23T16:05:02.0313476Z  * [new tag]           0.0.178                 -> 0.0.178
+end-workflow	Checkout code	2025-09-23T16:05:02.0314617Z  * [new tag]           0.0.179                 -> 0.0.179
+end-workflow	Checkout code	2025-09-23T16:05:02.0316067Z  * [new tag]           0.0.18                  -> 0.0.18
+end-workflow	Checkout code	2025-09-23T16:05:02.0317209Z  * [new tag]           0.0.19                  -> 0.0.19
+end-workflow	Checkout code	2025-09-23T16:05:02.0318334Z  * [new tag]           0.0.2                   -> 0.0.2
+end-workflow	Checkout code	2025-09-23T16:05:02.0319454Z  * [new tag]           0.0.20                  -> 0.0.20
+end-workflow	Checkout code	2025-09-23T16:05:02.0320592Z  * [new tag]           0.0.21                  -> 0.0.21
+end-workflow	Checkout code	2025-09-23T16:05:02.0321744Z  * [new tag]           0.0.22                  -> 0.0.22
+end-workflow	Checkout code	2025-09-23T16:05:02.0322889Z  * [new tag]           0.0.23                  -> 0.0.23
+end-workflow	Checkout code	2025-09-23T16:05:02.0324028Z  * [new tag]           0.0.24                  -> 0.0.24
+end-workflow	Checkout code	2025-09-23T16:05:02.0325228Z  * [new tag]           0.0.25                  -> 0.0.25
+end-workflow	Checkout code	2025-09-23T16:05:02.0326639Z  * [new tag]           0.0.26                  -> 0.0.26
+end-workflow	Checkout code	2025-09-23T16:05:02.0327775Z  * [new tag]           0.0.27                  -> 0.0.27
+end-workflow	Checkout code	2025-09-23T16:05:02.0328915Z  * [new tag]           0.0.28                  -> 0.0.28
+end-workflow	Checkout code	2025-09-23T16:05:02.0330046Z  * [new tag]           0.0.29                  -> 0.0.29
+end-workflow	Checkout code	2025-09-23T16:05:02.0331173Z  * [new tag]           0.0.3                   -> 0.0.3
+end-workflow	Checkout code	2025-09-23T16:05:02.0332304Z  * [new tag]           0.0.30                  -> 0.0.30
+end-workflow	Checkout code	2025-09-23T16:05:02.0333447Z  * [new tag]           0.0.31                  -> 0.0.31
+end-workflow	Checkout code	2025-09-23T16:05:02.0334593Z  * [new tag]           0.0.32                  -> 0.0.32
+end-workflow	Checkout code	2025-09-23T16:05:02.0336195Z  * [new tag]           0.0.33                  -> 0.0.33
+end-workflow	Checkout code	2025-09-23T16:05:02.0337338Z  * [new tag]           0.0.34                  -> 0.0.34
+end-workflow	Checkout code	2025-09-23T16:05:02.0338476Z  * [new tag]           0.0.35                  -> 0.0.35
+end-workflow	Checkout code	2025-09-23T16:05:02.0339608Z  * [new tag]           0.0.36                  -> 0.0.36
+end-workflow	Checkout code	2025-09-23T16:05:02.0340737Z  * [new tag]           0.0.37                  -> 0.0.37
+end-workflow	Checkout code	2025-09-23T16:05:02.0341874Z  * [new tag]           0.0.38                  -> 0.0.38
+end-workflow	Checkout code	2025-09-23T16:05:02.0343011Z  * [new tag]           0.0.39                  -> 0.0.39
+end-workflow	Checkout code	2025-09-23T16:05:02.0344142Z  * [new tag]           0.0.4                   -> 0.0.4
+end-workflow	Checkout code	2025-09-23T16:05:02.0345469Z  * [new tag]           0.0.40                  -> 0.0.40
+end-workflow	Checkout code	2025-09-23T16:05:02.0346878Z  * [new tag]           0.0.41                  -> 0.0.41
+end-workflow	Checkout code	2025-09-23T16:05:02.0348012Z  * [new tag]           0.0.42                  -> 0.0.42
+end-workflow	Checkout code	2025-09-23T16:05:02.0349140Z  * [new tag]           0.0.43                  -> 0.0.43
+end-workflow	Checkout code	2025-09-23T16:05:02.0350288Z  * [new tag]           0.0.44                  -> 0.0.44
+end-workflow	Checkout code	2025-09-23T16:05:02.0351589Z  * [new tag]           0.0.45                  -> 0.0.45
+end-workflow	Checkout code	2025-09-23T16:05:02.0352723Z  * [new tag]           0.0.46                  -> 0.0.46
+end-workflow	Checkout code	2025-09-23T16:05:02.0353866Z  * [new tag]           0.0.47                  -> 0.0.47
+end-workflow	Checkout code	2025-09-23T16:05:02.0354999Z  * [new tag]           0.0.48                  -> 0.0.48
+end-workflow	Checkout code	2025-09-23T16:05:02.0356444Z  * [new tag]           0.0.49                  -> 0.0.49
+end-workflow	Checkout code	2025-09-23T16:05:02.0357576Z  * [new tag]           0.0.5                   -> 0.0.5
+end-workflow	Checkout code	2025-09-23T16:05:02.0358709Z  * [new tag]           0.0.50                  -> 0.0.50
+end-workflow	Checkout code	2025-09-23T16:05:02.0359846Z  * [new tag]           0.0.51                  -> 0.0.51
+end-workflow	Checkout code	2025-09-23T16:05:02.0360989Z  * [new tag]           0.0.52                  -> 0.0.52
+end-workflow	Checkout code	2025-09-23T16:05:02.0362291Z  * [new tag]           0.0.53                  -> 0.0.53
+end-workflow	Checkout code	2025-09-23T16:05:02.0363552Z  * [new tag]           0.0.54                  -> 0.0.54
+end-workflow	Checkout code	2025-09-23T16:05:02.0364856Z  * [new tag]           0.0.55                  -> 0.0.55
+end-workflow	Checkout code	2025-09-23T16:05:02.0366625Z  * [new tag]           0.0.56                  -> 0.0.56
+end-workflow	Checkout code	2025-09-23T16:05:02.0367931Z  * [new tag]           0.0.57                  -> 0.0.57
+end-workflow	Checkout code	2025-09-23T16:05:02.0369088Z  * [new tag]           0.0.58                  -> 0.0.58
+end-workflow	Checkout code	2025-09-23T16:05:02.0370246Z  * [new tag]           0.0.59                  -> 0.0.59
+end-workflow	Checkout code	2025-09-23T16:05:02.0371410Z  * [new tag]           0.0.6                   -> 0.0.6
+end-workflow	Checkout code	2025-09-23T16:05:02.0372576Z  * [new tag]           0.0.60                  -> 0.0.60
+end-workflow	Checkout code	2025-09-23T16:05:02.0373736Z  * [new tag]           0.0.61                  -> 0.0.61
+end-workflow	Checkout code	2025-09-23T16:05:02.0374916Z  * [new tag]           0.0.62                  -> 0.0.62
+end-workflow	Checkout code	2025-09-23T16:05:02.0376404Z  * [new tag]           0.0.63                  -> 0.0.63
+end-workflow	Checkout code	2025-09-23T16:05:02.0377687Z  * [new tag]           0.0.64                  -> 0.0.64
+end-workflow	Checkout code	2025-09-23T16:05:02.0378825Z  * [new tag]           0.0.65                  -> 0.0.65
+end-workflow	Checkout code	2025-09-23T16:05:02.0379967Z  * [new tag]           0.0.66                  -> 0.0.66
+end-workflow	Checkout code	2025-09-23T16:05:02.0381115Z  * [new tag]           0.0.67                  -> 0.0.67
+end-workflow	Checkout code	2025-09-23T16:05:02.0382414Z  * [new tag]           0.0.68                  -> 0.0.68
+end-workflow	Checkout code	2025-09-23T16:05:02.0383583Z  * [new tag]           0.0.69                  -> 0.0.69
+end-workflow	Checkout code	2025-09-23T16:05:02.0384937Z  * [new tag]           0.0.7                   -> 0.0.7
+end-workflow	Checkout code	2025-09-23T16:05:02.0386388Z  * [new tag]           0.0.70                  -> 0.0.70
+end-workflow	Checkout code	2025-09-23T16:05:02.0387816Z  * [new tag]           0.0.71                  -> 0.0.71
+end-workflow	Checkout code	2025-09-23T16:05:02.0389002Z  * [new tag]           0.0.72                  -> 0.0.72
+end-workflow	Checkout code	2025-09-23T16:05:02.0390135Z  * [new tag]           0.0.73                  -> 0.0.73
+end-workflow	Checkout code	2025-09-23T16:05:02.0391280Z  * [new tag]           0.0.74                  -> 0.0.74
+end-workflow	Checkout code	2025-09-23T16:05:02.0392439Z  * [new tag]           0.0.75                  -> 0.0.75
+end-workflow	Checkout code	2025-09-23T16:05:02.0393763Z  * [new tag]           0.0.76                  -> 0.0.76
+end-workflow	Checkout code	2025-09-23T16:05:02.0395225Z  * [new tag]           0.0.77                  -> 0.0.77
+end-workflow	Checkout code	2025-09-23T16:05:02.0396506Z  * [new tag]           0.0.78                  -> 0.0.78
+end-workflow	Checkout code	2025-09-23T16:05:02.0397861Z  * [new tag]           0.0.79                  -> 0.0.79
+end-workflow	Checkout code	2025-09-23T16:05:02.0399002Z  * [new tag]           0.0.8                   -> 0.0.8
+end-workflow	Checkout code	2025-09-23T16:05:02.0400320Z  * [new tag]           0.0.80                  -> 0.0.80
+end-workflow	Checkout code	2025-09-23T16:05:02.0401750Z  * [new tag]           0.0.81                  -> 0.0.81
+end-workflow	Checkout code	2025-09-23T16:05:02.0403497Z  * [new tag]           0.0.82                  -> 0.0.82
+end-workflow	Checkout code	2025-09-23T16:05:02.0404694Z  * [new tag]           0.0.83                  -> 0.0.83
+end-workflow	Checkout code	2025-09-23T16:05:02.0406312Z  * [new tag]           0.0.84                  -> 0.0.84
+end-workflow	Checkout code	2025-09-23T16:05:02.0407460Z  * [new tag]           0.0.85                  -> 0.0.85
+end-workflow	Checkout code	2025-09-23T16:05:02.0408592Z  * [new tag]           0.0.86                  -> 0.0.86
+end-workflow	Checkout code	2025-09-23T16:05:02.0410025Z  * [new tag]           0.0.87                  -> 0.0.87
+end-workflow	Checkout code	2025-09-23T16:05:02.0411443Z  * [new tag]           0.0.88                  -> 0.0.88
+end-workflow	Checkout code	2025-09-23T16:05:02.0412582Z  * [new tag]           0.0.89                  -> 0.0.89
+end-workflow	Checkout code	2025-09-23T16:05:02.0413687Z  * [new tag]           0.0.9                   -> 0.0.9
+end-workflow	Checkout code	2025-09-23T16:05:02.0414949Z  * [new tag]           0.0.90                  -> 0.0.90
+end-workflow	Checkout code	2025-09-23T16:05:02.0416452Z  * [new tag]           0.0.91                  -> 0.0.91
+end-workflow	Checkout code	2025-09-23T16:05:02.0417616Z  * [new tag]           0.0.92                  -> 0.0.92
+end-workflow	Checkout code	2025-09-23T16:05:02.0418880Z  * [new tag]           0.0.93                  -> 0.0.93
+end-workflow	Checkout code	2025-09-23T16:05:02.0420006Z  * [new tag]           0.0.94                  -> 0.0.94
+end-workflow	Checkout code	2025-09-23T16:05:02.0421121Z  * [new tag]           0.0.95                  -> 0.0.95
+end-workflow	Checkout code	2025-09-23T16:05:02.0422231Z  * [new tag]           0.0.96                  -> 0.0.96
+end-workflow	Checkout code	2025-09-23T16:05:02.0423340Z  * [new tag]           0.0.97                  -> 0.0.97
+end-workflow	Checkout code	2025-09-23T16:05:02.0424654Z  * [new tag]           0.0.98                  -> 0.0.98
+end-workflow	Checkout code	2025-09-23T16:05:02.0426045Z  * [new tag]           0.0.99                  -> 0.0.99
+end-workflow	Checkout code	2025-09-23T16:05:02.0427415Z  * [new tag]           0.1.0                   -> 0.1.0
+end-workflow	Checkout code	2025-09-23T16:05:02.0428506Z  * [new tag]           0.1.1                   -> 0.1.1
+end-workflow	Checkout code	2025-09-23T16:05:02.0429597Z  * [new tag]           0.2.0                   -> 0.2.0
+end-workflow	Checkout code	2025-09-23T16:05:02.0430676Z  * [new tag]           0.3.0                   -> 0.3.0
+end-workflow	Checkout code	2025-09-23T16:05:02.0431749Z  * [new tag]           0.3.1                   -> 0.3.1
+end-workflow	Checkout code	2025-09-23T16:05:02.0432836Z  * [new tag]           0.3.10                  -> 0.3.10
+end-workflow	Checkout code	2025-09-23T16:05:02.0433977Z  * [new tag]           0.3.11                  -> 0.3.11
+end-workflow	Checkout code	2025-09-23T16:05:02.0435107Z  * [new tag]           0.3.12                  -> 0.3.12
+end-workflow	Checkout code	2025-09-23T16:05:02.0436910Z  * [new tag]           0.3.13                  -> 0.3.13
+end-workflow	Checkout code	2025-09-23T16:05:02.0438123Z  * [new tag]           0.3.14                  -> 0.3.14
+end-workflow	Checkout code	2025-09-23T16:05:02.0439370Z  * [new tag]           0.3.15                  -> 0.3.15
+end-workflow	Checkout code	2025-09-23T16:05:02.0440479Z  * [new tag]           0.3.16                  -> 0.3.16
+end-workflow	Checkout code	2025-09-23T16:05:02.0441598Z  * [new tag]           0.3.17                  -> 0.3.17
+end-workflow	Checkout code	2025-09-23T16:05:02.0442696Z  * [new tag]           0.3.2                   -> 0.3.2
+end-workflow	Checkout code	2025-09-23T16:05:02.0443775Z  * [new tag]           0.3.3                   -> 0.3.3
+end-workflow	Checkout code	2025-09-23T16:05:02.0444855Z  * [new tag]           0.3.4                   -> 0.3.4
+end-workflow	Checkout code	2025-09-23T16:05:02.0446284Z  * [new tag]           0.3.5                   -> 0.3.5
+end-workflow	Checkout code	2025-09-23T16:05:02.0447372Z  * [new tag]           0.3.6                   -> 0.3.6
+end-workflow	Checkout code	2025-09-23T16:05:02.0448457Z  * [new tag]           0.3.7                   -> 0.3.7
+end-workflow	Checkout code	2025-09-23T16:05:02.0450072Z  * [new tag]           0.3.8                   -> 0.3.8
+end-workflow	Checkout code	2025-09-23T16:05:02.0451307Z  * [new tag]           0.3.9                   -> 0.3.9
+end-workflow	Checkout code	2025-09-23T16:05:02.0452487Z  * [new tag]           0.4.0                   -> 0.4.0
+end-workflow	Checkout code	2025-09-23T16:05:02.0453701Z  * [new tag]           0.4.1                   -> 0.4.1
+end-workflow	Checkout code	2025-09-23T16:05:02.0454893Z  * [new tag]           0.4.2                   -> 0.4.2
+end-workflow	Checkout code	2025-09-23T16:05:02.0456099Z  * [new tag]           0.4.3                   -> 0.4.3
+end-workflow	Checkout code	2025-09-23T16:05:02.0457261Z  * [new tag]           0.4.4                   -> 0.4.4
+end-workflow	Checkout code	2025-09-23T16:05:02.0458410Z  * [new tag]           0.4.5                   -> 0.4.5
+end-workflow	Checkout code	2025-09-23T16:05:02.0459667Z  * [new tag]           0.4.6                   -> 0.4.6
+end-workflow	Checkout code	2025-09-23T16:05:02.0462526Z [command]/usr/bin/git branch --list --remote origin/main
+end-workflow	Checkout code	2025-09-23T16:05:02.0466454Z   origin/main
+end-workflow	Checkout code	2025-09-23T16:05:02.0476391Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+end-workflow	Checkout code	2025-09-23T16:05:02.0500931Z 139281e3d25722e7f81ea3fc514f3a3c2c104801
+end-workflow	Checkout code	2025-09-23T16:05:02.0512867Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules origin +2472f129174a0427369a933745f4575d5510d79b:refs/remotes/origin/main
+end-workflow	Checkout code	2025-09-23T16:05:02.0673686Z From https://github.com/Ka0s-Klaus/ka0s
+end-workflow	Checkout code	2025-09-23T16:05:02.0676092Z  + 139281e3...2472f129 2472f129174a0427369a933745f4575d5510d79b -> origin/main  (forced update)
+end-workflow	Checkout code	2025-09-23T16:05:02.0703516Z ##[endgroup]
+end-workflow	Checkout code	2025-09-23T16:05:02.0704920Z ##[group]Determining the checkout info
+end-workflow	Checkout code	2025-09-23T16:05:02.0706532Z ##[endgroup]
+end-workflow	Checkout code	2025-09-23T16:05:02.0708344Z [command]/usr/bin/git sparse-checkout disable
+end-workflow	Checkout code	2025-09-23T16:05:02.0753550Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+end-workflow	Checkout code	2025-09-23T16:05:02.0787336Z ##[group]Checking out the ref
+end-workflow	Checkout code	2025-09-23T16:05:02.0790926Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+end-workflow	Checkout code	2025-09-23T16:05:02.8111933Z Switched to a new branch 'main'
+end-workflow	Checkout code	2025-09-23T16:05:02.8119252Z branch 'main' set up to track 'origin/main'.
+end-workflow	Checkout code	2025-09-23T16:05:02.8218220Z ##[endgroup]
+end-workflow	Checkout code	2025-09-23T16:05:02.8262543Z [command]/usr/bin/git log -1 --format=%H
+end-workflow	Checkout code	2025-09-23T16:05:02.8291362Z 2472f129174a0427369a933745f4575d5510d79b
+end-workflow	Finaliza el workflow	﻿2025-09-23T16:05:02.8549116Z ##[group]Run echo "End process"
+end-workflow	Finaliza el workflow	2025-09-23T16:05:02.8549558Z [36;1mecho "End process"[0m
+end-workflow	Finaliza el workflow	2025-09-23T16:05:02.8549944Z [36;1m# RNNUMBER=$(echo "refs/heads/main" | grep -o '[0-9]*')[0m
+end-workflow	Finaliza el workflow	2025-09-23T16:05:02.8550457Z [36;1m# gh issue comment $RNNUMBER --body "Se finaliza Ka0s 17951893865"[0m
+end-workflow	Finaliza el workflow	2025-09-23T16:05:02.8550892Z [36;1mecho "Se finaliza Ka0s 17951893865"[0m
+end-workflow	Finaliza el workflow	2025-09-23T16:05:02.8551427Z [36;1mgh workflow run inspector.yml --ref 'main' -f kaos-workflow-id="17951893865" -f kaos-user-start=""[0m
+end-workflow	Finaliza el workflow	2025-09-23T16:05:02.8564199Z shell: /usr/bin/bash -e {0}
+end-workflow	Finaliza el workflow	2025-09-23T16:05:02.8564530Z env:
+end-workflow	Finaliza el workflow	2025-09-23T16:05:02.8565446Z   GITHUB_TOKEN: ***
+end-workflow	Finaliza el workflow	2025-09-23T16:05:02.8565872Z   KAOS_MODULE: [Ka0s] Delete Swarm Runners
+end-workflow	Finaliza el workflow	2025-09-23T16:05:02.8566219Z   KAOS_CODE: 17951893865
+end-workflow	Finaliza el workflow	2025-09-23T16:05:02.8566577Z   GH_TOKEN: ***
+end-workflow	Finaliza el workflow	2025-09-23T16:05:02.8566816Z ##[endgroup]
+end-workflow	Finaliza el workflow	2025-09-23T16:05:02.8620711Z End process
+end-workflow	Finaliza el workflow	2025-09-23T16:05:02.8621056Z Se finaliza Ka0s 17951893865
+end-workflow	Post Checkout code	﻿2025-09-23T16:05:03.6564935Z Post job cleanup.
+end-workflow	Post Checkout code	2025-09-23T16:05:03.7545787Z [command]/usr/bin/git version
+end-workflow	Post Checkout code	2025-09-23T16:05:03.7583278Z git version 2.51.0
+end-workflow	Post Checkout code	2025-09-23T16:05:03.7631278Z Temporarily overriding HOME='/home/runner/_work/_temp/cbd4da53-f412-479f-91ba-0d0e2e5d2900' before making global git config changes
+end-workflow	Post Checkout code	2025-09-23T16:05:03.7632501Z Adding repository directory to the temporary git global config as a safe directory
+end-workflow	Post Checkout code	2025-09-23T16:05:03.7636958Z [command]/usr/bin/git config --global --add safe.directory /home/runner/_work/ka0s/ka0s
+end-workflow	Post Checkout code	2025-09-23T16:05:03.7678249Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+end-workflow	Post Checkout code	2025-09-23T16:05:03.7722955Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+end-workflow	Post Checkout code	2025-09-23T16:05:03.7972556Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+end-workflow	Post Checkout code	2025-09-23T16:05:03.7996605Z http.https://github.com/.extraheader
+end-workflow	Post Checkout code	2025-09-23T16:05:03.8010030Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+end-workflow	Post Checkout code	2025-09-23T16:05:03.8045710Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+end-workflow	Complete job	﻿2025-09-23T16:05:03.8402979Z Cleaning up orphan processes
