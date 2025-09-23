@@ -3,14 +3,20 @@ version: '3.8'
 services:
   github-actions-manager:
     # --- SIN CAMBIOS ---
-    image: alpine:latest
+    image: ka0score/actions-runner:1.0.3
+    user: root
     environment:
       - RUNNER_SERVICE_NAME=kaosrunner_github-actions-runner
-      - MAX_RUNNERS=10
-      - LOOP_INTERVAL=1
+      - MAX_RUNNERS=0
+      - LOOP_INTERVAL=30
       - TZ=Europe/Madrid
-    command: >
-      sh -c "apk add --no-cache curl jq docker-cli openssl coreutils tzdata && sh /manager.sh"
+    command:
+      - "sh"
+      - "-c"
+      - |
+        echo "--- Iniciando como usuario `whoami` el proceso del manager---"
+        date
+        sh /manager.sh
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     configs:
@@ -28,7 +34,7 @@ services:
         constraints: [node.role == manager]
 
   github-actions-runner:
-    image: ka0score/actions-runner:1.0.1
+    image: ka0score/actions-runner:1.0.2
     # --- ¡VARIABLES DE ENTORNO! ---
     environment:
       - REPO_URL=https://github.com/Ka0s-Klaus
@@ -42,9 +48,7 @@ services:
       - "sh"
       - "-c"
       - |
-        apk -add --no-cache tzdata
         echo "--- Iniciando como usuario `whoami` $$GITHUB_TOKEN ---"
-        
         RUNNER_NAME="swarm-runner-`hostname`"
         echo "--- Ejecutado el runner $$RUNNER_NAME ---"
         
@@ -54,6 +58,7 @@ services:
           --labels swarm-runner \
           --runnergroup swarm-runners \
           --ephemeral
+          --disableupdate
           
         sleep 5  
         echo "--- Configuración completada. Ejecutando el runner. ---"

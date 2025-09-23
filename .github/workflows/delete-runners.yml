@@ -1,0 +1,127 @@
+name: Ka0s Delete Group Runners
+
+on:
+  workflow_dispatch:
+    inputs:
+      runner_group:
+        description: 'Nombre del grupo de runners a eliminar'
+        required: true
+        type: string
+
+env:
+  GITHUB_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+
+permissions:
+  actions: write      # needed for runner operations
+  issues: write       # needed for issue creation/comment
+  workflows: write    # needed for workflow triggers
+  contents: read      # safest minimal contents permission
+
+jobs:
+  job-core:
+    runs-on: swarm-runners
+    steps:
+      - name: Get Runners
+        id: get-runners
+        run: |
+          # Obtener la lista de runners del grupo especificado
+          RUNNERS=$(gh api \
+            -H "Accept: application/vnd.github+json" \
+            /orgs/${{ github.repository_owner }}/actions/runners \
+            --jq '.runners[] | select(.group_name=="${{ inputs.runner_group }}") | .id')
+          echo "runner_ids=$RUNNERS" >> $GITHUB_OUTPUT
+
+      - name: Delete Runners
+        if: steps.get-runners.outputs.runner_ids != ''
+        run: |
+          # Convertir la lista de IDs en un array
+          IFS=$'\n' read -r -a RUNNER_IDS <<< "${{ steps.get-runners.outputs.runner_ids }}"
+          
+          # Eliminar cada runner
+          for runner_id in "${RUNNER_IDS[@]}"; do
+            echo "Eliminando runner $runner_id..."
+            gh api \
+              --method DELETE \
+              -H "Accept: application/vnd.github+json" \
+              /orgs/${{ github.repository_owner }}/actions/runners/$runner_id
+          done
+
+      - name: Check Results
+        run: |
+          if [[ -z "${{ steps.get-runners.outputs.runner_ids }}" ]]; then
+            echo "No se encontraron runners en el grupo ${{ inputs.runner_group }}"
+          else
+            echo "Runners eliminados exitosamente del grupo ${{ inputs.runner_group }}"
+          fi
+  
+
+  handle-success:
+    runs-on:
+      group: swarm-runners
+    needs: [job-core]
+    if: ${{ success() }}
+    steps:
+      - id: repo
+        name: Checkout code
+        if: ${{ always() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+      - id: handle-success-execution
+        name: handle-success-execution
+        env:
+          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+        run: |
+          # RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
+          # gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data_${{ env.KAOS_CODE }}.log"
+          echo "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data_${{ env.KAOS_CODE }}.log"
+
+  handle_failure:
+    runs-on:
+      group: swarm-runners
+    needs: [job-core, handle-success]
+    if: ${{ failure() }}
+    steps:
+      - id: repo
+        name: Checkout code
+        if: ${{ always() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+      - id: handle-failure-execution
+        name: handle-failure-execution
+        env:
+          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+        run: |
+          echo "Error detected in process"
+          # RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
+          # gh issue comment $RNNUMBER --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
+          # Creamos la issue dado que ha fallado el modulo principal
+          gh issue create  --title "[Ka0S] Error detected in ${{ env.KAOS_MODULE }}" --body "Error detected in ${{ env.KAOS_MODULE }}. Please check the logs for ${{ github.run_id }} more information of error."
+          
+  end-workflow:
+    runs-on:
+      group: swarm-runners
+    needs: [job-core, handle-success, handle_failure]
+    if: ${{ always() && !contains(github.event.head_commit.message, '[Ka0S] ') }}
+    env:
+        GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+    steps:
+      - id: repo
+        name: Checkout code
+        if: ${{ always() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KAOS_REPO_TOKEN }}
+      - id: end-process
+        name: Finaliza el workflow
+        run: |
+          echo "End process"
+          # RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
+          # gh issue comment $RNNUMBER --body "Se finaliza Ka0s ${{ env.KAOS_CODE }}"
+          echo "Se finaliza Ka0s ${{ env.KAOS_CODE }}"
+          gh workflow run inspector.yml --ref 'main' -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start=""
+

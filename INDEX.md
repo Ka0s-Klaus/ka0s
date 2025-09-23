@@ -205,3 +205,4 @@
 - **Version**: 0.4.3 - **Description**: H1410 modulo execution
 - **Version**: 0.4.4 - **Description**: H1410 modulo execution
 - **Version**: 0.4.5 - **Description**: H1410 modulo execution
+- **Version**: 0.4.6 - **Description**: H1514 new swarm deployment stack with actions runners autoscale
