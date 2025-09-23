@@ -12,9 +12,11 @@ env:
   GITHUB_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
 
 permissions:
-  contents: write
-  actions: write
-  
+  actions: write      # needed for runner operations
+  issues: write       # needed for issue creation/comment
+  workflows: write    # needed for workflow triggers
+  contents: read      # safest minimal contents permission
+
 jobs:
   job-core:
     runs-on: swarm-runners
