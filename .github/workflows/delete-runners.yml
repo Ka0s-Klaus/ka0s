@@ -42,9 +42,8 @@ jobs:
             -H "Accept: application/vnd.github+json" \
             /orgs/${{ github.repository_owner }}/actions/runners \
             --paginate \
-            --jq '.runners[] | select(.runner_group_name == "${{ inputs.runner_group }}") | .name' \
-            | tr -d '\r' \
-            | tr '\n' ' ')
+            --jq '.runners[]'
+            '
           echo "$RUNNERS" 
           if [ -n "$RUNNERS" ]; then
             echo "runner_names=$RUNNERS" >> $GITHUB_OUTPUT
