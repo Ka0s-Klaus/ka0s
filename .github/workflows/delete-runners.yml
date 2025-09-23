@@ -24,6 +24,13 @@ jobs:
       - name: Get Runners
         id: get-runners
         run: |
+          # Mostrar todos los grupos de runners de la organización
+          echo "Grupos de runners disponibles:"
+          gh api \
+            -H "Accept: application/vnd.github+json" \
+            /orgs/${{ github.repository_owner }}/actions/runner-groups \
+            --jq '.runner_groups[] | {name: .name, id: .id, runners_count: .runners_count}'
+
           # Obtener la lista de runners del grupo especificado
           RUNNERS=$(gh api \
             -H "Accept: application/vnd.github+json" \
