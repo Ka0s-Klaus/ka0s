@@ -39,13 +39,12 @@ jobs:
             -H "Accept: application/vnd.github+json" \
             /orgs/${{ github.repository_owner }}/actions/runners \
             --paginate \
-            --jq '.runners[] | .name'
-          )
+            --jq '.runners[] | .name' \
+            | tr -d '\r' \
+            | tr '\n' ' ')
           
           if [ -n "$RUNNERS" ]; then
-            echo "runner_names<<EOF" >> $GITHUB_OUTPUT
-            echo "$RUNNERS" >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
+            echo "runner_names=$RUNNERS" >> $GITHUB_OUTPUT
           else
             echo "runner_names=" >> $GITHUB_OUTPUT
           fi
@@ -54,18 +53,19 @@ jobs:
         if: steps.get-runners.outputs.runner_names != ''
         run: |
           # Convertir la lista de nombres en un array
-          IFS=$'\n' read -r -a RUNNER_NAMES <<< "${{ steps.get-runners.outputs.runner_names }}"
+          read -r -a RUNNER_NAMES <<< "${{ steps.get-runners.outputs.runner_names }}"
           
           # Eliminar cada runner y registrar el resultado
+          echo "\nResultados de la eliminación:" >> runner_results/delete_runners_report.txt
           for runner_name in "${RUNNER_NAMES[@]}"; do
             echo "Eliminando runner $runner_name..."
             if gh api \
               --method DELETE \
               -H "Accept: application/vnd.github+json" \
               "/orgs/${{ github.repository_owner }}/actions/runners/$runner_name"; then
-              echo "✓ Runner $runner_name eliminado exitosamente" 
+              echo "✓ Runner $runner_name eliminado exitosamente" >> runner_results/delete_runners_report.txt
             else
-              echo "✗ Error al eliminar runner $runner_name"
+              echo "✗ Error al eliminar runner $runner_name" >> runner_results/delete_runners_report.txt
             fi
           done
 
