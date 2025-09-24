@@ -53,7 +53,24 @@ jobs:
             echo "runner_names=" >> $GITHUB_OUTPUT
             echo "No se encontraron runners" 
           fi
-
+      - name: Get Schema Runners
+        if: success()
+        run: |
+          # Convertir la lista de runners en un array
+          IFS=',' read -r -a RUNNER_NAMES <<< "${{ steps.get-runners.outputs.runner_names }}"
+          
+          # Mostrar información detallada de cada runner
+          for runner_name in "${RUNNER_NAMES[@]}"; do
+            if [ -n "$runner_name" ]; then
+              echo "\nObteniendo información del runner: $runner_name"
+              gh api \
+                -H "Accept: application/vnd.github+json" \
+                -H "X-GitHub-Api-Version: 2022-11-28" \
+                "/orgs/${{ github.repository_owner }}/actions/runners" \
+                --jq ".runners[] | select(.name == \"$runner_name\") | {id, name, os, status, busy, labels}"
+            fi
+          done
+      
       - name: Delete Runners
         if: success()
         run: |
@@ -87,7 +104,6 @@ jobs:
               exit 1
             fi
           done
-
       - name: Check Results
         run: |
           if [[ -z "${{ steps.get-runners.outputs.runner_names }}" ]]; then
