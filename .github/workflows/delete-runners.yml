@@ -84,6 +84,18 @@ jobs:
           # Convertir la lista de runners en un array
           IFS=',' read -r -a RUNNER_NAMES <<< "${{ steps.get-runners.outputs.runner_names }}"
           
+          # Verificar si el grupo es virtual
+          GROUP_INFO=$(gh api \
+            -H "Accept: application/vnd.github+json" \
+            "/orgs/${{ github.repository_owner }}/actions/runner-groups/${{ inputs.runner_group }}")
+          
+          IS_VIRTUAL=$(echo "$GROUP_INFO" | jq -r '.visibility')
+          
+          if [ "$IS_VIRTUAL" = "selected" ]; then
+            echo "⚠️ Error: El grupo ${{ inputs.runner_group }} es un grupo virtual y no puede ser modificado."
+            exit 1
+          fi
+          
           # Eliminar cada runner y mostrar el resultado
           echo "\nResultados de la eliminación:"
           for runner_name in "${RUNNER_NAMES[@]}"; do
