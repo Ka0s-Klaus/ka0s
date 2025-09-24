@@ -77,31 +77,33 @@ while true; do
   fi
 
   AUTH_HEADER="Authorization: Bearer ${temp_token}"
-  
+  # Extraemos los trabajo en cola
   response=$(curl -s -H "${AUTH_HEADER}" -H "Accept: application/vnd.github.v3+json" "${API_URL_RUNS}?status=queued")
   queued_jobs=$(echo "$response" | jq '.total_count // 0')
-  log "Trabajos en cola detectados: ${queued_jobs}"
-  
+  #log "Trabajos en cola detectados: ${queued_jobs}"
+  # Extraemos los trabajos en progreso
   response_in=$(curl -s -H "${AUTH_HEADER}" -H "Accept: application/vnd.github.v3+json" "${API_URL_RUNS}?status=in_progress")
   active_jobs=$(echo "$response_in" | jq '.total_count // 0')
-  log "Trabajos en activo: ${active_jobs}"
-
+  #log "Trabajos en activo: ${active_jobs}"
+  # Extraemos los Runners activos en Swarm
   active_runners_raw=$(docker service ls --filter "name=${RUNNER_SERVICE_NAME}" --format "{{.Replicas}}" || echo "0/0")
   active_runners=$(echo "${active_runners_raw}" | cut -d'/' -f1); active_runners=${active_runners:-0}
-  log "Runners activos en Swarm: ${active_runners}"
-
-  needed_runners=$((queued_jobs + active_runners - 1))
-  # Escalado
-  if [ "$queued_jobs" -gt 1 ] && [ "$needed_runners" -gt "$active_runners" ]; then
+  #log "Runners activos en Swarm: ${active_runners}"
+  # Calculamos los runner necesarios
+  needed_runners=$(((queued_jobs + active_jobs) - 1))
+  # Escalado / Desescalado
+  if [ "$needed_runners" -gt 0 ]; then
     docker service update --replicas "${needed_runners}" --env-add "GITHUB_TOKEN=${ACCESS_TOKEN}" "${RUNNER_SERVICE_NAME}"
+  else
+    docker service update --replicas "${needed_runners}" --env-rm "GITHUB_TOKEN=${ACCESS_TOKEN}" "${RUNNER_SERVICE_NAME}"
   fi
-  # Des Escalado
-  if [ "$queued_jobs" -eq 1 ] && [ "${active_jobs}" -eq 0 ]; then
-    docker service update --replicas "${active_jobs}" "${RUNNER_SERVICE_NAME}"
-  fi
-  log "En cola detectados: ${queued_jobs}"
-  log "Activos en Swarm: ${active_runners}"
-  log "Escalado + Swarm: ${needed_runners}"
-  log "Siguiente escalado/desescalado en: ${LOOP_INTERVAL}"
+  log "------------------------------------------------------------"
+  log "Runners Activos: ${active_runners}"
+  log "En cola detectados: ${queued_jobs} -1"
+  log "En Progreso: ${active_jobs}"
+  log "Escalado + / - : ${needed_runners}"
+  log "------------------------------------------------------------"
+  log "Tiempo de espera siguiente comprobación: ${LOOP_INTERVAL}seg"
+  log "------------------------------------------------------------"
   sleep "${LOOP_INTERVAL}"
 done
