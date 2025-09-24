@@ -1,6 +1,15 @@
 name: Ka0s Scan Images
 on:
-  workflow_dispatch: # Permite la ejecución manual desde la pestaña "Actions"
+  workflow_dispatch:
+    inputs:
+      image_name:
+        description: 'Nombre de la imagen Docker'
+        required: true
+        type: string
+      dockerfile_path:
+        description: 'Ruta al Dockerfile'
+        required: true
+        type: string
 
 jobs:
   job-core:
@@ -11,12 +20,27 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
+      - name: Build Docker image
+        id: build
+        run: |
+          docker build -t ${{ inputs.image_name }}:${{ inputs.version }} -f ${{ inputs.dockerfile_path }} .
+
       - name: Run Trivy vulnerability scanner
+        if: success()
+        id: scan
         uses: aquasecurity/trivy-action@0.28.0
         with:
-          image-ref: 'docker.io/ka0score/actions-runner:1.0.4'
+          image-ref: 'docker.io/ka0score/${{ inputs.image_name }}:${{ inputs.version }}'
           format: 'table'
-          exit-code: 'o'
+          exit-code: '0'
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
+
+      - name: Tag and Push Docker image
+        if: |
+          success() &&
+          contains(steps.scan.outputs.sarif, 'Total: 0 (HIGH: 0, CRITICAL: 0)')
+        run: |
+          docker tag ${{ inputs.image_name }}:${{ inputs.version }} ka0score/${{ inputs.image_name }}:${{ inputs.version }}
+          docker push ka0score/${{ inputs.image_name }}:${{ inputs.version }}
