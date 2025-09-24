@@ -6,31 +6,38 @@ on:
         description: 'Nombre de la imagen Docker'
         required: true
         type: string
-      version:
-        description: 'Número de la versión (0.0.0)'
-        required: true
-        type: string
       dockerfile_path:
         description: 'Ruta al Dockerfile'
+        required: true
+        type: string
+      version:
+        description: 'Número de la versión (0.0.0)'
         required: true
         type: string
 
 jobs:
   job-core:
-    name: Build
     runs-on:
       group: swarm-runners
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        id: buildx
+
       - name: Build Docker image
+        uses: docker/build-push-action@v6
         id: build
-        run: |
-          docker build -t ${{ inputs.image_name }}:${{ inputs.version }} -f ${{ inputs.dockerfile_path }} .
+        with:
+          context: .
+          file: ${{ inputs.dockerfile_path }}
+          tags: ${{ inputs.image_name }}:${{ inputs.version }}
+          load: true
+          push: false
 
       - name: Run Trivy vulnerability scanner
-        if: success()
         id: scan
         uses: aquasecurity/trivy-action@0.28.0
         with:
@@ -41,10 +48,14 @@ jobs:
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
 
-      - name: Tag and Push Docker image
+      - name: Tag and Push if scan passes
         if: |
           success() &&
           contains(steps.scan.outputs.sarif, 'Total: 0 (HIGH: 0, CRITICAL: 0)')
-        run: |
-          docker tag ${{ inputs.image_name }}:${{ inputs.version }} ka0score/${{ inputs.image_name }}:${{ inputs.version }}
-          docker push ka0score/${{ inputs.image_name }}:${{ inputs.version }}
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ inputs.dockerfile_path }}
+          push: true
+          tags: |
+            ka0score/${{ inputs.image_name }}:${{ inputs.version }}
