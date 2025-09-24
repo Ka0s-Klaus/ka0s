@@ -70,7 +70,7 @@ jobs:
           # Mostrar información detallada de cada runner
           for runner_name in "${RUNNER_NAMES[@]}"; do
             if [ -n "$runner_name" ]; then
-              echo "\nObteniendo información del runner: $runner_name"
+              # echo "\nObteniendo información del runner: $runner_name"
               gh api \
                 -H "Accept: application/vnd.github+json" \
                 -H "X-GitHub-Api-Version: 2022-11-28" \
@@ -93,22 +93,22 @@ jobs:
             echo "Eliminando runner $runner_name..."
             
             # Capturar el código de estado HTTP usando --include
-            RESPONSE=$(gh api \
-              --method DELETE \
-              -H "Accept: application/vnd.github+json" \
-              --include \
-              "/orgs/${{ github.repository_owner }}/actions/runners/$runner_name")
-            STATUS_CODE=$(echo "$RESPONSE" | grep -i '^HTTP' | awk '{print $2}')
+            # RESPONSE=$(gh api \
+            #   --method DELETE \
+            #   -H "Accept: application/vnd.github+json" \
+            #   --include \
+            #   "/orgs/${{ github.repository_owner }}/actions/runners/$runner_name")
+            # STATUS_CODE=$(echo "$RESPONSE" | grep -i '^HTTP' | awk '{print $2}')
             
-            if [ "$STATUS_CODE" = "204" ]; then
-              echo "✓ Runner $runner_name eliminado exitosamente"
-              echo "Código de estado HTTP: $STATUS_CODE"
-            else
-              echo "✗ Error al eliminar runner $runner_name"
-              echo "Código de estado HTTP: $STATUS_CODE"
-              echo "Respuesta completa: $RESPONSE"
-              exit 1
-            fi
+            # if [ "$STATUS_CODE" = "204" ]; then
+            #   echo "✓ Runner $runner_name eliminado exitosamente"
+            #   echo "Código de estado HTTP: $STATUS_CODE"
+            # else
+            #   echo "✗ Error al eliminar runner $runner_name"
+            #   echo "Código de estado HTTP: $STATUS_CODE"
+            #   echo "Respuesta completa: $RESPONSE"
+            #   exit 1
+            # fi
           done
       - name: Check Results
         run: |
