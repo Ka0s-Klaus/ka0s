@@ -84,8 +84,8 @@ jobs:
           # Convertir la lista de runners en un array
           IFS=',' read -r -a RUNNER_NAMES <<< "${{ steps.get-runners.outputs.runner_names }}"
           
-          # Eliminar cada runner y registrar el resultado
-          echo "\nResultados de la eliminación:" >> runner_results/delete_runners_report.txt
+          # Eliminar cada runner y mostrar el resultado
+          echo "\nResultados de la eliminación:"
           for runner_name in "${RUNNER_NAMES[@]}"; do
             # Ignorar elementos vacíos
             if [ -z "$runner_name" ]; then
@@ -93,23 +93,22 @@ jobs:
             fi
             echo "Eliminando runner $runner_name..."
             
-            # Capturar  el código de estado HTTP usando --include
-            # RESPONSE=$(gh api \
-            #   --method DELETE \
-            #   -H "Accept: application/vnd.github+json" \
-            #   --include \
-            #   "/orgs/${{ github.repository_owner }}/actions/runners/$runner_name")
-            # STATUS_CODE=$(echo "$RESPONSE" | grep -i '^HTTP' | awk '{print $2}')
+            RESPONSE=$(gh api \
+              --method DELETE \
+              -H "Accept: application/vnd.github+json" \
+              --include \
+              "/orgs/${{ github.repository_owner }}/actions/runners/$runner_name")
+            STATUS_CODE=$(echo "$RESPONSE" | grep -i '^HTTP' | awk '{print $2}')
             
-            # if [ "$STATUS_CODE" = "204" ]; then
-            #   echo "✓ Runner $runner_name eliminado exitosamente"
-            #   echo "Código de estado HTTP: $STATUS_CODE"
-            # else
-            #   echo "✗ Error al eliminar runner $runner_name"
-            #   echo "Código de estado HTTP: $STATUS_CODE"
-            #   echo "Respuesta completa: $RESPONSE"
-            #   exit 1
-            # fi
+            if [ "$STATUS_CODE" = "204" ]; then
+              echo "✓ Runner $runner_name eliminado exitosamente"
+              echo "Código de estado HTTP: $STATUS_CODE"
+            else
+              echo "✗ Error al eliminar runner $runner_name"
+              echo "Código de estado HTTP: $STATUS_CODE"
+              echo "Respuesta completa: $RESPONSE"
+              exit 1
+            fi
           done
       - name: Check Results
         run: |
