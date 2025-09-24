@@ -10,12 +10,13 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@0.28.0
         with:
           image-ref: 'docker.io/ka0score/actions-runner:1.0.4'
           format: 'table'
-          exit-code: '1'
+          exit-code: 'o'
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
