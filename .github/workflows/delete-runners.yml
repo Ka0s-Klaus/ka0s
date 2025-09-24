@@ -57,26 +57,27 @@ jobs:
         if: success()
         run: |
           # Extraer un fichero con todo el contenido de los runners de la organizacion
-          gh api \
-              -H "Accept: application/vnd.github+json" \
-              -H "X-GitHub-Api-Version: 2022-11-28" \
-              /orgs/${{ github.repository_owner }}/actions/runners > list_self-hosted_runners.json
+          echo "activar o desactivar a demanda"
+          # gh api \
+          #     -H "Accept: application/vnd.github+json" \
+          #     -H "X-GitHub-Api-Version: 2022-11-28" \
+          #     /orgs/${{ github.repository_owner }}/actions/runners > list_self-hosted_runners.json
       - name: Get Schema Runners
         if: success()
         run: |
           # Convertir la lista de runners en un array
-          IFS=',' read -r -a RUNNER_NAMES <<< "${{ steps.get-runners.outputs.runner_names }}"
-          
+          # IFS=',' read -r -a RUNNER_NAMES <<< "${{ steps.get-runners.outputs.runner_names }}"
+          echo "activar o desactivar a demanda"
           # Mostrar información detallada de cada runner
-          for runner_name in "${RUNNER_NAMES[@]}"; do
-            if [ -n "$runner_name" ]; then
-              # echo "\nObteniendo información del runner: $runner_name"
-              gh api \
-                -H "Accept: application/vnd.github+json" \
-                -H "X-GitHub-Api-Version: 2022-11-28" \
-                "/orgs/${{ github.repository_owner }}/actions/runners"  >> get_schema_runners.json
-            fi
-          done
+          # for runner_name in "${RUNNER_NAMES[@]}"; do
+          #   if [ -n "$runner_name" ]; then
+          #     # echo "\nObteniendo información del runner: $runner_name"
+          #     gh api \
+          #       -H "Accept: application/vnd.github+json" \
+          #       -H "X-GitHub-Api-Version: 2022-11-28" \
+          #       "/orgs/${{ github.repository_owner }}/actions/runners"  >> get_schema_runners.json
+          #   fi
+          # done
       - name: Delete Runners
         if: success()
         run: |
