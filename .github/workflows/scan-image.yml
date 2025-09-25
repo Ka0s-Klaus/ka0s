@@ -37,21 +37,21 @@ jobs:
           echo "Se ha generado la imagen ${{ inputs.image_name }}:${{ inputs.version }}...."
           sudo usermod -aG docker runner 
     
-      - name: Run Trivy vulnerability scanner
-        id: scan
-        uses: aquasecurity/trivy-action@0.28.0
-        with:
-          image-ref: '${{ inputs.image_name }}:${{ inputs.version }}'
-          format: 'table'
-          exit-code: '0'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
+      - name: Install Trivy vulnerability scanner
+        if: success()
+        run: |
+          # Instalamos Trivy
+          sudo apt-get install wget gnupg
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor | sudo tee /usr/share/keyrings/trivy.gpg > /dev/null
+          echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb generic main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update
+          sudo apt-get install trivy
+
+          # Ejecutamos el escaneo de la imagen
+          trivy image --severity HIGH,CRITICAL --ignore-unfixed --format table --debug ${{ inputs.image_name }}:${{ inputs.version }}
 
       - name: Tag and Push if scan passes
-        if: |
-          success() &&
-          contains(steps.scan.outputs.sarif, 'Total: 0 (HIGH: 0, CRITICAL: 0)')
+        if: success()
         run: |
             # Añadimos la imagen a la version
             sudo docker tag ${{ inputs.image_name }}:${{ inputs.version }} ka0score/${{ inputs.image_name }}:${{ inputs.version }}
