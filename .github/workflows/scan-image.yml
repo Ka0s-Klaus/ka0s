@@ -68,21 +68,23 @@ jobs:
           git commit -m "[Ka0s] Add scan image from ${{ env.KAOS_CODE }}"
           git push
       - name: Tag and Push if scan passes
-        if: success()
+        if: sucess()
         run: |
             # Logeamos en docker hub
             sudo docker login -u ka0score -p ${{ secrets.DOCKERHUB_TOKEN }}
             # Añadimos la imagen a la version
             sudo docker tag ${{ inputs.image_name }}:${{ inputs.version }} ka0score/${{ inputs.image_name }}:${{ inputs.version }}
             echo "Se ha generado la version ka0score/${{ inputs.image_name }}:${{ inputs.version }} ...."
-            # Añadimos la imagen a latest
-            sudo docker tag ${{ inputs.image_name }}:${{ inputs.version }} ka0score/${{ inputs.image_name }}:latest
-            echo "Se ha generado la version ka0score/${{ inputs.image_name }}:latest ...."
             # Subimos las imagenes
             sudo docker push ka0score/${{ inputs.image_name }}:${{ inputs.version }}
-            echo "Subida la imagen ka0score/${{ inputs.image_name }}:${{ inputs.version }} ...."
-            sudo docker push ka0score/${{ inputs.image_name }}:latest
-            echo "Subida la imagen ka0score/${{ inputs.image_name }}:latest ...."
+
+            # Añadimos la imagen a latest solo si la versión no es 'test'
+            if [ "${{ inputs.version }}" != "test" ]; then
+                sudo docker tag ${{ inputs.image_name }}:${{ inputs.version }} ka0score/${{ inputs.image_name }}:latest
+                echo "Se ha generado la version ka0score/${{ inputs.image_name }}:latest ...."
+                sudo docker push ka0score/${{ inputs.image_name }}:latest
+                echo "Subida la imagen ka0score/${{ inputs.image_name }}:latest ...."
+            fi
 
   handle-success:
     runs-on:
