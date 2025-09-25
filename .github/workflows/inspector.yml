@@ -39,9 +39,9 @@ jobs:
           GH_TOKEN: ${{ secrets.KAOS_ACTIONS_TOKEN }}
         run: |
           echo "Checking the execution of the workflow..."
-          gh run view ${{ github.event.inputs.kaos-workflow-id }} --log > ${{ env.KAOS_OUTPUT_EXECUTION }}${{ github.event.inputs.kaos-workflow-id }}.log
+          gh run view -v ${{ github.event.inputs.kaos-workflow-id }} --log > ${{ env.KAOS_OUTPUT_EXECUTION }}${{ github.event.inputs.kaos-workflow-id }}.log
           echo "Extract resume of execution code..."
-          gh run view ${{ github.event.inputs.kaos-workflow-id }} --json ${{ env.KAOS_EXP_FULL_LOGS }} > ${{ env.KAOS_OUTPUT_EXECUTION }}${{ github.event.inputs.kaos-workflow-id }}.json
+          gh run view -v ${{ github.event.inputs.kaos-workflow-id }} --json ${{ env.KAOS_EXP_FULL_LOGS }} > ${{ env.KAOS_OUTPUT_EXECUTION }}${{ github.event.inputs.kaos-workflow-id }}.json
       - id: upload-files
         name: Upload Files
         run: |
