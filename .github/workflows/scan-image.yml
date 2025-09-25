@@ -53,6 +53,8 @@ jobs:
       - name: Tag and Push if scan passes
         if: success()
         run: |
+            # Logeamos en docker hub
+            sudo docker login -u ka0score -p ${{ secrets.DOCKERHUB_TOKEN }}
             # Añadimos la imagen a la version
             sudo docker tag ${{ inputs.image_name }}:${{ inputs.version }} ka0score/${{ inputs.image_name }}:${{ inputs.version }}
             echo "Se ha generado la version ka0score/${{ inputs.image_name }}:${{ inputs.version }} ...."
