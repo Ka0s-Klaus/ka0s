@@ -67,8 +67,9 @@ jobs:
           git add ${{ env.KAOS_PATH_SCAN }}*
           git commit -m "[Ka0s] Add scan image from ${{ env.KAOS_CODE }}"
           git push
+
       - name: Tag and Push if scan passes
-        if: sucess()
+        if: success()
         run: |
             # Logeamos en docker hub
             sudo docker login -u ka0score -p ${{ secrets.DOCKERHUB_TOKEN }}
