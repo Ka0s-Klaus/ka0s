@@ -9,6 +9,8 @@ export DOCKER_HOST=unix:///var/run/docker.sock
 RUNNER_SERVICE_NAME=${RUNNER_SERVICE_NAME:-"kaosrunner_github-actions-runner"}
 MAX_RUNNERS=${MAX_RUNNERS}
 LOOP_INTERVAL=${LOOP_INTERVAL}
+CICLOS_MAX=${CICLOS}
+CICLOS_LAPSED=0
 
 # --- LEER SECRETOS (sin cambios) ---
 APP_ID=$(cat /run/secrets/github_app_id)
@@ -20,9 +22,14 @@ ORG_FULL_NAME=$(cat /run/secrets/github_scope_org)
 # --- LÓGICA DE AUTENTICACIÓN (sin cambios) ---
 ACCESS_TOKEN=""
 TOKEN_EXPIRES_AT=0
+log "----------------------------------------"
+log "Iniciamos el Manager..."
+log "----------------------------------------"
 # Modificamos la sección de actualización del token
 get_access_token() {
+  log "----------------------------------------"
   log "Generando token de acceso..."
+  log "----------------------------------------"
   now=$(date +%s); iat=$((${now} - 60)); exp=$((${now} + 540))
   header_b64=$(echo -n '{"alg":"RS256","typ":"JWT"}' | openssl base64 -e -A | tr '+/' '-_' | tr -d '=')
   payload_b64=$(printf '{"iat":%s,"exp":%s,"iss":"%s"}' "${iat}" "${exp}" "${APP_ID}" | openssl base64 -e -A | tr '+/' '-_' | tr -d '=')
@@ -41,14 +48,18 @@ get_access_token() {
   
   ACCESS_TOKEN=$(echo "${registration_response}" | jq -r .token)
   if [ -z "$ACCESS_TOKEN" ] || [ "$ACCESS_TOKEN" = "null" ]; then 
+    log "----------------------------------------"
     log "ERROR al obtener token de registro: ${registration_response}"
+    log "----------------------------------------"
     return 1
   fi
   
   TOKEN_EXPIRES_AT=$((now + 3600)) # Los tokens de registro expiran en 1 hora
+  log "----------------------------------------"
   log "Token de registro obtenido con éxito."
   log "-------------------------------------"
   update_runner_token
+  log "----------------------------------------"
   log "Token de registro actualizado con éxito."
   log "----------------------------------------"
   return 0
@@ -58,7 +69,9 @@ get_access_token() {
 # y la reemplazamos por una actualización del servicio
 update_runner_token() {
   docker service update --env-add "GITHUB_TOKEN=${ACCESS_TOKEN}" "${RUNNER_SERVICE_NAME}" || true
+  log "----------------------------------------"
   log "Se ha actualizado el GITHUB_TOKEN, ${ACCESS_TOKEN} ..."
+  log "----------------------------------------"
 }
 
 # --- BUCLE PRINCIPAL ---
@@ -69,11 +82,14 @@ while true; do
   now=$(date +%s )
   if [ -z "$ACCESS_TOKEN" ] || [ "$now" -ge "$((TOKEN_EXPIRES_AT - 300))" ]; then
     if ! get_access_token; then
+      log "----------------------------------------"
       log "Fallo al refrescar token, reintentando..."
+      log "----------------------------------------"
       sleep 60
       continue
     fi
     update_runner_token
+    CICLOS_LAPSED=0
   fi
 
   AUTH_HEADER="Authorization: Bearer ${temp_token}"
@@ -90,20 +106,45 @@ while true; do
   active_runners=$(echo "${active_runners_raw}" | cut -d'/' -f1); active_runners=${active_runners:-0}
   #log "Runners activos en Swarm: ${active_runners}"
   # Calculamos los runner necesarios
-  needed_runners=$(((queued_jobs + active_jobs) - 1))
-  # Escalado / Desescalado
-  if [ "$needed_runners" -gt 0 ]; then
-    docker service update --replicas "${needed_runners}" --env-add "GITHUB_TOKEN=${ACCESS_TOKEN}" "${RUNNER_SERVICE_NAME}"
-  else
-    docker service update --replicas "${needed_runners}" --env-rm "GITHUB_TOKEN=${ACCESS_TOKEN}" "${RUNNER_SERVICE_NAME}"
+  needed_runners=$((queued_jobs + active_jobs - 1))
+  if [ "$CICLOS_LAPSED" -eq "$CICLOS_MAX" ]; then
+     # Escalado
+     if [ "$queued_jobs" -gt 1 ] && [ "$active_jobs" -eq 0 ]; then
+         log "------------------------------------------------------------"
+         log "Escalando runners..."
+         log "------------------------------------------------------------"
+         docker service update --replicas "${needed_runners}" --env-add "GITHUB_TOKEN=${ACCESS_TOKEN}" "${RUNNER_SERVICE_NAME}"
+         log "----------------------------------------"
+         log "Escalados ${needed_runners} runners ..."
+         log "------------------------------------------------------------"
+     fi
+     # Desescalado
+     if [ "$queued_jobs" -eq 1 ] && [ "$active_jobs" -eq 0 ] &&  [ "$active_runners" -gt 0 ] ; then
+         log "------------------------------------------------------------"
+         log "Desescalando runners..."
+         log "------------------------------------------------------------"
+         docker service update --replicas 0 --env-add "GITHUB_TOKEN=${ACCESS_TOKEN}" "${RUNNER_SERVICE_NAME}"
+         log "----------------------------------------"
+         log "Desescalamos ${active_runners} runners ..."
+         log "------------------------------------------------------------"
+     fi
+     CICLOS_LAPSED=0
+     log "----------------------------------------"
+     log "Reiniciamos los CICLOS_LAPSED..."
+     log "----------------------------------------"
   fi
+  
   log "------------------------------------------------------------"
   log "Runners Activos: ${active_runners}"
-  log "En cola detectados: ${queued_jobs} -1"
+  log "En cola detectados: ${queued_jobs}"
   log "En Progreso: ${active_jobs}"
   log "Escalado + / - : ${needed_runners}"
   log "------------------------------------------------------------"
   log "Tiempo de espera siguiente comprobación: ${LOOP_INTERVAL}seg"
   log "------------------------------------------------------------"
+  log "Ciclos Máximo ${CICLOS_MAX} ..."
+  log "Ciclos Transcurridos ${CICLOS_LAPSED} ..."
+  log "-------------------------------------------------------------"
   sleep "${LOOP_INTERVAL}"
+  CICLOS_LAPSED=$((CICLOS_LAPSED + 1))
 done
