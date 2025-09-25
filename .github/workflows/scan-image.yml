@@ -32,7 +32,10 @@ jobs:
       - name: Build image
         if: success()
         run: |
+          # Construimos la imagen
           sudo docker build -t ${{ inputs.image_name }}:${{ inputs.version }} -f ${{ inputs.dockerfile_path }} .
+          echo "Se ha generado la imagen ${{ inputs.image_name }}:${{ inputs.version }}...."
+          sudo usermod -aG docker runner 
     
       - name: Run Trivy vulnerability scanner
         id: scan
