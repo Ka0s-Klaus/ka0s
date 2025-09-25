@@ -18,6 +18,7 @@ env:
   GITHUB_TOKEN: ${{ secrets.KAOS_ACTIONS_RUNNERS }}
   KAOS_MODULE: "[Ka0s] Personañized Image Runners"
   KAOS_CODE: ${{ github.run_id }}
+  KAOS_PATH_SCAN: "audit/scan/"
 
 permissions:
   actions: write      # needed for runner operations
@@ -58,7 +59,12 @@ jobs:
 
           # Ejecutamos el escaneo de la imagen
           sudo trivy image --severity HIGH,CRITICAL --ignore-unfixed --format table ${{ inputs.image_name }}:${{ inputs.version }}
-
+          sudo trivy image --severity HIGH,CRITICAL --ignore-unfixed --format table ${{ inputs.image_name }}:${{ inputs.version }} > ${{ env.KAOS_PATH_SCAN }}scan_image_from_${{ env.KAOS_CODE }}.json
+          echo "Subimos el scan_image_from_${{ env.KAOS_CODE }}.json a la ruta ${{ env.KAOS_PATH_SCAN }}"
+          git pull
+          git add ${{ env.KAOS_PATH_SCAN }}*
+          git commit -m "[Ka0s] Add scan image from ${{ env.KAOS_CODE }}"
+          git push
       - name: Tag and Push if scan passes
         if: success()
         run: |
