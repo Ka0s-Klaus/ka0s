@@ -48,7 +48,7 @@ jobs:
           sudo apt-get install trivy
 
           # Ejecutamos el escaneo de la imagen
-          trivy image --severity HIGH,CRITICAL --ignore-unfixed --format table --debug ${{ inputs.image_name }}:${{ inputs.version }}
+          sudo trivy image --severity HIGH,CRITICAL --ignore-unfixed --format table --debug ${{ inputs.image_name }}:${{ inputs.version }}
 
       - name: Tag and Push if scan passes
         if: success()
