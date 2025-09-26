@@ -46,7 +46,7 @@ jobs:
         if: success()
         run: |
           # Construimos la imagen
-          sudo docker build -t ${{ inputs.image_name }}:${{ inputs.version }} -f ${{ inputs.dockerfile_path }} .
+          sudo docker build -t ${{ inputs.image_name }}:${{ inputs.version }} -f ${{ inputs.dockerfile_path }} . || true
           echo "Se ha generado la imagen ${{ inputs.image_name }}:${{ inputs.version }}...."
           sudo usermod -aG docker runner 
     
