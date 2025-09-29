@@ -1,0 +1,18 @@
+# backstage-app/app-config.production.yaml
+
+backend:
+  # ... (otras configuraciones del backend pueden estar aquí)
+
+  database:
+    # Configuración para la conexión a PostgreSQL
+    client: pg
+    connection:
+      host: ${POSTGRES_HOST}
+      port: ${POSTGRES_PORT}
+      user: ${POSTGRES_USER}
+      password: ${POSTGRES_PASSWORD}
+      database: ${POSTGRES_DB}
+    # Configuración para SSL (deshabilitada para el entorno local de Docker)
+    # En un entorno de producción real con una base de datos remota, deberías configurar esto.
+    # ssl:
+    #   rejectUnauthorized: false

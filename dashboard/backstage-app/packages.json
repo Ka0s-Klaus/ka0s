@@ -1,0 +1,31 @@
+// backstage-app/package.json
+{
+    "name": "root",
+    "private": true,
+    "engines": {
+      "node": "18 || 20"
+    },
+    "workspaces": {
+      "packages": [
+        "packages/*",
+        "plugins/*"
+      ]
+    },
+    "scripts": {
+      "dev": "backstage-cli package start",
+      "start": "yarn workspace backend start",
+      "build": "backstage-cli package build",
+      "build:backend": "yarn workspace backend build",
+      "clean": "backstage-cli package clean",
+      "test": "backstage-cli package test",
+      "lint": "backstage-cli package lint",
+      "create-plugin": "backstage-cli create-plugin"
+    },
+    "devDependencies": {
+      "@backstage/cli": "^0.25.1",
+      "typescript": "~5.3.0",
+      "lerna": "^7.3.0"
+      // ... muchas otras dependencias de desarrollo
+    }
+  }
+  

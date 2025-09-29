@@ -1,0 +1,39 @@
+# backstage-app/app-config.yaml
+
+app:
+  title: Mi Portal Backstage # El título que aparecerá en el navegador
+  baseUrl: http://localhost:3000 # URL del frontend en desarrollo
+
+organization:
+  name: Mi Compañía # Nombre de tu organización
+
+backend:
+  baseUrl: http://localhost:7007 # URL del backend en desarrollo
+  cors:
+    origin: http://localhost:3000
+    methods: [GET, POST, PUT, DELETE]
+    credentials: true
+  # Esta es la configuración para la base de datos en desarrollo.
+  # Usa SQLite en memoria, que es rápido y no requiere configuración.
+  database:
+    client: better-sqlite3
+    connection: ':memory:'
+  # ... otras configuraciones del backend
+
+techdocs:
+  builder: 'local' # Usa el generador local de TechDocs
+  generator:
+    runIn: 'docker' # Ejecuta la generación de docs dentro de un contenedor Docker
+  publisher:
+    type: 'local' # Publica los docs en el sistema de archivos local
+
+# --- Otras configuraciones como auth, scaffolder, catalog, etc. ---
+# Por ahora, podemos dejar las que vienen por defecto.
+# Ejemplo de la configuración del catálogo:
+catalog:
+  rules:
+    - allow: [Component, System, API, Resource, Location]
+  locations:
+    # Ejemplo de cómo cargar entidades desde una URL
+    - type: url
+      target: https://github.com/backstage/backstage/blob/master/packages/catalog-model/examples/all.yaml
