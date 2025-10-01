@@ -111,10 +111,10 @@ jobs:
         git config --global user.email '${{ env.USER_EMAIL}}'
         git tag -a "${{ steps.version.outputs.VERSION }}" -m "${{ env.KAOS_MODULE }} NEW Ka0S version ${{ steps.version.outputs.VERSION }}"
         git push origin "${{ steps.version.outputs.VERSION }}"
-        if [ ! -f INDEX.md ]; then echo "# Version Index" > INDEX.md; fi
-        echo "- **Version**: ${{ steps.version.outputs.VERSION }} - **Description**: ${{ steps.commit_details.outputs.COMMIT_MESSAGE }}" >> INDEX.md
-        git add INDEX.md CHANGELOG.md
-        git commit -m "${{ env.KAOS_MODULE }}  Upload: CHANGELOG.md, INDEX.md with version ${{ steps.version.outputs.VERSION }}"
+        if [ ! -f INDEX_VERSION.md ]; then echo "# Version Index" > INDEX_VERSION.md; fi
+        echo "- **Version**: ${{ steps.version.outputs.VERSION }} - **Description**: ${{ steps.commit_details.outputs.COMMIT_MESSAGE }}" >> INDEX_VERSION.md
+        git add INDEX_VERSION.md CHANGELOG.md
+        git commit -m "${{ env.KAOS_MODULE }}  Upload: CHANGELOG.md, INDEX_VERSION.md with version ${{ steps.version.outputs.VERSION }}"
         git push origin HEAD:${{ github.head_ref }}
 
     - id: failure-delete-tag
