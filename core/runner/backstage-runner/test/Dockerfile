@@ -1,56 +1,36 @@
-FROM node:22-bookworm-slim
+FROM ubuntu:latest
+ENV TZ=Europe/Madrid
+USER root
+ARG NODE_VERSION=22 # este parametro se puede definir en el momento de construir la imagen
 
-# Set Python interpreter for `node-gyp` to use
-ENV PYTHON=/usr/bin/python3
+# Añadimos datos al metadata
+LABEL maintainer="ka0s@ka0s.io"
+LABEL description="Esta es una imagen de Ka0s C0re Project."
 
-# Install isolate-vm dependencies, these are needed by the @backstage/plugin-scaffolder-backend.
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    apt-get update && \
-    apt-get install -y --no-install-recommends python3 g++ build-essential && \
-    rm -rf /var/lib/apt/lists/*
+# Instalar dependencias
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends jq python3 pip bc ca-certificates \
+    tzdata apt-utils apt-transport-https curl wget git gnupg gh && \
+    openssl && \
+    dpkg-reconfigure --frontend noninteractive tzdata
 
-# Install sqlite3 dependencies. You can skip this if you don't use sqlite3 in the image,
-# in which case you should also move better-sqlite3 to "devDependencies" in package.json.
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    apt-get update && \
-    apt-get install -y --no-install-recommends libsqlite3-dev && \
-    rm -rf /var/lib/apt/lists/*
+# Actualiza y configura el entorno
+RUN apt-get update && \
+    export DEBIAN_FRONTEND=noninteractive && \
+    ln -fs /usr/share/zoneinfo/$TZ /etc/localtime && \
+    dpkg-reconfigure --frontend noninteractive tzdata && \
+    apt-get upgrade -y
 
-# From here on we use the least-privileged `node` user to run the backend.
-USER node
+# Añadimos la instalacion de Node mediante NVM...
+# install nvm
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
 
-# This should create the app dir as `node`.
-# If it is instead created as `root` then the `tar` command below will fail: `can't create directory 'packages/': Permission denied`.
-# If this occurs, then ensure BuildKit is enabled (`DOCKER_BUILDKIT=1`) so the app dir is correctly created as `node`.
-WORKDIR /app
+# set env
+ENV NVM_DIR=/root/.nvm
 
-# Copy files needed by Yarn
-COPY --chown=node:node .yarn ./.yarn
-COPY --chown=node:node .yarnrc.yml ./
-COPY --chown=node:node backstage.json ./
+# install node
+RUN bash -c "source $NVM_DIR/nvm.sh && nvm install $NODE_VERSION"
 
-# This switches many Node.js dependencies to production mode.
-ENV NODE_ENV=production
 
-# This disables node snapshot for Node 20 to work with the Scaffolder
-ENV NODE_OPTIONS="--no-node-snapshot"
-
-# Copy repo skeleton first, to avoid unnecessary docker cache invalidation.
-# The skeleton contains the package.json of each package in the monorepo,
-# and along with yarn.lock and the root package.json, that's enough to run yarn install.
-COPY --chown=node:node yarn.lock package.json packages/backend/dist/skeleton.tar.gz ./
-RUN tar xzf skeleton.tar.gz && rm skeleton.tar.gz
-
-RUN --mount=type=cache,target=/home/node/.cache/yarn,sharing=locked,uid=1000,gid=1000 \
-    yarn workspaces focus --all --production && rm -rf "$(yarn cache clean)"
-
-# This will include the examples, if you don't need these simply remove this line
-COPY --chown=node:node examples ./examples
-
-# Then copy the rest of the backend bundle, along with any other files we might want.
-COPY --chown=node:node packages/backend/dist/bundle.tar.gz app-config*.yaml ./
-RUN tar xzf bundle.tar.gz && rm bundle.tar.gz
-
-CMD ["node", "packages/backend", "--config", "app-config.yaml", "--config", "app-config.production.yaml"]
+# Cerramos la configuracion
+CMD ["bash"]
