@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  portal:
+    image: ka0score/portal-runner:0.0.1  # Reemplaza con el nombre de tu imagen
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      placement:
+        constraints:
+          - node.role == manager
+    networks:
+      - portal
+    volumes:
+      - portal_data:/app
+    configs:
+      - source: startup_script
+        target: ./startup.sh
+        mode: 0755
+    user: kaos
+    environment:
+      - NODE_ENV=production
+    ports:
+      - "3000:3000"  # Ajusta según los puertos que necesites
+      - "7007:7007"  # Puerto típico de Backstage backend
+    command: ["/bin/bash", "sh ./startup.sh"]
+
+networks:
+  portal:
+    driver: overlay
+    attachable: true
+
+volumes:
+  portal_data:
+    external: true
+
+configs:
+  startup_script:
+    external: true
