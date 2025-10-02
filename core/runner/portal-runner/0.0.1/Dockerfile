@@ -21,6 +21,11 @@ RUN apt-get update && \
     dpkg-reconfigure --frontend noninteractive tzdata && \
     apt-get upgrade -y
 
+# Crear usuario kaos y su directorio de trabajo
+RUN useradd -m -s /bin/bash kaos && \
+    mkdir -p /app && \
+    chown -R kaos:kaos /app
+
 # Añadimos la instalacion de Node mediante NVM...
 # install nvm
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
@@ -31,6 +36,6 @@ ENV NVM_DIR=/root/.nvm
 # install node
 RUN bash -c "source $NVM_DIR/nvm.sh && nvm install $NODE_VERSION"
 
-
+USER kaos
 # Cerramos la configuracion
 CMD ["bash"]
