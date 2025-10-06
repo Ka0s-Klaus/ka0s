@@ -182,6 +182,7 @@ jobs:
         fi
         
         # Set outputs
+        MATRIX_ITEMS=$(echo "$MATRIX_ITEMS" | jq -c .)
         echo "matrix=$MATRIX_ITEMS" >> $GITHUB_OUTPUT
         echo "has-dockerfiles=$([ "$MATRIX_ITEMS" != "[]" ] && echo true || echo false)" >> $GITHUB_OUTPUT
         echo "report-file=$REPORT_FILE" >> $GITHUB_OUTPUT
@@ -197,7 +198,7 @@ jobs:
       run: |
         REPORT_FILE="${{ steps.create-matrix.outputs.report-file }}"
         git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
-          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
+        git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
         git add "$REPORT_FILE"
         git commit -m "[Ka0s] 📊 Directory scan report: ${{ github.event.inputs.base_path }}" || echo "No changes to commit"
         git push
@@ -217,17 +218,17 @@ jobs:
       with:
         script: |
           echo "En este punto lnzartiamos la imagen, que dejamos comentada para evaluar el proceso principal"
-          const response = await github.rest.actions.createWorkflowDispatch({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            workflow_id: '${{ github.event.inputs.target_workflow }}',
-            ref: context.ref,
-            inputs: {
-              image_name: '${{ matrix.image_name }}',
-              version: '${{ matrix.version }}',
-              dockerfile_path: '${{ matrix.dockerfile_path }}'
-            }
-          });
+          # const response = await github.rest.actions.createWorkflowDispatch({
+          #   owner: context.repo.owner,
+          #   repo: context.repo.repo,
+          #   workflow_id: '${{ github.event.inputs.target_workflow }}',
+          #   ref: context.ref,
+          #   inputs: {
+          #     image_name: '${{ matrix.image_name }}',
+          #     version: '${{ matrix.version }}',
+          #     dockerfile_path: '${{ matrix.dockerfile_path }}'
+          #   }
+          # });
           
           console.log(`✅ Triggered workflow for ${{ matrix.image_name }}:${{ matrix.version }}`);
           console.log(`📁 Dockerfile: ${{ matrix.dockerfile_path }}`);
