@@ -4121,3 +4121,48 @@
   - monitoring/grafana/docker-swarm/docker-stack.yml
   - version.txt
 ---------------------------------
+## Version 0.4.7
+- **Branch**: refs/pull/1647/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Mon Oct  6 13:37:56 UTC 2025
+- **Message**: H1646 modulo de control de runners
+- **Files Changed**:
+  - .github/workflows/scan-and-trigger.yml
+  - audit/kaos/18282546564-files-in-commit.txt
+  - audit/kaos/18282546564.json
+  - audit/kaos/18282715274-files-in-commit.txt
+  - audit/kaos/18282715274.json
+  - audit/mdlint/18282590168.txt
+  - core/docker/Dockerfile.base
+  - core/docker_swarm/docker_swarm/docker-compose.yml
+  - core/docker_swarm/docker_swarm/scripts/manager.sh
+  - core/docker_swarm/docker_web/Dockerfile
+  - core/docker_swarm/docker_web/errores.txt
+  - core/docker_swarm/docker_web/kaos_cert/SSL1762288.cert
+  - core/docker_swarm/docker_web/kaos_cert/SSL1762288.crt
+  - core/docker_swarm/docker_web/kaos_cert/SSL1762288.intermediate_ca.pem
+  - core/docker_swarm/docker_web/kaos_cert/SSL1762288.pem
+  - core/docker_swarm/docker_web/kaos_conf/blog.ka0s.io.conf
+  - core/docker_swarm/docker_web/kaos_conf/ka0s.io.conf
+  - core/docker_swarm/docker_web/kaos_conf/new.ka0s.io.conf
+  - core/docker_swarm/docker_web/sites/blog.ka0s.io/index.html
+  - core/docker_swarm/docker_web/sites/news.ka0s.io/index.html
+  - core/docker_swarm/docker_web/sites/www.ka0s.io/index.html
+  - core/docker_swarm/docker_web/web_config/nginx.conf
+  - core/portal/README.md
+  - core/runner/actions-runner/1.0.0/Dockerfile
+  - core/runner/actions-runner/1.0.1/Dockerfile
+  - core/runner/actions-runner/1.0.3/Dockerfile
+  - core/runner/actions-runner/1.0.4/Dockerfile
+  - core/runner/actions-runner/1.0.5/Dockerfile
+  - core/runner/actions-runner/latest/Dockerfile
+  - core/runner/itsm-runner/latest/Dockerfile
+  - core/runner/itsm-runner/latest/install.sh
+  - core/runner/portal-runner/docker-stack.yml
+  - core/runner/portal-runner/latest/Dockerfile
+  - core/runner/trivy-runner/0.0.0/Dockerfile
+  - core/runner/trivy-runner/latest/Dockerfile
+  - core/runner/trivy-runner/test/Dockerfile
+  - version.txt
+---------------------------------
