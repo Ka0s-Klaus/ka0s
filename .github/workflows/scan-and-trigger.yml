@@ -5,7 +5,8 @@ on:
     inputs:
       base_path:
         description: 'Base path to scan for Docker projects (e.g., core/runner)'
-        required: true
+        required: false
+        default: 'core/runner'
         type: string
       target_workflow:
         description: 'Target workflow to trigger for each Docker image'
@@ -17,7 +18,7 @@ on:
         required: false
         default: false
         type: boolean
-        
+
 permissions:
   contents: write
   actions: write
@@ -32,7 +33,8 @@ env:
 
 jobs:
   job-core:
-    runs-on: swarm-runners
+    runs-on:
+      group: swarm-runners
     outputs:
       matrix: ${{ steps.create-matrix.outputs.matrix }}
       has-dockerfiles: ${{ steps.create-matrix.outputs.has-dockerfiles }}
@@ -197,11 +199,11 @@ jobs:
         git add "$REPORT_FILE"
         git commit -m "[Ka0s] 📊 Directory scan report: ${{ github.event.inputs.base_path }}" || echo "No changes to commit"
         git push
-
   job-trigger-workflows:
     needs: job-core
     if: ${{ needs.job-core.outputs.has-dockerfiles == 'true' && github.event.inputs.dry_run == 'false' }}
-    runs-on: swarm-runners
+    runs-on:
+      group: swarm-runners
     strategy:
       matrix:
         include: ${{ fromJson(needs.job-core.outputs.matrix) }}
