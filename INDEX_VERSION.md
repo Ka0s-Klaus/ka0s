@@ -209,3 +209,4 @@
 - **Version**: 0.4.7 - **Description**: H1646 modulo de control de runners
 - **Version**: 0.4.8 - **Description**: H1646 modulo de control de runners
 - **Version**: 0.4.9 - **Description**: H1646 modulo de control de runners
+- **Version**: 0.4.10 - **Description**: H1646 modulo de control de runners
