@@ -217,21 +217,13 @@ jobs:
       uses: actions/github-script@v7
       with:
         script: |
-          echo "En este punto lnzartiamos la imagen, que dejamos comentada para evaluar el proceso principal"
-          # const response = await github.rest.actions.createWorkflowDispatch({
-          #   owner: context.repo.owner,
-          #   repo: context.repo.repo,
-          #   workflow_id: '${{ github.event.inputs.target_workflow }}',
-          #   ref: context.ref,
-          #   inputs: {
-          #     image_name: '${{ matrix.image_name }}',
-          #     version: '${{ matrix.version }}',
-          #     dockerfile_path: '${{ matrix.dockerfile_path }}'
-          #   }
-          # });
-          
-          console.log(`✅ Triggered workflow for ${{ matrix.image_name }}:${{ matrix.version }}`);
-          console.log(`📁 Dockerfile: ${{ matrix.dockerfile_path }}`);
+          // Aquí puedes lanzar la imagen o el workflow
+          // Ejemplo de uso de las variables
+          console.log(`✅ Triggered workflow for ${image_name}:${version}`);
+          console.log(`📁 Dockerfile: ${dockerfile_path}`);
+        image_name: ${{ matrix.image_name }}
+        version: ${{ matrix.version }}
+        dockerfile_path: ${{ matrix.dockerfile_path }}
 
   handle-success:
     runs-on:
