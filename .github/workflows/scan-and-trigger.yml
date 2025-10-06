@@ -1,0 +1,212 @@
+name: Scan Directories and Trigger Workflows
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_path:
+        description: 'Base path to scan for Docker projects (e.g., core/runner)'
+        required: true
+        type: string
+      target_workflow:
+        description: 'Target workflow to trigger for each Docker image'
+        required: false
+        default: 'scan-image.yml'
+        type: string
+      dry_run:
+        description: 'Only generate report without triggering workflows'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  scan-directories:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.create-matrix.outputs.matrix }}
+      has-dockerfiles: ${{ steps.create-matrix.outputs.has-dockerfiles }}
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Scan directories and create matrix
+      id: create-matrix
+      run: |
+        BASE_PATH="${{ github.event.inputs.base_path }}"
+        REPORT_FILE="directory-scan-report-$(date +%Y%m%d-%H%M%S).md"
+        
+        # Validate base path exists
+        if [ ! -d "$BASE_PATH" ]; then
+          echo "❌ Error: Base path '$BASE_PATH' does not exist"
+          exit 1
+        fi
+        
+        # Extract main folder name
+        MAIN_FOLDER=$(basename "$BASE_PATH")
+        echo "📁 Main folder: $MAIN_FOLDER"
+        
+        # Initialize report
+        cat > "$REPORT_FILE" << EOF
+        # Directory Scan Report
+        
+        **Generated:** $(date '+%Y-%m-%d %H:%M:%S UTC')
+        **Base Path:** \`$BASE_PATH\`
+        **Main Folder:** \`$MAIN_FOLDER\`
+        
+        ## Summary
+        EOF
+        
+        # Initialize counters and matrix
+        TOTAL_SUBDIRS=0
+        TOTAL_FILES=0
+        TOTAL_DOCKERFILES=0
+        MATRIX_ITEMS="[]"
+        
+        # Scan first-level subdirectories
+        echo "" >> "$REPORT_FILE"
+        echo "## Subdirectories Analysis" >> "$REPORT_FILE"
+        echo "" >> "$REPORT_FILE"
+        
+        for subdir in "$BASE_PATH"/*/; do
+          if [ -d "$subdir" ]; then
+            SUBDIR_NAME=$(basename "$subdir")
+            TOTAL_SUBDIRS=$((TOTAL_SUBDIRS + 1))
+            
+            echo "### 📂 $SUBDIR_NAME" >> "$REPORT_FILE"
+            echo "**Path:** \`$subdir\`" >> "$REPORT_FILE"
+            echo "" >> "$REPORT_FILE"
+            
+            # Count files and subdirectories
+            FILE_COUNT=$(find "$subdir" -maxdepth 1 -type f | wc -l)
+            SUBDIR_COUNT=$(find "$subdir" -maxdepth 1 -type d | wc -l)
+            SUBDIR_COUNT=$((SUBDIR_COUNT - 1))  # Exclude the directory itself
+            
+            TOTAL_FILES=$((TOTAL_FILES + FILE_COUNT))
+            
+            echo "- **Files:** $FILE_COUNT" >> "$REPORT_FILE"
+            echo "- **Subdirectories:** $SUBDIR_COUNT" >> "$REPORT_FILE"
+            echo "" >> "$REPORT_FILE"
+            
+            # List contents
+            echo "**Contents:**" >> "$REPORT_FILE"
+            for item in "$subdir"*; do
+              if [ -e "$item" ]; then
+                ITEM_NAME=$(basename "$item")
+                if [ -d "$item" ]; then
+                  echo "- 📁 $ITEM_NAME/" >> "$REPORT_FILE"
+                else
+                  echo "- 📄 $ITEM_NAME" >> "$REPORT_FILE"
+                fi
+              fi
+            done
+            echo "" >> "$REPORT_FILE"
+            
+            # Check for Dockerfiles in subdirectories (versions)
+            DOCKERFILES_FOUND=0
+            echo "**Docker Analysis:**" >> "$REPORT_FILE"
+            
+            for version_dir in "$subdir"/*/; do
+              if [ -d "$version_dir" ]; then
+                VERSION_NAME=$(basename "$version_dir")
+                DOCKERFILE_PATH="$version_dir/Dockerfile"
+                
+                if [ -f "$DOCKERFILE_PATH" ]; then
+                  DOCKERFILES_FOUND=$((DOCKERFILES_FOUND + 1))
+                  TOTAL_DOCKERFILES=$((TOTAL_DOCKERFILES + 1))
+                  
+                  echo "- ✅ Version \`$VERSION_NAME\`: Dockerfile found" >> "$REPORT_FILE"
+                  
+                  # Add to matrix for workflow triggering
+                  MATRIX_ITEM=$(cat << EOF
+        {
+          "image_name": "$SUBDIR_NAME",
+          "version": "$VERSION_NAME",
+          "dockerfile_path": "$DOCKERFILE_PATH"
+        }
+        EOF
+                  )
+                  
+                  if [ "$MATRIX_ITEMS" = "[]" ]; then
+                    MATRIX_ITEMS="[$MATRIX_ITEM]"
+                  else
+                    MATRIX_ITEMS=$(echo "$MATRIX_ITEMS" | sed 's/]$/,'"$MATRIX_ITEM"']/')
+                  fi
+                else
+                  echo "- ❌ Version \`$VERSION_NAME\`: No Dockerfile" >> "$REPORT_FILE"
+                fi
+              fi
+            done
+            
+            if [ $DOCKERFILES_FOUND -eq 0 ]; then
+              echo "- ⚠️  No Dockerfiles found in any version subdirectory" >> "$REPORT_FILE"
+            fi
+            
+            echo "" >> "$REPORT_FILE"
+          fi
+        done
+        
+        # Update summary
+        sed -i "/## Summary/a\\\n- **Total Subdirectories:** $TOTAL_SUBDIRS\\\n- **Total Files:** $TOTAL_FILES\\\n- **Total Dockerfiles:** $TOTAL_DOCKERFILES\\\n- **Docker Images to Process:** $(echo "$MATRIX_ITEMS" | jq length 2>/dev/null || echo 0)" "$REPORT_FILE"
+        
+        # Add build matrix section
+        echo "## Build Matrix" >> "$REPORT_FILE"
+        echo "" >> "$REPORT_FILE"
+        if [ "$MATRIX_ITEMS" != "[]" ]; then
+          echo "The following Docker images will be processed:" >> "$REPORT_FILE"
+          echo "" >> "$REPORT_FILE"
+          echo "\`\`\`json" >> "$REPORT_FILE"
+          echo "$MATRIX_ITEMS" | jq . >> "$REPORT_FILE" 2>/dev/null || echo "$MATRIX_ITEMS" >> "$REPORT_FILE"
+          echo "\`\`\`" >> "$REPORT_FILE"
+        else
+          echo "❌ No Docker images found to process." >> "$REPORT_FILE"
+        fi
+        
+        # Set outputs
+        echo "matrix=$MATRIX_ITEMS" >> $GITHUB_OUTPUT
+        echo "has-dockerfiles=$([ "$MATRIX_ITEMS" != "[]" ] && echo true || echo false)" >> $GITHUB_OUTPUT
+        echo "report-file=$REPORT_FILE" >> $GITHUB_OUTPUT
+        
+        # Display summary
+        echo "📊 Scan completed:"
+        echo "   - Subdirectories: $TOTAL_SUBDIRS"
+        echo "   - Files: $TOTAL_FILES"
+        echo "   - Dockerfiles: $TOTAL_DOCKERFILES"
+        echo "   - Report: $REPORT_FILE"
+
+    - name: Commit scan report
+      run: |
+        REPORT_FILE="${{ steps.create-matrix.outputs.report-file }}"
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add "$REPORT_FILE"
+        git commit -m "📊 Directory scan report: ${{ github.event.inputs.base_path }}" || echo "No changes to commit"
+        git push
+
+  trigger-workflows:
+    needs: scan-directories
+    if: ${{ needs.scan-directories.outputs.has-dockerfiles == 'true' && github.event.inputs.dry_run == 'false' }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include: ${{ fromJson(needs.scan-directories.outputs.matrix) }}
+      fail-fast: false
+    
+    steps:
+    - name: Trigger target workflow
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const response = await github.rest.actions.createWorkflowDispatch({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            workflow_id: '${{ github.event.inputs.target_workflow }}',
+            ref: context.ref,
+            inputs: {
+              image_name: '${{ matrix.image_name }}',
+              version: '${{ matrix.version }}',
+              dockerfile_path: '${{ matrix.dockerfile_path }}'
+            }
+          });
+          
+          console.log(`✅ Triggered workflow for ${{ matrix.image_name }}:${{ matrix.version }}`);
+          console.log(`📁 Dockerfile: ${{ matrix.dockerfile_path }}`);
