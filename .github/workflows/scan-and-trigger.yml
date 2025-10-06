@@ -165,7 +165,7 @@ jobs:
         
         # Update summary
         MATRIX_COUNT=$(echo "$MATRIX_ITEMS" | jq length 2>/dev/null || echo 0)
-        sed -i "/## Summary/a\\\n- **Total Subdirectories:** $TOTAL_SUBDIRS\\\n- **Total Files:** $TOTAL_FILES\\\n- **Total Dockerfiles:** $TOTAL_DOCKERFILES\\\n- **Docker Images to Process:** $MATRIX_COUNT" "$REPORT_FILE"
+        sed -i "/## Summary/a\- **Total Subdirectories:** $TOTAL_SUBDIRS\n- **Total Files:** $TOTAL_FILES\n- **Total Dockerfiles:** $TOTAL_DOCKERFILES\n- **Docker Images to Process:** $MATRIX_COUNT" "$REPORT_FILE"
         
         # Add build matrix section
         echo "## Build Matrix" >> "$REPORT_FILE"
