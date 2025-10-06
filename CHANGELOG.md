@@ -4166,3 +4166,15 @@
   - core/runner/trivy-runner/test/Dockerfile
   - version.txt
 ---------------------------------
+## Version 0.4.8
+- **Branch**: refs/pull/1651/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Mon Oct  6 14:25:21 UTC 2025
+- **Message**: H1646 modulo de control de runners
+- **Files Changed**:
+  - .github/workflows/scan-and-trigger.yml
+  - audit/kaos/18284145972-files-in-commit.txt
+  - audit/kaos/18284145972.json
+  - version.txt
+---------------------------------
