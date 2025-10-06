@@ -147,7 +147,7 @@ jobs:
                   if [ "$MATRIX_ITEMS" = "[]" ]; then
                     MATRIX_ITEMS="[$MATRIX_ITEM]"
                   else
-                    MATRIX_ITEMS=$(echo "$MATRIX_ITEMS" | sed 's/]$/,'"$MATRIX_ITEM"']/')
+                    MATRIX_ITEMS=$(echo "$MATRIX_ITEMS" | jq ". + [$MATRIX_ITEM]")
                   fi
                 else
                   echo "- ❌ Version \`$VERSION_NAME\`: No Dockerfile" >> "$REPORT_FILE"
