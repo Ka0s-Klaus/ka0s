@@ -1,4 +1,4 @@
-name: Scan Directories and Trigger Workflows
+name: Ka0s Scan Directories and Trigger Workflows
 
 on:
   workflow_dispatch:
@@ -18,16 +18,28 @@ on:
         default: false
         type: boolean
 
+env:
+  KAOS_BASE_PATH: core/runner
+  KAOS_MODULE: "[Ka0S] Scan Directories and Trigger Workflows"
+  KAOS_CODE: ${{ github.run_id }}
+  KAOS_TARGET_WORKFLOW: scan-image.yml
+  KAOS_DRY_RUN: false
+  REPORTS_DESTINATION: audit/scan
+
 jobs:
-  scan-directories:
-    runs-on: ubuntu-latest
+  job-core:
+    runs-on: swarm-runners
     outputs:
       matrix: ${{ steps.create-matrix.outputs.matrix }}
       has-dockerfiles: ${{ steps.create-matrix.outputs.has-dockerfiles }}
     
     steps:
-    - name: Checkout repository
+    - name: Checkout code
+      if: ${{ always() }}
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.KAOS_REPO_TOKEN }}
 
     - name: Scan directories and create matrix
       id: create-matrix
