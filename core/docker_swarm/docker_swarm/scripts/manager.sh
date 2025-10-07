@@ -38,29 +38,31 @@ get_access_token() {
   
   # Primero obtenemos el token de instalación
   token_response=$(curl -s -X POST -H "Authorization: Bearer ${JWT}" -H "Accept: application/vnd.github+json" "https://api.github.com/app/installations/${INSTALLATION_ID}/access_tokens")
-  if ! echo "$token_response" | jq empty 2>/dev/null; then
+  token_response_clean=$(echo "$token_response" | tr -d '\000-\037')
+  if ! echo "$token_response_clean" | jq empty 2>/dev/null; then
     log "----------------------------------------"
-    log "ERROR: Respuesta inválida al obtener token de instalación: $token_response"
+    log "ERROR: Respuesta inválida al obtener token de instalación: $token_response_clean"
     log "----------------------------------------"
     return 1
   fi
-  temp_token=$(echo "$token_response" | jq -r .token)
+  temp_token=$(echo "$token_response_clean" | jq -r .token)
 
   # Luego usamos ese token para obtener el token de registro del runner
   registration_response=$(curl -s -X POST \
     -H "Authorization: Bearer ${temp_token}" \
     -H "Accept: application/vnd.github+json" \
     "https://api.github.com/orgs/${ORG_FULL_NAME}/actions/runners/registration-token")
-  if ! echo "$registration_response" | jq empty 2>/dev/null; then
+  registration_response_clean=$(echo "$registration_response" | tr -d '\000-\037')
+  if ! echo "$registration_response_clean" | jq empty 2>/dev/null; then
     log "----------------------------------------"
-    log "ERROR: Respuesta inválida al obtener token de registro: $registration_response"
+    log "ERROR: Respuesta inválida al obtener token de registro: $registration_response_clean"
     log "----------------------------------------"
     return 1
   fi
-  ACCESS_TOKEN=$(echo "$registration_response" | jq -r .token)
+  ACCESS_TOKEN=$(echo "$registration_response_clean" | jq -r .token)
   if [ -z "$ACCESS_TOKEN" ] || [ "$ACCESS_TOKEN" = "null" ]; then 
     log "----------------------------------------"
-    log "ERROR al obtener token de registro: ${registration_response}"
+    log "ERROR al obtener token de registro: ${registration_response_clean}"
     log "----------------------------------------"
     return 1
   fi
