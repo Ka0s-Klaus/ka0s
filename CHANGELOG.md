@@ -4245,3 +4245,21 @@
   - audit/mdlint/18310230803.txt
   - version.txt
 ---------------------------------
+## Version 0.4.10
+- **Branch**: refs/pull/1840/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Tue Oct  7 13:55:18 UTC 2025
+- **Message**: H1646 modulo de control de runners
+- **Files Changed**:
+  - .github/workflows/scan-image.yml
+  - audit/kaos/18314923047-files-in-commit.txt
+  - audit/kaos/18314923047.json
+  - core/runner/itsm-runner/0.0.0/Dockerfile
+  - core/runner/itsm-runner/0.0.0/install.sh
+  - core/runner/itsm-runner/latest/Dockerfile
+  - core/runner/itsm-runner/latest/install.sh
+  - core/runner/trivy-runner/0.0.0/Dockerfile
+  - core/runner/trivy-runner/latest/Dockerfile
+  - version.txt
+---------------------------------
