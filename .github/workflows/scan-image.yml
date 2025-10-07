@@ -54,7 +54,7 @@ jobs:
         if: success()
         run: |
           # Instalamos Trivy directamente desde el script oficial
-          # curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin v0.48.3
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin v0.48.3
 
           # Ejecutamos el escaneo de la imagen
           sudo trivy image --severity HIGH,CRITICAL --ignore-unfixed --format table ${{ inputs.image_name }}:${{ inputs.version }}
