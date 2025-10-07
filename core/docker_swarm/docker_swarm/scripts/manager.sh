@@ -3,6 +3,7 @@ set -e
 log() { echo "$(date -u +'%Y-%m-%dT%H:%M:%SZ') - $1"; }
 
 # --- CONFIGURACIÓN ---
+log "Paso 1: Configuración inicial"
 export DOCKER_HOST=unix:///var/run/docker.sock
 RUNNER_SERVICE_NAME=${RUNNER_SERVICE_NAME:-"kaosrunner_github-actions-runner"}
 MAX_RUNNERS=${MAX_RUNNERS}
@@ -11,6 +12,7 @@ CICLOS_MAX=${CICLOS}
 CICLOS_LAPSED=0
 
 # --- LEER SECRETOS ---
+log "Paso 2: Lectura de secretos de GitHub App"
 APP_ID=$(cat /run/secrets/github_app_id)
 INSTALLATION_ID=$(cat /run/secrets/github_installation_id)
 PRIVATE_KEY_PATH="/run/secrets/github_app_private_key"
@@ -18,12 +20,14 @@ REPO_FULL_NAME=$(cat /run/secrets/github_scope)
 ORG_FULL_NAME=$(cat /run/secrets/github_scope_org)
 
 # --- AUTENTICACIÓN ---
+log "Paso 3: Preparación de autenticación y tokens"
 ACCESS_TOKEN=""
 TOKEN_EXPIRES_AT=0
 log "----------------------------------------"
 log "Iniciamos el Manager..."
 log "----------------------------------------"
 get_access_token() {
+  log "Paso 4: Generando token de acceso"
   log "----------------------------------------"
   log "Generando token de acceso..."
   log "----------------------------------------"
@@ -61,11 +65,13 @@ get_access_token() {
 }
 
 update_runner_token() {
+  log "Paso 5: Actualizando token en el servicio Docker"
   docker service update --env-add "GITHUB_TOKEN=${ACCESS_TOKEN}" "${RUNNER_SERVICE_NAME}" || true
   log "Se ha actualizado el GITHUB_TOKEN, ${ACCESS_TOKEN} ..."
 }
 
 # --- FUNCIONES DE ESTADO DE RUNNERS ---
+log "Paso 6: Definiendo funciones de estado de runners"
 get_active_runner_status() {
   docker service ps "$RUNNER_SERVICE_NAME" --filter "desired-state=running" --format "{{.ID}} {{.CurrentState}}" | grep -E "Running|Ready" | wc -l
 }
@@ -74,9 +80,10 @@ get_idle_runners() {
 }
 
 # --- BUCLE PRINCIPAL ---
-log "Iniciando manager para el repositorio: ${REPO_FULL_NAME}..."
+log "Paso 7: Iniciando bucle principal del manager para el repositorio: ${REPO_FULL_NAME}"
 API_URL_RUNS="https://api.github.com/repos/${REPO_FULL_NAME}/actions/runs"
 while true; do
+  log "Paso 8: Comprobando y renovando tokens si es necesario"
   now=$(date +%s)
   if [ -z "$ACCESS_TOKEN" ] || [ "$now" -ge "$((TOKEN_EXPIRES_AT - 300))" ]; then
     if ! get_access_token; then
@@ -88,6 +95,7 @@ while true; do
     CICLOS_LAPSED=0
   fi
   AUTH_HEADER="Authorization: Bearer ${temp_token}"
+  log "Paso 9: Consultando trabajos en cola y en progreso"
   response=$(curl -s -H "$AUTH_HEADER" -H "Accept: application/vnd.github.v3+json" "$API_URL_RUNS?status=queued")
   queued_jobs=$(echo "$response" | jq '.total_count // 0')
   response_in=$(curl -s -H "$AUTH_HEADER" -H "Accept: application/vnd.github.v3+json" "$API_URL_RUNS?status=in_progress")
@@ -95,6 +103,7 @@ while true; do
   active_runners=$(get_active_runner_status)
   idle_runners=$(get_idle_runners)
   needed_runners=$((queued_jobs + active_jobs))
+  log "Paso 10: Escalando o desescalando runners si corresponde"
   if [ "$CICLOS_LAPSED" -eq "$CICLOS_MAX" ]; then
     if [ "$queued_jobs" -gt 0 ] && [ "$idle_runners" -eq 0 ]; then
       log "Escalando runners..."
@@ -109,6 +118,7 @@ while true; do
     CICLOS_LAPSED=0
     log "Reiniciamos los CICLOS_LAPSED..."
   fi
+  log "Paso 11: Estado actual de runners y trabajos"
   log "Runners Activos: $active_runners"
   log "Runners Libres: $idle_runners"
   log "En cola detectados: $queued_jobs"
