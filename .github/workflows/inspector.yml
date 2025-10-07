@@ -51,7 +51,7 @@ jobs:
           git pull --rebase
           git add ${{ env.KAOS_OUTPUT_EXECUTION }}
           git commit -m "[Ka0S] Inspector uploading resume execution files to the repository..." || echo "No changes to commit"
-          MAX_RETRIES=3
+          MAX_RETRIES=5
           COUNT=0
           until git push origin ${{ github.ref }} --force-with-lease; do
             COUNT=$((COUNT+1))
