@@ -2,11 +2,11 @@
 set -e
 log() {
   if echo "$1" | grep -q "Paso"; then
-    # Verde: \033[0;32m ... \033[0m
-    echo -e "$(date +'%Y-%m-%dT%H:%M:%S%z') - \033[0;32m$1\033[0m"
+    # Verde
+    printf "%s - \033[0;32m%s\033[0m\n" "$(date +'%Y-%m-%dT%H:%M:%S%z')" "$1"
   else
-    # Azul: \033[0;34m ... \033[0m
-    echo -e "$(date +'%Y-%m-%dT%H:%M:%S%z') - \033[0;34m$1\033[0m"
+    # Azul
+    printf "%s - \033[0;34m%s\033[0m\n" "$(date +'%Y-%m-%dT%H:%M:%S%z')" "$1"
   fi
 }
 
