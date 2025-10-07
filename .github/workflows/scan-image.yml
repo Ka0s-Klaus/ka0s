@@ -57,8 +57,8 @@ jobs:
           curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin v0.48.3
 
           # Ejecutamos el escaneo de la imagen
-          sudo trivy image --severity HIGH,CRITICAL --ignore-unfixed --format table ${{ inputs.image_name }}:${{ inputs.version }}
-          sudo trivy image --severity HIGH,CRITICAL --ignore-unfixed --format json ${{ inputs.image_name }}:${{ inputs.version }} > ${{ env.KAOS_PATH_SCAN }}${{ env.KAOS_CODE }}.json
+          sudo trivy image --timeout 300 --severity HIGH,CRITICAL --ignore-unfixed --format table ${{ inputs.image_name }}:${{ inputs.version }}
+          sudo trivy image --timeout 300 --severity HIGH,CRITICAL --ignore-unfixed --format json ${{ inputs.image_name }}:${{ inputs.version }} > ${{ env.KAOS_PATH_SCAN }}${{ env.KAOS_CODE }}.json
           echo "Subimos el scan_image_from_${{ env.KAOS_CODE }}.json a la ruta ${{ env.KAOS_PATH_SCAN }}"
           echo "Uploading files to the repository..."
           git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
