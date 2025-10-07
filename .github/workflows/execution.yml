@@ -262,7 +262,7 @@ jobs:
     runs-on: 
       group: swarm-runners
     needs: [job-repo, check-issue, check-data, show-data, start-execution, end-execution, handle-success, handle_failure]
-    if: ${{ always() }}
+    if: ${{ !contains(github.event.issue.title, '[Ka0s]') && github.ref == 'refs/heads/main' }}
     steps:
       - id: repo
         name: Checkout repository
