@@ -63,7 +63,7 @@ jobs:
           echo "Uploading files to the repository..."
           git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
           git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
-          git pull
+          git pull --rebase
           git add ${{ env.KAOS_PATH_SCAN }}*
           git commit -m "[Ka0s] Add scan image from ${{ env.KAOS_CODE }}"
           git push
