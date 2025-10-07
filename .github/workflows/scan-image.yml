@@ -65,8 +65,19 @@ jobs:
           git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
           git pull --rebase
           git add ${{ env.KAOS_PATH_SCAN }}*
-          git commit -m "[Ka0s] Add scan image from ${{ env.KAOS_CODE }}"
-          git push
+          git commit -m "[Ka0s] Add scan image from ${{ env.KAOS_CODE }}" || echo "No changes to commit"
+          MAX_RETRIES=3
+          COUNT=0
+          until git push origin ${{ github.ref }} --force-with-lease; do
+            COUNT=$((COUNT+1))
+            if [ $COUNT -ge $MAX_RETRIES ]; then
+              echo "❌ Error: git push failed after $MAX_RETRIES attempts."
+              exit 1
+            fi
+            echo "⚠️ git push failed, retrying ($COUNT/$MAX_RETRIES)..."
+            git pull --rebase
+            sleep 2
+          done
 
       - name: Tag and Push if scan passes
         if: success()
