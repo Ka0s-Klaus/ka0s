@@ -214,11 +214,15 @@ jobs:
     steps:
     - name: Trigger target workflow
       uses: actions/github-script@v7
+      env:
+        IMAGE_NAME: ${{ matrix.image_name }}
+        VERSION: ${{ matrix.version }}
+        DOCKERFILE_PATH: ${{ matrix.dockerfile_path }}
       with:
         script: |
-          const imageName = "${{ matrix.image_name }}";
-          const version = "${{ matrix.version }}";
-          const dockerfilePath = "${{ matrix.dockerfile_path }}";
+          const imageName = process.env.IMAGE_NAME;
+          const version = process.env.VERSION;
+          const dockerfilePath = process.env.DOCKERFILE_PATH;
           console.log(`✅ Triggered workflow for ${imageName}:${version}`);
           console.log(`📁 Dockerfile: ${dockerfilePath}`);
 
