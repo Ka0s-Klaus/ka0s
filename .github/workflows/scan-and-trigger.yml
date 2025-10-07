@@ -211,19 +211,16 @@ jobs:
       matrix:
         include: ${{ fromJson(needs.job-core.outputs.matrix) }}
       fail-fast: false
-    
     steps:
     - name: Trigger target workflow
       uses: actions/github-script@v7
       with:
         script: |
-          // Aquí puedes lanzar la imagen o el workflow
-          // Ejemplo de uso de las variables
-          console.log(`✅ Triggered workflow for ${image_name}:${version}`);
-          console.log(`📁 Dockerfile: ${dockerfile_path}`);
-        image_name: ${{ matrix.image_name }}
-        version: ${{ matrix.version }}
-        dockerfile_path: ${{ matrix.dockerfile_path }}
+          const imageName = "${{ matrix.image_name }}";
+          const version = "${{ matrix.version }}";
+          const dockerfilePath = "${{ matrix.dockerfile_path }}";
+          console.log(`✅ Triggered workflow for ${imageName}:${version}`);
+          console.log(`📁 Dockerfile: ${dockerfilePath}`);
 
   handle-success:
     runs-on:
