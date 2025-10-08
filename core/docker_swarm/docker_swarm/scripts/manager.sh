@@ -1,7 +1,5 @@
 #!/bin/sh
 set -e
-log() { echo "$(date +'%Y-%m-%dT%H:%M:%SZ') - $1"; }
-
 log() {
   if echo "$1" | grep -q "Paso"; then
     printf "%s - \033[0;32m%s\033[0m\n" "$(date +'%Y-%m-%dT%H:%M:%S%z')" "$1"
@@ -80,10 +78,6 @@ get_access_token() {
   signature=$(echo -n "${header_b64}.${payload_b64}" | openssl dgst -sha256 -sign "${PRIVATE_KEY_PATH}" | openssl base64 -e -A | tr '+/' '-_' | tr -d '=')
   JWT="${header_b64}.${payload_b64}.${signature}"
   token_response=$(curl -s -X POST -H "Authorization: Bearer ${JWT}" -H "Accept: application/vnd.github+json" "https://api.github.com/app/installations/${INSTALLATION_ID}/access_tokens")
-  token_response_clean=$(echo "$token_response" | tr -d '\000-\037')
-  log "Respuesta token (limpia): $token_response_clean"
-  if ! echo "$token_response_clean" | jq empty 2>/dev/null; then
-    log "ERROR: Respuesta inválida al obtener token de instalación: $token_response_clean"
   token_response_clean=$(echo "$token_response" | tr -d '\000-\037' | iconv -c -t UTF-8)
   if ! validate_json "$token_response_clean"; then
     alert "ERROR: Respuesta inválida al obtener token de instalación"
@@ -95,10 +89,6 @@ get_access_token() {
     -H "Authorization: Bearer ${temp_token}" \
     -H "Accept: application/vnd.github+json" \
     "https://api.github.com/orgs/${ORG_FULL_NAME}/actions/runners/registration-token")
-  registration_response_clean=$(echo "$registration_response" | tr -d '\000-\037')
-  log "Respuesta registro (limpia): $registration_response_clean"
-  if ! echo "$registration_response_clean" | jq empty 2>/dev/null; then
-    log "ERROR: Respuesta inválida al obtener token de registro: $registration_response_clean"
   registration_response_clean=$(echo "$registration_response" | tr -d '\000-\037' | iconv -c -t UTF-8)
   if ! validate_json "$registration_response_clean"; then
     alert "ERROR: Respuesta inválida al obtener token de registro"
@@ -145,12 +135,6 @@ while true; do
   fi
   AUTH_HEADER="Authorization: Bearer ${temp_token}"
   log "Paso 9: Consultando trabajos en cola y en progreso"
-  response=$(curl -s -H "$AUTH_HEADER" -H "Accept: application/vnd.github.v3+json" "$API_URL_RUNS?status=queued")
-  response_clean=$(echo "$response" | tr -d '\000-\037')
-  queued_jobs=$(echo "$response_clean" | jq '.total_count // 0')
-  response_in=$(curl -s -H "$AUTH_HEADER" -H "Accept: application/vnd.github.v3+json" "$API_URL_RUNS?status=in_progress")
-  response_in_clean=$(echo "$response_in" | tr -d '\000-\037')
-  active_jobs=$(echo "$response_in_clean" | jq '.total_count // 0')
   response=$(get_api_response "$API_URL_RUNS?status=queued" "$AUTH_HEADER")
   if [ $? -ne 0 ]; then
     alert "ERROR: No se pudo obtener trabajos en cola."
