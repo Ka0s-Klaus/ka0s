@@ -1,14 +1,6 @@
 #!/bin/sh
 set -e
-log() {
-  if echo "$1" | grep -q "Paso"; then
-    # Verde
-    printf "%s - \033[0;32m%s\033[0m\n" "$(date +'%Y-%m-%dT%H:%M:%S%z')" "$1"
-  else
-    # Azul
-    printf "%s - \033[0;34m%s\033[0m\n" "$(date +'%Y-%m-%dT%H:%M:%S%z')" "$1"
-  fi
-}
+log() { echo "$(date +'%Y-%m-%dT%H:%M:%SZ') - $1"; }
 
 # --- CONFIGURACIÓN ---
 log "Paso 1: Configuración inicial"
@@ -46,6 +38,7 @@ get_access_token() {
   JWT="${header_b64}.${payload_b64}.${signature}"
   token_response=$(curl -s -X POST -H "Authorization: Bearer ${JWT}" -H "Accept: application/vnd.github+json" "https://api.github.com/app/installations/${INSTALLATION_ID}/access_tokens")
   token_response_clean=$(echo "$token_response" | tr -d '\000-\037')
+  log "Respuesta token (limpia): $token_response_clean"
   if ! echo "$token_response_clean" | jq empty 2>/dev/null; then
     log "ERROR: Respuesta inválida al obtener token de instalación: $token_response_clean"
     return 1
@@ -56,6 +49,7 @@ get_access_token() {
     -H "Accept: application/vnd.github+json" \
     "https://api.github.com/orgs/${ORG_FULL_NAME}/actions/runners/registration-token")
   registration_response_clean=$(echo "$registration_response" | tr -d '\000-\037')
+  log "Respuesta registro (limpia): $registration_response_clean"
   if ! echo "$registration_response_clean" | jq empty 2>/dev/null; then
     log "ERROR: Respuesta inválida al obtener token de registro: $registration_response_clean"
     return 1
@@ -105,9 +99,11 @@ while true; do
   AUTH_HEADER="Authorization: Bearer ${temp_token}"
   log "Paso 9: Consultando trabajos en cola y en progreso"
   response=$(curl -s -H "$AUTH_HEADER" -H "Accept: application/vnd.github.v3+json" "$API_URL_RUNS?status=queued")
-  queued_jobs=$(echo "$response" | jq '.total_count // 0')
+  response_clean=$(echo "$response" | tr -d '\000-\037')
+  queued_jobs=$(echo "$response_clean" | jq '.total_count // 0')
   response_in=$(curl -s -H "$AUTH_HEADER" -H "Accept: application/vnd.github.v3+json" "$API_URL_RUNS?status=in_progress")
-  active_jobs=$(echo "$response_in" | jq '.total_count // 0')
+  response_in_clean=$(echo "$response_in" | tr -d '\000-\037')
+  active_jobs=$(echo "$response_in_clean" | jq '.total_count // 0')
   active_runners=$(get_active_runner_status)
   idle_runners=$(get_idle_runners)
   needed_runners=$((queued_jobs + active_jobs))
