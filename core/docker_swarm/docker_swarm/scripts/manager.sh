@@ -105,9 +105,11 @@ while true; do
   AUTH_HEADER="Authorization: Bearer ${temp_token}"
   log "Paso 9: Consultando trabajos en cola y en progreso"
   response=$(curl -s -H "$AUTH_HEADER" -H "Accept: application/vnd.github.v3+json" "$API_URL_RUNS?status=queued")
-  queued_jobs=$(echo "$response" | jq '.total_count // 0')
+  response_clean=$(echo "$response" | tr -d '\000-\037')
+  queued_jobs=$(echo "$response_clean" | jq '.total_count // 0')
   response_in=$(curl -s -H "$AUTH_HEADER" -H "Accept: application/vnd.github.v3+json" "$API_URL_RUNS?status=in_progress")
-  active_jobs=$(echo "$response_in" | jq '.total_count // 0')
+  response_in_clean=$(echo "$response_in" | tr -d '\000-\037')
+  active_jobs=$(echo "$response_in_clean" | jq '.total_count // 0')
   active_runners=$(get_active_runner_status)
   idle_runners=$(get_idle_runners)
   needed_runners=$((queued_jobs + active_jobs))
