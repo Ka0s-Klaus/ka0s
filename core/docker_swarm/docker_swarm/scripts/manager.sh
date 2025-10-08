@@ -1,6 +1,6 @@
 #!/bin/sh
 set -e
-log() { echo "$(date +'%Y-%m-%dT%H:%M:%SZ') - $1"; }
+log() { echo "[$(date +'%d-%m-%Y %H:%M:%S')] - $1"; }
 
 alert() {
   printf "%s - \033[0;31m%s\033[0m\n" "$(date +'%Y-%m-%dT%H:%M:%S%z')" "$1"
