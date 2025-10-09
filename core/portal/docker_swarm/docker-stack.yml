@@ -2,7 +2,11 @@ version: "3.8"
 
 volumes:
   portal_data:
-    external: true
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=192.168.1.52,rw,nolock,soft
+      device: :/portal
 
 secrets:
   POSTGRES_PASSWORD:
