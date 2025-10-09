@@ -4,4 +4,4 @@ WORKDIR /app
 # No copies redundantes, solo instala dependencias si es necesario
 RUN yarn install --production || true
 EXPOSE 7007
-CMD ["yarn", "workspace", "backend", "start"]
+CMD ["sh", "-c", "if [ ! -f /app/package.json ] || [ ! -d /app/packages/backend ]; then echo 'ERROR: El volumen /app no está correctamente poblado. Faltan package.json o packages/backend.'; ls -l /app; exit 1; fi; yarn workspace backend start"]
