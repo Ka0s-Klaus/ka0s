@@ -23,7 +23,7 @@ docker secret create "$FRONTEND_SECRET" ./frontend_secret.txt
 docker secret create "$SSL_CERT_SECRET" ./core.ka0s.io.crt
 
 # Crea el secreto para la clave SSL
-docker secret create "$SSL_KEY_SECRET" ./core.ka0s.io.key
+docker secret create "$SSL_KEY_SECRET" ./core.ka0s.io.pem
 
 # Muestra los secretos creados
 echo "Se han creado los siguientes secretos:"
