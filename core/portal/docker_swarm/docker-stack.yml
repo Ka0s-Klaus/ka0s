@@ -1,0 +1,70 @@
+version: "3.8"
+
+volumes:
+  portal_data:
+    external: true
+
+secrets:
+  POSTGRES_PASSWORD:
+    external: true
+  BACKEND_SECRET:
+    external: true
+  FRONTEND_SECRET:
+    external: true
+  SSL_CERT:
+    external: true
+  SSL_KEY:
+    external: true
+
+services:
+  backend:
+    image: portal_backend:latest
+    build:
+      context: ../../portal/portal/packages/backend
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: production
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: postgres
+      POSTGRES_DB: password
+      POSTGRES_PASSWORD_FILE: /run/secrets/POSTGRES_PASSWORD
+      BACKEND_SECRET_FILE: /run/secrets/BACKEND_SECRET
+    secrets:
+      - POSTGRES_PASSWORD
+      - BACKEND_SECRET
+    volumes:
+      - portal_data:/app/data
+    networks:
+      - portal_net
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  frontend:
+    image: portal_frontend:latest
+    build:
+      context: ../../portal/portal/packages/app
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: production
+      FRONTEND_SECRET_FILE: /run/secrets/FRONTEND_SECRET
+    secrets:
+      - FRONTEND_SECRET
+      - SSL_CERT
+      - SSL_KEY
+    ports:
+      - "3000:3000"
+    volumes:
+      - portal_data:/app/data
+    networks:
+      - portal_net
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+networks:
+  portal_net:
+    driver: overlay
