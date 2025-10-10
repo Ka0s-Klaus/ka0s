@@ -128,6 +128,25 @@ jobs:
             ] | @csv)
           ' ${{ env.KAOS_PATH_RESUME }}actually-workflows-runs.json > ${{ env.KAOS_PATH_RESUME }}actually-workflows-runs.csv
 
+      - name: Extraer issues completas en JSON y texto plano
+        run: |
+          mkdir -p audit/issues
+          // Obtener el último número de issue registrado
+          if [ -s audit/issues/README.MD ]; then
+            LAST_ISSUE=$(jq '.[].number' audit/issues/README.MD | sort -nr | head -n1)
+          else
+            LAST_ISSUE=0
+          fi
+          echo "LAST_ISSUE=$LAST_ISSUE" >> $GITHUB_ENV
+          # Descargar solo las issues posteriores a la última registrada
+          gh api "/repos/${{ env.GH_REPO }}/issues?state=all&filter=all&per_page=100" --paginate --jq '.' > audit/issues/all-issues.json
+          jq -c '.[] | select(.number > $LAST_ISSUE)' --argjson LAST_ISSUE "$LAST_ISSUE" audit/issues/all-issues.json | while read -r issue; do
+            number=$(echo "$issue" | jq -r '.number')
+            echo "$issue" > audit/issues/${number}.json
+            echo "$issue" | jq -r 'to_entries | map("\(.key): \(.value)") | .[]' > audit/issues/${number}.txt
+          done
+          cat audit/issues/all-issues.json > audit/issues/README.MD
+
       - name: Generate actually issues
         run: |
           gh api \
