@@ -20,18 +20,22 @@ secrets:
   SSL_KEY:
     external: true
 
+configs:
+  preinstall_deps_sh:
+    external: true
+
 services:
   backend:
-    image: portal_backend:latest
+    image: ka0score/portal-backend:0.0.0
     build:
-      context: ../../portal/portal/packages/backend
+      context: ../../packages/backend
       dockerfile: Dockerfile
     environment:
       NODE_ENV: production
       POSTGRES_HOST: db
       POSTGRES_PORT: 5432
       POSTGRES_USER: postgres
-      POSTGRES_DB: password
+      POSTGRES_DB: /run/secrets/POSTGRES_PASSWORD
       POSTGRES_PASSWORD_FILE: /run/secrets/POSTGRES_PASSWORD
       BACKEND_SECRET_FILE: /run/secrets/BACKEND_SECRET
     secrets:
@@ -45,6 +49,9 @@ services:
       replicas: 1
       restart_policy:
         condition: on-failure
+    configs:
+      - source: preinstall_deps_sh
+        target: /manager.sh
 
   frontend:
     image: ka0score/portal-frontend:0.0.0
@@ -65,6 +72,9 @@ services:
       replicas: 1
       restart_policy:
         condition: on-failure
+    configs:
+     - source: preinstall_deps_sh
+       target: /manager.sh
 
 networks:
   portal_net:

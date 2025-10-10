@@ -2,4 +2,6 @@
 FROM node:22-bookworm-slim
 WORKDIR /app
 EXPOSE 3000
-CMD ["sh", "-c", "if [ ! -f /app/package.json ] || [ ! -d /app/packages/app ]; then echo 'ERROR: El volumen /app no está correctamente poblado. Faltan package.json o packages/app.'; ls -l /app; exit 1; fi; yarn workspaces focus --all && yarn workspace app start"]
+COPY preinstall-deps.sh /app/preinstall-deps.sh
+RUN chmod +x /app/preinstall-deps.sh
+CMD ["sh", "-c", "/app/preinstall-deps.sh && yarn workspace app start"]
