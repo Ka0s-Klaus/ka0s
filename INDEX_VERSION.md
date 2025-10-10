@@ -212,3 +212,4 @@
 - **Version**: 0.4.10 - **Description**: H1646 modulo de control de runners
 - **Version**: 0.4.10 - **Description**: H1646 modulo de control de runners
 - **Version**: 0.4.10 - **Description**: H1646 modulo de control de runners
+- **Version**: 0.4.10 - **Description**: H1968 modulo personalización del portal de kaos core

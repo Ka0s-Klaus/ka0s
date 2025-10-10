@@ -4263,3 +4263,20 @@
   - core/runner/trivy-runner/latest/Dockerfile
   - version.txt
 ---------------------------------
+## Version 0.4.10
+- **Branch**: refs/pull/1999/merge
+- **Commit**: [Ka0S] Uploading mdlint resume execution files...
+- **Author**: Ka0s
+- **Date**: Fri Oct 10 08:59:15 UTC 2025
+- **Message**: H1968 modulo personalización del portal de kaos core
+- **Files Changed**:
+  - audit/kaos/18401569583-files-in-commit.txt
+  - audit/kaos/18401569583.json
+  - audit/mdlint/18401579069.txt
+  - core/docker_swarm/docker_swarm/scripts/manager.sh
+  - core/docs/ka0s/mapa_estructura_workspace.md
+  - core/portal/docker_swarm/docker-stack.yml
+  - core/runner/portal-backend/0.0.0/Dockerfile
+  - core/runner/portal-frontend/0.0.0/Dockerfile
+  - version.txt
+---------------------------------
