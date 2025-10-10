@@ -72,28 +72,43 @@ get_access_token() {
   payload_b64=$(printf '{"iat":%s,"exp":%s,"iss":"%s"}' "${iat}" "${exp}" "${APP_ID}" | openssl base64 -e -A | tr '+/' '-_' | tr -d '=')
   signature=$(echo -n "${header_b64}.${payload_b64}" | openssl dgst -sha256 -sign "${PRIVATE_KEY_PATH}" | openssl base64 -e -A | tr '+/' '-_' | tr -d '=')
   JWT="${header_b64}.${payload_b64}.${signature}"
-  token_response=$(curl -s -X POST -H "Authorization: Bearer ${JWT}" -H "Accept: application/vnd.github+json" "https://api.github.com/app/installations/${INSTALLATION_ID}/access_tokens")
-  token_response_clean=$(echo "$token_response" | tr -d '\000-\037' | iconv -c -t UTF-8)
-  if ! validate_json "$token_response_clean"; then
-    alert "ERROR: Respuesta inválida al obtener token de instalación"
-    log_error "Token install error: $token_response_clean"
+  # Captura código HTTP y cuerpo
+  token_response=$(curl -s -w "HTTPSTATUS:%{http_code}" -X POST -H "Authorization: Bearer ${JWT}" -H "Accept: application/vnd.github+json" "https://api.github.com/app/installations/${INSTALLATION_ID}/access_tokens")
+  token_body=$(echo "$token_response" | sed -e 's/HTTPSTATUS:.*//g')
+  token_status=$(echo "$token_response" | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
+  token_body_clean=$(echo "$token_body" | tr -d '\000-\037' | iconv -c -t UTF-8)
+  if ! validate_json "$token_body_clean"; then
+    alert "ERROR: Respuesta inválida al obtener token de instalación (HTTP $token_status)"
+    log_error "Token install error ($token_status): $token_body_clean"
+    if [ "$token_status" = "429" ]; then
+      alert "GitHub API rate limit alcanzado, esperando 5 minutos..."
+      log_error "Rate limit alcanzado, esperando 5 minutos."
+      sleep 300
+    fi
     return 1
   fi
-  temp_token=$(echo "$token_response_clean" | jq -r .token)
-  registration_response=$(curl -s -X POST \
+  temp_token=$(echo "$token_body_clean" | jq -r .token)
+  registration_response=$(curl -s -w "HTTPSTATUS:%{http_code}" -X POST \
     -H "Authorization: Bearer ${temp_token}" \
     -H "Accept: application/vnd.github+json" \
     "https://api.github.com/orgs/${ORG_FULL_NAME}/actions/runners/registration-token")
-  registration_response_clean=$(echo "$registration_response" | tr -d '\000-\037' | iconv -c -t UTF-8)
-  if ! validate_json "$registration_response_clean"; then
-    alert "ERROR: Respuesta inválida al obtener token de registro"
-    log_error "Token registration error: $registration_response_clean"
+  registration_body=$(echo "$registration_response" | sed -e 's/HTTPSTATUS:.*//g')
+  registration_status=$(echo "$registration_response" | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
+  registration_body_clean=$(echo "$registration_body" | tr -d '\000-\037' | iconv -c -t UTF-8)
+  if ! validate_json "$registration_body_clean"; then
+    alert "ERROR: Respuesta inválida al obtener token de registro (HTTP $registration_status)"
+    log_error "Token registration error ($registration_status): $registration_body_clean"
+    if [ "$registration_status" = "429" ]; then
+      alert "GitHub API rate limit alcanzado en registro, esperando 5 minutos..."
+      log_error "Rate limit en registro, esperando 5 minutos."
+      sleep 300
+    fi
     return 1
   fi
-  ACCESS_TOKEN=$(echo "$registration_response_clean" | jq -r .token)
+  ACCESS_TOKEN=$(echo "$registration_body_clean" | jq -r .token)
   if [ -z "$ACCESS_TOKEN" ] || [ "$ACCESS_TOKEN" = "null" ]; then 
-    alert "ERROR al obtener token de registro"
-    log_error "Token registration missing: $registration_response_clean"
+    alert "ERROR al obtener token de registro (HTTP $registration_status)"
+    log_error "Token registration missing ($registration_status): $registration_body_clean"
     return 1
   fi
   TOKEN_EXPIRES_AT=$((now + 3600))
