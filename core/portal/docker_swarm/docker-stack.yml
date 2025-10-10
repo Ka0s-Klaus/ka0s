@@ -52,6 +52,7 @@ services:
     configs:
       - source: preinstall_deps_sh
         target: /app/preinstall-deps.sh
+    command: sh -c "chmod +x /app/preinstall-deps.sh && sh /app/preinstall-deps.sh && yarn install --verbose && yarn start"
 
   frontend:
     image: ka0score/portal-frontend:0.0.0
@@ -73,8 +74,9 @@ services:
       restart_policy:
         condition: on-failure
     configs:
-     - source: preinstall_deps_sh
-       target: /app/preinstall-deps.sh
+      - source: preinstall_deps_sh
+        target: /app/preinstall-deps.sh
+    command: sh -c "chmod +x /app/preinstall-deps.sh && sh /app/preinstall-deps.sh && yarn install --verbose && yarn start"
 
 networks:
   portal_net:
