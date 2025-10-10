@@ -53,12 +53,30 @@ jobs:
       - name: Install Trivy vulnerability scanner
         if: success()
         run: |
-          # Instalamos Trivy directamente desde el script oficial
+          set -e
+          echo "[Ka0s][Trivy] Instalando Trivy v0.48.3..."
           curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin v0.48.3
+          echo "[Ka0s][Trivy] Instalación completada."
 
-          # Ejecutamos el escaneo de la imagen
-          sudo trivy image --severity HIGH,CRITICAL --ignore-unfixed --format table ${{ inputs.image_name }}:${{ inputs.version }}
-          sudo trivy image --severity HIGH,CRITICAL --ignore-unfixed --format json ${{ inputs.image_name }}:${{ inputs.version }} > ${{ env.KAOS_PATH_SCAN }}${{ env.KAOS_CODE }}.json
+          echo "[Ka0s][Trivy] Actualizando base de datos de vulnerabilidades..."
+          # Forzamos actualización de la DB y auditamos el proceso
+          sudo trivy --download-db-only || { echo "❌ Error al descargar la base de datos de Trivy"; exit 2; }
+          echo "[Ka0s][Trivy] Base de datos actualizada."
+
+          echo "[Ka0s][Trivy] Ejecutando escaneo de la imagen: ${{ inputs.image_name }}:${{ inputs.version }}"
+          # Ejecutamos el escaneo en modo tabla y auditamos errores
+          if ! sudo trivy image --severity HIGH,CRITICAL --ignore-unfixed --format table ${{ inputs.image_name }}:${{ inputs.version }}; then
+            echo "❌ Error en el escaneo de la imagen (tabla)."
+            echo "Sugerencia: Si el escaneo es lento, prueba con '--scanners vuln' para desactivar el escaneo de secretos."
+            exit 3
+          fi
+          # Escaneo en formato JSON y guardado
+          if ! sudo trivy image --severity HIGH,CRITICAL --ignore-unfixed --format json ${{ inputs.image_name }}:${{ inputs.version }} > ${{ env.KAOS_PATH_SCAN }}${{ env.KAOS_CODE }}.json; then
+            echo "❌ Error en el escaneo de la imagen (json)."
+            exit 4
+          fi
+          echo "[Ka0s][Trivy] Scan completado y guardado en ${{ env.KAOS_PATH_SCAN }}${{ env.KAOS_CODE }}.json"
+
           echo "Subimos el scan_image_from_${{ env.KAOS_CODE }}.json a la ruta ${{ env.KAOS_PATH_SCAN }}"
           echo "Uploading files to the repository..."
           git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
