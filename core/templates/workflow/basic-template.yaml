@@ -1,121 +1,119 @@
-name: Ka0s Basic Template # Display Name of workflow
+name: Ka0s Workflow Base Template
 
-on: # Execution trigger
+on:
+  workflow_dispatch:
+    inputs:
+      example-input:
+        description: "Ejemplo de entrada para el workflow"
+        required: false
+        default: ""
   push:
-    paths: # Types of file to be monitored
-      - '**.html'
-      - '**.js'
-      - '**.yaml'
+    paths:
       - '**.yml'
+      - '**.yaml'
       - '**.json'
       - '**.md'
       - '**.py'
-    branches: # Branches to be monitored
+      - '**.js'
+      - '**.html'
+    branches:
+      - 'main'
       - 'H*'
       - 'F*'
       - 'RN*'
+  schedule:
+    - cron: '0 0 * * *' # Ejemplo: ejecución diaria a medianoche
 
-env: # Environment variables
-    KAOS_CODE: ${{ github.run_id }}
-    KAOS_EVENT_NAME: ${{ github.event_name }}
-    KAOS_ACTION: ${{ github.action }}
-    KAOS_REF: ${{ github.ref }}
-    KAOS_MODULE: "[Ka0S] kaos"
-    KAOS_PATH_RESUME: "audit/kaos/"
-    KAOS_JSON: "audit/kaos/${{ github.run_id }}.json"
-    KAOS_ACTOR: ${{ github.actor }}
+permissions:
+  contents: write
+  actions: write
+  issues: write
+  pull-requests: write
 
-jobs: # Jobs to be executed
-  job-core: # Principal job
+env:
+  KAOS_CODE: ${{ github.run_id }}
+  KAOS_MODULE: "[Ka0S] Base Workflow"
+  KAOS_PATH_RESUME: "audit/kaos/"
+  KAOS_ACTOR: ${{ github.actor }}
+
+jobs:
+  job-core:
+    name: "Core Job"
     runs-on:
-      group: ka0s # Groups or self-hosted runners
-    if: ${{ !contains(github.event.head_commit.message, '[Ka0S] ') }} 
+      group: ka0s
     steps:
-      - id: repo
-        name: Checkout code
-        if: ${{ always() }}
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.KAOS_REPO_TOKEN }}
-
-      - id: execution
-        name: Execution
+      - name: Setup Environment
         run: |
-          echo "Start process"
-          # Here your process
-      
-      - id: upload-files
-        name: Upload Result Files
+          echo "Configurando entorno..."
+      - name: Main Execution
         run: |
-          echo "Uploading files to the repository..."
+          echo "Ejecutando proceso principal..."
+      - name: Upload Results
+        run: |
+          echo "Subiendo resultados..."
           git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
           git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
-          git pull
+          git pull --rebase
           git add *
-          git commit -m "[Ka0S] Uploading resume execution files to the repository..."
-          git push origin ${{ github.ref }} 
-  handle-success: # If success execution
+          git commit -m "[Ka0S] Subiendo archivos de resultado de ejecución..." || echo "Sin cambios para subir"
+          git push origin ${{ github.ref }} --force-with-lease
+
+  handle-success:
+    name: "Handle Success"
     runs-on:
       group: ka0s
     needs: [job-core]
     if: ${{ success() }}
     steps:
-      - id: repo
-        name: Checkout code
-        if: ${{ always() }}
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.KAOS_REPO_TOKEN }}
-      - id: handle-success-execution
-        name: handle-success-execution
-        env:
-          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+      - name: Success Message
         run: |
-          # Si todo ha ido correcto añadimos el contenido del fichero 
+          echo "Proceso finalizado correctamente."
           RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
-          gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado de la ejecución se guardará en MongoDB"
-  handle_failure: # If failed execution
+          gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}."
+
+  handle-failure:
+    name: "Handle Failure"
     runs-on:
       group: ka0s
-    needs: [job-core, handle-success]
-    if: ${{ failure() }} 
+    needs: [job-core]
+    if: ${{ failure() }}
     steps:
-      - id: repo
-        name: Checkout code
-        if: ${{ always() }}
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.KAOS_REPO_TOKEN }}
-      - id: handle-failure-execution
-        name: handle-failure-execution
-        env:
-          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+      - name: Failure Message
         run: |
-          echo "Error detected in process"
+          echo "Error detectado en el proceso."
           RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
           gh issue comment $RNNUMBER --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}."
-  end-workflow: # End workflow
+
+  end-workflow:
+    name: "End Workflow"
     runs-on:
       group: ka0s
-    needs: [job-core, handle-success, handle_failure]
-    if: ${{ always() && !contains(github.event.head_commit.message, '[Ka0S] ') }} 
-    env:
-        GH_TOKEN: ${{ secrets.KAOS_ACTIONS_TOKEN }}
+    needs: [job-core, handle-success, handle-failure]
+    if: ${{ always() }}
     steps:
-      - id: repo
-        name: Checkout code
-        if: ${{ always() }}
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.KAOS_REPO_TOKEN }}
-      - id: end-process
-        name: Finaliza el workflow
+      - name: End Message
         run: |
-          echo "End process"
+          echo "Finalizando workflow..."
           RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
           gh issue comment $RNNUMBER --body "Se finaliza Ka0s ${{ env.KAOS_CODE }}"
           gh workflow run inspector.yml --ref 'main' -f kaos-issue-id=$RNNUMBER -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start=""
