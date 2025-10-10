@@ -169,7 +169,20 @@ while true; do
       docker service update --replicas "$needed_runners" --env-add "GITHUB_TOKEN=${ACCESS_TOKEN}" "$RUNNER_SERVICE_NAME"
       log "Escalados $needed_runners runners ..."
     fi
-    if [ "$queued_jobs" -eq 0 ] && [ "$active_jobs" -eq 0 ] && [ "$idle_runners" -gt 0 ]; then
+    # --- Lógica de "drain" para runners ---
+    # Antes de desescalar, espera a que no haya trabajos en progreso
+    if [ "$queued_jobs" -eq 0 ] && [ "$idle_runners" -gt 0 ]; then
+      while [ "$active_jobs" -gt 0 ]; do
+        log "Esperando a que los jobs activos finalicen antes de desescalar runners..."
+        sleep 30
+        response_in=$(get_api_response "$API_URL_RUNS?status=in_progress" "$AUTH_HEADER")
+        if [ $? -ne 0 ]; then
+          alert "ERROR: No se pudo obtener trabajos en progreso."
+          sleep 60
+          continue
+        fi
+        active_jobs=$(echo "$response_in" | jq '.total_count // 0')
+      done
       log "Desescalando runners..."
       docker service update --replicas 0 --env-add "GITHUB_TOKEN=${ACCESS_TOKEN}" "$RUNNER_SERVICE_NAME"
       log "Desescalamos $idle_runners runners ..."
