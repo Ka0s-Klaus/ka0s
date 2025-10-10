@@ -136,7 +136,7 @@ jobs:
         run: |
           echo "Error detected in process"
           echo "Created issue"
-          gh issue create  --title "[Ka0S] Error detected in ${{ env.KAOS_MODULE }}" --label "bug" --body "Error detected in ${{ env.KAOS_MODULE }}. Please check the logs for ${{ github.run_id }} more information of error."
+          gh issue create  --title "${{ env.KAOS_MODULE }} Error detected in ${{ env.KAOS_CODE }}" --label "bug" --body "Please check the logs 'https://github.com/Ka0s-Klaus/ka0s/actions/runs/${{ env.KAOS_CODE }}' for more information of error."
           echo "Add comment to origin target"
           RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
           gh issue comment $RNNUMBER --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero ${{ env.KAOS_CODE }}.log"
