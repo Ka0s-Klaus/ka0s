@@ -45,8 +45,13 @@ jobs:
       - name: Build image
         if: success()
         run: |
-          # Construimos la imagen
-          sudo docker build -t ${{ inputs.image_name }}:${{ inputs.version }} -f ${{ inputs.dockerfile_path }} . || true
+          # Construimos la imagen y guardamos el log
+          sudo docker build -t ${{ inputs.image_name }}:${{ inputs.version }} -f ${{ inputs.dockerfile_path }} . > ${{ env.KAOS_PATH_SCAN }}build_${{ env.KAOS_CODE }}.log 2>&1 || {
+            echo "❌ Error en docker build. Log guardado en ${{ env.KAOS_PATH_SCAN }}build_${{ env.KAOS_CODE }}.log"
+            touch build_error.log
+            cp ${{ env.KAOS_PATH_SCAN }}build_${{ env.KAOS_CODE }}.log build_error.log
+            exit 10
+          }
           echo "Se ha generado la imagen ${{ inputs.image_name }}:${{ inputs.version }}...."
           sudo usermod -aG docker runner 
     
@@ -65,25 +70,24 @@ jobs:
 
           echo "[Ka0s][Trivy] Ejecutando escaneo de la imagen: ${{ inputs.image_name }}:${{ inputs.version }}"
           # Ejecutamos el escaneo en modo tabla y auditamos errores
-          if ! sudo trivy image --severity HIGH,CRITICAL --ignore-unfixed --format table ${{ inputs.image_name }}:${{ inputs.version }}; then
-            echo "❌ Error en el escaneo de la imagen (tabla)."
-            echo "Sugerencia: Si el escaneo es lento, prueba con '--scanners vuln' para desactivar el escaneo de secretos."
+          if ! sudo trivy image --severity HIGH,CRITICAL --ignore-unfixed --format table ${{ inputs.image_name }}:${{ inputs.version }} > ${{ env.KAOS_PATH_SCAN }}trivy_table_${{ env.KAOS_CODE }}.log 2>&1; then
+            echo "❌ Error en el escaneo de la imagen (tabla). Log guardado en ${{ env.KAOS_PATH_SCAN }}trivy_table_${{ env.KAOS_CODE }}.log"
             exit 3
           fi
           # Escaneo en formato JSON y guardado
-          if ! sudo trivy image --severity HIGH,CRITICAL --ignore-unfixed --format json ${{ inputs.image_name }}:${{ inputs.version }} > ${{ env.KAOS_PATH_SCAN }}${{ env.KAOS_CODE }}.json; then
-            echo "❌ Error en el escaneo de la imagen (json)."
+          if ! sudo trivy image --severity HIGH,CRITICAL --ignore-unfixed --format json ${{ inputs.image_name }}:${{ inputs.version }} > ${{ env.KAOS_PATH_SCAN }}${{ env.KAOS_CODE }}.json 2> ${{ env.KAOS_PATH_SCAN }}trivy_json_${{ env.KAOS_CODE }}.log; then
+            echo "❌ Error en el escaneo de la imagen (json). Log guardado en ${{ env.KAOS_PATH_SCAN }}trivy_json_${{ env.KAOS_CODE }}.log"
             exit 4
           fi
           echo "[Ka0s][Trivy] Scan completado y guardado en ${{ env.KAOS_PATH_SCAN }}${{ env.KAOS_CODE }}.json"
 
-          echo "Subimos el scan_image_from_${{ env.KAOS_CODE }}.json a la ruta ${{ env.KAOS_PATH_SCAN }}"
+          echo "Subimos los logs y el scan_image_from_${{ env.KAOS_CODE }}.json a la ruta ${{ env.KAOS_PATH_SCAN }}"
           echo "Uploading files to the repository..."
           git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
           git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
           git pull --rebase
           git add ${{ env.KAOS_PATH_SCAN }}*
-          git commit -m "[Ka0s] Add scan image from ${{ env.KAOS_CODE }}" || echo "No changes to commit"
+          git commit -m "[Ka0s] Add scan image and logs from ${{ env.KAOS_CODE }}" || echo "No changes to commit"
           MAX_RETRIES=3
           COUNT=0
           until git push origin ${{ github.ref }} --force-with-lease; do
@@ -148,9 +152,12 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
         run: |
-          echo "Error detected in process"
-          echo "Created issue"
-          gh issue create  --title "${{ env.KAOS_MODULE }} Error detected in ${{ env.KAOS_CODE }}" --label "bug" --body "Please check the logs 'https://github.com/Ka0s-Klaus/ka0s/actions/runs/${{ env.KAOS_CODE }}' for more information of error."
+          echo "Error detectado en el proceso"
+          echo "Creando issue para fallo general o fallo en docker build"
+          gh issue create --title "${{ env.KAOS_MODULE }} Error detectado en ${{ env.KAOS_CODE }}" --label "bug" --body "El workflow ha fallado. Revisa los logs en 'https://github.com/Ka0s-Klaus/ka0s/actions/runs/${{ env.KAOS_CODE }}' y en el repositorio en `${{ env.KAOS_PATH_SCAN }}` para más información.\n\nLogs relevantes:\n- [Log de build](https://github.com/Ka0s-Klaus/ka0s/blob/main/${{ env.KAOS_PATH_SCAN }}build_${{ env.KAOS_CODE }}.log)\n- [Log Trivy tabla](https://github.com/Ka0s-Klaus/ka0s/blob/main/${{ env.KAOS_PATH_SCAN }}trivy_table_${{ env.KAOS_CODE }}.log)\n- [Log Trivy json](https://github.com/Ka0s-Klaus/ka0s/blob/main/${{ env.KAOS_PATH_SCAN }}trivy_json_${{ env.KAOS_CODE }}.log)\n- [Resultado JSON](https://github.com/Ka0s-Klaus/ka0s/blob/main/${{ env.KAOS_PATH_SCAN }}${{ env.KAOS_CODE }}.json)"
+          if [ -f build_error.log ]; then
+            gh issue comment $(gh issue list --state open --search "${{ env.KAOS_MODULE }} Error detectado en ${{ env.KAOS_CODE }}" --json number --jq '.[0].number') --body "Detalles del error en docker build:\n\n$(cat build_error.log)\n\n[Ver log completo](https://github.com/Ka0s-Klaus/ka0s/blob/main/${{ env.KAOS_PATH_SCAN }}build_${{ env.KAOS_CODE }}.log)"
+          fi
           
   end-workflow:
     runs-on:
