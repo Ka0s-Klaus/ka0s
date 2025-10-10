@@ -64,8 +64,8 @@ jobs:
           echo "[Ka0s][Trivy] Instalación completada."
 
           echo "[Ka0s][Trivy] Actualizando base de datos de vulnerabilidades..."
-          # Forzamos actualización de la DB y auditamos el proceso
-          sudo trivy --download-db-only || { echo "❌ Error al descargar la base de datos de Trivy"; exit 2; }
+          # Actualizamos la base de datos ejecutando un escaneo dummy (Trivy descarga la DB automáticamente)
+          sudo trivy image --download-db-only || sudo trivy image alpine:latest > /dev/null 2>&1 || { echo "❌ Error al descargar la base de datos de Trivy"; exit 2; }
           echo "[Ka0s][Trivy] Base de datos actualizada."
 
           echo "[Ka0s][Trivy] Ejecutando escaneo de la imagen: ${{ inputs.image_name }}:${{ inputs.version }}"
