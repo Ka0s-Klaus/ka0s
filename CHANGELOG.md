@@ -4280,3 +4280,18 @@
   - core/runner/portal-frontend/0.0.0/Dockerfile
   - version.txt
 ---------------------------------
+## Version 0.4.10
+- **Branch**: refs/pull/2017/merge
+- **Commit**: fix
+- **Author**: Ka0s
+- **Date**: Fri Oct 10 10:22:44 UTC 2025
+- **Message**: H1968 modulo personalización del portal de kaos core
+- **Files Changed**:
+  - .github/workflows/scan-image.yml
+  - .github/workflows/workflow-stats.yml
+  - audit/issues/README.MD
+  - audit/kaos/18403528616-files-in-commit.txt
+  - audit/kaos/18403528616.json
+  - audit/scan/18403457543-20251010-121250.md
+  - version.txt
+---------------------------------
