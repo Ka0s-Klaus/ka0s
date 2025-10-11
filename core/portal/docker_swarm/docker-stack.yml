@@ -41,13 +41,16 @@ services:
     secrets:
       - POSTGRES_PASSWORD
       - BACKEND_SECRET
-    volumes:
-      - portal_data:/app
+    # volumes:
+    #   - portal_data:/app
     working_dir: /app/packages/backend
-    command: sh -c "yarn install --verbose && yarn start"
+    command: sh -c "yarn install && yarn start"
 
   frontend:
     image: ka0score/portal-frontend:0.0.0
+    build:
+      context: ../../portal
+      dockerfile: packages/app/Dockerfile
     environment:
       NODE_ENV: production
       FRONTEND_SECRET_FILE: /run/secrets/FRONTEND_SECRET
@@ -57,8 +60,8 @@ services:
       - SSL_KEY
     ports:
       - "3000:3000"
-    volumes:
-      - portal_data:/app
+    # volumes:
+    #   - portal_data:/app
     networks:
       - portal_net
     deploy:
@@ -68,7 +71,7 @@ services:
     configs:
       - source: preinstall_deps_sh
         target: /app/preinstall-deps.sh
-    command: sh -c "yarn install --verbose && yarn start"
+    command: sh -c "yarn install && yarn start"
 
 networks:
   portal_net:
