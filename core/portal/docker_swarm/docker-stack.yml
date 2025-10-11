@@ -28,8 +28,8 @@ services:
   backend:
     image: ka0score/portal-backend:0.0.0
     build:
-      context: ../../packages/backend
-      dockerfile: Dockerfile
+      context: ../../portal
+      dockerfile: packages/backend/Dockerfile
     environment:
       NODE_ENV: production
       POSTGRES_HOST: db
@@ -43,15 +43,7 @@ services:
       - BACKEND_SECRET
     volumes:
       - portal_data:/app
-    networks:
-      - portal_net
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: on-failure
-    configs:
-      - source: preinstall_deps_sh
-        target: /app/preinstall-deps.sh
+    working_dir: /app/packages/backend
     command: sh -c "yarn install --verbose && yarn start"
 
   frontend:
