@@ -3,11 +3,11 @@ FROM node:22-bookworm-slim
 
 WORKDIR /app
 
-COPY .yarn ./.yarn
-COPY .yarnrc.yml ./
-COPY backstage.json ./
-COPY yarn.lock package.json ./
-COPY packages/app ./packages/app
+COPY --chown=node:node .yarn ./.yarn
+COPY --chown=node:node .yarnrc.yml ./
+COPY --chown=node:node backstage.json ./
+COPY --chown=node:node yarn.lock package.json ./
+COPY --chown=node:node packages/app ./packages/app
 
 ENV NODE_ENV=production
 
