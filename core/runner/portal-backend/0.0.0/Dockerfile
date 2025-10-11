@@ -2,3 +2,5 @@
 FROM node:22-bookworm-slim
 EXPOSE 3000
 WORKDIR /app
+RUN chown -R node:node /app
+USER node
