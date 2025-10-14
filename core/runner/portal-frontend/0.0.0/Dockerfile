@@ -14,7 +14,7 @@ COPY --chown=node:node core/portal/portal/yarn.lock yarn.lock
 # Copiar el código fuente del frontend
 COPY --chown=node:node core/portal/portal/packages/app packages/app
 
-RUN yarn install --immutable --production
+RUN yarn install --immutable --production --verbose
 RUN yarn build --cwd packages/app
 
 EXPOSE 3000
