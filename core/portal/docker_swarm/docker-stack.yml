@@ -23,6 +23,14 @@ secrets:
 configs:
   preinstall_deps_sh:
     external: true
+  app_config_yaml:
+    file: /Users/santale/ka0s-klaus/ka0s/core/portal/portal/app-config.yaml
+  app_config_production_yaml:
+    file: /Users/santale/ka0s-klaus/ka0s/core/portal/portal/app-config.production.yaml
+  catalog_info_yaml:
+    file: /Users/santale/ka0s-klaus/ka0s/core/portal/portal/catalog-info.yaml
+  backstage_json:
+    file: /Users/santale/ka0s-klaus/ka0s/core/portal/portal/backstage.json
 
 services:
   backend:
@@ -71,6 +79,14 @@ services:
     configs:
       - source: preinstall_deps_sh
         target: /app/preinstall-deps.sh
+      - source: app_config_yaml
+        target: /app/app-config.yaml
+      - source: app_config_production_yaml
+        target: /app/app-config.production.yaml
+      - source: catalog_info_yaml
+        target: /app/catalog-info.yaml
+      - source: backstage_json
+        target: /app/backstage.json
     command: sh -c "yarn install && yarn start"
 
 networks:
