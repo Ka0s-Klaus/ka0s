@@ -24,20 +24,20 @@ configs:
   preinstall_deps_sh:
     external: true
   app_config_yaml:
-    file: /Users/santale/ka0s-klaus/ka0s/core/portal/portal/app-config.yaml
+    external: true
   app_config_production_yaml:
-    file: /Users/santale/ka0s-klaus/ka0s/core/portal/portal/app-config.production.yaml
+    external: true
   catalog_info_yaml:
-    file: /Users/santale/ka0s-klaus/ka0s/core/portal/portal/catalog-info.yaml
+    external: true
   backstage_json:
-    file: /Users/santale/ka0s-klaus/ka0s/core/portal/portal/backstage.json
+    external: true
 
 services:
   backend:
     image: ka0score/portal-backend:0.0.0
     build:
-      context: ../../portal
-      dockerfile: packages/backend/Dockerfile
+      context: ./core/portal/portal
+      dockerfile: ../../runner/portal-backend/0.0.0/Dockerfile
     environment:
       NODE_ENV: production
       POSTGRES_HOST: db
@@ -57,8 +57,8 @@ services:
   frontend:
     image: ka0score/portal-frontend:0.0.0
     build:
-      context: ../../portal
-      dockerfile: packages/app/Dockerfile
+      context: ./core/portal/portal
+      dockerfile: ../../runner/portal-frontend/0.0.0/Dockerfile
     environment:
       NODE_ENV: production
       FRONTEND_SECRET_FILE: /run/secrets/FRONTEND_SECRET
