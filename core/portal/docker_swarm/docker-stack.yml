@@ -34,9 +34,7 @@ configs:
 
 services:
   backend:
-    build:
-      context: core/portal/portal
-      dockerfile: core/runner/portal-backend/0.0.0/Dockerfile
+    image: ka0score/portal-backend:0.0.0
     environment:
       NODE_ENV: production
       POSTGRES_HOST: db
@@ -54,9 +52,7 @@ services:
     command: sh -c "yarn install && yarn start"
 
   frontend:
-    build:
-      context: core/portal/portal
-      dockerfile: core/runner/portal-frontend/0.0.0/Dockerfile
+    image: ka0score/portal-frontend:0.0.0
     environment:
       NODE_ENV: production
       FRONTEND_SECRET_FILE: /run/secrets/FRONTEND_SECRET
