@@ -2,7 +2,7 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-RUN apk add --no-cache python3 make g++
+RUN apk add --no-cache libc6-compat build-base python3 make g++
 
 # Copiar archivos de configuración y dependencias desde la raíz del repo
 COPY --chown=node:node core/portal/portal/.yarn .yarn
