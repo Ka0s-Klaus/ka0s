@@ -37,11 +37,12 @@ USER node
 
 WORKDIR /app
 
-COPY --chown=node:node .yarn ./.yarn
-COPY --chown=node:node .yarnrc.yml ./
-COPY --chown=node:node backstage.json ./
-COPY --chown=node:node yarn.lock package.json ./
-COPY --chown=node:node packages/backend ./packages/backend
+COPY .yarn .yarn/
+COPY .yarnrc.yml .yarnrc.yml
+COPY backstage.json backstage.json
+COPY yarn.lock yarn.lock
+COPY package.json package.json
+COPY packages/backend packages/backend
 
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--no-node-snapshot"
