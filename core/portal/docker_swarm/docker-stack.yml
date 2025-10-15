@@ -21,8 +21,6 @@ secrets:
     external: true
 
 configs:
-  preinstall_deps_sh:
-    external: true
   appconfig_yaml:
     external: true
   appconfig_production_yaml:
@@ -46,10 +44,23 @@ services:
     secrets:
       - POSTGRES_PASSWORD
       - BACKEND_SECRET
-    # volumes:
-    #   - portal_data:/app
     working_dir: /app/packages/backend
-    command: sh -c "yarn install && yarn start"
+    command: yarn start --cwd packages/backend
+    volumes:
+      - portal_data:/app
+    configs:
+      - source: appconfig_yaml
+        target: /app/app-config.yaml
+      - source: appconfig_production_yaml
+        target: /app/app-config.production.yaml
+      - source: cataloginfo_yaml
+        target: /app/catalog-info.yaml
+      - source: backstage_json
+        target: /app/backstage.json
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
 
   frontend:
     image: ka0score/portal-frontend:0.0.0
@@ -62,17 +73,9 @@ services:
       - SSL_KEY
     ports:
       - "3000:3000"
-    # volumes:
-    #   - portal_data:/app
     networks:
       - portal_net
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: on-failure
     configs:
-      - source: preinstall_deps_sh
-        target: /app/preinstall-deps.sh
       - source: appconfig_yaml
         target: /app/app-config.yaml
       - source: appconfig_production_yaml
@@ -81,7 +84,13 @@ services:
         target: /app/catalog-info.yaml
       - source: backstage_json
         target: /app/backstage.json
-    command: sh -c "yarn install && yarn start"
+    command: yarn start --cwd packages/app
+    volumes:
+      - portal_data:/app
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
 
 networks:
   portal_net:
