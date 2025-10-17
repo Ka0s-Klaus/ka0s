@@ -2,7 +2,9 @@
 FROM node:20-bookworm AS builder
 WORKDIR /app
 COPY . .
-
+RUN yarn install --immutable
+RUN yarn tsc
+RUN yarn build:all
 # Stage 2: Producción Backend
 FROM node:20-bookworm-slim AS backend
 WORKDIR /app
