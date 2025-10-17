@@ -41,13 +41,13 @@ services:
       POSTGRES_DB: /run/secrets/POSTGRES_PASSWORD
       POSTGRES_PASSWORD_FILE: /run/secrets/POSTGRES_PASSWORD
       BACKEND_SECRET_FILE: /run/secrets/BACKEND_SECRET
+    networks:
+      - portal_net
     secrets:
       - POSTGRES_PASSWORD
       - BACKEND_SECRET
-    working_dir: /app/packages/backend
+    working_dir: /app
     command: yarn start --cwd packages/backend
-    volumes:
-      - portal_data:/app
     configs:
       - source: appconfig_yaml
         target: /app/app-config.yaml
@@ -85,8 +85,7 @@ services:
       - source: backstage_json
         target: /app/backstage.json
     command: yarn start --cwd packages/app
-    volumes:
-      - portal_data:/app
+    working_dir: /app
     deploy:
       replicas: 1
       restart_policy:
