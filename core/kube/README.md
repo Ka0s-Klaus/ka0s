@@ -1,1 +1,0 @@
-# Modulo interno de gestion de Kubernetes
