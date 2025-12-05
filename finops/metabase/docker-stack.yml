@@ -15,13 +15,13 @@ services:
   metabase:
     image: metabase/metabase:latest
     ports:
-      - 3000:3000
+      - 3002:3000
     environment:
       MB_DB_TYPE: postgres
       MB_DB_DBNAME: metabase
       MB_DB_PORT: 5432
-      MB_DB_USER: 
-      MB_DB_PASS: 
+      MB_DB_USER: postgres
+      MB_DB_PASS: gv.bx8hi9PcBffmJeuaN
       MB_DB_HOST: postgres
     networks:
       - metabase
@@ -35,9 +35,9 @@ services:
   postgres:
     image: postgres:latest
     environment:
-      POSTGRES_USER: 
+      POSTGRES_USER: postgres
       POSTGRES_DB: metabase
-      POSTGRES_PASSWORD: 
+      POSTGRES_PASSWORD: your_secure_password
     networks:
       - metabase
     deploy:
