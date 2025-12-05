@@ -1,0 +1,23 @@
+# values.yaml
+
+# Configuración del despliegue del runner
+runnerDeployment:
+  # Número de réplicas de runners que estarán siempre disponibles.
+  replicas: 1
+
+  # Especifica el repositorio de GitHub donde se registrarán los runners.
+  # Formato: "propietario/nombre-del-repositorio"
+  repository: "returngis/actions-runner-controller-demo"
+
+  # Etiquetas para identificar a este grupo de runners en tus workflows de GitHub Actions.
+  # Ejemplo en un workflow:
+  #   runs-on: [self-hosted, mi-etiqueta-custom]
+  labels:
+    - self-hosted
+    - linux
+    - x64
+
+# Opcional: Permite sobreescribir el nombre del recurso creado.
+# Por defecto, se usará el nombre del release de Helm.
+nameOverride: ""
+fullnameOverride: ""

@@ -1,0 +1,117 @@
+name: Ka0s Check MongoDB Pod Health
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+env:
+  CLUSTER_NAME: osp-k8s-prod-eusw1-01
+  CLUSTER_ENDPOINT: https://34.175.37.48
+  CLUSTER_ZONE: europe-southwest1
+  CLUSTER_PROJECT: osp-k8s-prod-bf90
+  NAMESPACE: kaos-prod
+
+jobs:
+  check-mongodb:
+    name: Verificar estado y conectividad de MongoDB
+    runs-on: apps-mongodb
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      - name: Autenticar en Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.KAOS_GCP_SA_KEY }}
+          project_id: ${{ secrets.KAOS_GCP_PROJECT_ID }}
+      - name: Configurar Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.KAOS_GCP_PROJECT_ID }}
+      - name: Instalar kubectl
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
+          kubectl version --client
+      - name: Instalar gke-gcloud-auth-plugin
+        run: |
+          gcloud components install gke-gcloud-auth-plugin --quiet
+      - name: Configurar kubectl para GKE
+        run: |
+          gcloud container clusters get-credentials ${{ env.CLUSTER_NAME }} \
+            --region=${{ env.CLUSTER_ZONE }} \
+            --project=${{ env.CLUSTER_PROJECT }}
+          kubectl config current-context
+      - name: Verificar pods de MongoDB
+        id: check-pods
+        run: |
+          echo "Verificando pods de MongoDB en namespace: ${{ env.NAMESPACE }}"
+          echo "Todos los pods en el namespace:"
+          kubectl get pods -n ${{ env.NAMESPACE }}
+          echo ""
+          echo "Buscando pods de MongoDB..."
+          MONGO_PODS=$(kubectl get pods -n ${{ env.NAMESPACE }} | grep "^mongodb" | awk '{print $1}' || echo "")
+          if [ -z "$MONGO_PODS" ]; then
+            echo "❌ ERROR: No se encontraron pods de MongoDB en el namespace ${{ env.NAMESPACE }}"
+            exit 1
+          fi
+          echo "Pods de MongoDB encontrados: $MONGO_PODS"
+          echo ""
+          FAILED=0
+          for POD in $MONGO_PODS; do
+            echo "Verificando pod: $POD"
+            POD_STATUS=$(kubectl get pod $POD -n ${{ env.NAMESPACE }} -o jsonpath='{.status.phase}')
+            POD_READY=$(kubectl get pod $POD -n ${{ env.NAMESPACE }} -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}')
+            echo "  Estado: $POD_STATUS"
+            echo "  Ready: $POD_READY"
+            if [ "$POD_STATUS" != "Running" ]; then
+              echo "  ❌ ERROR: El pod $POD no está en estado Running (Estado actual: $POD_STATUS)"
+              FAILED=1
+            elif [ "$POD_READY" != "True" ]; then
+              echo "  ⚠️  ADVERTENCIA: El pod $POD está Running pero no está Ready"
+              FAILED=1
+            else
+              echo "  ✅ El pod $POD está activo y funcionando correctamente"
+            fi
+            echo "  Detalles del pod:"
+            kubectl get pod $POD -n ${{ env.NAMESPACE }} -o wide
+            echo ""
+            echo "  Últimos logs del pod:"
+            kubectl logs $POD -n ${{ env.NAMESPACE }} --tail=10 || echo "  No se pudieron obtener los logs"
+            echo ""
+            echo "---"
+          done
+          if [ $FAILED -eq 1 ]; then
+            echo ""
+            echo "❌ VERIFICACIÓN FALLIDA: Uno o más pods de MongoDB no están funcionando correctamente"
+            exit 1
+          fi
+          echo ""
+          echo "✅ VERIFICACIÓN EXITOSA: Todos los pods de MongoDB están activos y funcionando correctamente"
+      - name: Verificar conectividad con MongoDB
+        run: |
+          for POD in $(kubectl get pods -n ${{ env.NAMESPACE }} | grep "^mongodb" | awk '{print $1}'); do
+            echo "Probando conectividad desde el pod $POD usando mongosh"
+            kubectl exec -n ${{ env.NAMESPACE }} $POD -- mongosh --eval "db.runCommand({ ping: 1 })" || {
+              echo "❌ ERROR: No se pudo conectar a MongoDB desde el pod $POD"
+              exit 1
+            }
+            echo "✅ Conectividad exitosa con MongoDB desde el pod $POD"
+            - name: Prueba de conexión a la base de datos MongoDB
+              run: |
+                # Variables de conexión (ajusta según tu configuración)
+                MONGO_HOST="mongodb-kaos"
+                MONGO_PORT="27017"
+                MONGO_USER="${{ secrets.KAOS_MONGODB_USER }}"
+                MONGO_PASS="${{ secrets.KAOS_MONGODB_PASS }}"
+                MONGO_DB="admin"
+                echo "Probando conexión directa a la base de datos MongoDB ($MONGO_HOST:$MONGO_PORT)"
+                mongosh "mongodb://${MONGO_USER}:${MONGO_PASS}@${MONGO_HOST}:${MONGO_PORT}/${MONGO_DB}?authSource=${MONGO_DB}" --eval "db.runCommand({ ping: 1 })" || {
+                  echo "❌ ERROR: No se pudo conectar a la base de datos MongoDB con las credenciales proporcionadas"
+                  exit 1
+                }
+                echo "✅ Conexión exitosa a la base de datos MongoDB"
+          done
+          echo "✅ Todas las pruebas de conectividad con MongoDB fueron exitosas"

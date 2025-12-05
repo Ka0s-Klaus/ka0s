@@ -1,0 +1,137 @@
+name: Ka0s Check PostgreSQL Pod Health
+
+on:
+  # Ejecutar manualmente desde la UI de GitHub
+  workflow_dispatch:
+  
+  # Ejecutar en un schedule (cada hora)
+  #schedule:
+  #  - cron: '0 * * * *'
+  
+  # Ejecutar en push a main (opcional)
+  
+  push:
+    branches:
+      - main
+
+env:
+  CLUSTER_NAME: osp-k8s-prod-eusw1-01
+  CLUSTER_ENDPOINT: https://34.175.37.48
+  CLUSTER_ZONE: europe-southwest1
+  CLUSTER_PROJECT: osp-k8s-prod-bf90
+  NAMESPACE: kaos-prod
+
+jobs:
+  check-postgresql:
+    name: Verificar estado del pod PostgreSQL
+    runs-on: apps-mongodb
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      
+      - name: Autenticar en Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.KAOS_GCP_SA_KEY }}
+          project_id: ${{ secrets.KAOS_GCP_PROJECT_ID }}
+      
+      - name: Configurar Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.KAOS_GCP_PROJECT_ID }}
+    
+      - name: Instalar kubectl
+        run: |
+          # Descargar la última versión estable de kubectl
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          
+          # Dar permisos de ejecución
+          chmod +x kubectl
+          
+          # Mover kubectl a un directorio en el PATH
+          sudo mv kubectl /usr/local/bin/
+          
+          # Verificar la instalación
+          kubectl version --client
+      
+      - name: Instalar gke-gcloud-auth-plugin
+        run: |
+          gcloud components install gke-gcloud-auth-plugin --quiet
+      
+      - name: Configurar kubectl para GKE
+        run: |
+          gcloud container clusters get-credentials ${{ env.CLUSTER_NAME }} \
+            --region=${{ env.CLUSTER_ZONE }} \
+            --project=${{ env.CLUSTER_PROJECT }}
+
+          # Verificar que el contexto se configuró correctamente
+          echo "Contexto actual:"
+          kubectl config current-context
+      
+      - name: Verificar pods de PostgreSQL
+        id: check-pods
+        run: |  
+          echo "Verificando pods de PostgreSQL en namespace: ${{ env.NAMESPACE }}"
+    
+          # Listar todos los pods del namespace para debug
+          echo "Todos los pods en el namespace:"
+          kubectl get pods -n ${{ env.NAMESPACE }}
+          echo ""
+          
+          # Buscar pods de PostgreSQL (ajusta el patrón según tu nomenclatura)
+          echo "Buscando pods de PostgreSQL..."
+          POSTGRES_PODS=$(kubectl get pods -n ${{ env.NAMESPACE }} | grep "^postgresql-kaos" | awk '{print $1}' || echo "")
+          
+          if [ -z "$POSTGRES_PODS" ]; then
+            echo "❌ ERROR: No se encontraron pods de PostgreSQL en el namespace ${{ env.NAMESPACE }}"
+            exit 1
+          fi
+          
+          echo "Pods de PostgreSQL encontrados: $POSTGRES_PODS"
+          echo ""
+          
+          # Verificar el estado de cada pod de PostgreSQL
+          FAILED=0
+          for POD in $POSTGRES_PODS; do
+            echo "Verificando pod: $POD"
+            
+            # Obtener el estado del pod
+            POD_STATUS=$(kubectl get pod $POD -n ${{ env.NAMESPACE }} -o jsonpath='{.status.phase}')
+            POD_READY=$(kubectl get pod $POD -n ${{ env.NAMESPACE }} -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}')
+            
+            echo "  Estado: $POD_STATUS"
+            echo "  Ready: $POD_READY"
+            
+            # Verificar si el pod está en estado Running y Ready
+            if [ "$POD_STATUS" != "Running" ]; then
+              echo "  ❌ ERROR: El pod $POD no está en estado Running (Estado actual: $POD_STATUS)"
+              FAILED=1
+            elif [ "$POD_READY" != "True" ]; then
+              echo "  ⚠️  ADVERTENCIA: El pod $POD está Running pero no está Ready"
+              FAILED=1
+            else
+              echo "  ✅ El pod $POD está activo y funcionando correctamente"
+            fi
+            
+            # Mostrar información adicional del pod
+            echo "  Detalles del pod:"
+            kubectl get pod $POD -n ${{ env.NAMESPACE }} -o wide
+            echo ""
+            
+            # Mostrar los últimos logs del pod (últimas 10 líneas)
+            echo "  Últimos logs del pod:"
+            kubectl logs $POD -n ${{ env.NAMESPACE }} --tail=10 || echo "  No se pudieron obtener los logs"
+            echo ""
+            echo "---"
+          done
+          
+          # Salir con error si algún pod falló
+          if [ $FAILED -eq 1 ]; then
+            echo ""
+            echo "❌ VERIFICACIÓN FALLIDA: Uno o más pods de PostgreSQL no están funcionando correctamente"
+            exit 1
+          fi
+          
+          echo ""
+          echo "✅ VERIFICACIÓN EXITOSA: Todos los pods de PostgreSQL están activos y funcionando correctamente"

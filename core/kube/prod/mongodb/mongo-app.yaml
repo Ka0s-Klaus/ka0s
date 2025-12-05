@@ -1,0 +1,49 @@
+# apps/mongo-app.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: mongodb-kaos
+  namespace: argocd  # Las aplicaciones de Argo CD viven en el namespace 'argocd'
+spec:
+  project: default
+  
+  # --- FUENTE: Aquí le decimos que use un Helm Chart ---
+  source:
+    repoURL: 'https://charts.bitnami.com/bitnami' # La URL del repositorio de Helm
+    chart: mongodb          # El nombre del Chart que queremos usar
+    targetRevision: '14.7.0' # ¡Fija una versión del Chart para despliegues predecibles!
+    
+    # --- PERSONALIZACIÓN: Aquí configuramos MongoDB ---
+    helm:
+      values: |
+        # Usa la sintaxis YAML para sobrescribir los valores por defecto del Chart
+        # Esto es lo mismo que un archivo 'values.yaml' de Helm
+        
+        # Arquitectura: Un solo nodo (standalone ) en lugar de un conjunto de réplicas (replicaset)
+        # Para empezar, 'standalone' es más simple. Cambia a 'replicaset' para producción.
+        architecture: standalone 
+        
+        # Autenticación: Define tu propia contraseña
+        # ¡IMPORTANTE! Es mejor práctica usar un secreto de Kubernetes en lugar de texto plano.
+        # Pero para empezar, esto funciona.
+        auth:
+          rootUser: mongoadmin
+          rootPassword: "qG8#v^2x@Rk!zP5b"
+          
+        # Persistencia: Asegura que los datos sobrevivan si el Pod se reinicia
+        persistence:
+          enabled: true
+          size: 8Gi # Tamaño del disco persistente
+          
+  # --- DESTINO: Dónde se va a desplegar ---
+  destination:
+    server: 'https://kubernetes.default.svc' # El mismo clúster donde está Argo CD
+    namespace: kaos-prod # El namespace de destino para MongoDB
+    
+  # --- POLÍTICA DE SINCRONIZACIÓN ---
+  syncPolicy:
+    automated:
+      prune: true    # Elimina recursos que ya no están en Git
+      selfHeal: true # Revierte cambios manuales hechos en el clúster
+    syncOptions:
+      - CreateNamespace=true # Crea el namespace 'kaos-prod' si no existe
