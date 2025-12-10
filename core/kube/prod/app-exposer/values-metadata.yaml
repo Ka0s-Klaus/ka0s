@@ -1,0 +1,23 @@
+hosts:
+  - multicloudtrack.masorange.es
+
+app:
+  name: metabase
+  port: 3000
+  healthCheck:
+    path: /app-health/metabase/readyz
+    port: 15020
+
+armor:
+  securityPolicy: ""
+
+iap:
+  enabled: true
+  
+gateway:
+  name: public-http
+  namespace: gateways
+
+gcpBackend:
+  logging:
+    enabled: false

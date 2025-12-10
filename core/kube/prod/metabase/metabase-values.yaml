@@ -1,0 +1,52 @@
+# Configuración básica
+replicaCount: 1
+
+image:
+  repository: metabase/metabase
+  # IMPORTANTE: Se recomienda actualizar a una versión más reciente
+  tag: v0.36.3
+  pullPolicy: IfNotPresent
+
+# Configuración de la base de datos
+database:
+  type: "cG9zdGdyZXM="
+  host: "cG9zdGdyZXNxbC1rYW9zLmthb3MtcHJvZC5zdmMuY2x1c3Rlci5sb2NhbA=="
+  port: "NTQzMg=="
+  dbname: "bWV0YWJhc2VfcHJvZF9kYg=="
+  username: "postgres"
+  password: "3Ml8vsMHjSv9G45vNlyqKU+uTkxbOx1hfpFG5By2DO4="
+
+# Configuración del servicio
+service:
+  type: ClusterIP
+  port: 3000
+
+# Configuración de recursos
+resources:
+  requests:
+    memory: 2Gi
+    cpu: 250m
+  limits:
+    memory: 4Gi
+    cpu: 500m
+
+# Health checks
+livenessProbe:
+  enabled: true
+  initialDelaySeconds: 120
+  periodSeconds: 30
+
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 30
+  periodSeconds: 10
+
+# Desactivar ingress (puedes habilitarlo si necesitas acceso externo)
+ingress:
+  enabled: false
+
+# Configuración de seguridad
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 2000
+  fsGroup: 2000

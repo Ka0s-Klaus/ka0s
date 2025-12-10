@@ -1,0 +1,18 @@
+repositories:
+  - name: mm-platform-sre-prod
+    url: europe-docker.pkg.dev/mm-platform-sre-prod/helm-charts
+    oci: true
+
+releases:
+  - name: metabase-exposer
+    namespace: kaos-prod
+    chart: mm-platform-sre-prod/app-exposer
+    version: v1-stable
+    values:
+    - values-metadata.yaml
+  - name: grafana-exposer
+    namespace: kaos-prod
+    chart: mm-platform-sre-prod/app-exposer
+    version: v1-stable
+    values:
+    - values-grafana.yaml

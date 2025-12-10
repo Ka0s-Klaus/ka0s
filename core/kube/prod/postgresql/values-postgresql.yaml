@@ -1,0 +1,53 @@
+# postgresql-values.yaml
+
+# ========================================================================
+# Autenticación y Configuración Inicial
+# ========================================================================
+global:
+  postgresql:
+    auth:
+      # Pega aquí la contraseña segura que generaste en el Paso 1.
+      postgresPassword: "3Ml8vsMHjSv9G45vNlyqKU+uTkxbOx1hfpFG5By2DO4="
+      
+      # Opcional: Nombre de la base de datos a crear al iniciar.
+      # Es una buena práctica crear la base de datos de Metabase aquí.
+      database: "metabase_prod_db"
+      
+image:
+  registry: docker.io
+  # 1. Volvemos al repositorio principal, no al 'legacy'
+  repository: bitnami/postgresql
+  # 2. Usamos el tag 'latest'
+  tag: latest
+  digest: ""
+
+# ========================================================================
+# Persistencia de Datos (¡LA PARTE MÁS IMPORTANTE!)
+# ========================================================================
+primary:
+  persistence:
+    # Activa el uso de PersistentVolumeClaims para que los datos sobrevivan
+    # a los reinicios del Pod. Si esto es 'false', perderás todos los datos.
+    enabled: true
+
+    # Tamaño del volumen de almacenamiento. 10Gi es un buen punto de partida.
+    size: 10Gi
+    
+    # Opcional: Especifica el StorageClass si tienes varios en tu clúster
+    # y quieres usar uno en concreto (ej. "aws-ebs", "regional-ssd").
+    # Si lo dejas comentado, usará el StorageClass por defecto.
+    # storageClass: "aws-ebs"
+
+# ========================================================================
+# Recursos de Cómputo (CPU y Memoria)
+# ========================================================================
+# Es una buena práctica definir límites para evitar que la base de datos
+# consuma todos los recursos de un nodo.
+primary:
+  resources:
+    requests:
+      cpu: 250m       # Pide 0.25 de un núcleo de CPU
+      memory: 256Mi   # Pide 256 Megabytes de RAM
+    limits:
+      cpu: 500m       # Limita el uso a 0.5 de un núcleo de CPU
+      memory: 512Mi   # Limita el uso a 512 Megabytes de RAM
