@@ -22,8 +22,7 @@ env:
 
 jobs:
   job-core:
-    runs-on:
-      group: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -38,8 +37,7 @@ jobs:
           git pull --rebase
 
   job-stats:
-    runs-on:
-      group: swarm-runners
+    runs-on: swarm-runners-scaleset
     needs: job-core
     env:
           GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
@@ -390,8 +388,7 @@ jobs:
           git push origin ${{ github.ref }}
 
   handle-success:
-    runs-on:
-      group: swarm-runners
+    runs-on: swarm-runners-scaleset
     needs: [job-core, job-stats]
     if: ${{ success() }}
     steps:
@@ -412,8 +409,7 @@ jobs:
           echo "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data_${{ env.KAOS_CODE }}.log"
 
   handle_failure:
-    runs-on:
-      group: swarm-runners
+    runs-on: swarm-runners-scaleset
     needs: [job-core, handle-success]
     if: ${{ failure() }}
     steps:
@@ -436,8 +432,7 @@ jobs:
           gh issue create  --title "[Ka0S] Error detected in ${{ env.KAOS_MODULE }}" --body "Error detected in ${{ env.KAOS_MODULE }}. Please check the logs for ${{ github.run_id }} more information of error."
           
   end-workflow:
-    runs-on:
-      group: swarm-runners
+    runs-on: swarm-runners-scaleset
     needs: [job-core, job-stats, handle-success, handle_failure]
     if: ${{ always() && !contains(github.event.head_commit.message, '[Ka0S] ') }}
     env:
