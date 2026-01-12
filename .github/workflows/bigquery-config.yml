@@ -1,0 +1,48 @@
+name: Kaos Export Service Account JSON for Metabase
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PROJECT_ID: "mo-finops"
+  OUTPUT_PATH: "core/outputs/gcp/metabase-service-account.json"
+
+jobs:
+  export-service-account-json:
+    runs-on: apps-mongodb
+
+    steps:
+    # 1. Checkout del repositorio
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    # 2. Crear fichero JSON desde el secreto
+    - name: Crear fichero JSON desde el secreto
+      run: |
+        echo "Generando fichero JSON para Metabase..."
+        mkdir -p core/outputs/gcp
+        echo '${{ secrets.KAOS_GCP_SA_KEY }}' > ${{ env.OUTPUT_PATH }}
+
+    # 3. Validar acceso a BigQuery con la Service Account
+    - name: Validar acceso a BigQuery
+      run: |
+        echo "Autenticando con la Service Account..."
+        gcloud auth activate-service-account --key-file=${{ env.OUTPUT_PATH }}
+        gcloud config set project ${{ env.PROJECT_ID }}
+        
+        echo "Verificando acceso a BigQuery..."
+        if bq ls --project_id=${{ env.PROJECT_ID }}; then
+          echo "✅ Validación OK: La Service Account tiene acceso a BigQuery"
+        else
+          echo "❌ Validación FALLIDA: No se pudo acceder a BigQuery"
+          exit 1
+        fi
+
+    # 4. Subir el fichero como artefacto seguro
+    - name: Subir artefacto seguro
+      uses: actions/upload-artifact@v4
+      with:
+        name: metabase-service-account
+        path: ${{ env.OUTPUT_PATH }}
