@@ -45,7 +45,7 @@ jobs:
       - id: validate
         name: Validate file extensions
         env:
-          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           # Nueva ejecución
           IFS=',' read -r -a extensions <<< "${{ secrets.KAOS_CORE_FILES }}"
@@ -85,7 +85,7 @@ jobs:
         env:
             modules: ${{ secrets.KAOS_CORE_MODULES }}
             files: ${{ secrets.KAOS_CORE_FILES }}
-            GH_TOKEN: ${{ secrets.KAOS_ACTIONS_TOKEN}}
+            GH_TOKEN: ${{ github.token }}
         run: |
           git diff --name-only ${{ github.event.before }} ${{ github.sha }} > files-in-commit.txt
           cat files-in-commit.txt
@@ -166,11 +166,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
+          # token: ${{ secrets.KAOS_REPO_TOKEN }}
       - id: handle-success-execution
         name: handle-success-execution
         env:
-          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           # Si todo ha ido correcto añadimos el contenido del fichero 
           RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
@@ -186,11 +186,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
+          # token: ${{ secrets.KAOS_REPO_TOKEN }}
       - id: handle-failure-execution
         name: handle-failure-execution
         env:
-          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           echo "Error detected in process"
           echo "Created issue"
@@ -203,7 +203,7 @@ jobs:
     needs: [job-core, handle-success, handle_failure]
     if: ${{ always() && !contains(github.event.head_commit.message, '[Ka0S] ') }} 
     env:
-        GH_TOKEN: ${{ secrets.KAOS_ACTIONS_TOKEN }}
+        GH_TOKEN: ${{ github.token }}
     steps:
       - id: repo
         name: Checkout code
@@ -211,7 +211,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
+          # token: ${{ secrets.KAOS_REPO_TOKEN }}
       - id: end-process
         name: Finaliza el workflow
         run: |
