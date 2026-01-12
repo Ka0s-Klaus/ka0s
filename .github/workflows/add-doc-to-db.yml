@@ -23,8 +23,7 @@ env:
 
 jobs:
   job-core:
-    runs-on:
-      group: swarm-runners
+    runs-on: swarm-runners-scaleset
     env:
       GITHUB_OUTPUT: ""
     if: ${{ !contains(github.event.head_commit.message, '[swarm-runners] ') }}  
@@ -76,8 +75,7 @@ jobs:
           path: ${{ env.REPORT_PATH }}
 
   handle-success:
-    runs-on:
-      group: swarm-runners
+    runs-on: swarm-runners-scaleset
     needs: [job-core]
     if: ${{ success() }}
     steps:
@@ -98,8 +96,7 @@ jobs:
           # RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
           # gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data_${{ env.KAOS_CODE }}.log"
   handle_failure:
-    runs-on:
-      group: swarm-runners
+    runs-on: swarm-runners-scaleset
     needs: [job-core, handle-success]
     if: ${{ failure() }} 
     steps:
@@ -119,8 +116,7 @@ jobs:
           echo "Created issue"
           gh issue create  --title "${{ env.KAOS_MODULE }} Error detected in ${{ env.KAOS_CODE }}" --label "bug" --body "Please check the logs 'https://github.com/Ka0s-Klaus/ka0s/actions/runs/${{ env.KAOS_CODE }}' for more information of error."
   end-workflow:
-    runs-on:
-      group: swarm-runners
+    runs-on: swarm-runners-scaleset
     needs: [job-core, handle-success, handle_failure]
     if: ${{ always() }} 
     env:

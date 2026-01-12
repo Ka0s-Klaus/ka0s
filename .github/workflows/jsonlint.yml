@@ -123,8 +123,7 @@ jobs:
            RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
            gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero ${{ env.KAOS_CODE }}.log"
   handle_failure:
-    runs-on:
-      group: swarm-runners
+    runs-on: swarm-runners-scaleset
     needs: [job-core, handle-success]
     if: ${{ failure() }} 
     steps:
@@ -147,8 +146,7 @@ jobs:
           RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
           gh issue comment $RNNUMBER --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero ${{ env.KAOS_CODE }}.log"
   end-workflow:
-    runs-on:
-      group: swarm-runners
+    runs-on: swarm-runners-scaleset
     needs: [job-core, handle-success, handle_failure]
     if: ${{ always() }} 
     env:

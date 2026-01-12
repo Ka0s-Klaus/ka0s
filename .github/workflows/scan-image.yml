@@ -27,8 +27,7 @@ permissions:
 
 jobs:
   job-core:
-    runs-on:
-      group: swarm-runners
+    runs-on: swarm-runners-scaleset
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -113,8 +112,7 @@ jobs:
             sudo docker push ka0score/${{ inputs.image_name }}:${{ inputs.version }}
 
   handle-success:
-    runs-on:
-      group: swarm-runners
+    runs-on: swarm-runners-scaleset
     needs: [job-core]
     if: ${{ success() }}
     steps:
@@ -135,8 +133,7 @@ jobs:
           echo "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data_${{ env.KAOS_CODE }}.log"
 
   handle_failure:
-    runs-on:
-      group: swarm-runners
+    runs-on: swarm-runners-scaleset
     needs: [job-core, handle-success]
     if: ${{ failure() }}
     steps:
@@ -160,8 +157,7 @@ jobs:
           fi
           
   end-workflow:
-    runs-on:
-      group: swarm-runners
+    runs-on: swarm-runners-scaleset
     needs: [job-core, handle-success, handle_failure]
     if: ${{ always() && !contains(github.event.head_commit.message, '[Ka0S] ') }}
     env:

@@ -20,8 +20,7 @@ permissions:
 
 jobs:
   job-core:
-    runs-on:
-      group: swarm-runners
+    runs-on: swarm-runners-scaleset
     steps:
       - name: Get Runners
         id: get-runners
@@ -146,8 +145,7 @@ jobs:
           retention-days: 5
 
   handle-success:
-    runs-on:
-      group: swarm-runners
+    runs-on: swarm-runners-scaleset
     needs: [job-core]
     if: ${{ success() }}
     steps:
@@ -168,8 +166,7 @@ jobs:
           echo "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data_${{ env.KAOS_CODE }}.log"
 
   handle_failure:
-    runs-on:
-      group: swarm-runners
+    runs-on: swarm-runners-scaleset
     needs: [job-core, handle-success]
     if: ${{ failure() }}
     steps:
@@ -192,8 +189,7 @@ jobs:
           gh issue create  --title "[Ka0S] Error detected in ${{ env.KAOS_MODULE }}" --body "Error detected in ${{ env.KAOS_MODULE }}. Please check the logs for ${{ github.run_id }} more information of error."
           
   end-workflow:
-    runs-on:
-      group: swarm-runners
+    runs-on: swarm-runners-scaleset
     needs: [job-core, handle-success, handle_failure]
     if: ${{ always() && !contains(github.event.head_commit.message, '[Ka0S] ') }}
     env:

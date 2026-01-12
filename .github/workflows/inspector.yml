@@ -24,8 +24,7 @@ env:
   KAOS_REPO: "/actions-runner/_work/kaos/kaos" # Variable de repositorio global
 jobs:
   job-core:
-    runs-on:
-      group: swarm-runners
+    runs-on: swarm-runners-scaleset
     steps:
       - id: repo
         name: Checkout Repository
@@ -83,8 +82,7 @@ jobs:
             sleep 2
           done
   handle-success:
-    runs-on:
-      group: swarm-runners
+    runs-on: swarm-runners-scaleset
     needs: [job-core]
     if: ${{ success() }}
     steps: 
@@ -102,8 +100,7 @@ jobs:
             echo "Se ha encontrado el issue asociado a la ejecución."
           fi       
   handle_failure:
-    runs-on:
-      group: swarm-runners
+    runs-on: swarm-runners-scaleset
     needs: [job-core, handle-success]
     if: ${{ failure() }}
     steps:
