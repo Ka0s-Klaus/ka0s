@@ -28,3 +28,9 @@ jobs:
           echo "Estoy ejecutando el trabajo en el directorio:"
           pwd
           ls -la
+      - name: List open issues in repository and check gh command
+        env:
+          GH_TOKEN: ${{ github.token }} # Usa el token automático de GitHub
+        run: |
+          echo "Listing open issues..."
+          gh issue list --state open
