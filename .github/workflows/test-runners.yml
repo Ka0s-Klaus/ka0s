@@ -3,7 +3,11 @@ name: 'Test Swarm Runners'
 on:
   workflow_dispatch: # Permite la ejecución manual desde la pestaña "Actions"
   schedule:
-      - cron: '*/5 * * * *'  # Se ejecuta cada 5 minutos
+      - cron: '*/1 * * * *'  # Se ejecuta cada 5 minutos
+permissions:
+  contents: read
+  actions: write
+  issues: write
 
 jobs:
   test-runner:
@@ -11,7 +15,7 @@ jobs:
     
     # ¡Esta es la parte más importante!
     # El trabajo solo se ejecutará en un runner que tenga TODAS estas etiquetas.
-    runs-on: [self-hosted, linux, x64, swarm-runner]
+    runs-on: swarm-runners-scaleset
 
     steps:
       - name: 'Checkout code'
