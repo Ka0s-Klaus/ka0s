@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: wazuh-indexer
+  namespace: wazuh
+  labels:
+    app: wazuh-indexer
+spec:
+  ports:
+  - name: http
+    port: 9200
+    protocol: TCP
+  selector:
+    app: wazuh-indexer
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: wazuh-indexer
+  name: wazuh-indexer
+  namespace: wazuh
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wazuh-indexer
+  serviceName: wazuh-indexer
+  template:
+    metadata:
+      labels:
+        app: wazuh-indexer
+    spec:
+      containers:
+      - name: wazuh-indexer
+        image: wazuh/wazuh-indexer:4.14.1
+        env:
+        - name: discovery.type
+          value: single-node
+        ports:
+        - containerPort: 9200
+          name: http
+        volumeMounts:
+        - name: data
+          mountPath: /usr/share/wazuh-indexer/data
+        - name: config
+          mountPath: /usr/share/wazuh-indexer/config
+      volumes:
+      - name: config
+        configMap:
+          name: wazuh-indexer-config
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      storageClassName: manual
+      resources:
+        requests:
+          storage: 10Gi

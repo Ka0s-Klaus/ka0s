@@ -1,0 +1,30 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: runner-scaler
+  namespace: runners
+spec:
+  schedule: "*/1 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: manager-sa
+          containers:
+          - name: kubectl
+            image: bitnami/kubectl:latest
+            command:
+            - "/bin/sh"
+            - "-c"
+            - |
+              REPLICAS=$(kubectl get configmap runner-replicas -n runners -o jsonpath='{.data.replicas}')
+              echo "Current desired replicas in ConfigMap: $REPLICAS"
+              CURRENT_REPLICAS=$(kubectl get deployment github-actions-runner -n runners -o jsonpath='{.spec.replicas}')
+              echo "Current running replicas in Deployment: $CURRENT_REPLICAS"
+              if [ "$REPLICAS" != "$CURRENT_REPLICAS" ]; then
+                echo "Scaling deployment github-actions-runner to $REPLICAS replicas..."
+                kubectl scale deployment github-actions-runner --replicas=$REPLICAS -n runners
+              else
+                echo "No scaling needed."
+              fi
+          restartPolicy: OnFailure

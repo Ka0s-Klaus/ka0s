@@ -1,0 +1,18 @@
+apiVersion: crd.projectcalico.org/v1
+kind: GlobalNetworkPolicy
+metadata:
+  name: allow-all-egress
+spec:
+  selector: all()
+  types:
+  - Egress
+  egress:
+  - action: Allow
+    protocol: TCP
+    destination: {}
+  - action: Allow
+    protocol: UDP
+    destination: {}
+  - action: Allow
+    protocol: ICMP
+    destination: {}

@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: loki
+  namespace: monitoring
+spec:
+  serviceName: loki
+  replicas: 1
+  selector:
+    matchLabels:
+      app: loki
+  template:
+    metadata:
+      labels:
+        app: loki
+    spec:
+      securityContext:
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+      containers:
+        - name: loki
+          image: grafana/loki:latest
+          args:
+            - "-config.file=/etc/loki/loki-config.yaml"
+            - "--ingester.wal-enabled=true"
+            - "--ingester.wal-dir=/loki/wal"
+          ports:
+            - containerPort: 3100
+              name: http-metrics
+          volumeMounts:
+          - name: config
+            mountPath: /etc/loki
+          - name: storage
+            mountPath: /loki
+
+      volumes:
+        - name: config
+          configMap:
+            name: loki-config
+        - name: storage
+          emptyDir: {}
