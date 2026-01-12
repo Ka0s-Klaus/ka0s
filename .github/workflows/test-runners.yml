@@ -1,9 +1,9 @@
 name: 'Test Swarm Runners'
 
 on:
-  # workflow_dispatch: # Permite la ejecución manual desde la pestaña "Actions"
-  schedule:
-      - cron: '*/5 * * * *'  # Se ejecuta cada 5 minutos
+  workflow_dispatch: # Permite la ejecución manual desde la pestaña "Actions"
+  # schedule:
+      # - cron: '*/5 * * * *'  # Se ejecuta cada 5 minutos
 permissions:
   contents: read
   actions: write
@@ -28,3 +28,9 @@ jobs:
           echo "Estoy ejecutando el trabajo en el directorio:"
           pwd
           ls -la
+      - name: List open issues in repository and check gh command
+        env:
+          GH_TOKEN: ${{ github.token }} # Usa el token automático de GitHub
+        run: |
+          echo "Listing open issues..."
+          gh issue list --state open
