@@ -105,7 +105,7 @@ helm template "${RUNNER_SCALESET_RELEASE_NAME}" \
   --set runnerScaleSet.minRunners=1 \
   --set runnerScaleSet.maxRunners=50 \
   --set runnerScaleSet.runnerGroup="${RUNNER_GROUP}" \
-  --set runnerScaleSet.template.spec.image="${RUNNER_IMAGE}" | kubectl apply -f -
+  --set runner.image="${RUNNER_IMAGE}" | kubectl apply -f -
 
 # --- Cleanup ---
 echo "INFO: Limpiando archivos del chart descargado..."
