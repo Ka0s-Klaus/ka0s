@@ -86,6 +86,7 @@ echo "INFO: Desplegando el RunnerScaleSet '${RUNNER_SCALESET_RELEASE_NAME}' con 
 helm template "${RUNNER_SCALESET_RELEASE_NAME}" \
   oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set \
   --namespace "${NAMESPACE}" \
+  --set controllerServiceAccount.name="${CONTROLLER_RELEASE_NAME}-gha-rs-controller" \
   --set-string githubConfigUrl="https://github.com/${GITHUB_REPO}" \
   --set githubConfigSecret=controller-manager \
   --set runnerScaleSet.minRunners=1 \
