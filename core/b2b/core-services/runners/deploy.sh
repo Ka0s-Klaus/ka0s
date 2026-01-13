@@ -81,17 +81,17 @@ helm upgrade --install "${CONTROLLER_RELEASE_NAME}" \
   --skip-crds \
   oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set-controller
 
-# 5. Install the RunnerScaleSet using a separate Helm release
-echo "INFO: Desplegando el RunnerScaleSet '${RUNNER_SCALESET_RELEASE_NAME}' con Helm..."
-helm upgrade --install "${RUNNER_SCALESET_RELEASE_NAME}" \
+# 5. Generate RunnerScaleSet manifest from Helm and apply with kubectl
+echo "INFO: Desplegando el RunnerScaleSet '${RUNNER_SCALESET_RELEASE_NAME}' con kubectl..."
+helm template "${RUNNER_SCALESET_RELEASE_NAME}" \
+  oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set \
   --namespace "${NAMESPACE}" \
   --set-string githubConfigUrl="https://github.com/${GITHUB_REPO}" \
   --set githubConfigSecret=controller-manager \
   --set runnerScaleSet.minRunners=1 \
   --set runnerScaleSet.maxRunners=50 \
   --set runnerScaleSet.runnerGroup="${RUNNER_GROUP}" \
-  --set runnerScaleSet.template.spec.containers[0].image="${RUNNER_IMAGE}" \
-  oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set
+  --set runnerScaleSet.template.spec.containers[0].image="${RUNNER_IMAGE}" | kubectl apply -f -
 
 # --- Cleanup ---
 echo "INFO: Limpiando archivos del chart descargado..."
