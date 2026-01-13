@@ -95,14 +95,19 @@ kubectl patch autoscalingrunnerset.actions.github.com "${RUNNER_SCALESET_RELEASE
 # Give a moment for the patch to be processed before deleting
 sleep 2
 
+echo "INFO: Deleting previous RunnerScaleSet and associated resources..."
 kubectl delete --ignore-not-found=true -n "${NAMESPACE}" \
-  autoscalingrunnerset.actions.github.com/${RUNNER_SCALESET_RELEASE_NAME} \
-  rolebinding.rbac.authorization.k8s.io/${RUNNER_SCALESET_RELEASE_NAME}-gha-rs-manager \
-  role.rbac.authorization.k8s.io/${RUNNER_SCALESET_RELEASE_NAME}-gha-rs-manager \
-  serviceaccount/${RUNNER_SCALESET_RELEASE_NAME}-gha-rs-no-permission
+  autoscalingrunnerset.actions.github.com/swarm-runners-scaleset \
+  rolebinding.rbac.authorization.k8s.io/swarm-runners-scaleset-gha-rs-manager \
+  role.rbac.authorization.k8s.io/swarm-runners-scaleset-gha-rs-manager \
+  serviceaccount/swarm-runners-scaleset-gha-rs-no-permission
 
-# Allow some time for termination
-sleep 5
+# Wait for the main resource to be fully deleted to avoid conflicts
+echo "INFO: Waiting for RunnerScaleSet to be completely terminated..."
+kubectl wait --for=delete autoscalingrunnerset.actions.github.com/"${RUNNER_SCALESET_RELEASE_NAME}" \
+  --namespace "${NAMESPACE}" \
+  --timeout=120s || echo "INFO: Wait for delete failed, resource might already be gone. Continuing..."
+
 
 # 6. Generate RunnerScaleSet manifest from Helm and apply with kubectl
 echo "INFO: Desplegando el RunnerScaleSet '${RUNNER_SCALESET_RELEASE_NAME}' con kubectl..."
