@@ -92,22 +92,20 @@ kubectl patch autoscalingrunnerset.actions.github.com "${RUNNER_SCALESET_RELEASE
   -p '{"metadata":{"finalizers":[]}}' \
   --type=merge || echo "INFO: Patch failed, likely because the resource doesn't exist. Continuing..."
 
-# Give a moment for the patch to be processed before deleting
 sleep 2
 
-echo "INFO: Deleting previous RunnerScaleSet and associated resources..."
+echo "INFO: Forcefully deleting previous RunnerScaleSet resource to break any locks..."
+kubectl delete --ignore-not-found=true --force --grace-period=0 -n "${NAMESPACE}" \
+  autoscalingrunnerset.actions.github.com/${RUNNER_SCALESET_RELEASE_NAME}
+
+echo "INFO: Deleting associated RBAC resources..."
 kubectl delete --ignore-not-found=true -n "${NAMESPACE}" \
-  autoscalingrunnerset.actions.github.com/swarm-runners-scaleset \
   rolebinding.rbac.authorization.k8s.io/swarm-runners-scaleset-gha-rs-manager \
   role.rbac.authorization.k8s.io/swarm-runners-scaleset-gha-rs-manager \
   serviceaccount/swarm-runners-scaleset-gha-rs-no-permission
 
-# Wait for the main resource to be fully deleted to avoid conflicts
-echo "INFO: Waiting for RunnerScaleSet to be completely terminated..."
-kubectl wait --for=delete autoscalingrunnerset.actions.github.com/"${RUNNER_SCALESET_RELEASE_NAME}" \
-  --namespace "${NAMESPACE}" \
-  --timeout=120s || echo "INFO: Wait for delete failed, resource might already be gone. Continuing..."
-
+# Allow some time for termination of all resources
+sleep 5
 
 # 6. Generate RunnerScaleSet manifest from Helm and apply with kubectl
 echo "INFO: Desplegando el RunnerScaleSet '${RUNNER_SCALESET_RELEASE_NAME}' con kubectl..."
