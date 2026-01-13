@@ -84,11 +84,22 @@ helm upgrade --install "${CONTROLLER_RELEASE_NAME}" \
 
 # 5. Clean up previous RunnerScaleSet resources and deploy the new one
 echo "INFO: Cleaning up previous RunnerScaleSet resources to avoid conflicts..."
+
+# Forcefully remove finalizers from the RunnerScaleSet if it's stuck in termination
+echo "INFO: Attempting to remove finalizers from RunnerScaleSet to prevent hanging..."
+kubectl patch autoscalingrunnerset.actions.github.com "${RUNNER_SCALESET_RELEASE_NAME}" \
+  -n "${NAMESPACE}" \
+  -p '{"metadata":{"finalizers":[]}}' \
+  --type=merge || echo "INFO: Patch failed, likely because the resource doesn't exist. Continuing..."
+
+# Give a moment for the patch to be processed before deleting
+sleep 2
+
 kubectl delete --ignore-not-found=true -n "${NAMESPACE}" \
-  autoscalingrunnerset.actions.github.com/swarm-runners-scaleset \
-  rolebinding.rbac.authorization.k8s.io/swarm-runners-scaleset-gha-rs-manager \
-  role.rbac.authorization.k8s.io/swarm-runners-scaleset-gha-rs-manager \
-  serviceaccount/swarm-runners-scaleset-gha-rs-no-permission
+  autoscalingrunnerset.actions.github.com/${RUNNER_SCALESET_RELEASE_NAME} \
+  rolebinding.rbac.authorization.k8s.io/${RUNNER_SCALESET_RELEASE_NAME}-gha-rs-manager \
+  role.rbac.authorization.k8s.io/${RUNNER_SCALESET_RELEASE_NAME}-gha-rs-manager \
+  serviceaccount/${RUNNER_SCALESET_RELEASE_NAME}-gha-rs-no-permission
 
 # Allow some time for termination
 sleep 5
