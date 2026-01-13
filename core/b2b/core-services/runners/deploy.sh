@@ -98,12 +98,6 @@ echo "INFO: Forcefully deleting previous RunnerScaleSet resource to break any lo
 kubectl delete --ignore-not-found=true --force --grace-period=0 -n "${NAMESPACE}" \
   autoscalingrunnerset.actions.github.com/${RUNNER_SCALESET_RELEASE_NAME}
 
-echo "INFO: Deleting associated RBAC resources..."
-kubectl delete --ignore-not-found=true -n "${NAMESPACE}" \
-  rolebinding.rbac.authorization.k8s.io/swarm-runners-scaleset-gha-rs-manager \
-  role.rbac.authorization.k8s.io/swarm-runners-scaleset-gha-rs-manager \
-  serviceaccount/swarm-runners-scaleset-gha-rs-no-permission
-
 # Allow some time for termination of all resources
 sleep 5
 
@@ -120,7 +114,10 @@ helm template "${RUNNER_SCALESET_RELEASE_NAME}" \
   --set runnerScaleSet.maxRunners=50 \
   --set runnerScaleSet.runnerGroup="${RUNNER_GROUP}" \
   --set template.spec.containers[0].name="runner" \
-  --set template.spec.containers[0].image="${RUNNER_IMAGE}" | kubectl apply -f -
+  --set template.spec.containers[0].image="${RUNNER_IMAGE}" \
+  --set 'template.spec.containers[0].command[0]=/bin/bash' \
+  --set 'template.spec.containers[0].args[0]=-c' \
+  --set 'template.spec.containers[0].args[1]=echo "Runner container started. Sleeping for 1 hour for debugging..."; sleep 3600' | kubectl apply -f -
 
 # --- Cleanup ---
 echo "INFO: Limpiando archivos del chart descargado..."
