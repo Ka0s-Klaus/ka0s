@@ -12,10 +12,6 @@ NAMESPACE="actions-runner-system"
 # Name for the controller Helm release
 CONTROLLER_RELEASE_NAME="actions-runner-controller"
 
-# Chart details
-CHART_NAME="actions-runner-controller"
-CHART_URL="oci://ghcr.io/actions/actions-runner-controller-charts/${CHART_NAME}"
-
 # Name for the runner scale set Helm release
 RUNNER_SCALESET_RELEASE_NAME="swarm-runners-scaleset"
 
@@ -54,41 +50,53 @@ kubectl create secret generic controller-manager \
 
 # 0. Clean up previous downloads
 echo "INFO: Limpiando descargas anteriores del chart..."
-rm -rf ${CHART_NAME} ${CHART_NAME}-*.tgz
+rm -rf gha-runner-scale-set-controller gha-runner-scale-set-controller-*.tgz
 
 # 1. Download the controller chart to extract CRDs
 echo "INFO: Descargando el chart del controlador para la instalación manual de CRDs..."
-helm pull ${CHART_URL} --untar
+helm pull oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set-controller --untar
+
+# DEBUG: List contents to verify CRD file paths
+echo "DEBUG: Contenido del directorio del chart extraído:"
+ls -l gha-runner-scale-set-controller/
+echo "DEBUG: Contenido del directorio crds:"
+ls -l gha-runner-scale-set-controller/crds/
 
 # 2. Apply CRDs manually from the downloaded chart using Server-Side Apply
 echo "INFO: Aplicando las CRDs del controlador con kubectl (server-side apply)..."
-kubectl apply --server-side -f ${CHART_NAME}/crds/
+kubectl apply --server-side -f gha-runner-scale-set-controller/crds/
 
 # 3. Wait for the CRDs to be established in the cluster
 echo "INFO: Esperando a que los CRDs se establezcan..."
-kubectl wait --for=condition=established --timeout=120s crd/runners.actions.github.com
-kubectl wait --for=condition=established --timeout=120s crd/runnerdeployments.actions.github.com
-kubectl wait --for=condition=established --timeout=120s crd/runnerreplicasets.actions.github.com
-kubectl wait --for=condition=established --timeout=120s crd/runnersets.actions.github.com
-kubectl wait --for=condition=established --timeout=120s crd/horizontalrunnerautoscalers.actions.github.com
-kubectl wait --for=condition=established --timeout=120s crd/runnerscalesets.actions.github.com
+kubectl wait --for=condition=established --timeout=120s crd/autoscalinglisteners.actions.github.com
+kubectl wait --for=condition=established --timeout=120s crd/autoscalingrunnersets.actions.github.com
+kubectl wait --for=condition=established --timeout=120s crd/ephemeralrunners.actions.github.com
+kubectl wait --for=condition=established --timeout=120s crd/ephemeralrunnersets.actions.github.com
 
-# 4. Install the actions-runner-controller Helm chart (skipping CRDs)
-echo "INFO: Desplegando el ${CHART_NAME} con Helm (omitiendo CRDs)..."
+# 4. Install the gha-runner-scale-set-controller Helm chart (skipping CRDs)
+echo "INFO: Desplegando el gha-runner-scale-set-controller con Helm (omitiendo CRDs)..."
 helm upgrade --install "${CONTROLLER_RELEASE_NAME}" \
   --namespace "${NAMESPACE}" \
   --set=authSecret.name=controller-manager \
   --skip-crds \
-  ${CHART_URL}
+  oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set-controller
 
-# 5. Apply the RunnerScaleSet manifest directly
-echo "INFO: Desplegando el RunnerScaleSet desde el fichero runner-scale-set.yaml..."
-kubectl apply -f runner-scale-set.yaml
+# 5. Install the RunnerScaleSet using a separate Helm release
+echo "INFO: Desplegando el RunnerScaleSet '${RUNNER_SCALESET_RELEASE_NAME}' con Helm..."
+helm upgrade --install "${RUNNER_SCALESET_RELEASE_NAME}" \
+  --namespace "${NAMESPACE}" \
+  --set-string githubConfigUrl="https://github.com/${GITHUB_REPO}" \
+  --set githubConfigSecret=controller-manager \
+  --set runnerScaleSet.minRunners=1 \
+  --set runnerScaleSet.maxRunners=50 \
+  --set runnerScaleSet.runnerGroup="${RUNNER_GROUP}" \
+  --set runnerScaleSet.template.spec.containers[0].image="${RUNNER_IMAGE}" \
+  oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set
 
 # --- Cleanup ---
 echo "INFO: Limpiando archivos del chart descargado..."
-rm -rf ${CHART_NAME}
-rm -f ${CHART_NAME}-*.tgz
+rm -rf gha-runner-scale-set-controller
+rm -f gha-runner-scale-set-controller-*.tgz
 
 echo "INFO: Despliegue completado. Verificando los pods del runner..."
 sleep 15
