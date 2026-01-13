@@ -1,19 +1,21 @@
 apiVersion: actions.github.com/v1alpha1
 kind: RunnerScaleSet
 metadata:
-  name: swarm-runners-scaleset
-  namespace: actions-runner-system
+  name: "swarm-runners-scaleset"
+  namespace: "actions-runner-system"
 spec:
+  # --- Añadir la configuración de GitHub --- 
+  githubConfigUrl: "https://github.com/Ka0s-Klaus/Ka0s"
+  githubConfigSecret: "controller-manager"
+  # -------------------------------------
   minRunners: 1
-  maxRunners: 50
-  githubConfig:
-    url: https://github.com/Ka0s-Klaus/Ka0s
-    # --- AÑADE ESTA LÍNEA ---
-    # Asegúrate de que el grupo 'swarm-runners' existe en la configuración de tu repositorio.
-    runnerGroup: "swarm-runners"
+  maxRunners: 5
   template:
     spec:
+      group: "swarm-runners"
+      labels:
+        - "swarm-runners-scaleset"
       containers:
         - name: runner
-          image: ka0score/actions-runner:1.0.3
+          image: "ka0score/actions-runner:1.0.3"
           command: ["/home/runner/run.sh"]
