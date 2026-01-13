@@ -112,7 +112,7 @@ helm template "${RUNNER_SCALESET_RELEASE_NAME}" \
   --set githubConfigSecret=controller-manager \
   --set runnerScaleSet.minRunners=1 \
   --set runnerScaleSet.maxRunners=50 \
-  --set runnerScaleSet.runnerGroup="${RUNNER_GROUP}" \
+  --set runnerGroup="${RUNNER_GROUP}" \
   --set template.spec.containers[0].name="runner" \
   --set template.spec.containers[0].image="${RUNNER_IMAGE}" \
   --set 'template.spec.containers[0].command[0]=/bin/bash' \
