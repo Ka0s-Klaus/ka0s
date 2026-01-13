@@ -84,7 +84,7 @@ helm upgrade --install "${CONTROLLER_RELEASE_NAME}" \
 
 # 5. Clean up previous RunnerScaleSet resources and deploy the new one
 echo "INFO: Cleaning up previous RunnerScaleSet resources to avoid conflicts..."
-kubecl delete --ignore-not-found=true -n "${NAMESPACE}" \
+kubectl delete --ignore-not-found=true -n "${NAMESPACE}" \
   autoscalingrunnerset.actions.github.com/swarm-runners-scaleset \
   rolebinding.rbac.authorization.k8s.io/swarm-runners-scaleset-gha-rs-manager \
   role.rbac.authorization.k8s.io/swarm-runners-scaleset-gha-rs-manager \
