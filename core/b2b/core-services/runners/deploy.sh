@@ -82,7 +82,18 @@ helm upgrade --install "${CONTROLLER_RELEASE_NAME}" \
   --skip-crds \
   oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set-controller
 
-# 5. Generate RunnerScaleSet manifest from Helm and apply with kubectl
+# 5. Clean up previous RunnerScaleSet resources and deploy the new one
+echo "INFO: Cleaning up previous RunnerScaleSet resources to avoid conflicts..."
+kubecl delete --ignore-not-found=true -n "${NAMESPACE}" \
+  autoscalingrunnerset.actions.github.com/swarm-runners-scaleset \
+  rolebinding.rbac.authorization.k8s.io/swarm-runners-scaleset-gha-rs-manager \
+  role.rbac.authorization.k8s.io/swarm-runners-scaleset-gha-rs-manager \
+  serviceaccount/swarm-runners-scaleset-gha-rs-no-permission
+
+# Allow some time for termination
+sleep 5
+
+# 6. Generate RunnerScaleSet manifest from Helm and apply with kubectl
 echo "INFO: Desplegando el RunnerScaleSet '${RUNNER_SCALESET_RELEASE_NAME}' con kubectl..."
 helm template "${RUNNER_SCALESET_RELEASE_NAME}" \
   oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set \
