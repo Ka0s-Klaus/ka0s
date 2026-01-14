@@ -4190,6 +4190,8 @@
   - audit/kaos/18285276749.json
   - version.txt
 ---------------------------------
+<<<<<<< HEAD
+=======
 ## Version 0.4.10
 - **Branch**: refs/pull/1659/merge
 - **Commit**: [Ka0S] Uploading resume execution files to the repository...
@@ -4407,5 +4409,29 @@
   - audit/yamllint/yaml-lint-results-20994334840.txt
   - audit/yamllint/yaml-lint-results-20994581159.txt
   - core/test/correct-file1.yaml
+  - version.txt
+---------------------------------
+>>>>>>> origin
+## Version 0.4.10
+- **Branch**: refs/pull/2463/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Wed Jan 14 15:27:04 UTC 2026
+- **Message**: H2436 modulo de mongo
+- **Files Changed**:
+  - CHANGELOG.md
+  - INDEX_VERSION.md
+  - audit/kaos/20992995800-files-in-commit.txt
+  - audit/kaos/20992995800.json
+  - audit/kaos/20999449587-files-in-commit.txt
+  - audit/kaos/20999449587.json
+  - audit/kaos/20999502382-files-in-commit.txt
+  - audit/kaos/20999502382.json
+  - audit/mdlint/20999470939.txt
+  - core/b2b/core-services/mongo/mongo-secret.yaml
+  - core/b2b/core-services/mongo/mongo-service.yaml
+  - core/b2b/core-services/mongo/mongo-statefulset.yaml
+  - core/b2b/core-services/mongo/mongo-storage.yaml
+  - index.md
   - version.txt
 ---------------------------------
