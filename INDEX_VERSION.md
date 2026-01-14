@@ -215,3 +215,4 @@
 - **Version**: 0.4.10 - **Description**: H1968 modulo personalización del portal de kaos core
 - **Version**: 0.4.10 - **Description**: H1968 modulo personalización del portal de kaos core
 - **Version**: 0.4.10 - **Description**: H1968 modulo personalización del portal de kaos core
+- **Version**: 0.4.10 - **Description**: H2443 nuevo modulo de pruebas sobre kubernetes
