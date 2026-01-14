@@ -21,6 +21,8 @@ jobs:
   job-core:
     if: github.event.pull_request.state == 'open'
     runs-on: swarm-runners-scaleset
+    env:
+      GH_TOKEN: ${{ github.token }}
     outputs:
       KAOS_BRANCH: ${{ steps.commit_details.outputs.RNBRANCH }}
       KAOS_NUMBER: ${{ steps.commit_details.outputs.RNNUMBER }}
@@ -36,7 +38,10 @@ jobs:
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
-        token: ${{ secrets.KAOS_REPO_TOKEN }}
+    
+    # con esta parte suplimos que la imagen no disponga de la cli de GH    
+    - name: Install GH CLI
+      uses: ./.github/actions/install-gh-cli
 
     - id: commit_details
       name: Get commit details
@@ -105,6 +110,7 @@ jobs:
       env:
         USER_NAME: ${{ secrets.KAOS_BOT_NAME }}
         USER_EMAIL: ${{ secrets.KAOS_BOT_EMAIL }}
+        GH_TOKEN: ${{ github.token }}
       run: |
         git config --global user.name '${{ env.USER_NAME }}'
         git config --global user.email '${{ env.USER_EMAIL}}'
@@ -135,11 +141,15 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
+          
+      # con esta parte suplimos que la imagen no disponga de la cli de GH    
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+
       - id: handle-success-execution
         name: handle-success-execution
         env:
-          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           # Si todo ha ido correcto añadimos el contenido del fichero 
           RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
@@ -152,14 +162,18 @@ jobs:
       - id: repo
         name: Checkout code
         if: ${{ always() }}
+        env:
+          GH_TOKEN: ${{ github.token }}
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
+
+      # con esta parte suplimos que la imagen no disponga de la cli de GH    
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+
       - id: handle-failure-execution
         name: handle-failure-execution
-        env:
-          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
         run: |
           echo "Error detected in process"
           echo "Created issue"
@@ -172,7 +186,7 @@ jobs:
     needs: [job-core, handle-success, handle_failure]
     if: ${{ always() }} 
     env:
-        GH_TOKEN: ${{ secrets.KAOS_ACTIONS_TOKEN }}
+        GH_TOKEN: ${{ github.token }}
     steps:
       - id: repo
         name: Checkout code
@@ -180,7 +194,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
+
+      # con esta parte suplimos que la imagen no disponga de la cli de GH    
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+
       - id: end-process
         name: Finaliza el workflow
         run: |

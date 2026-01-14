@@ -4190,3 +4190,225 @@
   - audit/kaos/18285276749.json
   - version.txt
 ---------------------------------
+<<<<<<< HEAD
+=======
+## Version 0.4.10
+- **Branch**: refs/pull/1659/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Mon Oct  6 15:41:46 UTC 2025
+- **Message**: H1646 modulo de control de runners
+- **Files Changed**:
+  - .github/workflows/scan-and-trigger.yml
+  - audit/kaos/18286119408-files-in-commit.txt
+  - audit/kaos/18286119408.json
+  - directory-scan-report-20251006-171940.md
+  - version.txt
+---------------------------------
+## Version 0.4.10
+- **Branch**: refs/pull/1756/merge
+- **Commit**: [Ka0S] Uploading mdlint resume execution files...
+- **Author**: Ka0s
+- **Date**: Tue Oct  7 10:58:46 UTC 2025
+- **Message**: H1646 modulo de control de runners
+- **Files Changed**:
+  - .github/workflows/scan-image.yml
+  - audit/jsonlint/jsonlint-results-18310194711.txt
+  - audit/jsonlint/jsonlint-results-18310195419.txt
+  - audit/jsonlint/jsonlint-results-18310196067.txt
+  - audit/jsonlint/jsonlint-results-18310196859.txt
+  - audit/jsonlint/jsonlint-results-18310198245.txt
+  - audit/jsonlint/jsonlint-results-18310199024.txt
+  - audit/jsonlint/jsonlint-results-18310199638.txt
+  - audit/jsonlint/jsonlint-results-18310200876.txt
+  - audit/jsonlint/jsonlint-results-18310201597.txt
+  - audit/jsonlint/jsonlint-results-18310202250.txt
+  - audit/jsonlint/jsonlint-results-18310202877.txt
+  - audit/jsonlint/jsonlint-results-18310203597.txt
+  - audit/jsonlint/jsonlint-results-18310204489.txt
+  - audit/jsonlint/jsonlint-results-18310205162.txt
+  - audit/jsonlint/jsonlint-results-18310226951.txt
+  - audit/jsonlint/jsonlint-results-18310227461.txt
+  - audit/jsonlint/jsonlint-results-18310227627.txt
+  - audit/jsonlint/jsonlint-results-18310228007.txt
+  - audit/jsonlint/jsonlint-results-18310228273.txt
+  - audit/jsonlint/jsonlint-results-18310228617.txt
+  - audit/jsonlint/jsonlint-results-18310228876.txt
+  - audit/jsonlint/jsonlint-results-18310229100.txt
+  - audit/kaos/18310184071-files-in-commit.txt
+  - audit/kaos/18310184071.json
+  - audit/mdlint/18310227187.txt
+  - audit/mdlint/18310229365.txt
+  - audit/mdlint/18310229658.txt
+  - audit/mdlint/18310229835.txt
+  - audit/mdlint/18310230147.txt
+  - audit/mdlint/18310230509.txt
+  - audit/mdlint/18310230624.txt
+  - audit/mdlint/18310230803.txt
+  - version.txt
+---------------------------------
+## Version 0.4.10
+- **Branch**: refs/pull/1840/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Tue Oct  7 13:55:18 UTC 2025
+- **Message**: H1646 modulo de control de runners
+- **Files Changed**:
+  - .github/workflows/scan-image.yml
+  - audit/kaos/18314923047-files-in-commit.txt
+  - audit/kaos/18314923047.json
+  - core/runner/itsm-runner/0.0.0/Dockerfile
+  - core/runner/itsm-runner/0.0.0/install.sh
+  - core/runner/itsm-runner/latest/Dockerfile
+  - core/runner/itsm-runner/latest/install.sh
+  - core/runner/trivy-runner/0.0.0/Dockerfile
+  - core/runner/trivy-runner/latest/Dockerfile
+  - version.txt
+---------------------------------
+## Version 0.4.10
+- **Branch**: refs/pull/1999/merge
+- **Commit**: [Ka0S] Uploading mdlint resume execution files...
+- **Author**: Ka0s
+- **Date**: Fri Oct 10 08:59:15 UTC 2025
+- **Message**: H1968 modulo personalización del portal de kaos core
+- **Files Changed**:
+  - audit/kaos/18401569583-files-in-commit.txt
+  - audit/kaos/18401569583.json
+  - audit/mdlint/18401579069.txt
+  - core/docker_swarm/docker_swarm/scripts/manager.sh
+  - core/docs/ka0s/mapa_estructura_workspace.md
+  - core/portal/docker_swarm/docker-stack.yml
+  - core/runner/portal-backend/0.0.0/Dockerfile
+  - core/runner/portal-frontend/0.0.0/Dockerfile
+  - version.txt
+---------------------------------
+## Version 0.4.10
+- **Branch**: refs/pull/2017/merge
+- **Commit**: fix
+- **Author**: Ka0s
+- **Date**: Fri Oct 10 10:22:44 UTC 2025
+- **Message**: H1968 modulo personalización del portal de kaos core
+- **Files Changed**:
+  - .github/workflows/scan-image.yml
+  - .github/workflows/workflow-stats.yml
+  - audit/issues/README.MD
+  - audit/kaos/18403528616-files-in-commit.txt
+  - audit/kaos/18403528616.json
+  - audit/scan/18403457543-20251010-121250.md
+  - version.txt
+---------------------------------
+## Version 0.4.10
+- **Branch**: refs/pull/2055/merge
+- **Commit**: [Ka0S] Uploading jsonlint resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Fri Oct 10 14:37:13 UTC 2025
+- **Message**: H1968 modulo personalización del portal de kaos core
+- **Files Changed**:
+  - audit/jsonlint/jsonlint-results-18409301082.txt
+  - audit/jsonlint/jsonlint-results-18409301813.txt
+  - audit/jsonlint/jsonlint-results-18409302549.txt
+  - audit/jsonlint/jsonlint-results-18409304124.txt
+  - audit/jsonlint/jsonlint-results-18409304874.txt
+  - audit/jsonlint/jsonlint-results-18409305685.txt
+  - audit/jsonlint/jsonlint-results-18409332359.txt
+  - audit/jsonlint/jsonlint-results-18409333190.txt
+  - audit/jsonlint/jsonlint-results-18409334239.txt
+  - audit/jsonlint/jsonlint-results-18409335132.txt
+  - audit/jsonlint/jsonlint-results-18409337275.txt
+  - audit/jsonlint/jsonlint-results-18409337789.txt
+  - audit/jsonlint/jsonlint-results-18409338664.txt
+  - audit/jsonlint/jsonlint-results-18409340498.txt
+  - audit/jsonlint/jsonlint-results-18409341508.txt
+  - audit/jsonlint/jsonlint-results-18409342527.txt
+  - audit/jsonlint/jsonlint-results-18409343707.txt
+  - audit/jsonlint/jsonlint-results-18409344378.txt
+  - audit/jsonlint/jsonlint-results-18409344763.txt
+  - audit/jsonlint/jsonlint-results-18409345519.txt
+  - audit/jsonlint/jsonlint-results-18409345868.txt
+  - audit/kaos/18409293816-files-in-commit.txt
+  - audit/kaos/18409293816.json
+  - audit/kaos/18409306479-files-in-commit.txt
+  - audit/kaos/18409306479.json
+  - audit/mdlint/18409309395.txt
+  - audit/mdlint/18409343069.txt
+  - audit/mdlint/18409345260.txt
+  - audit/scan/18405209102-20251010-133047.md
+  - version.txt
+---------------------------------
+## Version 0.4.10
+- **Branch**: refs/pull/2458/merge
+- **Commit**: [Ka0S] Uploading jsonlint resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Wed Jan 14 15:08:46 UTC 2026
+- **Message**: H2443 nuevo modulo de pruebas sobre kubernetes
+- **Files Changed**:
+  - audit/jsonlint/jsonlint-results-20993617402.txt
+  - audit/jsonlint/jsonlint-results-20993618729.txt
+  - audit/jsonlint/jsonlint-results-20993620166.txt
+  - audit/jsonlint/jsonlint-results-20993621492.txt
+  - audit/jsonlint/jsonlint-results-20994326481.txt
+  - audit/jsonlint/jsonlint-results-20994327903.txt
+  - audit/jsonlint/jsonlint-results-20994329333.txt
+  - audit/jsonlint/jsonlint-results-20994330825.txt
+  - audit/jsonlint/jsonlint-results-20994333527.txt
+  - audit/jsonlint/jsonlint-results-20994564550.txt
+  - audit/jsonlint/jsonlint-results-20994566130.txt
+  - audit/jsonlint/jsonlint-results-20994567268.txt
+  - audit/jsonlint/jsonlint-results-20994569699.txt
+  - audit/jsonlint/jsonlint-results-20994572386.txt
+  - audit/jsonlint/jsonlint-results-20994782653.txt
+  - audit/jsonlint/jsonlint-results-20994784167.txt
+  - audit/jsonlint/jsonlint-results-20994785618.txt
+  - audit/jsonlint/jsonlint-results-20994787110.txt
+  - audit/jsonlint/jsonlint-results-20994788438.txt
+  - audit/jsonlint/jsonlint-results-20994864949.txt
+  - audit/jsonlint/jsonlint-results-20994866417.txt
+  - audit/jsonlint/jsonlint-results-20994867716.txt
+  - audit/jsonlint/jsonlint-results-20995494530.txt
+  - audit/jsonlint/jsonlint-results-20995496144.txt
+  - audit/jsonlint/jsonlint-results-20995497638.txt
+  - audit/jsonlint/jsonlint-results-20995498882.txt
+  - audit/jsonlint/jsonlint-results-20995500496.txt
+  - audit/jsonlint/jsonlint-results-20995502106.txt
+  - audit/jsonlint/jsonlint-results-20995503419.txt
+  - audit/jsonlint/jsonlint-results-20995504968.txt
+  - audit/jsonlint/jsonlint-results-20995506910.txt
+  - audit/jsonlint/jsonlint-results-20995510313.txt
+  - audit/jsonlint/jsonlint-results-20995511962.txt
+  - audit/jsonlint/jsonlint-results-20995515644.txt
+  - audit/kaos/20991833578-files-in-commit.txt
+  - audit/kaos/20991833578.json
+  - audit/kaos/20991996977-files-in-commit.txt
+  - audit/kaos/20991996977.json
+  - audit/kaos/20992654265-files-in-commit.txt
+  - audit/kaos/20992654265.json
+  - audit/kaos/20992900011-files-in-commit.txt
+  - audit/kaos/20992900011.json
+  - audit/kaos/20993226067-files-in-commit.txt
+  - audit/kaos/20993226067.json
+  - audit/kaos/20993373360-files-in-commit.txt
+  - audit/kaos/20993373360.json
+  - audit/kaos/20993598421-files-in-commit.txt
+  - audit/kaos/20993598421.json
+  - audit/kaos/20994308270-files-in-commit.txt
+  - audit/kaos/20994308270.json
+  - audit/kaos/20994545699-files-in-commit.txt
+  - audit/kaos/20994545699.json
+  - audit/kaos/20994561128-files-in-commit.txt
+  - audit/kaos/20994561128.json
+  - audit/kaos/20994762847-files-in-commit.txt
+  - audit/kaos/20994762847.json
+  - audit/kaos/20994836582-files-in-commit.txt
+  - audit/kaos/20994836582.json
+  - audit/kaos/20995473811-files-in-commit.txt
+  - audit/kaos/20995473811.json
+  - audit/mdlint/20992923549.txt
+  - audit/mdlint/20993243962.txt
+  - audit/mdlint/20993391353.txt
+  - audit/mdlint/20993622765.txt
+  - audit/yamllint/yaml-lint-results-20994334840.txt
+  - audit/yamllint/yaml-lint-results-20994581159.txt
+  - core/test/correct-file1.yaml
+  - version.txt
+---------------------------------
+>>>>>>> origin
