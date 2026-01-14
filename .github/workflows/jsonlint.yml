@@ -38,8 +38,7 @@ env:
 
 jobs:
   job-core:
-    runs-on: 
-      group: swarm-runners
+    runs-on: swarm-runners-scaleset
     steps:
       - id: repo
         name: Checkout code
@@ -105,8 +104,7 @@ jobs:
               git push origin ${{ github.ref }} --force-with-lease
             fi
   handle-success:
-     runs-on:
-       group: swarm-runners
+     runs-on: swarm-runners-scaleset
      needs: [job-core]
      if: ${{ success() }}
      steps:
