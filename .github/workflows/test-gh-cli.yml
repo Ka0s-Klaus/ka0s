@@ -72,12 +72,12 @@ jobs:
         run: |
           gh workflow list -a 
 
-      - name: Get Current Run ID and View Logs
+      - name: Get Current Run ID and View
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Viewing logs for run ID: ${{ github.run_id }}"
-          gh run view ${{ github.run_id }} --log 
+          echo "Viewing status for run ID: ${{ github.run_id }}"
+          gh run view ${{ github.run_id }}
 
       - name: List Runs for this Workflow
         env:
