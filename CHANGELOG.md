@@ -4190,6 +4190,8 @@
   - audit/kaos/18285276749.json
   - version.txt
 ---------------------------------
+<<<<<<< HEAD
+=======
 ## Version 0.4.10
 - **Branch**: refs/pull/1659/merge
 - **Commit**: [Ka0S] Uploading resume execution files to the repository...
@@ -4409,3 +4411,4 @@
   - core/test/correct-file1.yaml
   - version.txt
 ---------------------------------
+>>>>>>> origin
