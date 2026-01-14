@@ -28,7 +28,10 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
+
+      # con esta parte suplimos que la imagen no disponga de la cli de GH    
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
 
       - name: Commit and push changes
         run: |
@@ -46,8 +49,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
-  
+
+      # con esta parte suplimos que la imagen no disponga de la cli de GH    
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+
       - name: Generate names
         run: |
           git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
@@ -398,7 +404,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
+
       - id: handle-success-execution
         name: handle-success-execution
         env:
@@ -419,7 +425,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
+
+      # con esta parte suplimos que la imagen no disponga de la cli de GH    
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+
       - id: handle-failure-execution
         name: handle-failure-execution
         env:
@@ -444,7 +454,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
+          
+      # con esta parte suplimos que la imagen no disponga de la cli de GH    
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+
       - id: end-process
         name: Finaliza el workflow
         run: |
