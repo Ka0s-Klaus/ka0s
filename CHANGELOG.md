@@ -4333,3 +4333,79 @@
   - audit/scan/18405209102-20251010-133047.md
   - version.txt
 ---------------------------------
+## Version 0.4.10
+- **Branch**: refs/pull/2458/merge
+- **Commit**: [Ka0S] Uploading jsonlint resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Wed Jan 14 15:08:46 UTC 2026
+- **Message**: H2443 nuevo modulo de pruebas sobre kubernetes
+- **Files Changed**:
+  - audit/jsonlint/jsonlint-results-20993617402.txt
+  - audit/jsonlint/jsonlint-results-20993618729.txt
+  - audit/jsonlint/jsonlint-results-20993620166.txt
+  - audit/jsonlint/jsonlint-results-20993621492.txt
+  - audit/jsonlint/jsonlint-results-20994326481.txt
+  - audit/jsonlint/jsonlint-results-20994327903.txt
+  - audit/jsonlint/jsonlint-results-20994329333.txt
+  - audit/jsonlint/jsonlint-results-20994330825.txt
+  - audit/jsonlint/jsonlint-results-20994333527.txt
+  - audit/jsonlint/jsonlint-results-20994564550.txt
+  - audit/jsonlint/jsonlint-results-20994566130.txt
+  - audit/jsonlint/jsonlint-results-20994567268.txt
+  - audit/jsonlint/jsonlint-results-20994569699.txt
+  - audit/jsonlint/jsonlint-results-20994572386.txt
+  - audit/jsonlint/jsonlint-results-20994782653.txt
+  - audit/jsonlint/jsonlint-results-20994784167.txt
+  - audit/jsonlint/jsonlint-results-20994785618.txt
+  - audit/jsonlint/jsonlint-results-20994787110.txt
+  - audit/jsonlint/jsonlint-results-20994788438.txt
+  - audit/jsonlint/jsonlint-results-20994864949.txt
+  - audit/jsonlint/jsonlint-results-20994866417.txt
+  - audit/jsonlint/jsonlint-results-20994867716.txt
+  - audit/jsonlint/jsonlint-results-20995494530.txt
+  - audit/jsonlint/jsonlint-results-20995496144.txt
+  - audit/jsonlint/jsonlint-results-20995497638.txt
+  - audit/jsonlint/jsonlint-results-20995498882.txt
+  - audit/jsonlint/jsonlint-results-20995500496.txt
+  - audit/jsonlint/jsonlint-results-20995502106.txt
+  - audit/jsonlint/jsonlint-results-20995503419.txt
+  - audit/jsonlint/jsonlint-results-20995504968.txt
+  - audit/jsonlint/jsonlint-results-20995506910.txt
+  - audit/jsonlint/jsonlint-results-20995510313.txt
+  - audit/jsonlint/jsonlint-results-20995511962.txt
+  - audit/jsonlint/jsonlint-results-20995515644.txt
+  - audit/kaos/20991833578-files-in-commit.txt
+  - audit/kaos/20991833578.json
+  - audit/kaos/20991996977-files-in-commit.txt
+  - audit/kaos/20991996977.json
+  - audit/kaos/20992654265-files-in-commit.txt
+  - audit/kaos/20992654265.json
+  - audit/kaos/20992900011-files-in-commit.txt
+  - audit/kaos/20992900011.json
+  - audit/kaos/20993226067-files-in-commit.txt
+  - audit/kaos/20993226067.json
+  - audit/kaos/20993373360-files-in-commit.txt
+  - audit/kaos/20993373360.json
+  - audit/kaos/20993598421-files-in-commit.txt
+  - audit/kaos/20993598421.json
+  - audit/kaos/20994308270-files-in-commit.txt
+  - audit/kaos/20994308270.json
+  - audit/kaos/20994545699-files-in-commit.txt
+  - audit/kaos/20994545699.json
+  - audit/kaos/20994561128-files-in-commit.txt
+  - audit/kaos/20994561128.json
+  - audit/kaos/20994762847-files-in-commit.txt
+  - audit/kaos/20994762847.json
+  - audit/kaos/20994836582-files-in-commit.txt
+  - audit/kaos/20994836582.json
+  - audit/kaos/20995473811-files-in-commit.txt
+  - audit/kaos/20995473811.json
+  - audit/mdlint/20992923549.txt
+  - audit/mdlint/20993243962.txt
+  - audit/mdlint/20993391353.txt
+  - audit/mdlint/20993622765.txt
+  - audit/yamllint/yaml-lint-results-20994334840.txt
+  - audit/yamllint/yaml-lint-results-20994581159.txt
+  - core/test/correct-file1.yaml
+  - version.txt
+---------------------------------
