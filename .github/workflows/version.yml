@@ -21,6 +21,8 @@ jobs:
   job-core:
     if: github.event.pull_request.state == 'open'
     runs-on: swarm-runners-scaleset
+    env:
+      GH_TOKEN: ${{ github.token }}
     outputs:
       KAOS_BRANCH: ${{ steps.commit_details.outputs.RNBRANCH }}
       KAOS_NUMBER: ${{ steps.commit_details.outputs.RNNUMBER }}
@@ -160,6 +162,8 @@ jobs:
       - id: repo
         name: Checkout code
         if: ${{ always() }}
+        env:
+          GH_TOKEN: ${{ github.token }}
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -170,8 +174,6 @@ jobs:
 
       - id: handle-failure-execution
         name: handle-failure-execution
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
           echo "Error detected in process"
           echo "Created issue"
