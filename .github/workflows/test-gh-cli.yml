@@ -1,0 +1,102 @@
+name: Ka0s Test GH CLI Commands
+
+on:
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  actions: read
+  contents: read
+
+jobs:
+  test-issue-commands:
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+
+      - name: Create Test Issue
+        id: create_issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          issue_number=$(gh issue create --title "Test Issue for GH CLI" --body "This is a test issue created by a workflow." --label "bug"  | awk -F'/' '{print $NF}')
+          echo "issue_number=$issue_number" >> $GITHUB_OUTPUT
+
+      - name: Comment on Issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue comment ${{ steps.create_issue.outputs.issue_number }} --body "This is a test comment." 
+
+      - name: Add Label to Issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue edit ${{ steps.create_issue.outputs.issue_number }} --add-label "documentation" 
+
+      - name: View Issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue view ${{ steps.create_issue.outputs.issue_number }} --json title,number,state 
+
+      - name: List Issues
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue list --label "bug" --state "open" --limit 5 
+
+      - name: Close Test Issue
+        if: always() # Always run this step to clean up
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue close ${{ steps.create_issue.outputs.issue_number }} 
+
+  test-workflow-and-run-commands:
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+
+      - name: List Workflows
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh workflow list -a 
+
+      - name: Get Current Run ID and View
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Viewing status for run ID: ${{ github.run_id }}"
+          gh run view ${{ github.run_id }}
+
+      - name: List Runs for this Workflow
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh run list --workflow="test-gh-cli.yml" --limit 5 
+
+  test-api-command:
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+
+      - name: Test GH API
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Fetching repository details via API"
+          gh api "/repos/${{ github.repository }}" --jq '.full_name'
