@@ -117,7 +117,7 @@ jobs:
       - id: handle-success-execution
         name: handle-success-execution
         env:
-          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           # Si todo ha ido correcto añadimos el contenido del fichero 
           RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
@@ -168,6 +168,8 @@ jobs:
 
       - id: end-process
         name: Finaliza el workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           echo "End process"
           RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
