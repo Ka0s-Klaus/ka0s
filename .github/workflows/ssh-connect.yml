@@ -1,5 +1,15 @@
 name: Ka0s C0re Host Audit logs
 on:
+  workflow_dispatch:
+    inputs:
+      script-path:
+        description: 'Path of the script to execute'
+        required: true
+        default: 'devops/core/host/test.sh'
+      script-args:
+        description: 'Arguments for the script'
+        required: false
+        default: ''
   schedule:
     - cron: '0 0 * * *'  # Run daily at midnight
 
@@ -41,9 +51,9 @@ jobs:
           port: ${{ secrets.KAOS_SSH_PORT_1 }}
           pass: ${{ secrets.KAOS_SSH_PASS }}
           use-sudo: true
-          script-path: 'devops/core/host/test.sh'
-          script-args: '--some-arg value'
-        
+          script-path: ${{ github.event.inputs.script-path || 'devops/core/host/test.sh' }}
+          script-args: ${{ github.event.inputs.script-args || '' }}
+
   handle-success:
     runs-on: swarm-runners-scaleset
     needs: [job-core, job-audit]
