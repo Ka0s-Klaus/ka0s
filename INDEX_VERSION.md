@@ -211,3 +211,4 @@
 - **Version**: 0.4.9 - **Description**: H1646 modulo de control de runners
 - **Version**: 0.4.10 - **Description**: H2436 modulo de mongo
 - **Version**: 0.4.10 - **Description**: H2460 limpieza y esplendor del codigo actual
+- **Version**: 0.4.10 - **Description**: H2559 modulo de conexion ssh
