@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgresql
+  namespace: zabbix
+  labels:
+    app: postgresql
+    core.kaos.io/type: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgresql
+  template:
+    metadata:
+      labels:
+        app: postgresql
+    spec:
+      nodeSelector:
+        node-role.kubernetes.io/control-plane: ""
+      containers:
+        - name: postgresql
+          image: postgres:16
+          env:
+            - name: POSTGRES_USER
+              value: "admin"
+            - name: POSTGRES_PASSWORD
+              value: "admin"
+            - name: POSTGRES_DB
+              value: "zabbix"
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: postgresql-persistent-storage
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: postgresql-persistent-storage
+          persistentVolumeClaim:
+            claimName: postgresql-pvc

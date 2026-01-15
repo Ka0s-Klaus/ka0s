@@ -38,8 +38,41 @@ spec:
                 if (!file_exists($path)) { exit(0); }
                 $content = file_get_contents($path);
 
+                if (!preg_match("/'app_root_url'\\s*=>\\s*(.*?),/m", $content, $m)) { exit(0); }
+                $currentRaw = trim($m[1]);
+                if (strpos($currentRaw, '$_SERVER') !== false) { exit(0); }
+
+                $currentUrl = null;
+                $rawInside = null;
+                if (preg_match("/'([^']*)'/", $currentRaw, $m2)) {
+                  $rawInside = $m2[1];
+                  $currentUrl = trim($rawInside, " \t\n\r\0\x0B`");
+                }
+
+                $host = null;
+                if ($currentUrl !== null) {
+                  $parts = @parse_url($currentUrl);
+                  if (is_array($parts) && isset($parts['host'])) {
+                    $host = $parts['host'];
+                  }
+                }
+
+                $isInternalHost = false;
+                if ($host !== null) {
+                  if ($host === 'localhost' || $host === '127.0.0.1') { $isInternalHost = true; }
+                  if (preg_match('/^(10\\.|192\\.168\\.|172\\.(1[6-9]|2\\d|3[0-1])\\.)/', $host)) { $isInternalHost = true; }
+                }
+
+                $hasWeirdFormatting = false;
+                if ($rawInside !== null) {
+                  if ($rawInside !== trim($rawInside)) { $hasWeirdFormatting = true; }
+                  if (strpos($rawInside, '`') !== false) { $hasWeirdFormatting = true; }
+                }
+
+                if (!$isInternalHost && !$hasWeirdFormatting) { exit(0); }
+
                 $pattern = "/'app_root_url'\\s*=>\\s*[^,]*,/m";
-                $replacement = "'app_root_url' => (isset(\$_SERVER['HTTP_X_FORWARDED_PROTO']) ? \$_SERVER['HTTP_X_FORWARDED_PROTO'] : ((isset(\$_SERVER['HTTPS']) && \$_SERVER['HTTPS'] !== 'off') ? 'https' : 'http')).'://'.(isset(\$_SERVER['HTTP_HOST']) ? \$_SERVER['HTTP_HOST'] : 'localhost').((isset(\$_SERVER['HTTP_X_FORWARDED_PREFIX']) && \$_SERVER['HTTP_X_FORWARDED_PREFIX'] !== '') ? rtrim(\$_SERVER['HTTP_X_FORWARDED_PREFIX'], '/').'/' : '/'),";
+                $replacement = "'app_root_url' => (isset(\$_SERVER['HTTP_X_FORWARDED_PROTO']) ? \$_SERVER['HTTP_X_FORWARDED_PROTO'] : ((isset(\$_SERVER['HTTPS']) && \$_SERVER['HTTPS'] !== 'off') ? 'https' : 'http')).'://'.(isset(\$_SERVER['HTTP_X_FORWARDED_HOST']) ? \$_SERVER['HTTP_X_FORWARDED_HOST'] : (isset(\$_SERVER['HTTP_HOST']) ? \$_SERVER['HTTP_HOST'] : (isset(\$_SERVER['SERVER_NAME']) ? \$_SERVER['SERVER_NAME'] : 'localhost'))).((isset(\$_SERVER['HTTP_X_FORWARDED_PREFIX']) && \$_SERVER['HTTP_X_FORWARDED_PREFIX'] !== '') ? rtrim(\$_SERVER['HTTP_X_FORWARDED_PREFIX'], '/').'/' : '/'),";
 
                 $new = preg_replace($pattern, $replacement, $content, 1, $count);
                 if ($count === 0) { exit(0); }

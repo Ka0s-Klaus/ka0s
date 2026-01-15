@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: zabbix-agent
+  namespace: zabbix
+  labels:
+    app: zabbix-agent
+spec:
+  selector:
+    matchLabels:
+      app: zabbix-agent
+  template:
+    metadata:
+      labels:
+        app: zabbix-agent
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+        - name: zabbix-agent
+          image: zabbix/zabbix-agent2:latest
+          env:
+            - name: ZBX_SERVER_HOST
+              value: zabbix-server
+            - name: ZBX_SERVER_PORT
+              value: "10051"
+            - name: ZBX_SERVER_ACTIVE
+              value: zabbix-server
+            - name: ZBX_HOSTNAMEITEM
+              value: system.hostname
+          volumeMounts:
+            - name: rootfs
+              mountPath: /rootfs
+              readOnly: true
+            - name: var-run
+              mountPath: /var/run
+      volumes:
+        - name: rootfs
+          hostPath:
+            path: /
+        - name: var-run
+          hostPath:
+            path: /var/run
+

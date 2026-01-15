@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zabbix-web
+  namespace: zabbix
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zabbix-web
+  template:
+    metadata:
+      labels:
+        app: zabbix-web
+    spec:
+      nodeSelector:
+        node-role.kubernetes.io/control-plane: ""
+      containers:
+        - name: zabbix-web
+          image: zabbix/zabbix-web-nginx-pgsql:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DB_SERVER_HOST
+              value: postgresql
+            - name: POSTGRES_USER
+              value: "admin"
+            - name: POSTGRES_PASSWORD
+              value: "admin"
+            - name: POSTGRES_DB
+              value: "zabbix"
+            - name: ZBX_SERVER_HOST
+              value: zabbix-server
+            - name: PHP_TZ
+              value: UTC

@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: backstage
+  namespace: backstage
+  labels:
+    app: backstage
+    core.kaos.io/type: catalog
+spec:
+  type: LoadBalancer
+  loadBalancerIP: 192.168.1.242
+  ports:
+    - port: 80
+      targetPort: 7007
+      protocol: TCP
+  selector:
+    app: backstage
