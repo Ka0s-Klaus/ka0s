@@ -209,10 +209,5 @@
 - **Version**: 0.4.7 - **Description**: H1646 modulo de control de runners
 - **Version**: 0.4.8 - **Description**: H1646 modulo de control de runners
 - **Version**: 0.4.9 - **Description**: H1646 modulo de control de runners
-- **Version**: 0.4.10 - **Description**: H1646 modulo de control de runners
-- **Version**: 0.4.10 - **Description**: H1646 modulo de control de runners
-- **Version**: 0.4.10 - **Description**: H1646 modulo de control de runners
-- **Version**: 0.4.10 - **Description**: H1968 modulo personalización del portal de kaos core
-- **Version**: 0.4.10 - **Description**: H1968 modulo personalización del portal de kaos core
-- **Version**: 0.4.10 - **Description**: H1968 modulo personalización del portal de kaos core
-- **Version**: 0.4.10 - **Description**: H2443 nuevo modulo de pruebas sobre kubernetes
+- **Version**: 0.4.10 - **Description**: H2436 modulo de mongo
+- **Version**: 0.4.10 - **Description**: H2460 limpieza y esplendor del codigo actual
