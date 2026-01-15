@@ -23,3 +23,30 @@ Para desplegar MongoDB, sitúate en el directorio raíz del proyecto y ejecuta e
 
 ```bash
 kubectl apply -k core/b2b/core-services/mongo
+```
+
+## Verificacion
+
+Una vez aplicado, puedes verificar que el Pod de MongoDB se está ejecutando correctamente:
+
+```bash
+kubectl get pods -n mongo
+```
+
+Se debería ver un Pod llamado mongo-0 en estado Running . También se puede verificar el servicio y el volumen persistente:
+
+```bash
+# Verificar el servicio
+kubectl get service -n mongo
+ 
+# Verificar el PersistentVolumeClaim
+kubectl get pvc -n mongo
+```
+
+## Limpieza
+
+Para eliminar todos los recursos creados por esta configuración, se puede emplear usar el mismo kustomization.yaml con el comando delete :
+
+```bash
+kubectl delete -k core/b2b/core-services/mongo
+```
