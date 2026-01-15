@@ -1,0 +1,82 @@
+name: 'Ka0s Execute Remote Command via SSH'
+description: 'Ka0s Connects to a remote host via SSH and executes a given command or script.'
+
+inputs:
+  host:
+    description: 'SSH host to connect to.'
+    required: true
+  username:
+    description: 'SSH username.'
+    required: true
+  key:
+    description: 'SSH private key.'
+    required: true
+  port:
+    description: 'SSH port.'
+    required: true
+  pass:
+    description: 'Password for sudo. Required only if use-sudo is true.'
+    required: false
+  use-sudo:
+    description: 'Set to true to execute the command with sudo -S.'
+    required: false
+    default: 'false'
+  command:
+    description: 'The command to execute on the remote host. Mutually exclusive with script-path.'
+    required: false
+  script-path:
+    description: 'Path to the local script to execute on the remote host. Mutually exclusive with command.'
+    required: false
+  script-args:
+    description: 'Arguments to pass to the script.'
+    required: false
+  remote-tmp-dir:
+    description: 'Temporary directory on the remote host.'
+    required: false
+    default: '/tmp'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Execute SSH Command or Script
+      uses: appleboy/ssh-action@v1.2.2
+      with:
+        host: ${{ inputs.host }}
+        username: ${{ inputs.username }}
+        key: ${{ inputs.key }}
+        port: ${{ inputs.port }}
+        script: |
+          if [[ -n "${{ inputs.script-path }}" ]]; then
+            # Logic for script execution
+            scp -o StrictHostKeyChecking=no -i ${{ runner.temp }}/ssh_key -P ${{ inputs.port }} ${{ inputs.script-path }} ${{ inputs.username }}@${{ inputs.host }}:${{ inputs.remote-tmp-dir }}
+            
+            REMOTE_SCRIPT_PATH="${{ inputs.remote-tmp-dir }}/$(basename ${{ inputs.script-path }})"
+            
+            ssh -o StrictHostKeyChecking=no -i ${{ runner.temp }}/ssh_key -p ${{ inputs.port }} ${{ inputs.username }}@${{ inputs.host }} "chmod +x $REMOTE_SCRIPT_PATH"
+            
+            EXEC_COMMAND="$REMOTE_SCRIPT_PATH ${{ inputs.script-args }}"
+            if [[ "${{ inputs.use-sudo }}" == "true" ]]; then
+              ssh -o StrictHostKeyChecking=no -i ${{ runner.temp }}/ssh_key -p ${{ inputs.port }} ${{ inputs.username }}@${{ inputs.host }} "echo '${{ inputs.pass }}' | sudo -S $EXEC_COMMAND"
+            else
+              ssh -o StrictHostKeyChecking=no -i ${{ runner.temp }}/ssh_key -p ${{ inputs.port }} ${{ inputs.username }}@${{ inputs.host }} "$EXEC_COMMAND"
+            fi
+
+            ssh -o StrictHostKeyChecking=no -i ${{ runner.temp }}/ssh_key -p ${{ inputs.port }} ${{ inputs.username }}@${{ inputs.host }} "rm $REMOTE_SCRIPT_PATH"
+
+          elif [[ -n "${{ inputs.command }}" ]]; then
+            # Logic for direct command execution
+            if [[ "${{ inputs.use-sudo }}" == "true" ]]; then
+              echo "${{ inputs.pass }}" | sudo -S ${{ inputs.command }}
+            else
+              ${{ inputs.command }}
+            fi
+          else
+            echo "Error: Either 'command' or 'script-path' must be provided."
+            exit 1
+          fi
+
+    - name: Prepare SSH key
+      shell: bash
+      run: |
+        echo "${{ inputs.key }}" > ${{ runner.temp }}/ssh_key
+        chmod 600 ${{ runner.temp }}/ssh_key

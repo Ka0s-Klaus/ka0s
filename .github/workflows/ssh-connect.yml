@@ -26,28 +26,26 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
 
   job-audit:
-    runs-on: 
-      group: test
+    runs-on: swarm-runners-scaleset
     needs: [job-core]
     steps:
       - id: audit
-        name: Execute audit
-        if: ${{ success() }}
-        uses: appleboy/ssh-action@v1.2.2
+        name: Execute audit script
+        uses: ./.github/actions/ssh-exec
         with:
           host: ${{ secrets.KAOS_SSH_HOST_1 }}
           username: ${{ secrets.KAOS_SSH_USER }}
           key: ${{ secrets.KAOS_SSH_KEY_PRIV }}
           port: ${{ secrets.KAOS_SSH_PORT_1 }}
-          script: |
-            echo "${{ secrets.KAOS_SSH_PASS }}" | sudo -S lynis audit system --pentest --forensics 
+          pass: ${{ secrets.KAOS_SSH_PASS }}
+          use-sudo: true
+          script-path: 'devops/core/host/test.sh'
+          script-args: '--some-arg value'
         
   handle-success:
-    runs-on: 
-      group: test
+    runs-on: swarm-runners-scaleset
     needs: [job-core, job-audit]
     if: ${{ success() }}
     steps: 
@@ -65,8 +63,7 @@ jobs:
           # fi
           
   handle_failure:
-      runs-on: 
-        group: test
+      runs-on: swarm-runners-scaleset
       needs: [job-core, job-audit]
       if: ${{ failure() }} 
       steps: 
@@ -76,12 +73,11 @@ jobs:
             echo "Error detected in ${{ env.KAOS_MODULE }}, creating issue..."
             
   end-workflow:
-    runs-on: 
-      group: test
+    runs-on: swarm-runners-scaleset
     needs: [job-core, job-audit, handle-success, handle_failure]
     if: ${{ always() }}
     env:
-      GH_TOKEN: ${{ secrets.KAOS_ACTIONS_TOKEN }}
+      GH_TOKEN: ${{ github.token }}
     steps:
       - id: end-process
         name: Finaliza el workflow
