@@ -1,9 +1,0 @@
-# Construir imágenes
-docker build -t nmap-audit -f nmap.Dockerfile .
-docker build -t nikto-audit -f nikto.Dockerfile .
-docker build -t testssl-audit -f testssl.Dockerfile .
-
-# Ejecutar auditorías
-docker run -it --rm -v $(pwd):/scan nmap-audit -sV --script vulners <URL>
-docker run -it --rm -v $(pwd):/scan nikto-audit -h <URL>
-docker run -it --rm -v $(pwd):/scan testssl-audit <URL>
