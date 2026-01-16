@@ -68,7 +68,12 @@ runs:
         REMOTE_SCRIPT_PATH="${{ inputs.remote-tmp-dir }}/$(basename ${{ inputs.script-path }})"
         EXEC_COMMAND="chmod +x $REMOTE_SCRIPT_PATH && $REMOTE_SCRIPT_PATH ${{ inputs.script-args }}"
         if [[ "${{ inputs.use-sudo }}" == "true" ]]; then
-          ssh -o StrictHostKeyChecking=no -i ${{ runner.temp }}/ssh_key -p ${{ inputs.port }} ${{ inputs.username }}@${{ inputs.host }} "echo '${{ inputs.pass }}' | sudo -S $EXEC_COMMAND && rm $REMOTE_SCRIPT_PATH"
+          SUDO_PREFIX="echo '${{ inputs.pass }}' | sudo -S"
+          COMMAND_CHAIN="$SUDO_PREFIX bash -c '$EXEC_COMMAND'"
+          if [[ "${{ inputs.remote-results-path }}" != "" ]]; then
+            COMMAND_CHAIN="$COMMAND_CHAIN && $SUDO_PREFIX chmod -R 777 ${{ inputs.remote-results-path }}"
+          fi
+          ssh -o StrictHostKeyChecking=no -i ${{ runner.temp }}/ssh_key -p ${{ inputs.port }} ${{ inputs.username }}@${{ inputs.host }} "$COMMAND_CHAIN && rm $REMOTE_SCRIPT_PATH"
         else
           ssh -o StrictHostKeyChecking=no -i ${{ runner.temp }}/ssh_key -p ${{ inputs.port }} ${{ inputs.username }}@${{ inputs.host }} "$EXEC_COMMAND && rm $REMOTE_SCRIPT_PATH"
         fi
@@ -78,7 +83,9 @@ runs:
       shell: bash
       run: |
         if [[ "${{ inputs.use-sudo }}" == "true" ]]; then
-          ssh -o StrictHostKeyChecking=no -i ${{ runner.temp }}/ssh_key -p ${{ inputs.port }} ${{ inputs.username }}@${{ inputs.host }} "echo '${{ inputs.pass }}' | sudo -S ${{ inputs.command }}"
+          SUDO_PREFIX="echo '${{ inputs.pass }}' | sudo -S"
+          COMMAND_CHAIN="$SUDO_PREFIX bash -c '${{ inputs.command }}'"
+          if [[ "${{ inputs.remote-results-path }}" != 
         else
           ssh -o StrictHostKeyChecking=no -i ${{ runner.temp }}/ssh_key -p ${{ inputs.port }} ${{ inputs.username }}@${{ inputs.host }} "${{ inputs.command }}"
         fi
