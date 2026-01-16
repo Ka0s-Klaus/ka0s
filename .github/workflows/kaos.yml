@@ -6,10 +6,9 @@ on:
       - '**.js'
       - '**.yaml'
       - '**.yml'
-      #- '**.json'
+      - '**.json'
       - '**.md'
       - '**.py'
-      #- '!audit/**'
     branches:
       - 'H*'
       - 'F*'
@@ -95,8 +94,8 @@ jobs:
           cat files-in-commit.txt
           # Nuevo proceso de activacion de los modulos
           while IFS= read -r line; do
-            # Skip files in core/outputs directory
-            if [[ "$line" == core/outputs/* || "$line" == core/results/* ]]; then
+            # Skip files in audit/** directory
+            if [[ "$line" == audit/* || "$line" == audit/* ]]; then
               echo "Skipping file in outputs directory: $line"
               continue
             fi
