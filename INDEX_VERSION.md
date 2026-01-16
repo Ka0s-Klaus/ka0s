@@ -212,3 +212,4 @@
 - **Version**: 0.4.10 - **Description**: H2436 modulo de mongo
 - **Version**: 0.4.10 - **Description**: H2460 limpieza y esplendor del codigo actual
 - **Version**: 0.4.10 - **Description**: H2559 modulo de conexion ssh
+- **Version**: 0.5.0 - **Description**: F2559 modulo de conexion ssh
