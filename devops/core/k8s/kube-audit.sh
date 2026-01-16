@@ -2,6 +2,10 @@
 # Exit immediately if a command exits with a non-zero status.
 set -e
 
+# Set the KUBECONFIG environment variable to point to the admin config file.
+# This is necessary for kubectl to connect to the API server when run as root via sudo.
+export KUBECONFIG=/etc/kubernetes/admin.conf
+
 # The first argument is the directory where results will be stored. Default to /tmp/results.
 RESULTS_DIR=${1:-/tmp/results}
 
