@@ -10,6 +10,11 @@ on:
         description: 'Arguments for the script'
         required: false
         default: ''
+      results-path:
+        description: 'Path in the repository to store results'
+        required: false
+        default: 'audit/eresults/'
+
   schedule:
     - cron: '0 0 * * *'  # Run daily at midnight
 
@@ -21,7 +26,7 @@ permissions:
 
 env:
   KAOS_MODULE: "[Ka0S] Audit Host"
-  KAOS_PATH_RESUME: "audit/eresults/"
+  KAOS_PATH_RESUME: ${{ github.event.inputs.results-path || 'audit/eresults/' }}
   KAOS_FILE_HOST: ${{ github.run_id }}
   KAOS_CODE: ${{ github.run_id }}
 
