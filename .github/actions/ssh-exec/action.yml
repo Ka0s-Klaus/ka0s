@@ -57,48 +57,31 @@ runs:
 
     - name: Copy script to remote
       if: inputs.script-path != ''
-      uses: appleboy/scp-action@v0.1.4
-      with:
-        host: ${{ inputs.host }}
-        username: ${{ inputs.username }}
-        key: ${{ inputs.key }}
-        port: ${{ inputs.port }}
-        source: "${{ inputs.script-path }}"
-        target: "${{ inputs.remote-tmp-dir }}"
+      shell: bash
+      run: |
+        scp -o StrictHostKeyChecking=no -i ${{ runner.temp }}/ssh_key -P ${{ inputs.port }} ${{ inputs.script-path }} ${{ inputs.username }}@${{ inputs.host }}:${{ inputs.remote-tmp-dir }}
 
     - name: Execute remote script
       if: inputs.script-path != ''
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ inputs.host }}
-        username: ${{ inputs.username }}
-        key: ${{ inputs.key }}
-        port: ${{ inputs.port }}
-        script: |
-          REMOTE_SCRIPT_PATH="${{ inputs.remote-tmp-dir }}/$(basename ${{ inputs.script-path }})"
-          chmod +x $REMOTE_SCRIPT_PATH
-          EXEC_COMMAND="$REMOTE_SCRIPT_PATH ${{ inputs.script-args }}"
-          if [[ "${{ inputs.use-sudo }}" == "true" ]]; then
-            echo '${{ inputs.pass }}' | sudo -S $EXEC_COMMAND
-          else
-            $EXEC_COMMAND
-          fi
-          rm $REMOTE_SCRIPT_PATH
+      shell: bash
+      run: |
+        REMOTE_SCRIPT_PATH="${{ inputs.remote-tmp-dir }}/$(basename ${{ inputs.script-path }})"
+        EXEC_COMMAND="chmod +x $REMOTE_SCRIPT_PATH && $REMOTE_SCRIPT_PATH ${{ inputs.script-args }}"
+        if [[ "${{ inputs.use-sudo }}" == "true" ]]; then
+          ssh -o StrictHostKeyChecking=no -i ${{ runner.temp }}/ssh_key -p ${{ inputs.port }} ${{ inputs.username }}@${{ inputs.host }} "echo '${{ inputs.pass }}' | sudo -S $EXEC_COMMAND && rm $REMOTE_SCRIPT_PATH"
+        else
+          ssh -o StrictHostKeyChecking=no -i ${{ runner.temp }}/ssh_key -p ${{ inputs.port }} ${{ inputs.username }}@${{ inputs.host }} "$EXEC_COMMAND && rm $REMOTE_SCRIPT_PATH"
+        fi
 
     - name: Execute remote command
       if: inputs.command != ''
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ inputs.host }}
-        username: ${{ inputs.username }}
-        key: ${{ inputs.key }}
-        port: ${{ inputs.port }}
-        script: |
-          if [[ "${{ inputs.use-sudo }}" == "true" ]]; then
-            echo "${{ inputs.pass }}" | sudo -S ${{ inputs.command }}
-          else
-            ${{ inputs.command }}
-          fi
+      shell: bash
+      run: |
+        if [[ "${{ inputs.use-sudo }}" == "true" ]]; then
+          ssh -o StrictHostKeyChecking=no -i ${{ runner.temp }}/ssh_key -p ${{ inputs.port }} ${{ inputs.username }}@${{ inputs.host }} "echo '${{ inputs.pass }}' | sudo -S ${{ inputs.command }}"
+        else
+          ssh -o StrictHostKeyChecking=no -i ${{ runner.temp }}/ssh_key -p ${{ inputs.port }} ${{ inputs.username }}@${{ inputs.host }} "${{ inputs.command }}"
+        fi
 
     - name: Copy results from remote
       id: copy_results
