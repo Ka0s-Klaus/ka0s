@@ -1,0 +1,114 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "v1",
+            "data": {
+                "prometheus.yaml": "apiVersion: 1\ndatasources:\n- name: Prometheus\n  type: prometheus\n  url: http://prometheus-service:9090\n  access: proxy\n  isDefault: true"
+            },
+            "kind": "ConfigMap",
+            "metadata": {
+                "annotations": {
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"data\":{\"prometheus.yaml\":\"apiVersion: 1\\ndatasources:\\n- name: Prometheus\\n  type: prometheus\\n  url: http://prometheus-service:9090\\n  access: proxy\\n  isDefault: true\"},\"kind\":\"ConfigMap\",\"metadata\":{\"annotations\":{},\"name\":\"grafana-datasources\",\"namespace\":\"monitoring\"}}\n"
+                },
+                "creationTimestamp": "2025-12-23T15:58:13Z",
+                "name": "grafana-datasources",
+                "namespace": "monitoring",
+                "resourceVersion": "810444",
+                "uid": "e05dbb4b-4b59-4576-9e86-ac2af727174b"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "data": {
+                "loki-datasource.yaml": "apiVersion: 1\ndatasources:\n- name: Loki\n  type: loki\n  url: http://loki:3100\n  access: proxy\n  jsonData:\n    maxLines: 1000"
+            },
+            "kind": "ConfigMap",
+            "metadata": {
+                "annotations": {
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"data\":{\"loki-datasource.yaml\":\"apiVersion: 1\\ndatasources:\\n- name: Loki\\n  type: loki\\n  url: http://loki:3100\\n  access: proxy\\n  jsonData:\\n    maxLines: 1000\"},\"kind\":\"ConfigMap\",\"metadata\":{\"annotations\":{},\"labels\":{\"grafana_datasource\":\"1\"},\"name\":\"grafana-loki-datasource\",\"namespace\":\"monitoring\"}}\n"
+                },
+                "creationTimestamp": "2025-12-23T15:58:13Z",
+                "labels": {
+                    "grafana_datasource": "1"
+                },
+                "name": "grafana-loki-datasource",
+                "namespace": "monitoring",
+                "resourceVersion": "810445",
+                "uid": "796f07e3-f1f9-48ab-9f71-aa566d82aa0b"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "data": {
+                "ca.crt": "-----BEGIN CERTIFICATE-----\nMIIDBTCCAe2gAwIBAgIIdVZ4OXlm3howDQYJKoZIhvcNAQELBQAwFTETMBEGA1UE\nAxMKa3ViZXJuZXRlczAeFw0yNTEyMTgxODIxNTVaFw0zNTEyMTYxODI2NTVaMBUx\nEzARBgNVBAMTCmt1YmVybmV0ZXMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK\nAoIBAQDRmY/1mdgGLX5JJz4mQmbSxg5C9OxhaR4Z2iQnuZjfqv/Ad186OXBadxRw\neVgeye4P1iWvmjcqY9q3pbdjN2WdE4x1p/tXFN6A4onbZypXN8pkXSAqyf0+D/QX\n5UY7mRtMHjgrOqAQ/0Lr79r6lX8bKvwHq8oiVjpwcHHb08ouq99B7TCJZ5d6EYeQ\n3ZGdbt2Vo/JM2xGfoXm1NBP26L3EnuXCDHlrQp0ERAQM68KRiyCNNDynwjz/DLtX\nofZrG+p2pWYc0C4NvXH3B8/1PjiQ6kcc6noKoBFerfobuVLJmkW+8qhdInmkvRt6\nfVDpzklrxUNMp/rIMbdxxTQ5S4g9AgMBAAGjWTBXMA4GA1UdDwEB/wQEAwICpDAP\nBgNVHRMBAf8EBTADAQH/MB0GA1UdDgQWBBQBfYhN6j9YZrHNfGRZH+zhNzZh/TAV\nBgNVHREEDjAMggprdWJlcm5ldGVzMA0GCSqGSIb3DQEBCwUAA4IBAQBgnq6yWBQd\nC6Z/LReT/E39sJG03rzXz5NRoQBZMONAfvL+jlzRkqK+T70/jGZlu9mNNZFa7fck\npjoO6QXqBHli60feBMJeUTrK5az1V8rPgKpEt34Esy6NVc8S52RzSy78HtQejh2l\nXPNLA/BuGMOP1kuaizM7axYW4luqyankgHNXiKxxoK2qsc+mtELapmtSu1a3oaqx\nV6ZO/4/EoV25KORXWMQ4IZ7sK+dPbr6Mh/GejaZG2N2lTFAWA1a9C2ZootKg8VDO\nKFvVePd227BqD5153nQ7r8u3BckJj+9tfUn/JCTlDnDdx/YFqv64vZU7FWHIW7CU\nwGjni5x+bo3m\n-----END CERTIFICATE-----\n"
+            },
+            "kind": "ConfigMap",
+            "metadata": {
+                "annotations": {
+                    "kubernetes.io/description": "Contains a CA bundle that can be used to verify the kube-apiserver when using internal endpoints such as the internal service IP or kubernetes.default.svc. No other usage is guaranteed across distributions of Kubernetes clusters."
+                },
+                "creationTimestamp": "2025-12-23T15:58:13Z",
+                "name": "kube-root-ca.crt",
+                "namespace": "monitoring",
+                "resourceVersion": "810439",
+                "uid": "676ed9f8-746f-481d-a899-90f8d0110ee6"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "data": {
+                "loki-config.yaml": "auth_enabled: false\n\nserver:\n  http_listen_port: 3100\n\ningester:\n  lifecycler:\n    address: 127.0.0.1\n    ring:\n      kvstore:\n        store: inmemory\n      replication_factor: 1\n    final_sleep: 0s\n  chunk_idle_period: 5m\n  chunk_retain_period: 1m\n\nschema_config:\n  configs:\n    - from: 2020-10-24\n      store: boltdb-shipper\n      object_store: filesystem\n      schema: v11\n      index:\n        prefix: index_\n        period: 24h\n\nstorage_config:\n  boltdb_shipper:\n    active_index_directory: /loki/boltdb-shipper-active\n    cache_location: /loki/boltdb-shipper-cache\n    cache_ttl: 24h\n  filesystem:\n    directory: /loki/chunks\n\ncompactor:\n  working_directory: /loki/boltdb-shipper-compactor\n\nlimits_config:\n  reject_old_samples: true\n  reject_old_samples_max_age: 168h\n  allow_structured_metadata: false\n\ntable_manager:\n  retention_deletes_enabled: false\n  retention_period: 0s\n"
+            },
+            "kind": "ConfigMap",
+            "metadata": {
+                "annotations": {
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"data\":{\"loki-config.yaml\":\"auth_enabled: false\\n\\nserver:\\n  http_listen_port: 3100\\n\\ningester:\\n  lifecycler:\\n    address: 127.0.0.1\\n    ring:\\n      kvstore:\\n        store: inmemory\\n      replication_factor: 1\\n    final_sleep: 0s\\n  chunk_idle_period: 5m\\n  chunk_retain_period: 1m\\n\\nschema_config:\\n  configs:\\n    - from: 2020-10-24\\n      store: boltdb-shipper\\n      object_store: filesystem\\n      schema: v11\\n      index:\\n        prefix: index_\\n        period: 24h\\n\\nstorage_config:\\n  boltdb_shipper:\\n    active_index_directory: /loki/boltdb-shipper-active\\n    cache_location: /loki/boltdb-shipper-cache\\n    cache_ttl: 24h\\n  filesystem:\\n    directory: /loki/chunks\\n\\ncompactor:\\n  working_directory: /loki/boltdb-shipper-compactor\\n\\nlimits_config:\\n  reject_old_samples: true\\n  reject_old_samples_max_age: 168h\\n  allow_structured_metadata: false\\n\\ntable_manager:\\n  retention_deletes_enabled: false\\n  retention_period: 0s\\n\"},\"kind\":\"ConfigMap\",\"metadata\":{\"annotations\":{},\"name\":\"loki-config\",\"namespace\":\"monitoring\"}}\n"
+                },
+                "creationTimestamp": "2025-12-23T15:58:13Z",
+                "name": "loki-config",
+                "namespace": "monitoring",
+                "resourceVersion": "810446",
+                "uid": "1f20923c-d437-4295-802c-e7c5f27bb529"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "data": {
+                "prometheus.yml": "global:\n  scrape_interval: 15s\nscrape_configs:\n  - job_name: 'prometheus'\n    static_configs:\n      - targets: ['localhost:9090']\n  - job_name: 'node-exporter'\n    kubernetes_sd_configs:\n      - role: endpoints\n    relabel_configs:\n    - source_labels: [__meta_kubernetes_service_label_app]\n      action: keep\n      regex: node-exporter\n  - job_name: 'cadvisor'\n    kubernetes_sd_configs:\n      - role: node\n    relabel_configs:\n    - action: labelmap\n      regex: __meta_kubernetes_node_label_(.+)\n    - target_label: __address__\n      replacement: kubernetes.default.svc:443\n    - source_labels: [__meta_kubernetes_node_name]\n      regex: (.+)\n      target_label: __metrics_path__\n      replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor\n"
+            },
+            "kind": "ConfigMap",
+            "metadata": {
+                "annotations": {
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"data\":{\"prometheus.yml\":\"global:\\n  scrape_interval: 15s\\nscrape_configs:\\n  - job_name: 'prometheus'\\n    static_configs:\\n      - targets: ['localhost:9090']\\n  - job_name: 'node-exporter'\\n    kubernetes_sd_configs:\\n      - role: endpoints\\n    relabel_configs:\\n    - source_labels: [__meta_kubernetes_service_label_app]\\n      action: keep\\n      regex: node-exporter\\n  - job_name: 'cadvisor'\\n    kubernetes_sd_configs:\\n      - role: node\\n    relabel_configs:\\n    - action: labelmap\\n      regex: __meta_kubernetes_node_label_(.+)\\n    - target_label: __address__\\n      replacement: kubernetes.default.svc:443\\n    - source_labels: [__meta_kubernetes_node_name]\\n      regex: (.+)\\n      target_label: __metrics_path__\\n      replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor\\n\"},\"kind\":\"ConfigMap\",\"metadata\":{\"annotations\":{},\"name\":\"prometheus-config\",\"namespace\":\"monitoring\"}}\n"
+                },
+                "creationTimestamp": "2025-12-23T15:58:13Z",
+                "name": "prometheus-config",
+                "namespace": "monitoring",
+                "resourceVersion": "810447",
+                "uid": "8b91ab06-84b6-4a41-be1f-fef24a85fb56"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "data": {
+                "promtail.yaml": "server:\n  http_listen_port: 9080\n  grpc_listen_port: 0\n\npositions:\n  filename: /tmp/positions.yaml\n\nclients:\n  - url: http://loki:3100/loki/api/v1/push\n\nscrape_configs:\n  - job_name: kubernetes-pods\n    kubernetes_sd_configs:\n      - role: pod\n    pipeline_stages:\n      - docker: {}\n    relabel_configs:\n      - source_labels: [__meta_kubernetes_pod_node_name]\n        target_label: __host__\n      - action: labelmap\n        regex: __meta_kubernetes_pod_label_(.+)\n      - action: replace\n        source_labels:\n          - __meta_kubernetes_namespace\n        target_label: namespace\n      - action: replace\n        source_labels:\n          - __meta_kubernetes_pod_name\n        target_label: pod\n      - action: replace\n        source_labels:\n          - __meta_kubernetes_pod_container_name\n        target_label: container\n      - replacement: /var/log/pods/*$1/*.log\n        separator: /\n        source_labels:\n          - __meta_kubernetes_pod_uid\n          - __meta_kubernetes_pod_container_name\n        target_label: __path__\n"
+            },
+            "kind": "ConfigMap",
+            "metadata": {
+                "annotations": {
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"data\":{\"promtail.yaml\":\"server:\\n  http_listen_port: 9080\\n  grpc_listen_port: 0\\n\\npositions:\\n  filename: /tmp/positions.yaml\\n\\nclients:\\n  - url: http://loki:3100/loki/api/v1/push\\n\\nscrape_configs:\\n  - job_name: kubernetes-pods\\n    kubernetes_sd_configs:\\n      - role: pod\\n    pipeline_stages:\\n      - docker: {}\\n    relabel_configs:\\n      - source_labels: [__meta_kubernetes_pod_node_name]\\n        target_label: __host__\\n      - action: labelmap\\n        regex: __meta_kubernetes_pod_label_(.+)\\n      - action: replace\\n        source_labels:\\n          - __meta_kubernetes_namespace\\n        target_label: namespace\\n      - action: replace\\n        source_labels:\\n          - __meta_kubernetes_pod_name\\n        target_label: pod\\n      - action: replace\\n        source_labels:\\n          - __meta_kubernetes_pod_container_name\\n        target_label: container\\n      - replacement: /var/log/pods/*$1/*.log\\n        separator: /\\n        source_labels:\\n          - __meta_kubernetes_pod_uid\\n          - __meta_kubernetes_pod_container_name\\n        target_label: __path__\\n\"},\"kind\":\"ConfigMap\",\"metadata\":{\"annotations\":{},\"name\":\"promtail-config\",\"namespace\":\"monitoring\"}}\n"
+                },
+                "creationTimestamp": "2025-12-23T15:58:13Z",
+                "name": "promtail-config",
+                "namespace": "monitoring",
+                "resourceVersion": "810448",
+                "uid": "13e6abb0-2e3d-4113-9e08-b9ddf56a5cf8"
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": ""
+    }
+}

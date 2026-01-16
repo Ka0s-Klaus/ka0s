@@ -1,0 +1,127 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "apps/v1",
+            "kind": "Deployment",
+            "metadata": {
+                "annotations": {
+                    "deployment.kubernetes.io/revision": "2",
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"apps/v1\",\"kind\":\"Deployment\",\"metadata\":{\"annotations\":{},\"labels\":{\"app\":\"kibana\"},\"name\":\"kibana\",\"namespace\":\"elk\"},\"spec\":{\"replicas\":1,\"selector\":{\"matchLabels\":{\"app\":\"kibana\"}},\"template\":{\"metadata\":{\"labels\":{\"app\":\"kibana\"}},\"spec\":{\"containers\":[{\"env\":[{\"name\":\"ELASTICSEARCH_PASSWORD\",\"valueFrom\":{\"secretKeyRef\":{\"key\":\"password\",\"name\":\"elasticsearch-credentials\"}}}],\"image\":\"docker.elastic.co/kibana/kibana:8.5.0\",\"name\":\"kibana\",\"ports\":[{\"containerPort\":5601}],\"volumeMounts\":[{\"mountPath\":\"/usr/share/kibana/config/kibana.yml\",\"name\":\"config\",\"subPath\":\"kibana.yml\"}]}],\"volumes\":[{\"configMap\":{\"name\":\"kibana-config\"},\"name\":\"config\"}]}}}}\n"
+                },
+                "creationTimestamp": "2026-01-16T09:40:35Z",
+                "generation": 2,
+                "labels": {
+                    "app": "kibana"
+                },
+                "name": "kibana",
+                "namespace": "elk",
+                "resourceVersion": "5082445",
+                "uid": "8a93106b-df3a-4d64-95e6-1d4cbe6ceff0"
+            },
+            "spec": {
+                "progressDeadlineSeconds": 600,
+                "replicas": 1,
+                "revisionHistoryLimit": 10,
+                "selector": {
+                    "matchLabels": {
+                        "app": "kibana"
+                    }
+                },
+                "strategy": {
+                    "rollingUpdate": {
+                        "maxSurge": "25%",
+                        "maxUnavailable": "25%"
+                    },
+                    "type": "RollingUpdate"
+                },
+                "template": {
+                    "metadata": {
+                        "creationTimestamp": null,
+                        "labels": {
+                            "app": "kibana"
+                        }
+                    },
+                    "spec": {
+                        "containers": [
+                            {
+                                "env": [
+                                    {
+                                        "name": "ELASTICSEARCH_PASSWORD",
+                                        "valueFrom": {
+                                            "secretKeyRef": {
+                                                "key": "password",
+                                                "name": "elasticsearch-credentials"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "image": "docker.elastic.co/kibana/kibana:8.5.0",
+                                "imagePullPolicy": "IfNotPresent",
+                                "name": "kibana",
+                                "ports": [
+                                    {
+                                        "containerPort": 5601,
+                                        "protocol": "TCP"
+                                    }
+                                ],
+                                "resources": {},
+                                "terminationMessagePath": "/dev/termination-log",
+                                "terminationMessagePolicy": "File",
+                                "volumeMounts": [
+                                    {
+                                        "mountPath": "/usr/share/kibana/config/kibana.yml",
+                                        "name": "config",
+                                        "subPath": "kibana.yml"
+                                    }
+                                ]
+                            }
+                        ],
+                        "dnsPolicy": "ClusterFirst",
+                        "restartPolicy": "Always",
+                        "schedulerName": "default-scheduler",
+                        "securityContext": {},
+                        "terminationGracePeriodSeconds": 30,
+                        "volumes": [
+                            {
+                                "configMap": {
+                                    "defaultMode": 420,
+                                    "name": "kibana-config"
+                                },
+                                "name": "config"
+                            }
+                        ]
+                    }
+                }
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastTransitionTime": "2026-01-16T09:40:35Z",
+                        "lastUpdateTime": "2026-01-16T12:15:11Z",
+                        "message": "ReplicaSet \"kibana-86cd689b5d\" has successfully progressed.",
+                        "reason": "NewReplicaSetAvailable",
+                        "status": "True",
+                        "type": "Progressing"
+                    },
+                    {
+                        "lastTransitionTime": "2026-01-16T13:38:57Z",
+                        "lastUpdateTime": "2026-01-16T13:38:57Z",
+                        "message": "Deployment does not have minimum availability.",
+                        "reason": "MinimumReplicasUnavailable",
+                        "status": "False",
+                        "type": "Available"
+                    }
+                ],
+                "observedGeneration": 2,
+                "replicas": 1,
+                "unavailableReplicas": 1,
+                "updatedReplicas": 1
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": ""
+    }
+}
