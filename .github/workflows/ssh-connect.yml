@@ -28,6 +28,8 @@ env:
 jobs:
   job-core:
     runs-on: swarm-runners-scaleset
+    outputs:
+      results_path: ${{ steps.audit.outputs.results-path }}
     steps:
       - id: repo
         name: Checkout repository
@@ -35,13 +37,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-  job-audit:
-    runs-on: swarm-runners-scaleset
-    needs: [job-core]
-    outputs:
-      results_path: ${{ steps.audit.outputs.results-path }}
-    steps:
+          
       - id: audit
         name: Execute audit script
         uses: ./.github/actions/ssh-exec
