@@ -1,4 +1,4 @@
-name: Ka0s C0re Host Audit logs
+name: Ka0s C0re SSH Host Connect
 on:
   workflow_dispatch:
     inputs:
@@ -10,6 +10,11 @@ on:
         description: 'Arguments for the script'
         required: false
         default: ''
+      results-path:
+        description: 'Path in the repository to store results'
+        required: false
+        default: 'audit/eresults/'
+
   schedule:
     - cron: '0 0 * * *'  # Run daily at midnight
 
@@ -21,13 +26,15 @@ permissions:
 
 env:
   KAOS_MODULE: "[Ka0S] Audit Host"
-  KAOS_PATH_RESUME: "audit/hosts/"
+  KAOS_PATH_RESUME: ${{ github.event.inputs.results-path || 'audit/eresults/' }}
   KAOS_FILE_HOST: ${{ github.run_id }}
   KAOS_CODE: ${{ github.run_id }}
 
 jobs:
   job-core:
     runs-on: swarm-runners-scaleset
+    outputs:
+      results_path: ${{ steps.audit.outputs.results-path }}
     steps:
       - id: repo
         name: Checkout repository
@@ -36,12 +43,6 @@ jobs:
         with:
           fetch-depth: 0
 
-  job-audit:
-    runs-on: swarm-runners-scaleset
-    needs: [job-core]
-    outputs:
-      results_path: ${{ steps.audit.outputs.results-path }}
-    steps:
       - id: audit
         name: Execute audit script
         uses: ./.github/actions/ssh-exec
@@ -57,20 +58,33 @@ jobs:
           remote-results-path: '/tmp/results/' # Ruta de ejemplo en el host remoto
           local-results-path: '${{ env.KAOS_PATH_RESUME }}' # Ruta en el runner donde se copiarán los resultados
 
+      - name: Upload audit results
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit-results
+          path: ${{ env.KAOS_PATH_RESUME }}
+
   commit-results:
     runs-on: swarm-runners-scaleset
-    needs: [job-audit]
-    if: success() && needs.job-audit.outputs.results_path != ''
+    needs: [job-core]
+    if: success() && needs.job-core.outputs.results_path != ''
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Download audit results
+        uses: actions/download-artifact@v4
+        with:
+          name: audit-results
+          path: ${{ env.KAOS_PATH_RESUME }}
 
       - name: Commit and push results
         run: |
           echo "Uploading files to Audit update repository..."
           git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
           git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
-          git add ${{ needs.job-audit.outputs.results_path }}/*
+          git add ${{ env.KAOS_PATH_RESUME }}/*
           if ! git diff --staged --quiet; then
              git commit -m "[Ka0S] Uploading audit results for run ${{ github.run_id }}"
              git push origin ${{ github.ref }}
@@ -80,7 +94,7 @@ jobs:
 
   handle-success:
     runs-on: swarm-runners-scaleset
-    needs: [job-core, job-audit, commit-results]
+    needs: [job-core, commit-results]
     if: ${{ success() }}
     steps: 
       - id: handle-success-execution
@@ -98,7 +112,7 @@ jobs:
           
   handle_failure:
       runs-on: swarm-runners-scaleset
-      needs: [job-core, job-audit]
+      needs: [job-core]
       if: ${{ failure() }} 
       steps: 
         - id: check-execution
@@ -108,11 +122,23 @@ jobs:
             
   end-workflow:
     runs-on: swarm-runners-scaleset
-    needs: [job-core, job-audit, handle-success, handle_failure, commit-results]
+    needs: [job-core, handle-success, handle_failure, commit-results]
     if: ${{ always() }} 
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
+      - id: repo
+        name: Checkout code
+        if: ${{ always() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          # token: ${{ secrets.KAOS_REPO_TOKEN }}
+
+      # con esta parte suplimos que la imagen no disponga de la cli de GH    
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+
       - id: end-process
         name: Finaliza el workflow
         run: |
