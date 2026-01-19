@@ -1,0 +1,31 @@
+name: Ka0s iTop Triggered Workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      itop_ticket_id:
+        description: 'ID del ticket de iTop'
+        required: true
+        default: 'N/A'
+      requester_name:
+        description: 'Nombre del solicitante'
+        required: true
+        default: 'Ka0sC0re'
+
+jobs:
+  do-something:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print iTop Data
+        run: |
+          echo "Workflow iniciado desde iTop."
+          echo "ID del Ticket: ${{ github.event.inputs.itop_ticket_id }}"
+          echo "Solicitante: ${{ github.event.inputs.requester_name }}"
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Aquí irían los pasos de tu automatización
+      # Por ejemplo, ejecutar un script, desplegar una aplicación, etc.
+      - name: Run automation script
+        run: echo "Ejecutando la tarea automatizada..."
