@@ -213,3 +213,4 @@
 - **Version**: 0.4.10 - **Description**: H2460 limpieza y esplendor del codigo actual
 - **Version**: 0.4.10 - **Description**: H2559 modulo de conexion ssh
 - **Version**: 0.5.0 - **Description**: F2559 modulo de conexion ssh
+- **Version**: 0.5.1 - **Description**: H2927 test launch workflows from itop services
