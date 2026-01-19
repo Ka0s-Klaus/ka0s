@@ -5228,3 +5228,23 @@
   - devops/core/k8s/kube-audit.sh
   - version.txt
 ---------------------------------
+## Version 0.5.1
+- **Branch**: refs/pull/2929/merge
+- **Commit**: [Ka0S] Uploading mdlint resume execution files...
+- **Author**: Ka0s
+- **Date**: Mon Jan 19 09:45:20 UTC 2026
+- **Message**: H2927 test launch workflows from itop services
+- **Files Changed**:
+  - .github/workflows/itop-triggered-workflow.yml
+  - audit/kaos/21132199900-files-in-commit.txt
+  - audit/kaos/21132199900.json
+  - audit/mdlint/21132237370.txt
+  - audit/mdlint/21132238136.txt
+  - audit/mdlint/21132239015.txt
+  - core/docs/ka0s_itop/01_github_workflow.md
+  - core/docs/ka0s_itop/02_PAT_creation.md
+  - core/docs/ka0s_itop/03_itop_configuration.md
+  - core/docs/ka0s_itop/04_verification.md
+  - core/docs/ka0s_itop/README.md
+  - version.txt
+---------------------------------
