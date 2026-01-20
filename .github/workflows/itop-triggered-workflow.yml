@@ -25,7 +25,53 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Aquí irían los pasos de tu automatización
+      # Aquí irían los pasos de tu automatización en ejecuciones futuras
       # Por ejemplo, ejecutar un script, desplegar una aplicación, etc.
       - name: Run automation script
         run: echo "Ejecutando la tarea automatizada..."
+
+  update-itop-on-success:
+    runs-on: swarm-runners-scaleset
+    needs: job-core
+    if: success()
+    steps:
+      - name: Close iTop Ticket on Success
+        run: |
+          curl -X POST "${{ secrets.ITOP_URL }}/webservices/rest.php?version=1.3"
+          -H "Content-Type: application/json"
+          -u "${{ secrets.ITOP_API_USER }}:${{ secrets.ITOP_API_PASSWORD }}"
+          -d '{
+            "operation": "core/update",
+            "class": "UserRequest",
+            "key": "SELECT UserRequest WHERE id = ${{ github.event.inputs.itop_ticket_id }}",
+            "output_fields": "id",
+            "fields": {
+              "status": "closed",
+              "private_log": {
+                "message": "El workflow de GitHub ha finalizado con éxito. El requerimiento se cierra automáticamente."
+              }
+            }
+          }'
+
+  update-itop-on-failure:
+    runs-on: swarm-runners-scaleset
+    needs: job-core
+    if: failure()
+    steps:
+      - name: Update iTop Ticket on Failure
+        run: |
+          ERROR_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          curl -X POST "${{ secrets.ITOP_URL }}/webservices/rest.php?version=1.3"
+          -H "Content-Type: application/json"
+          -u "${{ secrets.ITOP_API_USER }}:${{ secrets.ITOP_API_PASSWORD }}"
+          -d "{
+            \"operation\": \"core/update\",
+            \"class\": \"UserRequest\",
+            \"key\": \"SELECT UserRequest WHERE id = ${{ github.event.inputs.itop_ticket_id }}\",
+            \"output_fields\": \"id\",
+            \"fields\": {
+              \"private_log\": {
+                \"message\": \"El workflow de GitHub ha fallado. Por favor, revise los logs para más detalles: ${ERROR_URL}\"
+              }
+            }
+          }"
