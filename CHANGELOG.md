@@ -5266,3 +5266,16 @@
   - core/lab/elk/kustomization.yaml
   - version.txt
 ---------------------------------
+## Version 0.6.0
+- **Branch**: refs/pull/2936/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Tue Jan 20 14:58:54 UTC 2026
+- **Message**: F2927 test launch workflows from itop services
+- **Files Changed**:
+  - audit/kaos/21175195901-files-in-commit.txt
+  - audit/kaos/21175195901.json
+  - audit/kaos/21175872569-files-in-commit.txt
+  - audit/kaos/21175872569.json
+  - version.txt
+---------------------------------
