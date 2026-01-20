@@ -1,4 +1,4 @@
-name: 'Test Swarm Runners'
+name: 'Ka0s Test Swarm Runners ScaleSet'
 
 on:
   workflow_dispatch: # Permite la ejecución manual desde la pestaña "Actions"
@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   test-runner:
-    name: 'Run a test job on a Swarm runner'
+    name: 'Run a test job on a Swarm runner ScaleSet'
     
     # ¡Esta es la parte más importante!
     # El trabajo solo se ejecutará en un runner que tenga TODAS estas etiquetas.
@@ -28,9 +28,3 @@ jobs:
           echo "Estoy ejecutando el trabajo en el directorio:"
           pwd
           ls -la
-      - name: List open issues in repository and check gh command
-        env:
-          GH_TOKEN: ${{ github.token }} # Usa el token automático de GitHub
-        run: |
-          echo "Listing open issues..."
-          gh issue list --state open

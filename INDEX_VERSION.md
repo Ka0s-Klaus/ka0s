@@ -209,9 +209,10 @@
 - **Version**: 0.4.7 - **Description**: H1646 modulo de control de runners
 - **Version**: 0.4.8 - **Description**: H1646 modulo de control de runners
 - **Version**: 0.4.9 - **Description**: H1646 modulo de control de runners
-- **Version**: 0.4.10 - **Description**: H1646 modulo de control de runners
-- **Version**: 0.4.10 - **Description**: H1646 modulo de control de runners
-- **Version**: 0.4.10 - **Description**: H1646 modulo de control de runners
-- **Version**: 0.4.10 - **Description**: H1968 modulo personalización del portal de kaos core
-- **Version**: 0.4.10 - **Description**: H1968 modulo personalización del portal de kaos core
-- **Version**: 0.4.10 - **Description**: H1968 modulo personalización del portal de kaos core
+- **Version**: 0.4.10 - **Description**: H2436 modulo de mongo
+- **Version**: 0.4.10 - **Description**: H2460 limpieza y esplendor del codigo actual
+- **Version**: 0.4.10 - **Description**: H2559 modulo de conexion ssh
+- **Version**: 0.5.0 - **Description**: F2559 modulo de conexion ssh
+- **Version**: 0.5.1 - **Description**: H2927 test launch workflows from itop services
+- **Version**: 0.5.2 - **Description**: H1128 modulo de observabilidad
+- **Version**: 0.6.0 - **Description**: F2927 test launch workflows from itop services

@@ -18,27 +18,31 @@ success() {
     echo -e "${GREEN}SUCCESS: $1${NC}"
 }
 
-info "Desinstalando actions-runner-controller y sus componentes..."
+info "Iniciando limpieza de runners autoescalados..."
 
-# Desinstalar el RunnerDeployment
-kubectl delete -f runner-deployment.yaml --ignore-not-found=true
+# 1. Eliminar el RunnerScaleSet para detener la creación de nuevos runners
+info "Eliminando RunnerScaleSet..."
+# Se añade '|| true' para que el script no falle si el tipo de recurso no existe
+kubectl delete runnerscaleset swarm-runners-scaleset -n actions-runner-system --ignore-not-found=true || true
 
-# Desinstalar el controlador
+# 2. Desinstalar el controlador de runners con Helm
+info "Desinstalando actions-runner-controller..."
 helm uninstall actions-runner-controller -n actions-runner-system &>/dev/null || true
 
-# Eliminar el secreto y el namespace
-kubectl delete secret controller-manager -n actions-runner-system --ignore-not-found=true
-kubectl delete namespace actions-runner-system --ignore-not-found=true
+# 3. Eliminar el namespace del controlador de runners
+info "Eliminando el namespace 'actions-runner-system'..."
+kubectl delete namespace actions-runner-system --ignore-not-found=true --wait=false
 
 info "Desinstalando cert-manager y sus componentes..."
 
-# Desinstalar cert-manager
+# 4. Desinstalar cert-manager con Helm
 helm uninstall cert-manager -n cert-manager &>/dev/null || true
 
-# Eliminar el namespace de cert-manager
-kubectl delete namespace cert-manager --ignore-not-found=true
+# 5. Eliminar el namespace de cert-manager
+kubectl delete namespace cert-manager --ignore-not-found=true --wait=false
 
-# Eliminar los CRDs de cert-manager
-kubectl delete -f https://github.com/cert-manager/cert-manager/releases/download/v1.14.2/cert-manager.crds.yaml --ignore-not-found=true
+# 6. Eliminar los CRDs de cert-manager (¡con precaución!)
+info "Eliminando CRDs de cert-manager..."
+kubectl delete crd -l app.kubernetes.io/instance=cert-manager --ignore-not-found=true
 
 success "Limpieza completada."

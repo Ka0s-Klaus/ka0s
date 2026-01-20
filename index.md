@@ -13,7 +13,7 @@ La documentación principal se encuentra en:
 Este repositorio contiene:
 
 - `core/docs/` - Documentación principal
-- Otros componentes del proyecto...
+- Otros componentes del proyecto..
 
 ## Enlaces útiles
 

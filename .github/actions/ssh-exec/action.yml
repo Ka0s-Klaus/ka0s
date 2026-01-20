@@ -1,0 +1,100 @@
+name: 'Ka0s Execute Remote Command via SSH'
+description: 'Ka0s Connects to a remote host via SSH and executes a given command or script.'
+
+inputs:
+  host:
+    description: 'SSH host to connect to.'
+    required: true
+  username:
+    description: 'SSH username.'
+    required: true
+  key:
+    description: 'SSH private key.'
+    required: true
+  port:
+    description: 'SSH port.'
+    required: true
+  pass:
+    description: 'Password for sudo. Required only if use-sudo is true.'
+    required: false
+  use-sudo:
+    description: 'Set to true to execute the command with sudo -S.'
+    required: false
+    default: 'false'
+  command:
+    description: 'The command to execute on the remote host. Mutually exclusive with script-path.'
+    required: false
+  script-path:
+    description: 'Path to the local script to execute on the remote host. Mutually exclusive with command.'
+    required: false
+  script-args:
+    description: 'Arguments to pass to the script.'
+    required: false
+  remote-tmp-dir:
+    description: 'Temporary directory on the remote host.'
+    required: false
+    default: '/tmp'
+  remote-results-path:
+    description: 'Path on the remote host where results are stored.'
+    required: false
+  local-results-path:
+    description: 'Path on the local runner to copy results to.'
+    required: false
+
+outputs:
+  results-path:
+    description: 'The path to the results on the local runner.'
+    value: ${{ steps.copy_results.outputs.path }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Prepare SSH key
+      shell: bash
+      run: |
+        echo "${{ inputs.key }}" > ${{ runner.temp }}/ssh_key
+        chmod 600 ${{ runner.temp }}/ssh_key
+
+    - name: Copy script to remote
+      if: inputs.script-path != ''
+      shell: bash
+      run: |
+        scp -o StrictHostKeyChecking=no -i ${{ runner.temp }}/ssh_key -P ${{ inputs.port }} ${{ inputs.script-path }} ${{ inputs.username }}@${{ inputs.host }}:${{ inputs.remote-tmp-dir }}
+
+    - name: Execute remote script
+      if: inputs.script-path != ''
+      shell: bash
+      run: |
+        REMOTE_SCRIPT_PATH="${{ inputs.remote-tmp-dir }}/$(basename ${{ inputs.script-path }})"
+        EXEC_COMMAND="chmod +x $REMOTE_SCRIPT_PATH && $REMOTE_SCRIPT_PATH ${{ inputs.script-args }}"
+        if [[ "${{ inputs.use-sudo }}" == "true" ]]; then
+          SUDO_PREFIX="echo '${{ inputs.pass }}' | sudo -S"
+          COMMAND_CHAIN="$SUDO_PREFIX bash -c '$EXEC_COMMAND'"
+          if [[ "${{ inputs.remote-results-path }}" != "" ]]; then
+            COMMAND_CHAIN="$COMMAND_CHAIN && $SUDO_PREFIX chmod -R 777 ${{ inputs.remote-results-path }}"
+          fi
+          ssh -o StrictHostKeyChecking=no -i ${{ runner.temp }}/ssh_key -p ${{ inputs.port }} ${{ inputs.username }}@${{ inputs.host }} "$COMMAND_CHAIN && rm $REMOTE_SCRIPT_PATH"
+        else
+          ssh -o StrictHostKeyChecking=no -i ${{ runner.temp }}/ssh_key -p ${{ inputs.port }} ${{ inputs.username }}@${{ inputs.host }} "$EXEC_COMMAND && rm $REMOTE_SCRIPT_PATH"
+        fi
+
+    - name: Execute remote command
+      if: inputs.command != ''
+      shell: bash
+      run: |
+        if [[ "${{ inputs.use-sudo }}" == "true" ]]; then
+          SUDO_PREFIX="echo '${{ inputs.pass }}' | sudo -S"
+          COMMAND_CHAIN="$SUDO_PREFIX bash -c '${{ inputs.command }}'"
+          if [[ "${{ inputs.remote-results-path }}" != 
+        else
+          ssh -o StrictHostKeyChecking=no -i ${{ runner.temp }}/ssh_key -p ${{ inputs.port }} ${{ inputs.username }}@${{ inputs.host }} "${{ inputs.command }}"
+        fi
+
+    - name: Copy results from remote
+      id: copy_results
+      if: inputs.remote-results-path != '' && inputs.local-results-path != ''
+      shell: bash
+      run: |
+        mkdir -p ${{ inputs.local-results-path }}
+        scp -o StrictHostKeyChecking=no -r -i ${{ runner.temp }}/ssh_key -P ${{ inputs.port }} ${{ inputs.username }}@${{ inputs.host }}:${{ inputs.remote-results-path }}/* ${{ inputs.local-results-path }}
+        echo "path=${{ inputs.local-results-path }}" >> $GITHUB_OUTPUT

@@ -73,25 +73,46 @@ kubectl wait --for=condition=established --timeout=120s crd/autoscalingrunnerset
 kubectl wait --for=condition=established --timeout=120s crd/ephemeralrunners.actions.github.com
 kubectl wait --for=condition=established --timeout=120s crd/ephemeralrunnersets.actions.github.com
 
-# 4. Install the gha-runner-scale-set-controller Helm chart (skipping CRDs)
+# 4. Install the gha-runner-scale-set-controller Helm chart (skipping CRDs) and add the required label
 echo "INFO: Desplegando el gha-runner-scale-set-controller con Helm (omitiendo CRDs)..."
 helm upgrade --install "${CONTROLLER_RELEASE_NAME}" \
   --namespace "${NAMESPACE}" \
   --set=authSecret.name=controller-manager \
+  --set fullnameOverride="gha-rs-controller" \
   --skip-crds \
   oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set-controller
 
-# 5. Install the RunnerScaleSet using a separate Helm release
-echo "INFO: Desplegando el RunnerScaleSet '${RUNNER_SCALESET_RELEASE_NAME}' con Helm..."
-helm upgrade --install "${RUNNER_SCALESET_RELEASE_NAME}" \
+# 5. Clean up previous RunnerScaleSet resources and deploy the new one
+echo "INFO: Cleaning up previous RunnerScaleSet resources to avoid conflicts..."
+
+# Forcefully remove finalizers from the RunnerScaleSet if it's stuck in termination
+echo "INFO: Attempting to remove finalizers from RunnerScaleSet to prevent hanging..."
+kubectl patch autoscalingrunnerset.actions.github.com "${RUNNER_SCALESET_RELEASE_NAME}" \
+  -n "${NAMESPACE}" \
+  -p '{"metadata":{"finalizers":[]}}' \
+  --type=merge || echo "INFO: Patch failed, likely because the resource doesn't exist. Continuing..."
+
+sleep 2
+
+echo "INFO: Forcefully deleting previous RunnerScaleSet resource to break any locks..."
+kubectl delete --ignore-not-found=true --force --grace-period=0 -n "${NAMESPACE}" \
+  autoscalingrunnerset.actions.github.com/${RUNNER_SCALESET_RELEASE_NAME}
+
+# Allow some time for termination of all resources
+sleep 5
+
+# 6. Generate RunnerScaleSet manifest from Helm and apply with kubectl
+echo "INFO: Desplegando el RunnerScaleSet '${RUNNER_SCALESET_RELEASE_NAME}' con kubectl..."
+helm template "${RUNNER_SCALESET_RELEASE_NAME}" \
+  oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set \
   --namespace "${NAMESPACE}" \
+  --set controllerServiceAccount.name="gha-rs-controller" \
+  --set controllerServiceAccount.namespace="${NAMESPACE}" \
   --set-string githubConfigUrl="https://github.com/${GITHUB_REPO}" \
   --set githubConfigSecret=controller-manager \
   --set runnerScaleSet.minRunners=1 \
   --set runnerScaleSet.maxRunners=50 \
-  --set runnerScaleSet.runnerGroup="${RUNNER_GROUP}" \
-  --set runnerScaleSet.template.spec.containers[0].image="${RUNNER_IMAGE}" \
-  oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set
+  --set runnerScaleSet.runnerGroup="${RUNNER_GROUP}" | kubectl apply -f -
 
 # --- Cleanup ---
 echo "INFO: Limpiando archivos del chart descargado..."
