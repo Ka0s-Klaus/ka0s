@@ -24,6 +24,19 @@ spec:
             - name: itop-web-persistent-storage
               mountPath: /web-data
       containers:
+        - name: nginx-sidecar
+          image: nginx:alpine
+          ports:
+            - containerPort: 8080
+              name: http
+            - containerPort: 8443
+              name: https
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/conf.d
+            - name: tls-certs
+              mountPath: /etc/nginx/ssl
+              readOnly: true
         - name: itop
           image: vbkunin/itop:latest-base
           ports:
@@ -41,6 +54,12 @@ spec:
             - name: itop-web-persistent-storage
               mountPath: /var/www/html
       volumes:
+        - name: nginx-config
+          configMap:
+            name: itop-nginx-config
+        - name: tls-certs
+          secret:
+            secretName: itop-tls
         - name: itop-web-persistent-storage
           persistentVolumeClaim:
             claimName: itop-web-pvc
