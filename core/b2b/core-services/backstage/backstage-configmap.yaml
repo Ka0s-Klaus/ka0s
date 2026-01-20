@@ -1,0 +1,66 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backstage-app-config
+  namespace: backstage
+data:
+  app-config.production.yaml: |
+    app:
+      title: Kaos Backstage
+      baseUrl: https://83.32.50.24:8082
+
+    integrations:
+      github:
+        - host: github.com
+          token: ${GITHUB_TOKEN}
+      gitlab:
+        - host: gitlab.com
+          token: "not-used" # Esto evita el error ForwardedError de tus logs
+
+    backend:
+      baseUrl: https://83.32.50.24:8082
+      listen:
+        port: 7007
+        host: 0.0.0.0
+      auth:
+        keys:
+          - secret: "secret"
+      csp:
+        upgradeInsecureRequests: false
+      cors:
+        origin: https://83.32.50.24:8082
+        methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
+        credentials: true
+      database:
+        client: pg
+        connection:
+          host: postgresql
+          port: 5432
+          user: backstage
+          password: backstage
+
+    auth:
+      environment: production
+      providers:
+        guest:
+          dangerouslyAllowOutsideDevelopment: true
+        github:
+          production:
+            clientId: ${AUTH_GITHUB_CLIENT_ID}
+            clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}
+          development:
+            clientId: ${AUTH_GITHUB_CLIENT_ID}
+            clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}
+
+    # Configuración para TechDocs y Catálogo (necesaria para que no falle al iniciar)
+    catalog:
+      import:
+        entityFilename: catalog-info.yaml
+      locations: []
+
+    techdocs:
+      builder: 'local'
+      generator:
+        runIn: 'docker'
+      publisher:
+        type: 'local'
