@@ -5248,3 +5248,21 @@
   - core/docs/ka0s_itop/README.md
   - version.txt
 ---------------------------------
+## Version 0.5.2
+- **Branch**: refs/pull/2932/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: yolabn
+- **Date**: Tue Jan 20 11:34:21 UTC 2026
+- **Message**: H1128 modulo de observabilidad
+- **Files Changed**:
+  - audit/kaos/21168901896-files-in-commit.txt
+  - audit/kaos/21168901896.json
+  - core/b2b/core-services/elk/elasticsearch-service.yaml
+  - core/b2b/core-services/elk/elasticsearch-statefulset.yaml
+  - core/b2b/core-services/elk/kibana-deployment.yaml
+  - core/b2b/core-services/elk/kibana-service.yaml
+  - core/b2b/core-services/elk/kustomization.yaml
+  - core/b2b/core-services/elk/namespace.yaml
+  - core/lab/elk/kustomization.yaml
+  - version.txt
+---------------------------------
