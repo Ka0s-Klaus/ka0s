@@ -88,7 +88,7 @@ jobs:
         env:
             modules: ${{ secrets.KAOS_CORE_MODULES }}
             files: ${{ secrets.KAOS_CORE_FILES }}
-            GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+            GH_TOKEN: ${{ github.token }}
         run: |
           git diff --name-only ${{ github.event.before }} ${{ github.sha }} > files-in-commit.txt
           cat files-in-commit.txt
