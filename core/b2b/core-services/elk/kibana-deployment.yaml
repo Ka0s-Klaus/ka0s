@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kibana
+  namespace: elastic
+  labels:
+    app: kibana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kibana
+  template:
+    metadata:
+      labels:
+        app: kibana
+    spec:
+      containers:
+      - name: kibana
+        image: docker.elastic.co/kibana/kibana:8.5.0
+        ports:
+        - containerPort: 5601
+          name: https
+        env:
+          - name: ELASTICSEARCH_HOSTS
+            value: '["http://elasticsearch:9200"]'
+          - name: SERVER_SSL_ENABLED
+            value: "true"
+          - name: SERVER_SSL_CERTIFICATE
+            value: /usr/share/kibana/config/certs/tls.crt
+          - name: SERVER_SSL_KEY
+            value: /usr/share/kibana/config/certs/tls.key
+        volumeMounts:
+        - name: kibana-certs
+          mountPath: /usr/share/kibana/config/certs
+          readOnly: true
+      volumes:
+      - name: kibana-certs
+        secret:
+          secretName: kibana-tls-secret
