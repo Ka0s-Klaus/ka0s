@@ -1,0 +1,692 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zabbix_export>
+    <version>7.0</version>
+    <template_groups>
+        <template_group>
+            <name>Templates/Applications</name>
+            <uuid>521b4432095840008000000000000001</uuid>
+        </template_group>
+    </template_groups>
+    <templates>
+        <template>
+            <uuid>521b4432095840008000000000000002</uuid>
+            <template>Template GitHub Repository Metrics</template>
+            <name>Template GitHub Repository Metrics</name>
+            <description>Monitor GitHub repository metrics via native HTTP Agent. Compliant with official Zabbix GitHub integration standards.</description>
+            <groups>
+                <group>
+                    <name>Templates/Applications</name>
+                </group>
+            </groups>
+            <items>
+                <!-- Master Item 1: General Info -->
+                <item>
+                    <uuid>521b4432095840008000000000000003</uuid>
+                    <name>GitHub Repository Info</name>
+                    <type>HTTP_AGENT</type>
+                    <key>github.repo_info</key>
+                    <url>{$GITHUB.API.URL}/repos/{$GITHUB.REPO.OWNER}/{$GITHUB.REPO.NAME}</url>
+                    <headers>
+                        <header>
+                            <name>Authorization</name>
+                            <value>Bearer {$GITHUB.API.TOKEN}</value>
+                        </header>
+                        <header>
+                            <name>Accept</name>
+                            <value>application/vnd.github+json</value>
+                        </header>
+                        <header>
+                            <name>User-Agent</name>
+                            <value>{$GITHUB.USER_AGENT}</value>
+                        </header>
+                        <header>
+                            <name>X-GitHub-Api-Version</name>
+                            <value>{$GITHUB.API_VERSION}</value>
+                        </header>
+                    </headers>
+                    <delay>{$GITHUB.INTERVAL:"get_repo"}</delay>
+                    <timeout>{$GITHUB.TIMEOUT}</timeout>
+                    <history>0</history>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <description>Fetch repository general info (Stars, Forks, Issues)</description>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>github</value>
+                        </tag>
+                    </tags>
+                </item>
+
+                <!-- Master Item 2: Pull Requests Search -->
+                <item>
+                    <uuid>521b443209584000800000000000000d</uuid>
+                    <name>GitHub Pull Requests Search</name>
+                    <type>HTTP_AGENT</type>
+                    <key>github.pr_search</key>
+                    <url>{$GITHUB.API.URL}/search/issues?q=repo:{$GITHUB.REPO.OWNER}/{$GITHUB.REPO.NAME}+type:pr+state:open</url>
+                    <headers>
+                        <header>
+                            <name>Authorization</name>
+                            <value>Bearer {$GITHUB.API.TOKEN}</value>
+                        </header>
+                        <header>
+                            <name>Accept</name>
+                            <value>application/vnd.github+json</value>
+                        </header>
+                        <header>
+                            <name>User-Agent</name>
+                            <value>{$GITHUB.USER_AGENT}</value>
+                        </header>
+                        <header>
+                            <name>X-GitHub-Api-Version</name>
+                            <value>{$GITHUB.API_VERSION}</value>
+                        </header>
+                    </headers>
+                    <delay>{$GITHUB.INTERVAL:"get_issues"}</delay>
+                    <timeout>{$GITHUB.TIMEOUT}</timeout>
+                    <history>0</history>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <description>Fetch open Pull Requests count via Search API</description>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>github</value>
+                        </tag>
+                    </tags>
+                </item>
+
+                <!-- Dependent Items (Linked to Master Item 1) -->
+                <item>
+                    <uuid>521b4432095840008000000000000004</uuid>
+                    <name>GitHub Stars</name>
+                    <type>DEPENDENT</type>
+                    <master_item>
+                        <key>github.repo_info</key>
+                    </master_item>
+                    <key>github.stars</key>
+                    <delay>0</delay>
+                    <history>7d</history>
+                    <value_type>UNSIGNED</value_type>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$.stargazers_count</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>popularity</value>
+                        </tag>
+                    </tags>
+                </item>
+
+                <item>
+                    <uuid>521b4432095840008000000000000005</uuid>
+                    <name>GitHub Forks</name>
+                    <type>DEPENDENT</type>
+                    <master_item>
+                        <key>github.repo_info</key>
+                    </master_item>
+                    <key>github.forks</key>
+                    <delay>0</delay>
+                    <history>7d</history>
+                    <value_type>UNSIGNED</value_type>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$.forks_count</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>popularity</value>
+                        </tag>
+                    </tags>
+                </item>
+
+                <item>
+                    <uuid>521b4432095840008000000000000006</uuid>
+                    <name>GitHub Watchers</name>
+                    <type>DEPENDENT</type>
+                    <master_item>
+                        <key>github.repo_info</key>
+                    </master_item>
+                    <key>github.watchers</key>
+                    <delay>0</delay>
+                    <history>7d</history>
+                    <value_type>UNSIGNED</value_type>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$.subscribers_count</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>popularity</value>
+                        </tag>
+                    </tags>
+                </item>
+
+                <item>
+                    <uuid>521b4432095840008000000000000007</uuid>
+                    <name>GitHub Open Issues</name>
+                    <type>DEPENDENT</type>
+                    <master_item>
+                        <key>github.repo_info</key>
+                    </master_item>
+                    <key>github.open_issues</key>
+                    <delay>0</delay>
+                    <history>7d</history>
+                    <value_type>UNSIGNED</value_type>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$.open_issues_count</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>workload</value>
+                        </tag>
+                    </tags>
+                </item>
+
+                <item>
+                    <uuid>521b4432095840008000000000000009</uuid>
+                    <name>GitHub Repo Size (Bytes)</name>
+                    <type>DEPENDENT</type>
+                    <master_item>
+                        <key>github.repo_info</key>
+                    </master_item>
+                    <key>github.size_bytes</key>
+                    <delay>0</delay>
+                    <history>7d</history>
+                    <value_type>UNSIGNED</value_type>
+                    <units>B</units>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$.size</parameter>
+                            </parameters>
+                        </step>
+                        <step>
+                            <type>MULTIPLIER</type>
+                            <parameters>
+                                <parameter>1024</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>size</value>
+                        </tag>
+                    </tags>
+                </item>
+
+                <!-- Dependent Item (Linked to Master Item 2) -->
+                <item>
+                    <uuid>521b4432095840008000000000000008</uuid>
+                    <name>GitHub Open PRs</name>
+                    <type>DEPENDENT</type>
+                    <master_item>
+                        <key>github.pr_search</key>
+                    </master_item>
+                    <key>github.open_prs</key>
+                    <delay>0</delay>
+                    <history>7d</history>
+                    <value_type>UNSIGNED</value_type>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$.total_count</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>workload</value>
+                        </tag>
+                    </tags>
+                </item>
+
+                <!-- Master Item 3: GitHub Actions -->
+                <item>
+                    <uuid>521b443209584000800000000000000e</uuid>
+                    <name>GitHub Actions Raw Data</name>
+                    <type>HTTP_AGENT</type>
+                    <key>github.actions_raw</key>
+                    <url>{$GITHUB.API.URL}/repos/{$GITHUB.REPO.OWNER}/{$GITHUB.REPO.NAME}/actions/runs?per_page=5</url>
+                    <headers>
+                        <header>
+                            <name>Authorization</name>
+                            <value>Bearer {$GITHUB.API.TOKEN}</value>
+                        </header>
+                        <header>
+                            <name>Accept</name>
+                            <value>application/vnd.github+json</value>
+                        </header>
+                        <header>
+                            <name>User-Agent</name>
+                            <value>{$GITHUB.USER_AGENT}</value>
+                        </header>
+                        <header>
+                            <name>X-GitHub-Api-Version</name>
+                            <value>{$GITHUB.API_VERSION}</value>
+                        </header>
+                    </headers>
+                    <delay>{$GITHUB.INTERVAL:"get_actions"}</delay>
+                    <timeout>{$GITHUB.TIMEOUT}</timeout>
+                    <history>0</history>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <description>Fetch recent GitHub Actions workflow runs</description>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>github</value>
+                        </tag>
+                    </tags>
+                </item>
+
+                <!-- Dependent Item (Linked to Master Item 3) -->
+                <item>
+                    <uuid>521b443209584000800000000000000f</uuid>
+                    <name>GitHub Actions Recent Runs</name>
+                    <type>DEPENDENT</type>
+                    <master_item>
+                        <key>github.actions_raw</key>
+                    </master_item>
+                    <key>github.actions_log</key>
+                    <delay>0</delay>
+                    <history>7d</history>
+                    <value_type>TEXT</value_type>
+                    <preprocessing>
+                        <step>
+                            <type>JAVASCRIPT</type>
+                            <parameters>
+                                <parameter>
+var data = JSON.parse(value);
+var output = "";
+if (data.workflow_runs) {
+    data.workflow_runs.forEach(function(run) {
+        output += "Workflow: " + run.name + " (#" + run.run_number + ") | Status: " + (run.conclusion || run.status) + " | Branch: " + run.head_branch + " | Author: " + run.actor.login + " | Event: " + run.event + "\n";
+    });
+}
+return output;
+                                </parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>actions</value>
+                        </tag>
+                    </tags>
+                </item>
+            </items>
+
+            <macros>
+                <macro>
+                    <macro>{$GITHUB.API.TOKEN}</macro>
+                    <description>GitHub Personal Access Token (PAT)</description>
+                </macro>
+                <macro>
+                    <macro>{$GITHUB.API.URL}</macro>
+                    <value>https://api.github.com</value>
+                    <description>API URL</description>
+                </macro>
+                <macro>
+                    <macro>{$GITHUB.API_VERSION}</macro>
+                    <value>2022-11-28</value>
+                    <description>GitHub API Version</description>
+                </macro>
+                <macro>
+                    <macro>{$GITHUB.USER_AGENT}</macro>
+                    <value>Zabbix/7.4</value>
+                    <description>User Agent for requests</description>
+                </macro>
+                <macro>
+                    <macro>{$GITHUB.REPO.OWNER}</macro>
+                    <value>Ka0s-Klaus</value>
+                    <description>Repository Owner</description>
+                </macro>
+                <macro>
+                    <macro>{$GITHUB.REPO.NAME}</macro>
+                    <value>ka0s</value>
+                    <description>Repository Name</description>
+                </macro>
+                <macro>
+                    <macro>{$GITHUB.INTERVAL:"get_repo"}</macro>
+                    <value>15m</value>
+                    <description>Interval for repository info</description>
+                </macro>
+                <macro>
+                    <macro>{$GITHUB.INTERVAL:"get_issues"}</macro>
+                    <value>1h</value>
+                    <description>Interval for issues and PRs</description>
+                </macro>
+                <macro>
+                    <macro>{$GITHUB.INTERVAL:"get_actions"}</macro>
+                    <value>15m</value>
+                    <description>Interval for actions</description>
+                </macro>
+                <macro>
+                    <macro>{$GITHUB.TIMEOUT}</macro>
+                    <value>15s</value>
+                    <description>Request timeout</description>
+                </macro>
+            </macros>
+            <dashboards>
+                <dashboard>
+                    <uuid>521b4432095840008000000000000010</uuid>
+                    <name>GitHub Repository Overview</name>
+                    <pages>
+                        <page>
+                            <widgets>
+                                <widget>
+                                    <type>item</type>
+                                    <name>Stars</name>
+                                    <x>0</x>
+                                    <y>0</y>
+                                    <width>6</width>
+                                    <height>6</height>
+                                    <fields>
+                                        <field>
+                                            <type>ITEM</type>
+                                            <name>itemid</name>
+                                            <value>
+                                                <host>Template GitHub Repository Metrics</host>
+                                                <key>github.stars</key>
+                                            </value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>show</name>
+                                            <value>2</value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>decimal_places</name>
+                                            <value>0</value>
+                                        </field>
+                                    </fields>
+                                </widget>
+                                <widget>
+                                    <type>item</type>
+                                    <name>Forks</name>
+                                    <x>6</x>
+                                    <y>0</y>
+                                    <width>6</width>
+                                    <height>6</height>
+                                    <fields>
+                                        <field>
+                                            <type>ITEM</type>
+                                            <name>itemid</name>
+                                            <value>
+                                                <host>Template GitHub Repository Metrics</host>
+                                                <key>github.forks</key>
+                                            </value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>show</name>
+                                            <value>2</value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>decimal_places</name>
+                                            <value>0</value>
+                                        </field>
+                                    </fields>
+                                </widget>
+                                <widget>
+                                    <type>item</type>
+                                    <name>Open Issues</name>
+                                    <x>12</x>
+                                    <y>0</y>
+                                    <width>6</width>
+                                    <height>6</height>
+                                    <fields>
+                                        <field>
+                                            <type>ITEM</type>
+                                            <name>itemid</name>
+                                            <value>
+                                                <host>Template GitHub Repository Metrics</host>
+                                                <key>github.open_issues</key>
+                                            </value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>show</name>
+                                            <value>2</value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>decimal_places</name>
+                                            <value>0</value>
+                                        </field>
+                                    </fields>
+                                </widget>
+                                <widget>
+                                    <type>item</type>
+                                    <name>Open PRs</name>
+                                    <x>18</x>
+                                    <y>0</y>
+                                    <width>6</width>
+                                    <height>6</height>
+                                    <fields>
+                                        <field>
+                                            <type>ITEM</type>
+                                            <name>itemid</name>
+                                            <value>
+                                                <host>Template GitHub Repository Metrics</host>
+                                                <key>github.open_prs</key>
+                                            </value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>show</name>
+                                            <value>2</value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>decimal_places</name>
+                                            <value>0</value>
+                                        </field>
+                                    </fields>
+                                </widget>
+                                <widget>
+                                    <type>graph</type>
+                                    <name>Popularity Trends</name>
+                                    <x>0</x>
+                                    <y>6</y>
+                                    <width>12</width>
+                                    <height>10</height>
+                                    <fields>
+                                        <field>
+                                            <type>GRAPH</type>
+                                            <name>graphid</name>
+                                            <value>
+                                                <name>GitHub Popularity (Stars/Forks/Watchers)</name>
+                                                <host>Template GitHub Repository Metrics</host>
+                                            </value>
+                                        </field>
+                                    </fields>
+                                </widget>
+                                <widget>
+                                    <type>graph</type>
+                                    <name>Workload Trends</name>
+                                    <x>12</x>
+                                    <y>6</y>
+                                    <width>12</width>
+                                    <height>10</height>
+                                    <fields>
+                                        <field>
+                                            <type>GRAPH</type>
+                                            <name>graphid</name>
+                                            <value>
+                                                <name>GitHub Workload (Issues/PRs)</name>
+                                                <host>Template GitHub Repository Metrics</host>
+                                            </value>
+                                        </field>
+                                    </fields>
+                                </widget>
+                                <widget>
+                                    <type>graph</type>
+                                    <name>Repository Size Growth</name>
+                                    <x>0</x>
+                                    <y>16</y>
+                                    <width>12</width>
+                                    <height>10</height>
+                                    <fields>
+                                        <field>
+                                            <type>GRAPH</type>
+                                            <name>graphid</name>
+                                            <value>
+                                                <name>GitHub Repository Size Growth</name>
+                                                <host>Template GitHub Repository Metrics</host>
+                                            </value>
+                                        </field>
+                                    </fields>
+                                </widget>
+                                <widget>
+                                    <type>plain_text</type>
+                                    <name>Recent GitHub Actions</name>
+                                    <x>12</x>
+                                    <y>16</y>
+                                    <width>12</width>
+                                    <height>10</height>
+                                    <fields>
+                                        <field>
+                                            <type>ITEM</type>
+                                            <name>itemids</name>
+                                            <value>
+                                                <key>github.actions_log</key>
+                                                <host>Template GitHub Repository Metrics</host>
+                                            </value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>show_lines</name>
+                                            <value>10</value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>show_as_html</name>
+                                            <value>0</value>
+                                        </field>
+                                    </fields>
+                                </widget>
+                            </widgets>
+                        </page>
+                    </pages>
+                </dashboard>
+            </dashboards>
+
+        </template>
+    </templates>
+    <triggers>
+        <trigger>
+            <uuid>521b443209584000800000000000000a</uuid>
+            <expression>last(/Template GitHub Repository Metrics/github.open_issues)&gt;50</expression>
+            <name>High number of open issues on {$GITHUB.REPO.OWNER}/{$GITHUB.REPO.NAME} ({ITEM.LASTVALUE})</name>
+            <priority>WARNING</priority>
+        </trigger>
+    </triggers>
+
+    <graphs>
+        <graph>
+            <uuid>521b443209584000800000000000000b</uuid>
+            <name>GitHub Popularity (Stars/Forks/Watchers)</name>
+            <graph_items>
+                <graph_item>
+                    <sortorder>0</sortorder>
+                    <drawtype>FILLED_REGION</drawtype>
+                    <color>FFD700</color>
+                    <item>
+                        <host>Template GitHub Repository Metrics</host>
+                        <key>github.stars</key>
+                    </item>
+                </graph_item>
+                <graph_item>
+                    <sortorder>1</sortorder>
+                    <drawtype>BOLD_LINE</drawtype>
+                    <color>0000FF</color>
+                    <item>
+                        <host>Template GitHub Repository Metrics</host>
+                        <key>github.forks</key>
+                    </item>
+                </graph_item>
+                <graph_item>
+                    <sortorder>2</sortorder>
+                    <color>00FF00</color>
+                    <item>
+                        <host>Template GitHub Repository Metrics</host>
+                        <key>github.watchers</key>
+                    </item>
+                </graph_item>
+            </graph_items>
+        </graph>
+
+        <graph>
+            <uuid>521b443209584000800000000000000c</uuid>
+            <name>GitHub Workload (Issues/PRs)</name>
+            <graph_items>
+                <graph_item>
+                    <sortorder>0</sortorder>
+                    <drawtype>BOLD_LINE</drawtype>
+                    <color>FF0000</color>
+                    <item>
+                        <host>Template GitHub Repository Metrics</host>
+                        <key>github.open_issues</key>
+                    </item>
+                </graph_item>
+                <graph_item>
+                    <sortorder>1</sortorder>
+                    <drawtype>BOLD_LINE</drawtype>
+                    <color>00FFFF</color>
+                    <item>
+                        <host>Template GitHub Repository Metrics</host>
+                        <key>github.open_prs</key>
+                    </item>
+                </graph_item>
+            </graph_items>
+        </graph>
+
+        <graph>
+            <uuid>521b4432095840008000000000000011</uuid>
+            <name>GitHub Repository Size Growth</name>
+            <graph_items>
+                <graph_item>
+                    <sortorder>0</sortorder>
+                    <drawtype>FILLED_REGION</drawtype>
+                    <color>800080</color>
+                    <item>
+                        <host>Template GitHub Repository Metrics</host>
+                        <key>github.size_bytes</key>
+                    </item>
+                </graph_item>
+            </graph_items>
+        </graph>
+    </graphs>
+</zabbix_export>

@@ -1,0 +1,411 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zabbix_export>
+    <version>7.0</version>
+    <template_groups>
+        <template_group>
+            <name>Templates/Databases</name>
+            <uuid>521b4432095840008000000000000100</uuid>
+        </template_group>
+    </template_groups>
+    <templates>
+        <template>
+            <uuid>521b4432095840008000000000000101</uuid>
+            <template>Template DB MongoDB Node by Zabbix Agent 2</template>
+            <name>Template DB MongoDB Node by Zabbix Agent 2</name>
+            <description>Monitor MongoDB metrics via Zabbix Agent 2 native plugin. Requires Zabbix Agent 2 with MongoDB plugin enabled.</description>
+            <groups>
+                <group>
+                    <name>Templates/Databases</name>
+                </group>
+            </groups>
+            <items>
+                <item>
+                    <uuid>521b4432095840008000000000000102</uuid>
+                    <name>MongoDB Ping</name>
+                    <key>mongodb.ping["{$MONGODB.CONNSTRING}","{$MONGODB.USER}","{$MONGODB.PASSWORD}"]</key>
+                    <history>7d</history>
+                    <valuemap>
+                        <name>Service state</name>
+                    </valuemap>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>health</value>
+                        </tag>
+                    </tags>
+                </item>
+                
+                <!-- Master Item: Server Status -->
+                <item>
+                    <uuid>521b4432095840008000000000000103</uuid>
+                    <name>MongoDB Server Status</name>
+                    <key>mongodb.server.status["{$MONGODB.CONNSTRING}","{$MONGODB.USER}","{$MONGODB.PASSWORD}"]</key>
+                    <history>0</history>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>raw</value>
+                        </tag>
+                    </tags>
+                </item>
+
+                <!-- Dependent Items -->
+                <item>
+                    <uuid>521b4432095840008000000000000104</uuid>
+                    <name>MongoDB Version</name>
+                    <type>DEPENDENT</type>
+                    <master_item>
+                        <key>mongodb.server.status["{$MONGODB.CONNSTRING}","{$MONGODB.USER}","{$MONGODB.PASSWORD}"]</key>
+                    </master_item>
+                    <key>mongodb.version</key>
+                    <delay>0</delay>
+                    <history>7d</history>
+                    <value_type>TEXT</value_type>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$.version</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>application</value>
+                        </tag>
+                    </tags>
+                </item>
+
+                <item>
+                    <uuid>521b4432095840008000000000000105</uuid>
+                    <name>MongoDB Uptime</name>
+                    <type>DEPENDENT</type>
+                    <master_item>
+                        <key>mongodb.server.status["{$MONGODB.CONNSTRING}","{$MONGODB.USER}","{$MONGODB.PASSWORD}"]</key>
+                    </master_item>
+                    <key>mongodb.uptime</key>
+                    <delay>0</delay>
+                    <history>7d</history>
+                    <units>s</units>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$.uptime</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>application</value>
+                        </tag>
+                    </tags>
+                </item>
+
+                <item>
+                    <uuid>521b4432095840008000000000000106</uuid>
+                    <name>MongoDB Connections Current</name>
+                    <type>DEPENDENT</type>
+                    <master_item>
+                        <key>mongodb.server.status["{$MONGODB.CONNSTRING}","{$MONGODB.USER}","{$MONGODB.PASSWORD}"]</key>
+                    </master_item>
+                    <key>mongodb.connections.current</key>
+                    <delay>0</delay>
+                    <history>7d</history>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$.connections.current</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>connections</value>
+                        </tag>
+                    </tags>
+                </item>
+
+                <item>
+                    <uuid>521b4432095840008000000000000107</uuid>
+                    <name>MongoDB Operations: Insert</name>
+                    <type>DEPENDENT</type>
+                    <master_item>
+                        <key>mongodb.server.status["{$MONGODB.CONNSTRING}","{$MONGODB.USER}","{$MONGODB.PASSWORD}"]</key>
+                    </master_item>
+                    <key>mongodb.opcounters.insert</key>
+                    <delay>0</delay>
+                    <history>7d</history>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$.opcounters.insert</parameter>
+                            </parameters>
+                        </step>
+                        <step>
+                            <type>CHANGE_PER_SECOND</type>
+                            <parameters>
+                                <parameter/>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>operations</value>
+                        </tag>
+                    </tags>
+                </item>
+
+                <item>
+                    <uuid>521b4432095840008000000000000108</uuid>
+                    <name>MongoDB Operations: Query</name>
+                    <type>DEPENDENT</type>
+                    <master_item>
+                        <key>mongodb.server.status["{$MONGODB.CONNSTRING}","{$MONGODB.USER}","{$MONGODB.PASSWORD}"]</key>
+                    </master_item>
+                    <key>mongodb.opcounters.query</key>
+                    <delay>0</delay>
+                    <history>7d</history>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$.opcounters.query</parameter>
+                            </parameters>
+                        </step>
+                        <step>
+                            <type>CHANGE_PER_SECOND</type>
+                            <parameters>
+                                <parameter/>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>operations</value>
+                        </tag>
+                    </tags>
+                </item>
+
+                <item>
+                    <uuid>521b4432095840008000000000000109</uuid>
+                    <name>MongoDB Operations: Update</name>
+                    <type>DEPENDENT</type>
+                    <master_item>
+                        <key>mongodb.server.status["{$MONGODB.CONNSTRING}","{$MONGODB.USER}","{$MONGODB.PASSWORD}"]</key>
+                    </master_item>
+                    <key>mongodb.opcounters.update</key>
+                    <delay>0</delay>
+                    <history>7d</history>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$.opcounters.update</parameter>
+                            </parameters>
+                        </step>
+                        <step>
+                            <type>CHANGE_PER_SECOND</type>
+                            <parameters>
+                                <parameter/>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>operations</value>
+                        </tag>
+                    </tags>
+                </item>
+            </items>
+
+            <macros>
+                <macro>
+                    <macro>{$MONGODB.CONNSTRING}</macro>
+                    <value>tcp://localhost:27017</value>
+                    <description>Connection string</description>
+                </macro>
+                <macro>
+                    <macro>{$MONGODB.USER}</macro>
+                    <description>User</description>
+                </macro>
+                <macro>
+                    <macro>{$MONGODB.PASSWORD}</macro>
+                    <type>SECRET_TEXT</type>
+                    <description>Password</description>
+                </macro>
+            </macros>
+
+            <dashboards>
+                <dashboard>
+                    <uuid>521b4432095840008000000000000120</uuid>
+                    <name>MongoDB Overview</name>
+                    <pages>
+                        <page>
+                            <widgets>
+                                <widget>
+                                    <type>item</type>
+                                    <name>Status</name>
+                                    <x>0</x>
+                                    <y>0</y>
+                                    <width>6</width>
+                                    <height>6</height>
+                                    <fields>
+                                        <field>
+                                            <type>ITEM</type>
+                                            <name>itemid</name>
+                                            <value>
+                                                <host>Template DB MongoDB Node by Zabbix Agent 2</host>
+                                                <key>mongodb.ping["{$MONGODB.CONNSTRING}","{$MONGODB.USER}","{$MONGODB.PASSWORD}"]</key>
+                                            </value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>show</name>
+                                            <value>2</value>
+                                        </field>
+                                    </fields>
+                                </widget>
+                                <widget>
+                                    <type>item</type>
+                                    <name>Connections</name>
+                                    <x>6</x>
+                                    <y>0</y>
+                                    <width>6</width>
+                                    <height>6</height>
+                                    <fields>
+                                        <field>
+                                            <type>ITEM</type>
+                                            <name>itemid</name>
+                                            <value>
+                                                <host>Template DB MongoDB Node by Zabbix Agent 2</host>
+                                                <key>mongodb.connections.current</key>
+                                            </value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>show</name>
+                                            <value>2</value>
+                                        </field>
+                                    </fields>
+                                </widget>
+                                <widget>
+                                    <type>item</type>
+                                    <name>Version</name>
+                                    <x>12</x>
+                                    <y>0</y>
+                                    <width>6</width>
+                                    <height>6</height>
+                                    <fields>
+                                        <field>
+                                            <type>ITEM</type>
+                                            <name>itemid</name>
+                                            <value>
+                                                <host>Template DB MongoDB Node by Zabbix Agent 2</host>
+                                                <key>mongodb.version</key>
+                                            </value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>show</name>
+                                            <value>2</value>
+                                        </field>
+                                    </fields>
+                                </widget>
+                                <widget>
+                                    <type>graph</type>
+                                    <name>Operations per Second</name>
+                                    <x>0</x>
+                                    <y>6</y>
+                                    <width>24</width>
+                                    <height>10</height>
+                                    <fields>
+                                        <field>
+                                            <type>GRAPH</type>
+                                            <name>graphid</name>
+                                            <value>
+                                                <name>MongoDB Operations</name>
+                                                <host>Template DB MongoDB Node by Zabbix Agent 2</host>
+                                            </value>
+                                        </field>
+                                    </fields>
+                                </widget>
+                            </widgets>
+                        </page>
+                    </pages>
+                </dashboard>
+            </dashboards>
+            <valuemaps>
+                <valuemap>
+                    <uuid>521b4432095840008000000000000150</uuid>
+                    <name>Service state</name>
+                    <mappings>
+                        <mapping>
+                            <value>0</value>
+                            <newvalue>Down</newvalue>
+                        </mapping>
+                        <mapping>
+                            <value>1</value>
+                            <newvalue>Up</newvalue>
+                        </mapping>
+                    </mappings>
+                </valuemap>
+            </valuemaps>
+        </template>
+    </templates>
+
+    <triggers>
+        <trigger>
+            <uuid>521b4432095840008000000000000130</uuid>
+            <expression>last(/Template DB MongoDB Node by Zabbix Agent 2/mongodb.ping["{$MONGODB.CONNSTRING}","{$MONGODB.USER}","{$MONGODB.PASSWORD}"])=0</expression>
+            <name>MongoDB service is down on {HOST.NAME}</name>
+            <priority>HIGH</priority>
+        </trigger>
+    </triggers>
+
+    <graphs>
+        <graph>
+            <uuid>521b4432095840008000000000000140</uuid>
+            <name>MongoDB Operations</name>
+            <graph_items>
+                <graph_item>
+                    <sortorder>0</sortorder>
+                    <drawtype>BOLD_LINE</drawtype>
+                    <color>00FF00</color>
+                    <item>
+                        <host>Template DB MongoDB Node by Zabbix Agent 2</host>
+                        <key>mongodb.opcounters.insert</key>
+                    </item>
+                </graph_item>
+                <graph_item>
+                    <sortorder>1</sortorder>
+                    <drawtype>BOLD_LINE</drawtype>
+                    <color>0000FF</color>
+                    <item>
+                        <host>Template DB MongoDB Node by Zabbix Agent 2</host>
+                        <key>mongodb.opcounters.query</key>
+                    </item>
+                </graph_item>
+                <graph_item>
+                    <sortorder>2</sortorder>
+                    <drawtype>BOLD_LINE</drawtype>
+                    <color>FFFF00</color>
+                    <item>
+                        <host>Template DB MongoDB Node by Zabbix Agent 2</host>
+                        <key>mongodb.opcounters.update</key>
+                    </item>
+                </graph_item>
+            </graph_items>
+        </graph>
+    </graphs>
+</zabbix_export>

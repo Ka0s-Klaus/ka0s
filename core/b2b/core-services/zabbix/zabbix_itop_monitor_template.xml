@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zabbix_export>
+    <version>7.0</version>
+    <template_groups>
+        <template_group>
+            <name>Templates/Applications</name>
+            <uuid>521b4432095840008000000000000200</uuid>
+        </template_group>
+    </template_groups>
+    <templates>
+        <template>
+            <uuid>521b4432095840008000000000000201</uuid>
+            <template>Template App iTop Service</template>
+            <name>Template App iTop Service</name>
+            <description>Monitorización de disponibilidad y métricas de negocio de iTop.</description>
+            <groups>
+                <group>
+                    <name>Templates/Applications</name>
+                </group>
+            </groups>
+            <items>
+                <!-- Service Availability (Simple Check) -->
+                <item>
+                    <uuid>521b4432095840008000000000000202</uuid>
+                    <name>iTop Web Service Availability</name>
+                    <type>SIMPLE</type>
+                    <key>net.tcp.service[http,"{$ITOP.HOST}","{$ITOP.PORT}"]</key>
+                    <history>7d</history>
+                    <valuemap>
+                        <name>Service state</name>
+                    </valuemap>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>network</value>
+                        </tag>
+                        <tag>
+                            <tag>application</tag>
+                            <value>itop</value>
+                        </tag>
+                    </tags>
+                    <triggers>
+                        <trigger>
+                            <uuid>521b4432095840008000000000000203</uuid>
+                            <expression>last(/Template App iTop Service/net.tcp.service[http,"{$ITOP.HOST}","{$ITOP.PORT}"])=0</expression>
+                            <name>iTop Service is DOWN on {HOST.NAME}</name>
+                            <priority>HIGH</priority>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+                
+                <!-- Response Time (Simple Check) -->
+                <item>
+                    <uuid>521b4432095840008000000000000204</uuid>
+                    <name>iTop Response Time</name>
+                    <type>SIMPLE</type>
+                    <key>net.tcp.service.perf[http,"{$ITOP.HOST}","{$ITOP.PORT}"]</key>
+                    <history>7d</history>
+                    <value_type>FLOAT</value_type>
+                    <units>s</units>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>performance</value>
+                        </tag>
+                        <tag>
+                            <tag>application</tag>
+                            <value>itop</value>
+                        </tag>
+                    </tags>
+                </item>
+
+                <!-- Open UserRequests (HTTP Agent) -->
+                <item>
+                    <uuid>521b4432095840008000000000000210</uuid>
+                    <name>iTop Open User Requests</name>
+                    <type>HTTP_AGENT</type>
+                    <key>itop.open_requests</key>
+                    <url>http://{$ITOP.HOST}:{$ITOP.PORT}/webservices/rest.php</url>
+                    <posts>version={$ITOP.API_VERSION}&amp;auth_user={$ITOP.USER}&amp;auth_pwd={$ITOP.PASSWORD}&amp;json_data={"operation": "core/get", "class": "UserRequest", "key": "SELECT UserRequest WHERE status NOT IN ('closed', 'resolved')", "output_fields": "id"}</posts>
+                    <headers>
+                        <header>
+                            <name>Content-Type</name>
+                            <value>application/x-www-form-urlencoded</value>
+                        </header>
+                    </headers>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$.objects</parameter>
+                            </parameters>
+                            <error_handler>CUSTOM_VALUE</error_handler>
+                            <error_handler_params>{}</error_handler_params>
+                        </step>
+                        <step>
+                            <type>JAVASCRIPT</type>
+                            <parameters>
+                                <parameter>return Object.keys(JSON.parse(value)).length;</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <history>7d</history>
+                    <value_type>UNSIGNED</value_type>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>business</value>
+                        </tag>
+                        <tag>
+                            <tag>application</tag>
+                            <value>itop</value>
+                        </tag>
+                    </tags>
+                </item>
+
+                <!-- Open Incidents (HTTP Agent) -->
+                <item>
+                    <uuid>521b4432095840008000000000000211</uuid>
+                    <name>iTop Open Incidents</name>
+                    <type>HTTP_AGENT</type>
+                    <key>itop.open_incidents</key>
+                    <url>http://{$ITOP.HOST}:{$ITOP.PORT}/webservices/rest.php</url>
+                    <posts>version={$ITOP.API_VERSION}&amp;auth_user={$ITOP.USER}&amp;auth_pwd={$ITOP.PASSWORD}&amp;json_data={"operation": "core/get", "class": "Incident", "key": "SELECT Incident WHERE status NOT IN ('closed', 'resolved')", "output_fields": "id"}</posts>
+                    <headers>
+                        <header>
+                            <name>Content-Type</name>
+                            <value>application/x-www-form-urlencoded</value>
+                        </header>
+                    </headers>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$.objects</parameter>
+                            </parameters>
+                            <error_handler>CUSTOM_VALUE</error_handler>
+                            <error_handler_params>{}</error_handler_params>
+                        </step>
+                        <step>
+                            <type>JAVASCRIPT</type>
+                            <parameters>
+                                <parameter>return Object.keys(JSON.parse(value)).length;</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <history>7d</history>
+                    <value_type>UNSIGNED</value_type>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>business</value>
+                        </tag>
+                        <tag>
+                            <tag>application</tag>
+                            <value>itop</value>
+                        </tag>
+                    </tags>
+                    <triggers>
+                        <trigger>
+                            <uuid>521b4432095840008000000000000212</uuid>
+                            <expression>last(/Template App iTop Service/itop.open_incidents)&gt;5</expression>
+                            <name>High number of Open Incidents ({ITEM.LASTVALUE})</name>
+                            <priority>WARNING</priority>
+                        </trigger>
+                    </triggers>
+                </item>
+            </items>
+
+            <valuemaps>
+                <valuemap>
+                    <uuid>521b4432095840008000000000000205</uuid>
+                    <name>Service state</name>
+                    <mappings>
+                        <mapping>
+                            <value>0</value>
+                            <newvalue>Down</newvalue>
+                        </mapping>
+                        <mapping>
+                            <value>1</value>
+                            <newvalue>Up</newvalue>
+                        </mapping>
+                    </mappings>
+                </valuemap>
+            </valuemaps>
+
+            <macros>
+                <macro>
+                    <macro>{$ITOP.API_VERSION}</macro>
+                    <value>1.3</value>
+                    <description>Versión de la API REST de iTop</description>
+                </macro>
+                <macro>
+                    <macro>{$ITOP.HOST}</macro>
+                    <value>127.0.0.1</value>
+                    <description>IP o Hostname del servidor iTop</description>
+                </macro>
+                <macro>
+                    <macro>{$ITOP.PASSWORD}</macro>
+                    <value>admin</value>
+                    <description>Contraseña para conectar a la API de iTop</description>
+                </macro>
+                <macro>
+                    <macro>{$ITOP.PORT}</macro>
+                    <value>80</value>
+                    <description>Puerto del servidor web de iTop</description>
+                </macro>
+                <macro>
+                    <macro>{$ITOP.USER}</macro>
+                    <value>admin</value>
+                    <description>Usuario para conectar a la API de iTop</description>
+                </macro>
+            </macros>
+
+            <dashboards>
+                <dashboard>
+                    <uuid>521b4432095840008000000000000206</uuid>
+                    <name>iTop Status Overview</name>
+                    <pages>
+                        <page>
+                            <widgets>
+                                <!-- Service Status -->
+                                <widget>
+                                    <type>item</type>
+                                    <name>Service Status</name>
+                                    <x>0</x>
+                                    <y>0</y>
+                                    <width>12</width>
+                                    <height>4</height>
+                                    <fields>
+                                        <field>
+                                            <type>ITEM</type>
+                                            <name>itemid</name>
+                                            <value>
+                                                <host>Template App iTop Service</host>
+                                                <key>net.tcp.service[http,"{$ITOP.HOST}","{$ITOP.PORT}"]</key>
+                                            </value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>show</name>
+                                            <value>2</value>
+                                        </field>
+                                    </fields>
+                                </widget>
+
+                                <!-- Open Requests Count -->
+                                <widget>
+                                    <type>item</type>
+                                    <name>Open Requests</name>
+                                    <x>12</x>
+                                    <y>0</y>
+                                    <width>6</width>
+                                    <height>4</height>
+                                    <fields>
+                                        <field>
+                                            <type>ITEM</type>
+                                            <name>itemid</name>
+                                            <value>
+                                                <host>Template App iTop Service</host>
+                                                <key>itop.open_requests</key>
+                                            </value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>show</name>
+                                            <value>2</value>
+                                        </field>
+                                    </fields>
+                                </widget>
+
+                                <!-- Open Incidents Count -->
+                                <widget>
+                                    <type>item</type>
+                                    <name>Open Incidents</name>
+                                    <x>18</x>
+                                    <y>0</y>
+                                    <width>6</width>
+                                    <height>4</height>
+                                    <fields>
+                                        <field>
+                                            <type>ITEM</type>
+                                            <name>itemid</name>
+                                            <value>
+                                                <host>Template App iTop Service</host>
+                                                <key>itop.open_incidents</key>
+                                            </value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>show</name>
+                                            <value>2</value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>decimal_places</name>
+                                            <value>0</value>
+                                        </field>
+                                    </fields>
+                                </widget>
+
+                                <!-- Response Time Graph -->
+                                <widget>
+                                    <type>graph</type>
+                                    <name>Response Time</name>
+                                    <x>0</x>
+                                    <y>4</y>
+                                    <width>24</width>
+                                    <height>6</height>
+                                    <fields>
+                                        <field>
+                                            <type>ITEM</type>
+                                            <name>itemid</name>
+                                            <value>
+                                                <host>Template App iTop Service</host>
+                                                <key>net.tcp.service.perf[http,"{$ITOP.HOST}","{$ITOP.PORT}"]</key>
+                                            </value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>source_type</name>
+                                            <value>0</value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>show_legend</name>
+                                            <value>1</value>
+                                        </field>
+                                    </fields>
+                                </widget>
+                            </widgets>
+                        </page>
+                    </pages>
+                </dashboard>
+            </dashboards>
+        </template>
+    </templates>
+</zabbix_export>

@@ -1,0 +1,79 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: zabbix-github-plugin
+  namespace: zabbix
+data:
+  github_connector.sh: |
+    #!/bin/bash
+    # [DEPRECATED] Este script ya no es necesario con el template nativo "Template GitHub Repository Metrics" (HTTP_AGENT).
+    # La configuración ahora se realiza via Macros en la interfaz web de Zabbix.
+    #
+    # Script para conectar Zabbix con GitHub (Soporta Token)
+    # Uso: github_connector.sh <OWNER> <REPO> <TYPE> <TOKEN> <API_URL>
+    
+    OWNER="${1:-Ka0s-Klaus}"
+    REPO="${2:-ka0s}"
+    TYPE="${3:-metrics}"
+    TOKEN="$4"
+    API_URL="${5:-https://api.github.com}"
+    
+    FULL_REPO="$OWNER/$REPO"
+    JQ_BIN="/tmp/jq"
+    
+    # Auto-descarga de jq
+    if [ ! -f "$JQ_BIN" ]; then
+        wget -q -O "$JQ_BIN" https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
+        chmod +x "$JQ_BIN"
+    fi
+
+    # Función wrapper para wget con autenticación opcional
+    fetch_url() {
+        local url="$1"
+        if [ -n "$TOKEN" ] && [ "$TOKEN" != "" ]; then
+            wget -q --no-check-certificate --header="Authorization: Bearer $TOKEN" -O - "$url"
+        else
+            wget -q --no-check-certificate -O - "$url"
+        fi
+    }
+
+    if [ "$TYPE" = "metrics" ]; then
+        # 1. Info General
+        REPO_JSON=$(fetch_url "$API_URL/repos/$FULL_REPO")
+        
+        # 2. Pull Requests (Search API)
+        PR_JSON=$(fetch_url "$API_URL/search/issues?q=repo:$FULL_REPO+type:pr+state:open")
+        
+        if [ -x "$JQ_BIN" ]; then
+            echo "$REPO_JSON" | "$JQ_BIN" --argjson prs "$PR_JSON" '{
+                stars: .stargazers_count,
+                forks: .forks_count,
+                open_issues: .open_issues_count,
+                watchers: .subscribers_count,
+                size_kb: .size,
+                created_at: .created_at,
+                updated_at: .updated_at,
+                pushed_at: .pushed_at,
+                language: .language,
+                open_prs: $prs.total_count
+            }'
+        else
+            echo "Error: jq required"
+        fi
+        
+    elif [ "$TYPE" = "info" ]; then
+        # Legacy info
+        JSON=$(fetch_url "$API_URL/repos/$FULL_REPO")
+        STARS=$(echo "$JSON" | grep -o '"stargazers_count": [0-9]*' | head -1 | awk '{print $2}')
+        echo "Stars: $STARS"
+        
+    else
+        # Actions
+        JSON=$(fetch_url "$API_URL/repos/$FULL_REPO/actions/runs?per_page=10")
+        
+        if [ -x "$JQ_BIN" ]; then
+             echo "$JSON" | "$JQ_BIN" -r '.workflow_runs[] | "Workflow: \(.name) (#\(.run_number)) | Status: \(.conclusion) | Branch: \(.head_branch) | Author: \(.actor.login) | Event: \(.event)"'
+        else
+             echo "Error: jq required"
+        fi
+    fi
