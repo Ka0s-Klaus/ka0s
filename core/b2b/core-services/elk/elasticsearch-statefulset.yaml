@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: elasticsearch
+  namespace: elastic
+  labels:
+    app: elasticsearch
+spec:
+  serviceName: elasticsearch
+  replicas: 1
+  selector:
+    matchLabels:
+      app: elasticsearch
+  template:
+    metadata:
+      labels:
+        app: elasticsearch
+    spec:
+      # Elasticsearch requiere un valor alto para vm.max_map_count.
+      # Este initContainer lo configura antes de que el pod de Elasticsearch inicie.
+      initContainers:
+      - name: set-vm-max-map-count
+        image: busybox
+        command: ['sh', '-c', 'sysctl -w vm.max_map_count=262144']
+        securityContext:
+          privileged: true
+      containers:
+      - name: elasticsearch
+        image: docker.elastic.co/elasticsearch/elasticsearch:8.5.0
+        # Se recomienda especificar los recursos para un entorno de producción
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1"
+          limits:
+            memory: "2Gi"
+            cpu: "2"
+        ports:
+        - containerPort: 9200
+          name: rest
+        - containerPort: 9300
+          name: inter-node
+        env:
+          - name: cluster.name
+            value: ka0s-elastic-cluster
+          - name: node.name
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          # Descubrimiento de nodos para un clúster de un solo nodo.
+          - name: discovery.type
+            value: single-node
+          # Configuración de la memoria de la JVM. Ajustar según sea necesario.
+          - name: ES_JAVA_OPTS
+            value: "-Xms512m -Xmx512m"
+          # Deshabilitamos la seguridad para este ejemplo. 
+          # En producción, esto debería ser 'true' y configurarse adecuadamente.
+          - name: xpack.security.enabled
+            value: "false"
+        volumeMounts:
+        - name: data
+          mountPath: /usr/share/elasticsearch/data
+        # Probes para verificar la salud del clúster
+        readinessProbe:
+          httpGet:
+            path: /_cluster/health?wait_for_status=yellow&timeout=5s
+            port: 9200
+          initialDelaySeconds: 20
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /_cluster/health
+            port: 9200
+          initialDelaySeconds: 120
+          periodSeconds: 30
+  # Plantilla para crear un PersistentVolumeClaim por cada pod del StatefulSet.
+  # Esto asegura que cada pod tenga su propio almacenamiento persistente.
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      # Se recomienda usar una StorageClass que provisione discos rápidos (SSD) para producción.
+      # storageClassName: "your-storage-class"
+      resources:
+        requests:
+          storage: 10Gi
