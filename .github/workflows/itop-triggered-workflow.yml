@@ -44,7 +44,7 @@ jobs:
           curl -k -X POST "${{ secrets.ITOP_API_URL }}/webservices/rest.php?version=1.3" \
           -H "Content-Type: application/x-www-form-urlencoded" \
           -u "${{ secrets.ITOP_API_USER }}:${{ secrets.ITOP_API_PASSWORD }}" \
-          --data-urlencode "json_data={\"operation\": \"core/apply_stimulus\", \"class\": \"UserRequest\", \"key\": ${{ fromJson(steps.get_ticket_id.outputs.response).key }}, \"stimulus\": \"ev_resolve\", \"fields\": {\"solution\": \"${{ steps.get-pr-description.outputs.description }}\"}}
+          --data-urlencode "json_data={\"operation\": \"core/apply_stimulus\", \"class\": \"UserRequest\", \"key\": ${{ fromJson(steps.get_ticket_id.outputs.response).key }}, \"stimulus\": \"ev_resolve\", \"comment\": \"Resolving ticket via GitHub Actions\", \"fields\": {\"solution\": \"${{ steps.get-pr-description.outputs.description }}\"}}"
       
       - name: Update iTop on Failure
         if: always() && steps.get_ticket_id.outputs.response != 'null' && needs.execute.result == 'failure'
@@ -52,7 +52,7 @@ jobs:
           curl -k -X POST "${{ secrets.ITOP_API_URL }}/webservices/rest.php?version=1.3" \
           -H "Content-Type: application/x-www-form-urlencoded" \
           -u "${{ secrets.ITOP_API_USER }}:${{ secrets.ITOP_API_PASSWORD }}" \
-          --data-urlencode "json_data={\"operation\": \"core/update\", \"class\": \"UserRequest\", \"key\": ${{ fromJson(steps.get_ticket_id.outputs.response).key }}, \"fields\": {\"public_log\": \"Failed to apply the following PR: ${{ github.event.pull_request.html_url }}\"}}
+          --data-urlencode "json_data={\"operation\": \"core/update\", \"comment\": \"GitHub Actions execution failed\", \"class\": \"UserRequest\", \"key\": ${{ fromJson(steps.get_ticket_id.outputs.response).key }}, \"fields\": {\"public_log\": \"Failed to apply the following PR: ${{ github.event.pull_request.html_url }}\"}}"
 
       - name: Check curl output
         run: |
