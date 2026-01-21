@@ -38,20 +38,9 @@ jobs:
       - name: Close iTop Ticket on Success
         run: |
           curl -k -X POST "${{ secrets.ITOP_URL }}/webservices/rest.php?version=1.3" \
-          -H "Content-Type: application/x-www-form-urlencoded" \
+          --header "Content-Type: application/x-www-form-urlencoded" \
           -u "${{ secrets.ITOP_API_USER }}:${{ secrets.ITOP_API_PASSWORD }}" \
-          --data-urlencode 'json_data={
-            "operation": "core/update",
-            "class": "UserRequest",
-            "key": "SELECT UserRequest WHERE id = ${{ github.event.inputs.itop_ticket_id }}",
-            "output_fields": "id",
-            "fields": {
-              "status": "closed",
-              "private_log": {
-                "comment": "El workflow de GitHub ha finalizado con éxito. El requerimiento se cierra automáticamente."
-              }
-            }
-          }'
+          --data-urlencode 'json_data={ "operation": "core/update", "class": "UserRequest", "key": "SELECT UserRequest WHERE id = ${{ github.event.inputs.itop_ticket_id }}", "comment": "El workflow de GitHub ha finalizado con éxito. El requerimiento se cierra automáticamente.", "output_fields": "id", "fields": { "status": "closed" } }'
 
   update-itop-on-failure:
     runs-on: swarm-runners-scaleset
@@ -62,16 +51,6 @@ jobs:
         run: |
           ERROR_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           curl -k -X POST "${{ secrets.ITOP_URL }}/webservices/rest.php?version=1.3" \
-          -H "Content-Type: application/x-www-form-urlencoded" \
+          --header "Content-Type: application/x-www-form-urlencoded" \
           -u "${{ secrets.ITOP_API_USER }}:${{ secrets.ITOP_API_PASSWORD }}" \
-          --data-urlencode "json_data={
-            \"operation\": \"core/update\",
-            \"class\": \"UserRequest\",
-            \"key\": \"SELECT UserRequest WHERE id = ${{ github.event.inputs.itop_ticket_id }}\",
-            \"output_fields\": \"id\",
-            \"fields\": {
-              \"private_log\": {
-                \"comment\": \"El workflow de GitHub ha fallado. Por favor, revise los logs para más detalles: ${ERROR_URL}\"
-              }
-            }
-          }"
+          --data-urlencode "json_data={ \"operation\": \"core/update\", \"class\": \"UserRequest\", \"key\": \"SELECT UserRequest WHERE id = ${{ github.event.inputs.itop_ticket_id }}\", \"comment\": \"El workflow de GitHub ha fallado. Por favor, revise los logs para más detalles: ${ERROR_URL}\", \"output_fields\": \"id\", \"fields\": {} }"
