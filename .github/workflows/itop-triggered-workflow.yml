@@ -30,7 +30,7 @@ jobs:
       - name: Run automation script
         run: echo "Ejecutando la tarea automatizada..."
 
-  update-itop-on-success:
+  update-itop-on-execute:
     runs-on: swarm-runners-scaleset
     needs: job-core
     if: success()
@@ -38,7 +38,7 @@ jobs:
       - name: Update iTop ticket on success
         if: steps.run-main-logic.outcome == 'success'
         run: |
-          curl -X POST '${{ secrets.ITOP_URL }}/webservices/rest.php?version=1.3' \
+          curl -k -X POST '${{ secrets.ITOP_URL }}/webservices/rest.php?version=1.3' \
           -H "Content-Type: application/x-www-form-urlencoded" \
           --data-urlencode 'auth_user=${{ secrets.ITOP_USER }}' \
           --data-urlencode 'auth_pwd=${{ secrets.ITOP_PASSWORD }}' \
@@ -47,7 +47,7 @@ jobs:
       - name: Update iTop ticket on failure
         if: steps.run-main-logic.outcome != 'success'
         run: |
-          curl -X POST '${{ secrets.ITOP_URL }}/webservices/rest.php?version=1.3' \
+          curl -k -X POST '${{ secrets.ITOP_URL }}/webservices/rest.php?version=1.3' \
           -H "Content-Type: application/x-www-form-urlencoded" \
           --data-urlencode 'auth_user=${{ secrets.ITOP_USER }}' \
           --data-urlencode 'auth_pwd=${{ secrets.ITOP_PASSWORD }}' \
