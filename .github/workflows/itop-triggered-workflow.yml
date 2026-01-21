@@ -39,21 +39,22 @@ jobs:
     if: always()
     steps:
       - name: Update iTop on Success
-        if: needs.job-core.outputs.status == 'success'
+        if: always() && steps.get_ticket_id.outputs.response != 'null' && needs.execute.result == 'success'
         run: |
-          curl -k -X POST "${{ secrets.ITOP_URL }}/webservices/rest.php?version=1.3" \
-          --header "Content-Type: application/x-www-form-urlencoded" \
+          curl -k -X POST "${{ secrets.ITOP_API_URL }}/webservices/rest.php?version=1.3" \
+          -H "Content-Type: application/x-www-form-urlencoded" \
           -u "${{ secrets.ITOP_API_USER }}:${{ secrets.ITOP_API_PASSWORD }}" \
-          --data-urlencode 'json_data={
-            "operation": "core/apply_stimulus",
-            "class": "UserRequest",
-            "key": "${{ github.event.inputs.itop_ticket_id }}",
-            "stimulus": "ev_resolve",
-            "comment": "Solución provista por Asistencia. El workflow de GitHub ha finalizado con éxito."
-          }'
-
+          --data-urlencode "json_data={\"operation\": \"core/apply_stimulus\", \"class\": \"UserRequest\", \"key\": ${{ fromJson(steps.get_ticket_id.outputs.response).key }}, \"stimulus\": \"ev_resolve\", \"fields\": {\"solution\": \"${{ steps.get-pr-description.outputs.description }}\"}}
+      
       - name: Update iTop on Failure
-        if: needs.job-core.outputs.status == 'failure'
+        if: always() && steps.get_ticket_id.outputs.response != 'null' && needs.execute.result == 'failure'
+        run: |
+          curl -k -X POST "${{ secrets.ITOP_API_URL }}/webservices/rest.php?version=1.3" \
+          -H "Content-Type: application/x-www-form-urlencoded" \
+          -u "${{ secrets.ITOP_API_USER }}:${{ secrets.ITOP_API_PASSWORD }}" \
+          --data-urlencode "json_data={\"operation\": \"core/update\", \"class\": \"UserRequest\", \"key\": ${{ fromJson(steps.get_ticket_id.outputs.response).key }}, \"fields\": {\"public_log\": \"Failed to apply the following PR: ${{ github.event.pull_request.html_url }}\"}}
+
+      - name: Check curl output
         run: |
           ERROR_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           curl -k -X POST "${{ secrets.ITOP_URL }}/webservices/rest.php?version=1.3" \
