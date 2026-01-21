@@ -44,7 +44,7 @@ jobs:
           curl -k -X POST "${{ secrets.ITOP_URL }}/webservices/rest.php?version=1.3" \
           --header "Content-Type: application/x-www-form-urlencoded" \
           -u "${{ secrets.ITOP_API_USER }}:${{ secrets.ITOP_API_PASSWORD }}" \
-          --data-urlencode 'json={
+          --data-urlencode 'json_data={
             "operation": "core/apply_stimulus",
             "class": "UserRequest",
             "key": "${{ github.event.inputs.itop_ticket_id }}",
@@ -59,7 +59,7 @@ jobs:
           curl -k -X POST "${{ secrets.ITOP_URL }}/webservices/rest.php?version=1.3" \
           --header "Content-Type: application/x-www-form-urlencoded" \
           -u "${{ secrets.ITOP_API_USER }}:${{ secrets.ITOP_API_PASSWORD }}" \
-          --data-urlencode "json={
+          --data-urlencode "json_data={
             \"operation\": \"core/update\",
             \"class\": \"UserRequest\",
             \"key\": \"${{ github.event.inputs.itop_ticket_id }}\",
