@@ -52,3 +52,38 @@ jobs:
           --data-urlencode 'auth_user=${{ secrets.ITOP_USER }}' \
           --data-urlencode 'auth_pwd=${{ secrets.ITOP_PASSWORD }}' \
           --data-urlencode 'json_data={ "operation": "core/update", "class": "UserRequest", "key": "SELECT UserRequest WHERE id = ${{ github.event.inputs.itop_ticket_id }}", "output_fields": "id", "fields": { "solution": "El workflow de GitHub ha fallado. Por favor, revise los logs de la ejecución para más detalles." } }'
+
+      - name: Update iTop on Success
+        if: steps.execute-workflow.outputs.status == 'success'
+        run: |
+          curl -k -X POST '${{ secrets.ITOP_URL }}/webservices/rest.php?version=1.3' \
+            -H 'Content-Type: application/json' \
+            -d '{
+              "operation": "core/update",
+              "class": "UserRequest",
+              "key": "${{ github.event.client_payload.itop_id }}",
+              "output_fields": "ref",
+              "auth_user": "${{ secrets.ITOP_API_USER }}",
+              "auth_pwd": "${{ secrets.ITOP_API_PASSWORD }}",
+              "fields": {
+                "status": "resolved",
+                "solution": "Solución provista por Asistencia. El workflow se ha ejecutado correctamente."
+              }
+            }'
+
+      - name: Update iTop on Failure
+        if: steps.execute-workflow.outputs.status == 'failure'
+        run: |
+          curl -k -X POST '${{ secrets.ITOP_URL }}/webservices/rest.php?version=1.3' \
+            -H 'Content-Type: application/json' \
+            -d '{
+              "operation": "core/update",
+              "class": "UserRequest",
+              "key": "${{ github.event.client_payload.itop_id }}",
+              "output_fields": "ref",
+              "auth_user": "${{ secrets.ITOP_API_USER }}",
+              "auth_pwd": "${{ secrets.ITOP_API_PASSWORD }}",
+              "fields": {
+                "solution": "Solución provista por Asistencia. El workflow ha fallado."
+              }
+            }'
