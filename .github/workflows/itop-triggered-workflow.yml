@@ -39,34 +39,37 @@ jobs:
     if: always()
     steps:
       - name: Update iTop on Success
-        if: always() && steps.get_ticket_id.outputs.response != 'null' && needs.execute.result == 'success'
+        if: needs.job-core.result == 'success'
         run: |
           curl -k -X POST "${{ secrets.ITOP_API_URL }}/webservices/rest.php?version=1.3" \
           -H "Content-Type: application/x-www-form-urlencoded" \
           -u "${{ secrets.ITOP_API_USER }}:${{ secrets.ITOP_API_PASSWORD }}" \
-          --data-urlencode "json_data={\"operation\": \"core/apply_stimulus\", \"class\": \"UserRequest\", \"key\": ${{ fromJson(steps.get_ticket_id.outputs.response).key }}, \"stimulus\": \"ev_resolve\", \"comment\": \"Resolving ticket via GitHub Actions\", \"fields\": {\"solution\": \"${{ steps.get-pr-description.outputs.description }}\"}}"
-      
-      - name: Update iTop on Failure
-        if: always() && steps.get_ticket_id.outputs.response != 'null' && needs.execute.result == 'failure'
-        run: |
-          curl -k -X POST "${{ secrets.ITOP_API_URL }}/webservices/rest.php?version=1.3" \
-          -H "Content-Type: application/x-www-form-urlencoded" \
-          -u "${{ secrets.ITOP_API_USER }}:${{ secrets.ITOP_API_PASSWORD }}" \
-          --data-urlencode "json_data={\"operation\": \"core/update\", \"comment\": \"GitHub Actions execution failed\", \"class\": \"UserRequest\", \"key\": ${{ fromJson(steps.get_ticket_id.outputs.response).key }}, \"fields\": {\"public_log\": \"Failed to apply the following PR: ${{ github.event.pull_request.html_url }}\"}}"
+          --data-urlencode "json_data={
+            \"operation\": \"core/apply_stimulus\", 
+            \"class\": \"UserRequest\", 
+            \"key\": \"${{ github.event.inputs.itop_ticket_id }}\", 
+            \"stimulus\": \"ev_resolve\", 
+            \"comment\": \"Ticket resuelto automáticamente por GitHub Actions.\",
+            \"fields\": {
+              \"solution\": \"La automatización se ejecutó correctamente.\"
+            }
+          }"
 
-      - name: Check curl output
+      - name: Update iTop on Failure
+        if: needs.job-core.result == 'failure'
         run: |
           ERROR_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          curl -k -X POST "${{ secrets.ITOP_URL }}/webservices/rest.php?version=1.3" \
+          curl -k -X POST "${{ secrets.ITOP_API_URL }}/webservices/rest.php?version=1.3" \
           --header "Content-Type: application/x-www-form-urlencoded" \
           -u "${{ secrets.ITOP_API_USER }}:${{ secrets.ITOP_API_PASSWORD }}" \
           --data-urlencode "json_data={
             \"operation\": \"core/update\",
             \"class\": \"UserRequest\",
             \"key\": \"${{ github.event.inputs.itop_ticket_id }}\",
+            \"comment\": \"El workflow de GitHub ha fallado.\",
             \"fields\": {
               \"public_log\": {
-                \"add_comment\": \"Solución provista por Asistencia. El workflow de GitHub ha fallado. Por favor, revise los logs para más detalles: ${ERROR_URL}\"
+                \"add_comment\": \"El workflow de GitHub ha fallado. Por favor, revise los logs para más detalles: ${ERROR_URL}\"
               }
             }
           }"
