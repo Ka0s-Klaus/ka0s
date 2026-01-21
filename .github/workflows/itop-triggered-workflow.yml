@@ -44,7 +44,7 @@ jobs:
           curl -k -X POST "${{ secrets.ITOP_URL }}/webservices/rest.php?version=1.3" \
           --header "Content-Type: application/x-www-form-urlencoded" \
           -u "${{ secrets.ITOP_API_USER }}:${{ secrets.ITOP_API_PASSWORD }}" \
-          --data-urlencode 'json_data={ "operation": "core/update", "class": "UserRequest", "key": "SELECT UserRequest WHERE id = ${{ github.event.inputs.itop_ticket_id }}", "solution": "Solución provista por Asistencia. El workflow de GitHub ha finalizado con éxito.", "output_fields": "id", "fields": { "status": "resolved" } }'
+          --data-urlencode 'json_data={ "operation": "core/update", "class": "UserRequest", "key": "SELECT UserRequest WHERE id = ${{ github.event.inputs.itop_ticket_id }}", "comment": "Solución provista por Asistencia. El workflow de GitHub ha finalizado con éxito.", "output_fields": "id", "fields": { "status": "resolved" } }'
 
       - name: Update iTop on Failure
         if: needs.job-core.outputs.status == 'failure'
@@ -53,4 +53,4 @@ jobs:
           curl -k -X POST "${{ secrets.ITOP_URL }}/webservices/rest.php?version=1.3" \
           --header "Content-Type: application/x-www-form-urlencoded" \
           -u "${{ secrets.ITOP_API_USER }}:${{ secrets.ITOP_API_PASSWORD }}" \
-          --data-urlencode "json_data={ \"operation\": \"core/update\", \"class\": \"UserRequest\", \"key\": \"SELECT UserRequest WHERE id = ${{ github.event.inputs.itop_ticket_id }}\", \"solution\": \"Solución provista por Asistencia. El workflow de GitHub ha fallado. Por favor, revise los logs para más detalles: ${ERROR_URL}\", \"output_fields\": \"id\", \"fields\": {} }"
+          --data-urlencode "json_data={ \"operation\": \"core/update\", \"class\": \"UserRequest\", \"key\": \"SELECT UserRequest WHERE id = ${{ github.event.inputs.itop_ticket_id }}\", \"comment\": \"Solución provista por Asistencia. El workflow de GitHub ha fallado. Por favor, revise los logs para más detalles: ${ERROR_URL}\", \"output_fields\": \"id\", \"fields\": {} }"
