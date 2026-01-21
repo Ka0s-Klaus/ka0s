@@ -15,6 +15,8 @@ on:
 jobs:
   job-core:
     runs-on: swarm-runners-scaleset
+    outputs:
+      status: ${{ job.status }}
     steps:
       - name: Print iTop Data
         run: |
@@ -25,43 +27,29 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Aquí irían los pasos de tu automatización en ejecuciones futuras
-      # Por ejemplo, ejecutar un script, desplegar una aplicación, etc.
+      # Este es el paso principal de la automatización.
+      # Si este paso falla, el job 'update-itop' lo reflejará en el ticket.
       - name: Run automation script
-        run: echo "Ejecutando la tarea automatizada..."
+        id: automation
+        run: |
+          echo "Ejecutando la tarea automatizada..."
+          # Simula un fallo para probar la lógica de error. Elimina o comenta la siguiente línea para probar el éxito.
+          # exit 1
 
-  update-itop-on-execute:
+  update-itop:
     runs-on: swarm-runners-scaleset
     needs: job-core
-    if: success()
+    if: always() # Se ejecuta siempre, para poder reportar tanto éxito como fallo.
     steps:
-      - name: Update iTop ticket on success
-        if: steps.run-main-logic.outcome == 'success'
-        run: |
-          curl -k -X POST '${{ secrets.ITOP_URL }}/webservices/rest.php?version=1.3' \
-          -H "Content-Type: application/x-www-form-urlencoded" \
-          --data-urlencode 'auth_user=${{ secrets.ITOP_USER }}' \
-          --data-urlencode 'auth_pwd=${{ secrets.ITOP_PASSWORD }}' \
-          --data-urlencode 'json_data={ "operation": "core/update", "class": "UserRequest", "key": "SELECT UserRequest WHERE id = ${{ github.event.inputs.itop_ticket_id }}", "output_fields": "id", "fields": { "status": "closed", "solution": "El workflow de GitHub ha finalizado con éxito. El requerimiento se cierra automáticamente." } }'
-
-      - name: Update iTop ticket on failure
-        if: steps.run-main-logic.outcome != 'success'
-        run: |
-          curl -k -X POST '${{ secrets.ITOP_URL }}/webservices/rest.php?version=1.3' \
-          -H "Content-Type: application/x-www-form-urlencoded" \
-          --data-urlencode 'auth_user=${{ secrets.ITOP_USER }}' \
-          --data-urlencode 'auth_pwd=${{ secrets.ITOP_PASSWORD }}' \
-          --data-urlencode 'json_data={ "operation": "core/update", "class": "UserRequest", "key": "SELECT UserRequest WHERE id = ${{ github.event.inputs.itop_ticket_id }}", "output_fields": "id", "fields": { "solution": "El workflow de GitHub ha fallado. Por favor, revise los logs de la ejecución para más detalles." } }'
-
       - name: Update iTop on Success
-        if: steps.execute-workflow.outputs.status == 'success'
+        if: needs.job-core.outputs.status == 'success'
         run: |
           curl -k -X POST '${{ secrets.ITOP_URL }}/webservices/rest.php?version=1.3' \
             -H 'Content-Type: application/json' \
             -d '{
               "operation": "core/update",
               "class": "UserRequest",
-              "key": "${{ github.event.client_payload.itop_id }}",
+              "key": "${{ github.event.inputs.itop_ticket_id }}",
               "output_fields": "ref",
               "auth_user": "${{ secrets.ITOP_API_USER }}",
               "auth_pwd": "${{ secrets.ITOP_API_PASSWORD }}",
@@ -72,14 +60,14 @@ jobs:
             }'
 
       - name: Update iTop on Failure
-        if: steps.execute-workflow.outputs.status == 'failure'
+        if: needs.job-core.outputs.status == 'failure'
         run: |
           curl -k -X POST '${{ secrets.ITOP_URL }}/webservices/rest.php?version=1.3' \
             -H 'Content-Type: application/json' \
             -d '{
               "operation": "core/update",
               "class": "UserRequest",
-              "key": "${{ github.event.client_payload.itop_id }}",
+              "key": "${{ github.event.inputs.itop_ticket_id }}",
               "output_fields": "ref",
               "auth_user": "${{ secrets.ITOP_API_USER }}",
               "auth_pwd": "${{ secrets.ITOP_API_PASSWORD }}",
