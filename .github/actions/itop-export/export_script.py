@@ -33,6 +33,40 @@ def main():
     print(f"Exportando datos para la fecha: {date_str}")
     print(f"Rango: {start_time} a {end_time}")
 
+    # DEBUG: Consultar un objeto cualquiera para ver sus campos
+    print("--- DEBUG: Inspeccionando estructura de UserRequest ---")
+    debug_payload = {
+        "operation": "core/get",
+        "class": "UserRequest",
+        "key": "SELECT UserRequest",
+        "limit": 1,
+        "output_fields": "*",
+        "version": "1.3"
+    }
+    try:
+        requests.packages.urllib3.disable_warnings()
+        debug_res = requests.post(
+            f"{ITOP_URL}/webservices/rest.php",
+            auth=(ITOP_USER, ITOP_PASSWORD),
+            data={"json_data": json.dumps(debug_payload)},
+            verify=False
+        )
+        if debug_res.status_code == 200:
+            debug_data = debug_res.json()
+            objs = debug_data.get('objects', {})
+            if objs:
+                first_key = list(objs.keys())[0]
+                fields = objs[first_key].get('fields', {})
+                print(f"Campos de fecha encontrados en {first_key}:")
+                for k, v in fields.items():
+                    if 'date' in k:
+                        print(f"  - {k}: {v}")
+            else:
+                print("⚠️ No hay ningún UserRequest en el sistema.")
+    except Exception as e:
+        print(f"Error en debug: {e}")
+    print("-----------------------------------------------------")
+
     targets = [
         {"class": "UserRequest", "filename": f"requerimientos_{date_str}.json"},
         {"class": "Incident", "filename": f"incidentes_{date_str}.json"},
