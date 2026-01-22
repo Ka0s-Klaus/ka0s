@@ -58,15 +58,40 @@ jobs:
             "stimulus": "ev_resolve",
             "comment": "Ticket resuelto automáticamente por GitHub Actions.",
             "fields": {
-              "solution": "La automatización se ejecutó correctamente."
+              "solution": "La automatización se ejecutó correctamente.",
+              "agent_id": "SELECT Person JOIN User ON User.contactid = Person.id WHERE User.login = '${ITOP_USER}'"
             }
           }
           EOF
           )
+          echo "::group::Resolviendo Ticket en iTop..."
           curl -k -X POST "${ITOP_URL}/webservices/rest.php?version=1.3" \
           -H "Content-Type: application/x-www-form-urlencoded" \
           -u "${ITOP_USER}:${ITOP_PASSWORD}" \
           --data-urlencode "json_data=$JSON_PAYLOAD"
+          echo "::endgroup::"
+
+          # Paso 2: Cerrar el ticket (ev_close)
+          JSON_PAYLOAD_CLOSE=$(cat <<EOF
+          {
+            "operation": "core/apply_stimulus",
+            "class": "UserRequest",
+            "key": "${{ github.event.inputs.itop_ticket_id }}",
+            "stimulus": "ev_close",
+            "comment": "Cierre automático post-resolución.",
+            "fields": {
+              "user_satisfaction": 4,
+              "user_comment": "Cerrado automáticamente por GitHub Actions."
+            }
+          }
+          EOF
+          )
+          echo "::group::Cerrando Ticket en iTop..."
+          curl -k -X POST "${ITOP_URL}/webservices/rest.php?version=1.3" \
+          -H "Content-Type: application/x-www-form-urlencoded" \
+          -u "${ITOP_USER}:${ITOP_PASSWORD}" \
+          --data-urlencode "json_data=$JSON_PAYLOAD_CLOSE"
+          echo "::endgroup::"
 
       - name: Update iTop on Failure
         if: needs.job-core.result == 'failure'
