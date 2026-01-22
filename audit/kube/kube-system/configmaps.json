@@ -1,0 +1,125 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "v1",
+            "data": {
+                "Corefile": ".:53 {\n    errors\n    health {\n       lameduck 5s\n    }\n    ready\n    kubernetes cluster.local in-addr.arpa ip6.arpa {\n       pods insecure\n       fallthrough in-addr.arpa ip6.arpa\n       ttl 30\n    }\n    prometheus :9153\n    forward . /etc/resolv.conf {\n       max_concurrent 1000\n    }\n    cache 30 {\n       disable success cluster.local\n       disable denial cluster.local\n    }\n    loop\n    reload\n    loadbalance\n}\n"
+            },
+            "kind": "ConfigMap",
+            "metadata": {
+                "creationTimestamp": "2025-12-18T18:27:06Z",
+                "name": "coredns",
+                "namespace": "kube-system",
+                "resourceVersion": "218",
+                "uid": "3cc8e72e-1e4d-4315-b920-e5c7bb1c08e3"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "data": {
+                "client-ca-file": "-----BEGIN CERTIFICATE-----\nMIIDBTCCAe2gAwIBAgIIdVZ4OXlm3howDQYJKoZIhvcNAQELBQAwFTETMBEGA1UE\nAxMKa3ViZXJuZXRlczAeFw0yNTEyMTgxODIxNTVaFw0zNTEyMTYxODI2NTVaMBUx\nEzARBgNVBAMTCmt1YmVybmV0ZXMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK\nAoIBAQDRmY/1mdgGLX5JJz4mQmbSxg5C9OxhaR4Z2iQnuZjfqv/Ad186OXBadxRw\neVgeye4P1iWvmjcqY9q3pbdjN2WdE4x1p/tXFN6A4onbZypXN8pkXSAqyf0+D/QX\n5UY7mRtMHjgrOqAQ/0Lr79r6lX8bKvwHq8oiVjpwcHHb08ouq99B7TCJZ5d6EYeQ\n3ZGdbt2Vo/JM2xGfoXm1NBP26L3EnuXCDHlrQp0ERAQM68KRiyCNNDynwjz/DLtX\nofZrG+p2pWYc0C4NvXH3B8/1PjiQ6kcc6noKoBFerfobuVLJmkW+8qhdInmkvRt6\nfVDpzklrxUNMp/rIMbdxxTQ5S4g9AgMBAAGjWTBXMA4GA1UdDwEB/wQEAwICpDAP\nBgNVHRMBAf8EBTADAQH/MB0GA1UdDgQWBBQBfYhN6j9YZrHNfGRZH+zhNzZh/TAV\nBgNVHREEDjAMggprdWJlcm5ldGVzMA0GCSqGSIb3DQEBCwUAA4IBAQBgnq6yWBQd\nC6Z/LReT/E39sJG03rzXz5NRoQBZMONAfvL+jlzRkqK+T70/jGZlu9mNNZFa7fck\npjoO6QXqBHli60feBMJeUTrK5az1V8rPgKpEt34Esy6NVc8S52RzSy78HtQejh2l\nXPNLA/BuGMOP1kuaizM7axYW4luqyankgHNXiKxxoK2qsc+mtELapmtSu1a3oaqx\nV6ZO/4/EoV25KORXWMQ4IZ7sK+dPbr6Mh/GejaZG2N2lTFAWA1a9C2ZootKg8VDO\nKFvVePd227BqD5153nQ7r8u3BckJj+9tfUn/JCTlDnDdx/YFqv64vZU7FWHIW7CU\nwGjni5x+bo3m\n-----END CERTIFICATE-----\n",
+                "requestheader-allowed-names": "[\"front-proxy-client\"]",
+                "requestheader-client-ca-file": "-----BEGIN CERTIFICATE-----\nMIIDETCCAfmgAwIBAgIIQo0lWMDqNgIwDQYJKoZIhvcNAQELBQAwGTEXMBUGA1UE\nAxMOZnJvbnQtcHJveHktY2EwHhcNMjUxMjE4MTgyMTU1WhcNMzUxMjE2MTgyNjU1\nWjAZMRcwFQYDVQQDEw5mcm9udC1wcm94eS1jYTCCASIwDQYJKoZIhvcNAQEBBQAD\nggEPADCCAQoCggEBAO0E/zmW2oHeNuBX+rLCoeKuZSFP9RyNGd425+KX3IYKzkAg\nu2rQwjvBIIQhKESvIAlEwj9sunyoODjZB1dpkFiCDh630djzWS3mo+uPC+uKCPPA\nUke6BG1CXBWlHyHqCcJpwxcwQp+Qkd9Gcy7+GR7QO4bTUvaL+ND6CW4eYFfym1fa\n0cDhXeg1lx0bUNOUm0eGZoR3cEVNGwc8DPzwePCarHJyEdpQ2UD4cwk2bdh2bnsb\naZNI7zOCv8fyQXMoQ5SeXS4L3r2/Jh8Ch3CqaZo3lcsbA6Ey7sjA20QLWU0krGxO\nDvMbg6M7FdxV8C72clPXqlOBh40ZS2fbClOqPTUCAwEAAaNdMFswDgYDVR0PAQH/\nBAQDAgKkMA8GA1UdEwEB/wQFMAMBAf8wHQYDVR0OBBYEFAJzS+E6QbV50UD6RsSs\nHJoXDU7DMBkGA1UdEQQSMBCCDmZyb250LXByb3h5LWNhMA0GCSqGSIb3DQEBCwUA\nA4IBAQDKYaN9DohIjHviFY+Ea4jpF/hf9IrmmwGZxTVnkTQeHBmbEoSu4kWsHwiw\nYjMLKJ/azhv6KOrk9d2zSuyM5YIqoZWPde4JhQPK1JQmyjT3c2Sd2Zn92gLhyt//\n5lWEmqUbvc1zD2fAUnTsCArFpg47jgLlNcQidC1tV+VwmGG/Uu8XbhtSYfCOZbrU\nG16eQnALqosk0gne4T14bgmMslXZdXbSfb7YZujgbLsT+f76i6Tc6KJKliYDax9j\nv7ee5rc4x1ycyeFNELtDsMVsoGaONjyawEF6nlSambDiKvSntB3JtUs2pKINk6lo\nUHgg+06qqjJez8ujgwJ+zDGQJBA2\n-----END CERTIFICATE-----\n",
+                "requestheader-extra-headers-prefix": "[\"X-Remote-Extra-\"]",
+                "requestheader-group-headers": "[\"X-Remote-Group\"]",
+                "requestheader-username-headers": "[\"X-Remote-User\"]"
+            },
+            "kind": "ConfigMap",
+            "metadata": {
+                "creationTimestamp": "2025-12-18T18:27:04Z",
+                "name": "extension-apiserver-authentication",
+                "namespace": "kube-system",
+                "resourceVersion": "14",
+                "uid": "11637a5f-d097-476a-967e-f2d87c6faf60"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "data": {
+                "since": "2025-12-18"
+            },
+            "kind": "ConfigMap",
+            "metadata": {
+                "creationTimestamp": "2025-12-18T18:27:04Z",
+                "name": "kube-apiserver-legacy-service-account-token-tracking",
+                "namespace": "kube-system",
+                "resourceVersion": "38",
+                "uid": "c9c98938-c97c-4cd4-9168-34bc58255ff3"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "data": {
+                "config.conf": "apiVersion: kubeproxy.config.k8s.io/v1alpha1\nbindAddress: 0.0.0.0\nbindAddressHardFail: false\nclientConnection:\n  acceptContentTypes: \"\"\n  burst: 0\n  contentType: \"\"\n  kubeconfig: /var/lib/kube-proxy/kubeconfig.conf\n  qps: 0\nclusterCIDR: 172.16.0.0/16\nconfigSyncPeriod: 0s\nconntrack:\n  maxPerCore: null\n  min: null\n  tcpBeLiberal: false\n  tcpCloseWaitTimeout: null\n  tcpEstablishedTimeout: null\n  udpStreamTimeout: 0s\n  udpTimeout: 0s\ndetectLocal:\n  bridgeInterface: \"\"\n  interfaceNamePrefix: \"\"\ndetectLocalMode: \"\"\nenableProfiling: false\nhealthzBindAddress: \"\"\nhostnameOverride: \"\"\niptables:\n  localhostNodePorts: null\n  masqueradeAll: false\n  masqueradeBit: null\n  minSyncPeriod: 0s\n  syncPeriod: 0s\nipvs:\n  excludeCIDRs: null\n  minSyncPeriod: 0s\n  scheduler: \"\"\n  strictARP: false\n  syncPeriod: 0s\n  tcpFinTimeout: 0s\n  tcpTimeout: 0s\n  udpTimeout: 0s\nkind: KubeProxyConfiguration\nlogging:\n  flushFrequency: 0\n  options:\n    json:\n      infoBufferSize: \"0\"\n    text:\n      infoBufferSize: \"0\"\n  verbosity: 0\nmetricsBindAddress: \"\"\nmode: \"\"\nnftables:\n  masqueradeAll: false\n  masqueradeBit: null\n  minSyncPeriod: 0s\n  syncPeriod: 0s\nnodePortAddresses: null\noomScoreAdj: null\nportRange: \"\"\nshowHiddenMetricsForVersion: \"\"\nwinkernel:\n  enableDSR: false\n  forwardHealthCheckVip: false\n  networkName: \"\"\n  rootHnsEndpointName: \"\"\n  sourceVip: \"\"",
+                "kubeconfig.conf": "apiVersion: v1\nkind: Config\nclusters:\n- cluster:\n    certificate-authority: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt\n    server: https://192.168.1.10:6443\n  name: default\ncontexts:\n- context:\n    cluster: default\n    namespace: default\n    user: default\n  name: default\ncurrent-context: default\nusers:\n- name: default\n  user:\n    tokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token"
+            },
+            "kind": "ConfigMap",
+            "metadata": {
+                "annotations": {
+                    "kubeadm.kubernetes.io/component-config.hash": "sha256:6fe6b934875b3c988456331093f05f9d6265d48b1a759e91393d52b0bb05b451"
+                },
+                "creationTimestamp": "2025-12-18T18:27:06Z",
+                "labels": {
+                    "app": "kube-proxy"
+                },
+                "name": "kube-proxy",
+                "namespace": "kube-system",
+                "resourceVersion": "225",
+                "uid": "81b2bb7a-401a-4998-9e2b-c3c3c0d0e211"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "data": {
+                "ca.crt": "-----BEGIN CERTIFICATE-----\nMIIDBTCCAe2gAwIBAgIIdVZ4OXlm3howDQYJKoZIhvcNAQELBQAwFTETMBEGA1UE\nAxMKa3ViZXJuZXRlczAeFw0yNTEyMTgxODIxNTVaFw0zNTEyMTYxODI2NTVaMBUx\nEzARBgNVBAMTCmt1YmVybmV0ZXMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK\nAoIBAQDRmY/1mdgGLX5JJz4mQmbSxg5C9OxhaR4Z2iQnuZjfqv/Ad186OXBadxRw\neVgeye4P1iWvmjcqY9q3pbdjN2WdE4x1p/tXFN6A4onbZypXN8pkXSAqyf0+D/QX\n5UY7mRtMHjgrOqAQ/0Lr79r6lX8bKvwHq8oiVjpwcHHb08ouq99B7TCJZ5d6EYeQ\n3ZGdbt2Vo/JM2xGfoXm1NBP26L3EnuXCDHlrQp0ERAQM68KRiyCNNDynwjz/DLtX\nofZrG+p2pWYc0C4NvXH3B8/1PjiQ6kcc6noKoBFerfobuVLJmkW+8qhdInmkvRt6\nfVDpzklrxUNMp/rIMbdxxTQ5S4g9AgMBAAGjWTBXMA4GA1UdDwEB/wQEAwICpDAP\nBgNVHRMBAf8EBTADAQH/MB0GA1UdDgQWBBQBfYhN6j9YZrHNfGRZH+zhNzZh/TAV\nBgNVHREEDjAMggprdWJlcm5ldGVzMA0GCSqGSIb3DQEBCwUAA4IBAQBgnq6yWBQd\nC6Z/LReT/E39sJG03rzXz5NRoQBZMONAfvL+jlzRkqK+T70/jGZlu9mNNZFa7fck\npjoO6QXqBHli60feBMJeUTrK5az1V8rPgKpEt34Esy6NVc8S52RzSy78HtQejh2l\nXPNLA/BuGMOP1kuaizM7axYW4luqyankgHNXiKxxoK2qsc+mtELapmtSu1a3oaqx\nV6ZO/4/EoV25KORXWMQ4IZ7sK+dPbr6Mh/GejaZG2N2lTFAWA1a9C2ZootKg8VDO\nKFvVePd227BqD5153nQ7r8u3BckJj+9tfUn/JCTlDnDdx/YFqv64vZU7FWHIW7CU\nwGjni5x+bo3m\n-----END CERTIFICATE-----\n"
+            },
+            "kind": "ConfigMap",
+            "metadata": {
+                "annotations": {
+                    "kubernetes.io/description": "Contains a CA bundle that can be used to verify the kube-apiserver when using internal endpoints such as the internal service IP or kubernetes.default.svc. No other usage is guaranteed across distributions of Kubernetes clusters."
+                },
+                "creationTimestamp": "2025-12-18T18:27:12Z",
+                "name": "kube-root-ca.crt",
+                "namespace": "kube-system",
+                "resourceVersion": "407",
+                "uid": "384015cd-30fb-49c0-9d85-6b58e2a5a32f"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "data": {
+                "ClusterConfiguration": "apiServer: {}\napiVersion: kubeadm.k8s.io/v1beta4\ncaCertificateValidityPeriod: 87600h0m0s\ncertificateValidityPeriod: 8760h0m0s\ncertificatesDir: /etc/kubernetes/pki\nclusterName: kubernetes\ncontrollerManager: {}\ndns: {}\nencryptionAlgorithm: RSA-2048\netcd:\n  local:\n    dataDir: /var/lib/etcd\nimageRepository: registry.k8s.io\nkind: ClusterConfiguration\nkubernetesVersion: v1.32.11\nnetworking:\n  dnsDomain: cluster.local\n  podSubnet: 172.16.0.0/16\n  serviceSubnet: 10.96.0.0/12\nproxy: {}\nscheduler: {}\n"
+            },
+            "kind": "ConfigMap",
+            "metadata": {
+                "creationTimestamp": "2025-12-18T18:27:05Z",
+                "name": "kubeadm-config",
+                "namespace": "kube-system",
+                "resourceVersion": "199",
+                "uid": "c15da992-1885-43ab-9eaa-ba446c0d7496"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "data": {
+                "kubelet": "apiVersion: kubelet.config.k8s.io/v1beta1\nauthentication:\n  anonymous:\n    enabled: false\n  webhook:\n    cacheTTL: 0s\n    enabled: true\n  x509:\n    clientCAFile: /etc/kubernetes/pki/ca.crt\nauthorization:\n  mode: Webhook\n  webhook:\n    cacheAuthorizedTTL: 0s\n    cacheUnauthorizedTTL: 0s\ncgroupDriver: systemd\nclusterDNS:\n- 10.96.0.10\nclusterDomain: cluster.local\ncontainerRuntimeEndpoint: \"\"\ncpuManagerReconcilePeriod: 0s\ncrashLoopBackOff: {}\nevictionPressureTransitionPeriod: 0s\nfileCheckFrequency: 0s\nhealthzBindAddress: 127.0.0.1\nhealthzPort: 10248\nhttpCheckFrequency: 0s\nimageMaximumGCAge: 0s\nimageMinimumGCAge: 0s\nkind: KubeletConfiguration\nlogging:\n  flushFrequency: 0\n  options:\n    json:\n      infoBufferSize: \"0\"\n    text:\n      infoBufferSize: \"0\"\n  verbosity: 0\nmemorySwap: {}\nnodeStatusReportFrequency: 0s\nnodeStatusUpdateFrequency: 0s\nresolvConf: /run/systemd/resolve/resolv.conf\nrotateCertificates: true\nruntimeRequestTimeout: 0s\nshutdownGracePeriod: 0s\nshutdownGracePeriodCriticalPods: 0s\nstaticPodPath: /etc/kubernetes/manifests\nstreamingConnectionIdleTimeout: 0s\nsyncFrequency: 0s\nvolumeStatsAggPeriod: 0s\n"
+            },
+            "kind": "ConfigMap",
+            "metadata": {
+                "annotations": {
+                    "kubeadm.kubernetes.io/component-config.hash": "sha256:0ff07274ab31cc8c0f9d989e90179a90b6e9b633c8f3671993f44185a0791127"
+                },
+                "creationTimestamp": "2025-12-18T18:27:05Z",
+                "name": "kubelet-config",
+                "namespace": "kube-system",
+                "resourceVersion": "204",
+                "uid": "09508cbe-df26-48ba-802c-7f8b1f5b5292"
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": ""
+    }
+}

@@ -1,0 +1,46 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "v1",
+            "data": {
+                "ca.crt": "-----BEGIN CERTIFICATE-----\nMIIDBTCCAe2gAwIBAgIIdVZ4OXlm3howDQYJKoZIhvcNAQELBQAwFTETMBEGA1UE\nAxMKa3ViZXJuZXRlczAeFw0yNTEyMTgxODIxNTVaFw0zNTEyMTYxODI2NTVaMBUx\nEzARBgNVBAMTCmt1YmVybmV0ZXMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK\nAoIBAQDRmY/1mdgGLX5JJz4mQmbSxg5C9OxhaR4Z2iQnuZjfqv/Ad186OXBadxRw\neVgeye4P1iWvmjcqY9q3pbdjN2WdE4x1p/tXFN6A4onbZypXN8pkXSAqyf0+D/QX\n5UY7mRtMHjgrOqAQ/0Lr79r6lX8bKvwHq8oiVjpwcHHb08ouq99B7TCJZ5d6EYeQ\n3ZGdbt2Vo/JM2xGfoXm1NBP26L3EnuXCDHlrQp0ERAQM68KRiyCNNDynwjz/DLtX\nofZrG+p2pWYc0C4NvXH3B8/1PjiQ6kcc6noKoBFerfobuVLJmkW+8qhdInmkvRt6\nfVDpzklrxUNMp/rIMbdxxTQ5S4g9AgMBAAGjWTBXMA4GA1UdDwEB/wQEAwICpDAP\nBgNVHRMBAf8EBTADAQH/MB0GA1UdDgQWBBQBfYhN6j9YZrHNfGRZH+zhNzZh/TAV\nBgNVHREEDjAMggprdWJlcm5ldGVzMA0GCSqGSIb3DQEBCwUAA4IBAQBgnq6yWBQd\nC6Z/LReT/E39sJG03rzXz5NRoQBZMONAfvL+jlzRkqK+T70/jGZlu9mNNZFa7fck\npjoO6QXqBHli60feBMJeUTrK5az1V8rPgKpEt34Esy6NVc8S52RzSy78HtQejh2l\nXPNLA/BuGMOP1kuaizM7axYW4luqyankgHNXiKxxoK2qsc+mtELapmtSu1a3oaqx\nV6ZO/4/EoV25KORXWMQ4IZ7sK+dPbr6Mh/GejaZG2N2lTFAWA1a9C2ZootKg8VDO\nKFvVePd227BqD5153nQ7r8u3BckJj+9tfUn/JCTlDnDdx/YFqv64vZU7FWHIW7CU\nwGjni5x+bo3m\n-----END CERTIFICATE-----\n"
+            },
+            "kind": "ConfigMap",
+            "metadata": {
+                "annotations": {
+                    "kubernetes.io/description": "Contains a CA bundle that can be used to verify the kube-apiserver when using internal endpoints such as the internal service IP or kubernetes.default.svc. No other usage is guaranteed across distributions of Kubernetes clusters."
+                },
+                "creationTimestamp": "2025-12-23T11:57:04Z",
+                "name": "kube-root-ca.crt",
+                "namespace": "local-path-storage",
+                "resourceVersion": "776433",
+                "uid": "6b60e45c-b55a-4814-a7fb-b3bd063e9d8c"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "data": {
+                "config.json": "{\n        \"nodePathMap\":[\n        {\n                \"node\":\"DEFAULT_PATH_FOR_NON_LISTED_NODES\",\n                \"paths\":[\"/opt/local-path-provisioner\"]\n        }\n        ]\n}",
+                "helperPod.yaml": "apiVersion: v1\nkind: Pod\nmetadata:\n  name: helper-pod\nspec:\n  priorityClassName: system-node-critical\n  tolerations:\n    - key: node.kubernetes.io/disk-pressure\n      operator: Exists\n      effect: NoSchedule\n  containers:\n  - name: helper-pod\n    image: busybox\n    imagePullPolicy: IfNotPresent",
+                "setup": "#!/bin/sh\nset -eu\nmkdir -m 0777 -p \"$VOL_DIR\"",
+                "teardown": "#!/bin/sh\nset -eu\nrm -rf \"$VOL_DIR\""
+            },
+            "kind": "ConfigMap",
+            "metadata": {
+                "annotations": {
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"data\":{\"config.json\":\"{\\n        \\\"nodePathMap\\\":[\\n        {\\n                \\\"node\\\":\\\"DEFAULT_PATH_FOR_NON_LISTED_NODES\\\",\\n                \\\"paths\\\":[\\\"/opt/local-path-provisioner\\\"]\\n        }\\n        ]\\n}\",\"helperPod.yaml\":\"apiVersion: v1\\nkind: Pod\\nmetadata:\\n  name: helper-pod\\nspec:\\n  priorityClassName: system-node-critical\\n  tolerations:\\n    - key: node.kubernetes.io/disk-pressure\\n      operator: Exists\\n      effect: NoSchedule\\n  containers:\\n  - name: helper-pod\\n    image: busybox\\n    imagePullPolicy: IfNotPresent\",\"setup\":\"#!/bin/sh\\nset -eu\\nmkdir -m 0777 -p \\\"$VOL_DIR\\\"\",\"teardown\":\"#!/bin/sh\\nset -eu\\nrm -rf \\\"$VOL_DIR\\\"\"},\"kind\":\"ConfigMap\",\"metadata\":{\"annotations\":{},\"name\":\"local-path-config\",\"namespace\":\"local-path-storage\"}}\n"
+                },
+                "creationTimestamp": "2025-12-23T11:57:04Z",
+                "name": "local-path-config",
+                "namespace": "local-path-storage",
+                "resourceVersion": "776447",
+                "uid": "6a5b92d8-b2c8-4a61-a0ad-123cf90ace7f"
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": ""
+    }
+}

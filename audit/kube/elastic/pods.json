@@ -1,0 +1,1067 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "annotations": {
+                    "cni.projectcalico.org/containerID": "d96cc9011bc4d01b2f074e5c434608b3461d66393ff96236712b2534abeaa092",
+                    "cni.projectcalico.org/podIP": "172.16.146.43/32",
+                    "cni.projectcalico.org/podIPs": "172.16.146.43/32"
+                },
+                "creationTimestamp": "2026-01-22T08:45:13Z",
+                "generateName": "elasticsearch-",
+                "labels": {
+                    "app": "elasticsearch",
+                    "apps.kubernetes.io/pod-index": "0",
+                    "controller-revision-hash": "elasticsearch-5776d565f8",
+                    "statefulset.kubernetes.io/pod-name": "elasticsearch-0"
+                },
+                "name": "elasticsearch-0",
+                "namespace": "elastic",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "apps/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "StatefulSet",
+                        "name": "elasticsearch",
+                        "uid": "dd02952c-f751-42f6-a0a8-ad5eb465a2ee"
+                    }
+                ],
+                "resourceVersion": "6250132",
+                "uid": "2e3ab2f9-9554-4950-92b9-917c58d2adfe"
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "env": [
+                            {
+                                "name": "cluster.name",
+                                "value": "ka0s-elastic-cluster"
+                            },
+                            {
+                                "name": "node.name",
+                                "valueFrom": {
+                                    "fieldRef": {
+                                        "apiVersion": "v1",
+                                        "fieldPath": "metadata.name"
+                                    }
+                                }
+                            },
+                            {
+                                "name": "discovery.type",
+                                "value": "single-node"
+                            },
+                            {
+                                "name": "ES_JAVA_OPTS",
+                                "value": "-Xms512m -Xmx512m"
+                            },
+                            {
+                                "name": "xpack.security.enabled",
+                                "value": "false"
+                            }
+                        ],
+                        "image": "docker.elastic.co/elasticsearch/elasticsearch:8.5.0",
+                        "imagePullPolicy": "IfNotPresent",
+                        "livenessProbe": {
+                            "failureThreshold": 3,
+                            "httpGet": {
+                                "path": "/_cluster/health",
+                                "port": 9200,
+                                "scheme": "HTTP"
+                            },
+                            "initialDelaySeconds": 120,
+                            "periodSeconds": 30,
+                            "successThreshold": 1,
+                            "timeoutSeconds": 1
+                        },
+                        "name": "elasticsearch",
+                        "ports": [
+                            {
+                                "containerPort": 9200,
+                                "name": "rest",
+                                "protocol": "TCP"
+                            },
+                            {
+                                "containerPort": 9300,
+                                "name": "inter-node",
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "readinessProbe": {
+                            "failureThreshold": 3,
+                            "httpGet": {
+                                "path": "/_cluster/health?wait_for_status=yellow\u0026timeout=5s",
+                                "port": 9200,
+                                "scheme": "HTTP"
+                            },
+                            "initialDelaySeconds": 20,
+                            "periodSeconds": 10,
+                            "successThreshold": 1,
+                            "timeoutSeconds": 1
+                        },
+                        "resources": {
+                            "limits": {
+                                "cpu": "2",
+                                "memory": "2Gi"
+                            },
+                            "requests": {
+                                "cpu": "1",
+                                "memory": "2Gi"
+                            }
+                        },
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/usr/share/elasticsearch/data",
+                                "name": "data"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-h22gh",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirst",
+                "enableServiceLinks": true,
+                "hostname": "elasticsearch-0",
+                "initContainers": [
+                    {
+                        "command": [
+                            "sh",
+                            "-c",
+                            "sysctl -w vm.max_map_count=262144"
+                        ],
+                        "image": "busybox",
+                        "imagePullPolicy": "Always",
+                        "name": "set-vm-max-map-count",
+                        "resources": {},
+                        "securityContext": {
+                            "privileged": true
+                        },
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-h22gh",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "nodeName": "k8-node-30",
+                "preemptionPolicy": "PreemptLowerPriority",
+                "priority": 0,
+                "restartPolicy": "Always",
+                "schedulerName": "default-scheduler",
+                "securityContext": {},
+                "serviceAccount": "default",
+                "serviceAccountName": "default",
+                "subdomain": "elasticsearch",
+                "terminationGracePeriodSeconds": 30,
+                "tolerations": [
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/not-ready",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    },
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/unreachable",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    }
+                ],
+                "volumes": [
+                    {
+                        "name": "data",
+                        "persistentVolumeClaim": {
+                            "claimName": "data-elasticsearch-0"
+                        }
+                    },
+                    {
+                        "name": "kube-api-access-h22gh",
+                        "projected": {
+                            "defaultMode": 420,
+                            "sources": [
+                                {
+                                    "serviceAccountToken": {
+                                        "expirationSeconds": 3607,
+                                        "path": "token"
+                                    }
+                                },
+                                {
+                                    "configMap": {
+                                        "items": [
+                                            {
+                                                "key": "ca.crt",
+                                                "path": "ca.crt"
+                                            }
+                                        ],
+                                        "name": "kube-root-ca.crt"
+                                    }
+                                },
+                                {
+                                    "downwardAPI": {
+                                        "items": [
+                                            {
+                                                "fieldRef": {
+                                                    "apiVersion": "v1",
+                                                    "fieldPath": "metadata.namespace"
+                                                },
+                                                "path": "namespace"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-22T08:46:18Z",
+                        "status": "True",
+                        "type": "PodReadyToStartContainers"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-22T08:46:33Z",
+                        "status": "True",
+                        "type": "Initialized"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-22T08:47:05Z",
+                        "status": "True",
+                        "type": "Ready"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-22T08:47:05Z",
+                        "status": "True",
+                        "type": "ContainersReady"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-22T08:45:25Z",
+                        "status": "True",
+                        "type": "PodScheduled"
+                    }
+                ],
+                "containerStatuses": [
+                    {
+                        "containerID": "containerd://d81816d6ba75b1602ae9af42514b8b8729ac0f2b1ff8f8b656b71b46ca1487bc",
+                        "image": "docker.elastic.co/elasticsearch/elasticsearch:8.5.0",
+                        "imageID": "docker.elastic.co/elasticsearch/elasticsearch@sha256:98698bcce937f4bc0e38aa23ec2745b27eb191aa27ff5451859e73812807799c",
+                        "lastState": {},
+                        "name": "elasticsearch",
+                        "ready": true,
+                        "restartCount": 0,
+                        "started": true,
+                        "state": {
+                            "running": {
+                                "startedAt": "2026-01-22T08:46:34Z"
+                            }
+                        },
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/usr/share/elasticsearch/data",
+                                "name": "data"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-h22gh",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            }
+                        ]
+                    }
+                ],
+                "hostIP": "192.168.1.30",
+                "hostIPs": [
+                    {
+                        "ip": "192.168.1.30"
+                    }
+                ],
+                "initContainerStatuses": [
+                    {
+                        "containerID": "containerd://d8347f10337656bd99dd251e29b219a1ff914ca0e5b59d8bec0c048c8cb33d48",
+                        "image": "docker.io/library/busybox:latest",
+                        "imageID": "docker.io/library/busybox@sha256:e226d6308690dbe282443c8c7e57365c96b5228f0fe7f40731b5d84d37a06839",
+                        "lastState": {},
+                        "name": "set-vm-max-map-count",
+                        "ready": true,
+                        "restartCount": 0,
+                        "started": false,
+                        "state": {
+                            "terminated": {
+                                "containerID": "containerd://d8347f10337656bd99dd251e29b219a1ff914ca0e5b59d8bec0c048c8cb33d48",
+                                "exitCode": 0,
+                                "finishedAt": "2026-01-22T08:46:18Z",
+                                "reason": "Completed",
+                                "startedAt": "2026-01-22T08:46:18Z"
+                            }
+                        },
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-h22gh",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            }
+                        ]
+                    }
+                ],
+                "phase": "Running",
+                "podIP": "172.16.146.43",
+                "podIPs": [
+                    {
+                        "ip": "172.16.146.43"
+                    }
+                ],
+                "qosClass": "Burstable",
+                "startTime": "2026-01-22T08:45:26Z"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "annotations": {
+                    "cni.projectcalico.org/containerID": "839b3ff11865d9c49312fb90a2172529832ab1c9c4ab3396a291e9da2edc733f",
+                    "cni.projectcalico.org/podIP": "172.16.146.5/32",
+                    "cni.projectcalico.org/podIPs": "172.16.146.5/32"
+                },
+                "creationTimestamp": "2026-01-22T08:45:13Z",
+                "generateName": "kibana-7c5d67889-",
+                "labels": {
+                    "app": "kibana",
+                    "pod-template-hash": "7c5d67889"
+                },
+                "name": "kibana-7c5d67889-dnqc2",
+                "namespace": "elastic",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "apps/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "ReplicaSet",
+                        "name": "kibana-7c5d67889",
+                        "uid": "63d258d9-0d30-4002-96df-1f339290bcd0"
+                    }
+                ],
+                "resourceVersion": "6249953",
+                "uid": "a7eaab16-d895-44f4-a585-2506dd8564be"
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "env": [
+                            {
+                                "name": "ELASTICSEARCH_HOSTS",
+                                "value": "[\"http://elasticsearch:9200\"]"
+                            },
+                            {
+                                "name": "SERVER_SSL_ENABLED",
+                                "value": "true"
+                            },
+                            {
+                                "name": "SERVER_SSL_CERTIFICATE",
+                                "value": "/usr/share/kibana/config/certs/tls.crt"
+                            },
+                            {
+                                "name": "SERVER_SSL_KEY",
+                                "value": "/usr/share/kibana/config/certs/tls.key"
+                            }
+                        ],
+                        "image": "docker.elastic.co/kibana/kibana:8.5.0",
+                        "imagePullPolicy": "IfNotPresent",
+                        "name": "kibana",
+                        "ports": [
+                            {
+                                "containerPort": 5601,
+                                "name": "https",
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "resources": {},
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/usr/share/kibana/config/certs",
+                                "name": "kibana-certs",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-p4tz7",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirst",
+                "enableServiceLinks": true,
+                "nodeName": "k8-node-30",
+                "preemptionPolicy": "PreemptLowerPriority",
+                "priority": 0,
+                "restartPolicy": "Always",
+                "schedulerName": "default-scheduler",
+                "securityContext": {},
+                "serviceAccount": "default",
+                "serviceAccountName": "default",
+                "terminationGracePeriodSeconds": 30,
+                "tolerations": [
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/not-ready",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    },
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/unreachable",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    }
+                ],
+                "volumes": [
+                    {
+                        "name": "kibana-certs",
+                        "secret": {
+                            "defaultMode": 420,
+                            "secretName": "kibana-tls-secret-52gt8g6g2f"
+                        }
+                    },
+                    {
+                        "name": "kube-api-access-p4tz7",
+                        "projected": {
+                            "defaultMode": 420,
+                            "sources": [
+                                {
+                                    "serviceAccountToken": {
+                                        "expirationSeconds": 3607,
+                                        "path": "token"
+                                    }
+                                },
+                                {
+                                    "configMap": {
+                                        "items": [
+                                            {
+                                                "key": "ca.crt",
+                                                "path": "ca.crt"
+                                            }
+                                        ],
+                                        "name": "kube-root-ca.crt"
+                                    }
+                                },
+                                {
+                                    "downwardAPI": {
+                                        "items": [
+                                            {
+                                                "fieldRef": {
+                                                    "apiVersion": "v1",
+                                                    "fieldPath": "metadata.namespace"
+                                                },
+                                                "path": "namespace"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-22T08:46:13Z",
+                        "status": "True",
+                        "type": "PodReadyToStartContainers"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-22T08:45:13Z",
+                        "status": "True",
+                        "type": "Initialized"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-22T08:46:13Z",
+                        "status": "True",
+                        "type": "Ready"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-22T08:46:13Z",
+                        "status": "True",
+                        "type": "ContainersReady"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-22T08:45:13Z",
+                        "status": "True",
+                        "type": "PodScheduled"
+                    }
+                ],
+                "containerStatuses": [
+                    {
+                        "containerID": "containerd://c5c09b41e1131482bea26582382becc43973c565d0475a49982ebcc94a14afa4",
+                        "image": "docker.elastic.co/kibana/kibana:8.5.0",
+                        "imageID": "docker.elastic.co/kibana/kibana@sha256:ca1276adff4f8d413086b6e3c10a563185f6cd714676e7a40e98aa93490196fb",
+                        "lastState": {},
+                        "name": "kibana",
+                        "ready": true,
+                        "restartCount": 0,
+                        "started": true,
+                        "state": {
+                            "running": {
+                                "startedAt": "2026-01-22T08:46:13Z"
+                            }
+                        },
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/usr/share/kibana/config/certs",
+                                "name": "kibana-certs",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-p4tz7",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            }
+                        ]
+                    }
+                ],
+                "hostIP": "192.168.1.30",
+                "hostIPs": [
+                    {
+                        "ip": "192.168.1.30"
+                    }
+                ],
+                "phase": "Running",
+                "podIP": "172.16.146.5",
+                "podIPs": [
+                    {
+                        "ip": "172.16.146.5"
+                    }
+                ],
+                "qosClass": "BestEffort",
+                "startTime": "2026-01-22T08:45:13Z"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "annotations": {
+                    "cni.projectcalico.org/containerID": "a9651ee76b2bb4b8d7776f64633712113913116ab76d51ae1ace45e849a5afef",
+                    "cni.projectcalico.org/podIP": "172.16.209.7/32",
+                    "cni.projectcalico.org/podIPs": "172.16.209.7/32",
+                    "kubectl.kubernetes.io/restartedAt": "2026-01-22T09:12:34Z"
+                },
+                "creationTimestamp": "2026-01-22T09:12:34Z",
+                "generateName": "logstash-7bdbcfd98d-",
+                "labels": {
+                    "app": "logstash",
+                    "pod-template-hash": "7bdbcfd98d"
+                },
+                "name": "logstash-7bdbcfd98d-cv72b",
+                "namespace": "elastic",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "apps/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "ReplicaSet",
+                        "name": "logstash-7bdbcfd98d",
+                        "uid": "7ee84071-19c1-4026-a085-ce9b0531fc34"
+                    }
+                ],
+                "resourceVersion": "6257119",
+                "uid": "a47ee39b-112c-4ef5-bfb4-381c14412408"
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "env": [
+                            {
+                                "name": "MONGO_USER",
+                                "value": "root"
+                            },
+                            {
+                                "name": "MONGO_PASSWORD",
+                                "valueFrom": {
+                                    "secretKeyRef": {
+                                        "key": "mongo-root-password",
+                                        "name": "mongo-secret"
+                                    }
+                                }
+                            }
+                        ],
+                        "image": "docker.elastic.co/logstash/logstash:8.5.0",
+                        "imagePullPolicy": "IfNotPresent",
+                        "name": "logstash",
+                        "ports": [
+                            {
+                                "containerPort": 9600,
+                                "name": "http",
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "resources": {},
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/usr/share/logstash/config/logstash.yml",
+                                "name": "config-volume",
+                                "subPath": "logstash.yml"
+                            },
+                            {
+                                "mountPath": "/usr/share/logstash/pipeline/pipeline.conf",
+                                "name": "pipeline-volume",
+                                "subPath": "pipeline.conf"
+                            },
+                            {
+                                "mountPath": "/usr/share/logstash/data",
+                                "name": "data-volume"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-pm7c5",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirst",
+                "enableServiceLinks": true,
+                "nodeName": "k8-node-20",
+                "preemptionPolicy": "PreemptLowerPriority",
+                "priority": 0,
+                "restartPolicy": "Always",
+                "schedulerName": "default-scheduler",
+                "securityContext": {},
+                "serviceAccount": "default",
+                "serviceAccountName": "default",
+                "terminationGracePeriodSeconds": 30,
+                "tolerations": [
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/not-ready",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    },
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/unreachable",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    }
+                ],
+                "volumes": [
+                    {
+                        "configMap": {
+                            "defaultMode": 420,
+                            "name": "logstash-pipeline-config"
+                        },
+                        "name": "config-volume"
+                    },
+                    {
+                        "configMap": {
+                            "defaultMode": 420,
+                            "name": "logstash-pipeline-config"
+                        },
+                        "name": "pipeline-volume"
+                    },
+                    {
+                        "emptyDir": {},
+                        "name": "data-volume"
+                    },
+                    {
+                        "name": "kube-api-access-pm7c5",
+                        "projected": {
+                            "defaultMode": 420,
+                            "sources": [
+                                {
+                                    "serviceAccountToken": {
+                                        "expirationSeconds": 3607,
+                                        "path": "token"
+                                    }
+                                },
+                                {
+                                    "configMap": {
+                                        "items": [
+                                            {
+                                                "key": "ca.crt",
+                                                "path": "ca.crt"
+                                            }
+                                        ],
+                                        "name": "kube-root-ca.crt"
+                                    }
+                                },
+                                {
+                                    "downwardAPI": {
+                                        "items": [
+                                            {
+                                                "fieldRef": {
+                                                    "apiVersion": "v1",
+                                                    "fieldPath": "metadata.namespace"
+                                                },
+                                                "path": "namespace"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-22T09:12:35Z",
+                        "status": "True",
+                        "type": "PodReadyToStartContainers"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-22T09:12:34Z",
+                        "status": "True",
+                        "type": "Initialized"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-22T09:36:13Z",
+                        "message": "containers with unready status: [logstash]",
+                        "reason": "ContainersNotReady",
+                        "status": "False",
+                        "type": "Ready"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-22T09:36:13Z",
+                        "message": "containers with unready status: [logstash]",
+                        "reason": "ContainersNotReady",
+                        "status": "False",
+                        "type": "ContainersReady"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-22T09:12:34Z",
+                        "status": "True",
+                        "type": "PodScheduled"
+                    }
+                ],
+                "containerStatuses": [
+                    {
+                        "containerID": "containerd://46de27b587bfd26ad615d7dd0969e254c547ab65a8cba9390a3f69fa8d561c04",
+                        "image": "docker.elastic.co/logstash/logstash:8.5.0",
+                        "imageID": "docker.elastic.co/logstash/logstash@sha256:95682ec3cd5f4b8cdbe97874924b73674749bb2f5d43b4eab8c0678504873541",
+                        "lastState": {
+                            "terminated": {
+                                "containerID": "containerd://46de27b587bfd26ad615d7dd0969e254c547ab65a8cba9390a3f69fa8d561c04",
+                                "exitCode": 0,
+                                "finishedAt": "2026-01-22T09:36:12Z",
+                                "reason": "Completed",
+                                "startedAt": "2026-01-22T09:35:56Z"
+                            }
+                        },
+                        "name": "logstash",
+                        "ready": false,
+                        "restartCount": 9,
+                        "started": false,
+                        "state": {
+                            "waiting": {
+                                "message": "back-off 5m0s restarting failed container=logstash pod=logstash-7bdbcfd98d-cv72b_elastic(a47ee39b-112c-4ef5-bfb4-381c14412408)",
+                                "reason": "CrashLoopBackOff"
+                            }
+                        },
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/usr/share/logstash/config/logstash.yml",
+                                "name": "config-volume"
+                            },
+                            {
+                                "mountPath": "/usr/share/logstash/pipeline/pipeline.conf",
+                                "name": "pipeline-volume"
+                            },
+                            {
+                                "mountPath": "/usr/share/logstash/data",
+                                "name": "data-volume"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-pm7c5",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            }
+                        ]
+                    }
+                ],
+                "hostIP": "192.168.1.20",
+                "hostIPs": [
+                    {
+                        "ip": "192.168.1.20"
+                    }
+                ],
+                "phase": "Running",
+                "podIP": "172.16.209.7",
+                "podIPs": [
+                    {
+                        "ip": "172.16.209.7"
+                    }
+                ],
+                "qosClass": "BestEffort",
+                "startTime": "2026-01-22T09:12:34Z"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "annotations": {
+                    "cni.projectcalico.org/containerID": "4e08ea6cf9df74d4ab1ede39808db1eaebad4b0ff7b9fbd98e893df28cbbe9a7",
+                    "cni.projectcalico.org/podIP": "172.16.209.16/32",
+                    "cni.projectcalico.org/podIPs": "172.16.209.16/32"
+                },
+                "creationTimestamp": "2026-01-22T08:54:00Z",
+                "generateName": "metricbeat-mongo-5d7665694d-",
+                "labels": {
+                    "app": "metricbeat",
+                    "pod-template-hash": "5d7665694d"
+                },
+                "name": "metricbeat-mongo-5d7665694d-f6ht9",
+                "namespace": "elastic",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "apps/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "ReplicaSet",
+                        "name": "metricbeat-mongo-5d7665694d",
+                        "uid": "5e1c3d0c-8c01-46f4-9a94-6a8f6f101ed4"
+                    }
+                ],
+                "resourceVersion": "6251158",
+                "uid": "3e6bee60-9f17-4d16-b12c-613826b20646"
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "args": [
+                            "-c",
+                            "/etc/metricbeat.yml",
+                            "-e"
+                        ],
+                        "env": [
+                            {
+                                "name": "MONGO_PASSWORD",
+                                "valueFrom": {
+                                    "secretKeyRef": {
+                                        "key": "mongo-root-password",
+                                        "name": "mongo-secret"
+                                    }
+                                }
+                            }
+                        ],
+                        "image": "docker.elastic.co/beats/metricbeat:8.5.0",
+                        "imagePullPolicy": "IfNotPresent",
+                        "name": "metricbeat",
+                        "resources": {},
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/etc/metricbeat.yml",
+                                "name": "config",
+                                "readOnly": true,
+                                "subPath": "metricbeat.yml"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-b5mkt",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirst",
+                "enableServiceLinks": true,
+                "nodeName": "k8-node-20",
+                "preemptionPolicy": "PreemptLowerPriority",
+                "priority": 0,
+                "restartPolicy": "Always",
+                "schedulerName": "default-scheduler",
+                "securityContext": {},
+                "serviceAccount": "default",
+                "serviceAccountName": "default",
+                "terminationGracePeriodSeconds": 30,
+                "tolerations": [
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/not-ready",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    },
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/unreachable",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    }
+                ],
+                "volumes": [
+                    {
+                        "configMap": {
+                            "defaultMode": 416,
+                            "name": "metricbeat-mongo-config"
+                        },
+                        "name": "config"
+                    },
+                    {
+                        "name": "kube-api-access-b5mkt",
+                        "projected": {
+                            "defaultMode": 420,
+                            "sources": [
+                                {
+                                    "serviceAccountToken": {
+                                        "expirationSeconds": 3607,
+                                        "path": "token"
+                                    }
+                                },
+                                {
+                                    "configMap": {
+                                        "items": [
+                                            {
+                                                "key": "ca.crt",
+                                                "path": "ca.crt"
+                                            }
+                                        ],
+                                        "name": "kube-root-ca.crt"
+                                    }
+                                },
+                                {
+                                    "downwardAPI": {
+                                        "items": [
+                                            {
+                                                "fieldRef": {
+                                                    "apiVersion": "v1",
+                                                    "fieldPath": "metadata.namespace"
+                                                },
+                                                "path": "namespace"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-22T08:54:09Z",
+                        "status": "True",
+                        "type": "PodReadyToStartContainers"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-22T08:54:00Z",
+                        "status": "True",
+                        "type": "Initialized"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-22T08:54:09Z",
+                        "status": "True",
+                        "type": "Ready"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-22T08:54:09Z",
+                        "status": "True",
+                        "type": "ContainersReady"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-22T08:54:00Z",
+                        "status": "True",
+                        "type": "PodScheduled"
+                    }
+                ],
+                "containerStatuses": [
+                    {
+                        "containerID": "containerd://40580ef06a071bb0321bc20c0b90960beff06e590301526b834f821cc511a682",
+                        "image": "docker.elastic.co/beats/metricbeat:8.5.0",
+                        "imageID": "docker.elastic.co/beats/metricbeat@sha256:708d524b5dc09e4f5185fb4251f8c1d03726ea6137fc46acda2123250ca5ddc6",
+                        "lastState": {},
+                        "name": "metricbeat",
+                        "ready": true,
+                        "restartCount": 0,
+                        "started": true,
+                        "state": {
+                            "running": {
+                                "startedAt": "2026-01-22T08:54:08Z"
+                            }
+                        },
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/etc/metricbeat.yml",
+                                "name": "config",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-b5mkt",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            }
+                        ]
+                    }
+                ],
+                "hostIP": "192.168.1.20",
+                "hostIPs": [
+                    {
+                        "ip": "192.168.1.20"
+                    }
+                ],
+                "phase": "Running",
+                "podIP": "172.16.209.16",
+                "podIPs": [
+                    {
+                        "ip": "172.16.209.16"
+                    }
+                ],
+                "qosClass": "BestEffort",
+                "startTime": "2026-01-22T08:54:00Z"
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": ""
+    }
+}
