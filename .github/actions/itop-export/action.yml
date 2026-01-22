@@ -1,0 +1,45 @@
+name: 'Export iTop Data'
+description: 'Export iTop data (UserRequest, Incident, Problem, Change) to JSON files'
+inputs:
+  itop-url:
+    description: 'iTop URL'
+    required: true
+  itop-user:
+    description: 'iTop API User'
+    required: true
+  itop-password:
+    description: 'iTop API Password'
+    required: true
+  date:
+    description: 'Date to export (YYYY-MM-DD). Defaults to yesterday.'
+    required: false
+  output-dir:
+    description: 'Directory to save JSON files'
+    required: false
+    default: 'audit/itop'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      shell: bash
+      run: pip install requests
+
+    - name: Run export script
+      shell: bash
+      env:
+        ITOP_URL: ${{ inputs.itop-url }}
+        ITOP_USER: ${{ inputs.itop-user }}
+        ITOP_PASSWORD: ${{ inputs.itop-password }}
+      run: |
+        DATE_ARG=""
+        if [ -n "${{ inputs.date }}" ]; then
+          DATE_ARG="--date ${{ inputs.date }}"
+        fi
+        
+        python3 ${{ github.action_path }}/export_script.py $DATE_ARG --output-dir ${{ inputs.output-dir }}
