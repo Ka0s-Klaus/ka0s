@@ -41,12 +41,12 @@ jobs:
       - name: Update iTop on Success
         if: needs.job-core.result == 'success'
         env:
-          ITOP_URL: ${{ secrets.ITOP_API_URL }}
+          ITOP_URL: ${{ secrets.ITOP_URL || vars.ITOP_URL }}
           ITOP_USER: ${{ secrets.ITOP_API_USER }}
           ITOP_PASSWORD: ${{ secrets.ITOP_API_PASSWORD }}
         run: |
           if [ -z "$ITOP_URL" ]; then
-            echo "::error::El secreto ITOP_API_URL no está configurado."
+            echo "::error::La variable ITOP_URL no se encuentra en Secrets ni en Variables."
             exit 1
           fi
           
@@ -71,12 +71,12 @@ jobs:
       - name: Update iTop on Failure
         if: needs.job-core.result == 'failure'
         env:
-          ITOP_URL: ${{ secrets.ITOP_API_URL }}
+          ITOP_URL: ${{ secrets.ITOP_URL || vars.ITOP_URL }}
           ITOP_USER: ${{ secrets.ITOP_API_USER }}
           ITOP_PASSWORD: ${{ secrets.ITOP_API_PASSWORD }}
         run: |
           if [ -z "$ITOP_URL" ]; then
-            echo "::error::El secreto ITOP_API_URL no está configurado."
+            echo "::error::La variable ITOP_URL no se encuentra en Secrets ni en Variables."
             exit 1
           fi
 
