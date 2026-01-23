@@ -1,0 +1,46 @@
+name: iTop Daily Audit Export
+
+on:
+  schedule:
+    # Ejecutar a las 01:00 UTC todos los días
+    - cron: '0 1 * * *'
+  workflow_dispatch:
+    inputs:
+      date:
+        description: 'Fecha a exportar (YYYY-MM-DD). Dejar vacío para "ayer".'
+        required: false
+        default: ''
+
+jobs:
+  audit-export:
+    runs-on: swarm-runners-scaleset
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Export iTop Data
+        uses: ./.github/actions/itop-export
+        with:
+          itop-url: ${{ secrets.ITOP_URL || vars.ITOP_URL }}
+          itop-user: ${{ secrets.ITOP_API_USER }}
+          itop-password: ${{ secrets.ITOP_API_PASSWORD }}
+          date: ${{ github.event.inputs.date }}
+          output-dir: 'audit/itop'
+
+      - name: Commit and Push changes
+        run: |
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "actions@github.com"
+          
+          git add audit/itop/*.json
+          
+          # Verificar si hay cambios antes de hacer commit
+          if git diff --staged --quiet; then
+            echo "No hay nuevos ficheros de auditoría para guardar."
+          else
+            git commit -m "Audit: iTop export $(date +%Y-%m-%d)"
+            git push
+          fi
