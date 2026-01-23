@@ -39,11 +39,11 @@ zabbix_export:
         - name: itop_organization_id
           value: '1'
         - name: itop_password
-          value: '<PLACEHOLDER>'
+          value: 'zabbix'
         - name: itop_url
-          value: '<PLACEHOLDER>'
+          value: 'https://itop.itop.svc.cluster.local'
         - name: itop_user
-          value: '<PLACEHOLDER>'
+          value: 'zabbix'
         - name: trigger_id
           value: '{TRIGGER.ID}'
         - name: zabbix_url
@@ -212,13 +212,20 @@ zabbix_export:
                 var description = 'Event ID: ' + params.event_id + '\n';
                 description += 'Event tags: ' + params.event_tags + '\n';
                 description += 'Event details: ' + params.alert_message;
+
+                // Logic to determine Class based on specific tags in Subject
+                if (params.alert_subject.toLowerCase().indexOf('problem') !== -1) {
+                    Itop.params.itop_class = 'Problem';
+                } else {
+                    Itop.params.itop_class = 'Incident';
+                }
         
                 json_data.org_id = params.itop_organization_id;
                 json_data.title = params.alert_subject;
                 json_data.description = description;
                 json_data.caller_id = {
-                    name: 'admin',
-                    first_name: 'admin'
+                    name: 'Zabbix',
+                    first_name: 'Integration'
                 };
                 json_data.impact = 2; // Medium
                 json_data.urgency = 2; // Medium

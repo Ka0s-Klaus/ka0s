@@ -21,3 +21,4 @@ Para facilitar la lectura, hemos dividido el manual en las siguientes secciones 
 5.  [Integración con iTop](05_itop_integration.md): Conectar Zabbix con su sistema de tickets.
 6.  [Solución de Problemas](06_troubleshooting.md): Guía rápida para resolver errores comunes.
 7.  [Mantenimiento](07_maintenance.md): Cómo actualizar, reiniciar o desinstalar el sistema.
+8.  [Monitorización de Servicios K8s](08_k8s_services_monitoring.md): Cómo obtener gráficas de los servicios del clúster.

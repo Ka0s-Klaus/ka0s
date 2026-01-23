@@ -23,6 +23,28 @@ Para que el sistema cree tickets de incidencia automáticamente:
         *   `itop_organization_id`: El ID de su organización (ej. `1`).
     *   Clic en **Update**.
 
+3.  **Configurar Acción Automática** (Creación Manual):
+    *   *Nota: Zabbix no permite importar Acciones directamente desde la interfaz web.*
+    *   Vaya a **Alerts** > **Actions** > **Trigger actions**.
+    *   Clic en **Create action**.
+    *   **Pestaña Action**:
+        *   **Name**: `Create iTop Ticket on High Severity`
+        *   **Conditions**: Añadir `Severity is greater than or equals Average`.
+    *   **Pestaña Operations**:
+        *   **Operations**: Clic en **Add**.
+            *   **Send to media types**: Seleccionar `iTop`.
+            *   **Send to user groups**: Seleccionar `Zabbix administrators` (o el grupo responsable).
+            *   Clic en **Add** (dentro del popup).
+        *   **Recovery operations**: Clic en **Add**.
+            *   **Send to media types**: Seleccionar `iTop`.
+            *   **Send to user groups**: Seleccionar `Zabbix administrators`.
+            *   Clic en **Add**.
+        *   **Update operations**: Clic en **Add**.
+            *   **Send to media types**: Seleccionar `iTop`.
+            *   **Send to user groups**: Seleccionar `Zabbix administrators`.
+            *   Clic en **Add**.
+    *   Clic en **Add** (botón final para guardar la acción).
+
 ## B. Monitorización del Servicio iTop
 
 Para ver si la web de iTop responde correctamente:
