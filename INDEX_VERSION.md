@@ -216,3 +216,4 @@
 - **Version**: 0.5.1 - **Description**: H2927 test launch workflows from itop services
 - **Version**: 0.5.2 - **Description**: H1128 modulo de observabilidad
 - **Version**: 0.6.0 - **Description**: F2927 test launch workflows from itop services
+- **Version**: 0.6.1 - **Description**: H1276 modulo observabilidad
