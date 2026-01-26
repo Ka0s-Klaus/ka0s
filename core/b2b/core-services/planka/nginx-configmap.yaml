@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: planka-nginx-conf
+  namespace: planka
+data:
+  nginx.conf: |
+    events {}
+    http {
+      include       /etc/nginx/mime.types;
+      default_type  application/octet-stream;
+      
+      # Desactivar tokens de versión
+      server_tokens off;
+
+      server {
+        listen 8443 ssl default_server;
+        server_name scrum.ka0s.io;
+        ssl_certificate /etc/nginx/certs/tls.crt;
+        ssl_certificate_key /etc/nginx/certs/tls.key;
+        
+        # SSL settings relajados para evitar problemas con autofirmados
+        ssl_session_cache shared:SSL:1m;
+        ssl_session_timeout  10m;
+        ssl_ciphers HIGH:!aNULL:!MD5;
+        ssl_prefer_server_ciphers on;
+
+        # IMPORTANTE: No incluir Strict-Transport-Security (HSTS) para evitar bloqueo en Chrome con self-signed
+
+        # Logs para depuración
+        access_log /dev/stdout;
+        error_log /dev/stderr;
+    
+        location / {
+          proxy_pass http://localhost:1337;
+          proxy_http_version 1.1;
+          proxy_set_header Upgrade $http_upgrade;
+          proxy_set_header Connection "upgrade";
+          proxy_set_header Host $http_host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
+        }
+    
+        location /socket.io/ {
+          proxy_pass http://localhost:1337;
+          proxy_http_version 1.1;
+          proxy_set_header Upgrade $http_upgrade;
+          proxy_set_header Connection "upgrade";
+          proxy_set_header Host $http_host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
+        }
+      }
+    }
