@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: n8n-db-pvc
+  namespace: n8n
+  labels:
+    app: postgres
+    core.kaos.io/type: automation
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  volumeName: n8n-db-pv
