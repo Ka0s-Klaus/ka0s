@@ -1,0 +1,510 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zabbix_export>
+    <version>7.0</version>
+    <template_groups>
+        <template_group>
+            <name>Templates/Applications</name>
+            <uuid>821b4432095840008000000000000300</uuid>
+        </template_group>
+    </template_groups>
+    <templates>
+        <template>
+            <uuid>821b4432095840008000000000000301</uuid>
+            <template>Template App n8n Service</template>
+            <name>Template App n8n Service</name>
+            <description>Monitorización de disponibilidad de n8n y recursos del pod en Kubernetes mediante checks TCP/HTTP y scripts externos k8s_pod_metrics.sh.</description>
+            <groups>
+                <group>
+                    <name>Templates/Applications</name>
+                </group>
+            </groups>
+            <items>
+                <!-- Service Availability (Simple Check) -->
+                <item>
+                    <uuid>821b4432095840008000000000000302</uuid>
+                    <name>n8n Web Service Availability</name>
+                    <type>SIMPLE</type>
+                    <key>net.tcp.service[https,"{$N8N.HOST}","{$N8N.PORT}"]</key>
+                    <history>7d</history>
+                    <valuemap>
+                        <name>Service state</name>
+                    </valuemap>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>network</value>
+                        </tag>
+                        <tag>
+                            <tag>application</tag>
+                            <value>n8n</value>
+                        </tag>
+                    </tags>
+                    <triggers>
+                        <trigger>
+                            <uuid>821b4432095840008000000000000303</uuid>
+                            <expression>last(/Template App n8n Service/net.tcp.service[https,"{$N8N.HOST}","{$N8N.PORT}"])=0</expression>
+                            <name>n8n Service is DOWN on {HOST.NAME}</name>
+                            <priority>HIGH</priority>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+
+                <!-- Response Time (Simple Check) -->
+                <item>
+                    <uuid>821b4432095840008000000000000304</uuid>
+                    <name>n8n Response Time</name>
+                    <type>SIMPLE</type>
+                    <key>net.tcp.service.perf[https,"{$N8N.HOST}","{$N8N.PORT}"]</key>
+                    <history>7d</history>
+                    <value_type>FLOAT</value_type>
+                    <units>s</units>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>performance</value>
+                        </tag>
+                        <tag>
+                            <tag>application</tag>
+                            <value>n8n</value>
+                        </tag>
+                    </tags>
+                </item>
+
+                <!-- Pod CPU Usage (External Script) -->
+                <item>
+                    <uuid>821b4432095840008000000000000305</uuid>
+                    <name>n8n Pod CPU Usage</name>
+                    <type>EXTERNAL</type>
+                    <key>k8s_pod_metrics.sh["{$N8N.NAMESPACE}","{$N8N.POD_NAME}","cpu"]</key>
+                    <history>7d</history>
+                    <trends>30d</trends>
+                    <units>m</units>
+                    <value_type>FLOAT</value_type>
+                    <description>Uso total de CPU del pod de n8n (millicores) via Metrics API.</description>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>resource</value>
+                        </tag>
+                        <tag>
+                            <tag>application</tag>
+                            <value>n8n</value>
+                        </tag>
+                    </tags>
+                </item>
+
+                <!-- Pod Memory Usage (External Script) -->
+                <item>
+                    <uuid>821b4432095840008000000000000306</uuid>
+                    <name>n8n Pod Memory Usage</name>
+                    <type>EXTERNAL</type>
+                    <key>k8s_pod_metrics.sh["{$N8N.NAMESPACE}","{$N8N.POD_NAME}","memory"]</key>
+                    <history>7d</history>
+                    <trends>30d</trends>
+                    <units>B</units>
+                    <value_type>UNSIGNED</value_type>
+                    <description>Uso total de memoria del pod de n8n (bytes) via Metrics API.</description>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>resource</value>
+                        </tag>
+                        <tag>
+                            <tag>application</tag>
+                            <value>n8n</value>
+                        </tag>
+                    </tags>
+                </item>
+
+                <!-- Pod Restart Count (External Script) -->
+                <item>
+                    <uuid>821b4432095840008000000000000307</uuid>
+                    <name>n8n Pod Restart Count</name>
+                    <type>EXTERNAL</type>
+                    <key>k8s_pod_metrics.sh["{$N8N.NAMESPACE}","{$N8N.POD_NAME}","restarts"]</key>
+                    <history>7d</history>
+                    <trends>30d</trends>
+                    <value_type>UNSIGNED</value_type>
+                    <description>Reinicios acumulados de los contenedores del pod de n8n.</description>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>health</value>
+                        </tag>
+                        <tag>
+                            <tag>application</tag>
+                            <value>n8n</value>
+                        </tag>
+                    </tags>
+                    <triggers>
+                        <trigger>
+                            <uuid>821b4432095840008000000000000308</uuid>
+                            <expression>last(/Template App n8n Service/k8s_pod_metrics.sh["{$N8N.NAMESPACE}","{$N8N.POD_NAME}","restarts"])&gt;3</expression>
+                            <name>High restart count on n8n pod ({ITEM.LASTVALUE})</name>
+                            <priority>WARNING</priority>
+                        </trigger>
+                    </triggers>
+                </item>
+
+                <!-- Pod Phase (External Script) -->
+                <item>
+                    <uuid>821b4432095840008000000000000309</uuid>
+                    <name>n8n Pod Phase</name>
+                    <type>EXTERNAL</type>
+                    <key>k8s_pod_metrics.sh["{$N8N.NAMESPACE}","{$N8N.POD_NAME}","phase"]</key>
+                    <history>7d</history>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <description>Fase del pod de n8n (Running, Pending, Failed, etc.).</description>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>state</value>
+                        </tag>
+                        <tag>
+                            <tag>application</tag>
+                            <value>n8n</value>
+                        </tag>
+                    </tags>
+                    <triggers>
+                        <trigger>
+                            <uuid>821b4432095840008000000000000310</uuid>
+                            <expression>last(/Template App n8n Service/k8s_pod_metrics.sh["{$N8N.NAMESPACE}","{$N8N.POD_NAME}","phase"])&lt;&gt;"Running"</expression>
+                            <name>n8n pod is not Running (phase: {ITEM.LASTVALUE})</name>
+                            <priority>AVERAGE</priority>
+                        </trigger>
+                    </triggers>
+                </item>
+
+                <!-- Pod OOM Killed (External Script) -->
+                <item>
+                    <uuid>821b4432095840008000000000000330</uuid>
+                    <name>n8n Pod OOM Killed</name>
+                    <type>EXTERNAL</type>
+                    <key>k8s_pod_metrics.sh["{$N8N.NAMESPACE}","{$N8N.POD_NAME}","oom_killed"]</key>
+                    <history>7d</history>
+                    <trends>30d</trends>
+                    <value_type>UNSIGNED</value_type>
+                    <description>1 si algún contenedor fue terminado por OOMKilled, 0 en caso contrario.</description>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>health</value>
+                        </tag>
+                        <tag>
+                            <tag>application</tag>
+                            <value>n8n</value>
+                        </tag>
+                    </tags>
+                    <triggers>
+                        <trigger>
+                            <uuid>821b4432095840008000000000000331</uuid>
+                            <expression>last(/Template App n8n Service/k8s_pod_metrics.sh["{$N8N.NAMESPACE}","{$N8N.POD_NAME}","oom_killed"])=1</expression>
+                            <name>n8n Pod was OOM Killed on {HOST.NAME}</name>
+                            <priority>HIGH</priority>
+                        </trigger>
+                    </triggers>
+                </item>
+
+                <!-- Pod CPU Limit (External Script) -->
+                <item>
+                    <uuid>821b4432095840008000000000000332</uuid>
+                    <name>n8n Pod CPU Limit</name>
+                    <type>EXTERNAL</type>
+                    <key>k8s_pod_metrics.sh["{$N8N.NAMESPACE}","{$N8N.POD_NAME}","limits_cpu"]</key>
+                    <history>7d</history>
+                    <trends>30d</trends>
+                    <units>m</units>
+                    <value_type>UNSIGNED</value_type>
+                    <description>Límite de CPU configurado en Kubernetes (millicores).</description>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>resource</value>
+                        </tag>
+                        <tag>
+                            <tag>application</tag>
+                            <value>n8n</value>
+                        </tag>
+                    </tags>
+                </item>
+
+                <!-- Pod Memory Limit (External Script) -->
+                <item>
+                    <uuid>821b4432095840008000000000000333</uuid>
+                    <name>n8n Pod Memory Limit</name>
+                    <type>EXTERNAL</type>
+                    <key>k8s_pod_metrics.sh["{$N8N.NAMESPACE}","{$N8N.POD_NAME}","limits_memory"]</key>
+                    <history>7d</history>
+                    <trends>30d</trends>
+                    <units>B</units>
+                    <value_type>UNSIGNED</value_type>
+                    <description>Límite de memoria configurado en Kubernetes (bytes).</description>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>resource</value>
+                        </tag>
+                        <tag>
+                            <tag>application</tag>
+                            <value>n8n</value>
+                        </tag>
+                    </tags>
+                </item>
+            </items>
+
+            <valuemaps>
+                <valuemap>
+                    <uuid>821b4432095840008000000000000311</uuid>
+                    <name>Service state</name>
+                    <mappings>
+                        <mapping>
+                            <value>0</value>
+                            <newvalue>Down</newvalue>
+                        </mapping>
+                        <mapping>
+                            <value>1</value>
+                            <newvalue>Up</newvalue>
+                        </mapping>
+                    </mappings>
+                </valuemap>
+            </valuemaps>
+
+            <macros>
+                <macro>
+                    <macro>{$N8N.HOST}</macro>
+                    <value>83.32.50.24</value>
+                    <description>IP o hostname público/privado donde escucha n8n</description>
+                </macro>
+                <macro>
+                    <macro>{$N8N.PORT}</macro>
+                    <value>8084</value>
+                    <description>Puerto TCP donde está publicado n8n</description>
+                </macro>
+                <macro>
+                    <macro>{$N8N.NAMESPACE}</macro>
+                    <value>n8n</value>
+                    <description>Namespace de Kubernetes donde corre el pod de n8n</description>
+                </macro>
+                <macro>
+                    <macro>{$N8N.POD_NAME}</macro>
+                    <value>n8n-0</value>
+                    <description>Nombre del Pod de n8n a monitorizar</description>
+                </macro>
+            </macros>
+
+            <dashboards>
+                <dashboard>
+                    <uuid>821b4432095840008000000000000312</uuid>
+                    <name>n8n Status Overview</name>
+                    <pages>
+                        <page>
+                            <widgets>
+                                <!-- Service Status -->
+                                <widget>
+                                    <type>item</type>
+                                    <name>Service Status</name>
+                                    <x>0</x>
+                                    <y>0</y>
+                                    <width>12</width>
+                                    <height>4</height>
+                                    <fields>
+                                        <field>
+                                            <type>ITEM</type>
+                                            <name>itemid</name>
+                                            <value>
+                                                <host>Template App n8n Service</host>
+                                                <key>net.tcp.service[https,"{$N8N.HOST}","{$N8N.PORT}"]</key>
+                                            </value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>show</name>
+                                            <value>2</value>
+                                        </field>
+                                    </fields>
+                                </widget>
+
+                                <!-- Pod CPU and Memory -->
+                                <widget>
+                                    <type>graph</type>
+                                    <name>n8n Pod CPU/Memory</name>
+                                    <x>0</x>
+                                    <y>4</y>
+                                    <width>24</width>
+                                    <height>6</height>
+                                    <fields>
+                                        <field>
+                                            <type>GRAPH</type>
+                                            <name>graphid</name>
+                                            <value>
+                                                <name>n8n Pod CPU and Memory</name>
+                                                <host>Template App n8n Service</host>
+                                            </value>
+                                        </field>
+                                    </fields>
+                                </widget>
+                                <!-- Restarts -->
+                                <widget>
+                                    <type>item</type>
+                                    <name>Restarts</name>
+                                    <x>0</x>
+                                    <y>10</y>
+                                    <width>8</width>
+                                    <height>4</height>
+                                    <fields>
+                                        <field>
+                                            <type>ITEM</type>
+                                            <name>itemid</name>
+                                            <value>
+                                                <host>Template App n8n Service</host>
+                                                <key>k8s_pod_metrics.sh["{$N8N.NAMESPACE}","{$N8N.POD_NAME}","restarts"]</key>
+                                            </value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>show</name>
+                                            <value>2</value>
+                                        </field>
+                                    </fields>
+                                </widget>
+                                <!-- Phase -->
+                                <widget>
+                                    <type>item</type>
+                                    <name>Phase</name>
+                                    <x>8</x>
+                                    <y>10</y>
+                                    <width>8</width>
+                                    <height>4</height>
+                                    <fields>
+                                        <field>
+                                            <type>ITEM</type>
+                                            <name>itemid</name>
+                                            <value>
+                                                <host>Template App n8n Service</host>
+                                                <key>k8s_pod_metrics.sh["{$N8N.NAMESPACE}","{$N8N.POD_NAME}","phase"]</key>
+                                            </value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>show</name>
+                                            <value>2</value>
+                                        </field>
+                                    </fields>
+                                </widget>
+                                <!-- OOM Killed -->
+                                <widget>
+                                    <type>item</type>
+                                    <name>OOM Killed</name>
+                                    <x>16</x>
+                                    <y>10</y>
+                                    <width>8</width>
+                                    <height>4</height>
+                                    <fields>
+                                        <field>
+                                            <type>ITEM</type>
+                                            <name>itemid</name>
+                                            <value>
+                                                <host>Template App n8n Service</host>
+                                                <key>k8s_pod_metrics.sh["{$N8N.NAMESPACE}","{$N8N.POD_NAME}","oom_killed"]</key>
+                                            </value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>show</name>
+                                            <value>2</value>
+                                        </field>
+                                    </fields>
+                                </widget>
+                                <!-- CPU Limit -->
+                                <widget>
+                                    <type>item</type>
+                                    <name>CPU Limit</name>
+                                    <x>0</x>
+                                    <y>14</y>
+                                    <width>12</width>
+                                    <height>4</height>
+                                    <fields>
+                                        <field>
+                                            <type>ITEM</type>
+                                            <name>itemid</name>
+                                            <value>
+                                                <host>Template App n8n Service</host>
+                                                <key>k8s_pod_metrics.sh["{$N8N.NAMESPACE}","{$N8N.POD_NAME}","limits_cpu"]</key>
+                                            </value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>show</name>
+                                            <value>2</value>
+                                        </field>
+                                    </fields>
+                                </widget>
+                                <!-- Memory Limit -->
+                                <widget>
+                                    <type>item</type>
+                                    <name>Memory Limit</name>
+                                    <x>12</x>
+                                    <y>14</y>
+                                    <width>12</width>
+                                    <height>4</height>
+                                    <fields>
+                                        <field>
+                                            <type>ITEM</type>
+                                            <name>itemid</name>
+                                            <value>
+                                                <host>Template App n8n Service</host>
+                                                <key>k8s_pod_metrics.sh["{$N8N.NAMESPACE}","{$N8N.POD_NAME}","limits_memory"]</key>
+                                            </value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>show</name>
+                                            <value>2</value>
+                                        </field>
+                                    </fields>
+                                </widget>
+                            </widgets>
+                        </page>
+                    </pages>
+                </dashboard>
+            </dashboards>
+        </template>
+    </templates>
+    <graphs>
+        <graph>
+            <uuid>821b4432095840008000000000000320</uuid>
+            <name>n8n Pod CPU and Memory</name>
+            <width>900</width>
+            <height>200</height>
+            <type>NORMAL</type>
+            <graph_items>
+                <graph_item>
+                    <sortorder>0</sortorder>
+                    <drawtype>FILLED_REGION</drawtype>
+                    <color>1A7C11</color>
+                    <yaxisside>LEFT</yaxisside>
+                    <calc_fnc>AVG</calc_fnc>
+                    <type>SIMPLE</type>
+                    <item>
+                        <host>Template App n8n Service</host>
+                        <key>k8s_pod_metrics.sh["{$N8N.NAMESPACE}","{$N8N.POD_NAME}","cpu"]</key>
+                    </item>
+                </graph_item>
+                <graph_item>
+                    <sortorder>1</sortorder>
+                    <color>0040FF</color>
+                    <yaxisside>RIGHT</yaxisside>
+                    <calc_fnc>AVG</calc_fnc>
+                    <type>SIMPLE</type>
+                    <item>
+                        <host>Template App n8n Service</host>
+                        <key>k8s_pod_metrics.sh["{$N8N.NAMESPACE}","{$N8N.POD_NAME}","memory"]</key>
+                    </item>
+                </graph_item>
+            </graph_items>
+        </graph>
+    </graphs>
+</zabbix_export>
+
