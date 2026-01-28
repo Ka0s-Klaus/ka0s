@@ -5266,3 +5266,55 @@
   - core/lab/elk/kustomization.yaml
   - version.txt
 ---------------------------------
+## Version 0.6.0
+- **Branch**: refs/pull/2936/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: Ka0s
+- **Date**: Tue Jan 20 14:58:54 UTC 2026
+- **Message**: F2927 test launch workflows from itop services
+- **Files Changed**:
+  - audit/kaos/21175195901-files-in-commit.txt
+  - audit/kaos/21175195901.json
+  - audit/kaos/21175872569-files-in-commit.txt
+  - audit/kaos/21175872569.json
+  - version.txt
+---------------------------------
+## Version 0.6.1
+- **Branch**: refs/pull/3001/merge
+- **Commit**: [Ka0S] Uploading mdlint resume execution files...
+- **Author**: yolabn
+- **Date**: Fri Jan 23 09:30:42 UTC 2026
+- **Message**: H1276 modulo observabilidad
+- **Files Changed**:
+  - audit/kaos/21208755470-files-in-commit.txt
+  - audit/kaos/21208755470.json
+  - audit/kaos/21281108075-files-in-commit.txt
+  - audit/kaos/21281108075.json
+  - audit/mdlint/21281132625.txt
+  - audit/mdlint/21281133649.txt
+  - audit/mdlint/21281134611.txt
+  - audit/mdlint/21281135378.txt
+  - audit/mdlint/21281136172.txt
+  - audit/yamllint/yaml-lint-results-21208776310.txt
+  - audit/yamllint/yaml-lint-results-21208778129.txt
+  - audit/yamllint/yaml-lint-results-21208779005.txt
+  - core/b2b/core-services/elk/Dockerfile
+  - core/b2b/core-services/elk/build-logstash-image.sh
+  - core/b2b/core-services/elk/kustomization.yaml
+  - core/b2b/core-services/elk/logstash-configmap.yaml
+  - core/b2b/core-services/elk/logstash-deployment.yaml
+  - core/b2b/core-services/elk/logstash-service.yaml
+  - version.txt
+---------------------------------
+## Version 0.6.2
+- **Branch**: refs/pull/3002/merge
+- **Commit**: [Ka0S] Uploading resume execution files to the repository...
+- **Author**: yolabn
+- **Date**: Mon Jan 26 09:25:46 UTC 2026
+- **Message**: H1276 modulo observabilidad
+- **Files Changed**:
+  - audit/kaos/21352464564-files-in-commit.txt
+  - audit/kaos/21352464564.json
+  - core/b2b/core-services/elk/build-logstash-image.sh
+  - version.txt
+---------------------------------
