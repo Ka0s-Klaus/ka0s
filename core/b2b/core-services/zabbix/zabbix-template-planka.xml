@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zabbix_export>
+    <version>6.0</version>
+    <date>2026-01-28T00:00:00Z</date>
+
+    <groups>
+        <group>
+            <uuid>abcdef12345647898abcdef012345678</uuid>
+            <name>Templates</name>
+        </group>
+    </groups>
+
+    <templates>
+        <template>
+            <uuid>fedcba6543214abc9def0123456789aa</uuid>
+            <template>Template App Planka</template>
+            <name>Template App Planka</name>
+
+            <groups>
+                <group>
+                    <name>Templates</name>
+                </group>
+            </groups>
+
+            <httptests>
+                <httptest>
+                    <uuid>0011223344554def8aabbccddeeff001</uuid>
+                    <name>Planka Web</name>
+                    <delay>60s</delay>
+                    <steps>
+                        <step>
+                            <name>Home</name>
+                            <url>{$PLANKA.URL}</url>
+                            <timeout>10s</timeout>
+                            <required>{$PLANKA.TEXT}</required>
+                            <status_codes>200</status_codes>
+                        </step>
+                    </steps>
+                </httptest>
+            </httptests>
+
+            <items>
+                <item>
+                    <uuid>8899aabbccdd4eab8f00112233445566</uuid>
+                    <name>Planka - Response Time (ms)</name>
+                    <type>CALCULATED</type>
+                    <key>planka.response.time</key>
+                    <delay>60s</delay>
+                    <value_type>FLOAT</value_type>
+                    <units>ms</units>
+                    <params>last(//web.test.time[Planka Web,Home])</params>
+                </item>
+                <item>
+                    <uuid>1122334455664abc9ddeeff001122334</uuid>
+                    <name>Planka - HTTP Status</name>
+                    <type>CALCULATED</type>
+                    <key>planka.http.status</key>
+                    <delay>60s</delay>
+                    <value_type>UNSIGNED</value_type>
+                    <params>last(//web.test.rspcode[Planka Web,Home])</params>
+                </item>
+            </items>
+
+
+            <macros>
+                <macro>
+                    <macro>{$PLANKA.URL}</macro>
+                    <value>https://scrum.ka0s.io:8083/</value>
+                </macro>
+
+                <macro>
+                    <macro>{$PLANKA.TEXT}</macro>
+                    <value>Planka</value>
+                </macro>
+
+                <macro>
+                    <macro>{$PLANKA.SLA.TIME}</macro>
+                    <value>2000</value>
+                    <description>ms</description>
+                </macro>
+            </macros>
+        </template>
+    </templates>
+    
+    <graphs>
+        <graph>
+            <uuid>aabbccddeeff4abc8def1234567890aa</uuid>
+            <name>Planka - Response Time</name>
+            <width>900</width>
+            <height>200</height>
+            <graph_items>
+                <graph_item>
+                    <sortorder>0</sortorder>
+                    <color>1A7C9E</color>
+                    <item>
+                        <host>Template App Planka</host>
+                        <key>planka.response.time</key>
+                    </item>
+                </graph_item>
+            </graph_items>
+        </graph>
+        <graph>
+            <uuid>9988776655444abcbddeeffaabbccdde</uuid>
+            <name>Planka - HTTP Status</name>
+            <width>900</width>
+            <height>200</height>
+            <graph_items>
+                <graph_item>
+                    <sortorder>0</sortorder>
+                    <color>F63100</color>
+                    <item>
+                        <host>Template App Planka</host>
+                        <key>planka.http.status</key>
+                    </item>
+                </graph_item>
+            </graph_items>
+        </graph>
+    </graphs>
+    
+</zabbix_export>
