@@ -65,6 +65,11 @@ spec:
                 secretKeyRef:
                   name: backstage-secrets
                   key: AUTH_GITHUB_CLIENT_SECRET
+            - name: GITHUB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: backstage-secrets
+                  key: GITHUB_TOKEN
           volumeMounts:
             - name: app-config
               mountPath: /opt/app-root/src/app-config.production.yaml
