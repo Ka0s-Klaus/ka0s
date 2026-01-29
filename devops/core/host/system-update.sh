@@ -26,7 +26,7 @@ run_remote_update() {
     
     if [ "$type" == "key" ]; then
         # Node 20 uses specific key and port 6666
-        if ssh -i ~/.ssh/k8-node-20 -p 6666 -o StrictHostKeyChecking=no -o ConnectTimeout=10 kaos@"$node" "$cmd" 2>&1 | tee -a "$LOG_FILE"; then
+        if ssh -i .ssh/k8-node-20 -p 6666 -o StrictHostKeyChecking=no -o ConnectTimeout=10 kaos@"$node" "$cmd" 2>&1 | tee -a "$LOG_FILE"; then
             log "SUCCESS: $node updated."
         else
             log "ERROR: Failed to update $node."
