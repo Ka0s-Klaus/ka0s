@@ -1,0 +1,95 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "metadata": {
+                "annotations": {
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"Service\",\"metadata\":{\"annotations\":{},\"name\":\"elasticsearch\",\"namespace\":\"elastic\"},\"spec\":{\"ports\":[{\"port\":9200,\"targetPort\":9200}],\"selector\":{\"app\":\"elasticsearch\"},\"type\":\"ClusterIP\"}}\n"
+                },
+                "creationTimestamp": "2026-01-29T12:30:06Z",
+                "name": "elasticsearch",
+                "namespace": "elastic",
+                "resourceVersion": "7640705",
+                "uid": "339e4ab2-85a1-425f-9c2f-e11ac85dcac7"
+            },
+            "spec": {
+                "clusterIP": "10.111.91.22",
+                "clusterIPs": [
+                    "10.111.91.22"
+                ],
+                "internalTrafficPolicy": "Cluster",
+                "ipFamilies": [
+                    "IPv4"
+                ],
+                "ipFamilyPolicy": "SingleStack",
+                "ports": [
+                    {
+                        "port": 9200,
+                        "protocol": "TCP",
+                        "targetPort": 9200
+                    }
+                ],
+                "selector": {
+                    "app": "elasticsearch"
+                },
+                "sessionAffinity": "None",
+                "type": "ClusterIP"
+            },
+            "status": {
+                "loadBalancer": {}
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "metadata": {
+                "annotations": {
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"Service\",\"metadata\":{\"annotations\":{},\"labels\":{\"app\":\"kibana\"},\"name\":\"kibana\",\"namespace\":\"elastic\"},\"spec\":{\"ports\":[{\"name\":\"https\",\"nodePort\":30005,\"port\":5601,\"targetPort\":5601}],\"selector\":{\"app\":\"kibana\"},\"type\":\"NodePort\"}}\n"
+                },
+                "creationTimestamp": "2026-01-29T12:30:15Z",
+                "labels": {
+                    "app": "kibana"
+                },
+                "name": "kibana",
+                "namespace": "elastic",
+                "resourceVersion": "7643557",
+                "uid": "49a346ed-11d3-408d-9bc0-ca29aa5fde4d"
+            },
+            "spec": {
+                "clusterIP": "10.111.41.13",
+                "clusterIPs": [
+                    "10.111.41.13"
+                ],
+                "externalTrafficPolicy": "Cluster",
+                "internalTrafficPolicy": "Cluster",
+                "ipFamilies": [
+                    "IPv4"
+                ],
+                "ipFamilyPolicy": "SingleStack",
+                "ports": [
+                    {
+                        "name": "http",
+                        "nodePort": 31148,
+                        "port": 5601,
+                        "protocol": "TCP",
+                        "targetPort": 5601
+                    }
+                ],
+                "selector": {
+                    "app": "kibana"
+                },
+                "sessionAffinity": "None",
+                "type": "NodePort"
+            },
+            "status": {
+                "loadBalancer": {}
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": ""
+    }
+}
