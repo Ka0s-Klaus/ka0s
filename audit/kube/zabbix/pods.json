@@ -1,0 +1,1925 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "annotations": {
+                    "cni.projectcalico.org/containerID": "f6e34b8f19c602e51d54f538a1aa6e975653695caa3dcbd2b7888aba18aa418b",
+                    "cni.projectcalico.org/podIP": "172.16.74.17/32",
+                    "cni.projectcalico.org/podIPs": "172.16.74.17/32"
+                },
+                "creationTimestamp": "2026-01-13T16:22:21Z",
+                "generateName": "postgresql-7dfd4b4b68-",
+                "labels": {
+                    "app": "postgresql",
+                    "pod-template-hash": "7dfd4b4b68"
+                },
+                "name": "postgresql-7dfd4b4b68-kdbz9",
+                "namespace": "zabbix",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "apps/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "ReplicaSet",
+                        "name": "postgresql-7dfd4b4b68",
+                        "uid": "71c3d425-6960-4811-b474-12928cd0e487"
+                    }
+                ],
+                "resourceVersion": "4353672",
+                "uid": "65b186d8-2211-4365-9b32-a67c9307dfe3"
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "env": [
+                            {
+                                "name": "POSTGRES_USER",
+                                "value": "admin"
+                            },
+                            {
+                                "name": "POSTGRES_PASSWORD",
+                                "value": "admin"
+                            },
+                            {
+                                "name": "POSTGRES_DB",
+                                "value": "zabbix"
+                            }
+                        ],
+                        "image": "postgres:16",
+                        "imagePullPolicy": "IfNotPresent",
+                        "name": "postgresql",
+                        "ports": [
+                            {
+                                "containerPort": 5432,
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "resources": {},
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/var/lib/postgresql/data",
+                                "name": "postgresql-persistent-storage"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-vhjv9",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirst",
+                "enableServiceLinks": true,
+                "nodeName": "k8-manager",
+                "nodeSelector": {
+                    "node-role.kubernetes.io/control-plane": ""
+                },
+                "preemptionPolicy": "PreemptLowerPriority",
+                "priority": 0,
+                "restartPolicy": "Always",
+                "schedulerName": "default-scheduler",
+                "securityContext": {},
+                "serviceAccount": "default",
+                "serviceAccountName": "default",
+                "terminationGracePeriodSeconds": 30,
+                "tolerations": [
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/not-ready",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    },
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/unreachable",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    }
+                ],
+                "volumes": [
+                    {
+                        "name": "postgresql-persistent-storage",
+                        "persistentVolumeClaim": {
+                            "claimName": "postgresql-pvc"
+                        }
+                    },
+                    {
+                        "name": "kube-api-access-vhjv9",
+                        "projected": {
+                            "defaultMode": 420,
+                            "sources": [
+                                {
+                                    "serviceAccountToken": {
+                                        "expirationSeconds": 3607,
+                                        "path": "token"
+                                    }
+                                },
+                                {
+                                    "configMap": {
+                                        "items": [
+                                            {
+                                                "key": "ca.crt",
+                                                "path": "ca.crt"
+                                            }
+                                        ],
+                                        "name": "kube-root-ca.crt"
+                                    }
+                                },
+                                {
+                                    "downwardAPI": {
+                                        "items": [
+                                            {
+                                                "fieldRef": {
+                                                    "apiVersion": "v1",
+                                                    "fieldPath": "metadata.namespace"
+                                                },
+                                                "path": "namespace"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-13T16:22:42Z",
+                        "status": "True",
+                        "type": "PodReadyToStartContainers"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-13T16:22:30Z",
+                        "status": "True",
+                        "type": "Initialized"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-13T16:22:42Z",
+                        "status": "True",
+                        "type": "Ready"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-13T16:22:42Z",
+                        "status": "True",
+                        "type": "ContainersReady"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-13T16:22:30Z",
+                        "status": "True",
+                        "type": "PodScheduled"
+                    }
+                ],
+                "containerStatuses": [
+                    {
+                        "containerID": "containerd://44f376690353e023a031f17fbb7b4590a8a95bb719ce0f2d1619bd6e6e6c4224",
+                        "image": "docker.io/library/postgres:16",
+                        "imageID": "docker.io/library/postgres@sha256:74cf8f5812fe18b00154620aa95d5921c40a604f1b19e33f86ca3aaa6e993ad9",
+                        "lastState": {},
+                        "name": "postgresql",
+                        "ready": true,
+                        "restartCount": 0,
+                        "started": true,
+                        "state": {
+                            "running": {
+                                "startedAt": "2026-01-13T16:22:41Z"
+                            }
+                        },
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/var/lib/postgresql/data",
+                                "name": "postgresql-persistent-storage"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-vhjv9",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            }
+                        ]
+                    }
+                ],
+                "hostIP": "192.168.1.10",
+                "hostIPs": [
+                    {
+                        "ip": "192.168.1.10"
+                    }
+                ],
+                "phase": "Running",
+                "podIP": "172.16.74.17",
+                "podIPs": [
+                    {
+                        "ip": "172.16.74.17"
+                    }
+                ],
+                "qosClass": "BestEffort",
+                "startTime": "2026-01-13T16:22:30Z"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "annotations": {
+                    "kubectl.kubernetes.io/restartedAt": "2026-01-16T08:59:25Z"
+                },
+                "creationTimestamp": "2026-01-27T16:19:44Z",
+                "generateName": "zabbix-agent-",
+                "labels": {
+                    "app": "zabbix-agent",
+                    "controller-revision-hash": "7bc854f8b9",
+                    "pod-template-generation": "24"
+                },
+                "name": "zabbix-agent-6fftl",
+                "namespace": "zabbix",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "apps/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "DaemonSet",
+                        "name": "zabbix-agent",
+                        "uid": "baa78992-e4a3-4c75-8c0d-bf8435a79712"
+                    }
+                ],
+                "resourceVersion": "7271498",
+                "uid": "ed8eb728-bb71-4240-8942-182ad31ed64f"
+            },
+            "spec": {
+                "affinity": {
+                    "nodeAffinity": {
+                        "requiredDuringSchedulingIgnoredDuringExecution": {
+                            "nodeSelectorTerms": [
+                                {
+                                    "matchFields": [
+                                        {
+                                            "key": "metadata.name",
+                                            "operator": "In",
+                                            "values": [
+                                                "k8-manager"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                },
+                "containers": [
+                    {
+                        "env": [
+                            {
+                                "name": "ZBX_HOSTNAME",
+                                "valueFrom": {
+                                    "fieldRef": {
+                                        "apiVersion": "v1",
+                                        "fieldPath": "spec.nodeName"
+                                    }
+                                }
+                            },
+                            {
+                                "name": "ZBX_SERVER_HOST",
+                                "value": "zabbix-server"
+                            },
+                            {
+                                "name": "ZBX_SERVER_PORT",
+                                "value": "10051"
+                            },
+                            {
+                                "name": "ZBX_SERVER_ACTIVE",
+                                "value": "zabbix-server"
+                            },
+                            {
+                                "name": "ZBX_PASSIVESERVERS",
+                                "value": "172.16.0.0/12,127.0.0.1,192.168.0.0/16"
+                            },
+                            {
+                                "name": "ZBX_HOSTMETADATA",
+                                "value": "k8s-node"
+                            }
+                        ],
+                        "image": "zabbix/zabbix-agent2:latest",
+                        "imagePullPolicy": "Always",
+                        "name": "zabbix-agent",
+                        "ports": [
+                            {
+                                "containerPort": 10050,
+                                "hostPort": 10050,
+                                "name": "zabbix-agent",
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "resources": {},
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/rootfs",
+                                "name": "rootfs",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/var/run",
+                                "name": "var-run"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-f2wrj",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirstWithHostNet",
+                "enableServiceLinks": true,
+                "hostNetwork": true,
+                "nodeName": "k8-manager",
+                "preemptionPolicy": "PreemptLowerPriority",
+                "priority": 0,
+                "restartPolicy": "Always",
+                "schedulerName": "default-scheduler",
+                "securityContext": {},
+                "serviceAccount": "zabbix-service-account",
+                "serviceAccountName": "zabbix-service-account",
+                "terminationGracePeriodSeconds": 30,
+                "tolerations": [
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/not-ready",
+                        "operator": "Exists"
+                    },
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/unreachable",
+                        "operator": "Exists"
+                    },
+                    {
+                        "effect": "NoSchedule",
+                        "key": "node.kubernetes.io/disk-pressure",
+                        "operator": "Exists"
+                    },
+                    {
+                        "effect": "NoSchedule",
+                        "key": "node.kubernetes.io/memory-pressure",
+                        "operator": "Exists"
+                    },
+                    {
+                        "effect": "NoSchedule",
+                        "key": "node.kubernetes.io/pid-pressure",
+                        "operator": "Exists"
+                    },
+                    {
+                        "effect": "NoSchedule",
+                        "key": "node.kubernetes.io/unschedulable",
+                        "operator": "Exists"
+                    },
+                    {
+                        "effect": "NoSchedule",
+                        "key": "node.kubernetes.io/network-unavailable",
+                        "operator": "Exists"
+                    }
+                ],
+                "volumes": [
+                    {
+                        "hostPath": {
+                            "path": "/",
+                            "type": ""
+                        },
+                        "name": "rootfs"
+                    },
+                    {
+                        "hostPath": {
+                            "path": "/var/run",
+                            "type": ""
+                        },
+                        "name": "var-run"
+                    },
+                    {
+                        "name": "kube-api-access-f2wrj",
+                        "projected": {
+                            "defaultMode": 420,
+                            "sources": [
+                                {
+                                    "serviceAccountToken": {
+                                        "expirationSeconds": 3607,
+                                        "path": "token"
+                                    }
+                                },
+                                {
+                                    "configMap": {
+                                        "items": [
+                                            {
+                                                "key": "ca.crt",
+                                                "path": "ca.crt"
+                                            }
+                                        ],
+                                        "name": "kube-root-ca.crt"
+                                    }
+                                },
+                                {
+                                    "downwardAPI": {
+                                        "items": [
+                                            {
+                                                "fieldRef": {
+                                                    "apiVersion": "v1",
+                                                    "fieldPath": "metadata.namespace"
+                                                },
+                                                "path": "namespace"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-27T16:19:46Z",
+                        "status": "True",
+                        "type": "PodReadyToStartContainers"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-27T16:19:45Z",
+                        "status": "True",
+                        "type": "Initialized"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-27T16:19:46Z",
+                        "status": "True",
+                        "type": "Ready"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-27T16:19:46Z",
+                        "status": "True",
+                        "type": "ContainersReady"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-27T16:19:44Z",
+                        "status": "True",
+                        "type": "PodScheduled"
+                    }
+                ],
+                "containerStatuses": [
+                    {
+                        "containerID": "containerd://1118b8ce898940eb3c666c5a53a66f5a6d17bd814b975a32d4a2c49ab6706aeb",
+                        "image": "docker.io/zabbix/zabbix-agent2:latest",
+                        "imageID": "docker.io/zabbix/zabbix-agent2@sha256:94ad93a1425269cde1c8ec5d2dea6e103ef8650e3d8993515dbdc8c942e69943",
+                        "lastState": {},
+                        "name": "zabbix-agent",
+                        "ready": true,
+                        "restartCount": 0,
+                        "started": true,
+                        "state": {
+                            "running": {
+                                "startedAt": "2026-01-27T16:19:46Z"
+                            }
+                        },
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/rootfs",
+                                "name": "rootfs",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            },
+                            {
+                                "mountPath": "/var/run",
+                                "name": "var-run"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-f2wrj",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            }
+                        ]
+                    }
+                ],
+                "hostIP": "192.168.1.10",
+                "hostIPs": [
+                    {
+                        "ip": "192.168.1.10"
+                    }
+                ],
+                "phase": "Running",
+                "podIP": "192.168.1.10",
+                "podIPs": [
+                    {
+                        "ip": "192.168.1.10"
+                    }
+                ],
+                "qosClass": "BestEffort",
+                "startTime": "2026-01-27T16:19:45Z"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "annotations": {
+                    "kubectl.kubernetes.io/restartedAt": "2026-01-16T08:59:25Z"
+                },
+                "creationTimestamp": "2026-01-27T16:33:08Z",
+                "generateName": "zabbix-agent-",
+                "labels": {
+                    "app": "zabbix-agent",
+                    "controller-revision-hash": "7bc854f8b9",
+                    "pod-template-generation": "24"
+                },
+                "name": "zabbix-agent-76t7c",
+                "namespace": "zabbix",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "apps/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "DaemonSet",
+                        "name": "zabbix-agent",
+                        "uid": "baa78992-e4a3-4c75-8c0d-bf8435a79712"
+                    }
+                ],
+                "resourceVersion": "7274477",
+                "uid": "16ad4af1-221c-41a7-9fbc-01006f25bdc4"
+            },
+            "spec": {
+                "affinity": {
+                    "nodeAffinity": {
+                        "requiredDuringSchedulingIgnoredDuringExecution": {
+                            "nodeSelectorTerms": [
+                                {
+                                    "matchFields": [
+                                        {
+                                            "key": "metadata.name",
+                                            "operator": "In",
+                                            "values": [
+                                                "k8-node-40"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                },
+                "containers": [
+                    {
+                        "env": [
+                            {
+                                "name": "ZBX_HOSTNAME",
+                                "valueFrom": {
+                                    "fieldRef": {
+                                        "apiVersion": "v1",
+                                        "fieldPath": "spec.nodeName"
+                                    }
+                                }
+                            },
+                            {
+                                "name": "ZBX_SERVER_HOST",
+                                "value": "zabbix-server"
+                            },
+                            {
+                                "name": "ZBX_SERVER_PORT",
+                                "value": "10051"
+                            },
+                            {
+                                "name": "ZBX_SERVER_ACTIVE",
+                                "value": "zabbix-server"
+                            },
+                            {
+                                "name": "ZBX_PASSIVESERVERS",
+                                "value": "172.16.0.0/12,127.0.0.1,192.168.0.0/16"
+                            },
+                            {
+                                "name": "ZBX_HOSTMETADATA",
+                                "value": "k8s-node"
+                            }
+                        ],
+                        "image": "zabbix/zabbix-agent2:latest",
+                        "imagePullPolicy": "Always",
+                        "name": "zabbix-agent",
+                        "ports": [
+                            {
+                                "containerPort": 10050,
+                                "hostPort": 10050,
+                                "name": "zabbix-agent",
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "resources": {},
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/rootfs",
+                                "name": "rootfs",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/var/run",
+                                "name": "var-run"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-llpps",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirstWithHostNet",
+                "enableServiceLinks": true,
+                "hostNetwork": true,
+                "nodeName": "k8-node-40",
+                "preemptionPolicy": "PreemptLowerPriority",
+                "priority": 0,
+                "restartPolicy": "Always",
+                "schedulerName": "default-scheduler",
+                "securityContext": {},
+                "serviceAccount": "zabbix-service-account",
+                "serviceAccountName": "zabbix-service-account",
+                "terminationGracePeriodSeconds": 30,
+                "tolerations": [
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/not-ready",
+                        "operator": "Exists"
+                    },
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/unreachable",
+                        "operator": "Exists"
+                    },
+                    {
+                        "effect": "NoSchedule",
+                        "key": "node.kubernetes.io/disk-pressure",
+                        "operator": "Exists"
+                    },
+                    {
+                        "effect": "NoSchedule",
+                        "key": "node.kubernetes.io/memory-pressure",
+                        "operator": "Exists"
+                    },
+                    {
+                        "effect": "NoSchedule",
+                        "key": "node.kubernetes.io/pid-pressure",
+                        "operator": "Exists"
+                    },
+                    {
+                        "effect": "NoSchedule",
+                        "key": "node.kubernetes.io/unschedulable",
+                        "operator": "Exists"
+                    },
+                    {
+                        "effect": "NoSchedule",
+                        "key": "node.kubernetes.io/network-unavailable",
+                        "operator": "Exists"
+                    }
+                ],
+                "volumes": [
+                    {
+                        "hostPath": {
+                            "path": "/",
+                            "type": ""
+                        },
+                        "name": "rootfs"
+                    },
+                    {
+                        "hostPath": {
+                            "path": "/var/run",
+                            "type": ""
+                        },
+                        "name": "var-run"
+                    },
+                    {
+                        "name": "kube-api-access-llpps",
+                        "projected": {
+                            "defaultMode": 420,
+                            "sources": [
+                                {
+                                    "serviceAccountToken": {
+                                        "expirationSeconds": 3607,
+                                        "path": "token"
+                                    }
+                                },
+                                {
+                                    "configMap": {
+                                        "items": [
+                                            {
+                                                "key": "ca.crt",
+                                                "path": "ca.crt"
+                                            }
+                                        ],
+                                        "name": "kube-root-ca.crt"
+                                    }
+                                },
+                                {
+                                    "downwardAPI": {
+                                        "items": [
+                                            {
+                                                "fieldRef": {
+                                                    "apiVersion": "v1",
+                                                    "fieldPath": "metadata.namespace"
+                                                },
+                                                "path": "namespace"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-27T16:38:02Z",
+                        "status": "True",
+                        "type": "PodReadyToStartContainers"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-27T16:33:09Z",
+                        "status": "True",
+                        "type": "Initialized"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-27T16:39:26Z",
+                        "status": "True",
+                        "type": "Ready"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-27T16:39:26Z",
+                        "status": "True",
+                        "type": "ContainersReady"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-27T16:33:08Z",
+                        "status": "True",
+                        "type": "PodScheduled"
+                    }
+                ],
+                "containerStatuses": [
+                    {
+                        "containerID": "containerd://564d5cacc920010f7bfd5acda4da7022ed41b4aa1bb54dc1d681a997eda2dc56",
+                        "image": "docker.io/zabbix/zabbix-agent2:latest",
+                        "imageID": "docker.io/zabbix/zabbix-agent2@sha256:94ad93a1425269cde1c8ec5d2dea6e103ef8650e3d8993515dbdc8c942e69943",
+                        "lastState": {
+                            "terminated": {
+                                "containerID": "containerd://db1578da1bc318d48d47e1e95ecc9208f95c85c0776d7120c8806b7cdfdebb11",
+                                "exitCode": 1,
+                                "finishedAt": "2026-01-27T16:38:50Z",
+                                "reason": "Error",
+                                "startedAt": "2026-01-27T16:38:43Z"
+                            }
+                        },
+                        "name": "zabbix-agent",
+                        "ready": true,
+                        "restartCount": 4,
+                        "started": true,
+                        "state": {
+                            "running": {
+                                "startedAt": "2026-01-27T16:39:25Z"
+                            }
+                        },
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/rootfs",
+                                "name": "rootfs",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            },
+                            {
+                                "mountPath": "/var/run",
+                                "name": "var-run"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-llpps",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            }
+                        ]
+                    }
+                ],
+                "hostIP": "192.168.1.40",
+                "hostIPs": [
+                    {
+                        "ip": "192.168.1.40"
+                    }
+                ],
+                "phase": "Running",
+                "podIP": "192.168.1.40",
+                "podIPs": [
+                    {
+                        "ip": "192.168.1.40"
+                    }
+                ],
+                "qosClass": "BestEffort",
+                "startTime": "2026-01-27T16:33:09Z"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "annotations": {
+                    "kubectl.kubernetes.io/restartedAt": "2026-01-16T08:59:25Z"
+                },
+                "creationTimestamp": "2026-01-27T16:19:31Z",
+                "generateName": "zabbix-agent-",
+                "labels": {
+                    "app": "zabbix-agent",
+                    "controller-revision-hash": "7bc854f8b9",
+                    "pod-template-generation": "24"
+                },
+                "name": "zabbix-agent-ksjkb",
+                "namespace": "zabbix",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "apps/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "DaemonSet",
+                        "name": "zabbix-agent",
+                        "uid": "baa78992-e4a3-4c75-8c0d-bf8435a79712"
+                    }
+                ],
+                "resourceVersion": "7271421",
+                "uid": "4a65810b-3dcf-4f7e-be58-8470013338e5"
+            },
+            "spec": {
+                "affinity": {
+                    "nodeAffinity": {
+                        "requiredDuringSchedulingIgnoredDuringExecution": {
+                            "nodeSelectorTerms": [
+                                {
+                                    "matchFields": [
+                                        {
+                                            "key": "metadata.name",
+                                            "operator": "In",
+                                            "values": [
+                                                "k8-node-20"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                },
+                "containers": [
+                    {
+                        "env": [
+                            {
+                                "name": "ZBX_HOSTNAME",
+                                "valueFrom": {
+                                    "fieldRef": {
+                                        "apiVersion": "v1",
+                                        "fieldPath": "spec.nodeName"
+                                    }
+                                }
+                            },
+                            {
+                                "name": "ZBX_SERVER_HOST",
+                                "value": "zabbix-server"
+                            },
+                            {
+                                "name": "ZBX_SERVER_PORT",
+                                "value": "10051"
+                            },
+                            {
+                                "name": "ZBX_SERVER_ACTIVE",
+                                "value": "zabbix-server"
+                            },
+                            {
+                                "name": "ZBX_PASSIVESERVERS",
+                                "value": "172.16.0.0/12,127.0.0.1,192.168.0.0/16"
+                            },
+                            {
+                                "name": "ZBX_HOSTMETADATA",
+                                "value": "k8s-node"
+                            }
+                        ],
+                        "image": "zabbix/zabbix-agent2:latest",
+                        "imagePullPolicy": "Always",
+                        "name": "zabbix-agent",
+                        "ports": [
+                            {
+                                "containerPort": 10050,
+                                "hostPort": 10050,
+                                "name": "zabbix-agent",
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "resources": {},
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/rootfs",
+                                "name": "rootfs",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/var/run",
+                                "name": "var-run"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-pg8g2",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirstWithHostNet",
+                "enableServiceLinks": true,
+                "hostNetwork": true,
+                "nodeName": "k8-node-20",
+                "preemptionPolicy": "PreemptLowerPriority",
+                "priority": 0,
+                "restartPolicy": "Always",
+                "schedulerName": "default-scheduler",
+                "securityContext": {},
+                "serviceAccount": "zabbix-service-account",
+                "serviceAccountName": "zabbix-service-account",
+                "terminationGracePeriodSeconds": 30,
+                "tolerations": [
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/not-ready",
+                        "operator": "Exists"
+                    },
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/unreachable",
+                        "operator": "Exists"
+                    },
+                    {
+                        "effect": "NoSchedule",
+                        "key": "node.kubernetes.io/disk-pressure",
+                        "operator": "Exists"
+                    },
+                    {
+                        "effect": "NoSchedule",
+                        "key": "node.kubernetes.io/memory-pressure",
+                        "operator": "Exists"
+                    },
+                    {
+                        "effect": "NoSchedule",
+                        "key": "node.kubernetes.io/pid-pressure",
+                        "operator": "Exists"
+                    },
+                    {
+                        "effect": "NoSchedule",
+                        "key": "node.kubernetes.io/unschedulable",
+                        "operator": "Exists"
+                    },
+                    {
+                        "effect": "NoSchedule",
+                        "key": "node.kubernetes.io/network-unavailable",
+                        "operator": "Exists"
+                    }
+                ],
+                "volumes": [
+                    {
+                        "hostPath": {
+                            "path": "/",
+                            "type": ""
+                        },
+                        "name": "rootfs"
+                    },
+                    {
+                        "hostPath": {
+                            "path": "/var/run",
+                            "type": ""
+                        },
+                        "name": "var-run"
+                    },
+                    {
+                        "name": "kube-api-access-pg8g2",
+                        "projected": {
+                            "defaultMode": 420,
+                            "sources": [
+                                {
+                                    "serviceAccountToken": {
+                                        "expirationSeconds": 3607,
+                                        "path": "token"
+                                    }
+                                },
+                                {
+                                    "configMap": {
+                                        "items": [
+                                            {
+                                                "key": "ca.crt",
+                                                "path": "ca.crt"
+                                            }
+                                        ],
+                                        "name": "kube-root-ca.crt"
+                                    }
+                                },
+                                {
+                                    "downwardAPI": {
+                                        "items": [
+                                            {
+                                                "fieldRef": {
+                                                    "apiVersion": "v1",
+                                                    "fieldPath": "metadata.namespace"
+                                                },
+                                                "path": "namespace"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-27T16:19:33Z",
+                        "status": "True",
+                        "type": "PodReadyToStartContainers"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-27T16:19:31Z",
+                        "status": "True",
+                        "type": "Initialized"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-27T16:19:33Z",
+                        "status": "True",
+                        "type": "Ready"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-27T16:19:33Z",
+                        "status": "True",
+                        "type": "ContainersReady"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-27T16:19:31Z",
+                        "status": "True",
+                        "type": "PodScheduled"
+                    }
+                ],
+                "containerStatuses": [
+                    {
+                        "containerID": "containerd://9a31e920efedc6f920c7456facc6d6de20133c39d78ee1e61050481b9a9e55bc",
+                        "image": "docker.io/zabbix/zabbix-agent2:latest",
+                        "imageID": "docker.io/zabbix/zabbix-agent2@sha256:94ad93a1425269cde1c8ec5d2dea6e103ef8650e3d8993515dbdc8c942e69943",
+                        "lastState": {},
+                        "name": "zabbix-agent",
+                        "ready": true,
+                        "restartCount": 0,
+                        "started": true,
+                        "state": {
+                            "running": {
+                                "startedAt": "2026-01-27T16:19:32Z"
+                            }
+                        },
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/rootfs",
+                                "name": "rootfs",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            },
+                            {
+                                "mountPath": "/var/run",
+                                "name": "var-run"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-pg8g2",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            }
+                        ]
+                    }
+                ],
+                "hostIP": "192.168.1.20",
+                "hostIPs": [
+                    {
+                        "ip": "192.168.1.20"
+                    }
+                ],
+                "phase": "Running",
+                "podIP": "192.168.1.20",
+                "podIPs": [
+                    {
+                        "ip": "192.168.1.20"
+                    }
+                ],
+                "qosClass": "BestEffort",
+                "startTime": "2026-01-27T16:19:31Z"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "annotations": {
+                    "kubectl.kubernetes.io/restartedAt": "2026-01-16T08:59:25Z"
+                },
+                "creationTimestamp": "2026-01-27T16:19:39Z",
+                "generateName": "zabbix-agent-",
+                "labels": {
+                    "app": "zabbix-agent",
+                    "controller-revision-hash": "7bc854f8b9",
+                    "pod-template-generation": "24"
+                },
+                "name": "zabbix-agent-ksx2w",
+                "namespace": "zabbix",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "apps/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "DaemonSet",
+                        "name": "zabbix-agent",
+                        "uid": "baa78992-e4a3-4c75-8c0d-bf8435a79712"
+                    }
+                ],
+                "resourceVersion": "7271469",
+                "uid": "1941a85b-cf67-4cce-92c0-5ff3315057c8"
+            },
+            "spec": {
+                "affinity": {
+                    "nodeAffinity": {
+                        "requiredDuringSchedulingIgnoredDuringExecution": {
+                            "nodeSelectorTerms": [
+                                {
+                                    "matchFields": [
+                                        {
+                                            "key": "metadata.name",
+                                            "operator": "In",
+                                            "values": [
+                                                "k8-node-30"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                },
+                "containers": [
+                    {
+                        "env": [
+                            {
+                                "name": "ZBX_HOSTNAME",
+                                "valueFrom": {
+                                    "fieldRef": {
+                                        "apiVersion": "v1",
+                                        "fieldPath": "spec.nodeName"
+                                    }
+                                }
+                            },
+                            {
+                                "name": "ZBX_SERVER_HOST",
+                                "value": "zabbix-server"
+                            },
+                            {
+                                "name": "ZBX_SERVER_PORT",
+                                "value": "10051"
+                            },
+                            {
+                                "name": "ZBX_SERVER_ACTIVE",
+                                "value": "zabbix-server"
+                            },
+                            {
+                                "name": "ZBX_PASSIVESERVERS",
+                                "value": "172.16.0.0/12,127.0.0.1,192.168.0.0/16"
+                            },
+                            {
+                                "name": "ZBX_HOSTMETADATA",
+                                "value": "k8s-node"
+                            }
+                        ],
+                        "image": "zabbix/zabbix-agent2:latest",
+                        "imagePullPolicy": "Always",
+                        "name": "zabbix-agent",
+                        "ports": [
+                            {
+                                "containerPort": 10050,
+                                "hostPort": 10050,
+                                "name": "zabbix-agent",
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "resources": {},
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/rootfs",
+                                "name": "rootfs",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/var/run",
+                                "name": "var-run"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-b8r7l",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirstWithHostNet",
+                "enableServiceLinks": true,
+                "hostNetwork": true,
+                "nodeName": "k8-node-30",
+                "preemptionPolicy": "PreemptLowerPriority",
+                "priority": 0,
+                "restartPolicy": "Always",
+                "schedulerName": "default-scheduler",
+                "securityContext": {},
+                "serviceAccount": "zabbix-service-account",
+                "serviceAccountName": "zabbix-service-account",
+                "terminationGracePeriodSeconds": 30,
+                "tolerations": [
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/not-ready",
+                        "operator": "Exists"
+                    },
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/unreachable",
+                        "operator": "Exists"
+                    },
+                    {
+                        "effect": "NoSchedule",
+                        "key": "node.kubernetes.io/disk-pressure",
+                        "operator": "Exists"
+                    },
+                    {
+                        "effect": "NoSchedule",
+                        "key": "node.kubernetes.io/memory-pressure",
+                        "operator": "Exists"
+                    },
+                    {
+                        "effect": "NoSchedule",
+                        "key": "node.kubernetes.io/pid-pressure",
+                        "operator": "Exists"
+                    },
+                    {
+                        "effect": "NoSchedule",
+                        "key": "node.kubernetes.io/unschedulable",
+                        "operator": "Exists"
+                    },
+                    {
+                        "effect": "NoSchedule",
+                        "key": "node.kubernetes.io/network-unavailable",
+                        "operator": "Exists"
+                    }
+                ],
+                "volumes": [
+                    {
+                        "hostPath": {
+                            "path": "/",
+                            "type": ""
+                        },
+                        "name": "rootfs"
+                    },
+                    {
+                        "hostPath": {
+                            "path": "/var/run",
+                            "type": ""
+                        },
+                        "name": "var-run"
+                    },
+                    {
+                        "name": "kube-api-access-b8r7l",
+                        "projected": {
+                            "defaultMode": 420,
+                            "sources": [
+                                {
+                                    "serviceAccountToken": {
+                                        "expirationSeconds": 3607,
+                                        "path": "token"
+                                    }
+                                },
+                                {
+                                    "configMap": {
+                                        "items": [
+                                            {
+                                                "key": "ca.crt",
+                                                "path": "ca.crt"
+                                            }
+                                        ],
+                                        "name": "kube-root-ca.crt"
+                                    }
+                                },
+                                {
+                                    "downwardAPI": {
+                                        "items": [
+                                            {
+                                                "fieldRef": {
+                                                    "apiVersion": "v1",
+                                                    "fieldPath": "metadata.namespace"
+                                                },
+                                                "path": "namespace"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-27T16:19:44Z",
+                        "status": "True",
+                        "type": "PodReadyToStartContainers"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-27T16:19:40Z",
+                        "status": "True",
+                        "type": "Initialized"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-27T16:19:44Z",
+                        "status": "True",
+                        "type": "Ready"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-27T16:19:44Z",
+                        "status": "True",
+                        "type": "ContainersReady"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-27T16:19:39Z",
+                        "status": "True",
+                        "type": "PodScheduled"
+                    }
+                ],
+                "containerStatuses": [
+                    {
+                        "containerID": "containerd://185f47750f8d3f4b99b317f1df7a38644eb523ae56c20e488ce8f100690777fd",
+                        "image": "docker.io/zabbix/zabbix-agent2:latest",
+                        "imageID": "docker.io/zabbix/zabbix-agent2@sha256:94ad93a1425269cde1c8ec5d2dea6e103ef8650e3d8993515dbdc8c942e69943",
+                        "lastState": {},
+                        "name": "zabbix-agent",
+                        "ready": true,
+                        "restartCount": 0,
+                        "started": true,
+                        "state": {
+                            "running": {
+                                "startedAt": "2026-01-27T16:19:43Z"
+                            }
+                        },
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/rootfs",
+                                "name": "rootfs",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            },
+                            {
+                                "mountPath": "/var/run",
+                                "name": "var-run"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-b8r7l",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            }
+                        ]
+                    }
+                ],
+                "hostIP": "192.168.1.30",
+                "hostIPs": [
+                    {
+                        "ip": "192.168.1.30"
+                    }
+                ],
+                "phase": "Running",
+                "podIP": "192.168.1.30",
+                "podIPs": [
+                    {
+                        "ip": "192.168.1.30"
+                    }
+                ],
+                "qosClass": "BestEffort",
+                "startTime": "2026-01-27T16:19:40Z"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "annotations": {
+                    "cni.projectcalico.org/containerID": "e3d39974021a40f629e09e228dd6358a2fbabc3ed54ccb89aa37de79ede68699",
+                    "cni.projectcalico.org/podIP": "172.16.74.54/32",
+                    "cni.projectcalico.org/podIPs": "172.16.74.54/32",
+                    "kubectl.kubernetes.io/restartedAt": "2026-01-22T09:44:45Z"
+                },
+                "creationTimestamp": "2026-01-22T09:44:45Z",
+                "generateName": "zabbix-server-6575fb47cc-",
+                "labels": {
+                    "app": "zabbix-server",
+                    "pod-template-hash": "6575fb47cc"
+                },
+                "name": "zabbix-server-6575fb47cc-8p7rt",
+                "namespace": "zabbix",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "apps/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "ReplicaSet",
+                        "name": "zabbix-server-6575fb47cc",
+                        "uid": "46db284f-df7f-4038-8a49-22f87067e3ff"
+                    }
+                ],
+                "resourceVersion": "6258737",
+                "uid": "256cea5b-fdf7-4b93-9318-3313bebefd9f"
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "env": [
+                            {
+                                "name": "DB_SERVER_HOST",
+                                "value": "postgresql"
+                            },
+                            {
+                                "name": "POSTGRES_USER",
+                                "value": "admin"
+                            },
+                            {
+                                "name": "POSTGRES_PASSWORD",
+                                "value": "admin"
+                            },
+                            {
+                                "name": "POSTGRES_DB",
+                                "value": "zabbix"
+                            }
+                        ],
+                        "image": "zabbix/zabbix-server-pgsql:latest",
+                        "imagePullPolicy": "Always",
+                        "name": "zabbix-server",
+                        "ports": [
+                            {
+                                "containerPort": 10051,
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "resources": {},
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/var/lib/zabbix",
+                                "name": "zabbix-server-data"
+                            },
+                            {
+                                "mountPath": "/usr/lib/zabbix/externalscripts",
+                                "name": "external-scripts"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-nlltp",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirst",
+                "enableServiceLinks": true,
+                "nodeName": "k8-manager",
+                "nodeSelector": {
+                    "node-role.kubernetes.io/control-plane": ""
+                },
+                "preemptionPolicy": "PreemptLowerPriority",
+                "priority": 0,
+                "restartPolicy": "Always",
+                "schedulerName": "default-scheduler",
+                "securityContext": {},
+                "serviceAccount": "zabbix-service-account",
+                "serviceAccountName": "zabbix-service-account",
+                "terminationGracePeriodSeconds": 30,
+                "tolerations": [
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/not-ready",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    },
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/unreachable",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    }
+                ],
+                "volumes": [
+                    {
+                        "name": "zabbix-server-data",
+                        "persistentVolumeClaim": {
+                            "claimName": "zabbix-server-pvc"
+                        }
+                    },
+                    {
+                        "configMap": {
+                            "defaultMode": 493,
+                            "name": "zabbix-external-scripts"
+                        },
+                        "name": "external-scripts"
+                    },
+                    {
+                        "name": "kube-api-access-nlltp",
+                        "projected": {
+                            "defaultMode": 420,
+                            "sources": [
+                                {
+                                    "serviceAccountToken": {
+                                        "expirationSeconds": 3607,
+                                        "path": "token"
+                                    }
+                                },
+                                {
+                                    "configMap": {
+                                        "items": [
+                                            {
+                                                "key": "ca.crt",
+                                                "path": "ca.crt"
+                                            }
+                                        ],
+                                        "name": "kube-root-ca.crt"
+                                    }
+                                },
+                                {
+                                    "downwardAPI": {
+                                        "items": [
+                                            {
+                                                "fieldRef": {
+                                                    "apiVersion": "v1",
+                                                    "fieldPath": "metadata.namespace"
+                                                },
+                                                "path": "namespace"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-22T09:44:47Z",
+                        "status": "True",
+                        "type": "PodReadyToStartContainers"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-22T09:44:45Z",
+                        "status": "True",
+                        "type": "Initialized"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-22T09:44:47Z",
+                        "status": "True",
+                        "type": "Ready"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-22T09:44:47Z",
+                        "status": "True",
+                        "type": "ContainersReady"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-22T09:44:45Z",
+                        "status": "True",
+                        "type": "PodScheduled"
+                    }
+                ],
+                "containerStatuses": [
+                    {
+                        "containerID": "containerd://776cc27910a976368ae0bf510a800cd2f23f3690475bff56eb1965ecd7174881",
+                        "image": "docker.io/zabbix/zabbix-server-pgsql:latest",
+                        "imageID": "docker.io/zabbix/zabbix-server-pgsql@sha256:033791214ab8146a4663c56dd6b46f742f03363e441d928216202136d094e154",
+                        "lastState": {},
+                        "name": "zabbix-server",
+                        "ready": true,
+                        "restartCount": 0,
+                        "started": true,
+                        "state": {
+                            "running": {
+                                "startedAt": "2026-01-22T09:44:46Z"
+                            }
+                        },
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/var/lib/zabbix",
+                                "name": "zabbix-server-data"
+                            },
+                            {
+                                "mountPath": "/usr/lib/zabbix/externalscripts",
+                                "name": "external-scripts"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-nlltp",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            }
+                        ]
+                    }
+                ],
+                "hostIP": "192.168.1.10",
+                "hostIPs": [
+                    {
+                        "ip": "192.168.1.10"
+                    }
+                ],
+                "phase": "Running",
+                "podIP": "172.16.74.54",
+                "podIPs": [
+                    {
+                        "ip": "172.16.74.54"
+                    }
+                ],
+                "qosClass": "BestEffort",
+                "startTime": "2026-01-22T09:44:45Z"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "annotations": {
+                    "cni.projectcalico.org/containerID": "a74ac22c47da1dc8c12ce40457a778d7a33167c5cd9542dd943dcaf40d414400",
+                    "cni.projectcalico.org/podIP": "172.16.74.15/32",
+                    "cni.projectcalico.org/podIPs": "172.16.74.15/32"
+                },
+                "creationTimestamp": "2026-01-13T16:22:21Z",
+                "generateName": "zabbix-web-9f7666677-",
+                "labels": {
+                    "app": "zabbix-web",
+                    "pod-template-hash": "9f7666677"
+                },
+                "name": "zabbix-web-9f7666677-5bhwf",
+                "namespace": "zabbix",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "apps/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "ReplicaSet",
+                        "name": "zabbix-web-9f7666677",
+                        "uid": "9f64c252-ef9e-4b3c-a81f-5377f7e1ef81"
+                    }
+                ],
+                "resourceVersion": "4353625",
+                "uid": "2728c2cd-50b6-4c75-ab6f-8f1d20370e0c"
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "env": [
+                            {
+                                "name": "DB_SERVER_HOST",
+                                "value": "postgresql"
+                            },
+                            {
+                                "name": "POSTGRES_USER",
+                                "value": "admin"
+                            },
+                            {
+                                "name": "POSTGRES_PASSWORD",
+                                "value": "admin"
+                            },
+                            {
+                                "name": "POSTGRES_DB",
+                                "value": "zabbix"
+                            },
+                            {
+                                "name": "ZBX_SERVER_HOST",
+                                "value": "zabbix-server"
+                            },
+                            {
+                                "name": "PHP_TZ",
+                                "value": "UTC"
+                            }
+                        ],
+                        "image": "zabbix/zabbix-web-nginx-pgsql:latest",
+                        "imagePullPolicy": "Always",
+                        "name": "zabbix-web",
+                        "ports": [
+                            {
+                                "containerPort": 8080,
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "resources": {},
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-xcgn8",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirst",
+                "enableServiceLinks": true,
+                "nodeName": "k8-manager",
+                "nodeSelector": {
+                    "node-role.kubernetes.io/control-plane": ""
+                },
+                "preemptionPolicy": "PreemptLowerPriority",
+                "priority": 0,
+                "restartPolicy": "Always",
+                "schedulerName": "default-scheduler",
+                "securityContext": {},
+                "serviceAccount": "default",
+                "serviceAccountName": "default",
+                "terminationGracePeriodSeconds": 30,
+                "tolerations": [
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/not-ready",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    },
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/unreachable",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    }
+                ],
+                "volumes": [
+                    {
+                        "name": "kube-api-access-xcgn8",
+                        "projected": {
+                            "defaultMode": 420,
+                            "sources": [
+                                {
+                                    "serviceAccountToken": {
+                                        "expirationSeconds": 3607,
+                                        "path": "token"
+                                    }
+                                },
+                                {
+                                    "configMap": {
+                                        "items": [
+                                            {
+                                                "key": "ca.crt",
+                                                "path": "ca.crt"
+                                            }
+                                        ],
+                                        "name": "kube-root-ca.crt"
+                                    }
+                                },
+                                {
+                                    "downwardAPI": {
+                                        "items": [
+                                            {
+                                                "fieldRef": {
+                                                    "apiVersion": "v1",
+                                                    "fieldPath": "metadata.namespace"
+                                                },
+                                                "path": "namespace"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-13T16:22:28Z",
+                        "status": "True",
+                        "type": "PodReadyToStartContainers"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-13T16:22:21Z",
+                        "status": "True",
+                        "type": "Initialized"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-13T16:22:28Z",
+                        "status": "True",
+                        "type": "Ready"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-13T16:22:28Z",
+                        "status": "True",
+                        "type": "ContainersReady"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-13T16:22:21Z",
+                        "status": "True",
+                        "type": "PodScheduled"
+                    }
+                ],
+                "containerStatuses": [
+                    {
+                        "containerID": "containerd://95f0c4bb9a018acba9323a2c4957a21628ad3d1cf85a30180f81bab223ccffde",
+                        "image": "docker.io/zabbix/zabbix-web-nginx-pgsql:latest",
+                        "imageID": "docker.io/zabbix/zabbix-web-nginx-pgsql@sha256:5291ad0a67cd25e80d79f81956b4297ee2aad3a449fb49b96cfd6dec2ebd0d64",
+                        "lastState": {},
+                        "name": "zabbix-web",
+                        "ready": true,
+                        "restartCount": 0,
+                        "started": true,
+                        "state": {
+                            "running": {
+                                "startedAt": "2026-01-13T16:22:28Z"
+                            }
+                        },
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-xcgn8",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            }
+                        ]
+                    }
+                ],
+                "hostIP": "192.168.1.10",
+                "hostIPs": [
+                    {
+                        "ip": "192.168.1.10"
+                    }
+                ],
+                "phase": "Running",
+                "podIP": "172.16.74.15",
+                "podIPs": [
+                    {
+                        "ip": "172.16.74.15"
+                    }
+                ],
+                "qosClass": "BestEffort",
+                "startTime": "2026-01-13T16:22:21Z"
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": ""
+    }
+}

@@ -1,0 +1,81 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "v1",
+            "data": {
+                "app-config.production.yaml": "app:\n  baseUrl: https://83.32.50.24:8082\n\nintegrations:\n  github:\n    - host: github.com\n      token: ${GITHUB_TOKEN}\n  gitlab:\n    - host: gitlab.com\n      token: \"not-used\" # Esto evita el error ForwardedError de tus logs\n\nbackend:\n  baseUrl: https://83.32.50.24:8082\n  listen:\n    port: 7007\n    host: 0.0.0.0\n  auth:\n    keys:\n      - secret: \"secret\"\n  csp:\n    upgradeInsecureRequests: false\n  cors:\n    origin: https://83.32.50.24:8082\n    methods: [GET, HEAD, PATCH, POST, PUT, DELETE]\n    credentials: true\n  database:\n    client: pg\n    connection:\n      host: ${POSTGRES_HOST}\n      port: ${POSTGRES_PORT}\n      user: ${POSTGRES_USER}\n      password: ${POSTGRES_PASSWORD}\n\nauth:\n  environment: production\n  providers:\n    guest:\n      dangerouslyAllowOutsideDevelopment: true\n    github:\n      production:\n        clientId: ${AUTH_GITHUB_CLIENT_ID}\n        clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}\n      development:\n        clientId: ${AUTH_GITHUB_CLIENT_ID}\n        clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}\n\n# Configuración para TechDocs y Catálogo (necesaria para que no falle al iniciar)\ncatalog:\n  import:\n    entityFilename: catalog-info.yaml\n  locations: []\n\ntechdocs:\n  builder: 'local'\n  generator:\n    runIn: 'docker'\n  publisher:\n    type: 'local'\n"
+            },
+            "kind": "ConfigMap",
+            "metadata": {
+                "annotations": {
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"data\":{\"app-config.production.yaml\":\"app:\\n  baseUrl: https://83.32.50.24:8082\\n\\nintegrations:\\n  github:\\n    - host: github.com\\n      token: ${GITHUB_TOKEN}\\n  gitlab:\\n    - host: gitlab.com\\n      token: \\\"not-used\\\" # Esto evita el error ForwardedError de tus logs\\n\\nbackend:\\n  baseUrl: https://83.32.50.24:8082\\n  listen:\\n    port: 7007\\n    host: 0.0.0.0\\n  auth:\\n    keys:\\n      - secret: \\\"secret\\\"\\n  csp:\\n    upgradeInsecureRequests: false\\n  cors:\\n    origin: https://83.32.50.24:8082\\n    methods: [GET, HEAD, PATCH, POST, PUT, DELETE]\\n    credentials: true\\n  database:\\n    client: pg\\n    connection:\\n      host: ${POSTGRES_HOST}\\n      port: ${POSTGRES_PORT}\\n      user: ${POSTGRES_USER}\\n      password: ${POSTGRES_PASSWORD}\\n\\nauth:\\n  environment: production\\n  providers:\\n    guest:\\n      dangerouslyAllowOutsideDevelopment: true\\n    github:\\n      production:\\n        clientId: ${AUTH_GITHUB_CLIENT_ID}\\n        clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}\\n      development:\\n        clientId: ${AUTH_GITHUB_CLIENT_ID}\\n        clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}\\n\\n# Configuración para TechDocs y Catálogo (necesaria para que no falle al iniciar)\\ncatalog:\\n  import:\\n    entityFilename: catalog-info.yaml\\n  locations: []\\n\\ntechdocs:\\n  builder: 'local'\\n  generator:\\n    runIn: 'docker'\\n  publisher:\\n    type: 'local'\\n\"},\"kind\":\"ConfigMap\",\"metadata\":{\"annotations\":{},\"name\":\"backstage-app-config\",\"namespace\":\"backstage\"}}\n"
+                },
+                "creationTimestamp": "2026-01-14T12:03:03Z",
+                "name": "backstage-app-config",
+                "namespace": "backstage",
+                "resourceVersion": "7417560",
+                "uid": "ea61ed45-4ca2-4bfd-82c3-03c6a3c60409"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "data": {
+                "dynamic-plugins.yaml": "disabled:\n  - immobiliarelabs-*-plugin-gitlab-backend-dynamic\n  - immobiliarelabs-*-plugin-gitlab\n"
+            },
+            "kind": "ConfigMap",
+            "metadata": {
+                "annotations": {
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"data\":{\"dynamic-plugins.yaml\":\"disabled:\\n  - immobiliarelabs-*-plugin-gitlab-backend-dynamic\\n  - immobiliarelabs-*-plugin-gitlab\\n\"},\"kind\":\"ConfigMap\",\"metadata\":{\"annotations\":{},\"name\":\"backstage-dynamic-plugins\",\"namespace\":\"backstage\"}}\n"
+                },
+                "creationTimestamp": "2026-01-19T11:02:40Z",
+                "name": "backstage-dynamic-plugins",
+                "namespace": "backstage",
+                "resourceVersion": "5640362",
+                "uid": "35f3a15a-c542-4149-bed1-a609aba95d58"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "data": {
+                "default.conf": "server {\n    listen 8080;\n    server_name _;\n    return 301 https://$host$request_uri;\n}\n\nserver {\n    listen 8443 ssl;\n    server_name _;\n\n    ssl_certificate /etc/nginx/ssl/tls.crt;\n    ssl_certificate_key /etc/nginx/ssl/tls.key;\n    ssl_protocols TLSv1.2 TLSv1.3;\n    ssl_ciphers HIGH:!aNULL:!MD5;\n\n    location / {\n        proxy_pass http://localhost:7007;\n        proxy_set_header Host $host;\n        proxy_set_header X-Real-IP $remote_addr;\n        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n        proxy_set_header X-Forwarded-Proto https;\n    }\n}\n"
+            },
+            "kind": "ConfigMap",
+            "metadata": {
+                "annotations": {
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"data\":{\"default.conf\":\"server {\\n    listen 8080;\\n    server_name _;\\n    return 301 https://$host$request_uri;\\n}\\n\\nserver {\\n    listen 8443 ssl;\\n    server_name _;\\n\\n    ssl_certificate /etc/nginx/ssl/tls.crt;\\n    ssl_certificate_key /etc/nginx/ssl/tls.key;\\n    ssl_protocols TLSv1.2 TLSv1.3;\\n    ssl_ciphers HIGH:!aNULL:!MD5;\\n\\n    location / {\\n        proxy_pass http://localhost:7007;\\n        proxy_set_header Host $host;\\n        proxy_set_header X-Real-IP $remote_addr;\\n        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\\n        proxy_set_header X-Forwarded-Proto https;\\n    }\\n}\\n\"},\"kind\":\"ConfigMap\",\"metadata\":{\"annotations\":{},\"labels\":{\"app\":\"backstage\",\"core.kaos.io/type\":\"catalog\"},\"name\":\"backstage-nginx-config\",\"namespace\":\"backstage\"}}\n"
+                },
+                "creationTimestamp": "2026-01-16T12:52:59Z",
+                "labels": {
+                    "app": "backstage",
+                    "core.kaos.io/type": "catalog"
+                },
+                "name": "backstage-nginx-config",
+                "namespace": "backstage",
+                "resourceVersion": "5074874",
+                "uid": "c99e0234-eb81-49b8-a587-40106660a98c"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "data": {
+                "ca.crt": "-----BEGIN CERTIFICATE-----\nMIIDBTCCAe2gAwIBAgIIdVZ4OXlm3howDQYJKoZIhvcNAQELBQAwFTETMBEGA1UE\nAxMKa3ViZXJuZXRlczAeFw0yNTEyMTgxODIxNTVaFw0zNTEyMTYxODI2NTVaMBUx\nEzARBgNVBAMTCmt1YmVybmV0ZXMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK\nAoIBAQDRmY/1mdgGLX5JJz4mQmbSxg5C9OxhaR4Z2iQnuZjfqv/Ad186OXBadxRw\neVgeye4P1iWvmjcqY9q3pbdjN2WdE4x1p/tXFN6A4onbZypXN8pkXSAqyf0+D/QX\n5UY7mRtMHjgrOqAQ/0Lr79r6lX8bKvwHq8oiVjpwcHHb08ouq99B7TCJZ5d6EYeQ\n3ZGdbt2Vo/JM2xGfoXm1NBP26L3EnuXCDHlrQp0ERAQM68KRiyCNNDynwjz/DLtX\nofZrG+p2pWYc0C4NvXH3B8/1PjiQ6kcc6noKoBFerfobuVLJmkW+8qhdInmkvRt6\nfVDpzklrxUNMp/rIMbdxxTQ5S4g9AgMBAAGjWTBXMA4GA1UdDwEB/wQEAwICpDAP\nBgNVHRMBAf8EBTADAQH/MB0GA1UdDgQWBBQBfYhN6j9YZrHNfGRZH+zhNzZh/TAV\nBgNVHREEDjAMggprdWJlcm5ldGVzMA0GCSqGSIb3DQEBCwUAA4IBAQBgnq6yWBQd\nC6Z/LReT/E39sJG03rzXz5NRoQBZMONAfvL+jlzRkqK+T70/jGZlu9mNNZFa7fck\npjoO6QXqBHli60feBMJeUTrK5az1V8rPgKpEt34Esy6NVc8S52RzSy78HtQejh2l\nXPNLA/BuGMOP1kuaizM7axYW4luqyankgHNXiKxxoK2qsc+mtELapmtSu1a3oaqx\nV6ZO/4/EoV25KORXWMQ4IZ7sK+dPbr6Mh/GejaZG2N2lTFAWA1a9C2ZootKg8VDO\nKFvVePd227BqD5153nQ7r8u3BckJj+9tfUn/JCTlDnDdx/YFqv64vZU7FWHIW7CU\nwGjni5x+bo3m\n-----END CERTIFICATE-----\n"
+            },
+            "kind": "ConfigMap",
+            "metadata": {
+                "annotations": {
+                    "kubernetes.io/description": "Contains a CA bundle that can be used to verify the kube-apiserver when using internal endpoints such as the internal service IP or kubernetes.default.svc. No other usage is guaranteed across distributions of Kubernetes clusters."
+                },
+                "creationTimestamp": "2026-01-14T11:32:22Z",
+                "name": "kube-root-ca.crt",
+                "namespace": "backstage",
+                "resourceVersion": "4498537",
+                "uid": "106f98fc-bb89-46f7-b2b9-eb8044674bb8"
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": ""
+    }
+}

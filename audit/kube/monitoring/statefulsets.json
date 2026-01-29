@@ -1,0 +1,120 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "apps/v1",
+            "kind": "StatefulSet",
+            "metadata": {
+                "annotations": {
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"apps/v1\",\"kind\":\"StatefulSet\",\"metadata\":{\"annotations\":{},\"name\":\"loki\",\"namespace\":\"monitoring\"},\"spec\":{\"replicas\":1,\"selector\":{\"matchLabels\":{\"app\":\"loki\"}},\"serviceName\":\"loki\",\"template\":{\"metadata\":{\"labels\":{\"app\":\"loki\"}},\"spec\":{\"containers\":[{\"args\":[\"-config.file=/etc/loki/loki-config.yaml\",\"--ingester.wal-enabled=true\",\"--ingester.wal-dir=/loki/wal\"],\"image\":\"grafana/loki:latest\",\"name\":\"loki\",\"ports\":[{\"containerPort\":3100,\"name\":\"http-metrics\"}],\"volumeMounts\":[{\"mountPath\":\"/etc/loki\",\"name\":\"config\"},{\"mountPath\":\"/loki\",\"name\":\"storage\"}]}],\"securityContext\":{\"fsGroup\":10001,\"runAsGroup\":10001,\"runAsUser\":10001},\"volumes\":[{\"configMap\":{\"name\":\"loki-config\"},\"name\":\"config\"},{\"emptyDir\":{},\"name\":\"storage\"}]}}}}\n"
+                },
+                "creationTimestamp": "2025-12-23T15:58:13Z",
+                "generation": 1,
+                "name": "loki",
+                "namespace": "monitoring",
+                "resourceVersion": "2076442",
+                "uid": "060feb8a-ef19-4603-904d-418da70c0bad"
+            },
+            "spec": {
+                "persistentVolumeClaimRetentionPolicy": {
+                    "whenDeleted": "Retain",
+                    "whenScaled": "Retain"
+                },
+                "podManagementPolicy": "OrderedReady",
+                "replicas": 1,
+                "revisionHistoryLimit": 10,
+                "selector": {
+                    "matchLabels": {
+                        "app": "loki"
+                    }
+                },
+                "serviceName": "loki",
+                "template": {
+                    "metadata": {
+                        "creationTimestamp": null,
+                        "labels": {
+                            "app": "loki"
+                        }
+                    },
+                    "spec": {
+                        "containers": [
+                            {
+                                "args": [
+                                    "-config.file=/etc/loki/loki-config.yaml",
+                                    "--ingester.wal-enabled=true",
+                                    "--ingester.wal-dir=/loki/wal"
+                                ],
+                                "image": "grafana/loki:latest",
+                                "imagePullPolicy": "Always",
+                                "name": "loki",
+                                "ports": [
+                                    {
+                                        "containerPort": 3100,
+                                        "name": "http-metrics",
+                                        "protocol": "TCP"
+                                    }
+                                ],
+                                "resources": {},
+                                "terminationMessagePath": "/dev/termination-log",
+                                "terminationMessagePolicy": "File",
+                                "volumeMounts": [
+                                    {
+                                        "mountPath": "/etc/loki",
+                                        "name": "config"
+                                    },
+                                    {
+                                        "mountPath": "/loki",
+                                        "name": "storage"
+                                    }
+                                ]
+                            }
+                        ],
+                        "dnsPolicy": "ClusterFirst",
+                        "restartPolicy": "Always",
+                        "schedulerName": "default-scheduler",
+                        "securityContext": {
+                            "fsGroup": 10001,
+                            "runAsGroup": 10001,
+                            "runAsUser": 10001
+                        },
+                        "terminationGracePeriodSeconds": 30,
+                        "volumes": [
+                            {
+                                "configMap": {
+                                    "defaultMode": 420,
+                                    "name": "loki-config"
+                                },
+                                "name": "config"
+                            },
+                            {
+                                "emptyDir": {},
+                                "name": "storage"
+                            }
+                        ]
+                    }
+                },
+                "updateStrategy": {
+                    "rollingUpdate": {
+                        "partition": 0
+                    },
+                    "type": "RollingUpdate"
+                }
+            },
+            "status": {
+                "availableReplicas": 1,
+                "collisionCount": 0,
+                "currentReplicas": 1,
+                "currentRevision": "loki-55c7b4d94",
+                "observedGeneration": 1,
+                "readyReplicas": 1,
+                "replicas": 1,
+                "updateRevision": "loki-55c7b4d94",
+                "updatedReplicas": 1
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": ""
+    }
+}

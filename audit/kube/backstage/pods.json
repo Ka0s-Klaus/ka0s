@@ -1,0 +1,968 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "annotations": {
+                    "cni.projectcalico.org/containerID": "b66353f3dcb1e34a54749ac295f8f98aa51f98c89856979798cadc5e93a6202c",
+                    "cni.projectcalico.org/podIP": "172.16.209.53/32",
+                    "cni.projectcalico.org/podIPs": "172.16.209.53/32",
+                    "kubectl.kubernetes.io/restartedAt": "2026-01-19T11:14:12Z"
+                },
+                "creationTimestamp": "2026-01-28T10:09:43Z",
+                "generateName": "backstage-8f7578db-",
+                "labels": {
+                    "app": "backstage",
+                    "pod-template-hash": "8f7578db"
+                },
+                "name": "backstage-8f7578db-29sr4",
+                "namespace": "backstage",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "apps/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "ReplicaSet",
+                        "name": "backstage-8f7578db",
+                        "uid": "ec0ccdf8-b72d-4ebe-8889-52aaa9acb29d"
+                    }
+                ],
+                "resourceVersion": "7595122",
+                "uid": "7c1f6327-49ae-475d-af74-668256744427"
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "image": "nginx:alpine",
+                        "imagePullPolicy": "IfNotPresent",
+                        "name": "nginx-sidecar",
+                        "ports": [
+                            {
+                                "containerPort": 8080,
+                                "name": "http",
+                                "protocol": "TCP"
+                            },
+                            {
+                                "containerPort": 8443,
+                                "name": "https",
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "resources": {},
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/etc/nginx/conf.d",
+                                "name": "nginx-config"
+                            },
+                            {
+                                "mountPath": "/etc/nginx/ssl",
+                                "name": "tls-certs",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-56ls5",
+                                "readOnly": true
+                            }
+                        ]
+                    },
+                    {
+                        "env": [
+                            {
+                                "name": "DYNAMIC_PLUGINS_CONFIG",
+                                "value": "/opt/app-root/src/dynamic-plugins.yaml"
+                            },
+                            {
+                                "name": "POSTGRES_HOST",
+                                "value": "postgresql"
+                            },
+                            {
+                                "name": "POSTGRES_PORT",
+                                "value": "5432"
+                            },
+                            {
+                                "name": "POSTGRES_USER",
+                                "value": "backstage"
+                            },
+                            {
+                                "name": "POSTGRES_PASSWORD",
+                                "value": "backstage"
+                            },
+                            {
+                                "name": "NODE_ENV",
+                                "value": "production"
+                            },
+                            {
+                                "name": "APP_CONFIG_app_baseUrl",
+                                "value": "https://83.32.50.24:8082"
+                            },
+                            {
+                                "name": "APP_CONFIG_backend_baseUrl",
+                                "value": "https://83.32.50.24:8082"
+                            },
+                            {
+                                "name": "APP_CONFIG_backend_cors_origin",
+                                "value": "https://83.32.50.24:8082"
+                            },
+                            {
+                                "name": "NODE_TLS_REJECT_UNAUTHORIZED",
+                                "value": "0"
+                            },
+                            {
+                                "name": "AUTH_GITHUB_CLIENT_ID",
+                                "valueFrom": {
+                                    "secretKeyRef": {
+                                        "key": "AUTH_GITHUB_CLIENT_ID",
+                                        "name": "backstage-secrets"
+                                    }
+                                }
+                            },
+                            {
+                                "name": "AUTH_GITHUB_CLIENT_SECRET",
+                                "valueFrom": {
+                                    "secretKeyRef": {
+                                        "key": "AUTH_GITHUB_CLIENT_SECRET",
+                                        "name": "backstage-secrets"
+                                    }
+                                }
+                            },
+                            {
+                                "name": "GITHUB_TOKEN",
+                                "valueFrom": {
+                                    "secretKeyRef": {
+                                        "key": "GITHUB_TOKEN",
+                                        "name": "backstage-secrets"
+                                    }
+                                }
+                            }
+                        ],
+                        "image": "quay.io/janus-idp/backstage-showcase:latest",
+                        "imagePullPolicy": "IfNotPresent",
+                        "name": "backstage",
+                        "ports": [
+                            {
+                                "containerPort": 7007,
+                                "name": "http",
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "resources": {},
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/opt/app-root/src/app-config.production.yaml",
+                                "name": "app-config",
+                                "subPath": "app-config.production.yaml"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-56ls5",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirst",
+                "enableServiceLinks": true,
+                "nodeName": "k8-node-20",
+                "preemptionPolicy": "PreemptLowerPriority",
+                "priority": 0,
+                "restartPolicy": "Always",
+                "schedulerName": "default-scheduler",
+                "securityContext": {},
+                "serviceAccount": "default",
+                "serviceAccountName": "default",
+                "terminationGracePeriodSeconds": 30,
+                "tolerations": [
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/not-ready",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    },
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/unreachable",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    }
+                ],
+                "volumes": [
+                    {
+                        "configMap": {
+                            "defaultMode": 420,
+                            "name": "backstage-app-config"
+                        },
+                        "name": "app-config"
+                    },
+                    {
+                        "configMap": {
+                            "defaultMode": 420,
+                            "name": "backstage-nginx-config"
+                        },
+                        "name": "nginx-config"
+                    },
+                    {
+                        "name": "tls-certs",
+                        "secret": {
+                            "defaultMode": 420,
+                            "secretName": "backstage-tls"
+                        }
+                    },
+                    {
+                        "configMap": {
+                            "defaultMode": 420,
+                            "name": "backstage-dynamic-plugins"
+                        },
+                        "name": "dynamic-plugins"
+                    },
+                    {
+                        "name": "kube-api-access-56ls5",
+                        "projected": {
+                            "defaultMode": 420,
+                            "sources": [
+                                {
+                                    "serviceAccountToken": {
+                                        "expirationSeconds": 3607,
+                                        "path": "token"
+                                    }
+                                },
+                                {
+                                    "configMap": {
+                                        "items": [
+                                            {
+                                                "key": "ca.crt",
+                                                "path": "ca.crt"
+                                            }
+                                        ],
+                                        "name": "kube-root-ca.crt"
+                                    }
+                                },
+                                {
+                                    "downwardAPI": {
+                                        "items": [
+                                            {
+                                                "fieldRef": {
+                                                    "apiVersion": "v1",
+                                                    "fieldPath": "metadata.namespace"
+                                                },
+                                                "path": "namespace"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-28T10:09:45Z",
+                        "status": "True",
+                        "type": "PodReadyToStartContainers"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-28T10:09:43Z",
+                        "status": "True",
+                        "type": "Initialized"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-29T07:59:26Z",
+                        "message": "containers with unready status: [backstage]",
+                        "reason": "ContainersNotReady",
+                        "status": "False",
+                        "type": "Ready"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-29T07:59:26Z",
+                        "message": "containers with unready status: [backstage]",
+                        "reason": "ContainersNotReady",
+                        "status": "False",
+                        "type": "ContainersReady"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-28T10:09:43Z",
+                        "status": "True",
+                        "type": "PodScheduled"
+                    }
+                ],
+                "containerStatuses": [
+                    {
+                        "containerID": "containerd://54a4e67e8574bce4dc965312e6277bd297687c03800bd2b59db9b6f0b359d940",
+                        "image": "quay.io/janus-idp/backstage-showcase:latest",
+                        "imageID": "quay.io/janus-idp/backstage-showcase@sha256:81021071ebd48fc889ccf98ba3cb6c797c38edc11227fcf18fe52bd262a64c9a",
+                        "lastState": {
+                            "terminated": {
+                                "containerID": "containerd://54a4e67e8574bce4dc965312e6277bd297687c03800bd2b59db9b6f0b359d940",
+                                "exitCode": 1,
+                                "finishedAt": "2026-01-29T07:59:25Z",
+                                "reason": "Error",
+                                "startedAt": "2026-01-29T07:59:18Z"
+                            }
+                        },
+                        "name": "backstage",
+                        "ready": false,
+                        "restartCount": 255,
+                        "started": false,
+                        "state": {
+                            "waiting": {
+                                "message": "back-off 5m0s restarting failed container=backstage pod=backstage-8f7578db-29sr4_backstage(7c1f6327-49ae-475d-af74-668256744427)",
+                                "reason": "CrashLoopBackOff"
+                            }
+                        },
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/opt/app-root/src/app-config.production.yaml",
+                                "name": "app-config"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-56ls5",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            }
+                        ]
+                    },
+                    {
+                        "containerID": "containerd://d1efcb89a887d0da603e365da972bfe49de32c5746a8120a11f658bacdae6065",
+                        "image": "docker.io/library/nginx:alpine",
+                        "imageID": "docker.io/library/nginx@sha256:b0f7830b6bfaa1258f45d94c240ab668ced1b3651c8a222aefe6683447c7bf55",
+                        "lastState": {},
+                        "name": "nginx-sidecar",
+                        "ready": true,
+                        "restartCount": 0,
+                        "started": true,
+                        "state": {
+                            "running": {
+                                "startedAt": "2026-01-28T10:09:44Z"
+                            }
+                        },
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/etc/nginx/conf.d",
+                                "name": "nginx-config"
+                            },
+                            {
+                                "mountPath": "/etc/nginx/ssl",
+                                "name": "tls-certs",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-56ls5",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            }
+                        ]
+                    }
+                ],
+                "hostIP": "192.168.1.20",
+                "hostIPs": [
+                    {
+                        "ip": "192.168.1.20"
+                    }
+                ],
+                "phase": "Running",
+                "podIP": "172.16.209.53",
+                "podIPs": [
+                    {
+                        "ip": "172.16.209.53"
+                    }
+                ],
+                "qosClass": "BestEffort",
+                "startTime": "2026-01-28T10:09:43Z"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "annotations": {
+                    "cni.projectcalico.org/containerID": "2611a1cdb5ae298e507f622a9a273e99c357c301f1b1904abba246200c1e1ee2",
+                    "cni.projectcalico.org/podIP": "",
+                    "cni.projectcalico.org/podIPs": ""
+                },
+                "creationTimestamp": "2026-01-28T10:17:59Z",
+                "labels": {
+                    "run": "pg-test"
+                },
+                "name": "pg-test",
+                "namespace": "backstage",
+                "resourceVersion": "7416344",
+                "uid": "0852d979-ab12-45ab-b456-d2a02fe1912e"
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "command": [
+                            "psql",
+                            "-h",
+                            "postgresql",
+                            "-U",
+                            "backstage",
+                            "-c",
+                            "\\l"
+                        ],
+                        "env": [
+                            {
+                                "name": "PGPASSWORD",
+                                "value": "backstage"
+                            }
+                        ],
+                        "image": "postgres:alpine",
+                        "imagePullPolicy": "IfNotPresent",
+                        "name": "pg-test",
+                        "resources": {},
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-8cm9z",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirst",
+                "enableServiceLinks": true,
+                "nodeName": "k8-node-40",
+                "preemptionPolicy": "PreemptLowerPriority",
+                "priority": 0,
+                "restartPolicy": "Never",
+                "schedulerName": "default-scheduler",
+                "securityContext": {},
+                "serviceAccount": "default",
+                "serviceAccountName": "default",
+                "terminationGracePeriodSeconds": 30,
+                "tolerations": [
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/not-ready",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    },
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/unreachable",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    }
+                ],
+                "volumes": [
+                    {
+                        "name": "kube-api-access-8cm9z",
+                        "projected": {
+                            "defaultMode": 420,
+                            "sources": [
+                                {
+                                    "serviceAccountToken": {
+                                        "expirationSeconds": 3607,
+                                        "path": "token"
+                                    }
+                                },
+                                {
+                                    "configMap": {
+                                        "items": [
+                                            {
+                                                "key": "ca.crt",
+                                                "path": "ca.crt"
+                                            }
+                                        ],
+                                        "name": "kube-root-ca.crt"
+                                    }
+                                },
+                                {
+                                    "downwardAPI": {
+                                        "items": [
+                                            {
+                                                "fieldRef": {
+                                                    "apiVersion": "v1",
+                                                    "fieldPath": "metadata.namespace"
+                                                },
+                                                "path": "namespace"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-28T10:18:24Z",
+                        "status": "False",
+                        "type": "PodReadyToStartContainers"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-28T10:17:59Z",
+                        "status": "True",
+                        "type": "Initialized"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-28T10:18:22Z",
+                        "reason": "PodFailed",
+                        "status": "False",
+                        "type": "Ready"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-28T10:18:22Z",
+                        "reason": "PodFailed",
+                        "status": "False",
+                        "type": "ContainersReady"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-28T10:17:59Z",
+                        "status": "True",
+                        "type": "PodScheduled"
+                    }
+                ],
+                "containerStatuses": [
+                    {
+                        "containerID": "containerd://5ccdcd668cee58f5cb2b2ae1335c3ce027d3870970a5e59135da23f2fb91052d",
+                        "image": "docker.io/library/postgres:alpine",
+                        "imageID": "docker.io/library/postgres@sha256:30f2a9b6f470bece98c10f98952e720c881dc3ef987cf06b5ed4b698a350c1bb",
+                        "lastState": {},
+                        "name": "pg-test",
+                        "ready": false,
+                        "restartCount": 0,
+                        "started": false,
+                        "state": {
+                            "terminated": {
+                                "containerID": "containerd://5ccdcd668cee58f5cb2b2ae1335c3ce027d3870970a5e59135da23f2fb91052d",
+                                "exitCode": 2,
+                                "finishedAt": "2026-01-28T10:18:18Z",
+                                "reason": "Error",
+                                "startedAt": "2026-01-28T10:18:17Z"
+                            }
+                        },
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-8cm9z",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            }
+                        ]
+                    }
+                ],
+                "hostIP": "192.168.1.40",
+                "hostIPs": [
+                    {
+                        "ip": "192.168.1.40"
+                    }
+                ],
+                "phase": "Failed",
+                "podIP": "172.16.64.179",
+                "podIPs": [
+                    {
+                        "ip": "172.16.64.179"
+                    }
+                ],
+                "qosClass": "BestEffort",
+                "startTime": "2026-01-28T10:17:59Z"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "annotations": {
+                    "cni.projectcalico.org/containerID": "073d458c21bbfa8663b9288b2876901c12ed602071bb38da3bf65fa3a25a1d09",
+                    "cni.projectcalico.org/podIP": "172.16.209.56/32",
+                    "cni.projectcalico.org/podIPs": "172.16.209.56/32"
+                },
+                "creationTimestamp": "2026-01-14T11:32:22Z",
+                "generateName": "postgresql-548d95684d-",
+                "labels": {
+                    "app": "postgresql",
+                    "pod-template-hash": "548d95684d"
+                },
+                "name": "postgresql-548d95684d-vbgx8",
+                "namespace": "backstage",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "apps/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "ReplicaSet",
+                        "name": "postgresql-548d95684d",
+                        "uid": "84dc7b1f-9afd-45c6-b7b0-c73d90a730a2"
+                    }
+                ],
+                "resourceVersion": "4498618",
+                "uid": "0713766d-e8e2-42db-9244-bf291b587004"
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "env": [
+                            {
+                                "name": "POSTGRES_USER",
+                                "value": "backstage"
+                            },
+                            {
+                                "name": "POSTGRES_PASSWORD",
+                                "value": "backstage"
+                            },
+                            {
+                                "name": "POSTGRES_DB",
+                                "value": "backstage_plugin_catalog"
+                            }
+                        ],
+                        "image": "postgres:16",
+                        "imagePullPolicy": "IfNotPresent",
+                        "name": "postgresql",
+                        "ports": [
+                            {
+                                "containerPort": 5432,
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "resources": {},
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/var/lib/postgresql/data",
+                                "name": "postgresql-persistent-storage"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-vmnbc",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirst",
+                "enableServiceLinks": true,
+                "nodeName": "k8-node-20",
+                "preemptionPolicy": "PreemptLowerPriority",
+                "priority": 0,
+                "restartPolicy": "Always",
+                "schedulerName": "default-scheduler",
+                "securityContext": {},
+                "serviceAccount": "default",
+                "serviceAccountName": "default",
+                "terminationGracePeriodSeconds": 30,
+                "tolerations": [
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/not-ready",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    },
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/unreachable",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    }
+                ],
+                "volumes": [
+                    {
+                        "name": "postgresql-persistent-storage",
+                        "persistentVolumeClaim": {
+                            "claimName": "backstage-postgresql-pvc"
+                        }
+                    },
+                    {
+                        "name": "kube-api-access-vmnbc",
+                        "projected": {
+                            "defaultMode": 420,
+                            "sources": [
+                                {
+                                    "serviceAccountToken": {
+                                        "expirationSeconds": 3607,
+                                        "path": "token"
+                                    }
+                                },
+                                {
+                                    "configMap": {
+                                        "items": [
+                                            {
+                                                "key": "ca.crt",
+                                                "path": "ca.crt"
+                                            }
+                                        ],
+                                        "name": "kube-root-ca.crt"
+                                    }
+                                },
+                                {
+                                    "downwardAPI": {
+                                        "items": [
+                                            {
+                                                "fieldRef": {
+                                                    "apiVersion": "v1",
+                                                    "fieldPath": "metadata.namespace"
+                                                },
+                                                "path": "namespace"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-14T11:32:33Z",
+                        "status": "True",
+                        "type": "PodReadyToStartContainers"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-14T11:32:23Z",
+                        "status": "True",
+                        "type": "Initialized"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-14T11:32:33Z",
+                        "status": "True",
+                        "type": "Ready"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-14T11:32:33Z",
+                        "status": "True",
+                        "type": "ContainersReady"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-14T11:32:23Z",
+                        "status": "True",
+                        "type": "PodScheduled"
+                    }
+                ],
+                "containerStatuses": [
+                    {
+                        "containerID": "containerd://75c1c30c25e7bb84b35bc493966d61904a719e047d9539c1a80db8f41d8e2ec1",
+                        "image": "docker.io/library/postgres:16",
+                        "imageID": "docker.io/library/postgres@sha256:803ea6da631eab4a350da4ba87541e4737197b8c26ec0feb23ff6f9714212d1d",
+                        "lastState": {},
+                        "name": "postgresql",
+                        "ready": true,
+                        "restartCount": 0,
+                        "started": true,
+                        "state": {
+                            "running": {
+                                "startedAt": "2026-01-14T11:32:32Z"
+                            }
+                        },
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/var/lib/postgresql/data",
+                                "name": "postgresql-persistent-storage"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-vmnbc",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            }
+                        ]
+                    }
+                ],
+                "hostIP": "192.168.1.20",
+                "hostIPs": [
+                    {
+                        "ip": "192.168.1.20"
+                    }
+                ],
+                "phase": "Running",
+                "podIP": "172.16.209.56",
+                "podIPs": [
+                    {
+                        "ip": "172.16.209.56"
+                    }
+                ],
+                "qosClass": "BestEffort",
+                "startTime": "2026-01-14T11:32:23Z"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "creationTimestamp": "2026-01-28T10:51:32Z",
+                "generateName": "postgresql-758b594bfd-",
+                "labels": {
+                    "app": "postgresql",
+                    "pod-template-hash": "758b594bfd"
+                },
+                "name": "postgresql-758b594bfd-xsjnd",
+                "namespace": "backstage",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "apps/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "ReplicaSet",
+                        "name": "postgresql-758b594bfd",
+                        "uid": "e9342044-f167-4df2-a6b9-a81f4777b86c"
+                    }
+                ],
+                "resourceVersion": "7420890",
+                "uid": "98498789-91e7-4e28-b749-8b580a16355a"
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "env": [
+                            {
+                                "name": "POSTGRES_USER",
+                                "value": "backstage"
+                            },
+                            {
+                                "name": "POSTGRES_PASSWORD",
+                                "value": "backstage"
+                            },
+                            {
+                                "name": "POSTGRES_DB",
+                                "value": "backstage"
+                            }
+                        ],
+                        "image": "postgres:13.2-alpine",
+                        "imagePullPolicy": "IfNotPresent",
+                        "name": "postgresql",
+                        "ports": [
+                            {
+                                "containerPort": 5432,
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "resources": {},
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/var/lib/postgresql/data",
+                                "name": "postgres-storage"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-lwmwd",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirst",
+                "enableServiceLinks": true,
+                "preemptionPolicy": "PreemptLowerPriority",
+                "priority": 0,
+                "restartPolicy": "Always",
+                "schedulerName": "default-scheduler",
+                "securityContext": {},
+                "serviceAccount": "default",
+                "serviceAccountName": "default",
+                "terminationGracePeriodSeconds": 30,
+                "tolerations": [
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/not-ready",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    },
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/unreachable",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    }
+                ],
+                "volumes": [
+                    {
+                        "name": "postgres-storage",
+                        "persistentVolumeClaim": {
+                            "claimName": "postgres-pvc"
+                        }
+                    },
+                    {
+                        "name": "kube-api-access-lwmwd",
+                        "projected": {
+                            "defaultMode": 420,
+                            "sources": [
+                                {
+                                    "serviceAccountToken": {
+                                        "expirationSeconds": 3607,
+                                        "path": "token"
+                                    }
+                                },
+                                {
+                                    "configMap": {
+                                        "items": [
+                                            {
+                                                "key": "ca.crt",
+                                                "path": "ca.crt"
+                                            }
+                                        ],
+                                        "name": "kube-root-ca.crt"
+                                    }
+                                },
+                                {
+                                    "downwardAPI": {
+                                        "items": [
+                                            {
+                                                "fieldRef": {
+                                                    "apiVersion": "v1",
+                                                    "fieldPath": "metadata.namespace"
+                                                },
+                                                "path": "namespace"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-28T10:51:32Z",
+                        "message": "0/4 nodes are available: pod has unbound immediate PersistentVolumeClaims. preemption: 0/4 nodes are available: 4 Preemption is not helpful for scheduling.",
+                        "reason": "Unschedulable",
+                        "status": "False",
+                        "type": "PodScheduled"
+                    }
+                ],
+                "phase": "Pending",
+                "qosClass": "BestEffort"
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": ""
+    }
+}

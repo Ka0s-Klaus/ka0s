@@ -1,0 +1,108 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "metadata": {
+                "annotations": {
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"Service\",\"metadata\":{\"annotations\":{},\"labels\":{\"app\":\"n8n\",\"core.kaos.io/type\":\"automation\"},\"name\":\"n8n\",\"namespace\":\"n8n\"},\"spec\":{\"loadBalancerIP\":\"192.168.1.245\",\"ports\":[{\"name\":\"http\",\"port\":5678,\"protocol\":\"TCP\",\"targetPort\":5678}],\"selector\":{\"app\":\"n8n\"},\"type\":\"LoadBalancer\"}}\n"
+                },
+                "creationTimestamp": "2026-01-26T14:34:34Z",
+                "labels": {
+                    "app": "n8n",
+                    "core.kaos.io/type": "automation"
+                },
+                "name": "n8n",
+                "namespace": "n8n",
+                "resourceVersion": "7067501",
+                "uid": "fbe2cbda-2fb6-48eb-b77a-a9ee4a150d05"
+            },
+            "spec": {
+                "allocateLoadBalancerNodePorts": true,
+                "clusterIP": "10.109.115.158",
+                "clusterIPs": [
+                    "10.109.115.158"
+                ],
+                "externalTrafficPolicy": "Cluster",
+                "internalTrafficPolicy": "Cluster",
+                "ipFamilies": [
+                    "IPv4"
+                ],
+                "ipFamilyPolicy": "SingleStack",
+                "loadBalancerIP": "192.168.1.245",
+                "ports": [
+                    {
+                        "name": "http",
+                        "nodePort": 31654,
+                        "port": 5678,
+                        "protocol": "TCP",
+                        "targetPort": 5678
+                    }
+                ],
+                "selector": {
+                    "app": "n8n"
+                },
+                "sessionAffinity": "None",
+                "type": "LoadBalancer"
+            },
+            "status": {
+                "loadBalancer": {
+                    "ingress": [
+                        {
+                            "ip": "192.168.1.245",
+                            "ipMode": "VIP"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "metadata": {
+                "annotations": {
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"Service\",\"metadata\":{\"annotations\":{},\"labels\":{\"app\":\"postgres\"},\"name\":\"postgres\",\"namespace\":\"n8n\"},\"spec\":{\"ports\":[{\"port\":5432,\"targetPort\":5432}],\"selector\":{\"app\":\"postgres\"}}}\n"
+                },
+                "creationTimestamp": "2026-01-26T14:13:07Z",
+                "labels": {
+                    "app": "postgres"
+                },
+                "name": "postgres",
+                "namespace": "n8n",
+                "resourceVersion": "7062246",
+                "uid": "8cc256e5-5bac-41a1-b2e8-acd04173bc16"
+            },
+            "spec": {
+                "clusterIP": "10.109.29.14",
+                "clusterIPs": [
+                    "10.109.29.14"
+                ],
+                "internalTrafficPolicy": "Cluster",
+                "ipFamilies": [
+                    "IPv4"
+                ],
+                "ipFamilyPolicy": "SingleStack",
+                "ports": [
+                    {
+                        "port": 5432,
+                        "protocol": "TCP",
+                        "targetPort": 5432
+                    }
+                ],
+                "selector": {
+                    "app": "postgres"
+                },
+                "sessionAffinity": "None",
+                "type": "ClusterIP"
+            },
+            "status": {
+                "loadBalancer": {}
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": ""
+    }
+}

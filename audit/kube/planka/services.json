@@ -1,0 +1,101 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "metadata": {
+                "annotations": {
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"Service\",\"metadata\":{\"annotations\":{},\"name\":\"planka\",\"namespace\":\"planka\"},\"spec\":{\"loadBalancerIP\":\"192.168.1.244\",\"ports\":[{\"name\":\"https\",\"port\":30037,\"protocol\":\"TCP\",\"targetPort\":8443}],\"selector\":{\"app\":\"planka\"},\"type\":\"LoadBalancer\"}}\n"
+                },
+                "creationTimestamp": "2026-01-26T09:12:52Z",
+                "name": "planka",
+                "namespace": "planka",
+                "resourceVersion": "7019433",
+                "uid": "8007b3c7-7839-4b13-83a3-c72310de0644"
+            },
+            "spec": {
+                "allocateLoadBalancerNodePorts": true,
+                "clusterIP": "10.99.220.76",
+                "clusterIPs": [
+                    "10.99.220.76"
+                ],
+                "externalTrafficPolicy": "Cluster",
+                "internalTrafficPolicy": "Cluster",
+                "ipFamilies": [
+                    "IPv4"
+                ],
+                "ipFamilyPolicy": "SingleStack",
+                "loadBalancerIP": "192.168.1.244",
+                "ports": [
+                    {
+                        "name": "https",
+                        "nodePort": 32502,
+                        "port": 30037,
+                        "protocol": "TCP",
+                        "targetPort": 8443
+                    }
+                ],
+                "selector": {
+                    "app": "planka"
+                },
+                "sessionAffinity": "None",
+                "type": "LoadBalancer"
+            },
+            "status": {
+                "loadBalancer": {
+                    "ingress": [
+                        {
+                            "ip": "192.168.1.244",
+                            "ipMode": "VIP"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "metadata": {
+                "annotations": {
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"Service\",\"metadata\":{\"annotations\":{},\"name\":\"planka-db\",\"namespace\":\"planka\"},\"spec\":{\"ports\":[{\"port\":5432,\"protocol\":\"TCP\",\"targetPort\":5432}],\"selector\":{\"app\":\"planka-db\"}}}\n"
+                },
+                "creationTimestamp": "2026-01-26T09:12:51Z",
+                "name": "planka-db",
+                "namespace": "planka",
+                "resourceVersion": "7019388",
+                "uid": "fe754c3e-19ef-485f-8c0a-923145fdd3f7"
+            },
+            "spec": {
+                "clusterIP": "10.101.188.36",
+                "clusterIPs": [
+                    "10.101.188.36"
+                ],
+                "internalTrafficPolicy": "Cluster",
+                "ipFamilies": [
+                    "IPv4"
+                ],
+                "ipFamilyPolicy": "SingleStack",
+                "ports": [
+                    {
+                        "port": 5432,
+                        "protocol": "TCP",
+                        "targetPort": 5432
+                    }
+                ],
+                "selector": {
+                    "app": "planka-db"
+                },
+                "sessionAffinity": "None",
+                "type": "ClusterIP"
+            },
+            "status": {
+                "loadBalancer": {}
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": ""
+    }
+}
