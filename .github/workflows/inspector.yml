@@ -102,9 +102,9 @@ jobs:
           else
             echo "Se ha encontrado el issue asociado a la ejecución."
           fi       
-  handle_failure:
+  handle-failure:
     runs-on: swarm-runners-scaleset
-    needs: [job-core, handle-success]
+    needs: [job-core]
     if: ${{ failure() }}
     steps:
       - id: handle-failure-execution
