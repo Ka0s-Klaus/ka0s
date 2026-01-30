@@ -1,0 +1,119 @@
+name: Sincronización Planka-GitHub Ramas
+
+on:
+  schedule:
+    # Ejecutar cada 5 minutos
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+    # Permite ejecución manual desde la pestaña Actions
+
+jobs:
+  create-branches-from-planka:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Necesario para crear ramas
+    
+    env:
+      # URL base detectada en tu configuración, ajústala en Secrets si es diferente
+      PLANKA_BASE_URL: ${{ secrets.PLANKA_BASE_URL }}
+      PLANKA_API_TOKEN: ${{ secrets.PLANKA_API_TOKEN }}
+      PLANKA_BOARD_ID: ${{ secrets.PLANKA_BOARD_ID }}
+      # Nombre exacto de la columna a monitorear
+      TARGET_LIST_NAME: "To Do"
+      
+    steps:
+      - name: Instalar dependencias
+        run: sudo apt-get update && sudo apt-get install -y jq curl
+
+      - name: Verificar configuración
+        run: |
+          if [ -z "$PLANKA_BASE_URL" ]; then echo "Error: PLANKA_BASE_URL no está definido en Secrets"; exit 1; fi
+          if [ -z "$PLANKA_API_TOKEN" ]; then echo "Error: PLANKA_API_TOKEN no está definido en Secrets"; exit 1; fi
+          if [ -z "$PLANKA_BOARD_ID" ]; then echo "Error: PLANKA_BOARD_ID no está definido en Secrets"; exit 1; fi
+          echo "Configuración verificada. Conectando a $PLANKA_BASE_URL..."
+
+      - name: Sincronizar tarjetas y crear ramas
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          
+          # 1. Obtener información del repositorio
+          echo "Obteniendo información del repositorio..."
+          owner_repo="${GITHUB_REPOSITORY}"
+          base_branch="$(curl -s -H "Authorization: Bearer ${GH_TOKEN}" "https://api.github.com/repos/${owner_repo}" | jq -r .default_branch)"
+          base_sha="$(curl -s -H "Authorization: Bearer ${GH_TOKEN}" "https://api.github.com/repos/${owner_repo}/git/refs/heads/${base_branch}" | jq -r .object.sha)"
+          
+          if [ -z "$base_sha" ] || [ "$base_sha" == "null" ]; then
+            echo "Error: No se pudo obtener el SHA de la rama base ($base_branch)."
+            exit 1
+          fi
+          echo "Rama base: $base_branch ($base_sha)"
+
+          # 2. Obtener el tablero y buscar el ID de la lista "To Do"
+          echo "Consultando tablero en Planka (ID: $PLANKA_BOARD_ID)..."
+          # Nota: Ajusta el endpoint según la versión de tu API de Planka si es necesario.
+          # Asumimos que /api/boards/:id devuelve included.lists y included.cards
+          
+          board_response=$(curl -s -H "Authorization: Bearer ${PLANKA_API_TOKEN}" "${PLANKA_BASE_URL}/api/boards/${PLANKA_BOARD_ID}")
+          
+          # Verificar si la respuesta es válida
+          if echo "$board_response" | jq -e .code >/dev/null; then
+             err_code=$(echo "$board_response" | jq -r .code)
+             echo "Error al conectar con Planka: $err_code"
+             echo "Respuesta: $board_response"
+             exit 1
+          fi
+
+          # Extraer ID de la lista objetivo
+          list_id=$(echo "$board_response" | jq -r --arg name "$TARGET_LIST_NAME" '.included.lists[] | select(.name==$name) | .id' | head -n 1)
+          
+          if [ -z "$list_id" ] || [ "$list_id" == "null" ]; then
+            echo "Error: No se encontró la lista llamada '$TARGET_LIST_NAME' en el tablero."
+            echo "Listas disponibles:"
+            echo "$board_response" | jq -r '.included.lists[].name'
+            exit 1
+          fi
+          echo "ID de lista '$TARGET_LIST_NAME' encontrado: $list_id"
+
+          # 3. Procesar tarjetas de esa lista que empiecen por [H]
+          echo "Buscando tarjetas con [H] en la lista..."
+          
+          # Filtramos tarjetas que pertenecen a la lista Y cuyo nombre empieza por [H]
+          echo "$board_response" | jq -c --arg list_id "$list_id" '.included.cards[] | select(.listId==$list_id and (.name | test("^\\[H\\]"))) | {id, name}' | while read -r card; do
+            original_title=$(echo "$card" | jq -r .name)
+            
+            # Limpiar título para crear nombre de rama
+            # Quitar [H]
+            stripped="${original_title#\[H\]}"
+            # Quitar espacios iniciales/finales
+            stripped="$(echo "$stripped" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+            # Convertir a slug (minúsculas, reemplazar no-alfanuméricos con guiones)
+            slug="$(echo "$stripped" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9._-]/-/g' | sed 's/-\{2,\}/-/g' | sed 's/^-\\|-$//g')"
+            
+            branch_name="H-${slug}"
+            
+            echo "Procesando tarjeta: '$original_title' -> Rama: '$branch_name'"
+            
+            # 4. Verificar si la rama ya existe en GitHub
+            status_code=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer ${GH_TOKEN}" "https://api.github.com/repos/${owner_repo}/git/refs/heads/${branch_name}")
+            
+            if [ "$status_code" = "404" ]; then
+              echo "La rama '$branch_name' no existe. Creándola..."
+              create_response=$(curl -s -X POST -H "Authorization: Bearer ${GH_TOKEN}" -H "Content-Type: application/json" \
+                "https://api.github.com/repos/${owner_repo}/git/refs" \
+                -d "{\"ref\":\"refs/heads/${branch_name}\",\"sha\":\"${base_sha}\"}")
+              
+              if echo "$create_response" | jq -e .ref >/dev/null; then
+                echo "✅ Rama '$branch_name' creada exitosamente."
+              else
+                echo "❌ Error al crear la rama '$branch_name'."
+                echo "Respuesta GitHub: $create_response"
+              fi
+            elif [ "$status_code" = "200" ]; then
+              echo "ℹ️ La rama '$branch_name' ya existe. Saltando."
+            else
+              echo "⚠️ Error verificando rama '$branch_name'. Código HTTP: $status_code"
+            fi
+            
+          done
