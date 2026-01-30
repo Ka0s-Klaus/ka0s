@@ -63,7 +63,8 @@ jobs:
           # Nota: Ajusta el endpoint según la versión de tu API de Planka si es necesario.
           # Asumimos que /api/boards/:id devuelve included.lists y included.cards
           
-          board_response=$(curl -s -k -H "Authorization: Bearer ${PLANKA_API_TOKEN}" "${PLANKA_BASE_URL}/api/boards/${PLANKA_BOARD_ID}")
+          echo "${{ secrets.PLANKA_CA_CERT }}" > /tmp/planka-ca.crt
+          board_response=$(curl -s --cacert /tmp/planka-ca.crt -H "Authorization: Bearer ${PLANKA_API_TOKEN}" "${PLANKA_BASE_URL}/api/boards/${PLANKA_BOARD_ID}")
           
           # Validar JSON
           if ! echo "$board_response" | jq -e '.' >/dev/null; then
