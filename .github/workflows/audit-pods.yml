@@ -7,10 +7,16 @@ on:
 
 permissions:
   contents: write
+  actions: write
+  issues: write
+
+env:
+  KAOS_MODULE: "[Ka0S] Audit Pods"
+  KAOS_CODE: ${{ github.run_id }}
 
 jobs:
   audit-pods:
-    runs-on: ubuntu-latest
+    runs-on: swarm-runners-scaleset
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -38,3 +44,44 @@ jobs:
           else
             echo "No changes in failed pods report."
           fi
+
+  handle-success:
+    runs-on: swarm-runners-scaleset
+    needs: [audit-pods]
+    if: ${{ success() }}
+    steps: 
+      - id: handle-success-execution
+        run: |
+          echo "${{ env.KAOS_MODULE }} Success in runid ${{ github.run_id }} initiated."
+          
+  handle_failure:
+      runs-on: swarm-runners-scaleset
+      needs: [audit-pods]
+      if: ${{ failure() }} 
+      steps: 
+        - id: check-execution
+          run: |
+            echo "Error detected in ${{ env.KAOS_MODULE }}, creating issue..."
+            
+  end-workflow:
+    runs-on: swarm-runners-scaleset
+    needs: [audit-pods, handle-success, handle_failure]
+    if: ${{ always() }} 
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - id: repo
+        name: Checkout code
+        if: ${{ always() }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+
+      - id: end-process
+        name: Finaliza el workflow
+        run: |
+          echo "End process"
+          gh workflow run inspector.yml --ref ${{ github.ref }} -f kaos-workflow-id="${{ env.KAOS_CODE }}"

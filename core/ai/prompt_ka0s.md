@@ -58,6 +58,13 @@ La mayoría de las operaciones no ocurren en el runner de GitHub, sino en la inf
 ### 4.2. GitHub (Orquestador)
 *   Ver `core/ai/prompt_github.md` para detalles específicos.
 *   Seguridad ante todo: Secrets, OIDC, y permisos mínimos.
+*   **Estandarización de Workflows (MANDATORIO)**:
+    1.  **Runners**: SIEMPRE utilizar `runs-on: swarm-runners-scaleset`. Está prohibido usar `ubuntu-latest`.
+    2.  **Ciclo de Vida**: Todo workflow debe incluir los jobs de cierre estándar para trazabilidad:
+        *   `handle-success`: Log de éxito.
+        *   `handle_failure`: Creación de issues en caso de error.
+        *   `end-workflow`: Disparador final del `inspector.yml`.
+    3.  **Variables de Entorno**: Definir `KAOS_MODULE` (Nombre legible) y `KAOS_CODE` (Run ID) al inicio.
 
 ### 4.3. iTop (CMDB)
 *   Cualquier cambio de configuración mayor debería (idealmente) reflejarse o consultarse en la CMDB.
