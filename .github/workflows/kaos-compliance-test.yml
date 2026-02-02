@@ -130,3 +130,21 @@ jobs:
         run: |
           echo "❌ Failed: Expected failed-file.html to fail validation, but it passed."
           exit 1
+
+  handle-success:
+    runs-on: swarm-runners-scaleset
+    needs: [test-json, test-yaml, test-markdown, test-html]
+    if: ${{ success() }}
+    steps: 
+      - id: handle-success-execution
+        run: |
+          echo "${{ env.KAOS_MODULE }} Success in runid ${{ github.run_id }} initiated."
+          
+  handle_failure:
+      runs-on: swarm-runners-scaleset
+      needs: [test-json, test-yaml, test-markdown, test-html]
+      if: ${{ failure() }} 
+      steps: 
+        - id: check-execution
+          run: |
+            echo "Error detected in ${{ env.KAOS_MODULE }}, creating issue..."

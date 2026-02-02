@@ -15,6 +15,13 @@ if ! command -v trivy &> /dev/null; then
     curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin
 fi
 
+# Ensure Kubectl context is correctly set for Trivy
+echo "Verifying Kubernetes connection for Trivy..."
+export KUBECONFIG=~/.kube/config
+kubectl cluster-info
+CURRENT_CTX=$(kubectl config current-context)
+echo "Current Kubernetes Context: $CURRENT_CTX"
+
 echo "## 8. Resumen de Vulnerabilidades (Cluster)" >> "$OUTPUT_FILE"
 echo "Escaneo de vulnerabilidades críticas y altas en el clúster:" >> "$OUTPUT_FILE"
 echo '```' >> "$OUTPUT_FILE"
@@ -22,7 +29,7 @@ echo '```' >> "$OUTPUT_FILE"
 # Run Trivy K8s scan
 # We limit to High/Critical severities to keep the report readable
 # We focus on the summary first
-trivy k8s --report summary --severity HIGH,CRITICAL --scanners vuln,misconfig,secret cluster >> "$OUTPUT_FILE"
+trivy k8s --context "$CURRENT_CTX" --report summary --severity HIGH,CRITICAL --scanners vuln,misconfig,secret cluster >> "$OUTPUT_FILE"
 
 echo '```' >> "$OUTPUT_FILE"
 echo "" >> "$OUTPUT_FILE"
@@ -33,7 +40,7 @@ echo '```' >> "$OUTPUT_FILE"
 # More detailed scan but limited output? 
 # Using json output to parse might be better, but for now let's append a text table for specific workloads if needed.
 # For this "overview" report, the summary above is often enough, but let's try to list images with most critical CVEs.
-trivy k8s --format json --severity CRITICAL --scanners vuln cluster | jq -r '
+trivy k8s --context "$CURRENT_CTX" --format json --severity CRITICAL --scanners vuln cluster | jq -r '
   .Resources[]? 
   | select(.Results[]?.Vulnerabilities != null)
   | {
