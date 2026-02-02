@@ -1,22 +1,13 @@
-# Añadimos únicamente el titulo
+# Ka0s Project Documentation
 
-## Subtitulo 1
+## Overview
 
-### Subtitulo 2
+This is a compliant Markdown file. It follows the standard header structure.
 
-#### Subtitulo 3
+*   Item 1
+*   Item 2
+*   Item 3
 
-#### Subtitulo 4
+## Configuration
 
-##### Subtitulo 6
-
-- primera cita
-- segunda cita
-- tercera cita
-
-**Resaltado** y ahora con cursiva *queda asi*
-
-```shell
-    en medio escribimos codigo
-    #/bin/bash 
-```
+The configuration is simple and clean.
