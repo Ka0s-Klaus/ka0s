@@ -46,6 +46,15 @@ jobs:
             echo "No changes in failed pods report."
           fi
 
+      - name: Process Tickets in iTop
+        if: success()
+        env:
+          ITOP_URL: ${{ secrets.ITOP_URL || vars.ITOP_URL }}
+          ITOP_USER: ${{ secrets.ITOP_API_USER }}
+          ITOP_PASSWORD: ${{ secrets.ITOP_API_PASSWORD }}
+          FAILED_PODS_FILE: 'audit/kube/failed_pods.json'
+        run: python3 devops/core/k8s/process-failed-pods.py
+
   handle-success:
     runs-on: swarm-runners-scaleset
     needs: [audit-pods]
