@@ -5,8 +5,12 @@ Este documento es la **Constitución Técnica** del proyecto Ka0s. Define la arq
 ## 1. Visión del Proyecto
 **Ka0s** no es solo un repositorio, es una **Plataforma de Ingeniería Interna (IDP) y AIOps**.
 *   **Objetivo**: Orquestar infraestructura, seguridad y operaciones de TI de forma automatizada, auditable y resiliente.
-*   **Filosofía**: "Managed Chaos". Control total sobre entornos complejos mediante automatización estricta.
-*   **Actores**: GitHub Actions (Orquestador), Kubernetes (Motor), iTop (CMDB/Gobernanza), Wazuh/ELK (Seguridad/Observabilidad).
+*   **Filosofía**: "Managed Chaos" -> **"Automated Order"**. Control total sobre entornos complejos mediante automatización estricta y autocuración.
+*   **Actores**:
+    *   **GitHub Actions** (Cerebro/Orquestador).
+    *   **Kubernetes** (Músculo/Motor).
+    *   **iTop** (Memoria/Gobernanza Activa).
+    *   **Wazuh/ELK** (Sentidos/Observabilidad).
 
 ## 2. Estructura del Workspace (Mapa Sagrado)
 Respetar estrictamente esta estructura de directorios. No crear carpetas raíz nuevas sin autorización expresa.
@@ -42,12 +46,23 @@ La mayoría de las operaciones no ocurren en el runner de GitHub, sino en la inf
 *   **Ubicación**: Los scripts deben permitir configurar el directorio de salida, pero por defecto el workflow los moverá a la carpeta `audit/` correspondiente en el repo.
 
 ### 3.3. Desarrollo de Código
-*   **Lenguajes**: Bash (Scripting de sistema), Python (Lógica compleja/Data), YAML (Configuración).
-*   **Manejo de Errores**: Scripts Bash con `set -e`. Scripts Python con `try/except` y logging.
+*   **Lenguajes**: Bash (Scripting de sistema), Python (Lógica compleja/Data/API), YAML (Configuración).
+*   **Manejo de Errores**:
+    *   **Bash**: `set -e` obligatorio.
+    *   **Python**: Bloques `try/except` robustos, especialmente para llamadas de red (HTTP 502/503). Logs claros con prefijos `[INFO]`, `[WARN]`, `[FATAL]`.
 *   **Documentación**: Todo script nuevo debe ir acompañado de un `.md` (mismo nombre base) explicando:
     1.  Propósito.
     2.  Inputs requeridos.
     3.  Ejemplo de integración en workflow.
+
+### 3.4. Filosofía de Autocuración (Self-Healing)
+No basta con detectar errores; debemos gestionarlos.
+1.  **Detección**: El script identifica una anomalía (ej. Pod Failed).
+2.  **Reconciliación**: Consultar la "Fuente de Verdad" (iTop) antes de actuar.
+    *   *¿Ya existe un ticket?* -> Ignorar (evitar ruido).
+    *   *¿Es nuevo?* -> Crear ticket/alerta.
+    *   *¿Desapareció el error?* -> Cerrar ticket automáticamente.
+3.  **Resiliencia**: Si la herramienta de gestión (iTop) falla, el proceso debe degradarse elegantemente (loguear error y continuar o abortar limpiamente), nunca colgarse.
 
 ## 4. Integraciones Clave
 
@@ -66,12 +81,16 @@ La mayoría de las operaciones no ocurren en el runner de GitHub, sino en la inf
         *   `end-workflow`: Disparador final del `inspector.yml`.
     3.  **Variables de Entorno**: Definir `KAOS_MODULE` (Nombre legible) y `KAOS_CODE` (Run ID) al inicio.
 
-### 4.3. iTop (CMDB)
-*   Cualquier cambio de configuración mayor debería (idealmente) reflejarse o consultarse en la CMDB.
+### 4.3. iTop (Gobernanza Activa)
+*   **Rol**: No es solo un inventario, es el registro de estado de las operaciones.
+*   **Interacción**:
+    *   **Lectura**: Verificar estado antes de crear duplicados.
+    *   **Escritura**: Registrar incidentes (UserRequest) y cambios (Change).
+    *   **Cierre**: Autocompletar tickets si la condición de fallo desaparece.
 
 ## 5. Instrucciones para el Agente
 Al recibir una tarea:
 1.  **Clasificar**: ¿Es infraestructura (K8s), automatización (GitHub) o auditoría?
 2.  **Consultar**: Leer el prompt especializado correspondiente (`prompt_kubernetes.md`, etc.) si es necesario.
 3.  **Planificar**: Definir dónde irá el script (`devops/`), dónde irá el workflow (`.github/workflows/`) y dónde caerá el resultado (`audit/`).
-4.  **Ejecutar**: Generar código siguiendo los estándares de este archivo.
+4.  **Ejecutar**: Generar código siguiendo los estándares de este archivo, priorizando siempre la **Autocuración**.
