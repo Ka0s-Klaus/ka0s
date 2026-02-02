@@ -1,4 +1,4 @@
-name: Ka0s JSON Lint
+name: Ka0s JSON Compliance
 
 on:
   workflow_dispatch:
@@ -27,9 +27,9 @@ permissions:
   pull-requests: write
 
 env:
-  KAOS_MODULE: "[Ka0S] JSONLINT"
+  KAOS_MODULE: "[Ka0S] JSON COMPLIANCE"
   GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
-  KAOS_JSONLINT_CONFIG: "core/config/.jsonlint.json"
+  KAOS_PRETTIER_CONFIG: "compliance/json/.prettierrc.json"
   KAOS_PATH_RESUME: "audit/jsonlint/"
   KAOS_REPO: "/actions-runner/_work/kaos/kaos"
   KAOS_STEP_MODULE: ""
@@ -45,139 +45,136 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      # con esta parte suplimos que la imagen no disponga de la cli de GH    
+      
+      # Suplimos falta de GH CLI en imagen
       - name: Install GH CLI
         uses: ./.github/actions/install-gh-cli
 
       - id: install-node
         name: Install Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
-          node-version: '14'
-      - id: install-jsonlint
-        name: Install jsonlint
+          node-version: '20'
+
+      - id: install-tools
+        name: Install Compliance Tools
         run: |
-            if ! command -v jsonlint &> /dev/null; then
-              echo "Installing jsonlint..."
-              npm install -g jsonlint
-            else
-              echo "jsonlint already installed, skipping installation"
-            fi
+            echo "Installing jsonlint and prettier..."
+            npm install -g jsonlint prettier
             mkdir -p ${{ env.KAOS_PATH_RESUME }}
+
       - id: check-json
-        name: Check JSON
-        if: ${{ contains(github.event.inputs.kaos-files, '.json') && github.workspace }}/${{ github.event.inputs.kaos-files }}
+        name: Check and Self-Heal JSON
+        if: ${{ contains(github.event.inputs.kaos-files, '.json') }}
         env:
            GH_TOKEN: ${{ github.token }}
         run: |
-            # Invocamos la primera comprobación de base, sino se supera el proceso no continua
-            # Extraemos el nombre del fichero
-            file_name=$(basename "${{ github.event.inputs.kaos-files }}")
-            # Generamos el fichero de resultados vacio
-            touch ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt
-            # Realizamos el check del documento json 
-            jsonlint --pretty-print ${{ github.event.inputs.kaos-files }} > ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt || true
-            # Check if exist errors in file
-            if [ ! -s ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt ]; then
-              echo "File ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt is empty and is content correct"
-              KAOS_ISSUE_BODY="The ${{ env.KAOS_MODULE }} process (${{ github.event.inputs.kaos-origin }}) launch the check (${{ github.run_id }}) over file (${{ github.event.inputs.kaos-files }}) and its result has been SUCCESS. Please review all files implicated in pull request and approve to merge"
-              # Añadimos la versión de jsonlint con la que se realiza la comprobacion
-              jsonlint --version >> ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt
-              # añadimos el nombre del fichero que vamos a comprobar
-              echo "Finding: ${{ github.event.inputs.kaos-files }}" >> ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt
-              gh issue comment  ${{ github.event.inputs.kaos-issue-id }} -b "$KAOS_ISSUE_BODY" 
+            # Archivo a comprobar
+            FILE="${{ github.event.inputs.kaos-files }}"
+            FILE_NAME=$(basename "$FILE")
+            RESUME_FILE="${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt"
+            
+            echo "Starting Compliance Check for: $FILE" > "$RESUME_FILE"
+            
+            # 1. Validación de Sintaxis (JSONLint) - No recuperable automáticamente
+            if ! jsonlint -q "$FILE"; then
+              echo "❌ Syntax Error detected by JSONLint" >> "$RESUME_FILE"
+              jsonlint "$FILE" >> "$RESUME_FILE" 2>&1 || true
+              
+              KAOS_ISSUE_BODY="The ${{ env.KAOS_MODULE }} process (${{ github.event.inputs.kaos-origin }}) failed. File ($FILE) has INVALID JSON SYNTAX. Please fix manually."
+              gh issue comment ${{ github.event.inputs.kaos-issue-id }} -b "$KAOS_ISSUE_BODY"
+              exit 1
             else
-              cat ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt
-              echo "File ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt is not empty and is content not correct and write commit info"
-              KAOS_ISSUE_BODY="The ${{ env.KAOS_MODULE }} process (${{ github.event.inputs.kaos-origin }}) launch the check (${{ github.run_id }}) over file (${{ github.event.inputs.kaos-files }}) and its result has been FAILED, please check and solved it"
-              # Añadimos la versión de jsonlint con la que se realiza la comprobacion
-              jsonlint --version || true >> ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt
-              # añadimos el nombre del fichero que vamos a comprobar
-              echo "Finding: ${{ github.event.inputs.kaos-files }}" >> ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt
-              gh issue comment  ${{ github.event.inputs.kaos-issue-id }} -b "$KAOS_ISSUE_BODY" 
+              echo "✅ Syntax Check Passed" >> "$RESUME_FILE"
             fi
-            echo "Uploading files to the repository..."
-            git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
-            git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
-            git pull --rebase
-            git add ${{ env.KAOS_PATH_RESUME }}*
-            if ! git diff --staged --quiet; then
-              git commit -m "[Ka0S] Uploading jsonlint resume execution files to the repository..."
-              git push origin ${{ github.ref }} --force-with-lease
+
+            # 2. Validación de Cumplimiento (Prettier) - Recuperable (Self-Healing)
+            if ! prettier --check "$FILE" --config "${{ env.KAOS_PRETTIER_CONFIG }}"; then
+              echo "⚠️ Compliance/Style Error detected. Attempting Self-Healing..." >> "$RESUME_FILE"
+              
+              # Self-Healing: Aplicar formato
+              if prettier --write "$FILE" --config "${{ env.KAOS_PRETTIER_CONFIG }}"; then
+                echo "✅ Self-Healing Successful: File formatted to Ka0s Standards." >> "$RESUME_FILE"
+                
+                # Commit de la corrección
+                git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
+                git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
+                git add "$FILE"
+                if ! git diff --staged --quiet; then
+                  git commit -m "[Ka0S] Self-Healing: Auto-formatting JSON compliance for $FILE_NAME"
+                  git push origin ${{ github.ref }} --force-with-lease
+                  echo "🔄 Changes pushed to repository." >> "$RESUME_FILE"
+                fi
+                
+                KAOS_ISSUE_BODY="The ${{ env.KAOS_MODULE }} process (${{ github.event.inputs.kaos-origin }}) detected style violations in ($FILE) but successfully performed SELF-HEALING. No action required."
+                gh issue comment ${{ github.event.inputs.kaos-issue-id }} -b "$KAOS_ISSUE_BODY"
+              else
+                echo "❌ Self-Healing Failed." >> "$RESUME_FILE"
+                exit 1
+              fi
+            else
+              echo "✅ Compliance Check Passed (No changes needed)" >> "$RESUME_FILE"
+              KAOS_ISSUE_BODY="The ${{ env.KAOS_MODULE }} process (${{ github.event.inputs.kaos-origin }}) successfully validated file ($FILE). All checks passed."
+              gh issue comment ${{ github.event.inputs.kaos-issue-id }} -b "$KAOS_ISSUE_BODY"
             fi
+            
+            cat "$RESUME_FILE"
+
+      - id: upload-logs
+        name: Upload Logs
+        if: always()
+        run: |
+             # Subir logs de auditoría si existen
+             if [ -f "${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt" ]; then
+                git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
+                git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
+                git pull --rebase
+                git add ${{ env.KAOS_PATH_RESUME }}*
+                if ! git diff --staged --quiet; then
+                   git commit -m "[Ka0S] Uploading JSON compliance audit logs"
+                   git push origin ${{ github.ref }} --force-with-lease
+                fi
+             fi
+
   handle-success:
      runs-on: swarm-runners-scaleset
      needs: [job-core]
      if: ${{ success() }}
      steps:
-       - id: repo
-         name: Checkout code
-         if: ${{ always() }}
-         uses: actions/checkout@v4
-         with:
-           fetch-depth: 0
-
-      # con esta parte suplimos que la imagen no disponga de la cli de GH    
-       - name: Install GH CLI
-         uses: ./.github/actions/install-gh-cli
-
-       - id: handle-success-execution
-         name: handle-success-execution
+       - uses: actions/checkout@v4
+       - uses: ./.github/actions/install-gh-cli
+       - name: Notify Success
          env:
            GH_TOKEN: ${{ github.token }}
          run: |
-           # Si todo ha ido correcto añadimos el contenido del fichero 
            RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
-           gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero ${{ env.KAOS_CODE }}.log"
+           gh issue comment $RNNUMBER --body "✅ JSON Compliance finalizado correctamente ${{ env.KAOS_CODE }}."
+
   handle_failure:
     runs-on: swarm-runners-scaleset
     needs: [job-core, handle-success]
     if: ${{ failure() }} 
     steps:
-      - id: repo
-        name: Checkout code
-        if: ${{ always() }}
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      # con esta parte suplimos que la imagen no disponga de la cli de GH    
-      - name: Install GH CLI
-        uses: ./.github/actions/install-gh-cli
-
-      - id: handle-failure-execution
-        name: handle-failure-execution
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/install-gh-cli
+      - name: Notify Failure
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          echo "Error detected in process"
-          echo "Created issue"
-          gh issue create  --title "${{ env.KAOS_MODULE }} Error detected in ${{ env.KAOS_CODE }}" --label "bug" --body "Please check the logs 'https://github.com/Ka0s-Klaus/ka0s/actions/runs/${{ env.KAOS_CODE }}' for more information of error."
-          echo "Add comment to origin target"
+          gh issue create --title "${{ env.KAOS_MODULE }} Error in ${{ env.KAOS_CODE }}" --label "bug" --body "Check logs: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
-          gh issue comment $RNNUMBER --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero ${{ env.KAOS_CODE }}.log"
+          gh issue comment $RNNUMBER --body "❌ El proceso de Compliance ha fallado ${{ env.KAOS_CODE }}."
+
   end-workflow:
     runs-on: swarm-runners-scaleset
     needs: [job-core, handle-success, handle_failure]
     if: ${{ always() }} 
-    env:
-        GH_TOKEN: ${{ github.token }}
     steps:
-      - id: repo
-        name: Checkout code
-        if: ${{ always() }}
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      # con esta parte suplimos que la imagen no disponga de la cli de GH    
-      - name: Install GH CLI
-        uses: ./.github/actions/install-gh-cli
-        
-      - id: end-process
-        name: Finaliza el workflow
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/install-gh-cli
+      - name: End Workflow
+        env:
+            GH_TOKEN: ${{ github.token }}
         run: |
-          echo "End process"
           RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
-          gh issue comment $RNNUMBER --body "Se finaliza Ka0s ${{ env.KAOS_CODE }}"
           gh workflow run inspector.yml --ref 'main' -f kaos-issue-id=$RNNUMBER -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start=""
