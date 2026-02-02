@@ -31,10 +31,28 @@ def itop_request(url, data, headers):
     ctx.verify_mode = ssl.CERT_NONE
     
     encoded_data = urllib.parse.urlencode({'json_data': json.dumps(data)}).encode('utf-8')
-    req = urllib.request.Request(f"{url}/webservices/rest.php?version=1.3", data=encoded_data, headers=headers, method='POST')
+    full_url = f"{url}/webservices/rest.php?version=1.3"
+    print(f"[DEBUG] POST to {full_url}")
     
-    with urllib.request.urlopen(req, context=ctx) as response:
-        return json.loads(response.read().decode('utf-8'))
+    req = urllib.request.Request(full_url, data=encoded_data, headers=headers, method='POST')
+    
+    try:
+        with urllib.request.urlopen(req, context=ctx) as response:
+            return json.loads(response.read().decode('utf-8'))
+    except urllib.error.HTTPError as e:
+        print(f"[FATAL] HTTP Error {e.code}: {e.reason}")
+        try:
+            error_body = e.read().decode('utf-8')
+            print(f"[FATAL] Response Body: {error_body}")
+        except:
+            print("[FATAL] Could not read error body")
+        sys.exit(1)
+    except urllib.error.URLError as e:
+        print(f"[FATAL] URL Error: {e.reason}")
+        sys.exit(1)
+    except Exception as e:
+        print(f"[FATAL] Unexpected Error: {e}")
+        sys.exit(1)
 
 def get_open_tickets(itop_url, headers):
     """
