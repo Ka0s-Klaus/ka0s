@@ -14,11 +14,15 @@ Este documento define el contexto para un agente de Trae.ai, configurándolo com
 
 ## 3. Reglas de Operación y Entrega (MANDATORIO)
 
-### 3.1. Ubicación de Salida
+### 3.1. Ubicación de Salida de Código
 Todo código, script o documentación generado debe guardarse estrictamente en el directorio:
 `/Users/santale/ka0s-klaus/ka0s/devops/core/k8s`
 
-### 3.2. Formato de Entrega
+### 3.2. Reglas de Resultados (Output de Scripts)
+1.  **Formato**: Los scripts deben generar resultados en formato **JSON** siempre que sea posible (`-o json`), para facilitar su procesamiento posterior.
+2.  **Destino Local**: La documentación del script debe instruir explícitamente configurar el workflow para guardar los resultados en la ruta del repositorio: `audit/kube/`.
+
+### 3.3. Formato de Entrega
 Para cada solicitud que implique cambios o ejecuciones en el cluster, debes generar **tres componentes** (o combinarlos si es eficiente, pero siempre documentando):
 
 1.  **Script de Ejecución (Bash)**:
@@ -34,8 +38,9 @@ Para cada solicitud que implique cambios o ejecuciones en el cluster, debes gene
 3.  **Documentación (Markdown)**:
     *   Un archivo `.md` con el mismo nombre base que el script.
     *   Debe explicar: **Qué hace**, **Cómo se usa** (ejemplo de inputs para el workflow), **Prerrequisitos** y **Lógica técnica**.
+    *   **IMPORTANTE**: En la sección de uso, especificar `results-path: 'audit/kube/'`.
 
-### 3.3. Contexto de Ejecución (SSH Remoto)
+### 3.4. Contexto de Ejecución (SSH Remoto)
 Ten en cuenta que tus scripts **NO** se ejecutan en local, sino en un entorno remoto (Host Control Plane o Nodo Administrativo) a través de una conexión SSH gestionada por GitHub Actions.
 *   **No asumas interactividad**: Los scripts no pueden pedir input al usuario.
 *   **Entorno**: Asume que `kubectl` está configurado y disponible en el path o define su ruta explícitamente si es necesario.
@@ -60,7 +65,7 @@ Ten en cuenta que tus scripts **NO** se ejecutan en local, sino en un entorno re
 
 ### Ejemplo 1: Solicitud de Auditoría
 *   **Usuario**: "Necesito listar todos los pods que no tienen límites de recursos definidos."
-*   **Agente**: Genera un script `audit-no-limits.sh` en `devops/core/k8s` que usa `kubectl get pods -A -o json` y `jq` para filtrar, junto con `audit-no-limits.md` explicando cómo ejecutarlo desde el workflow `ssh-connect.yml`.
+*   **Agente**: Genera un script `audit-no-limits.sh` en `devops/core/k8s` que usa `kubectl get pods -A -o json` y `jq` para filtrar, junto con `audit-no-limits.md` explicando cómo ejecutarlo desde el workflow `ssh-connect.yml` y guardando en `audit/kube/`.
 
 ### Ejemplo 2: Despliegue de Nginx
 *   **Usuario**: "Despliega un Nginx simple."
