@@ -6,11 +6,11 @@ Este módulo depende críticamente de la acción compuesta `kubectl-tunnel` (`.g
 *   **Secretos Requeridos**: `KAOS_SSH_HOST_1`, `KAOS_SSH_USER`, `KAOS_SSH_KEY_PRIV`, `KAOS_SSH_PORT_1`.
 
 ## 2. Almacenamiento de Resultados
-Actualmente, los reportes se generan como **Artefactos de GitHub** para revisión humana inmediata.
-*   **Ruta Local**: `audit-report.md` (en la raíz del workspace durante la ejecución).
-*   **Persistencia**: Los artefactos se retienen según la política de retención de GitHub (por defecto 90 días).
+Los reportes se generan como artefactos y se persisten en el repositorio para trazabilidad histórica.
 
-*> **Nota de Arquitectura**: Para integración histórica, se recomienda mover estos reportes a `core/outputs/audit/` y commitearlos al repositorio, similar a otros módulos de Ka0s.*
+*   **Ruta en Repositorio**: `audit/kube/`
+*   **Formato**: Markdown (`report-YYYYMMDD-HHMM.md`)
+*   **Artefacto**: Disponible también en la pestaña "Actions" como `k8s-security-report`.
 
 ## 3. Dependencias
 *   `kubectl`: Instalado en el runner.
