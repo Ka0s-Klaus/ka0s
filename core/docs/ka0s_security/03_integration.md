@@ -17,3 +17,4 @@ Los reportes se generan como artefactos y se persisten en el repositorio para tr
 ## 3. Dependencias
 *   `kubectl`: Instalado en el runner.
 *   `jq`: Utilizado por los scripts de auditoría para parsear JSON.
+*   `trivy`: Escáner de vulnerabilidades (instalado automáticamente por `security-audit-trivy.sh` si no está presente).

@@ -22,6 +22,11 @@ Audita la configuración de identidades y permisos:
 Evalúa el aislamiento de tráfico:
 *   **NetworkPolicies**: Detección de namespaces sin políticas de red (Zero Trust fallido).
 
+### 2.4 Vulnerability Scanning (CVEs)
+Analiza los artefactos en ejecución para detectar vulnerabilidades conocidas:
+*   **Imágenes**: Escaneo de paquetes de sistema y dependencias de lenguaje en busca de CVEs críticos y altos.
+*   **Compliance**: Verificación de configuraciones contra estándares de seguridad (NSA/CISA).
+
 ## 3. Arquitectura Técnica
 *   **Ejecución Remota Segura**: Utiliza un túnel SSH efímero (`kubectl-tunnel`) para conectar GitHub Actions con el clúster privado sin exponer la API a internet.
 *   **Modularidad**: Scripts independientes (`bash`) para cada dominio de seguridad, orquestados por un workflow central.
