@@ -1,0 +1,33 @@
+name: Ka0s Docs Index Auto-Update
+
+on:
+  push:
+    paths:
+      - 'core/docs/**'
+      - '.github/scripts/update-docs-index.py'
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  update-index:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Run Index Generator
+        run: python .github/scripts/update-docs-index.py
+
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "docs: auto-update README index [skip ci]"
+          file_pattern: core/docs/README.md
