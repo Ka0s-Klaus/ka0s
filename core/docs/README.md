@@ -35,10 +35,10 @@ Si, parece increible pero hemos decidido en el equipo usar una terminología "es
 
 - [Documentación del módulo principal de Ka0s](./ka0s/ka0s.md)
 - [Guía del Workflow: Ka0s Cluster System Update](./ka0s_cluster_update/ka0s_cluster_update.md)
-- [Módulo Core para el despliegue de Ka0s](./ka0s_core/ka0s_core.md)
+- [Módulo Ka0s Core](./ka0s_core/ka0s_core.md)
 - [1.Casos de uso Generales de la web](./ka0s_dashboard/ka0s_dashboard_user.md)
 - [Módulo de gestión de docker](./ka0s_docker/docker.md)
-- [Ka0s Execution](./ka0s_execution/ka0s_execution.md)
+- [Módulo Ka0s Execution](./ka0s_execution/ka0s_execution.md)
 - [Módulo Ka0s HTML Lint](./ka0s_html/ka0s_html.md)
 - [Documentación del módulo referente al directorio](./ka0s_init/ka0s_init.md)
 - [Módulo Ka0s Inspector](./ka0s_inspector/ka0s_inspector.md)
