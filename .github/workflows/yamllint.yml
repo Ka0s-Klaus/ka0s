@@ -29,149 +29,157 @@ permissions:
 env:
   KAOS_MODULE: "[Ka0S] YAMLLINT"
   GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
-  KAOS_YAMLLINT_CONFIG: "core/config/.yamllint.json"
+  KAOS_YAMLLINT_CONFIG: "core/config/kaos-yamllint-config.yaml"
+  KAOS_PRETTIER_CONFIG: "compliance/yaml/.prettierrc.json"
   KAOS_PATH_RESUME: "audit/yamllint/"
   KAOS_REPO: "/actions-runner/_work/kaos/kaos"
   KAOS_STEP_MODULE: ""
   KAOS_CODE: ${{ github.run_id}}
+  KAOS_REF_BRANCH: "main"
 
 jobs:
   job-core:
     runs-on: swarm-runners-scaleset
-
     steps:
       - id: repo
         name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      # con esta parte suplimos que la imagen no disponga de la cli de GH    
+      
+      # Suplimos falta de GH CLI en imagen
       - name: Install GH CLI
         uses: ./.github/actions/install-gh-cli
 
-      - id: python
-        name: Setup Python
+      - id: install-python-node
+        name: Setup Python and Node.js
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
-  
-      - id: install-yamllint
-        name: Install yamllint
+      
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - id: install-tools
+        name: Install Compliance Tools
         run: |
-          python -m pip install yamllint
+            echo "Installing yamllint and prettier..."
+            python -m pip install yamllint
+            npm install -g prettier
+            mkdir -p ${{ env.KAOS_PATH_RESUME }}
 
       - id: check-yaml
-        name: Check YAML
+        name: Check and Self-Heal YAML
         env:
            GH_TOKEN: ${{ github.token }}
         run: |
-            # Invocamos la primera comprobación de base, sino se supera el proceso no continua
-            # Ejecutamos el comando
-            yamllint -c ${{ env.KAOS_YAMLLINT_CONFIG }} "${{ github.event.inputs.kaos-files }}" > ${{ env.KAOS_PATH_RESUME }}yaml-lint-results-${{ github.run_id }}.txt 2>&1 || true
-              # Check if exist errors in file
-              if [ ! -s ${{ env.KAOS_PATH_RESUME}}yaml-lint-results-${{ github.run_id }}.txt ]; then
-                # Todo ha salido bien, añadimos el comentario a la issue y saltamos al siguiente paso
-                # Añadimos la versión de yamllint con la que se realiza la comprobacion
-                yamllint --version >> ${{ env.KAOS_PATH_RESUME }}yaml-lint-results-${{ github.run_id }}.txt
-                # añadimos el nombre del fichero que vamos a comprobar
-                echo "Finding: ${{ github.event.inputs.kaos-files }}" >> ${{ env.KAOS_PATH_RESUME }}yaml-lint-results-${{ github.run_id }}.txt
-                KAOS_ISSUE_BODY="The ${{ env.KAOS_MODULE }} process (${{ github.event.inputs.kaos-origin }}) launch the check (${{ github.run_id }}) over file (${{ github.event.inputs.kaos-files }}) and its result has been SUCCESS. Please review all files implicated in pull request and approve to merge"
-                gh issue comment  ${{ github.event.inputs.kaos-issue-id }} -b "$KAOS_ISSUE_BODY" 
-                # una vez finalizado este proceso, en funcion del modulo donde esta ubicado el fichero que se ha comprobado ejecutara un jobs u otro                
-              else
-                # Algo no ha salido bien, añadimos el comentario a la issue y saltamos al siguiente paso
-                # Añadimos la versión de yamllint con la que se realiza la comprobacion
-                yamllint --version >> ${{ env.KAOS_PATH_RESUME }}yaml-lint-results-${{ github.run_id }}.txt
-                # añadimos el nombre del fichero que vamos a comprobar
-                echo "Finding: ${{ github.event.inputs.kaos-files }}" >> ${{ env.KAOS_PATH_RESUME }}yaml-lint-results-${{ github.run_id }}.txt
-                KAOS_ISSUE_BODY="The ${{ env.KAOS_MODULE }} process (${{ github.event.inputs.kaos-origin }}) launch the check (${{ github.run_id }}) over file (${{ github.event.inputs.kaos-files }}) and its result has been FAILED, please check and solved it"
-                gh issue comment  ${{ github.event.inputs.kaos-issue-id }} -b "$KAOS_ISSUE_BODY"
-                # una vez finalizado este proceso, en funcion del modulo donde esta ubicado el ficher que se ha comprobado ejecutara un jobs u otro 
-              fi
-            echo "Uploading files to the repository..."
-            git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
-            git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
-            git pull --rebase
-            git add ${{ env.KAOS_PATH_RESUME }}*
-            if ! git diff --staged --quiet; then
-              git commit -m "[Ka0S] Uploading yamllint resume execution files to the repository..."
-              git push origin ${{ github.ref }} --force-with-lease
+            # Archivo a comprobar
+            FILE="${{ github.event.inputs.kaos-files }}"
+            FILE_NAME=$(basename "$FILE")
+            RESUME_FILE="${{ env.KAOS_PATH_RESUME }}yamllint-results-${{ github.run_id }}.txt"
+            
+            echo "Starting Compliance Check for: $FILE" > "$RESUME_FILE"
+            
+            # 1. Validación de Sintaxis (Yamllint) - No recuperable automáticamente
+            if ! yamllint -c ${{ env.KAOS_YAMLLINT_CONFIG }} "$FILE" >> "$RESUME_FILE" 2>&1; then
+              echo "❌ Syntax/Structure Error detected by Yamllint" >> "$RESUME_FILE"
+              
+              KAOS_ISSUE_BODY="The ${{ env.KAOS_MODULE }} process (${{ github.event.inputs.kaos-origin }}) failed. File ($FILE) has YAML VIOLATIONS that cannot be auto-fixed. Please fix manually."
+              gh issue comment ${{ github.event.inputs.kaos-issue-id }} -b "$KAOS_ISSUE_BODY"
+              exit 1
+            else
+              echo "✅ Syntax/Structure Check Passed" >> "$RESUME_FILE"
             fi
-  handle-success:
-    runs-on: swarm-runners-scaleset
-    needs: [job-core]
-    if: ${{ success() }}
-    steps:
-      - id: repo
-        name: Checkout code
-        if: ${{ always() }}
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      # con esta parte suplimos que la imagen no disponga de la cli de GH    
-      - name: Install GH CLI
-        uses: ./.github/actions/install-gh-cli
+            # 2. Validación de Cumplimiento (Prettier) - Recuperable (Self-Healing)
+            if ! prettier --check "$FILE" --config "${{ env.KAOS_PRETTIER_CONFIG }}"; then
+              echo "⚠️ Compliance/Style Error detected. Attempting Self-Healing..." >> "$RESUME_FILE"
+              
+              # Self-Healing: Aplicar formato
+              if prettier --write "$FILE" --config "${{ env.KAOS_PRETTIER_CONFIG }}"; then
+                echo "✅ Self-Healing Successful: File formatted to Ka0s Standards." >> "$RESUME_FILE"
+                
+                # Commit de la corrección
+                git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
+                git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
+                git add "$FILE"
+                if ! git diff --staged --quiet; then
+                  git commit -m "[Ka0S] Self-Healing: Auto-formatting YAML compliance for $FILE_NAME"
+                  git push origin ${{ github.ref }} --force-with-lease
+                  echo "🔄 Changes pushed to repository." >> "$RESUME_FILE"
+                fi
+                
+                KAOS_ISSUE_BODY="The ${{ env.KAOS_MODULE }} process (${{ github.event.inputs.kaos-origin }}) detected style violations in ($FILE) but successfully performed SELF-HEALING. No action required."
+                gh issue comment ${{ github.event.inputs.kaos-issue-id }} -b "$KAOS_ISSUE_BODY"
+              else
+                echo "❌ Self-Healing Failed." >> "$RESUME_FILE"
+                exit 1
+              fi
+            else
+              echo "✅ Compliance Check Passed (No changes needed)" >> "$RESUME_FILE"
+              KAOS_ISSUE_BODY="The ${{ env.KAOS_MODULE }} process (${{ github.event.inputs.kaos-origin }}) successfully validated file ($FILE). All checks passed."
+              gh issue comment ${{ github.event.inputs.kaos-issue-id }} -b "$KAOS_ISSUE_BODY"
+            fi
+            
+            cat "$RESUME_FILE"
 
-      - id: handle-success-execution
-        name: handle-success-execution
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - id: upload-logs
+        name: Upload Logs
+        if: always()
         run: |
-          # Si todo ha ido correcto añadimos el contenido del fichero 
-          RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
-          gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero ${{ env.KAOS_CODE }}.log"
+             # Subir logs de auditoría si existen
+             if [ -f "${{ env.KAOS_PATH_RESUME }}yamllint-results-${{ github.run_id }}.txt" ]; then
+                git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
+                git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
+                git pull --rebase
+                git add ${{ env.KAOS_PATH_RESUME }}*
+                if ! git diff --staged --quiet; then
+                   git commit -m "[Ka0S] Uploading YAML compliance audit logs"
+                   git push origin ${{ github.ref }} --force-with-lease
+                fi
+             fi
+
+  handle-success:
+     runs-on: swarm-runners-scaleset
+     needs: [job-core]
+     if: ${{ success() }}
+     steps:
+       - uses: actions/checkout@v4
+       - uses: ./.github/actions/install-gh-cli
+       - name: Notify Success
+         env:
+           GH_TOKEN: ${{ github.token }}
+         run: |
+           RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
+           gh issue comment $RNNUMBER --body "✅ YAML Compliance finalizado correctamente ${{ env.KAOS_CODE }}."
+
   handle_failure:
     runs-on: swarm-runners-scaleset
     needs: [job-core, handle-success]
     if: ${{ failure() }} 
     steps:
-      - id: repo
-        name: Checkout code
-        if: ${{ always() }}
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      # con esta parte suplimos que la imagen no disponga de la cli de GH    
-      - name: Install GH CLI
-        uses: ./.github/actions/install-gh-cli
-
-      - id: handle-failure-execution
-        name: handle-failure-execution
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/install-gh-cli
+      - name: Notify Failure
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          echo "Error detected in process"
-          echo "Created issue"
-          gh issue create  --title "${{ env.KAOS_MODULE }} Error detected in ${{ env.KAOS_CODE }}" --label "bug" --body "Please check the logs 'https://github.com/Ka0s-Klaus/ka0s/actions/runs/${{ env.KAOS_CODE }}' for more information of error."
-          echo "Add comment to origin target"
+          gh issue create --title "${{ env.KAOS_MODULE }} Error in ${{ env.KAOS_CODE }}" --label "bug" --body "Check logs: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
-          gh issue comment $RNNUMBER --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero ${{ env.KAOS_CODE }}.log"
+          gh issue comment $RNNUMBER --body "❌ El proceso de Compliance YAML ha fallado ${{ env.KAOS_CODE }}."
+
   end-workflow:
     runs-on: swarm-runners-scaleset
     needs: [job-core, handle-success, handle_failure]
     if: ${{ always() }} 
-    env:
-        GH_TOKEN: ${{ github.token }}
     steps:
-      - id: repo
-        name: Checkout code
-        if: ${{ always() }}
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      # con esta parte suplimos que la imagen no disponga de la cli de GH    
-      - name: Install GH CLI
-        uses: ./.github/actions/install-gh-cli
-
-      - id: end-process
-        name: Finaliza el workflow
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/install-gh-cli
+      - name: End Workflow
         env:
-          GH_TOKEN: ${{ github.token }}
+            GH_TOKEN: ${{ github.token }}
         run: |
-          echo "End process"
           RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
-          gh issue comment $RNNUMBER --body "Se finaliza Ka0s ${{ env.KAOS_CODE }}"
           gh workflow run inspector.yml --ref 'main' -f kaos-issue-id=$RNNUMBER -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start=""

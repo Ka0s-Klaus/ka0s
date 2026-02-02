@@ -19,7 +19,7 @@ on:
         description: 'User initiated process'
         default: ""
         required: true
-
+  
 permissions:
   contents: write
   actions: write
@@ -30,113 +30,151 @@ env:
   KAOS_MODULE: "[Ka0S] HTMLLINT"
   GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
   KAOS_HTMLLINT_CONFIG: "core/config/.htmllintrc"
-  KAOS_PATH_RESUME: "core/outputs/h/"
+  KAOS_PRETTIER_CONFIG: "compliance/html/.prettierrc.json"
+  KAOS_PATH_RESUME: "audit/htmllint/"
   KAOS_REPO: "/actions-runner/_work/kaos/kaos"
   KAOS_STEP_MODULE: ""
-  KAOS_CODE: ${{ github.run_id }}
+  KAOS_CODE: ${{ github.run_id}}
   KAOS_REF_BRANCH: "main"
 
 jobs:
   job-core:
-    runs-on: 
-      group: swarm-runners
+    runs-on: swarm-runners-scaleset
     steps:
       - id: repo
         name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
+      
+      # Suplimos falta de GH CLI en imagen
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+
       - id: install-node
         name: Install Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
-          node-version: '14'
-      - id: install-htmllint
-        name: Install htmllint
+          node-version: '20'
+
+      - id: install-tools
+        name: Install Compliance Tools
         run: |
-            if ! command -v htmllint &> /dev/null; then
-              echo "Installing htmllint..."
-              npm install -g htmllint-cli
-            else
-              echo "htmllint already installed, skipping installation"
-            fi
+            echo "Installing htmllint-cli and prettier..."
+            npm install -g htmllint-cli prettier
             mkdir -p ${{ env.KAOS_PATH_RESUME }}
+
       - id: check-html
-        name: Check HTML
+        name: Check and Self-Heal HTML
+        env:
+           GH_TOKEN: ${{ github.token }}
         run: |
-            file_name=$(basename "${{ github.event.inputs.kaos-files }}")
-            touch ${{ env.KAOS_PATH_RESUME }}htmllint-results-${{ github.run_id }}.txt
-            htmllint --rc ${{ env.KAOS_HTMLLINT_CONFIG }} ${{ github.event.inputs.kaos-files }} > ${{ env.KAOS_PATH_RESUME }}htmllint-results-${{ github.run_id }}.txt || true
-            cat ${{ env.KAOS_PATH_RESUME }}htmllint-results-${{ github.run_id }}.txt
-            if [ ! -s ${{ env.KAOS_PATH_RESUME }}htmllint-results-${{ github.run_id }}.txt ]; then
-              echo "File ${{ env.KAOS_PATH_RESUME }}htmllint-results-${{ github.run_id }}.txt is empty and content is correct"
-              KAOS_ISSUE_BODY="The ${{ env.KAOS_MODULE }} process (${{ github.event.inputs.kaos-origin }}) launched the check (${{ github.run_id }}) over file (${{ github.event.inputs.kaos-files }}) and its result has been SUCCESS. Please review all files implicated in pull request and approve to merge."
-              gh issue comment ${{ github.event.inputs.kaos-issue-id }} -F ${{ env.KAOS_PATH_RESUME }}htmllint-results-${{ github.run_id }}.txt
+            # Archivo a comprobar
+            FILE="${{ github.event.inputs.kaos-files }}"
+            FILE_NAME=$(basename "$FILE")
+            RESUME_FILE="${{ env.KAOS_PATH_RESUME }}htmllint-results-${{ github.run_id }}.txt"
+            
+            echo "Starting Compliance Check for: $FILE" > "$RESUME_FILE"
+            
+            # 1. Validación de Sintaxis (HtmlLint) - No recuperable automáticamente
+            # Nota: htmllint-cli devuelve exit code != 0 si encuentra errores
+            if ! htmllint --rc ${{ env.KAOS_HTMLLINT_CONFIG }} "$FILE" >> "$RESUME_FILE" 2>&1; then
+              echo "❌ Syntax/Rule Error detected by HtmlLint" >> "$RESUME_FILE"
+              
+              KAOS_ISSUE_BODY="The ${{ env.KAOS_MODULE }} process (${{ github.event.inputs.kaos-origin }}) failed. File ($FILE) has HTML VIOLATIONS that cannot be auto-fixed. Please fix manually."
+              gh issue comment ${{ github.event.inputs.kaos-issue-id }} -b "$KAOS_ISSUE_BODY"
+              exit 1
             else
-              echo "File ${{ env.KAOS_PATH_RESUME }}htmllint-results-${{ github.run_id }}.txt is not empty and content is incorrect"
-              KAOS_ISSUE_BODY="The ${{ env.KAOS_MODULE }} process (${{ github.event.inputs.kaos-origin }}) launched the check (${{ github.run_id }}) over file (${{ github.event.inputs.kaos-files }}) and its result has been FAILED. Please check and resolve the issues."
-              gh issue comment ${{ github.event.inputs.kaos-issue-id }} -F ${{ env.KAOS_PATH_RESUME }}htmllint-results-${{ github.run_id }}.txt
+              echo "✅ Syntax/Rule Check Passed" >> "$RESUME_FILE"
             fi
 
-  handle-success:
-    runs-on: swarm-runners-scaleset
-    needs: [job-core]
-    if: ${{ success() }}
-    steps:
-      - id: repo
-        name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
-      - id: handle-success-execution
-        name: Handle Success Execution
-        env:
-          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+            # 2. Validación de Cumplimiento (Prettier) - Recuperable (Self-Healing)
+            if ! prettier --check "$FILE" --config "${{ env.KAOS_PRETTIER_CONFIG }}"; then
+              echo "⚠️ Compliance/Style Error detected. Attempting Self-Healing..." >> "$RESUME_FILE"
+              
+              # Self-Healing: Aplicar formato
+              if prettier --write "$FILE" --config "${{ env.KAOS_PRETTIER_CONFIG }}"; then
+                echo "✅ Self-Healing Successful: File formatted to Ka0s Standards." >> "$RESUME_FILE"
+                
+                # Commit de la corrección
+                git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
+                git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
+                git add "$FILE"
+                if ! git diff --staged --quiet; then
+                  git commit -m "[Ka0S] Self-Healing: Auto-formatting HTML compliance for $FILE_NAME"
+                  git push origin ${{ github.ref }} --force-with-lease
+                  echo "🔄 Changes pushed to repository." >> "$RESUME_FILE"
+                fi
+                
+                KAOS_ISSUE_BODY="The ${{ env.KAOS_MODULE }} process (${{ github.event.inputs.kaos-origin }}) detected style violations in ($FILE) but successfully performed SELF-HEALING. No action required."
+                gh issue comment ${{ github.event.inputs.kaos-issue-id }} -b "$KAOS_ISSUE_BODY"
+              else
+                echo "❌ Self-Healing Failed." >> "$RESUME_FILE"
+                exit 1
+              fi
+            else
+              echo "✅ Compliance Check Passed (No changes needed)" >> "$RESUME_FILE"
+              KAOS_ISSUE_BODY="The ${{ env.KAOS_MODULE }} process (${{ github.event.inputs.kaos-origin }}) successfully validated file ($FILE). All checks passed."
+              gh issue comment ${{ github.event.inputs.kaos-issue-id }} -b "$KAOS_ISSUE_BODY"
+            fi
+            
+            cat "$RESUME_FILE"
+
+      - id: upload-logs
+        name: Upload Logs
+        if: always()
         run: |
-          RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
-          gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
+             # Subir logs de auditoría si existen
+             if [ -f "${{ env.KAOS_PATH_RESUME }}htmllint-results-${{ github.run_id }}.txt" ]; then
+                git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
+                git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
+                git pull --rebase
+                git add ${{ env.KAOS_PATH_RESUME }}*
+                if ! git diff --staged --quiet; then
+                   git commit -m "[Ka0S] Uploading HTML compliance audit logs"
+                   git push origin ${{ github.ref }} --force-with-lease
+                fi
+             fi
+
+  handle-success:
+     runs-on: swarm-runners-scaleset
+     needs: [job-core]
+     if: ${{ success() }}
+     steps:
+       - uses: actions/checkout@v4
+       - uses: ./.github/actions/install-gh-cli
+       - name: Notify Success
+         env:
+           GH_TOKEN: ${{ github.token }}
+         run: |
+           RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
+           gh issue comment $RNNUMBER --body "✅ HTML Compliance finalizado correctamente ${{ env.KAOS_CODE }}."
 
   handle_failure:
     runs-on: swarm-runners-scaleset
     needs: [job-core, handle-success]
-    if: ${{ failure() }}
+    if: ${{ failure() }} 
     steps:
-      - id: repo
-        name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
-      - id: handle-failure-execution
-        name: Handle Failure Execution
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/install-gh-cli
+      - name: Notify Failure
         env:
-          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
         run: |
-          echo "Error detected in process"
-          echo "Created issue"
-          gh issue create  --title "${{ env.KAOS_MODULE }} Error detected in ${{ env.KAOS_CODE }}" --label "bug" --body "Please check the logs 'https://github.com/Ka0s-Klaus/ka0s/actions/runs/${{ env.KAOS_CODE }}' for more information of error."
+          gh issue create --title "${{ env.KAOS_MODULE }} Error in ${{ env.KAOS_CODE }}" --label "bug" --body "Check logs: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
-          gh issue comment $RNNUMBER --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
+          gh issue comment $RNNUMBER --body "❌ El proceso de Compliance HTML ha fallado ${{ env.KAOS_CODE }}."
 
   end-workflow:
     runs-on: swarm-runners-scaleset
     needs: [job-core, handle-success, handle_failure]
-    if: ${{ always() }}
-    env:
-        GH_TOKEN: ${{ secrets.KAOS_ACTIONS_TOKEN }}
+    if: ${{ always() }} 
     steps:
-      - id: repo
-        name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
-      - id: end-process
-        name: Finaliza el workflow
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/install-gh-cli
+      - name: End Workflow
+        env:
+            GH_TOKEN: ${{ github.token }}
         run: |
-          echo "End process"
           RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
-          gh issue comment $RNNUMBER --body "Se finaliza Ka0s ${{ env.KAOS_CODE }}"
           gh workflow run inspector.yml --ref 'main' -f kaos-issue-id=$RNNUMBER -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start=""
