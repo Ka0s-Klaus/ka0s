@@ -48,6 +48,7 @@ Si, parece increible pero hemos decidido en el equipo usar una terminología "es
 - [Módulo Ka0s Markdown Lint](./ka0s_md/ka0s_md.md)
 - [Módulo Ka0s MongoDB Integration](./ka0s_mongo/ka0s_mongo.md)
 - [Módulo Ka0s Release (Klaus)](./ka0s_release/ka0s_release.md)
+- [Lista de Tareas de Seguridad Kubernetes (Automatizables)](./ka0s_security/01_security_checklist.md)
 - [Módulo Ka0s SSH Connect](./ka0s_ssh_connect/ka0s_ssh_connect.md)
 - [Módulo Ka0s Workflow Statistics](./ka0s_summary/ka0s_summary.md)
 - [Módulo Ka0s Template](./ka0s_template/ka0s_template.md)
