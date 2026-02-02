@@ -4,9 +4,9 @@
 
 This is a compliant Markdown file. It follows the standard header structure.
 
-*   Item 1
-*   Item 2
-*   Item 3
+- Item 1
+- Item 2
+- Item 3
 
 ## Configuration
 
