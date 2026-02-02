@@ -41,6 +41,8 @@ def itop_request(url, data, headers):
             return json.loads(response.read().decode('utf-8'))
     except urllib.error.HTTPError as e:
         print(f"[FATAL] HTTP Error {e.code}: {e.reason}")
+        if e.code == 502:
+            print("[HINT] iTop server is returning Bad Gateway. Is the iTop pod running?")
         try:
             error_body = e.read().decode('utf-8')
             print(f"[FATAL] Response Body: {error_body}")
