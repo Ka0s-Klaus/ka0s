@@ -36,7 +36,8 @@ echo '```' >> "$OUTPUT_FILE"
 # Run Trivy K8s scan
 # We limit to High/Critical severities to keep the report readable
 # We focus on the summary first
-trivy k8s --report summary --severity HIGH,CRITICAL --scanners vuln,misconfig,secret cluster >> "$OUTPUT_FILE"
+# Added --timeout 20m to prevent 'context deadline exceeded' on large clusters or slow connections
+trivy k8s --timeout 20m --report summary --severity HIGH,CRITICAL --scanners vuln,misconfig,secret cluster >> "$OUTPUT_FILE"
 
 echo '```' >> "$OUTPUT_FILE"
 echo "" >> "$OUTPUT_FILE"
@@ -47,7 +48,7 @@ echo '```' >> "$OUTPUT_FILE"
 # More detailed scan but limited output? 
 # Using json output to parse might be better, but for now let's append a text table for specific workloads if needed.
 # For this "overview" report, the summary above is often enough, but let's try to list images with most critical CVEs.
-trivy k8s --format json --severity CRITICAL --scanners vuln cluster | jq -r '
+trivy k8s --timeout 20m --format json --severity CRITICAL --scanners vuln cluster | jq -r '
   .Resources[]? 
   | select(.Results[]?.Vulnerabilities != null)
   | {
