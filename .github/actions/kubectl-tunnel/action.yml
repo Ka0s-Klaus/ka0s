@@ -1,0 +1,90 @@
+name: 'Ka0s Kubectl Tunnel'
+description: 'Sets up a secure SSH tunnel to a private Kubernetes cluster and configures kubectl.'
+
+inputs:
+  host:
+    description: 'SSH host (Bastion/Manager) IP or Hostname.'
+    required: true
+  username:
+    description: 'SSH username.'
+    required: true
+  key:
+    description: 'SSH private key.'
+    required: true
+  port:
+    description: 'SSH port.'
+    required: true
+  k8s-api-port:
+    description: 'Port of the Kubernetes API on the remote host.'
+    default: '6443'
+  kubectl-version:
+    description: 'Version of kubectl to install.'
+    default: 'v1.30.0'
+
+outputs:
+  kubeconfig:
+    description: 'Path to the generated kubeconfig file.'
+    value: ${{ steps.config.outputs.path }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: ${{ inputs.kubectl-version }}
+
+    - name: Prepare SSH Key
+      shell: bash
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ inputs.key }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        # Add host key to known_hosts to avoid interactive prompt
+        ssh-keyscan -p ${{ inputs.port }} -H ${{ inputs.host }} >> ~/.ssh/known_hosts
+
+    - name: Establish SSH Tunnel
+      shell: bash
+      run: |
+        echo "Starting SSH Tunnel to ${{ inputs.host }}..."
+        # -f: Background, -N: No command, -L: Local forwarding
+        # Maps LocalPort:RemoteHost:RemotePort. 
+        # We map Runner:6443 -> Remote:Localhost:6443 (Assuming API is local to the SSH host)
+        ssh -f -N -L ${{ inputs.k8s-api-port }}:127.0.0.1:${{ inputs.k8s-api-port }} \
+            -p ${{ inputs.port }} \
+            -i ~/.ssh/id_rsa \
+            ${{ inputs.username }}@${{ inputs.host }}
+        
+        echo "Tunnel established on 127.0.0.1:${{ inputs.k8s-api-port }}"
+
+    - name: Fetch and Patch Kubeconfig
+      id: config
+      shell: bash
+      run: |
+        # Fetch kubeconfig from default location on remote
+        echo "Fetching remote kubeconfig..."
+        ssh -p ${{ inputs.port }} -i ~/.ssh/id_rsa ${{ inputs.username }}@${{ inputs.host }} "cat ~/.kube/config" > ./kubeconfig_raw
+        
+        # Patch the server URL to point to the local tunnel
+        # Replaces any IP/Hostname in the server URL with 127.0.0.1
+        # Example: https://192.168.1.10:6443 -> https://127.0.0.1:6443
+        sed -E "s/server: https:\/\/[0-9a-zA-Z\.\-]+:${{ inputs.k8s-api-port }}/server: https:\/\/127.0.0.1:${{ inputs.k8s-api-port }}/g" ./kubeconfig_raw > ./kubeconfig_tunneled
+        
+        # Move to a standard location
+        mkdir -p ~/.kube
+        mv ./kubeconfig_tunneled ~/.kube/config
+        chmod 600 ~/.kube/config
+        
+        # Set Skip TLS Verify (since certificate is for the private IP/Hostname, not localhost)
+        # Alternatively, we could add --insecure-skip-tls-verify to commands, but modifying config is cleaner for usage.
+        # However, modifying the global config structure via yq/kubectl is safer than sed if structure varies.
+        # Let's use kubectl to patch the insecure-skip-tls-verify
+        kubectl config set-cluster default --insecure-skip-tls-verify=true
+        
+        echo "path=~/.kube/config" >> $GITHUB_OUTPUT
+        echo "Kubeconfig configured successfully."
+
+    - name: Verify Connection
+      shell: bash
+      run: |
+        kubectl get nodes

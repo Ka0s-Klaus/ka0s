@@ -1,0 +1,24 @@
+name: 'Ka0s Test Kubectl Tunnel'
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-tunnel:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Kubectl Tunnel
+        uses: ./.github/actions/kubectl-tunnel
+        with:
+          host: ${{ secrets.KAOS_SSH_HOST_1 }}
+          username: ${{ secrets.KAOS_SSH_USER }}
+          key: ${{ secrets.KAOS_SSH_KEY_PRIV }}
+          port: ${{ secrets.KAOS_SSH_PORT_1 }}
+      
+      - name: Run Kubectl Command
+        run: |
+          echo "Listing Pods in all namespaces..."
+          kubectl get pods -A
