@@ -35,6 +35,10 @@ jobs:
       - name: Run RBAC & Network Security Audit
         run: |
           ./devops/core/k8s/security-audit-rbac-net.sh "${{ env.REPORT_FILE }}"
+
+      - name: Run Trivy Vulnerability Scan
+        run: |
+          ./devops/core/k8s/security-audit-trivy.sh "${{ env.REPORT_FILE }}"
           cat "${{ env.REPORT_FILE }}"
 
       - name: Upload Audit Report
