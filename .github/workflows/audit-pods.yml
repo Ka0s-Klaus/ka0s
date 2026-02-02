@@ -1,0 +1,40 @@
+name: Ka0s Audit Failed Pods
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 */6 * * *' # Ejecutar cada 6 horas
+
+permissions:
+  contents: write
+
+jobs:
+  audit-pods:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Execute Audit Script
+        uses: ./.github/actions/ssh-exec
+        with:
+          host: ${{ secrets.KAOS_SSH_HOST_1 }}
+          username: ${{ secrets.KAOS_SSH_USER }}
+          key: ${{ secrets.KAOS_SSH_KEY_PRIV }}
+          port: ${{ secrets.KAOS_SSH_PORT_1 }}
+          use-sudo: true # Requerido para acceso a kubeconfig admin si aplica
+          pass: ${{ secrets.KAOS_SSH_PASS }}
+          script-path: 'devops/core/k8s/audit-failed-pods.sh'
+          local-results-path: 'audit/kube/'
+
+      - name: Commit Results
+        run: |
+          git config --global user.name "Ka0s Bot"
+          git config --global user.email "bot@ka0s.io"
+          git add audit/kube/failed_pods.json
+          if ! git diff --staged --quiet; then
+            git commit -m "[Audit] Update failed pods report $(date +'%Y-%m-%d %H:%M')"
+            git push
+          else
+            echo "No changes in failed pods report."
+          fi
