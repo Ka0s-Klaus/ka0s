@@ -1,0 +1,129 @@
+name: Ka0s Compliance Test Suite
+# Este workflow actúa como el "Módulo de Test" para validar que las Actions de Compliance
+# funcionan correctamente (detectan errores cuando deben y pasan cuando todo está bien).
+
+on:
+  push:
+    paths:
+      - '.github/actions/kaos-lint-*/**'
+      - 'core/test/**'
+      - '.github/workflows/kaos-compliance-test.yml'
+  workflow_dispatch:
+
+jobs:
+  test-json:
+    runs-on: swarm-runners-scaleset
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      # 1. Test: Correct File (Must Pass)
+      - name: Test JSON - Correct File
+        uses: ./.github/actions/kaos-lint-json
+        with:
+          file_path: 'core/test/correct-file.json'
+          path_resume: 'test-results/json-correct.txt'
+      
+      # 2. Test: Failed File (Must Fail)
+      - name: Test JSON - Failed File
+        id: test_fail
+        continue-on-error: true
+        uses: ./.github/actions/kaos-lint-json
+        with:
+          file_path: 'core/test/failed-file.json'
+          path_resume: 'test-results/json-failed.txt'
+      
+      - name: Assert JSON Failure
+        if: steps.test_fail.outcome == 'success'
+        run: |
+          echo "❌ Failed: Expected failed-file.json to fail validation, but it passed."
+          exit 1
+
+  test-yaml:
+    runs-on: swarm-runners-scaleset
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Test YAML - Correct File
+        uses: ./.github/actions/kaos-lint-yaml
+        with:
+          file_path: 'core/test/correct-file.yaml'
+          path_resume: 'test-results/yaml-correct.txt'
+      
+      - name: Test YAML - Failed File
+        id: test_fail
+        continue-on-error: true
+        uses: ./.github/actions/kaos-lint-yaml
+        with:
+          file_path: 'core/test/failed-file.yaml'
+          path_resume: 'test-results/yaml-failed.txt'
+      
+      - name: Assert YAML Failure
+        if: steps.test_fail.outcome == 'success'
+        run: |
+          echo "❌ Failed: Expected failed-file.yaml to fail validation, but it passed."
+          exit 1
+
+  test-markdown:
+    runs-on: swarm-runners-scaleset
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Test MD - Correct File
+        uses: ./.github/actions/kaos-lint-md
+        with:
+          file_path: 'core/test/correct-file.md'
+          path_resume: 'test-results/md-correct.txt'
+      
+      - name: Test MD - Failed File
+        id: test_fail
+        continue-on-error: true
+        uses: ./.github/actions/kaos-lint-md
+        with:
+          file_path: 'core/test/failed-file.md'
+          path_resume: 'test-results/md-failed.txt'
+      
+      - name: Assert MD Failure
+        if: steps.test_fail.outcome == 'success'
+        run: |
+          echo "❌ Failed: Expected failed-file.md to fail validation, but it passed."
+          exit 1
+
+  test-html:
+    runs-on: swarm-runners-scaleset
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Test HTML - Correct File
+        uses: ./.github/actions/kaos-lint-html
+        with:
+          file_path: 'core/test/correct-file.html'
+          path_resume: 'test-results/html-correct.txt'
+      
+      - name: Test HTML - Failed File
+        id: test_fail
+        continue-on-error: true
+        uses: ./.github/actions/kaos-lint-html
+        with:
+          file_path: 'core/test/failed-file.html'
+          path_resume: 'test-results/html-failed.txt'
+      
+      - name: Assert HTML Failure
+        if: steps.test_fail.outcome == 'success'
+        run: |
+          echo "❌ Failed: Expected failed-file.html to fail validation, but it passed."
+          exit 1

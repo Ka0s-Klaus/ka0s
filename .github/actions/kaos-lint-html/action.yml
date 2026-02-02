@@ -1,0 +1,68 @@
+name: 'Ka0s Lint HTML'
+description: 'Validates HTML files using htmllint and prettier'
+inputs:
+  file_path:
+    description: 'Path to the file to check'
+    required: true
+  fix:
+    description: 'Whether to apply fixes (self-healing)'
+    required: false
+    default: 'false'
+  htmllint_config:
+    description: 'Path to htmllint config'
+    required: false
+    default: 'core/config/.htmllintrc'
+  prettier_config:
+    description: 'Path to prettier config'
+    required: false
+    default: 'compliance/html/.prettierrc.json'
+  path_resume:
+    description: 'Path to store resume file'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Install Tools
+      shell: bash
+      run: |
+        if ! command -v htmllint &> /dev/null; then npm install -g htmllint-cli; fi
+        if ! command -v prettier &> /dev/null; then npm install -g prettier; fi
+        mkdir -p $(dirname "${{ inputs.path_resume }}")
+
+    - name: Check Syntax and Style
+      shell: bash
+      run: |
+        FILE="${{ inputs.file_path }}"
+        RESUME_FILE="${{ inputs.path_resume }}"
+        HTML_CFG="${{ inputs.htmllint_config }}"
+        PRETTIER_CFG="${{ inputs.prettier_config }}"
+        
+        echo "Starting HTML Check for: $FILE" >> "$RESUME_FILE"
+        
+        # 1. Syntax (htmllint)
+        if ! htmllint --rc "$HTML_CFG" "$FILE" >> "$RESUME_FILE" 2>&1; then
+          echo "❌ Syntax Error detected by HtmlLint" >> "$RESUME_FILE"
+          exit 1
+        else
+          echo "✅ Syntax Check Passed" >> "$RESUME_FILE"
+        fi
+
+        # 2. Style (Prettier)
+        if ! prettier --check "$FILE" --config "$PRETTIER_CFG"; then
+          echo "⚠️ Style Error detected." >> "$RESUME_FILE"
+          
+          if [ "${{ inputs.fix }}" == "true" ]; then
+            echo "Attempting Self-Healing..." >> "$RESUME_FILE"
+            if prettier --write "$FILE" --config "$PRETTIER_CFG"; then
+              echo "✅ Self-Healing Successful." >> "$RESUME_FILE"
+            else
+              echo "❌ Self-Healing Failed." >> "$RESUME_FILE"
+              exit 1
+            fi
+          else
+             echo "❌ Style violations found (Fix mode disabled)." >> "$RESUME_FILE"
+             exit 1
+          fi
+        else
+          echo "✅ Style Check Passed" >> "$RESUME_FILE"
+        fi
