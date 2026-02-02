@@ -2,7 +2,9 @@
 
 ## 1. Conexión Segura (Tunneling)
 Este módulo depende críticamente de la acción compuesta `kubectl-tunnel` (`.github/actions/kubectl-tunnel`).
-*   **Flujo**: Runner -> Túnel SSH (Puerto 6443) -> Nodo Manager (Localhost:6443).
+
+*   **Infraestructura Requerida**: El workflow **DEBE** ejecutarse en `swarm-runners-scaleset` para garantizar acceso de red al bastión y al clúster privado. Los runners alojados en GitHub (`ubuntu-latest`) **no tienen acceso** a la red privada.
+*   **Flujo**: Runner (Red Privada) -> Túnel SSH (Puerto 6443) -> Nodo Manager (Localhost:6443).
 *   **Secretos Requeridos**: `KAOS_SSH_HOST_1`, `KAOS_SSH_USER`, `KAOS_SSH_KEY_PRIV`, `KAOS_SSH_PORT_1`.
 
 ## 2. Almacenamiento de Resultados
