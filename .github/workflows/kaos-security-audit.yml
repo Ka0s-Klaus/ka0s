@@ -38,8 +38,13 @@ jobs:
 
       - name: Run Trivy Vulnerability Scan
         run: |
-          ./devops/core/k8s/security-audit-trivy.sh "${{ env.REPORT_FILE }}"
-          cat "${{ env.REPORT_FILE }}"
+          chmod +x devops/core/k8s/security-audit-trivy.sh
+          ./devops/core/k8s/security-audit-trivy.sh "$REPORT_FILE"
+      
+      - name: Calculate Compliance Score
+        run: |
+          chmod +x devops/core/k8s/security-audit-score.sh
+          ./devops/core/k8s/security-audit-score.sh "$REPORT_FILE"
 
       - name: Upload Audit Report
         uses: actions/upload-artifact@v4
