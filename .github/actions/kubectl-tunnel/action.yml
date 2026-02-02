@@ -29,19 +29,33 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Install kubectl
-      uses: azure/setup-kubectl@v3
-      with:
-        version: ${{ inputs.kubectl-version }}
+    - name: Install kubectl (Official Method)
+      shell: bash
+      run: |
+        # Download the latest stable release of kubectl
+        curl -LO "https://dl.k8s.io/release/${{ inputs.kubectl-version }}/bin/linux/amd64/kubectl"
+        
+        # Validate binary (optional but recommended in official docs, skipping for speed/simplicity as per request)
+        
+        # Install kubectl
+        sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+        
+        # Verify installation
+        kubectl version --client
 
     - name: Prepare SSH Key
       shell: bash
       run: |
         mkdir -p ~/.ssh
+        
+        # Write private key
         echo "${{ inputs.key }}" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
-        # Add host key to known_hosts to avoid interactive prompt
-        ssh-keyscan -p ${{ inputs.port }} -H ${{ inputs.host }} >> ~/.ssh/known_hosts
+        
+        # Add host key to known_hosts
+        if [ -n "${{ inputs.host }}" ]; then
+            ssh-keyscan -p ${{ inputs.port }} -H ${{ inputs.host }} >> ~/.ssh/known_hosts 2>/dev/null || echo "Warning: ssh-keyscan failed"
+        fi
 
     - name: Establish SSH Tunnel
       shell: bash
