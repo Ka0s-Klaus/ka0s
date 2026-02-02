@@ -27,7 +27,7 @@ jobs:
       - name: Run Workload Security Audit
         run: |
           mkdir -p audit/kube
-          REPORT_FILE="audit/kube/report-$(date +%Y%m%d-%H%M).md"
+          REPORT_FILE="audit/kube/report-$(date +%Y%m%d-%H%M%S).md"
           echo "REPORT_FILE=$REPORT_FILE" >> $GITHUB_ENV
           
           ./devops/core/k8s/security-audit-workloads.sh "$REPORT_FILE"
@@ -51,7 +51,11 @@ jobs:
         run: |
           git config --global user.name "Ka0s Security Bot"
           git config --global user.email "security@ka0s.io"
-          git pull origin main
+          
+          # Stage and commit first to avoid untracked file conflicts
           git add audit/kube/
           git commit -m "chore(security): add audit report $(date +%Y-%m-%d)"
+          
+          # Rebase to integrate remote changes
+          git pull --rebase origin main
           git push origin main
