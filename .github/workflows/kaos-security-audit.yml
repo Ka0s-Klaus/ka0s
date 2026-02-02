@@ -59,3 +59,21 @@ jobs:
           # Rebase to integrate remote changes
           git pull --rebase origin main
           git push origin main
+
+  handle-success:
+    runs-on: swarm-runners-scaleset
+    needs: [audit-cluster]
+    if: ${{ success() }}
+    steps: 
+      - id: handle-success-execution
+        run: |
+          echo "${{ env.KAOS_MODULE }} Success in runid ${{ github.run_id }} initiated."
+          
+  handle_failure:
+      runs-on: swarm-runners-scaleset
+      needs: [audit-cluster]
+      if: ${{ failure() }} 
+      steps: 
+        - id: check-execution
+          run: |
+            echo "Error detected in ${{ env.KAOS_MODULE }}, creating issue..."

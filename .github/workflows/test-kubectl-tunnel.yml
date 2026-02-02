@@ -22,3 +22,21 @@ jobs:
         run: |
           echo "Listing Pods in all namespaces..."
           kubectl get pods -A
+
+  handle-success:
+    runs-on: swarm-runners-scaleset
+    needs: [test-tunnel]
+    if: ${{ success() }}
+    steps: 
+      - id: handle-success-execution
+        run: |
+          echo "${{ env.KAOS_MODULE }} Success in runid ${{ github.run_id }} initiated."
+          
+  handle_failure:
+      runs-on: swarm-runners-scaleset
+      needs: [test-tunnel]
+      if: ${{ failure() }} 
+      steps: 
+        - id: check-execution
+          run: |
+            echo "Error detected in ${{ env.KAOS_MODULE }}, creating issue..."
