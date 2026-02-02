@@ -1,6 +1,6 @@
-# Módulo Ka0s SSH Connect
+# Módulo Ka0s Docker
 
-Utilidad central para ejecución remota segura.
+Gestión del motor de contenedores.
 
 ## Índice de Documentación
 
@@ -9,4 +9,4 @@ Utilidad central para ejecución remota segura.
 3.  [**Integración en el Ecosistema**](./03_integration.md)
 
 ## Histórico
-*   [Documentación Legacy](./legacy_workflow.md)
+*   [Información Legacy](./legacy_info.md)
