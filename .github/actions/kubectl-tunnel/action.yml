@@ -90,10 +90,18 @@ runs:
         chmod 600 ~/.kube/config
         
         # Set Skip TLS Verify (since certificate is for the private IP/Hostname, not localhost)
-        # Alternatively, we could add --insecure-skip-tls-verify to commands, but modifying config is cleaner for usage.
-        # However, modifying the global config structure via yq/kubectl is safer than sed if structure varies.
-        # Let's use kubectl to patch the insecure-skip-tls-verify
-        kubectl config set-cluster default --insecure-skip-tls-verify=true
+        # We must detect the cluster name dynamically because it might not be 'default'
+        
+        CURRENT_CONTEXT=$(kubectl config current-context)
+        CLUSTER_NAME=$(kubectl config view -o jsonpath="{.contexts[?(@.name=='$CURRENT_CONTEXT')].context.cluster}")
+        
+        echo "Configuring TLS skip for cluster: $CLUSTER_NAME"
+        
+        # Disable TLS verification for the active cluster
+        kubectl config set-cluster "$CLUSTER_NAME" --insecure-skip-tls-verify=true
+        
+        # Unset CA data to ensure insecure mode works (avoid conflicts)
+        kubectl config unset "clusters.$CLUSTER_NAME.certificate-authority-data"
         
         echo "path=~/.kube/config" >> $GITHUB_OUTPUT
         echo "Kubeconfig configured successfully."
