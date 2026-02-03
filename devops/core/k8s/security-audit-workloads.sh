@@ -5,7 +5,11 @@
 
 OUTPUT_FILE="${1:-k8s-security-audit.md}"
 METRICS_FILE="audit/kube/metrics.env"
+VIOLATIONS_FILE="audit/kube/violations.md"
 mkdir -p audit/kube
+
+# Init Violations File
+echo "" > "$VIOLATIONS_FILE"
 
 echo "# Kubernetes Security Audit Report" > "$OUTPUT_FILE"
 echo "Date: $(date)" >> "$OUTPUT_FILE"
@@ -25,6 +29,13 @@ COUNT_PRIV=$(echo "$PRIV_PODS" | grep -v '^$' | wc -l | tr -d ' ')
 echo "COUNT_PRIV=$COUNT_PRIV" >> "$METRICS_FILE"
 echo "" >> "$OUTPUT_FILE"
 
+# Append to Violations Log
+if [ "$COUNT_PRIV" -gt 0 ]; then
+  echo "### 1. Privileged Containers" >> "$VIOLATIONS_FILE"
+  echo "$PRIV_PODS" | sed 's/^/- /' >> "$VIOLATIONS_FILE"
+  echo "" >> "$VIOLATIONS_FILE"
+fi
+
 echo "## 2. Containers Running as Root" >> "$OUTPUT_FILE"
 echo "Pods not enforcing 'runAsNonRoot: true':" >> "$OUTPUT_FILE"
 echo '```' >> "$OUTPUT_FILE"
@@ -36,6 +47,13 @@ echo "COUNT_ROOT=$COUNT_ROOT" >> "$METRICS_FILE"
 echo "*(List truncated to first 20)*" >> "$OUTPUT_FILE"
 echo "" >> "$OUTPUT_FILE"
 
+# Append to Violations Log
+if [ "$COUNT_ROOT" -gt 0 ]; then
+  echo "### 2. Containers Running as Root" >> "$VIOLATIONS_FILE"
+  echo "$ROOT_PODS" | sed 's/^/- /' >> "$VIOLATIONS_FILE"
+  echo "" >> "$VIOLATIONS_FILE"
+fi
+
 echo "## 3. HostPath Volume Usage" >> "$OUTPUT_FILE"
 echo "Pods mounting host filesystem paths:" >> "$OUTPUT_FILE"
 echo '```' >> "$OUTPUT_FILE"
@@ -46,6 +64,13 @@ COUNT_HOSTPATH=$(echo "$HOSTPATH_PODS" | grep -v '^$' | sort | uniq | wc -l | tr
 echo "COUNT_HOSTPATH=$COUNT_HOSTPATH" >> "$METRICS_FILE"
 echo "" >> "$OUTPUT_FILE"
 
+# Append to Violations Log
+if [ "$COUNT_HOSTPATH" -gt 0 ]; then
+  echo "### 3. HostPath Volume Usage" >> "$VIOLATIONS_FILE"
+  echo "$HOSTPATH_PODS" | sort | uniq | sed 's/^/- /' >> "$VIOLATIONS_FILE"
+  echo "" >> "$VIOLATIONS_FILE"
+fi
+
 echo "## 4. Usage of ':latest' Image Tag" >> "$OUTPUT_FILE"
 echo "Deployments using mutable ':latest' tag:" >> "$OUTPUT_FILE"
 echo '```' >> "$OUTPUT_FILE"
@@ -54,5 +79,12 @@ echo "$LATEST_PODS" | sort | uniq >> "$OUTPUT_FILE"
 echo '```' >> "$OUTPUT_FILE"
 COUNT_LATEST=$(echo "$LATEST_PODS" | grep -v '^$' | sort | uniq | wc -l | tr -d ' ')
 echo "COUNT_LATEST=$COUNT_LATEST" >> "$METRICS_FILE"
+
+# Append to Violations Log
+if [ "$COUNT_LATEST" -gt 0 ]; then
+  echo "### 4. Usage of ':latest' Image Tag" >> "$VIOLATIONS_FILE"
+  echo "$LATEST_PODS" | sort | uniq | sed 's/^/- /' >> "$VIOLATIONS_FILE"
+  echo "" >> "$VIOLATIONS_FILE"
+fi
 
 echo "Audit completed. Report saved to $OUTPUT_FILE"

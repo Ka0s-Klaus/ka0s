@@ -5,6 +5,7 @@
 
 OUTPUT_FILE="${1:-k8s-security-audit.md}"
 METRICS_FILE="audit/kube/metrics.env"
+VIOLATIONS_FILE="audit/kube/violations.md"
 
 if [ ! -f "$METRICS_FILE" ]; then
   echo "Metrics file not found!"
@@ -66,5 +67,16 @@ echo "| Pod Security (HostPath) | $TOTAL_PODS | $COUNT_HOSTPATH | $(calc_pct $TO
 echo "| Best Practices (Tags) | $TOTAL_PODS | $COUNT_LATEST | $(calc_pct $TOTAL_PODS $COUNT_LATEST) |" >> "$OUTPUT_FILE"
 echo "| Network Policies | $COUNT_NS_TOTAL | $COUNT_NS_NOPOL | $(calc_pct $COUNT_NS_TOTAL $COUNT_NS_NOPOL) |" >> "$OUTPUT_FILE"
 echo "" >> "$OUTPUT_FILE"
+
+echo "## 11. Detailed Violations Log" >> "$OUTPUT_FILE"
+echo "Full list of resources violating security best practices:" >> "$OUTPUT_FILE"
+echo "" >> "$OUTPUT_FILE"
+
+if [ -f "$VIOLATIONS_FILE" ]; then
+  cat "$VIOLATIONS_FILE" >> "$OUTPUT_FILE"
+  rm "$VIOLATIONS_FILE"
+else
+  echo "No violations data found." >> "$OUTPUT_FILE"
+fi
 
 echo "Scoring completed."
