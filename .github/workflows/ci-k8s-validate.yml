@@ -38,11 +38,12 @@ jobs:
           mkdir -p audit/kube
           # Sanitize branch name (replace slashes with dashes)
           SAFE_BRANCH_NAME=$(echo "${{ github.ref_name }}" | tr '/' '-')
+          # Report file path validation: audit/kube
           REPORT_FILE="audit/kube/validation-report-${SAFE_BRANCH_NAME}-${{ github.run_id }}.md"
           echo "REPORT_FILE=$REPORT_FILE" >> $GITHUB_ENV
           
           echo "# Kubernetes Manifest Validation Report" > "$REPORT_FILE"
-          echo "- **Branch**: ${{ github.ref_name }}" >> "$REPORT_FILE"
+          echo "- **Generated at**: $(date)" >> "$REPORT_FILE"
           echo "- **Commit**: ${{ github.sha }}" >> "$REPORT_FILE"
           echo "- **Date**: $(date)" >> "$REPORT_FILE"
           echo "" >> "$REPORT_FILE"
