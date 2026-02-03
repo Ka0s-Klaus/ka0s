@@ -19,14 +19,14 @@ spec:
     spec:
       initContainers:
         - name: init-itop-files
-          image: vbkunin/itop:3.2.0-base
+          image: vbkunin/itop:latest-base
           command: ['sh', '-c', 'cp -r /var/www/html/. /web-data/ && chown -R 33:33 /web-data']
           volumeMounts:
             - name: itop-web-persistent-storage
               mountPath: /web-data
       containers:
         - name: itop
-          image: vbkunin/itop:3.2.0-base
+          image: vbkunin/itop:latest-base
           ports:
             - containerPort: 80
           env:
