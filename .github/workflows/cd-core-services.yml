@@ -129,12 +129,37 @@ jobs:
               
               # Ensure script is executable
               chmod +x .github/scripts/k8s-verify-deployment.sh
-              ./.github/scripts/k8s-verify-deployment.sh "$NAMESPACE" "$SERVICE_NAME" "$EXPECTED_IP"
-
+              
+              # Run verification and append to report
+              echo "---------------------------------------------------" >> $REPORT_FILE
+              echo ">>> Advanced Verification Results:" >> $REPORT_FILE
+              ./.github/scripts/k8s-verify-deployment.sh "$NAMESPACE" "$SERVICE_NAME" "$EXPECTED_IP" 2>&1 | tee -a $REPORT_FILE
+              
+              # Save report to audit/deploy
+              mkdir -p audit/deploy
+              FINAL_REPORT_PATH="audit/deploy/deployment-report-$SERVICE_NAME-${{ github.run_id }}.md"
+              mv $REPORT_FILE $FINAL_REPORT_PATH
+              echo "REPORT_PATH=$FINAL_REPORT_PATH" >> $GITHUB_ENV
+              
             else
               echo "⚠️  Skipping $SERVICE: No kustomization.yaml found."
             fi
           done
+
+      - name: Commit Deployment Reports
+        if: success()
+        run: |
+          git config --global user.name "Ka0s CI Bot"
+          git config --global user.email "ci@ka0s.io"
+          
+          git add audit/deploy/
+          if git diff --staged --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "chore(cd): save deployment audit report [skip ci]"
+            git push origin HEAD:${{ github.ref_name }}
+          fi
+
 
   handle-success:
     runs-on: swarm-runners-scaleset
