@@ -1,0 +1,83 @@
+name: CI Kubernetes Validation
+
+on:
+  push:
+    branches:
+      - '**'
+      - '!main'
+    paths:
+      - 'core/b2b/core-services/itop/**'
+
+permissions:
+  contents: write
+
+env:
+  KAOS_MODULE: "CI-K8S-VALIDATION"
+
+jobs:
+  validate-manifests:
+    name: Validate Kubernetes Manifests
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Trivy
+        run: |
+          if ! command -v trivy &> /dev/null; then
+            echo "Installing Trivy..."
+            curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin
+          else
+            echo "Trivy is already installed."
+          fi
+
+      - name: Run Trivy Config Scan
+        run: |
+          mkdir -p audit/kube
+          REPORT_FILE="audit/kube/validation-report-${{ github.ref_name }}-${{ github.run_id }}.md"
+          echo "REPORT_FILE=$REPORT_FILE" >> $GITHUB_ENV
+          
+          echo "# Kubernetes Manifest Validation Report" > "$REPORT_FILE"
+          echo "- **Branch**: ${{ github.ref_name }}" >> "$REPORT_FILE"
+          echo "- **Commit**: ${{ github.sha }}" >> "$REPORT_FILE"
+          echo "- **Date**: $(date)" >> "$REPORT_FILE"
+          echo "" >> "$REPORT_FILE"
+          
+          echo "## Trivy Configuration Check (Best Practices & Security)" >> "$REPORT_FILE"
+          echo "Scanning directory: core/b2b/core-services/itop" >> "$REPORT_FILE"
+          echo '```' >> "$REPORT_FILE"
+          
+          # Run Trivy in config mode to check YAML files
+          # We capture both stdout and stderr
+          trivy config --severity HIGH,CRITICAL core/b2b/core-services/itop >> "$REPORT_FILE" 2>&1 || true
+          
+          echo '```' >> "$REPORT_FILE"
+
+      - name: Commit Validation Report
+        run: |
+          git config --global user.name "Ka0s CI Bot"
+          git config --global user.email "ci@ka0s.io"
+          
+          git add ${{ env.REPORT_FILE }}
+          git commit -m "chore(ci): add validation report [skip ci]"
+          # [skip ci] is added to be extra safe, though path filtering handles it.
+          
+          git push origin HEAD:${{ github.ref_name }}
+
+  handle-success:
+    runs-on: swarm-runners-scaleset
+    needs: [validate-manifests]
+    if: ${{ success() }}
+    steps: 
+      - id: handle-success-execution
+        run: |
+          echo "${{ env.KAOS_MODULE }} Success in runid ${{ github.run_id }}."
+          
+  handle-failure:
+    runs-on: swarm-runners-scaleset
+    needs: [validate-manifests]
+    if: ${{ failure() }} 
+    steps: 
+      - id: check-execution
+        run: |
+          echo "Error detected in ${{ env.KAOS_MODULE }}."
