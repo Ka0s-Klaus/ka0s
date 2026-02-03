@@ -26,6 +26,25 @@ spec:
       containers:
         - name: itop
           image: vbkunin/itop:latest-base
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "200m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /pages/UI.php
+              port: 80
+            initialDelaySeconds: 60
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /pages/UI.php
+              port: 80
+            initialDelaySeconds: 30
+            periodSeconds: 10
           ports:
             - containerPort: 80
           env:
