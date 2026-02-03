@@ -96,6 +96,18 @@ jobs:
               echo "---------------------------------------------------"
               cat $REPORT_FILE
               echo "---------------------------------------------------"
+
+              echo "🔍 Running Advanced Verification..."
+              SERVICE_NAME=$(basename $SERVICE)
+              EXPECTED_IP=""
+              if [ "$SERVICE_NAME" == "itop" ]; then
+                EXPECTED_IP="192.168.1.240"
+              fi
+              
+              # Ensure script is executable
+              chmod +x .github/scripts/k8s-verify-deployment.sh
+              ./.github/scripts/k8s-verify-deployment.sh "$SERVICE_NAME" "$SERVICE_NAME" "$EXPECTED_IP"
+
             else
               echo "⚠️  Skipping $SERVICE: No kustomization.yaml found."
             fi
