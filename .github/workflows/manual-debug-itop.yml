@@ -1,0 +1,45 @@
+name: Manual Debug iTop
+on:
+  workflow_dispatch:
+
+jobs:
+  debug:
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Setup Kubectl Tunnel
+        uses: ./.github/actions/kubectl-tunnel
+        with:
+          host: ${{ secrets.KAOS_SSH_HOST_1 }}
+          username: ${{ secrets.KAOS_SSH_USER }}
+          key: ${{ secrets.KAOS_SSH_KEY_PRIV }}
+          port: ${{ secrets.KAOS_SSH_PORT_1 }}
+
+      - name: Get iTop Pod Name
+        id: get-pod
+        run: |
+          POD=$(kubectl get pod -n itop -l app=itop -o jsonpath="{.items[0].metadata.name}")
+          echo "POD_NAME=$POD" >> $GITHUB_ENV
+          echo "Found Pod: $POD"
+
+      - name: Describe Pod
+        run: kubectl describe pod ${{ env.POD_NAME }} -n itop
+
+      - name: Get Pod Logs
+        run: kubectl logs ${{ env.POD_NAME }} -n itop --tail=200
+
+      - name: Check Network Status
+        run: |
+          echo ">>> Service Status"
+          kubectl get svc itop -n itop -o wide
+          echo ">>> Endpoints"
+          kubectl get endpoints itop -n itop
+
+      - name: Test Internal Connectivity (Exec Curl)
+        run: |
+          echo ">>> Testing connectivity from inside the pod..."
+          kubectl exec -n itop ${{ env.POD_NAME }} -- curl -I -v http://localhost || echo "Curl failed inside pod"
+          
+      - name: Check Configuration File
+        run: |
+          echo ">>> Checking if config-itop.php exists..."
+          kubectl exec -n itop ${{ env.POD_NAME }} -- ls -la /var/www/html/conf/production/config-itop.php || echo "Config file not found!"
