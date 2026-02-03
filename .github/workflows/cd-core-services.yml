@@ -1,0 +1,116 @@
+name: CD Core Services Deploy
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'core/b2b/core-services/**'
+      - '!core/b2b/core-services/kube/**'
+
+jobs:
+  deploy-services:
+    name: Deploy Changed Services
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Kubectl Tunnel
+        uses: ./.github/actions/kubectl-tunnel
+        with:
+          host: ${{ secrets.KAOS_SSH_HOST_1 }}
+          username: ${{ secrets.KAOS_SSH_USER }}
+          key: ${{ secrets.KAOS_SSH_KEY_PRIV }}
+          port: ${{ secrets.KAOS_SSH_PORT_1 }}
+
+      - name: Detect and Deploy
+        run: |
+          echo "Detecting changes..."
+          
+          BEFORE="${{ github.event.before }}"
+          AFTER="${{ github.sha }}"
+          
+          # Fallback for cases where before SHA is zero (e.g. new branch push, though rare on main)
+          if [ -z "$BEFORE" ] || [ "$BEFORE" == "0000000000000000000000000000000000000000" ]; then
+            BEFORE="HEAD~1"
+          fi
+          
+          echo "Diffing range: $BEFORE...$AFTER"
+          
+          # 1. Get changed files
+          # 2. Filter for core/b2b/core-services/
+          # 3. Exclude core/b2b/core-services/kube/
+          # 4. Extract the service root path (core/b2b/core-services/<service-name>)
+          # 5. Sort and Uniq
+          
+          CHANGED_SERVICES=$(git diff --name-only "$BEFORE" "$AFTER" | \
+            grep "^core/b2b/core-services/" | \
+            grep -v "^core/b2b/core-services/kube/" | \
+            cut -d/ -f1-4 | \
+            sort | uniq)
+          
+          if [ -z "$CHANGED_SERVICES" ]; then
+            echo "No relevant services changed in this push."
+            exit 0
+          fi
+          
+          echo "Found modified services: $CHANGED_SERVICES"
+          
+          for SERVICE in $CHANGED_SERVICES; do
+            # Check if directory still exists (it might have been deleted)
+            if [ ! -d "$SERVICE" ]; then
+               echo "⚠️  Service directory $SERVICE was deleted. Skipping."
+               continue
+            fi
+
+            # Check for kustomization.yaml
+            if [ -f "$SERVICE/kustomization.yaml" ]; then
+              echo "---------------------------------------------------"
+              echo "🚀 Deploying Service: $SERVICE"
+              echo "---------------------------------------------------"
+              kubectl apply -k "$SERVICE/"
+              
+              echo "⏳ Waiting for rollout..."
+              # Intentar esperar rollout de deployments si existen en el kustomization
+              # (Es un best-effort genérico)
+              kubectl rollout status deployment -n $(basename $SERVICE) --timeout=60s || echo "⚠️ Rollout wait warning (maybe no deployment or timeout)"
+
+              echo "📊 Generating Post-Deploy Report for $SERVICE..."
+              REPORT_FILE="deployment-report-$(basename $SERVICE)-${{ github.run_id }}.txt"
+              
+              echo "Deployment Report: $SERVICE" > $REPORT_FILE
+              echo "Date: $(date)" >> $REPORT_FILE
+              echo "Trigger: ${{ github.event_name }} by ${{ github.actor }}" >> $REPORT_FILE
+              echo "---------------------------------------------------" >> $REPORT_FILE
+              echo ">>> Pods Status:" >> $REPORT_FILE
+              kubectl get pods -n $(basename $SERVICE) -o wide >> $REPORT_FILE 2>&1 || echo "No pods found or namespace error" >> $REPORT_FILE
+              echo "" >> $REPORT_FILE
+              echo ">>> Services Status:" >> $REPORT_FILE
+              kubectl get svc -n $(basename $SERVICE) >> $REPORT_FILE 2>&1 || echo "No services found" >> $REPORT_FILE
+              echo "" >> $REPORT_FILE
+              echo ">>> Ingress Status:" >> $REPORT_FILE
+              kubectl get ingress -n $(basename $SERVICE) >> $REPORT_FILE 2>&1 || echo "No ingress found" >> $REPORT_FILE
+              
+              echo "---------------------------------------------------"
+              cat $REPORT_FILE
+              echo "---------------------------------------------------"
+            else
+              echo "⚠️  Skipping $SERVICE: No kustomization.yaml found."
+            fi
+          done
+
+  handle-success:
+    runs-on: swarm-runners-scaleset
+    needs: [deploy-services]
+    if: ${{ success() }}
+    steps: 
+      - run: echo "CD-CORE-SERVICES Success in runid ${{ github.run_id }}."
+          
+  handle-failure:
+    runs-on: swarm-runners-scaleset
+    needs: [deploy-services]
+    if: ${{ failure() }} 
+    steps: 
+      - run: echo "Error detected in CD-CORE-SERVICES."

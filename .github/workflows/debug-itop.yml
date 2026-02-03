@@ -1,0 +1,31 @@
+name: Debug iTop
+
+on:
+  workflow_dispatch:
+
+jobs:
+  debug:
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Kubectl Tunnel
+        uses: ./.github/actions/kubectl-tunnel
+        with:
+          host: ${{ secrets.KAOS_SSH_HOST_1 }}
+          username: ${{ secrets.KAOS_SSH_USER }}
+          key: ${{ secrets.KAOS_SSH_KEY_PRIV }}
+          port: ${{ secrets.KAOS_SSH_PORT_1 }}
+
+      - name: Get Pods
+        run: kubectl get pods -n itop
+
+      - name: Describe Deployment
+        run: kubectl describe deployment itop -n itop
+
+      - name: Describe Pods
+        run: kubectl describe pods -n itop -l app=itop
+
+      - name: Get Logs
+        run: kubectl logs -n itop -l app=itop --all-containers --tail=100

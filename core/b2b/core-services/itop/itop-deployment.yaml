@@ -6,7 +6,6 @@ metadata:
   labels:
     app: itop
     core.kaos.io/type: finops
-    ci-test: "true"
 spec:
   replicas: 1
   selector:
@@ -19,14 +18,33 @@ spec:
     spec:
       initContainers:
         - name: init-itop-files
-          image: vbkunin/itop:3.2.0-base
+          image: vbkunin/itop:latest-base
           command: ['sh', '-c', 'cp -r /var/www/html/. /web-data/ && chown -R 33:33 /web-data']
           volumeMounts:
             - name: itop-web-persistent-storage
               mountPath: /web-data
       containers:
         - name: itop
-          image: vbkunin/itop:3.2.0-base
+          image: vbkunin/itop:latest-base
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "200m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /pages/UI.php
+              port: 80
+            initialDelaySeconds: 60
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /pages/UI.php
+              port: 80
+            initialDelaySeconds: 30
+            periodSeconds: 10
           ports:
             - containerPort: 80
           env:
