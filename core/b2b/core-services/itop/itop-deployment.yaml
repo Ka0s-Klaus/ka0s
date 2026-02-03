@@ -28,20 +28,19 @@ spec:
           image: vbkunin/itop:latest-base
           resources:
             requests:
-              memory: "256Mi"
-              cpu: "200m"
-            limits:
               memory: "512Mi"
               cpu: "500m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
           livenessProbe:
-            httpGet:
-              path: /pages/UI.php
+            tcpSocket:
               port: 80
             initialDelaySeconds: 60
             periodSeconds: 30
           readinessProbe:
             httpGet:
-              path: /pages/UI.php
+              path: /
               port: 80
             initialDelaySeconds: 30
             periodSeconds: 10
