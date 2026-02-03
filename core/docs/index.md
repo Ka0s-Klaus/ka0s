@@ -7,6 +7,7 @@ Bienvenido al proyecto Ka0s-Klaus.
 La documentación principal se encuentra en:
 
 - [Core Documentation](core/docs/)
+- [Kubernetes CI/CD Automation](ka0s_ci_cd_k8s/)
 
 ## Estructura del Proyecto
 
