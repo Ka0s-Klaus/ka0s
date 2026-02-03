@@ -70,35 +70,58 @@ jobs:
               echo "---------------------------------------------------"
               echo "🚀 Deploying Service: $SERVICE"
               echo "---------------------------------------------------"
+              
+              # Detect Namespace Logic
+              SERVICE_NAME=$(basename $SERVICE)
+              NAMESPACE=$SERVICE_NAME # Default fallback
+
+              # 1. Check kustomization.yaml for global namespace override
+              KUST_NS=$(grep "^namespace:" "$SERVICE/kustomization.yaml" | awk '{print $2}')
+              if [ ! -z "$KUST_NS" ]; then
+                NAMESPACE=$KUST_NS
+              else
+                # 2. Look for explicit Namespace resource files
+                # Find files that contain "kind: Namespace" within the service directory
+                NS_FILE=$(grep -l "kind: Namespace" "$SERVICE/"*.yaml | head -n 1)
+                if [ ! -z "$NS_FILE" ]; then
+                  # Extract name from metadata.name
+                  DETECTED_NS=$(grep -A 5 "metadata:" "$NS_FILE" | grep "name:" | awk '{print $2}' | head -n 1)
+                  if [ ! -z "$DETECTED_NS" ]; then
+                     NAMESPACE=$DETECTED_NS
+                  fi
+                fi
+              fi
+              echo "🎯 Target Namespace: $NAMESPACE"
+
               kubectl apply -k "$SERVICE/"
               
               echo "⏳ Waiting for rollout..."
               # Intentar esperar rollout de deployments si existen en el kustomization
-              # (Es un best-effort genérico)
-              kubectl rollout status deployment -n $(basename $SERVICE) --timeout=60s || echo "⚠️ Rollout wait warning (maybe no deployment or timeout)"
+              kubectl rollout status deployment -n "$NAMESPACE" --timeout=60s || echo "⚠️ Rollout wait warning (maybe no deployment or timeout)"
 
               echo "📊 Generating Post-Deploy Report for $SERVICE..."
-              REPORT_FILE="deployment-report-$(basename $SERVICE)-${{ github.run_id }}.txt"
+              REPORT_FILE="deployment-report-$SERVICE_NAME-${{ github.run_id }}.txt"
               
               echo "Deployment Report: $SERVICE" > $REPORT_FILE
               echo "Date: $(date)" >> $REPORT_FILE
               echo "Trigger: ${{ github.event_name }} by ${{ github.actor }}" >> $REPORT_FILE
+              echo "Namespace: $NAMESPACE" >> $REPORT_FILE
               echo "---------------------------------------------------" >> $REPORT_FILE
               echo ">>> Pods Status:" >> $REPORT_FILE
-              kubectl get pods -n $(basename $SERVICE) -o wide >> $REPORT_FILE 2>&1 || echo "No pods found or namespace error" >> $REPORT_FILE
+              kubectl get pods -n "$NAMESPACE" -o wide >> $REPORT_FILE 2>&1 || echo "No pods found or namespace error" >> $REPORT_FILE
               echo "" >> $REPORT_FILE
               echo ">>> Services Status:" >> $REPORT_FILE
-              kubectl get svc -n $(basename $SERVICE) >> $REPORT_FILE 2>&1 || echo "No services found" >> $REPORT_FILE
+              kubectl get svc -n "$NAMESPACE" >> $REPORT_FILE 2>&1 || echo "No services found" >> $REPORT_FILE
               echo "" >> $REPORT_FILE
               echo ">>> Ingress Status:" >> $REPORT_FILE
-              kubectl get ingress -n $(basename $SERVICE) >> $REPORT_FILE 2>&1 || echo "No ingress found" >> $REPORT_FILE
+              kubectl get ingress -n "$NAMESPACE" >> $REPORT_FILE 2>&1 || echo "No ingress found" >> $REPORT_FILE
               
               echo "---------------------------------------------------"
               cat $REPORT_FILE
               echo "---------------------------------------------------"
 
               echo "🔍 Running Advanced Verification..."
-              SERVICE_NAME=$(basename $SERVICE)
+              
               EXPECTED_IP=""
               if [ "$SERVICE_NAME" == "itop" ]; then
                 EXPECTED_IP="192.168.1.240"
@@ -106,7 +129,7 @@ jobs:
               
               # Ensure script is executable
               chmod +x .github/scripts/k8s-verify-deployment.sh
-              ./.github/scripts/k8s-verify-deployment.sh "$SERVICE_NAME" "$SERVICE_NAME" "$EXPECTED_IP"
+              ./.github/scripts/k8s-verify-deployment.sh "$NAMESPACE" "$SERVICE_NAME" "$EXPECTED_IP"
 
             else
               echo "⚠️  Skipping $SERVICE: No kustomization.yaml found."
