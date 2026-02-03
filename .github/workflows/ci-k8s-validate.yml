@@ -36,7 +36,9 @@ jobs:
       - name: Run Trivy Config Scan
         run: |
           mkdir -p audit/kube
-          REPORT_FILE="audit/kube/validation-report-${{ github.ref_name }}-${{ github.run_id }}.md"
+          # Sanitize branch name (replace slashes with dashes)
+          SAFE_BRANCH_NAME=$(echo "${{ github.ref_name }}" | tr '/' '-')
+          REPORT_FILE="audit/kube/validation-report-${SAFE_BRANCH_NAME}-${{ github.run_id }}.md"
           echo "REPORT_FILE=$REPORT_FILE" >> $GITHUB_ENV
           
           echo "# Kubernetes Manifest Validation Report" > "$REPORT_FILE"
