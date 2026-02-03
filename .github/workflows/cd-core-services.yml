@@ -71,6 +71,31 @@ jobs:
               echo "🚀 Deploying Service: $SERVICE"
               echo "---------------------------------------------------"
               kubectl apply -k "$SERVICE/"
+              
+              echo "⏳ Waiting for rollout..."
+              # Intentar esperar rollout de deployments si existen en el kustomization
+              # (Es un best-effort genérico)
+              kubectl rollout status deployment -n $(basename $SERVICE) --timeout=60s || echo "⚠️ Rollout wait warning (maybe no deployment or timeout)"
+
+              echo "📊 Generating Post-Deploy Report for $SERVICE..."
+              REPORT_FILE="deployment-report-$(basename $SERVICE)-${{ github.run_id }}.txt"
+              
+              echo "Deployment Report: $SERVICE" > $REPORT_FILE
+              echo "Date: $(date)" >> $REPORT_FILE
+              echo "Trigger: ${{ github.event_name }} by ${{ github.actor }}" >> $REPORT_FILE
+              echo "---------------------------------------------------" >> $REPORT_FILE
+              echo ">>> Pods Status:" >> $REPORT_FILE
+              kubectl get pods -n $(basename $SERVICE) -o wide >> $REPORT_FILE 2>&1 || echo "No pods found or namespace error" >> $REPORT_FILE
+              echo "" >> $REPORT_FILE
+              echo ">>> Services Status:" >> $REPORT_FILE
+              kubectl get svc -n $(basename $SERVICE) >> $REPORT_FILE 2>&1 || echo "No services found" >> $REPORT_FILE
+              echo "" >> $REPORT_FILE
+              echo ">>> Ingress Status:" >> $REPORT_FILE
+              kubectl get ingress -n $(basename $SERVICE) >> $REPORT_FILE 2>&1 || echo "No ingress found" >> $REPORT_FILE
+              
+              echo "---------------------------------------------------"
+              cat $REPORT_FILE
+              echo "---------------------------------------------------"
             else
               echo "⚠️  Skipping $SERVICE: No kustomization.yaml found."
             fi
