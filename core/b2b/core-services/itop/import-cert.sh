@@ -78,7 +78,14 @@ else
         elif grep -q "PRIVATE KEY" "$file"; then
             echo "KEY"
         else
-            echo "UNKNOWN"
+            # Fallback por extensión
+            if [[ "$file" == *.crt ]] || [[ "$file" == *.cer ]] || [[ "$file" == *.pem ]]; then
+                 echo "CERT"
+            elif [[ "$file" == *.key ]]; then
+                 echo "KEY"
+            else
+                 echo "UNKNOWN"
+            fi
         fi
     }
 
