@@ -4,8 +4,17 @@ Despliegue oficial del Dashboard de Kubernetes (v2.7.0).
 
 ## Acceso
 
-- **URL**: `https://192.168.1.241`
-- **Nota**: Acepta la advertencia de certificado SSL (es autofirmado).
+La IP se asignará automáticamente mediante MetalLB (rango libre disponible).
+
+1.  **Obtener la IP asignada**:
+    ```bash
+    kubectl get svc -n kubernetes-dashboard kubernetes-dashboard
+    ```
+    Busca la columna `EXTERNAL-IP`.
+
+2.  **Acceder al navegador**:
+    *   URL: `https://<EXTERNAL-IP>`
+    *   **Nota**: Acepta la advertencia de certificado SSL (es autofirmado).
 
 ## Obtener Token de Acceso
 
