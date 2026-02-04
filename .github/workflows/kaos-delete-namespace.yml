@@ -1,0 +1,71 @@
+name: Ka0s Delete Namespace & Audit
+
+on:
+  workflow_dispatch:
+    inputs:
+      namespace:
+        description: 'Namespace to delete'
+        required: true
+        type: string
+      confirm:
+        description: 'Type "DELETE" to confirm'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  delete-namespace:
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Safety Check
+        if: ${{ inputs.confirm != 'DELETE' }}
+        run: |
+          echo "❌ Confirmation failed. You must type 'DELETE' exactly."
+          exit 1
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Execute Force Delete Script
+        uses: ./.github/actions/ssh-exec
+        with:
+          host: ${{ secrets.KAOS_SSH_HOST_1 }}
+          username: ${{ secrets.KAOS_SSH_USER }}
+          key: ${{ secrets.KAOS_SSH_KEY_PRIV }}
+          port: ${{ secrets.KAOS_SSH_PORT_1 }}
+          use-sudo: true
+          pass: ${{ secrets.KAOS_SSH_PASS }}
+          script-path: 'devops/core/k8s/force-delete-namespace.sh'
+          script-args: '${{ inputs.namespace }}'
+          remote-results-path: '/tmp/results'
+          local-results-path: 'audit/trash/'
+
+      - name: Commit Deletion Report
+        run: |
+          git config --global user.name "Ka0s Bot"
+          git config --global user.email "bot@ka0s.io"
+          
+          # Pull latest changes to avoid conflicts
+          git pull --rebase origin main || git pull origin main
+          
+          git add audit/trash/
+          
+          if ! git diff --staged --quiet; then
+            git commit -m "[Audit] Deleted namespace ${{ inputs.namespace }} - Report $(date +'%Y-%m-%d %H:%M')"
+            git push || (git pull --rebase origin main && git push)
+          else
+            echo "No report generated or already committed."
+          fi
+
+  trigger-cluster-status:
+    needs: [delete-namespace]
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Trigger Audit Cluster Status
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "Triggering Cluster Status Audit..."
+          gh workflow run audit-cluster-status.yml --ref main
