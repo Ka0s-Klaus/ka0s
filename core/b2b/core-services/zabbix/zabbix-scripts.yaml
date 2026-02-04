@@ -1,0 +1,527 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: zabbix-external-scripts
+  namespace: zabbix
+data:
+  github_connector.sh: |
+    #!/bin/bash
+    # [DEPRECATED] Este script ya no es necesario con el template nativo "Template GitHub Repository Metrics" (HTTP_AGENT).
+    # La configuración ahora se realiza via Macros en la interfaz web de Zabbix.
+    #
+    # Script para conectar Zabbix con GitHub (Soporta Token)
+    # Uso: github_connector.sh <OWNER> <REPO> <TYPE> <TOKEN> <API_URL>
+    
+    OWNER="${1:-Ka0s-Klaus}"
+    REPO="${2:-ka0s}"
+    TYPE="${3:-metrics}"
+    TOKEN="$4"
+    API_URL="${5:-https://api.github.com}"
+    
+    FULL_REPO="$OWNER/$REPO"
+    JQ_BIN="/tmp/jq"
+    
+    # Auto-descarga de jq
+    if [ ! -f "$JQ_BIN" ]; then
+        wget -q --timeout=10 -O "$JQ_BIN" https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
+        chmod +x "$JQ_BIN"
+    fi
+
+    # Función wrapper para wget con autenticación opcional
+    fetch_url() {
+        local url="$1"
+        if [ -n "$TOKEN" ] && [ "$TOKEN" != "" ]; then
+            wget -q --no-check-certificate --timeout=10 --header="Authorization: Bearer $TOKEN" -O - "$url"
+        else
+            wget -q --no-check-certificate --timeout=10 -O - "$url"
+        fi
+    }
+
+    if [ "$TYPE" = "metrics" ]; then
+        # 1. Info General
+        REPO_JSON=$(fetch_url "$API_URL/repos/$FULL_REPO")
+        
+        # 2. Pull Requests (Search API)
+        PR_JSON=$(fetch_url "$API_URL/search/issues?q=repo:$FULL_REPO+type:pr+state:open")
+        
+        if [ -x "$JQ_BIN" ] && [ -n "$REPO_JSON" ]; then
+            echo "$REPO_JSON" | "$JQ_BIN" --argjson prs "$PR_JSON" '{
+                stars: .stargazers_count,
+                forks: .forks_count,
+                open_issues: .open_issues_count,
+                watchers: .subscribers_count,
+                size_kb: .size,
+                created_at: .created_at,
+                updated_at: .updated_at,
+                pushed_at: .pushed_at,
+                language: .language,
+                open_prs: $prs.total_count
+            }'
+        else
+            echo "Error: jq required or no data"
+        fi
+        
+    elif [ "$TYPE" = "info" ]; then
+        # Legacy info
+        JSON=$(fetch_url "$API_URL/repos/$FULL_REPO")
+        STARS=$(echo "$JSON" | grep -o '"stargazers_count": [0-9]*' | head -1 | awk '{print $2}')
+        echo "Stars: $STARS"
+        
+    else
+        # Actions
+        JSON=$(fetch_url "$API_URL/repos/$FULL_REPO/actions/runs?per_page=10")
+        
+        if [ -x "$JQ_BIN" ] && [ -n "$JSON" ]; then
+             echo "$JSON" | "$JQ_BIN" -r '.workflow_runs[] | "Workflow: \(.name) (#\(.run_number)) | Status: \(.conclusion) | Branch: \(.head_branch) | Author: \(.actor.login) | Event: \(.event)"'
+        else
+             echo "Error: jq required or no data"
+        fi
+    fi
+
+  k8s_discovery.sh: |
+    #!/bin/bash
+    API_URL="https://kubernetes.default.svc"
+    TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+    JQ_BIN="/tmp/jq"
+
+    if command -v jq >/dev/null 2>&1; then
+        JQ_BIN=$(command -v jq)
+    elif [ ! -f "$JQ_BIN" ]; then
+        wget -q --no-check-certificate --timeout=10 -O "$JQ_BIN" https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
+        chmod +x "$JQ_BIN"
+    fi
+
+    # Discovery
+    JSON=$(wget -q --no-check-certificate --timeout=10 --header="Authorization: Bearer $TOKEN" -O - "$API_URL/api/v1/services")
+
+    if [ -n "$JSON" ] && [ -x "$JQ_BIN" ]; then
+        echo "$JSON" | "$JQ_BIN" -c '{data: [.items[] | {"{#SERVICE_NAME}": .metadata.name, "{#SERVICE_NAMESPACE}": .metadata.namespace, "{#SERVICE_TYPE}": .spec.type}]}'
+    else
+        echo '{"data":[]}'
+    fi
+
+  k8s_endpoints.sh: |
+    #!/bin/bash
+    NAMESPACE="$1"
+    NAME="$2"
+    API_URL="https://kubernetes.default.svc"
+    TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+    JQ_BIN="/tmp/jq"
+
+    if command -v jq >/dev/null 2>&1; then
+        JQ_BIN=$(command -v jq)
+    elif [ ! -f "$JQ_BIN" ]; then
+        wget -q --no-check-certificate --timeout=10 -O "$JQ_BIN" https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
+        chmod +x "$JQ_BIN"
+    fi
+
+    JSON=$(wget -q --no-check-certificate --timeout=10 --header="Authorization: Bearer $TOKEN" -O - "$API_URL/api/v1/namespaces/$NAMESPACE/endpoints/$NAME")
+
+    # Count subsets[].addresses[].ip
+    if [ -n "$JSON" ] && [ -x "$JQ_BIN" ]; then
+        COUNT=$(echo "$JSON" | "$JQ_BIN" '[.subsets[]?.addresses[]?] | length')
+    fi
+
+    if [ -z "$COUNT" ]; then echo 0; else echo "$COUNT"; fi
+
+  k8s_pod_discovery.sh: |
+    #!/bin/bash
+    API_URL="https://kubernetes.default.svc"
+    TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+    JQ_BIN="/tmp/jq"
+    if command -v jq >/dev/null 2>&1; then
+        JQ_BIN=$(command -v jq)
+    elif [ ! -f "$JQ_BIN" ]; then
+        wget -q --no-check-certificate --timeout=10 -O "$JQ_BIN" https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
+        chmod +x "$JQ_BIN"
+    fi
+    JSON=$(wget -q --no-check-certificate --timeout=10 --header="Authorization: Bearer $TOKEN" -O - "$API_URL/api/v1/pods")
+    
+    if [ -n "$JSON" ] && [ -x "$JQ_BIN" ]; then
+        echo "$JSON" | "$JQ_BIN" -c '{data: [.items[] | {"{#POD_NAME}": .metadata.name, "{#POD_NAMESPACE}": .metadata.namespace, "{#POD_IP}": .status.podIP}]}'
+    else
+        echo '{"data":[]}'
+    fi
+
+  k8s_pod_metrics.sh: |
+    #!/bin/bash
+    NAMESPACE="$1"
+    NAME="$2"
+    METRIC="$3"
+    API_URL="https://kubernetes.default.svc"
+    TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+    JQ_BIN="/tmp/jq"
+    if command -v jq >/dev/null 2>&1; then
+        JQ_BIN=$(command -v jq)
+    elif [ ! -f "$JQ_BIN" ]; then
+        wget -q --no-check-certificate --timeout=10 -O "$JQ_BIN" https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
+        chmod +x "$JQ_BIN"
+    fi
+    
+    if [ ! -x "$JQ_BIN" ]; then echo "0"; exit 0; fi
+
+    if [ "$METRIC" = "cpu" ] || [ "$METRIC" = "memory" ]; then
+        # Fetch from Metrics API
+        JSON=$(wget -q --no-check-certificate --timeout=10 --header="Authorization: Bearer $TOKEN" -O - "$API_URL/apis/metrics.k8s.io/v1beta1/namespaces/$NAMESPACE/pods/$NAME")
+        [ -z "$JSON" ] && echo "0" && exit 0
+
+        if [ "$METRIC" = "cpu" ]; then
+            VALS=$(echo "$JSON" | "$JQ_BIN" -r '.containers[].usage.cpu // empty')
+            if [ -z "$VALS" ]; then echo "0"; exit 0; fi
+            TOTAL=0
+            for V in $VALS; do
+                if [[ "$V" == *n ]]; then NUM=${V%n}; MILLI=$((NUM / 1000000));
+                elif [[ "$V" == *m ]]; then MILLI=${V%m};
+                elif [[ "$V" == *u ]]; then NUM=${V%u}; MILLI=$((NUM / 1000));
+                else MILLI=$((V * 1000)); fi
+                TOTAL=$((TOTAL + MILLI))
+            done
+            echo "$TOTAL"
+        elif [ "$METRIC" = "memory" ]; then
+            VALS=$(echo "$JSON" | "$JQ_BIN" -r '.containers[].usage.memory // empty')
+            if [ -z "$VALS" ]; then echo "0"; exit 0; fi
+            TOTAL=0
+            for V in $VALS; do
+                if [[ "$V" == *Ki ]]; then NUM=${V%Ki}; BYTES=$((NUM * 1024));
+                elif [[ "$V" == *Mi ]]; then NUM=${V%Mi}; BYTES=$((NUM * 1024 * 1024));
+                elif [[ "$V" == *Gi ]]; then NUM=${V%Gi}; BYTES=$((NUM * 1024 * 1024 * 1024));
+                else BYTES=$V; fi
+                TOTAL=$((TOTAL + BYTES))
+            done
+            echo "$TOTAL"
+        fi
+    elif [ "$METRIC" = "restarts" ]; then
+        # Fetch from Core API
+        JSON=$(wget -q --no-check-certificate --timeout=10 --header="Authorization: Bearer $TOKEN" -O - "$API_URL/api/v1/namespaces/$NAMESPACE/pods/$NAME")
+        [ -z "$JSON" ] && echo "0" && exit 0
+        RESTARTS=$(echo "$JSON" | "$JQ_BIN" '[.status.containerStatuses[]?.restartCount] | add')
+        echo "${RESTARTS:-0}"
+    elif [ "$METRIC" = "oom_killed" ]; then
+        # Check if any container was terminated with reason OOMKilled
+        JSON=$(wget -q --no-check-certificate --timeout=10 --header="Authorization: Bearer $TOKEN" -O - "$API_URL/api/v1/namespaces/$NAMESPACE/pods/$NAME")
+        [ -z "$JSON" ] && echo "0" && exit 0
+        OOM=$(echo "$JSON" | "$JQ_BIN" '[.status.containerStatuses[]?.lastState.terminated.reason == "OOMKilled"] | any')
+        if [ "$OOM" = "true" ]; then echo 1; else echo 0; fi
+    elif [ "$METRIC" = "phase" ]; then
+         JSON=$(wget -q --no-check-certificate --timeout=10 --header="Authorization: Bearer $TOKEN" -O - "$API_URL/api/v1/namespaces/$NAMESPACE/pods/$NAME")
+         [ -z "$JSON" ] && echo "Unknown" && exit 0
+         echo "$JSON" | "$JQ_BIN" -r '.status.phase'
+    elif [ "$METRIC" = "limits_cpu" ]; then
+         JSON=$(wget -q --no-check-certificate --timeout=10 --header="Authorization: Bearer $TOKEN" -O - "$API_URL/api/v1/namespaces/$NAMESPACE/pods/$NAME")
+         [ -z "$JSON" ] && echo "0" && exit 0
+         VALS=$(echo "$JSON" | "$JQ_BIN" -r '.spec.containers[].resources.limits.cpu // empty')
+         if [ -z "$VALS" ]; then echo "0"; exit 0; fi
+         TOTAL=0
+         for V in $VALS; do
+             if [[ "$V" == *m ]]; then MILLI=${V%m};
+             elif [[ "$V" == *[0-9] ]]; then MILLI=$((V * 1000));
+             else MILLI=0; fi
+             TOTAL=$((TOTAL + MILLI))
+         done
+         echo "$TOTAL"
+    elif [ "$METRIC" = "limits_memory" ]; then
+         JSON=$(wget -q --no-check-certificate --timeout=10 --header="Authorization: Bearer $TOKEN" -O - "$API_URL/api/v1/namespaces/$NAMESPACE/pods/$NAME")
+         [ -z "$JSON" ] && echo "0" && exit 0
+         VALS=$(echo "$JSON" | "$JQ_BIN" -r '.spec.containers[].resources.limits.memory // empty')
+         if [ -z "$VALS" ]; then echo "0"; exit 0; fi
+         TOTAL=0
+         for V in $VALS; do
+             if [[ "$V" == *Ki ]]; then NUM=${V%Ki}; BYTES=$((NUM * 1024));
+             elif [[ "$V" == *Mi ]]; then NUM=${V%Mi}; BYTES=$((NUM * 1024 * 1024));
+             elif [[ "$V" == *Gi ]]; then NUM=${V%Gi}; BYTES=$((NUM * 1024 * 1024 * 1024));
+             elif [[ "$V" == *[0-9] ]]; then BYTES=$V;
+             else BYTES=0; fi
+             TOTAL=$((TOTAL + BYTES))
+         done
+         echo "$TOTAL"
+    else
+        echo "0"
+    fi
+
+  k8s_cluster_stats.sh: |
+    #!/bin/bash
+    API_URL="https://kubernetes.default.svc"
+    TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+    JQ_BIN="/tmp/jq"
+    if command -v jq >/dev/null 2>&1; then
+        JQ_BIN=$(command -v jq)
+    elif [ ! -f "$JQ_BIN" ]; then
+        wget -q --no-check-certificate --timeout=10 -O "$JQ_BIN" https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
+        chmod +x "$JQ_BIN"
+    fi
+    
+    if [ ! -x "$JQ_BIN" ]; then
+        # Return valid JSON with 0s if critical tool is missing
+        echo '{"nodes":0,"allocatable_cpu":0,"allocatable_mem":0,"usage_cpu":0,"usage_mem":0,"requests_cpu":0,"requests_mem":0,"pods":0,"pods_running":0,"pods_pending":0,"pods_failed":0,"pods_succeeded":0,"pods_restarts":0,"cpu_avg":0,"mem_avg":0,"deployments_desired":0,"deployments_available":0,"services_total":0,"services_unhealthy":0}'
+        exit 0
+    fi
+
+    # --- 1. Fetch Nodes for Allocatable Resources & Conditions ---
+    NODES_JSON=$(wget -q --no-check-certificate --timeout=10 --header="Authorization: Bearer $TOKEN" -O - "$API_URL/api/v1/nodes")
+    
+    if [ -n "$NODES_JSON" ]; then
+        NODE_COUNT=$(echo "$NODES_JSON" | "$JQ_BIN" '.items | length')
+        ALLOC_CPU=$(echo "$NODES_JSON" | "$JQ_BIN" '[.items[].status.allocatable.cpu | if test("m$") then sub("m";"")|tonumber else tonumber*1000 end] | add')
+        ALLOC_MEM=$(echo "$NODES_JSON" | "$JQ_BIN" '[.items[].status.allocatable.memory | if test("Ki$") then sub("Ki";"")|tonumber*1024 else if test("Mi$") then sub("Mi";"")|tonumber*1048576 else if test("Gi$") then sub("Gi";"")|tonumber*1073741824 else tonumber end end end] | add')
+    else
+        NODE_COUNT=0; ALLOC_CPU=0; ALLOC_MEM=0
+    fi
+
+    # --- 2. Fetch Pods for Status Counts & Requests/Limits ---
+    PODS_JSON=$(wget -q --no-check-certificate --timeout=10 --header="Authorization: Bearer $TOKEN" -O - "$API_URL/api/v1/pods")
+    
+    if [ -n "$PODS_JSON" ]; then
+        POD_COUNT=$(echo "$PODS_JSON" | "$JQ_BIN" '.items | length')
+        PODS_RUNNING=$(echo "$PODS_JSON" | "$JQ_BIN" '[.items[] | select(.status.phase=="Running")] | length')
+        PODS_PENDING=$(echo "$PODS_JSON" | "$JQ_BIN" '[.items[] | select(.status.phase=="Pending")] | length')
+        PODS_FAILED=$(echo "$PODS_JSON" | "$JQ_BIN" '[.items[] | select(.status.phase=="Failed")] | length')
+        PODS_SUCCEEDED=$(echo "$PODS_JSON" | "$JQ_BIN" '[.items[] | select(.status.phase=="Succeeded")] | length')
+        TOTAL_RESTARTS=$(echo "$PODS_JSON" | "$JQ_BIN" '[.items[].status.containerStatuses[]?.restartCount // 0] | add')
+        
+        REQ_CPU=$(echo "$PODS_JSON" | "$JQ_BIN" '[.items[].spec.containers[].resources.requests.cpu // "0"] | map(if test("m$") then sub("m";"")|tonumber else if test("^[0-9]+$") then tonumber*1000 else 0 end end) | add')
+        REQ_MEM=$(echo "$PODS_JSON" | "$JQ_BIN" '[.items[].spec.containers[].resources.requests.memory // "0"] | map(if test("Ki$") then sub("Ki";"")|tonumber*1024 else if test("Mi$") then sub("Mi";"")|tonumber*1048576 else if test("Gi$") then sub("Gi";"")|tonumber*1073741824 else if test("^[0-9]+$") then tonumber else 0 end end end end) | add')
+    else
+        POD_COUNT=0; PODS_RUNNING=0; PODS_PENDING=0; PODS_FAILED=0; PODS_SUCCEEDED=0; TOTAL_RESTARTS=0; REQ_CPU=0; REQ_MEM=0
+    fi
+
+    # --- 3. Deployments Stats ---
+    DEPLOYS_JSON=$(wget -q --no-check-certificate --timeout=10 --header="Authorization: Bearer $TOKEN" -O - "$API_URL/apis/apps/v1/deployments")
+    
+    if [ -n "$DEPLOYS_JSON" ]; then
+        DEP_DESIRED=$(echo "$DEPLOYS_JSON" | "$JQ_BIN" '[.items[].spec.replicas // 0] | add')
+        DEP_AVAILABLE=$(echo "$DEPLOYS_JSON" | "$JQ_BIN" '[.items[].status.availableReplicas // 0] | add')
+    else
+        DEP_DESIRED=0; DEP_AVAILABLE=0
+    fi
+
+    # --- 4. Services Health ---
+    ENDPOINTS_JSON=$(wget -q --no-check-certificate --timeout=10 --header="Authorization: Bearer $TOKEN" -O - "$API_URL/api/v1/endpoints")
+    
+    if [ -n "$ENDPOINTS_JSON" ]; then
+        SVC_TOTAL=$(echo "$ENDPOINTS_JSON" | "$JQ_BIN" '.items | length')
+        SVC_UNHEALTHY=$(echo "$ENDPOINTS_JSON" | "$JQ_BIN" '[.items[] | select(.subsets == null or (.subsets | length == 0))] | length')
+    else
+        SVC_TOTAL=0; SVC_UNHEALTHY=0
+    fi
+
+    # --- 5. Usage Metrics ---
+    METRICS=$(wget -q --no-check-certificate --timeout=10 --header="Authorization: Bearer $TOKEN" -O - "$API_URL/apis/metrics.k8s.io/v1beta1/nodes")
+    
+    if [ -n "$METRICS" ]; then
+        METRICS_COUNT=$(echo "$METRICS" | "$JQ_BIN" '.items | length')
+    else
+        METRICS_COUNT=0
+    fi
+    
+    if [ "$METRICS_COUNT" -gt 0 ]; then
+       USAGE_CPU=$(echo "$METRICS" | "$JQ_BIN" '[.items[].usage.cpu | sub("n";"") | tonumber] | add')
+       USAGE_CPU=$((USAGE_CPU / 1000000)) # nano to milli
+       
+       USAGE_MEM=$(echo "$METRICS" | "$JQ_BIN" '[.items[].usage.memory | sub("Ki";"") | tonumber] | add')
+       USAGE_MEM=$((USAGE_MEM * 1024)) # Ki to Bytes
+       
+       CPU_AVG=$((USAGE_CPU / METRICS_COUNT))
+       MEM_AVG=$((USAGE_MEM / METRICS_COUNT))
+    else
+       USAGE_CPU=0; USAGE_MEM=0; CPU_AVG=0; MEM_AVG=0
+    fi
+
+    # Construct JSON Output
+    echo "{
+        \"nodes\": ${NODE_COUNT:-0},
+        \"allocatable_cpu\": ${ALLOC_CPU:-0},
+        \"allocatable_mem\": ${ALLOC_MEM:-0},
+        \"usage_cpu\": ${USAGE_CPU:-0},
+        \"usage_mem\": ${USAGE_MEM:-0},
+        \"requests_cpu\": ${REQ_CPU:-0},
+        \"requests_mem\": ${REQ_MEM:-0},
+        \"pods\": ${POD_COUNT:-0},
+        \"pods_running\": ${PODS_RUNNING:-0},
+        \"pods_pending\": ${PODS_PENDING:-0},
+        \"pods_failed\": ${PODS_FAILED:-0},
+        \"pods_succeeded\": ${PODS_SUCCEEDED:-0},
+        \"pods_restarts\": ${TOTAL_RESTARTS:-0},
+        \"cpu_avg\": ${CPU_AVG:-0},
+        \"mem_avg\": ${MEM_AVG:-0},
+        \"deployments_desired\": ${DEP_DESIRED:-0},
+        \"deployments_available\": ${DEP_AVAILABLE:-0},
+        \"services_total\": ${SVC_TOTAL:-0},
+        \"services_unhealthy\": ${SVC_UNHEALTHY:-0}
+    }"
+
+  k8s_deployment_discovery.sh: |
+    #!/bin/bash
+    API_URL="https://kubernetes.default.svc"
+    TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+    JQ_BIN="/tmp/jq"
+    if [ ! -f "$JQ_BIN" ]; then
+        wget -q --timeout=10 -O "$JQ_BIN" https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
+        chmod +x "$JQ_BIN"
+    fi
+    JSON=$(wget -q --no-check-certificate --timeout=10 --header="Authorization: Bearer $TOKEN" -O - "$API_URL/apis/apps/v1/deployments")
+    
+    if [ -n "$JSON" ] && [ -x "$JQ_BIN" ]; then
+        echo "$JSON" | "$JQ_BIN" -c '{data: [.items[] | {"{#NAME}": .metadata.name, "{#NAMESPACE}": .metadata.namespace}]}'
+    else
+        echo '{"data":[]}'
+    fi
+
+  k8s_deployment_metrics.sh: |
+    #!/bin/bash
+    NAMESPACE="$1"
+    NAME="$2"
+    METRIC="$3"
+    API_URL="https://kubernetes.default.svc"
+    TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+    JQ_BIN="/tmp/jq"
+    if [ ! -f "$JQ_BIN" ]; then
+        wget -q --timeout=10 -O "$JQ_BIN" https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
+        chmod +x "$JQ_BIN"
+    fi
+    JSON=$(wget -q --no-check-certificate --timeout=10 --header="Authorization: Bearer $TOKEN" -O - "$API_URL/apis/apps/v1/namespaces/$NAMESPACE/deployments/$NAME")
+    
+    if [ -z "$JSON" ] || [ ! -x "$JQ_BIN" ]; then echo "0"; exit 0; fi
+
+    if [ "$METRIC" = "replicas" ]; then
+        echo "$JSON" | "$JQ_BIN" '.spec.replicas // 0'
+    elif [ "$METRIC" = "available_replicas" ]; then
+        echo "$JSON" | "$JQ_BIN" '.status.availableReplicas // 0'
+    elif [ "$METRIC" = "unavailable_replicas" ]; then
+        echo "$JSON" | "$JQ_BIN" '.status.unavailableReplicas // 0'
+    else
+        echo "0"
+    fi
+
+  k8s_node_metrics.sh: |
+    #!/bin/bash
+    NODE_NAME="$1"
+    METRIC="$2"
+    API_URL="https://kubernetes.default.svc"
+    TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+    JQ_BIN="/tmp/jq"
+    if command -v jq >/dev/null 2>&1; then
+        JQ_BIN=$(command -v jq)
+    elif [ ! -f "$JQ_BIN" ]; then
+        wget -q --no-check-certificate --timeout=10 -O "$JQ_BIN" https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
+        chmod +x "$JQ_BIN"
+    fi
+    
+    if [ ! -x "$JQ_BIN" ]; then echo "0"; exit 0; fi
+    
+    # Standard metrics from metrics API
+    if [ "$METRIC" = "cpu" ] || [ "$METRIC" = "memory" ]; then
+        JSON=$(wget -q --no-check-certificate --timeout=10 --header="Authorization: Bearer $TOKEN" -O - "$API_URL/apis/metrics.k8s.io/v1beta1/nodes/$NODE_NAME")
+        [ -z "$JSON" ] && echo "0" && exit 0
+        
+        if [ "$METRIC" = "cpu" ]; then
+            V=$(echo "$JSON" | "$JQ_BIN" -r '.usage.cpu // empty')
+            if [ -z "$V" ]; then echo "0"; exit 0; fi
+            if [[ "$V" == *n ]]; then NUM=${V%n}; MILLI=$((NUM / 1000000));
+            elif [[ "$V" == *m ]]; then MILLI=${V%m};
+            elif [[ "$V" == *u ]]; then NUM=${V%u}; MILLI=$((NUM / 1000));
+            else MILLI=$((V * 1000)); fi
+            echo "$MILLI"
+        elif [ "$METRIC" = "memory" ]; then
+            V=$(echo "$JSON" | "$JQ_BIN" -r '.usage.memory // empty')
+            if [ -z "$V" ]; then echo "0"; exit 0; fi
+            if [[ "$V" == *Ki ]]; then NUM=${V%Ki}; BYTES=$((NUM * 1024));
+            elif [[ "$V" == *Mi ]]; then NUM=${V%Mi}; BYTES=$((NUM * 1024 * 1024));
+            elif [[ "$V" == *Gi ]]; then NUM=${V%Gi}; BYTES=$((NUM * 1024 * 1024 * 1024));
+            else BYTES=$V; fi
+            echo "$BYTES"
+        fi
+    # Node Conditions from Core API
+    else
+        JSON=$(wget -q --no-check-certificate --timeout=10 --header="Authorization: Bearer $TOKEN" -O - "$API_URL/api/v1/nodes/$NODE_NAME")
+        [ -z "$JSON" ] && echo "0" && exit 0
+        
+        if [ "$METRIC" = "disk_pressure" ]; then
+            STATUS=$(echo "$JSON" | "$JQ_BIN" -r '.status.conditions[] | select(.type=="DiskPressure") | .status')
+            if [ "$STATUS" = "True" ]; then echo 1; else echo 0; fi
+        elif [ "$METRIC" = "memory_pressure" ]; then
+            STATUS=$(echo "$JSON" | "$JQ_BIN" -r '.status.conditions[] | select(.type=="MemoryPressure") | .status')
+            if [ "$STATUS" = "True" ]; then echo 1; else echo 0; fi
+        elif [ "$METRIC" = "ready" ]; then
+            STATUS=$(echo "$JSON" | "$JQ_BIN" -r '.status.conditions[] | select(.type=="Ready") | .status')
+            if [ "$STATUS" = "True" ]; then echo 1; else echo 0; fi
+        elif [ "$METRIC" = "network_errors" ]; then
+            # Fetch from Kubelet Summary API via Proxy
+            JSON=$(wget -q --no-check-certificate --timeout=10 --header="Authorization: Bearer $TOKEN" -O - "$API_URL/api/v1/nodes/$NODE_NAME/proxy/stats/summary")
+            [ -z "$JSON" ] && echo "0" && exit 0
+            # Sum rxErrors and txErrors from all interfaces
+            RX=$(echo "$JSON" | "$JQ_BIN" '[.node.network.interfaces[]?.rxErrors // 0] | add')
+            TX=$(echo "$JSON" | "$JQ_BIN" '[.node.network.interfaces[]?.txErrors // 0] | add')
+            echo $((RX + TX))
+        elif [ "$METRIC" = "disk_usage" ]; then
+            JSON=$(wget -q --no-check-certificate --timeout=10 --header="Authorization: Bearer $TOKEN" -O - "$API_URL/api/v1/nodes/$NODE_NAME/proxy/stats/summary")
+            [ -z "$JSON" ] && echo "0" || echo "$JSON" | "$JQ_BIN" '.node.fs.usedBytes // 0'
+        elif [ "$METRIC" = "disk_capacity" ]; then
+            JSON=$(wget -q --no-check-certificate --timeout=10 --header="Authorization: Bearer $TOKEN" -O - "$API_URL/api/v1/nodes/$NODE_NAME/proxy/stats/summary")
+            [ -z "$JSON" ] && echo "0" || echo "$JSON" | "$JQ_BIN" '.node.fs.capacityBytes // 0'
+        else
+            echo "0"
+        fi
+    fi
+
+  k8s_node_discovery.sh: |
+    #!/bin/bash
+    API_URL="https://kubernetes.default.svc"
+    TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+    JQ_BIN="/tmp/jq"
+    if command -v jq >/dev/null 2>&1; then
+        JQ_BIN=$(command -v jq)
+    elif [ ! -f "$JQ_BIN" ]; then
+        wget -q --no-check-certificate --timeout=10 -O "$JQ_BIN" https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
+        chmod +x "$JQ_BIN"
+    fi
+    JSON=$(wget -q --no-check-certificate --timeout=10 --header="Authorization: Bearer $TOKEN" -O - "$API_URL/api/v1/nodes")
+    
+    if [ -n "$JSON" ] && [ -x "$JQ_BIN" ]; then
+        echo "$JSON" | "$JQ_BIN" -c '{data: [.items[] | {"{#NODE_NAME}": .metadata.name}]}'
+    else
+        echo '{"data":[]}'
+    fi
+
+  k8s_namespace_discovery.sh: |
+    #!/bin/bash
+    API_URL="https://kubernetes.default.svc"
+    TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+    JQ_BIN="/tmp/jq"
+    if command -v jq >/dev/null 2>&1; then
+        JQ_BIN=$(command -v jq)
+    elif [ ! -f "$JQ_BIN" ]; then
+        wget -q --no-check-certificate --timeout=10 -O "$JQ_BIN" https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
+        chmod +x "$JQ_BIN"
+    fi
+    JSON=$(wget -q --no-check-certificate --timeout=10 --header="Authorization: Bearer $TOKEN" -O - "$API_URL/api/v1/namespaces")
+    
+    if [ -n "$JSON" ] && [ -x "$JQ_BIN" ]; then
+        echo "$JSON" | "$JQ_BIN" -c '{data: [.items[] | {"{#NAMESPACE}": .metadata.name}]}'
+    else
+        echo '{"data":[]}'
+    fi
+
+  k8s_namespace_metrics.sh: |
+    #!/bin/bash
+    NAMESPACE="$1"
+    METRIC="$2"
+    API_URL="https://kubernetes.default.svc"
+    TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+    JQ_BIN="/tmp/jq"
+    if command -v jq >/dev/null 2>&1; then
+        JQ_BIN=$(command -v jq)
+    elif [ ! -f "$JQ_BIN" ]; then
+        wget -q --no-check-certificate --timeout=10 -O "$JQ_BIN" https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
+        chmod +x "$JQ_BIN"
+    fi
+    
+    if [ ! -x "$JQ_BIN" ]; then echo "0"; exit 0; fi
+
+    if [ "$METRIC" = "restarts" ]; then
+        JSON=$(wget -q --no-check-certificate --timeout=10 --header="Authorization: Bearer $TOKEN" -O - "$API_URL/api/v1/namespaces/$NAMESPACE/pods")
+        [ -z "$JSON" ] && echo "0" && exit 0
+        RESTARTS=$(echo "$JSON" | "$JQ_BIN" '[.items[].status.containerStatuses[]?.restartCount // 0] | add')
+        echo "${RESTARTS:-0}"
+    else
+        echo "0"
+    fi

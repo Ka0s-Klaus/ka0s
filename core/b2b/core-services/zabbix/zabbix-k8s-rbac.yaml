@@ -1,0 +1,58 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: zabbix-cluster-role
+rules:
+  # Recursos básicos del cluster
+  - apiGroups: [""]
+    resources:
+      - nodes
+      - nodes/proxy
+      - nodes/stats
+      - nodes/metrics
+      - nodes/log
+      - pods
+      - pods/log
+      - services
+      - endpoints
+      - namespaces
+      - componentstatuses
+      - events
+    verbs: ["get", "list", "watch"]
+
+  # Recursos de apps (deployments, daemonsets, etc.)
+  - apiGroups: ["apps", "batch", "extensions"]
+    resources:
+      - deployments
+      - daemonsets
+      - statefulsets
+      - replicasets
+      - jobs
+      - cronjobs
+    verbs: ["get", "list", "watch"]
+
+  # Métricas de metrics-server (por si el template lo usa)
+  - apiGroups: ["metrics.k8s.io"]
+    resources:
+      - nodes
+      - pods
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: zabbix-service-account
+  namespace: zabbix
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: zabbix-cluster-role-binding
+subjects:
+  - kind: ServiceAccount
+    name: zabbix-service-account
+    namespace: zabbix
+roleRef:
+  kind: ClusterRole
+  name: zabbix-cluster-role
+  apiGroup: rbac.authorization.k8s.io

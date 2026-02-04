@@ -1,0 +1,1546 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zabbix_export>
+    <version>7.0</version>
+    <template_groups>
+        <template_group>
+            <uuid>a571c0d144b14fd4a87a9d9b2a69eb45</uuid>
+            <name>Kubernetes</name>
+        </template_group>
+    </template_groups>
+    <templates>
+        <template>
+            <uuid>d8d1e3d144b14fd4a87a9d9b2a69eb46</uuid>
+            <template>Template Kubernetes Services Discovery</template>
+            <name>Template Kubernetes Services Discovery</name>
+            <description>Discover and monitor Kubernetes Services via External Scripts (k8s_discovery.sh)</description>
+            <groups>
+                <group>
+                    <name>Kubernetes</name>
+                </group>
+            </groups>
+            <items>
+                <!-- Master Item for Cluster Stats -->
+                <item>
+                    <uuid>e1d1e3d144b14fd4a87a9d9b2a69eb55</uuid>
+                    <name>Kubernetes Cluster Stats (JSON)</name>
+                    <type>EXTERNAL</type>
+                    <key>k8s_cluster_stats.sh</key>
+                    <history>1h</history>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <description>Returns JSON with Node count, Pod count, and Cluster Average CPU/Memory usage.</description>
+                    <tags>
+                        <tag>
+                            <tag>Application</tag>
+                            <value>Kubernetes Cluster</value>
+                        </tag>
+                    </tags>
+                </item>
+                
+                <!-- Dependent Items -->
+                <item>
+                    <uuid>f2d1e3d144b14fd4a87a9d9b2a69eb56</uuid>
+                    <name>Cluster: Total Nodes</name>
+                    <type>DEPENDENT</type>
+                    <master_item>
+                        <key>k8s_cluster_stats.sh</key>
+                    </master_item>
+                    <key>k8s.cluster.nodes</key>
+                    <delay>0</delay>
+                    <history>7d</history>
+                    <trends>30d</trends>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$.nodes</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <tags>
+                        <tag>
+                            <tag>Application</tag>
+                            <value>Kubernetes Cluster</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>f3d1e3d144b14fd4a87a9d9b2a69eb56</uuid>
+                    <name>Cluster: Allocatable CPU</name>
+                    <type>DEPENDENT</type>
+                    <master_item>
+                        <key>k8s_cluster_stats.sh</key>
+                    </master_item>
+                    <key>k8s.cluster.allocatable_cpu</key>
+                    <delay>0</delay>
+                    <history>7d</history>
+                    <trends>30d</trends>
+                    <units>m</units>
+                    <value_type>FLOAT</value_type>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$.allocatable_cpu</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <tags>
+                        <tag>
+                            <tag>Application</tag>
+                            <value>Kubernetes Capacity</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>f4d1e3d144b14fd4a87a9d9b2a69eb56</uuid>
+                    <name>Cluster: Allocatable Memory</name>
+                    <type>DEPENDENT</type>
+                    <master_item>
+                        <key>k8s_cluster_stats.sh</key>
+                    </master_item>
+                    <key>k8s.cluster.allocatable_mem</key>
+                    <delay>0</delay>
+                    <history>7d</history>
+                    <trends>30d</trends>
+                    <units>B</units>
+                    <value_type>UNSIGNED</value_type>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$.allocatable_mem</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <tags>
+                        <tag>
+                            <tag>Application</tag>
+                            <value>Kubernetes Capacity</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>f5d1e3d144b14fd4a87a9d9b2a69eb56</uuid>
+                    <name>Cluster: CPU Requests</name>
+                    <type>DEPENDENT</type>
+                    <master_item>
+                        <key>k8s_cluster_stats.sh</key>
+                    </master_item>
+                    <key>k8s.cluster.requests_cpu</key>
+                    <delay>0</delay>
+                    <history>7d</history>
+                    <trends>30d</trends>
+                    <units>m</units>
+                    <value_type>FLOAT</value_type>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$.requests_cpu</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <tags>
+                        <tag>
+                            <tag>Application</tag>
+                            <value>Kubernetes Capacity</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>f6d1e3d144b14fd4a87a9d9b2a69eb56</uuid>
+                    <name>Cluster: Memory Requests</name>
+                    <type>DEPENDENT</type>
+                    <master_item>
+                        <key>k8s_cluster_stats.sh</key>
+                    </master_item>
+                    <key>k8s.cluster.requests_mem</key>
+                    <delay>0</delay>
+                    <history>7d</history>
+                    <trends>30d</trends>
+                    <units>B</units>
+                    <value_type>UNSIGNED</value_type>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$.requests_mem</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <tags>
+                        <tag>
+                            <tag>Application</tag>
+                            <value>Kubernetes Capacity</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>f7d1e3d144b14fd4a87a9d9b2a69eb66</uuid>
+                    <name>Cluster: Services Total</name>
+                    <type>DEPENDENT</type>
+                    <master_item>
+                        <key>k8s_cluster_stats.sh</key>
+                    </master_item>
+                    <key>k8s.cluster.services_total</key>
+                    <delay>0</delay>
+                    <history>7d</history>
+                    <trends>30d</trends>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$.services_total</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <tags>
+                        <tag>
+                            <tag>Application</tag>
+                            <value>Kubernetes Health</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>f8d1e3d144b14fd4a87a9d9b2a69eb67</uuid>
+                    <name>Cluster: Services Unhealthy</name>
+                    <type>DEPENDENT</type>
+                    <master_item>
+                        <key>k8s_cluster_stats.sh</key>
+                    </master_item>
+                    <key>k8s.cluster.services_unhealthy</key>
+                    <delay>0</delay>
+                    <history>7d</history>
+                    <trends>30d</trends>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$.services_unhealthy</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <tags>
+                        <tag>
+                            <tag>Application</tag>
+                            <value>Kubernetes Health</value>
+                        </tag>
+                    </tags>
+                    <triggers>
+                        <trigger>
+                            <uuid>a1d1e3d144b14fd4a87a9d9b2a69eb68</uuid>
+                            <expression>last(/Template Kubernetes Services Discovery/k8s.cluster.services_unhealthy)&gt;0</expression>
+                            <name>There are unhealthy services in the cluster</name>
+                            <priority>AVERAGE</priority>
+                            <description>Services found with no active endpoints.</description>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <uuid>f7d1e3d144b14fd4a87a9d9b2a69eb56</uuid>
+                    <name>Cluster: Pods Running</name>
+                    <type>DEPENDENT</type>
+                    <master_item>
+                        <key>k8s_cluster_stats.sh</key>
+                    </master_item>
+                    <key>k8s.cluster.pods_running</key>
+                    <delay>0</delay>
+                    <history>7d</history>
+                    <trends>30d</trends>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$.pods_running</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <tags>
+                        <tag>
+                            <tag>Application</tag>
+                            <value>Kubernetes Health</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>f8d1e3d144b14fd4a87a9d9b2a69eb56</uuid>
+                    <name>Cluster: Pods Pending</name>
+                    <type>DEPENDENT</type>
+                    <master_item>
+                        <key>k8s_cluster_stats.sh</key>
+                    </master_item>
+                    <key>k8s.cluster.pods_pending</key>
+                    <delay>0</delay>
+                    <history>7d</history>
+                    <trends>30d</trends>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$.pods_pending</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <tags>
+                        <tag>
+                            <tag>Application</tag>
+                            <value>Kubernetes Health</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>f9d1e3d144b14fd4a87a9d9b2a69eb56</uuid>
+                    <name>Cluster: Pods Failed</name>
+                    <type>DEPENDENT</type>
+                    <master_item>
+                        <key>k8s_cluster_stats.sh</key>
+                    </master_item>
+                    <key>k8s.cluster.pods_failed</key>
+                    <delay>0</delay>
+                    <history>7d</history>
+                    <trends>30d</trends>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$.pods_failed</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <tags>
+                        <tag>
+                            <tag>Application</tag>
+                            <value>Kubernetes Health</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>a2d1e3d144b14fd4a87a9d9b2a69eb56</uuid>
+                    <name>Cluster: Total Restarts</name>
+                    <type>DEPENDENT</type>
+                    <master_item>
+                        <key>k8s_cluster_stats.sh</key>
+                    </master_item>
+                    <key>k8s.cluster.pods_restarts</key>
+                    <delay>0</delay>
+                    <history>7d</history>
+                    <trends>30d</trends>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$.pods_restarts</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <tags>
+                        <tag>
+                            <tag>Application</tag>
+                            <value>Kubernetes Health</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>a3d1e3d144b14fd4a87a9d9b2a69eb57</uuid>
+                    <name>Cluster: Total Pods</name>
+                    <type>DEPENDENT</type>
+                    <master_item>
+                        <key>k8s_cluster_stats.sh</key>
+                    </master_item>
+                    <key>k8s.cluster.pods</key>
+                    <delay>0</delay>
+                    <history>7d</history>
+                    <trends>30d</trends>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$.pods</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <tags>
+                        <tag>
+                            <tag>Application</tag>
+                            <value>Kubernetes Cluster</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>b4d1e3d144b14fd4a87a9d9b2a69eb58</uuid>
+                    <name>Cluster: Average CPU Usage</name>
+                    <type>DEPENDENT</type>
+                    <master_item>
+                        <key>k8s_cluster_stats.sh</key>
+                    </master_item>
+                    <key>k8s.cluster.cpu_avg</key>
+                    <delay>0</delay>
+                    <history>7d</history>
+                    <trends>30d</trends>
+                    <units>m</units>
+                    <value_type>FLOAT</value_type>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$.cpu_avg</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <tags>
+                        <tag>
+                            <tag>Application</tag>
+                            <value>Kubernetes Cluster</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>c5d1e3d144b14fd4a87a9d9b2a69eb59</uuid>
+                    <name>Cluster: Average Memory Usage</name>
+                    <type>DEPENDENT</type>
+                    <master_item>
+                        <key>k8s_cluster_stats.sh</key>
+                    </master_item>
+                    <key>k8s.cluster.mem_avg</key>
+                    <delay>0</delay>
+                    <history>7d</history>
+                    <trends>30d</trends>
+                    <units>B</units>
+                    <value_type>UNSIGNED</value_type>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$.mem_avg</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <tags>
+                        <tag>
+                            <tag>Application</tag>
+                            <value>Kubernetes Cluster</value>
+                        </tag>
+                    </tags>
+                </item>
+            </items>
+            <dashboards>
+                <dashboard>
+                    <uuid>d6d1e3d144b14fd4a87a9d9b2a69eb60</uuid>
+                    <name>Kubernetes Cluster Overview</name>
+                    <pages>
+                        <page>
+                            <name>Overview</name>
+                            <widgets>
+                                <!-- Row 0: Stats (Keep) -->
+                                <widget>
+                                    <type>item</type>
+                                    <name>Total Nodes</name>
+                                    <width>4</width>
+                                    <height>4</height>
+                                    <fields>
+                                        <field>
+                                            <type>ITEM</type>
+                                            <name>itemid</name>
+                                            <value>
+                                                <host>Template Kubernetes Services Discovery</host>
+                                                <key>k8s.cluster.nodes</key>
+                                            </value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>show</name>
+                                            <value>1</value>
+                                        </field>
+                                    </fields>
+                                </widget>
+                                <widget>
+                                    <type>item</type>
+                                    <name>Total Pods</name>
+                                    <x>4</x>
+                                    <y>0</y>
+                                    <width>4</width>
+                                    <height>4</height>
+                                    <fields>
+                                        <field>
+                                            <type>ITEM</type>
+                                            <name>itemid</name>
+                                            <value>
+                                                <host>Template Kubernetes Services Discovery</host>
+                                                <key>k8s.cluster.pods</key>
+                                            </value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>show</name>
+                                            <value>1</value>
+                                        </field>
+                                    </fields>
+                                </widget>
+                                <widget>
+                                    <type>item</type>
+                                    <name>Total Services</name>
+                                    <x>8</x>
+                                    <y>0</y>
+                                    <width>4</width>
+                                    <height>4</height>
+                                    <fields>
+                                        <field>
+                                            <type>ITEM</type>
+                                            <name>itemid</name>
+                                            <value>
+                                                <host>Template Kubernetes Services Discovery</host>
+                                                <key>k8s.cluster.services_total</key>
+                                            </value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>show</name>
+                                            <value>1</value>
+                                        </field>
+                                    </fields>
+                                </widget>
+                                <widget>
+                                    <type>item</type>
+                                    <name>Unhealthy Services</name>
+                                    <x>12</x>
+                                    <y>0</y>
+                                    <width>4</width>
+                                    <height>4</height>
+                                    <fields>
+                                        <field>
+                                            <type>ITEM</type>
+                                            <name>itemid</name>
+                                            <value>
+                                                <host>Template Kubernetes Services Discovery</host>
+                                                <key>k8s.cluster.services_unhealthy</key>
+                                            </value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>show</name>
+                                            <value>1</value>
+                                        </field>
+                                    </fields>
+                                </widget>
+                                <widget>
+                                    <type>item</type>
+                                    <name>Total Pod Restarts</name>
+                                    <x>16</x>
+                                    <y>0</y>
+                                    <width>4</width>
+                                    <height>4</height>
+                                    <fields>
+                                        <field>
+                                            <type>ITEM</type>
+                                            <name>itemid</name>
+                                            <value>
+                                                <host>Template Kubernetes Services Discovery</host>
+                                                <key>k8s.cluster.pods_restarts</key>
+                                            </value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>show</name>
+                                            <value>1</value>
+                                        </field>
+                                    </fields>
+                                </widget>
+
+                                <!-- Row 1: Capacity Planning (Keep) -->
+                                <widget>
+                                    <type>graph</type>
+                                    <name>CPU Capacity Planning</name>
+                                    <x>0</x>
+                                    <y>4</y>
+                                    <width>12</width>
+                                    <height>6</height>
+                                    <fields>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>source_type</name>
+                                            <value>1</value>
+                                        </field>
+                                        <field>
+                                            <type>ITEM</type>
+                                            <name>itemid.0</name>
+                                            <value>
+                                                <host>Template Kubernetes Services Discovery</host>
+                                                <key>k8s.cluster.allocatable_cpu</key>
+                                            </value>
+                                        </field>
+                                        <field>
+                                            <type>STRING</type>
+                                            <name>color.0</name>
+                                            <value>00FF00</value>
+                                        </field>
+                                        <field>
+                                            <type>ITEM</type>
+                                            <name>itemid.1</name>
+                                            <value>
+                                                <host>Template Kubernetes Services Discovery</host>
+                                                <key>k8s.cluster.requests_cpu</key>
+                                            </value>
+                                        </field>
+                                        <field>
+                                            <type>STRING</type>
+                                            <name>color.1</name>
+                                            <value>FF9900</value>
+                                        </field>
+                                        <field>
+                                            <type>ITEM</type>
+                                            <name>itemid.2</name>
+                                            <value>
+                                                <host>Template Kubernetes Services Discovery</host>
+                                                <key>k8s.cluster.cpu_avg</key>
+                                            </value>
+                                        </field>
+                                        <field>
+                                            <type>STRING</type>
+                                            <name>color.2</name>
+                                            <value>1A7C11</value>
+                                        </field>
+                                    </fields>
+                                </widget>
+                                <widget>
+                                    <type>graph</type>
+                                    <name>Memory Capacity Planning</name>
+                                    <x>12</x>
+                                    <y>4</y>
+                                    <width>12</width>
+                                    <height>6</height>
+                                    <fields>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>source_type</name>
+                                            <value>1</value>
+                                        </field>
+                                        <field>
+                                            <type>ITEM</type>
+                                            <name>itemid.0</name>
+                                            <value>
+                                                <host>Template Kubernetes Services Discovery</host>
+                                                <key>k8s.cluster.allocatable_mem</key>
+                                            </value>
+                                        </field>
+                                        <field>
+                                            <type>STRING</type>
+                                            <name>color.0</name>
+                                            <value>00FF00</value>
+                                        </field>
+                                        <field>
+                                            <type>ITEM</type>
+                                            <name>itemid.1</name>
+                                            <value>
+                                                <host>Template Kubernetes Services Discovery</host>
+                                                <key>k8s.cluster.requests_mem</key>
+                                            </value>
+                                        </field>
+                                        <field>
+                                            <type>STRING</type>
+                                            <name>color.1</name>
+                                            <value>FF9900</value>
+                                        </field>
+                                        <field>
+                                            <type>ITEM</type>
+                                            <name>itemid.2</name>
+                                            <value>
+                                                <host>Template Kubernetes Services Discovery</host>
+                                                <key>k8s.cluster.mem_avg</key>
+                                            </value>
+                                        </field>
+                                        <field>
+                                            <type>STRING</type>
+                                            <name>color.2</name>
+                                            <value>F63100</value>
+                                        </field>
+                                    </fields>
+                                </widget>
+
+                                <!-- Row 2: Pod Status Breakdown -->
+                                <widget>
+                                    <type>graph</type>
+                                    <name>Pod Status Breakdown</name>
+                                    <x>0</x>
+                                    <y>10</y>
+                                    <width>12</width>
+                                    <height>6</height>
+                                    <fields>
+                                        <field>
+                                            <type>GRAPH</type>
+                                            <name>graphid.0</name>
+                                            <value>
+                                                <host>Template Kubernetes Services Discovery</host>
+                                                <name>Pod Status Breakdown</name>
+                                            </value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>source_type</name>
+                                            <value>0</value>
+                                        </field>
+                                        <field>
+                                            <type>STRING</type>
+                                            <name>reference</name>
+                                            <value>AAAAF</value>
+                                        </field>
+                                    </fields>
+                                </widget>
+                                <widget>
+                                    <type>problems</type>
+                                    <name>Cluster Problems</name>
+                                    <x>12</x>
+                                    <y>10</y>
+                                    <width>12</width>
+                                    <height>6</height>
+                                    <fields>
+                                        <field>
+                                            <type>STRING</type>
+                                            <name>tags.0.tag</name>
+                                            <value>Application</value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>tags.0.operator</name>
+                                            <value>0</value> <!-- Contains -->
+                                        </field>
+                                        <field>
+                                            <type>STRING</type>
+                                            <name>tags.0.value</name>
+                                            <value>Kubernetes</value>
+                                        </field>
+                                    </fields>
+                                </widget>
+
+                                <!-- Row 3: Deployment Replicas & Namespace Restarts -->
+                                <widget>
+                                    <type>graphprototype</type>
+                                    <name>Deployment Replicas</name>
+                                    <x>0</x>
+                                    <y>16</y>
+                                    <width>12</width>
+                                    <height>6</height>
+                                    <fields>
+                                        <field>
+                                            <type>GRAPH_PROTOTYPE</type>
+                                            <name>graphid.0</name>
+                                            <value>
+                                                <host>Template Kubernetes Services Discovery</host>
+                                                <name>Deployment Replicas: {#NAME} ({#NAMESPACE})</name>
+                                            </value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>columns</name>
+                                            <value>2</value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>rows</name>
+                                            <value>1</value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>source_type</name>
+                                            <value>0</value>
+                                        </field>
+                                        <field>
+                                            <type>STRING</type>
+                                            <name>reference</name>
+                                            <value>AAAAA</value>
+                                        </field>
+                                    </fields>
+                                </widget>
+                                <widget>
+                                    <type>graphprototype</type>
+                                    <name>Namespace Restarts</name>
+                                    <x>12</x>
+                                    <y>16</y>
+                                    <width>12</width>
+                                    <height>6</height>
+                                    <fields>
+                                        <field>
+                                            <type>GRAPH_PROTOTYPE</type>
+                                            <name>graphid.0</name>
+                                            <value>
+                                                <host>Template Kubernetes Services Discovery</host>
+                                                <name>Namespace Restarts: {#NAMESPACE}</name>
+                                            </value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>columns</name>
+                                            <value>2</value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>rows</name>
+                                            <value>1</value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>source_type</name>
+                                            <value>0</value>
+                                        </field>
+                                        <field>
+                                            <type>STRING</type>
+                                            <name>reference</name>
+                                            <value>AAAAB</value>
+                                        </field>
+                                    </fields>
+                                </widget>
+
+                                <!-- Row 4: Node Metrics -->
+                                <widget>
+                                    <type>graphprototype</type>
+                                    <name>Node Resources</name>
+                                    <x>0</x>
+                                    <y>22</y>
+                                    <width>12</width>
+                                    <height>6</height>
+                                    <fields>
+                                        <field>
+                                            <type>GRAPH_PROTOTYPE</type>
+                                            <name>graphid.0</name>
+                                            <value>
+                                                <host>Template Kubernetes Services Discovery</host>
+                                                <name>Node Resources: {#NODE_NAME}</name>
+                                            </value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>columns</name>
+                                            <value>2</value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>rows</name>
+                                            <value>1</value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>source_type</name>
+                                            <value>0</value>
+                                        </field>
+                                        <field>
+                                            <type>STRING</type>
+                                            <name>reference</name>
+                                            <value>AAAAC</value>
+                                        </field>
+                                    </fields>
+                                </widget>
+                                <widget>
+                                    <type>graphprototype</type>
+                                    <name>Node Disk Space</name>
+                                    <x>12</x>
+                                    <y>22</y>
+                                    <width>12</width>
+                                    <height>6</height>
+                                    <fields>
+                                        <field>
+                                            <type>GRAPH_PROTOTYPE</type>
+                                            <name>graphid.0</name>
+                                            <value>
+                                                <host>Template Kubernetes Services Discovery</host>
+                                                <name>Node Disk Space: {#NODE_NAME}</name>
+                                            </value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>columns</name>
+                                            <value>2</value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>rows</name>
+                                            <value>1</value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>source_type</name>
+                                            <value>0</value>
+                                        </field>
+                                        <field>
+                                            <type>STRING</type>
+                                            <name>reference</name>
+                                            <value>AAAAD</value>
+                                        </field>
+                                    </fields>
+                                </widget>
+
+                                <!-- Row 5: Pod Resources vs Limits -->
+                                <widget>
+                                    <type>graphprototype</type>
+                                    <name>Pod Resources vs Limits</name>
+                                    <x>0</x>
+                                    <y>28</y>
+                                    <width>24</width>
+                                    <height>12</height>
+                                    <fields>
+                                        <field>
+                                            <type>GRAPH_PROTOTYPE</type>
+                                            <name>graphid.0</name>
+                                            <value>
+                                                <host>Template Kubernetes Services Discovery</host>
+                                                <name>Resources: {#POD_NAME} ({#POD_NAMESPACE})</name>
+                                            </value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>columns</name>
+                                            <value>3</value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>rows</name>
+                                            <value>2</value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>source_type</name>
+                                            <value>0</value>
+                                        </field>
+                                        <field>
+                                            <type>STRING</type>
+                                            <name>reference</name>
+                                            <value>AAAAE</value>
+                                        </field>
+                                    </fields>
+                                </widget>
+                            </widgets>
+                        </page>
+                    </pages>
+                </dashboard>
+            </dashboards>
+            <discovery_rules>
+                <discovery_rule>
+                    <uuid>a9d1e3d144b14fd4a87a9d9b2a69eb47</uuid>
+                    <name>Kubernetes Services Discovery</name>
+                    <type>EXTERNAL</type>
+                    <key>k8s_discovery.sh</key>
+                    <delay>5m</delay>
+                    <lifetime>1h</lifetime>
+                    <filter>
+                        <evaltype>AND</evaltype>
+                        <conditions>
+                            <condition>
+                                <macro>{#SERVICE_NAMESPACE}</macro>
+                                <value>.*</value>
+                                <operator>MATCHES_REGEX</operator>
+                            </condition>
+                        </conditions>
+                    </filter>
+                    <item_prototypes>
+                        <item_prototype>
+                            <uuid>b1d1e3d144b14fd4a87a9d9b2a69eb48</uuid>
+                            <name>Service Endpoints: {#SERVICE_NAME} ({#SERVICE_NAMESPACE})</name>
+                            <type>EXTERNAL</type>
+                            <key>k8s_endpoints.sh["{#SERVICE_NAMESPACE}","{#SERVICE_NAME}"]</key>
+                            <delay>1m</delay>
+                            <history>7d</history>
+                            <trends>30d</trends>
+                            <value_type>UNSIGNED</value_type>
+                            <tags>
+                                <tag>
+                                    <tag>Application</tag>
+                                    <value>Kubernetes Service</value>
+                                </tag>
+                                <tag>
+                                    <tag>Namespace</tag>
+                                    <value>{#SERVICE_NAMESPACE}</value>
+                                </tag>
+                            </tags>
+                            <trigger_prototypes>
+                                <trigger_prototype>
+                                    <uuid>c2d1e3d144b14fd4a87a9d9b2a69eb49</uuid>
+                                    <expression>last(/Template Kubernetes Services Discovery/k8s_endpoints.sh["{#SERVICE_NAMESPACE}","{#SERVICE_NAME}"])&lt;1</expression>
+                                    <name>Service {#SERVICE_NAME} in {#SERVICE_NAMESPACE} has no endpoints</name>
+                                    <priority>AVERAGE</priority>
+                                    <description>The service has no active endpoints (pods).</description>
+                                    <manual_close>YES</manual_close>
+                                </trigger_prototype>
+                            </trigger_prototypes>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>b1d1e3d144b14fd4a87a9d9b2a69eb92</uuid>
+                            <name>Node Network Errors: {#NODE_NAME}</name>
+                            <type>EXTERNAL</type>
+                            <key>k8s_node_metrics.sh["{#NODE_NAME}","network_errors"]</key>
+                            <delay>1m</delay>
+                            <history>7d</history>
+                            <trends>30d</trends>
+                            <value_type>UNSIGNED</value_type>
+                            <description>Total RX+TX Errors on Node Interfaces</description>
+                            <preprocessing>
+                                <step>
+                                    <type>SIMPLE_CHANGE</type>
+                                    <parameters>
+                                        <parameter/>
+                                    </parameters>
+                                </step>
+                            </preprocessing>
+                            <tags>
+                                <tag>
+                                    <tag>Application</tag>
+                                    <value>Kubernetes Node Health</value>
+                                </tag>
+                            </tags>
+                            <trigger_prototypes>
+                                <trigger_prototype>
+                                    <uuid>c1d1e3d144b14fd4a87a9d9b2a69eb93</uuid>
+                                    <expression>last(/Template Kubernetes Services Discovery/k8s_node_metrics.sh["{#NODE_NAME}","network_errors"])&gt;10</expression>
+                                    <name>High Network Error Rate on Node {#NODE_NAME}</name>
+                                    <priority>WARNING</priority>
+                                    <description>More than 10 errors detected in the last interval.</description>
+                                </trigger_prototype>
+                            </trigger_prototypes>
+                        </item_prototype>
+                    </item_prototypes>
+                    <graph_prototypes>
+                        <graph_prototype>
+                            <uuid>d3d1e3d144b14fd4a87a9d9b2a69eb50</uuid>
+                            <name>Endpoints for {#SERVICE_NAME} ({#SERVICE_NAMESPACE})</name>
+                            <graph_items>
+                                <graph_item>
+                                    <color>1A7C11</color>
+                                    <item>
+                                        <host>Template Kubernetes Services Discovery</host>
+                                        <key>k8s_endpoints.sh["{#SERVICE_NAMESPACE}","{#SERVICE_NAME}"]</key>
+                                    </item>
+                                </graph_item>
+                            </graph_items>
+                        </graph_prototype>
+                    </graph_prototypes>
+                </discovery_rule>
+                <discovery_rule>
+                    <uuid>a9d1e3d144b14fd4a87a9d9b2a69eb51</uuid>
+                    <name>Kubernetes Pods Discovery</name>
+                    <type>EXTERNAL</type>
+                    <key>k8s_pod_discovery.sh</key>
+                    <delay>5m</delay>
+                    <lifetime>1h</lifetime>
+                    <item_prototypes>
+                        <item_prototype>
+                            <uuid>b1d1e3d144b14fd4a87a9d9b2a69eb52</uuid>
+                            <name>Pod CPU Usage: {#POD_NAME} ({#POD_NAMESPACE})</name>
+                            <type>EXTERNAL</type>
+                            <key>k8s_pod_metrics.sh["{#POD_NAMESPACE}","{#POD_NAME}","cpu"]</key>
+                            <delay>1m</delay>
+                            <history>7d</history>
+                            <trends>30d</trends>
+                            <units>m</units>
+                            <value_type>FLOAT</value_type>
+                            <description>CPU Usage in millicores</description>
+                            <tags>
+                                <tag>
+                                    <tag>Application</tag>
+                                    <value>Kubernetes Pod Resources</value>
+                                </tag>
+                            </tags>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>b1d1e3d144b14fd4a87a9d9b2a69eb53</uuid>
+                            <name>Pod Memory Usage: {#POD_NAME} ({#POD_NAMESPACE})</name>
+                            <type>EXTERNAL</type>
+                            <key>k8s_pod_metrics.sh["{#POD_NAMESPACE}","{#POD_NAME}","memory"]</key>
+                            <delay>1m</delay>
+                            <history>7d</history>
+                            <trends>30d</trends>
+                            <units>B</units>
+                            <value_type>UNSIGNED</value_type>
+                            <description>Memory Usage in Bytes</description>
+                            <tags>
+                                <tag>
+                                    <tag>Application</tag>
+                                    <value>Kubernetes Pod Resources</value>
+                                </tag>
+                            </tags>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>b1d1e3d144b14fd4a87a9d9b2a69eb80</uuid>
+                            <name>Pod Restarts: {#POD_NAME}</name>
+                            <type>EXTERNAL</type>
+                            <key>k8s_pod_metrics.sh["{#POD_NAMESPACE}","{#POD_NAME}","restarts"]</key>
+                            <delay>1m</delay>
+                            <value_type>UNSIGNED</value_type>
+                            <tags>
+                                <tag>
+                                    <tag>Application</tag>
+                                    <value>Kubernetes Pod Health</value>
+                                </tag>
+                            </tags>
+                            <trigger_prototypes>
+                                <trigger_prototype>
+                                    <uuid>c1d1e3d144b14fd4a87a9d9b2a69eb81</uuid>
+                                    <expression>last(/Template Kubernetes Services Discovery/k8s_pod_metrics.sh["{#POD_NAMESPACE}","{#POD_NAME}","restarts"])&gt;5</expression>
+                                    <name>Pod {#POD_NAME} restarting frequently</name>
+                                    <priority>WARNING</priority>
+                                </trigger_prototype>
+                            </trigger_prototypes>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>b1d1e3d144b14fd4a87a9d9b2a69eb82</uuid>
+                            <name>Pod OOMKilled: {#POD_NAME}</name>
+                            <type>EXTERNAL</type>
+                            <key>k8s_pod_metrics.sh["{#POD_NAMESPACE}","{#POD_NAME}","oom_killed"]</key>
+                            <delay>1m</delay>
+                            <value_type>UNSIGNED</value_type>
+                            <tags>
+                                <tag>
+                                    <tag>Application</tag>
+                                    <value>Kubernetes Pod Health</value>
+                                </tag>
+                            </tags>
+                            <trigger_prototypes>
+                                <trigger_prototype>
+                                    <uuid>c1d1e3d144b14fd4a87a9d9b2a69eb83</uuid>
+                                    <expression>last(/Template Kubernetes Services Discovery/k8s_pod_metrics.sh["{#POD_NAMESPACE}","{#POD_NAME}","oom_killed"])=1</expression>
+                                    <name>Pod {#POD_NAME} was OOMKilled</name>
+                                    <priority>AVERAGE</priority>
+                                </trigger_prototype>
+                            </trigger_prototypes>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>b1d1e3d144b14fd4a87a9d9b2a69eb55</uuid>
+                            <name>Pod CPU Limit: {#POD_NAME} ({#POD_NAMESPACE})</name>
+                            <type>EXTERNAL</type>
+                            <key>k8s_pod_metrics.sh["{#POD_NAMESPACE}","{#POD_NAME}","limits_cpu"]</key>
+                            <delay>1m</delay>
+                            <history>7d</history>
+                            <trends>30d</trends>
+                            <units>m</units>
+                            <value_type>FLOAT</value_type>
+                            <description>CPU Limit in millicores</description>
+                            <tags>
+                                <tag>
+                                    <tag>Application</tag>
+                                    <value>Kubernetes Pod Resources</value>
+                                </tag>
+                            </tags>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>b1d1e3d144b14fd4a87a9d9b2a69eb56</uuid>
+                            <name>Pod Memory Limit: {#POD_NAME} ({#POD_NAMESPACE})</name>
+                            <type>EXTERNAL</type>
+                            <key>k8s_pod_metrics.sh["{#POD_NAMESPACE}","{#POD_NAME}","limits_memory"]</key>
+                            <delay>1m</delay>
+                            <history>7d</history>
+                            <trends>30d</trends>
+                            <units>B</units>
+                            <value_type>UNSIGNED</value_type>
+                            <description>Memory Limit in Bytes</description>
+                            <tags>
+                                <tag>
+                                    <tag>Application</tag>
+                                    <value>Kubernetes Pod Resources</value>
+                                </tag>
+                            </tags>
+                        </item_prototype>
+                    </item_prototypes>
+                    <graph_prototypes>
+                        <graph_prototype>
+                            <uuid>d3d1e3d144b14fd4a87a9d9b2a69eb54</uuid>
+                            <name>Resources: {#POD_NAME} ({#POD_NAMESPACE})</name>
+                            <graph_items>
+                                <graph_item>
+                                    <color>1A7C11</color>
+                                    <item>
+                                        <host>Template Kubernetes Services Discovery</host>
+                                        <key>k8s_pod_metrics.sh["{#POD_NAMESPACE}","{#POD_NAME}","cpu"]</key>
+                                    </item>
+                                </graph_item>
+                                <graph_item>
+                                    <color>00FF00</color>
+                                    <item>
+                                        <host>Template Kubernetes Services Discovery</host>
+                                        <key>k8s_pod_metrics.sh["{#POD_NAMESPACE}","{#POD_NAME}","limits_cpu"]</key>
+                                    </item>
+                                </graph_item>
+                                <graph_item>
+                                    <color>F63100</color>
+                                    <yaxisside>RIGHT</yaxisside>
+                                    <item>
+                                        <host>Template Kubernetes Services Discovery</host>
+                                        <key>k8s_pod_metrics.sh["{#POD_NAMESPACE}","{#POD_NAME}","memory"]</key>
+                                    </item>
+                                </graph_item>
+                                <graph_item>
+                                    <color>FF0000</color>
+                                    <yaxisside>RIGHT</yaxisside>
+                                    <item>
+                                        <host>Template Kubernetes Services Discovery</host>
+                                        <key>k8s_pod_metrics.sh["{#POD_NAMESPACE}","{#POD_NAME}","limits_memory"]</key>
+                                    </item>
+                                </graph_item>
+                            </graph_items>
+                        </graph_prototype>
+                    </graph_prototypes>
+                </discovery_rule>
+                <discovery_rule>
+                    <uuid>a9d1e3d144b14fd4a87a9d9b2a69eb99</uuid>
+                    <name>Kubernetes Nodes Discovery</name>
+                    <type>EXTERNAL</type>
+                    <key>k8s_node_discovery.sh</key>
+                    <delay>5m</delay>
+                    <lifetime>1h</lifetime>
+                    <item_prototypes>
+                        <item_prototype>
+                            <uuid>b1d1e3d144b14fd4a87a9d9b2a69eb88</uuid>
+                            <name>Node CPU Usage: {#NODE_NAME}</name>
+                            <type>EXTERNAL</type>
+                            <key>k8s_node_metrics.sh["{#NODE_NAME}","cpu"]</key>
+                            <delay>1m</delay>
+                            <history>7d</history>
+                            <trends>30d</trends>
+                            <units>m</units>
+                            <value_type>FLOAT</value_type>
+                            <description>Node CPU Usage in millicores</description>
+                            <tags>
+                                <tag>
+                                    <tag>Application</tag>
+                                    <value>Kubernetes Node Resources</value>
+                                </tag>
+                            </tags>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>b1d1e3d144b14fd4a87a9d9b2a69eb77</uuid>
+                            <name>Node Memory Usage: {#NODE_NAME}</name>
+                            <type>EXTERNAL</type>
+                            <key>k8s_node_metrics.sh["{#NODE_NAME}","memory"]</key>
+                            <delay>1m</delay>
+                            <history>7d</history>
+                            <trends>30d</trends>
+                            <units>B</units>
+                            <value_type>UNSIGNED</value_type>
+                            <description>Node Memory Usage in Bytes</description>
+                            <tags>
+                                <tag>
+                                    <tag>Application</tag>
+                                    <value>Kubernetes Node Resources</value>
+                                </tag>
+                            </tags>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>b1d1e3d144b14fd4a87a9d9b2a69eb78</uuid>
+                            <name>Node Disk Pressure: {#NODE_NAME}</name>
+                            <type>EXTERNAL</type>
+                            <key>k8s_node_metrics.sh["{#NODE_NAME}","disk_pressure"]</key>
+                            <delay>1m</delay>
+                            <history>7d</history>
+                            <trends>30d</trends>
+                            <value_type>UNSIGNED</value_type>
+                            <description>1 if DiskPressure, 0 otherwise</description>
+                            <tags>
+                                <tag>
+                                    <tag>Application</tag>
+                                    <value>Kubernetes Node Health</value>
+                                </tag>
+                            </tags>
+                            <trigger_prototypes>
+                                <trigger_prototype>
+                                    <uuid>c1d1e3d144b14fd4a87a9d9b2a69eb79</uuid>
+                                    <expression>last(/Template Kubernetes Services Discovery/k8s_node_metrics.sh["{#NODE_NAME}","disk_pressure"])=1</expression>
+                                    <name>Node {#NODE_NAME} has Disk Pressure</name>
+                                    <priority>HIGH</priority>
+                                </trigger_prototype>
+                            </trigger_prototypes>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>b1d1e3d144b14fd4a87a9d9b2a69eb89</uuid>
+                            <name>Node Memory Pressure: {#NODE_NAME}</name>
+                            <type>EXTERNAL</type>
+                            <key>k8s_node_metrics.sh["{#NODE_NAME}","memory_pressure"]</key>
+                            <delay>1m</delay>
+                            <history>7d</history>
+                            <trends>30d</trends>
+                            <value_type>UNSIGNED</value_type>
+                            <description>1 if MemoryPressure, 0 otherwise</description>
+                            <tags>
+                                <tag>
+                                    <tag>Application</tag>
+                                    <value>Kubernetes Node Health</value>
+                                </tag>
+                            </tags>
+                            <trigger_prototypes>
+                                <trigger_prototype>
+                                    <uuid>c1d1e3d144b14fd4a87a9d9b2a69eb90</uuid>
+                                    <expression>last(/Template Kubernetes Services Discovery/k8s_node_metrics.sh["{#NODE_NAME}","memory_pressure"])=1</expression>
+                                    <name>Node {#NODE_NAME} has Memory Pressure</name>
+                                    <priority>HIGH</priority>
+                                </trigger_prototype>
+                            </trigger_prototypes>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>b1d1e3d144b14fd4a87a9d9b2a69eb91</uuid>
+                            <name>Node Ready Status: {#NODE_NAME}</name>
+                            <type>EXTERNAL</type>
+                            <key>k8s_node_metrics.sh["{#NODE_NAME}","ready"]</key>
+                            <delay>1m</delay>
+                            <history>7d</history>
+                            <trends>30d</trends>
+                            <value_type>UNSIGNED</value_type>
+                            <description>1 if Ready, 0 otherwise</description>
+                            <tags>
+                                <tag>
+                                    <tag>Application</tag>
+                                    <value>Kubernetes Node Health</value>
+                                </tag>
+                            </tags>
+                            <trigger_prototypes>
+                                <trigger_prototype>
+                                    <uuid>c1d1e3d144b14fd4a87a9d9b2a69eb92</uuid>
+                                    <expression>last(/Template Kubernetes Services Discovery/k8s_node_metrics.sh["{#NODE_NAME}","ready"])=0</expression>
+                                    <name>Node {#NODE_NAME} is Not Ready</name>
+                                    <priority>HIGH</priority>
+                                </trigger_prototype>
+                            </trigger_prototypes>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>b1d1e3d144b14fd4a87a9d9b2a69eb93</uuid>
+                            <name>Node Disk Usage: {#NODE_NAME}</name>
+                            <type>EXTERNAL</type>
+                            <key>k8s_node_metrics.sh["{#NODE_NAME}","disk_usage"]</key>
+                            <delay>1m</delay>
+                            <history>7d</history>
+                            <trends>30d</trends>
+                            <units>B</units>
+                            <value_type>UNSIGNED</value_type>
+                            <tags>
+                                <tag>
+                                    <tag>Application</tag>
+                                    <value>Kubernetes Node Resources</value>
+                                </tag>
+                            </tags>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>b1d1e3d144b14fd4a87a9d9b2a69eb94</uuid>
+                            <name>Node Disk Capacity: {#NODE_NAME}</name>
+                            <type>EXTERNAL</type>
+                            <key>k8s_node_metrics.sh["{#NODE_NAME}","disk_capacity"]</key>
+                            <delay>1m</delay>
+                            <history>7d</history>
+                            <trends>30d</trends>
+                            <units>B</units>
+                            <value_type>UNSIGNED</value_type>
+                            <tags>
+                                <tag>
+                                    <tag>Application</tag>
+                                    <value>Kubernetes Node Resources</value>
+                                </tag>
+                            </tags>
+                        </item_prototype>
+                    </item_prototypes>
+                    <graph_prototypes>
+                        <graph_prototype>
+                            <uuid>d3d1e3d144b14fd4a87a9d9b2a69eb95</uuid>
+                            <name>Node Disk Space: {#NODE_NAME}</name>
+                            <graph_items>
+                                <graph_item>
+                                    <color>1A7C11</color>
+                                    <item>
+                                        <host>Template Kubernetes Services Discovery</host>
+                                        <key>k8s_node_metrics.sh["{#NODE_NAME}","disk_usage"]</key>
+                                    </item>
+                                </graph_item>
+                                <graph_item>
+                                    <color>F63100</color>
+                                    <item>
+                                        <host>Template Kubernetes Services Discovery</host>
+                                        <key>k8s_node_metrics.sh["{#NODE_NAME}","disk_capacity"]</key>
+                                    </item>
+                                </graph_item>
+                            </graph_items>
+                        </graph_prototype>
+                        <graph_prototype>
+                            <uuid>d3d1e3d144b14fd4a87a9d9b2a69eb66</uuid>
+                            <name>Node Resources: {#NODE_NAME}</name>
+                            <graph_items>
+                                <graph_item>
+                                    <color>1A7C11</color>
+                                    <item>
+                                        <host>Template Kubernetes Services Discovery</host>
+                                        <key>k8s_node_metrics.sh["{#NODE_NAME}","cpu"]</key>
+                                    </item>
+                                </graph_item>
+                                <graph_item>
+                                    <color>F63100</color>
+                                    <yaxisside>RIGHT</yaxisside>
+                                    <item>
+                                        <host>Template Kubernetes Services Discovery</host>
+                                        <key>k8s_node_metrics.sh["{#NODE_NAME}","memory"]</key>
+                                    </item>
+                                </graph_item>
+                            </graph_items>
+                        </graph_prototype>
+                    </graph_prototypes>
+                </discovery_rule>
+                <discovery_rule>
+                    <uuid>a9d1e3d144b14fd4a87a9d9b2a69ec00</uuid>
+                    <name>Kubernetes Deployments Discovery</name>
+                    <type>EXTERNAL</type>
+                    <key>k8s_deployment_discovery.sh</key>
+                    <delay>5m</delay>
+                    <lifetime>1h</lifetime>
+                    <item_prototypes>
+                        <item_prototype>
+                            <uuid>b1d1e3d144b14fd4a87a9d9b2a69ec01</uuid>
+                            <name>Deployment Replicas Desired: {#NAME} ({#NAMESPACE})</name>
+                            <type>EXTERNAL</type>
+                            <key>k8s_deployment_metrics.sh["{#NAMESPACE}","{#NAME}","replicas"]</key>
+                            <delay>1m</delay>
+                            <history>7d</history>
+                            <trends>30d</trends>
+                            <value_type>UNSIGNED</value_type>
+                            <tags>
+                                <tag>
+                                    <tag>Application</tag>
+                                    <value>Kubernetes Deployment Health</value>
+                                </tag>
+                            </tags>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>b1d1e3d144b14fd4a87a9d9b2a69ec02</uuid>
+                            <name>Deployment Replicas Available: {#NAME} ({#NAMESPACE})</name>
+                            <type>EXTERNAL</type>
+                            <key>k8s_deployment_metrics.sh["{#NAMESPACE}","{#NAME}","available_replicas"]</key>
+                            <delay>1m</delay>
+                            <history>7d</history>
+                            <trends>30d</trends>
+                            <value_type>UNSIGNED</value_type>
+                            <tags>
+                                <tag>
+                                    <tag>Application</tag>
+                                    <value>Kubernetes Deployment Health</value>
+                                </tag>
+                            </tags>
+                            <trigger_prototypes>
+                                <trigger_prototype>
+                                    <uuid>c1d1e3d144b14fd4a87a9d9b2a69ec04</uuid>
+                                    <expression>last(/Template Kubernetes Services Discovery/k8s_deployment_metrics.sh["{#NAMESPACE}","{#NAME}","available_replicas"])&lt;last(/Template Kubernetes Services Discovery/k8s_deployment_metrics.sh["{#NAMESPACE}","{#NAME}","replicas"])</expression>
+                                    <name>Deployment {#NAME} has missing replicas</name>
+                                    <priority>HIGH</priority>
+                                    <description>Available replicas are less than desired replicas.</description>
+                                </trigger_prototype>
+                            </trigger_prototypes>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>b1d1e3d144b14fd4a87a9d9b2a69ec03</uuid>
+                            <name>Deployment Replicas Unavailable: {#NAME} ({#NAMESPACE})</name>
+                            <type>EXTERNAL</type>
+                            <key>k8s_deployment_metrics.sh["{#NAMESPACE}","{#NAME}","unavailable_replicas"]</key>
+                            <delay>1m</delay>
+                            <history>7d</history>
+                            <trends>30d</trends>
+                            <value_type>UNSIGNED</value_type>
+                            <tags>
+                                <tag>
+                                    <tag>Application</tag>
+                                    <value>Kubernetes Deployment Health</value>
+                                </tag>
+                            </tags>
+                        </item_prototype>
+                    </item_prototypes>
+                    <graph_prototypes>
+                        <graph_prototype>
+                            <uuid>d3d1e3d144b14fd4a87a9d9b2a69ec05</uuid>
+                            <name>Deployment Replicas: {#NAME} ({#NAMESPACE})</name>
+                            <graph_items>
+                                <graph_item>
+                                    <color>1A7C11</color>
+                                    <item>
+                                        <host>Template Kubernetes Services Discovery</host>
+                                        <key>k8s_deployment_metrics.sh["{#NAMESPACE}","{#NAME}","available_replicas"]</key>
+                                    </item>
+                                </graph_item>
+                                <graph_item>
+                                    <color>F63100</color>
+                                    <item>
+                                        <host>Template Kubernetes Services Discovery</host>
+                                        <key>k8s_deployment_metrics.sh["{#NAMESPACE}","{#NAME}","replicas"]</key>
+                                    </item>
+                                </graph_item>
+                            </graph_items>
+                        </graph_prototype>
+                    </graph_prototypes>
+                </discovery_rule>
+                <discovery_rule>
+                    <uuid>a9d1e3d144b14fd4a87a9d9b2a69ec10</uuid>
+                    <name>Kubernetes Namespace Discovery</name>
+                    <type>EXTERNAL</type>
+                    <key>k8s_namespace_discovery.sh</key>
+                    <delay>1h</delay>
+                    <lifetime>1d</lifetime>
+                    <item_prototypes>
+                        <item_prototype>
+                            <uuid>b1d1e3d144b14fd4a87a9d9b2a69ec11</uuid>
+                            <name>Namespace Restarts: {#NAMESPACE}</name>
+                            <type>EXTERNAL</type>
+                            <key>k8s_namespace_metrics.sh["{#NAMESPACE}","restarts"]</key>
+                            <delay>1m</delay>
+                            <history>7d</history>
+                            <trends>30d</trends>
+                            <value_type>UNSIGNED</value_type>
+                            <tags>
+                                <tag>
+                                    <tag>Application</tag>
+                                    <value>Kubernetes Namespace</value>
+                                </tag>
+                            </tags>
+                        </item_prototype>
+                    </item_prototypes>
+                    <graph_prototypes>
+                        <graph_prototype>
+                            <uuid>d3d1e3d144b14fd4a87a9d9b2a69ec12</uuid>
+                            <name>Namespace Restarts: {#NAMESPACE}</name>
+                            <graph_items>
+                                <graph_item>
+                                    <color>F63100</color>
+                                    <item>
+                                        <host>Template Kubernetes Services Discovery</host>
+                                        <key>k8s_namespace_metrics.sh["{#NAMESPACE}","restarts"]</key>
+                                    </item>
+                                </graph_item>
+                            </graph_items>
+                        </graph_prototype>
+                    </graph_prototypes>
+                </discovery_rule>
+            </discovery_rules>
+        </template>
+    </templates>
+    <graphs>
+        <graph>
+            <uuid>a5d1e3d144b14fd4a87a9d9b2a69eb61</uuid>
+            <name>Pod Status Breakdown</name>
+            <type>STACKED</type>
+            <graph_items>
+                <graph_item>
+                    <sortorder>0</sortorder>
+                    <drawtype>FILLED_REGION</drawtype>
+                    <color>00FF00</color>
+                    <item>
+                        <host>Template Kubernetes Services Discovery</host>
+                        <key>k8s.cluster.pods_running</key>
+                    </item>
+                </graph_item>
+                <graph_item>
+                    <sortorder>1</sortorder>
+                    <drawtype>FILLED_REGION</drawtype>
+                    <color>FFC107</color>
+                    <item>
+                        <host>Template Kubernetes Services Discovery</host>
+                        <key>k8s.cluster.pods_pending</key>
+                    </item>
+                </graph_item>
+                <graph_item>
+                    <sortorder>2</sortorder>
+                    <drawtype>FILLED_REGION</drawtype>
+                    <color>FF0000</color>
+                    <item>
+                        <host>Template Kubernetes Services Discovery</host>
+                        <key>k8s.cluster.pods_failed</key>
+                    </item>
+                </graph_item>
+            </graph_items>
+        </graph>
+    </graphs>
+</zabbix_export>

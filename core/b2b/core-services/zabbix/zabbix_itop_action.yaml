@@ -1,0 +1,54 @@
+zabbix_export:
+  version: '7.0'
+  actions:
+    - name: 'Create iTop Problem (High Severity)'
+      event_source: TRIGGERS
+      status: ENABLED
+      esc_period: 1h
+      filter:
+        evaltype: AND
+        conditions:
+          - conditiontype: MIN_SEVERITY
+            operator: GREATER_OR_EQUAL
+            value: HIGH
+      operations:
+        - operationtype: SEND_MESSAGE
+          esc_step_from: 1
+          esc_step_to: 1
+          esc_period: 0
+          mediatype: iTop
+          message:
+            subject: '[Problem] {EVENT.NAME}'
+            body: 'Problem Detected: {EVENT.NAME}'
+      recovery_operations:
+        - operationtype: SEND_MESSAGE
+          mediatype: iTop
+          message:
+            subject: 'Resolved: [Problem] {EVENT.NAME}'
+            body: 'Resolved: {EVENT.NAME}'
+
+    - name: 'Create iTop Incident (Average Severity)'
+      event_source: TRIGGERS
+      status: ENABLED
+      esc_period: 1h
+      filter:
+        evaltype: AND
+        conditions:
+          - conditiontype: TRIGGER_SEVERITY
+            operator: EQUAL
+            value: AVERAGE
+      operations:
+        - operationtype: SEND_MESSAGE
+          esc_step_from: 1
+          esc_step_to: 1
+          esc_period: 0
+          mediatype: iTop
+          message:
+            subject: '[Incident] {EVENT.NAME}'
+            body: 'Incident Detected: {EVENT.NAME}'
+      recovery_operations:
+        - operationtype: SEND_MESSAGE
+          mediatype: iTop
+          message:
+            subject: 'Resolved: [Incident] {EVENT.NAME}'
+            body: 'Resolved: {EVENT.NAME}'
