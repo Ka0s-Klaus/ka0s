@@ -9,6 +9,7 @@ La documentación principal se encuentra en:
 - [Core Documentation](core/docs/)
 - [Kubernetes CI/CD Automation](ka0s_ci_cd_k8s/)
 - [Secure Namespace Deletion](ka0s_delete_ns/)
+- [Cluster Safe Restart](kaos_cluster_restart/)
 
 ## Estructura del Proyecto
 

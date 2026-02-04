@@ -1,0 +1,56 @@
+name: Ka0s Cluster Safe Restart
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "RESTART" to confirm cluster reboot'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  rolling-restart:
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Safety Check
+        if: ${{ inputs.confirm != 'RESTART' }}
+        run: |
+          echo "❌ Confirmation failed. You must type 'RESTART' exactly."
+          exit 1
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Execute Rolling Restart Script
+        uses: ./.github/actions/ssh-exec
+        with:
+          host: ${{ secrets.KAOS_SSH_HOST_1 }}
+          username: ${{ secrets.KAOS_SSH_USER }}
+          key: ${{ secrets.KAOS_SSH_KEY_PRIV }}
+          port: ${{ secrets.KAOS_SSH_PORT_1 }}
+          use-sudo: true
+          pass: ${{ secrets.KAOS_SSH_PASS }}
+          script-path: 'devops/core/k8s/cluster-restart.sh'
+          # Args: ResultsDir, SudoPass, WorkerSshPass
+          script-args: "/tmp/kaos_restart ${{ secrets.KAOS_SSH_PASS }} ${{ secrets.KAOS_WORKER_SSH_PASS }}"
+          remote-results-path: '/tmp/kaos_restart'
+          local-results-path: 'audit/restart/'
+
+      - name: Commit Restart Log
+        run: |
+          git config --global user.name "Ka0s Bot"
+          git config --global user.email "bot@ka0s.io"
+          
+          git pull --rebase origin main || git pull origin main
+          
+          git add audit/restart/
+          
+          if ! git diff --staged --quiet; then
+            git commit -m "[Ops] Cluster Restart Log - $(date +'%Y-%m-%d')"
+            git push || (git pull --rebase origin main && git push)
+          else
+            echo "No logs to commit."
+          fi
