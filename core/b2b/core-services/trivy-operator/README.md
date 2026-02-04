@@ -1,21 +1,23 @@
-# Trivy Operator (Security)
+# Trivy Operator (Security Scanner)
 
-Este operador escanea automáticamente el cluster en busca de vulnerabilidades y genera reportes CRD que pueden visualizarse directamente en el Dashboard de Kubernetes.
+**Rol**: Auditoría Continua de Seguridad y Vulnerabilidades.
 
-## ¿Qué aporta al ecosistema?
-Convierte el Dashboard en un **Centro de Seguridad**.
+Este operador escanea automáticamente el cluster en busca de vulnerabilidades (CVEs), secretos expuestos y configuraciones inseguras, integrándose directamente con el Kubernetes Dashboard.
 
-1.  **Escaneo Continuo**: Monitoriza vulnerabilidades en imágenes, configs incorrectas (misconfig) y secretos expuestos.
-2.  **Visualización Integrada**: Los reportes aparecen como Custom Resources (`VulnerabilityReport`, `ConfigAuditReport`) en el Dashboard.
+## 🚀 Funcionalidades
+*   **Escaneo de Imágenes**: Analiza contenedores en busca de vulnerabilidades conocidas.
+*   **Auditoría de Configuración**: Revisa manifiestos contra best practices (CIS Benchmarks).
+*   **Integración**: Genera Custom Resources (`VulnerabilityReport`) visibles en el Dashboard.
 
-## Despliegue
+## 🛠️ Guía de Despliegue
 
+### Opción A: Automático (GitOps)
+Commit y Push a `main`.
+
+### Opción B: Manual
 ```bash
-kubectl apply -k .
+kubectl apply -k core/b2b/core-services/trivy-operator
 ```
 
-## Ver Resultados
-En el Dashboard de Kubernetes, navega a la sección **Custom Resource Definitions** -> **aquasecurity.github.io**.
-Allí verás:
-- `vulnerabilityreports`: CVEs detectados.
-- `configauditreports`: Fallos de configuración y seguridad.
+## 📊 Visualización
+Los reportes no tienen una UI propia separada; se consumen a través del **Kubernetes Dashboard** en la sección de CRDs (Custom Resource Definitions -> `aquasecurity.github.io`).

@@ -1,20 +1,28 @@
 # Metrics Server (v0.7.0)
 
-Componente esencial para habilitar las métricas de CPU y Memoria en el Dashboard de Kubernetes y permitir el auto-escalado (HPA).
+**Rol**: Proveedor de Métricas de Recursos (CPU/RAM).
 
-## Configuración Especial
+Componente esencial que recolecta métricas de uso de recursos de los contenedores y nodos, habilitando:
+1.  Gráficas en el **Kubernetes Dashboard**.
+2.  Auto-escalado horizontal de Pods (HPA).
+3.  Comando `kubectl top`.
 
-Se ha añadido el parche `--kubelet-insecure-tls` para permitir su funcionamiento en entornos con certificados autofirmados o clusters locales, evitando el error `x509: certificate signed by unknown authority`.
+## ⚙️ Configuración Especial
+Se ha aplicado el parche `--kubelet-insecure-tls` para permitir el funcionamiento en entornos con certificados autofirmados (típico en clusters on-premise/locales).
 
-## Despliegue
+## 🛠️ Guía de Despliegue
 
+### Opción A: Automático (GitOps)
+Commit y Push a `main`.
+
+### Opción B: Manual
 ```bash
-kubectl apply -k .
+kubectl apply -k core/b2b/core-services/metrics-server
 ```
 
-Una vez desplegado, espera unos minutos y ejecuta:
-
+## ✅ Verificación
+Tras unos minutos del despliegue:
 ```bash
 kubectl top nodes
 ```
-Si devuelve valores de CPU/RAM, el sistema está funcionando.
+Debe devolver valores de CPU y Memoria.
