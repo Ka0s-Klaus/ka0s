@@ -1,0 +1,41 @@
+name: Ka0s Audit Cluster Status
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 * * * *'
+
+permissions:
+  contents: write
+
+jobs:
+  audit-cluster:
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Execute Cluster Audit (Status)
+        uses: ./.github/actions/ssh-exec
+        with:
+          host: ${{ secrets.KAOS_SSH_HOST_1 }}
+          username: ${{ secrets.KAOS_SSH_USER }}
+          key: ${{ secrets.KAOS_SSH_KEY_PRIV }}
+          port: ${{ secrets.KAOS_SSH_PORT_1 }}
+          use-sudo: true
+          pass: ${{ secrets.KAOS_SSH_PASS }}
+          script-path: 'devops/core/k8s/audit-services-status.sh'
+          remote-results-path: '/tmp/results'
+          local-results-path: 'audit/kube/'
+
+      - name: Commit Audit Reports
+        run: |
+          git config --global user.name "Ka0s Bot"
+          git config --global user.email "bot@ka0s.io"
+          git add audit/kube/cluster-report-*.md audit/kube/cluster-dashboard-*.html || true
+          if ! git diff --staged --quiet; then
+            git commit -m "[Audit] Cluster status report $(date +'%Y-%m-%d %H:%M')"
+            git push
+          else
+            echo "No new cluster status reports to commit."
+          fi
