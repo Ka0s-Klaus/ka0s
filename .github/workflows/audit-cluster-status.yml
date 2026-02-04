@@ -32,10 +32,17 @@ jobs:
         run: |
           git config --global user.name "Ka0s Bot"
           git config --global user.email "bot@ka0s.io"
+          
+          # Ensure we have the latest changes before committing
+          git pull --rebase origin main || git pull origin main
+          
           git add audit/kube/cluster-report-*.md audit/kube/cluster-dashboard-*.html || true
+          
           if ! git diff --staged --quiet; then
             git commit -m "[Audit] Cluster status report $(date +'%Y-%m-%d %H:%M')"
-            git push
+            
+            # Try push, if fails due to race condition, pull-rebase and retry once
+            git push || (git pull --rebase origin main && git push)
           else
             echo "No new cluster status reports to commit."
           fi
