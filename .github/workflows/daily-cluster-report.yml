@@ -1,0 +1,46 @@
+name: Daily Cluster Status Report
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Todos los días a medianoche UTC
+  workflow_dispatch: # Ejecución manual para tests
+
+permissions:
+  contents: write
+
+jobs:
+  generate-report:
+    name: Generate and Publish Report
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Kubectl Tunnel
+        uses: ./.github/actions/kubectl-tunnel
+        with:
+          host: ${{ secrets.KAOS_SSH_HOST_1 }}
+          username: ${{ secrets.KAOS_SSH_USER }}
+          key: ${{ secrets.KAOS_SSH_KEY_PRIV }}
+          port: ${{ secrets.KAOS_SSH_PORT_1 }}
+
+      - name: Generate Report
+        run: |
+          echo "🚀 Generating Daily Cluster Report..."
+          ./.github/scripts/generate-cluster-report.sh
+
+      - name: Commit and Push Report
+        run: |
+          git config --global user.name "Ka0s CI Bot"
+          git config --global user.email "ci-bot@ka0s.io"
+          
+          git add audit/daily-reports/
+          
+          # Solo commit si hay cambios (nuevo archivo)
+          if ! git diff-index --quiet HEAD; then
+            git commit -m "chore(report): add daily cluster status report [skip ci]"
+            git push
+            echo "✅ Report published successfully."
+          else
+            echo "ℹ️ No changes to commit."
+          fi
