@@ -28,7 +28,7 @@ IS_TEMP=true
 FINAL_CRT="$TEMP_DIR/tls.crt"
 FINAL_KEY="$TEMP_DIR/tls.key"
 
-# Función para convertir/validar a PEM
+# Función para convertir/validar a PEM de forma ESTRICTA
 normalize_to_pem() {
     local in_file=$1
     local out_file=$2
@@ -39,31 +39,47 @@ normalize_to_pem() {
         return 1
     fi
 
+    echo "🔄 Procesando $type desde $in_file..."
+
     if [ "$type" == "cert" ]; then
-        # Intenta leer como PEM (si ya es PEM, esto funciona)
-        if openssl x509 -in "$in_file" -noout 2>/dev/null; then
-            cat "$in_file" > "$out_file"
-        # Si falla, intenta como DER
-        elif openssl x509 -in "$in_file" -inform DER -out "$out_file" 2>/dev/null; then
-            echo "ℹ️  Convertido certificado DER a PEM."
-        # Si falla, intenta pkcs7
-        elif openssl pkcs7 -print_certs -in "$in_file" -out "$out_file" 2>/dev/null; then
-             echo "ℹ️  Convertido certificado PKCS7 a PEM."
-        else
-            echo "❌ Error: No se pudo leer el certificado $in_file. Formato desconocido."
-            return 1
+        # 1. Intentar normalizar como PEM estándar (esto limpia cabeceras extrañas)
+        # Nota: Esto solo extrae el PRIMER certificado si hay una cadena.
+        # Para cadenas completas se requeriría otra lógica, pero esto soluciona el error de formato.
+        if openssl x509 -in "$in_file" -out "$out_file" 2>/dev/null; then
+            echo "   ✅ Certificado normalizado correctamente."
+            return 0
         fi
+
+        # 2. Intentar como DER
+        if openssl x509 -in "$in_file" -inform DER -out "$out_file" 2>/dev/null; then
+            echo "   ✅ Convertido de DER a PEM."
+            return 0
+        fi
+
+        # 3. Intentar como PKCS7
+        if openssl pkcs7 -print_certs -in "$in_file" -out "$out_file" 2>/dev/null; then
+             echo "   ✅ Convertido de PKCS7 a PEM."
+             return 0
+        fi
+        
+        echo "   ❌ Falló la normalización del certificado."
+        return 1
+
     elif [ "$type" == "key" ]; then
-        # Intenta leer como PEM
-        if openssl rsa -in "$in_file" -check -noout 2>/dev/null || openssl pkey -in "$in_file" -check -noout 2>/dev/null; then
-             cat "$in_file" > "$out_file"
-        # Si falla, intenta DER
-        elif openssl rsa -in "$in_file" -inform DER -out "$out_file" 2>/dev/null; then
-             echo "ℹ️  Convertida clave privada DER a PEM."
-        else
-             echo "❌ Error: No se pudo leer la clave privada $in_file."
-             return 1
+        # 1. Intentar normalizar Clave Privada (limpia passphrase si existe y formato)
+        if openssl rsa -in "$in_file" -out "$out_file" 2>/dev/null; then
+             echo "   ✅ Clave RSA normalizada."
+             return 0
         fi
+        
+        # 2. Intentar clave genérica (PKCS8)
+        if openssl pkey -in "$in_file" -out "$out_file" 2>/dev/null; then
+             echo "   ✅ Clave PKEY normalizada."
+             return 0
+        fi
+
+        echo "   ❌ Falló la normalización de la clave privada."
+        return 1
     fi
 }
 
@@ -112,8 +128,10 @@ else
     # Función auxiliar para adivinar tipo
     guess_type() {
         local file=$1
+        # Comprobación "rápida" por contenido
         if grep -q "BEGIN CERTIFICATE" "$file" 2>/dev/null; then echo "CERT"; return; fi
         if grep -q "PRIVATE KEY" "$file" 2>/dev/null; then echo "KEY"; return; fi
+        # Fallback extensión
         if [[ "$file" == *.crt ]] || [[ "$file" == *.cer ]] || [[ "$file" == *.pem ]]; then echo "CERT"; return; fi
         if [[ "$file" == *.key ]]; then echo "KEY"; return; fi
         echo "UNKNOWN"
@@ -130,10 +148,8 @@ else
          INPUT_CRT=$1
          INPUT_KEY=$2
     elif [ -z "$INPUT_CRT" ]; then
-         # Si tenemos KEY pero no CRT, el otro debe ser CRT
          if [ "$INPUT_KEY" == "$FILE1" ]; then INPUT_CRT="$FILE2"; else INPUT_CRT="$FILE1"; fi
     elif [ -z "$INPUT_KEY" ]; then
-         # Si tenemos CRT pero no KEY, el otro debe ser KEY
          if [ "$INPUT_CRT" == "$FILE1" ]; then INPUT_KEY="$FILE2"; else INPUT_KEY="$FILE1"; fi
     fi
 
@@ -158,6 +174,11 @@ if [ ! -s "$FINAL_CRT" ] || [ ! -s "$FINAL_KEY" ]; then
 fi
 
 echo "✅ Archivos PEM preparados en $TEMP_DIR"
+
+# Debug visual (primeras lineas)
+echo "--- Head del Certificado generado ---"
+head -n 2 "$FINAL_CRT"
+echo "-------------------------------------"
 
 echo "Creando secreto TLS 'itop-tls-secret' en el namespace 'itop'..."
 kubectl create secret tls itop-tls-secret \
