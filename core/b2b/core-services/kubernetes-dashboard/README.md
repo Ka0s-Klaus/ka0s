@@ -25,3 +25,6 @@ kubectl -n kubernetes-dashboard create token admin-user
 ```
 
 Copia el token resultante y pégalo en la pantalla de login.
+
+---
+*Última actualización del despliegue: Se ha forzado una actualización para validar el flujo de CD.*
