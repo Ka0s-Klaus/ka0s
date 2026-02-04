@@ -37,6 +37,7 @@ Si, parece increible pero hemos decidido en el equipo usar una terminología "es
 - [Ka0s Kubernetes CI/CD Automation](./ka0s_ci_cd_k8s/ka0s_ci_cd_k8s.md)
 - [Módulo Ka0s Cluster Update](./ka0s_cluster_update/ka0s_cluster_update.md)
 - [Módulo Ka0s Core](./ka0s_core/ka0s_core.md)
+- [Ka0s Daily Cluster Report](./ka0s_daily_report/ka0s_daily_report.md)
 - [Módulo Ka0s Dashboard](./ka0s_dashboard/ka0s_dashboard.md)
 - [Ka0s Delete Namespace Module](./ka0s_delete_ns/ka0s_delete_ns.md)
 - [Módulo Ka0s Docker](./ka0s_docker/ka0s_docker.md)
