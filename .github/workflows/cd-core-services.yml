@@ -125,9 +125,20 @@ jobs:
 
               echo "🔍 Running Advanced Verification..."
               
+              # Auto-detect expected IP for LoadBalancer services
               EXPECTED_IP=""
-              if [ "$SERVICE_NAME" == "itop" ]; then
-                EXPECTED_IP="192.168.1.244"
+              SERVICE_TYPE=$(kubectl get svc -n "$NAMESPACE" "$SERVICE_NAME" -o jsonpath='{.spec.type}' 2>/dev/null || echo "Unknown")
+              
+              if [ "$SERVICE_TYPE" == "LoadBalancer" ]; then
+                echo "ℹ️ Service $SERVICE_NAME is LoadBalancer. Detecting assigned IP..."
+                # Wait briefly for IP assignment if needed (though rollout status above should have covered pod readiness)
+                EXPECTED_IP=$(kubectl get svc -n "$NAMESPACE" "$SERVICE_NAME" -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+                
+                if [ -z "$EXPECTED_IP" ]; then
+                   echo "⚠️ LoadBalancer IP not yet assigned. Verification might fail on IP check."
+                else
+                   echo "🎯 Detected LoadBalancer IP: $EXPECTED_IP"
+                fi
               fi
               
               # Ensure script is executable
