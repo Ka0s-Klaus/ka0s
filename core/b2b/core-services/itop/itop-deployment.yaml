@@ -29,7 +29,7 @@ spec:
             - |
               cp -r /var/www/html/. /web-data/ && \
               if [ -f /web-data/conf/production/config-itop.php ]; then \
-                sed -i "s|'app_root_url' => .*|'app_root_url' => ((isset(\$_SERVER['HTTPS']) \&\& \$_SERVER['HTTPS'] != 'off') || (isset(\$_SERVER['HTTP_X_FORWARDED_PROTO']) \&\& \$_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') ? 'https' : 'http') . '://' . \$_SERVER['HTTP_HOST'] . '/',|" /web-data/conf/production/config-itop.php; \
+                sed -i "s|'app_root_url' => .*|'app_root_url' => ((isset(\$_SERVER['HTTPS']) \\&\\& \$_SERVER['HTTPS'] != 'off') || (isset(\$_SERVER['HTTP_X_FORWARDED_PROTO']) \\&\\& \$_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') ? 'https' : 'http') . '://' . \$_SERVER['HTTP_HOST'] . '/',|" /web-data/conf/production/config-itop.php; \
               fi && \
               chown -R 33:33 /web-data
           volumeMounts:
