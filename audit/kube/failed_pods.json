@@ -456,5 +456,414 @@
       "qosClass": "BestEffort",
       "startTime": "2026-02-04T14:59:39Z"
     }
+  },
+  {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+      "creationTimestamp": "2026-02-05T09:24:22Z",
+      "generateName": "itop-7d4569cf76-",
+      "labels": {
+        "app": "itop",
+        "pod-template-hash": "7d4569cf76"
+      },
+      "name": "itop-7d4569cf76-ffqkf",
+      "namespace": "itop",
+      "ownerReferences": [
+        {
+          "apiVersion": "apps/v1",
+          "blockOwnerDeletion": true,
+          "controller": true,
+          "kind": "ReplicaSet",
+          "name": "itop-7d4569cf76",
+          "uid": "1d779f13-3fc8-46ed-abd5-9c9e659bfeb2"
+        }
+      ],
+      "resourceVersion": "9060258",
+      "uid": "ab402792-e576-4c89-8352-31edc42b932e"
+    },
+    "spec": {
+      "containers": [
+        {
+          "env": [
+            {
+              "name": "ITOP_DB_HOST",
+              "value": "mysql"
+            },
+            {
+              "name": "ITOP_DB_NAME",
+              "value": "itop"
+            },
+            {
+              "name": "ITOP_DB_USER",
+              "value": "admin"
+            },
+            {
+              "name": "ITOP_DB_PASSWORD",
+              "value": "admin"
+            }
+          ],
+          "image": "vbkunin/itop:latest-base",
+          "imagePullPolicy": "IfNotPresent",
+          "livenessProbe": {
+            "failureThreshold": 3,
+            "initialDelaySeconds": 60,
+            "periodSeconds": 30,
+            "successThreshold": 1,
+            "tcpSocket": {
+              "port": 80
+            },
+            "timeoutSeconds": 1
+          },
+          "name": "itop",
+          "ports": [
+            {
+              "containerPort": 80,
+              "protocol": "TCP"
+            }
+          ],
+          "readinessProbe": {
+            "failureThreshold": 3,
+            "initialDelaySeconds": 30,
+            "periodSeconds": 10,
+            "successThreshold": 1,
+            "tcpSocket": {
+              "port": 80
+            },
+            "timeoutSeconds": 1
+          },
+          "resources": {
+            "limits": {
+              "cpu": "1",
+              "memory": "1Gi"
+            },
+            "requests": {
+              "cpu": "500m",
+              "memory": "512Mi"
+            }
+          },
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/var/www/html",
+              "name": "itop-web-persistent-storage"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-757vz",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "dnsPolicy": "ClusterFirst",
+      "enableServiceLinks": true,
+      "initContainers": [
+        {
+          "command": [
+            "sh",
+            "-c",
+            "cp -r /var/www/html/. /web-data/ && chown -R 33:33 /web-data"
+          ],
+          "image": "vbkunin/itop:latest-base",
+          "imagePullPolicy": "IfNotPresent",
+          "name": "init-itop-files",
+          "resources": {},
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/web-data",
+              "name": "itop-web-persistent-storage"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-757vz",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "nodeSelector": {
+        "kubernetes.io/hostname": "k8-node-20"
+      },
+      "preemptionPolicy": "PreemptLowerPriority",
+      "priority": 0,
+      "restartPolicy": "Always",
+      "schedulerName": "default-scheduler",
+      "securityContext": {},
+      "serviceAccount": "default",
+      "serviceAccountName": "default",
+      "terminationGracePeriodSeconds": 30,
+      "tolerations": [
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/not-ready",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        },
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/unreachable",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        }
+      ],
+      "volumes": [
+        {
+          "name": "itop-web-persistent-storage",
+          "persistentVolumeClaim": {
+            "claimName": "itop-web-pvc"
+          }
+        },
+        {
+          "name": "kube-api-access-757vz",
+          "projected": {
+            "defaultMode": 420,
+            "sources": [
+              {
+                "serviceAccountToken": {
+                  "expirationSeconds": 3607,
+                  "path": "token"
+                }
+              },
+              {
+                "configMap": {
+                  "items": [
+                    {
+                      "key": "ca.crt",
+                      "path": "ca.crt"
+                    }
+                  ],
+                  "name": "kube-root-ca.crt"
+                }
+              },
+              {
+                "downwardAPI": {
+                  "items": [
+                    {
+                      "fieldRef": {
+                        "apiVersion": "v1",
+                        "fieldPath": "metadata.namespace"
+                      },
+                      "path": "namespace"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "status": {
+      "conditions": [
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-05T09:24:22Z",
+          "message": "0/4 nodes are available: pod has unbound immediate PersistentVolumeClaims. preemption: 0/4 nodes are available: 4 Preemption is not helpful for scheduling.",
+          "reason": "Unschedulable",
+          "status": "False",
+          "type": "PodScheduled"
+        }
+      ],
+      "phase": "Pending",
+      "qosClass": "Burstable"
+    }
+  },
+  {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+      "creationTimestamp": "2026-02-05T09:24:22Z",
+      "generateName": "mysql-6c885b98c4-",
+      "labels": {
+        "app": "mysql",
+        "pod-template-hash": "6c885b98c4"
+      },
+      "name": "mysql-6c885b98c4-fn7d5",
+      "namespace": "itop",
+      "ownerReferences": [
+        {
+          "apiVersion": "apps/v1",
+          "blockOwnerDeletion": true,
+          "controller": true,
+          "kind": "ReplicaSet",
+          "name": "mysql-6c885b98c4",
+          "uid": "8f14b7f1-cbe2-4340-87b0-6bbf268ab817"
+        }
+      ],
+      "resourceVersion": "9060271",
+      "uid": "dd7c7225-21ec-4b56-9884-9c44fdb2ad71"
+    },
+    "spec": {
+      "containers": [
+        {
+          "env": [
+            {
+              "name": "MYSQL_ROOT_PASSWORD",
+              "value": "admin"
+            },
+            {
+              "name": "MYSQL_DATABASE",
+              "value": "itop"
+            },
+            {
+              "name": "MYSQL_USER",
+              "value": "admin"
+            },
+            {
+              "name": "MYSQL_PASSWORD",
+              "value": "admin"
+            }
+          ],
+          "image": "mysql:5.7",
+          "imagePullPolicy": "IfNotPresent",
+          "livenessProbe": {
+            "failureThreshold": 3,
+            "initialDelaySeconds": 30,
+            "periodSeconds": 10,
+            "successThreshold": 1,
+            "tcpSocket": {
+              "port": 3306
+            },
+            "timeoutSeconds": 1
+          },
+          "name": "mysql",
+          "ports": [
+            {
+              "containerPort": 3306,
+              "protocol": "TCP"
+            }
+          ],
+          "readinessProbe": {
+            "exec": {
+              "command": [
+                "mysqladmin",
+                "ping",
+                "-h",
+                "localhost"
+              ]
+            },
+            "failureThreshold": 3,
+            "initialDelaySeconds": 10,
+            "periodSeconds": 10,
+            "successThreshold": 1,
+            "timeoutSeconds": 1
+          },
+          "resources": {
+            "limits": {
+              "cpu": "1",
+              "memory": "1Gi"
+            },
+            "requests": {
+              "cpu": "500m",
+              "memory": "512Mi"
+            }
+          },
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/var/lib/mysql",
+              "name": "mysql-persistent-storage"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-zlpbv",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "dnsPolicy": "ClusterFirst",
+      "enableServiceLinks": true,
+      "nodeSelector": {
+        "kubernetes.io/hostname": "k8-node-20"
+      },
+      "preemptionPolicy": "PreemptLowerPriority",
+      "priority": 0,
+      "restartPolicy": "Always",
+      "schedulerName": "default-scheduler",
+      "securityContext": {},
+      "serviceAccount": "default",
+      "serviceAccountName": "default",
+      "terminationGracePeriodSeconds": 30,
+      "tolerations": [
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/not-ready",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        },
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/unreachable",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        }
+      ],
+      "volumes": [
+        {
+          "name": "mysql-persistent-storage",
+          "persistentVolumeClaim": {
+            "claimName": "mysql-pvc"
+          }
+        },
+        {
+          "name": "kube-api-access-zlpbv",
+          "projected": {
+            "defaultMode": 420,
+            "sources": [
+              {
+                "serviceAccountToken": {
+                  "expirationSeconds": 3607,
+                  "path": "token"
+                }
+              },
+              {
+                "configMap": {
+                  "items": [
+                    {
+                      "key": "ca.crt",
+                      "path": "ca.crt"
+                    }
+                  ],
+                  "name": "kube-root-ca.crt"
+                }
+              },
+              {
+                "downwardAPI": {
+                  "items": [
+                    {
+                      "fieldRef": {
+                        "apiVersion": "v1",
+                        "fieldPath": "metadata.namespace"
+                      },
+                      "path": "namespace"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "status": {
+      "conditions": [
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-05T09:24:22Z",
+          "message": "0/4 nodes are available: pod has unbound immediate PersistentVolumeClaims. preemption: 0/4 nodes are available: 4 Preemption is not helpful for scheduling.",
+          "reason": "Unschedulable",
+          "status": "False",
+          "type": "PodScheduled"
+        }
+      ],
+      "phase": "Pending",
+      "qosClass": "Burstable"
+    }
   }
 ]
