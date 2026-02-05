@@ -7,8 +7,8 @@ DEPLOYMENT="itop"
 CONFIG_FILE="/var/www/html/conf/production/config-itop.php"
 
 # Inyectamos código PHP dinámico para que iTop detecte automáticamente el protocolo y puerto.
-# Usamos HTTP_HOST que ya incluye el puerto si es no estándar.
-DYNAMIC_URL_PHP="(isset(\$_SERVER['HTTPS']) && \$_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . \$_SERVER['HTTP_HOST'] . '/'"
+# Usamos HTTP_HOST si existe (web), o fallback a la URL externa por defecto (CLI/Cron).
+DYNAMIC_URL_PHP="(isset(\$_SERVER['HTTP_HOST']) ? (isset(\$_SERVER['HTTPS']) && \$_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . \$_SERVER['HTTP_HOST'] . '/' : 'https://itsm.ka0s.io:8080/')"
 
 echo "🔍 Buscando pod de iTop..."
 POD=$(kubectl get pod -n $NAMESPACE -l app=itop -o jsonpath="{.items[0].metadata.name}")
