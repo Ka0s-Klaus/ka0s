@@ -29,9 +29,8 @@ spec:
             - |
               cp -r /var/www/html/. /web-data/ && \
               if [ -f /web-data/conf/production/config-itop.php ]; then \
-                PHP_CODE="((isset(\$_SERVER['HTTPS']) && \$_SERVER['HTTPS'] != 'off') || (isset(\$_SERVER['HTTP_X_FORWARDED_PROTO']) && \$_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') ? 'https' : 'http') . '://' . \$_SERVER['HTTP_HOST'] . '/'" && \
-                ESCAPED_CODE=$(echo "$PHP_CODE" | sed 's/&/\\\&/g') && \
-                sed -i "s|'app_root_url' => .*|'app_root_url' => $ESCAPED_CODE,|" /web-data/conf/production/config-itop.php; \
+                 echo "Modifying config-itop.php..." && \
+                 sed -i "s|'app_root_url' => .*|'app_root_url' => '',|" /web-data/conf/production/config-itop.php; \
               fi && \
               chown -R 33:33 /web-data
           volumeMounts:
