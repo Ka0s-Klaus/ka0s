@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: planka
+  namespace: planka
+  labels:
+    app: planka
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: planka
+  template:
+    metadata:
+      labels:
+        app: planka
+    spec:
+      initContainers:
+        - name: wait-for-db
+          image: postgres:14-alpine
+          command: ['sh', '-c', 'until pg_isready -h planka-db -U planka; do echo waiting for database; sleep 2; done;']
+      containers:
+        - name: planka
+          image: ghcr.io/plankanban/planka:master
+          ports:
+            - containerPort: 1337
+          env:
+            - name: BASE_URL
+              value: "http://planka.ka0s.io"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: planka-secrets
+                  key: database-url
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: planka-secrets
+                  key: secret-key
+            - name: DEFAULT_ADMIN_EMAIL
+              value: "admin@ka0s.io"
+            - name: DEFAULT_ADMIN_PASSWORD
+              value: "demo"
+            - name: DEFAULT_ADMIN_USERNAME
+              value: "admin"
+            - name: DEFAULT_ADMIN_NAME
+              value: "Admin Ka0s"
+            - name: TRUST_PROXY
+              value: "0" # Set to 1 if behind reverse proxy doing TLS termination, but here we are LoadBalancer
+          # We need to construct DATABASE_URL from parts because k8s env doesn't support inline composition easily
+          # Planka expects DATABASE_URL.
+          # Option: use a shell script entrypoint or just set it explicitly with the password.
+          # Since I can't interpolate secrets easily in 'value', I'll use a script to set it or just hardcode the connection string structure in a separate secret key?
+          # Better: Create a specific secret key for the full URL.
+          volumeMounts:
+            - name: planka-data
+              mountPath: /app/public/user-avatars
+              subPath: user-avatars
+            - name: planka-data
+              mountPath: /app/public/project-background-images
+              subPath: project-background-images
+            - name: planka-data
+              mountPath: /app/private/attachments
+              subPath: attachments
+      volumes:
+        - name: planka-data
+          persistentVolumeClaim:
+            claimName: planka-data-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: planka
+  namespace: planka
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: 1337
+      protocol: TCP
+  selector:
+    app: planka

@@ -1,23 +1,34 @@
-# Planka - Project Management
+# Planka - Kanban Board for Ka0s
 
-**Rol**: Gestión de Proyectos (Kanban).
+Despliegue de **Planka**, una herramienta de gestión de proyectos Kanban moderna y eficiente (React + Redux + Sails.js).
 
-Planka es una alternativa Open Source a Trello, utilizada para la gestión ágil de tareas dentro del equipo Ka0s.
+## 🚀 Arquitectura
+Este despliegue consta de:
+1.  **PostgreSQL 14**: Base de datos dedicada (`planka-db`) con persistencia local.
+2.  **Planka Server**: Aplicación principal expuesta vía LoadBalancer.
+3.  **Almacenamiento**: Volúmenes persistentes para avatares, fondos y adjuntos.
 
-## 🚀 Funcionalidades
-*   Tableros Kanban.
-*   Tarjetas con etiquetas, fechas de vencimiento y asignados.
-*   Actualizaciones en tiempo real.
+## 📋 Configuración
+| Variable | Valor | Descripción |
+|----------|-------|-------------|
+| URL | `http://planka.ka0s.io` | Acceso Web (apunta al LoadBalancer IP) |
+| DB | `postgresql://planka-db` | Base de datos interna |
+| User Default | `admin` / `demo` | Credenciales iniciales |
 
-## 🛠️ Guía de Despliegue
+## 🛠️ Despliegue
+El despliegue se gestiona automáticamente vía **GitHub Actions** (`cd-core-services.yml`) al detectar cambios en este directorio.
 
-### Opción A: Automático (GitOps)
-Commit y Push a `main`.
-
-### Opción B: Manual
+### Comandos Manuales
 ```bash
-kubectl apply -k core/b2b/core-services/planka
+# Aplicar configuración
+kubectl apply -k .
+
+# Verificar estado
+kubectl get pods -n planka
+kubectl get svc -n planka
 ```
 
-## ⚙️ Configuración
-*   **Base de Datos**: Requiere PostgreSQL (configurado en manifiestos adjuntos).
+## 🔒 Seguridad
+- Secretos gestionados en `planka-secret.yaml` (Base64/Opaque).
+- Conexión a DB interna (no expuesta).
+- Acceso Web vía LoadBalancer (IP dedicada).
