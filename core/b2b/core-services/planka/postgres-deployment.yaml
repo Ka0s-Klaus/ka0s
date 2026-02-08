@@ -30,6 +30,13 @@ spec:
                 secretKeyRef:
                   name: planka-secrets
                   key: postgres-password
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
           volumeMounts:
             - name: db-data
               mountPath: /var/lib/postgresql/data
@@ -39,10 +46,9 @@ spec:
             claimName: planka-db-pvc
       affinity:
         nodeAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 100
-              preference:
-                matchExpressions:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
                   - key: kubernetes.io/hostname
                     operator: In
                     values:

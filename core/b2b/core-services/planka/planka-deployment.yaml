@@ -28,7 +28,7 @@ spec:
             - name: BASE_URL
               value: "http://192.168.1.244" # IP Access
             - name: TRUST_PROXY
-              value: "0"
+              value: "1" # Allow proxy headers
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
@@ -47,6 +47,13 @@ spec:
               value: "admin"
             - name: DEFAULT_ADMIN_NAME
               value: "Admin Ka0s"
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1024Mi"
           # We need to construct DATABASE_URL from parts because k8s env doesn't support inline composition easily
           # Planka expects DATABASE_URL.
           # Option: use a shell script entrypoint or just set it explicitly with the password.

@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: planka
+  namespace: planka
+  annotations:
+    # Aumentar tamaño de body para adjuntos
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    # Confiar en el upstream (necesario por el TRUST_PROXY de Planka)
+    nginx.ingress.kubernetes.io/enable-real-ip: "true"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: planka.ka0s.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: planka
+                port:
+                  number: 80
