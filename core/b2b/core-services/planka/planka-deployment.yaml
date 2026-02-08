@@ -19,9 +19,6 @@ spec:
         - name: wait-for-db
           image: postgres:14-alpine
           command: ['sh', '-c', 'until pg_isready -h planka-db -U planka; do echo waiting for database; sleep 2; done;']
-        - name: configure-dynamic-url
-          image: busybox:latest
-          command: ['sh', '-c', 'echo "Checking custom configuration...";']
       containers:
         - name: planka
           image: ghcr.io/plankanban/planka:master
@@ -29,7 +26,9 @@ spec:
             - containerPort: 1337
           env:
             - name: BASE_URL
-              value: "http://planka.ka0s.io" # Just a placeholder, will be dynamic if handled by client logic or needs empty
+              value: "http://planka.ka0s.io" # Default external URL. 
+              # Note: Planka might require rebuild or restart to change this. 
+              # If we need dual access, we might need to patch index.html or config in initContainer.
             - name: TRUST_PROXY
               value: "0"
             - name: DATABASE_URL
