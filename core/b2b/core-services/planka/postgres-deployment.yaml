@@ -37,6 +37,16 @@ spec:
         - name: db-data
           persistentVolumeClaim:
             claimName: planka-db-pvc
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - k8-node-20
 ---
 apiVersion: v1
 kind: Service
