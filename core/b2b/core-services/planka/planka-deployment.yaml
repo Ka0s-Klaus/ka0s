@@ -19,6 +19,9 @@ spec:
         - name: wait-for-db
           image: postgres:14-alpine
           command: ['sh', '-c', 'until pg_isready -h planka-db -U planka; do echo waiting for database; sleep 2; done;']
+        - name: configure-dynamic-url
+          image: busybox:latest
+          command: ['sh', '-c', 'echo "Checking custom configuration...";']
       containers:
         - name: planka
           image: ghcr.io/plankanban/planka:master
@@ -26,7 +29,9 @@ spec:
             - containerPort: 1337
           env:
             - name: BASE_URL
-              value: "http://planka.ka0s.io"
+              value: "http://planka.ka0s.io" # Just a placeholder, will be dynamic if handled by client logic or needs empty
+            - name: TRUST_PROXY
+              value: "0"
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
@@ -45,8 +50,6 @@ spec:
               value: "admin"
             - name: DEFAULT_ADMIN_NAME
               value: "Admin Ka0s"
-            - name: TRUST_PROXY
-              value: "0" # Set to 1 if behind reverse proxy doing TLS termination, but here we are LoadBalancer
           # We need to construct DATABASE_URL from parts because k8s env doesn't support inline composition easily
           # Planka expects DATABASE_URL.
           # Option: use a shell script entrypoint or just set it explicitly with the password.
