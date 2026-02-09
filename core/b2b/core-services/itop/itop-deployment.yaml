@@ -56,6 +56,7 @@ spec:
                    sed -i "s|'app_root_url' => .*|'app_root_url' => '',|" /web-data/conf/production/config-itop.php;
                  fi
               fi && \
+              chmod -R 775 /web-data/conf && \
               chown -R 33:33 /web-data
           volumeMounts:
             - name: itop-web-persistent-storage
