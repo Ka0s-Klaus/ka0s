@@ -5,12 +5,12 @@ metadata:
   namespace: planka
   annotations:
     nginx.ingress.kubernetes.io/proxy-body-size: "50m"
-    nginx.ingress.kubernetes.io/configuration-snippet: |
-      add_header X-Debug-Snippet "true" always;
-      proxy_set_header Accept-Encoding "";
-      sub_filter "http://192.168.1.244" "https://planka.ka0s.io";
-      sub_filter_once off;
-      sub_filter_types text/html application/javascript application/json;
+    # nginx.ingress.kubernetes.io/configuration-snippet: |
+    #   add_header X-Debug-Snippet "true" always;
+    #   proxy_set_header Accept-Encoding "";
+    #   sub_filter "http://192.168.1.244" "https://planka.ka0s.io";
+    #   sub_filter_once off;
+    #   sub_filter_types text/html application/javascript application/json;
 spec:
   ingressClassName: nginx
   rules:
