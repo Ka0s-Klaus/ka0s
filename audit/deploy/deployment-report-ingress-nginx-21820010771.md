@@ -1,13 +1,13 @@
 Deployment Report: core/b2b/core-services/ingress-nginx
-Date: Mon Feb  9 09:34:05 UTC 2026
+Date: Mon Feb  9 09:45:44 UTC 2026
 Trigger: push by santakloud
 Namespace: ingress-nginx
 ---------------------------------------------------
 >>> Pods Status:
-NAME                                        READY   STATUS      RESTARTS   AGE     IP              NODE         NOMINATED NODE   READINESS GATES
-ingress-nginx-admission-create-xvdwb        0/1     Completed   0          22h     172.16.74.55    k8-manager   <none>           <none>
-ingress-nginx-admission-patch-s482f         0/1     Completed   0          22h     172.16.74.29    k8-manager   <none>           <none>
-ingress-nginx-controller-5dfb55cbbd-9p44p   1/1     Running     0          5m22s   172.16.209.61   k8-node-20   <none>           <none>
+NAME                                        READY   STATUS      RESTARTS   AGE   IP             NODE         NOMINATED NODE   READINESS GATES
+ingress-nginx-admission-create-xvdwb        0/1     Completed   0          22h   172.16.74.55   k8-manager   <none>           <none>
+ingress-nginx-admission-patch-s482f         0/1     Completed   0          22h   172.16.74.29   k8-manager   <none>           <none>
+ingress-nginx-controller-7cc5796b84-nm2hc   1/1     Running     0          13s   172.16.74.5    k8-manager   <none>           <none>
 
 >>> Services Status:
 NAME                                 TYPE           CLUSTER-IP       EXTERNAL-IP     PORT(S)                      AGE
