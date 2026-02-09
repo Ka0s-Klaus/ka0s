@@ -15,3 +15,19 @@ spec:
           - --kubelet-use-node-status-port
           - --metric-resolution=15s
           - --kubelet-insecure-tls
+        ports:
+          - containerPort: 4443
+            name: https
+            protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /livez
+            port: https
+            scheme: HTTPS
+          initialDelaySeconds: 60
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: https
+            scheme: HTTPS
+          initialDelaySeconds: 60
