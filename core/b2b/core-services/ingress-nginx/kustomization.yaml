@@ -3,21 +3,4 @@ kind: Kustomization
 namespace: ingress-nginx
 
 resources:
-  - https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.12.0/deploy/static/provider/baremetal/deploy.yaml
-
-patches:
-  - path: service-loadbalancer-patch.yaml
-    target:
-      kind: Service
-      name: ingress-nginx-controller
-      namespace: ingress-nginx
-  - path: deployment-patch.yaml
-    target:
-      kind: Deployment
-      name: ingress-nginx-controller
-      namespace: ingress-nginx
-  - path: configmap-patch.yaml
-    target:
-      kind: ConfigMap
-      name: ingress-nginx-controller
-      namespace: ingress-nginx
+  - ingress-nginx.yaml
