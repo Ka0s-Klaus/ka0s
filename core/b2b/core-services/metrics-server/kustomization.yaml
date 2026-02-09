@@ -6,3 +6,16 @@ resources:
 
 patches:
   - path: patch-insecure.yaml
+  - target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: metrics-server
+      namespace: kube-system
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/ports
+        value:
+          - containerPort: 4443
+            name: https
+            protocol: TCP
