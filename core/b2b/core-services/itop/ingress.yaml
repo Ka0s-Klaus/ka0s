@@ -11,6 +11,10 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - itsm.ka0s.io
+      secretName: ka0s-wildcard-tls
   rules:
     - host: itsm.ka0s.io
       http:
