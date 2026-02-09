@@ -5,15 +5,14 @@ metadata:
   namespace: planka
   annotations:
     nginx.ingress.kubernetes.io/proxy-body-size: "50m"
-    # nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
-    # nginx.ingress.kubernetes.io/configuration-snippet: |
-    #  add_header X-Debug-Snippet "true" always;
-    #  proxy_set_header Accept-Encoding "";
-    #  sub_filter "http://192.168.1.244" "https://planka.ka0s.io";
-    #  sub_filter_once off;
-    #  sub_filter_types text/html text/css application/javascript application/json;
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - planka.ka0s.io
+      secretName: ka0s-wildcard-tls
   rules:
     - host: planka.ka0s.io
       http:
@@ -25,5 +24,4 @@ spec:
                 name: planka
                 port:
                   number: 80
-# Force update: retry with extended sub_filter_types for JSON support
 
