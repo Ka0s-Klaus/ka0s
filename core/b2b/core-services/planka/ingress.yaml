@@ -5,9 +5,11 @@ metadata:
   namespace: planka
   annotations:
     nginx.ingress.kubernetes.io/proxy-body-size: "50m"
-    nginx.ingress.kubernetes.io/sub-filter: "http://192.168.1.244 https://planka.ka0s.io"
-    nginx.ingress.kubernetes.io/sub-filter-once: "false"
-    nginx.ingress.kubernetes.io/sub-filter-types: "*"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      proxy_set_header Accept-Encoding "";
+      sub_filter 'http://192.168.1.244' 'https://planka.ka0s.io';
+      sub_filter_once off;
+      sub_filter_types *;
 spec:
   ingressClassName: nginx
   rules:
