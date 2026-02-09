@@ -23,13 +23,16 @@ spec:
       containers:
         - name: mysql
           image: mysql:5.7
+          args:
+            - "--skip-name-resolve"
+            - "--innodb-buffer-pool-size=1G"
           resources:
             requests:
-              memory: "512Mi"
+              memory: "1Gi"
               cpu: "500m"
             limits:
-              memory: "1Gi"
-              cpu: "1000m"
+              memory: "2Gi"
+              cpu: "2000m"
           livenessProbe:
             tcpSocket:
               port: 3306
