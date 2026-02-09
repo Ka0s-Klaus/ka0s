@@ -1,0 +1,102 @@
+# Deployment de Kibana con configuración de URL pública
+# Soluciona el problema de referencias a localhost
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kibana
+  namespace: elk
+  labels:
+    app: kibana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kibana
+  template:
+    metadata:
+      labels:
+        app: kibana
+    spec:
+      containers:
+      - name: kibana
+        image: docker.elastic.co/kibana/kibana:8.11.4
+        ports:
+        - containerPort: 5601
+          name: http
+        env:
+        # Conexión a Elasticsearch
+        - name: ELASTICSEARCH_HOSTS
+          value: "http://elasticsearch.elk.svc.cluster.local:9200"
+
+        # Configuración del servidor
+        - name: SERVER_NAME
+          value: "kibana"
+        - name: SERVER_HOST
+          value: "0.0.0.0"
+
+        # *** CONFIGURACIÓN DE URL PÚBLICA ***
+        # Esta es la clave para resolver el problema de localhost
+        - name: SERVER_PUBLICBASEURL
+          value: "http://83.32.50.24:5601"
+
+        # Configuración SSL
+        - name: ELASTICSEARCH_SSL_VERIFICATIONMODE
+          value: "none"
+
+        # Telemetría deshabilitada
+        - name: TELEMETRY_ENABLED
+          value: "false"
+
+        # Idioma en español
+        - name: I18N_LOCALE
+          value: "es"
+
+        # Configuración de seguridad para desarrollo
+        - name: SERVER_REWRITEBASEPATH
+          value: "false"
+
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+
+        readinessProbe:
+          httpGet:
+            path: /api/status
+            port: 5601
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 5
+
+        livenessProbe:
+          httpGet:
+            path: /api/status
+            port: 5601
+          initialDelaySeconds: 90
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+
+---
+# Servicio LoadBalancer para Kibana
+apiVersion: v1
+kind: Service
+metadata:
+  name: kibana
+  namespace: elk
+  labels:
+    app: kibana
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 5601
+      targetPort: 5601
+      protocol: TCP
+      name: http
+  selector:
+    app: kibana

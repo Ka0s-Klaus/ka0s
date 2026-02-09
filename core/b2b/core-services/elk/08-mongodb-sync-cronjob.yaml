@@ -1,0 +1,457 @@
+# CronJob Optimizado para Sincronización MongoDB → Elasticsearch
+# Con límites de recursos, manejo de errores mejorado y frecuencia razonable
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: mongodb-sync
+  namespace: elk
+spec:
+  # Ejecutar cada 1 hora (en lugar de cada 5 minutos)
+  schedule: "0 * * * *"
+
+  # Mantener historial limitado
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 2
+
+  # No permitir ejecuciones concurrentes
+  concurrencyPolicy: Forbid
+
+  # Timeout de 30 minutos
+  jobTemplate:
+    spec:
+      # Timeout para el job completo
+      activeDeadlineSeconds: 1800
+
+      # Reintentar solo 1 vez en caso de fallo
+      backoffLimit: 1
+
+      template:
+        spec:
+          restartPolicy: Never
+
+          containers:
+          - name: mongodb-sync
+            image: python:3.11-slim
+
+            # Límites de recursos para evitar OOMKilled
+            resources:
+              requests:
+                memory: "256Mi"
+                cpu: "100m"
+              limits:
+                memory: "512Mi"
+                cpu: "500m"
+
+            command:
+            - /bin/bash
+            - -c
+            - |
+              set -e
+
+              echo "→ Instalando dependencias..."
+              pip install --quiet pymongo requests
+
+              echo "→ Ejecutando script de sincronización..."
+              python3 -u /scripts/sync.py
+
+            env:
+            - name: MONGO_HOST
+              value: "mongo.mongo.svc.cluster.local"
+            - name: MONGO_PORT
+              value: "27017"
+            - name: MONGO_USERNAME
+              value: "root"
+            - name: MONGO_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-secret
+                  key: mongo-root-password
+                  optional: false
+            - name: MONGO_AUTH_DB
+              value: "admin"
+            - name: ELASTICSEARCH_HOST
+              value: "elasticsearch.elk.svc.cluster.local"
+            - name: ELASTICSEARCH_PORT
+              value: "9200"
+            # Lotes más pequeños para evitar sobrecarga
+            - name: BATCH_SIZE
+              value: "50"
+            # Límite de documentos por colección (para pruebas)
+            - name: MAX_DOCS_PER_COLLECTION
+              value: "10000"
+
+            volumeMounts:
+            - name: sync-script
+              mountPath: /scripts
+
+          volumes:
+          - name: sync-script
+            configMap:
+              name: mongodb-sync-script
+
+---
+# ConfigMap con el script de sincronización optimizado
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mongodb-sync-script
+  namespace: elk
+data:
+  sync.py: |
+    #!/usr/bin/env python3
+    """
+    Script de sincronización MongoDB → Elasticsearch (OPTIMIZADO)
+    Con límites de recursos, manejo de errores y delays
+    """
+
+    import os
+    import sys
+    import json
+    import time
+    from datetime import datetime
+    from decimal import Decimal
+    from pymongo import MongoClient
+    from bson import ObjectId, Decimal128
+    import requests
+
+    # Configuración desde variables de entorno
+    MONGO_HOST = os.getenv('MONGO_HOST', 'mongo.mongo.svc.cluster.local')
+    MONGO_PORT = int(os.getenv('MONGO_PORT', '27017'))
+    MONGO_USERNAME = os.getenv('MONGO_USERNAME', '')
+    MONGO_PASSWORD = os.getenv('MONGO_PASSWORD', '')
+    MONGO_AUTH_DB = os.getenv('MONGO_AUTH_DB', 'admin')
+
+    ES_HOST = os.getenv('ELASTICSEARCH_HOST', 'elasticsearch.elk.svc.cluster.local')
+    ES_PORT = int(os.getenv('ELASTICSEARCH_PORT', '9200'))
+    ES_URL = f'http://{ES_HOST}:{ES_PORT}'
+
+    BATCH_SIZE = int(os.getenv('BATCH_SIZE', '50'))
+    MAX_DOCS_PER_COLLECTION = int(os.getenv('MAX_DOCS_PER_COLLECTION', '10000'))
+
+    # Bases de datos del sistema que no se deben sincronizar
+    SYSTEM_DBS = ['admin', 'local', 'config']
+
+    def print_header():
+        print("=" * 60)
+        print("=== Sincronización MongoDB → Elasticsearch ===")
+        print("=" * 60)
+        print(f"\nTimestamp: {datetime.now().isoformat()}")
+        print(f"Configuración:")
+        print(f"  - Tamaño de lote: {BATCH_SIZE}")
+        print(f"  - Máx docs por colección: {MAX_DOCS_PER_COLLECTION}")
+        print()
+
+    def connect_mongodb():
+        """Conecta a MongoDB con autenticación"""
+        try:
+            print(f"→ Conectando a MongoDB: {MONGO_USERNAME}@{MONGO_HOST}:{MONGO_PORT}")
+
+            # Construir URI de conexión con autenticación
+            if MONGO_USERNAME and MONGO_PASSWORD:
+                mongo_uri = f"mongodb://{MONGO_USERNAME}:{MONGO_PASSWORD}@{MONGO_HOST}:{MONGO_PORT}/{MONGO_AUTH_DB}"
+            else:
+                mongo_uri = f"mongodb://{MONGO_HOST}:{MONGO_PORT}/"
+
+            client = MongoClient(
+                mongo_uri,
+                serverSelectionTimeoutMS=5000,
+                connectTimeoutMS=5000
+            )
+
+            # Verificar conexión
+            client.admin.command('ping')
+            print("✓ Conectado a MongoDB")
+            return client
+        except Exception as e:
+            print(f"✗ Error al conectar a MongoDB: {e}")
+            sys.exit(1)
+
+    def test_elasticsearch():
+        """Verifica que Elasticsearch esté accesible"""
+        try:
+            print(f"→ Conectando a Elasticsearch: {ES_URL}")
+            response = requests.get(ES_URL, timeout=10)
+            response.raise_for_status()
+            info = response.json()
+            print(f"✓ Conectado a Elasticsearch {info['version']['number']}")
+            return True
+        except Exception as e:
+            print(f"✗ Error al conectar a Elasticsearch: {e}")
+            print(f"   URL intentada: {ES_URL}")
+            sys.exit(1)
+
+    def get_index_name(db_name, collection_name):
+        """Genera el nombre del índice en Elasticsearch"""
+        date_suffix = datetime.now().strftime('%Y.%m.%d')
+        # Convertir a minúsculas y reemplazar caracteres no válidos
+        index_name = f"mongodb-{db_name}-{collection_name}-{date_suffix}".lower()
+        index_name = index_name.replace('_', '-')
+        return index_name
+
+    def json_serializer(obj):
+        """Serializador personalizado para tipos no estándar de JSON"""
+        if isinstance(obj, ObjectId):
+            return str(obj)
+        elif isinstance(obj, datetime):
+            return obj.isoformat()
+        elif isinstance(obj, Decimal128):
+            return float(obj.to_decimal())
+        elif isinstance(obj, Decimal):
+            return float(obj)
+        elif isinstance(obj, bytes):
+            try:
+                return obj.decode('utf-8')
+            except:
+                return str(obj)
+        else:
+            return str(obj)
+
+    def convert_doc(doc):
+        """Convierte un documento de MongoDB a formato JSON serializable"""
+        try:
+            # Convertir ObjectId a string
+            if '_id' in doc:
+                doc['_id'] = str(doc['_id'])
+
+            # Intentar serializar para detectar problemas
+            json.dumps(doc, default=json_serializer)
+            return doc
+        except Exception as e:
+            print(f"      ⚠ Error al convertir documento: {e}")
+            return None
+
+    def bulk_index_documents(index_name, documents, retry_count=0):
+        """Indexa documentos en Elasticsearch usando Bulk API con retry automático"""
+        if not documents:
+            return 0, 0
+
+        # Límite de reintentos
+        if retry_count > 3:
+            print(f"      ✗ Máximo de reintentos alcanzado")
+            return 0, len(documents)
+
+        # Preparar el payload para Bulk API
+        lines = []
+        for doc in documents:
+            if doc is None:
+                continue
+
+            try:
+                # Extraer el _id y eliminarlo del documento
+                doc_id = doc.get('_id', '')
+
+                # Crear una copia del documento SIN el campo _id
+                doc_without_id = {k: v for k, v in doc.items() if k != '_id'}
+
+                # Acción de indexación (el _id va aquí, no en el documento)
+                action = {"index": {"_index": index_name, "_id": doc_id}}
+                action_line = json.dumps(action, default=json_serializer)
+
+                # Documento SIN el campo _id
+                doc_line = json.dumps(doc_without_id, default=json_serializer, ensure_ascii=False)
+
+                lines.append(action_line)
+                lines.append(doc_line)
+            except Exception as e:
+                print(f"      ⚠ Error al serializar documento {doc.get('_id', 'unknown')}: {e}")
+                continue
+
+        if not lines:
+            return 0, 0
+
+        # Unir con newlines (formato requerido por Bulk API)
+        bulk_payload = '\n'.join(lines) + '\n'
+
+        # Enviar a Elasticsearch
+        url = f'{ES_URL}/_bulk'
+        headers = {'Content-Type': 'application/x-ndjson'}
+
+        try:
+            response = requests.post(url, data=bulk_payload.encode('utf-8'), headers=headers, timeout=120)
+            response.raise_for_status()
+            result = response.json()
+
+            # Contar éxitos y fallos
+            success = 0
+            failed = 0
+            errors = []
+
+            if 'items' in result:
+                for item in result['items']:
+                    if 'index' in item:
+                        if item['index'].get('status') in [200, 201]:
+                            success += 1
+                        else:
+                            failed += 1
+                            if 'error' in item['index']:
+                                error_type = item['index']['error'].get('type', 'unknown')
+                                if error_type not in errors:
+                                    errors.append(error_type)
+
+            if errors and failed > 0:
+                print(f"      ⚠ Tipos de errores: {', '.join(errors[:3])}")
+
+            return success, failed
+
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == 429:
+                # Too Many Requests - esperar y reintentar
+                retry_after = int(e.response.headers.get('Retry-After', 2))
+                print(f"      ⏳ Elasticsearch sobrecargado, esperando {retry_after}s...")
+                time.sleep(retry_after)
+                # Reintentar con el mismo lote
+                return bulk_index_documents(index_name, documents, retry_count + 1)
+            elif e.response.status_code == 413:
+                # Payload demasiado grande, dividir y reintentar
+                doc_count = len(documents)
+                if doc_count == 1:
+                    print(f"      ✗ Documento individual demasiado grande, saltando...")
+                    return 0, 1
+
+                # Dividir en dos mitades y procesar recursivamente
+                mid = doc_count // 2
+                print(f"      ⚙ Payload demasiado grande ({doc_count} docs), dividiendo en lotes de {mid}...")
+
+                first_half = documents[:mid]
+                second_half = documents[mid:]
+
+                success1, failed1 = bulk_index_documents(index_name, first_half, retry_count)
+                success2, failed2 = bulk_index_documents(index_name, second_half, retry_count)
+
+                return success1 + success2, failed1 + failed2
+            else:
+                print(f"      ✗ Error HTTP en bulk index: {e}")
+                return 0, len(documents)
+        except Exception as e:
+            print(f"      ✗ Error inesperado en bulk index: {e}")
+            return 0, len(documents)
+
+    def sync_collection(mongo_client, db_name, collection_name):
+        """Sincroniza una colección de MongoDB a Elasticsearch"""
+        try:
+            collection = mongo_client[db_name][collection_name]
+            doc_count = collection.count_documents({})
+
+            if doc_count == 0:
+                print(f"   ⊘ Colección vacía, saltando")
+                return 0
+
+            # Limitar documentos si es necesario
+            docs_to_process = min(doc_count, MAX_DOCS_PER_COLLECTION)
+            if docs_to_process < doc_count:
+                print(f"   ⚠ Limitando a {docs_to_process} de {doc_count} documentos")
+
+            print(f"   → Sincronizando {docs_to_process} documentos en lotes de {BATCH_SIZE}...")
+
+            # Indexar en Elasticsearch
+            index_name = get_index_name(db_name, collection_name)
+            total_success = 0
+            total_failed = 0
+
+            # Procesar en lotes
+            batch = []
+            batch_count = 0
+            processed = 0
+
+            for doc in collection.find().limit(docs_to_process):
+                converted = convert_doc(doc)
+                if converted:
+                    batch.append(converted)
+
+                # Cuando el lote está lleno, indexar
+                if len(batch) >= BATCH_SIZE:
+                    success, failed = bulk_index_documents(index_name, batch)
+                    total_success += success
+                    total_failed += failed
+                    batch = []
+                    batch_count += 1
+                    processed += BATCH_SIZE
+
+                    # Pequeño delay cada 5 lotes para no saturar Elasticsearch
+                    if batch_count % 5 == 0:
+                        time.sleep(1)
+                        print(f"      ... {processed}/{docs_to_process} documentos procesados")
+
+            # Indexar el último lote
+            if batch:
+                success, failed = bulk_index_documents(index_name, batch)
+                total_success += success
+                total_failed += failed
+
+            print(f"   ✓ Sincronizados {total_success} documentos al índice '{index_name}'")
+
+            if total_failed > 0:
+                print(f"   ⚠ {total_failed} documentos fallaron")
+
+            return total_success
+
+        except Exception as e:
+            print(f"   ✗ Error al sincronizar colección: {e}")
+            import traceback
+            traceback.print_exc()
+            return 0
+
+    def main():
+        """Función principal"""
+        print_header()
+
+        # Conectar a MongoDB y Elasticsearch
+        mongo_client = connect_mongodb()
+        test_elasticsearch()
+
+        print()
+
+        # Obtener lista de bases de datos
+        try:
+            print("→ Obteniendo lista de bases de datos...")
+            db_list = [db for db in mongo_client.list_database_names() if db not in SYSTEM_DBS]
+            print(f"✓ Encontradas {len(db_list)} bases de datos\n")
+        except Exception as e:
+            print(f"✗ Error al obtener lista de bases de datos: {e}")
+            sys.exit(1)
+
+        # Estadísticas
+        total_dbs = 0
+        total_collections = 0
+        total_documents = 0
+
+        # Sincronizar cada base de datos
+        for db_name in db_list:
+            try:
+                db = mongo_client[db_name]
+                collections = db.list_collection_names()
+
+                if not collections:
+                    continue
+
+                print(f"📁 Base de datos: {db_name}")
+                print(f"   Colecciones: {len(collections)}\n")
+
+                total_dbs += 1
+
+                for collection_name in collections:
+                    print(f"   📄 Colección: {collection_name}")
+                    docs_synced = sync_collection(mongo_client, db_name, collection_name)
+                    total_documents += docs_synced
+                    total_collections += 1
+                    print()
+
+                    # Pequeño delay entre colecciones
+                    time.sleep(0.5)
+
+            except Exception as e:
+                print(f"✗ Error al procesar base de datos {db_name}: {e}\n")
+                continue
+
+        # Resumen final
+        print("=" * 60)
+        print("✓ Sincronización completada")
+        print("=" * 60)
+        print(f"  Bases de datos procesadas: {total_dbs}")
+        print(f"  Colecciones procesadas: {total_collections}")
+        print(f"  Documentos sincronizados: {total_documents}")
+        print("=" * 60)
+
+    if __name__ == "__main__":
+        main()

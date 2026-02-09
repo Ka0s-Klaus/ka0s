@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logstash-mongo-config
+  namespace: elk
+data:
+  logstash.conf: |
+    input {
+      jdbc {
+        # Path to the JDBC driver
+        jdbc_driver_library => "/usr/share/logstash/drivers/mongodb-jdbc.jar"
+        jdbc_driver_class => "com.mongodb.jdbc.MongoDriver"
+
+        # Connection string for your MongoDB instance
+        # Replace <YOUR_MONGO_SERVICE>, <YOUR_MONGO_NAMESPACE>, and <YOUR_DATABASE>
+        jdbc_connection_string => "jdbc:mongodb://mongodb.default.svc.cluster.local:27017/test"
+
+        # Uncomment and set if your MongoDB requires authentication
+        # jdbc_user => "your-user"
+        # jdbc_password => "your-password"
+
+        # SQL-like query to execute. The JDBC driver will translate this for MongoDB.
+        # Replace 'logs' with your actual collection name.
+        statement => "SELECT * FROM logs"
+
+        # Schedule to run the query every minute
+        schedule => "* * * * *"
+      }
+    }
+    output {
+      elasticsearch {
+        hosts => ["http://elasticsearch:9200"]
+        index => "mongodb-data-%{+YYYY.MM.dd}"
+      }
+      # You can also output to stdout for debugging
+      stdout { codec => rubydebug }
+    }

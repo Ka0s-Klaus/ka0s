@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logstash-mongo
+  namespace: elk
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logstash-mongo
+  template:
+    metadata:
+      labels:
+        app: logstash-mongo
+    spec:
+      initContainers:
+      - name: download-mongo-driver
+        image: curlimages/curl
+        args:
+          - -o
+          - /drivers/mongodb-jdbc.jar
+          - https://repo1.maven.org/maven2/org/mongodb/mongodb-jdbc/1.1.0/mongodb-jdbc-1.1.0.jar
+        volumeMounts:
+        - name: drivers
+          mountPath: /drivers
+      containers:
+      - name: logstash
+        image: docker.elastic.co/logstash/logstash:8.5.0
+        ports:
+        - containerPort: 5044
+        env:
+        - name: LS_JAVA_OPTS
+          value: "-Xms256m -Xmx256m"
+        volumeMounts:
+        - name: config
+          mountPath: /usr/share/logstash/pipeline
+        - name: drivers
+          mountPath: /usr/share/logstash/drivers
+      volumes:
+      - name: config
+        configMap:
+          name: logstash-mongo-config
+      - name: drivers
+        emptyDir: {}
