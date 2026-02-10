@@ -58,10 +58,33 @@ spec:
             - name: certificates
               mountPath: /usr/share/wazuh-dashboard/certs
               readOnly: true
+            - name: dashboard-conf
+              mountPath: /usr/share/wazuh-dashboard/config/opensearch_dashboards.yml
+              subPath: opensearch_dashboards.yml
+              readOnly: true
       volumes:
         - name: certificates
           secret:
             secretName: wazuh-dashboard-certs
+        - name: dashboard-conf
+          configMap:
+            name: wazuh-dashboard-conf
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wazuh-dashboard-conf
+  namespace: soc
+data:
+  opensearch_dashboards.yml: |
+    server.host: "0.0.0.0"
+    server.port: 5601
+    opensearch.hosts: https://wazuh-indexer:9200
+    opensearch.ssl.verificationMode: certificate
+    opensearch.requestHeadersWhitelist: [ authorization, securitytenant ]
+    opensearch_security.multitenancy.enabled: true
+    opensearch_security.readonly_mode.roles: [ kibana_read_only ]
+    server.ssl.enabled: false
 ---
 apiVersion: v1
 kind: Service
