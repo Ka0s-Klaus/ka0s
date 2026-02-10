@@ -22,9 +22,32 @@ spec:
           command: ["sh", "-c"]
           args:
             - |
-              IFACE=$(ip route get 1 | awk '{print $5;exit}')
-              echo "Detected interface: $IFACE"
-              sed "s/eth0/$IFACE/g" /template/suricata.yaml > /config/suricata.yaml
+              echo "Detecting interface..."
+              # Try detecting interface via default route
+              IFACE=$(ip route get 8.8.8.8 2>/dev/null | awk '{print $5;exit}')
+              if [ -z "$IFACE" ]; then
+                IFACE=$(ip route get 1 2>/dev/null | awk '{print $5;exit}')
+              fi
+              
+              if [ -z "$IFACE" ]; then
+                 echo "Warning: Could not detect interface via route. Listing available interfaces:"
+                 ip link
+                 # Fallback to first non-loopback
+                 IFACE=$(ip -o link show | awk -F': ' '{print $2}' | grep -v "lo" | head -n 1)
+              fi
+
+              if [ -z "$IFACE" ]; then
+                echo "Error: No interface found. Defaulting to eth0."
+                IFACE="eth0"
+              else
+                echo "Detected interface: $IFACE"
+              fi
+
+              echo "Generating Suricata config..."
+              sed "s/interface: eth0/interface: $IFACE/g" /template/suricata.yaml > /config/suricata.yaml
+              
+              echo "Config verification:"
+              grep "interface:" /config/suricata.yaml
           volumeMounts:
             - name: suricata-conf
               mountPath: /template
@@ -68,14 +91,17 @@ spec:
               echo "Starting Suricata..."
               if [ ! -f /etc/suricata/suricata.yaml ]; then
                 echo "Error: Configuration file not found!"
+                ls -l /etc/suricata/
                 exit 1
               fi
+              
+              # Optional rule update - non-blocking
               if command -v suricata-update > /dev/null; then
                   echo "Updating rules..."
                   suricata-update || echo "Rule update failed, proceeding with existing rules"
               fi
-              echo "Launching Suricata with config:"
-              grep "interface" /etc/suricata/suricata.yaml
+              
+              echo "Launching Suricata..."
               exec /usr/bin/suricata -c /etc/suricata/suricata.yaml -v
           securityContext:
             capabilities:
