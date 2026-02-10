@@ -18,6 +18,12 @@ if [ ! -z "$PODS_NOT_READY" ]; then
   for pod in $(echo "$PODS_NOT_READY" | awk '{print $1}'); do
       echo "--- Description for $pod ---"
       kubectl describe pod "$pod" -n "$NAMESPACE" | tail -n 20
+      
+      echo "--- Logs for $pod (Current) ---"
+      kubectl logs "$pod" -n "$NAMESPACE" --all-containers --tail=50 --prefix=true || echo "Failed to fetch current logs"
+      
+      echo "--- Logs for $pod (Previous) ---"
+      kubectl logs "$pod" -n "$NAMESPACE" --all-containers --tail=50 --prefix=true -p || echo "Failed to fetch previous logs"
   done
   exit 1
 else
