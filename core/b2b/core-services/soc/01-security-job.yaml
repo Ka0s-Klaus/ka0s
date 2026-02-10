@@ -34,7 +34,7 @@ roleRef:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: wazuh-cert-generator-v4
+  name: wazuh-cert-generator-v5
   namespace: soc
 spec:
   ttlSecondsAfterFinished: 600
@@ -49,22 +49,16 @@ spec:
           args:
             - |
               cat > /config/certs.yml <<EOF
-              instances:
-                - name: wazuh-indexer
-                  ip: 
-                    - 127.0.0.1
-                  dns:
-                    - wazuh-indexer.soc.svc
-                - name: wazuh-manager
-                  ip: 
-                    - 127.0.0.1
-                  dns:
-                    - wazuh-manager.soc.svc
-                - name: wazuh-dashboard
-                  ip: 
-                    - 127.0.0.1
-                  dns:
-                    - wazuh-dashboard.soc.svc
+              nodes:
+                indexer:
+                  - name: wazuh-indexer
+                    ip: wazuh-indexer.soc.svc
+                server:
+                  - name: wazuh-manager
+                    ip: wazuh-manager.soc.svc
+                dashboard:
+                  - name: wazuh-dashboard
+                    ip: wazuh-dashboard.soc.svc
               EOF
           volumeMounts:
             - name: config-vol
