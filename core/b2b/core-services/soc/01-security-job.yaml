@@ -34,7 +34,7 @@ roleRef:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: wazuh-cert-generator-v5
+  name: wazuh-cert-generator-v6
   namespace: soc
 spec:
   ttlSecondsAfterFinished: 600
@@ -48,7 +48,7 @@ spec:
           command: ["sh", "-c"]
           args:
             - |
-              cat > /config/certs.yml <<EOF
+              cat > /config/config.yml <<EOF
               nodes:
                 indexer:
                   - name: wazuh-indexer
@@ -65,7 +65,16 @@ spec:
               mountPath: /config
 
         - name: generator
-          image: wazuh/wazuh-certs-generator:0.0.4
+          image: debian:bookworm-slim
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              apt-get update && apt-get install -y curl openssl tar
+              curl -sO https://packages.wazuh.com/4.9/wazuh-certs-tool.sh
+              cp /config/config.yml ./config.yml
+              bash ./wazuh-certs-tool.sh -A
+              cp -r wazuh-certificates/* /certificates/
+              ls -R /certificates
           volumeMounts:
             - name: config-vol
               mountPath: /config
@@ -86,13 +95,6 @@ spec:
               ls -R /shared
               
               echo "Creating Wazuh Secrets..."
-              
-              # Copy files to flat structure if needed, or reference them directly
-              # wazuh-certs-generator output structure might vary. 
-              # Typically: /certificates/wazuh-indexer.pem, etc. or /certificates/wazuh-indexer/node.pem
-              
-              # We assume they are in /shared (mounted to /certificates in generator)
-              # Let's try to find them.
               
               ROOT_CA_PEM=$(find /shared -name "root-ca.pem" | head -n 1)
               ROOT_CA_KEY=$(find /shared -name "root-ca.key" | head -n 1)
