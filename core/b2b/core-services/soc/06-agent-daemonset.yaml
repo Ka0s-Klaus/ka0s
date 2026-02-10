@@ -16,10 +16,24 @@ spec:
     spec:
       hostNetwork: true
       dnsPolicy: ClusterFirstWithHostNet
+      initContainers:
+        - name: config-init
+          image: busybox
+          command: ["sh", "-c"]
+          args:
+            - |
+              IFACE=$(ip route get 1 | awk '{print $5;exit}')
+              echo "Detected interface: $IFACE"
+              sed "s/eth0/$IFACE/g" /template/suricata.yaml > /config/suricata.yaml
+          volumeMounts:
+            - name: suricata-conf
+              mountPath: /template
+            - name: suricata-final-conf
+              mountPath: /config
       containers:
         # Wazuh Agent Container
         - name: wazuh-agent
-          image: wazuh/wazuh-agent:4.9.0
+          image: wazuh/wazuh-agent:4.9.0-1
           env:
             - name: WAZUH_MANAGER
               value: "wazuh-manager.soc.svc"
@@ -51,7 +65,7 @@ spec:
             capabilities:
               add: ["NET_ADMIN", "NET_RAW", "SYS_NICE"]
           volumeMounts:
-            - name: suricata-conf
+            - name: suricata-final-conf
               mountPath: /etc/suricata/suricata.yaml
               subPath: suricata.yaml
               readOnly: true
@@ -71,6 +85,8 @@ spec:
         - name: suricata-conf
           configMap:
             name: suricata-conf
+        - name: suricata-final-conf
+          emptyDir: {}
         - name: var-log
           hostPath:
             path: /var/log
