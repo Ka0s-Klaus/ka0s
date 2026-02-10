@@ -42,6 +42,9 @@ spec:
               else
                 echo "Detected interface: $IFACE"
               fi
+              
+              # Save interface for Suricata
+              echo "$IFACE" > /config/interface
 
               echo "Generating Suricata config..."
               sed "s/interface: eth0/interface: $IFACE/g" /template/suricata.yaml > /config/suricata.yaml
@@ -51,13 +54,20 @@ spec:
           volumeMounts:
             - name: suricata-conf
               mountPath: /template
-            - name: suricata-final-conf
+            - name: shared-config
               mountPath: /config
       containers:
         # Wazuh Agent Container
         - name: wazuh-agent
           image: wazuh/wazuh-agent:4.14.2
           imagePullPolicy: Always
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              echo "Injecting ossec.conf..."
+              cp /tmp/wazuh-config/ossec.conf /var/ossec/etc/ossec.conf
+              echo "Starting Wazuh Agent..."
+              exec /init
           env:
             - name: WAZUH_MANAGER
               value: "wazuh-manager.soc.svc"
@@ -65,9 +75,8 @@ spec:
               value: "default"
           volumeMounts:
             - name: wazuh-agent-conf
-              mountPath: /var/ossec/etc/ossec.conf
+              mountPath: /tmp/wazuh-config/ossec.conf
               subPath: ossec.conf
-              readOnly: true
             - name: var-log
               mountPath: /host/var/log
               readOnly: true
@@ -88,10 +97,11 @@ spec:
           command: ["sh", "-c"]
           args:
             - |
-              echo "Starting Suricata..."
-              if [ ! -f /etc/suricata/suricata.yaml ]; then
+              IFACE=$(cat /etc/suricata-shared/interface)
+              echo "Starting Suricata on interface $IFACE..."
+              if [ ! -f /etc/suricata-shared/suricata.yaml ]; then
                 echo "Error: Configuration file not found!"
-                ls -l /etc/suricata/
+                ls -l /etc/suricata-shared/
                 exit 1
               fi
               
@@ -102,14 +112,13 @@ spec:
               fi
               
               echo "Launching Suricata..."
-                exec /usr/bin/suricata -c /etc/suricata/suricata.yaml
+              exec /usr/bin/suricata -c /etc/suricata-shared/suricata.yaml -i "$IFACE"
           securityContext:
             capabilities:
               add: ["NET_ADMIN", "NET_RAW", "SYS_NICE"]
           volumeMounts:
-            - name: suricata-final-conf
-              mountPath: /etc/suricata/suricata.yaml
-              subPath: suricata.yaml
+            - name: shared-config
+              mountPath: /etc/suricata-shared
               readOnly: true
             - name: suricata-logs
               mountPath: /var/log/suricata
@@ -127,7 +136,7 @@ spec:
         - name: suricata-conf
           configMap:
             name: suricata-conf
-        - name: suricata-final-conf
+        - name: shared-config
           emptyDir: {}
         - name: var-log
           hostPath:
