@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: wazuh-agent
+  namespace: soc
+  labels:
+    app: wazuh-agent
+spec:
+  selector:
+    matchLabels:
+      app: wazuh-agent
+  template:
+    metadata:
+      labels:
+        app: wazuh-agent
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      hostPID: true
+      containers:
+        # 1. Suricata (NIDS)
+        - name: suricata
+          image: jasonish/suricata:latest
+          securityContext:
+            capabilities:
+              add: ["NET_ADMIN", "SYS_NICE", "NET_RAW"]
+          command: ["/usr/bin/suricata"]
+          args: ["-c", "/etc/suricata/suricata.yaml", "-i", "eth0"]
+          volumeMounts:
+            - name: suricata-config
+              mountPath: /etc/suricata/suricata.yaml
+              subPath: suricata.yaml
+            - name: suricata-logs
+              mountPath: /var/log/suricata
+        
+        # 2. Wazuh Agent (HIDS + Log Forwarder)
+        - name: wazuh-agent
+          image: wazuh/wazuh-agent:4.9.0
+          securityContext:
+            privileged: true # Needed to read host /proc and logs
+          env:
+            - name: WAZUH_MANAGER
+              value: "wazuh-manager.soc.svc"
+            - name: WAZUH_AGENT_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          volumeMounts:
+            - name: wazuh-config
+              mountPath: /var/ossec/etc/ossec.conf
+              subPath: ossec.conf
+            - name: suricata-logs
+              mountPath: /var/log/suricata
+              readOnly: true
+            # Host Mounts
+            - name: host-var-log
+              mountPath: /var/log
+              readOnly: true
+            - name: host-etc
+              mountPath: /host/etc
+              readOnly: true
+      volumes:
+        - name: suricata-config
+          configMap:
+            name: suricata-conf
+        - name: wazuh-config
+          configMap:
+            name: wazuh-agent-conf
+        - name: suricata-logs
+          emptyDir: {}
+        - name: host-var-log
+          hostPath:
+            path: /var/log
+        - name: host-etc
+          hostPath:
+            path: /etc

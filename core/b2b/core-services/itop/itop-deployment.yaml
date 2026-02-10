@@ -27,11 +27,36 @@ spec:
             - 'sh'
             - '-c'
             - |
-              cp -r /var/www/html/. /web-data/ && \
-              if [ -f /web-data/conf/production/config-itop.php ]; then \
-                 echo "Modifying config-itop.php..." && \
-                 sed -i "s|'app_root_url' => .*|'app_root_url' => '',|" /web-data/conf/production/config-itop.php; \
+              if [ ! -f /web-data/conf/production/config-itop.php ]; then
+                echo "Initializing iTop files..."
+                cp -r /var/www/html/. /web-data/
+              else
+                echo "Config file exists, preserving configuration..."
+                # Only sync code, preserve config
+                cp -r /var/www/html/application /web-data/
+                cp -r /var/www/html/core /web-data/
+                cp -r /var/www/html/css /web-data/
+                cp -r /var/www/html/data /web-data/
+                cp -r /var/www/html/datamodels /web-data/
+                cp -r /var/www/html/dictionaries /web-data/
+                cp -r /var/www/html/env-production /web-data/
+                cp -r /var/www/html/images /web-data/
+                cp -r /var/www/html/js /web-data/
+                cp -r /var/www/html/lib /web-data/
+                cp -r /var/www/html/pages /web-data/
+                cp -r /var/www/html/portal /web-data/
+                cp -r /var/www/html/setup /web-data/
+                cp -r /var/www/html/sources /web-data/
+                cp -r /var/www/html/webservices /web-data/
+                cp -r /var/www/html/index.php /web-data/
               fi && \
+              if [ -f /web-data/conf/production/config-itop.php ]; then \
+                 echo "Ensuring app_root_url is empty in config-itop.php..." && \
+                 if grep -q "'app_root_url' =>" /web-data/conf/production/config-itop.php; then
+                   sed -i "s|'app_root_url' => .*|'app_root_url' => '',|" /web-data/conf/production/config-itop.php;
+                 fi
+              fi && \
+              chmod -R 775 /web-data/conf && \
               chown -R 33:33 /web-data
           volumeMounts:
             - name: itop-web-persistent-storage
@@ -41,11 +66,11 @@ spec:
           image: vbkunin/itop:latest-base
           resources:
             requests:
-              memory: "512Mi"
+              memory: "1Gi"
               cpu: "500m"
             limits:
-              memory: "1Gi"
-              cpu: "1000m"
+              memory: "2Gi"
+              cpu: "2000m"
           livenessProbe:
             tcpSocket:
               port: 80

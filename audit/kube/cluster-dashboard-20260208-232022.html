@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ka0s Cluster Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #0d1117;
+      --card-bg: #161b22;
+      --border-color: #30363d;
+      --text-primary: #c9d1d9;
+      --text-secondary: #8b949e;
+      --accent-color: #58a6ff;
+      --success-color: #238636;
+      --danger-color: #da3633;
+      --warning-color: #d29922;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-primary);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+    /* Sidebar Navigation */
+    .sidebar {
+      width: 250px;
+      background-color: var(--card-bg);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      padding: 20px 0;
+    }
+    .brand {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--accent-color);
+      padding: 0 20px 20px;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 10px;
+    }
+    .nav-item {
+      padding: 12px 20px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      display: block;
+    }
+    .nav-item:hover, .nav-item.active {
+      background-color: rgba(88, 166, 255, 0.1);
+      color: var(--text-primary);
+      border-left: 3px solid var(--accent-color);
+    }
+    
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      padding: 30px;
+      overflow-y: auto;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+    .timestamp {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+    
+    /* Cards & Sections */
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    .card h2 {
+      margin-top: 0;
+      font-size: 1.2rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 10px;
+      margin-bottom: 15px;
+      color: var(--text-primary);
+    }
+    
+    /* Code/Pre blocks */
+    pre {
+      background-color: #0d1117;
+      padding: 15px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 0.85rem;
+      color: #e6edf3;
+      white-space: pre-wrap;
+    }
+    
+    /* Status Indicators */
+    .status-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .status-ok { background-color: rgba(35, 134, 54, 0.2); color: #3fb950; }
+    .status-err { background-color: rgba(218, 54, 51, 0.2); color: #f85149; }
+    
+    /* Tabs for Services */
+    .tab-container { margin-top: 20px; }
+    
+  </style>
+  <script>
+    function showSection(id) {
+      // Hide all sections
+      document.querySelectorAll('.content-section').forEach(el => el.style.display = 'none');
+      // Show target
+      document.getElementById(id).style.display = 'block';
+      // Update nav
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      document.querySelector('[onclick="showSection(\'' + id + '\')"]').classList.add('active');
+    }
+  </script>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="brand">Ka0s Monitor</div>
+    <a class="nav-item active" onclick="showSection('overview')">📊 Vista General</a>
+    <a class="nav-item" onclick="showSection('nodes')">🖥️ Nodos</a>
+    <a class="nav-item" onclick="showSection('pods')">🚑 Pods & Salud</a>
+    <a class="nav-item" onclick="showSection('network')">🌐 Red & Servicios</a>
+    <a class="nav-item" onclick="showSection('infra')">⚙️ Infraestructura</a>
+  </div>
+
+  <!-- Content -->
+  <div class="main-content">
+    <div class="header">
+      <h1>Estado del Cluster</h1>
+      <div class="timestamp">Actualizado: dom 08 feb 2026 23:20:24 UTC</div>
+    </div>
+
+    <!-- Overview Section -->
+    <div id="overview" class="content-section">
+      <div class="card">
+        <h2>Resumen Rápido</h2>
+        <p>Bienvenido al panel de control de Ka0s. Usa el menú lateral para navegar por los detalles técnicos.</p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 20px;">
+          <div style="background: rgba(88, 166, 255, 0.1); padding: 15px; border-radius: 8px; text-align: center;">
+            <h3 style="margin:0; color: var(--accent-color);">Nodos</h3>
+            <span style="font-size: 2rem; font-weight: bold;">4</span>
+          </div>
+          <div style="background: rgba(218, 54, 51, 0.1); padding: 15px; border-radius: 8px; text-align: center;">
+            <h3 style="margin:0; color: var(--danger-color);">Pods Fallidos</h3>
+            <span style="font-size: 2rem; font-weight: bold;">1</span>
+          </div>
+          <div style="background: rgba(35, 134, 54, 0.1); padding: 15px; border-radius: 8px; text-align: center;">
+            <h3 style="margin:0; color: var(--success-color);">Servicios Expuestos</h3>
+            <span style="font-size: 2rem; font-weight: bold;">6</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nodes Section -->
+    <div id="nodes" class="content-section" style="display:none;">
+      <div class="card">
+        <h2>Estado de Nodos</h2>
+        <pre>NAME         STATUS                     ROLES           AGE    VERSION    INTERNAL-IP    EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION        CONTAINER-RUNTIME
+k8-manager   Ready                      control-plane   52d    v1.32.11   192.168.1.10   <none>        Ubuntu 24.04.3 LTS   6.8.1-1040-realtime   containerd://2.2.1
+k8-node-20   Ready                      <none>          52d    v1.32.11   192.168.1.20   <none>        Ubuntu 24.04.3 LTS   6.8.1-1040-realtime   containerd://2.2.1
+k8-node-30   Ready,SchedulingDisabled   <none>          32d    v1.32.11   192.168.1.30   <none>        Ubuntu 24.04.3 LTS   6.8.0-100-generic     containerd://2.2.1
+k8-node-40   Ready,SchedulingDisabled   <none>          4d5h   v1.32.11   192.168.1.40   <none>        Ubuntu 24.04.3 LTS   6.8.0-100-generic     containerd://2.2.1</pre>
+      </div>
+    </div>
+
+    <!-- Pods Section -->
+    <div id="pods" class="content-section" style="display:none;">
+      <div class="card">
+        <h2>Pods con Problemas (No Running/Succeeded)</h2>
+        <pre>No resources found</pre>
+      </div>
+      <div class="card">
+        <h2>Últimos 50 Pods Creados (Actividad Reciente)</h2>
+        <pre>calico-apiserver        calico-apiserver-8659d4bbc5-pxwpw            1/1     Running            3 (14h ago)        52d     172.16.74.13    k8-manager   <none>           <none>
+calico-apiserver        calico-apiserver-8659d4bbc5-296fz            1/1     Running            3 (14h ago)        52d     172.16.74.2     k8-manager   <none>           <none>
+calico-system           csi-node-driver-dbm9t                        2/2     Running            10 (14h ago)       52d     172.16.209.40   k8-node-20   <none>           <none>
+kube-system             kube-proxy-t4sv5                             1/1     Running            5 (14h ago)        52d     192.168.1.20    k8-node-20   <none>           <none>
+metallb-system          speaker-jtkrt                                1/1     Running            17 (14h ago)       47d     192.168.1.10    k8-manager   <none>           <none>
+metallb-system          speaker-fzckw                                1/1     Running            10 (14h ago)       47d     192.168.1.20    k8-node-20   <none>           <none>
+metallb-system          controller-5cbffbc46b-qpvsv                  1/1     Running            16 (14h ago)       41d     172.16.74.44    k8-manager   <none>           <none>
+kube-system             kube-proxy-p9gdf                             1/1     Running            3 (14h ago)        32d     192.168.1.30    k8-node-30   <none>           <none>
+calico-system           csi-node-driver-8hf6g                        2/2     Running            6 (14h ago)        32d     172.16.146.48   k8-node-30   <none>           <none>
+metallb-system          speaker-xfb9s                                1/1     Running            11 (13h ago)       32d     192.168.1.30    k8-node-30   <none>           <none>
+mongo                   mongo-0                                      1/1     Running            3 (14h ago)        31d     172.16.209.8    k8-node-20   <none>           <none>
+zabbix                  postgresql-7dfd4b4b68-kdbz9                  1/1     Running            4 (14h ago)        26d     172.16.74.30    k8-manager   <none>           <none>
+kube-system             metrics-server-56fb9549f4-wml82              1/1     Running            4 (14h ago)        18d     172.16.209.21   k8-node-20   <none>           <none>
+zabbix                  zabbix-agent-ksjkb                           1/1     Running            3 (14h ago)        12d     192.168.1.20    k8-node-20   <none>           <none>
+zabbix                  zabbix-agent-ksx2w                           1/1     Running            16 (12h ago)       12d     192.168.1.30    k8-node-30   <none>           <none>
+zabbix                  zabbix-agent-6fftl                           1/1     Running            3 (14h ago)        12d     192.168.1.10    k8-manager   <none>           <none>
+zabbix                  zabbix-web-677b9f7b9c-sljl8                  1/1     Running            3 (14h ago)        10d     172.16.74.42    k8-manager   <none>           <none>
+kubernetes-dashboard    dashboard-metrics-scraper-5bd45c9dd6-nks5r   1/1     Running            1 (14h ago)        4d12h   172.16.209.48   k8-node-20   <none>           <none>
+kubernetes-dashboard    kubernetes-dashboard-79cbcf9fb6-bm75t        1/1     Running            1 (14h ago)        4d12h   172.16.209.32   k8-node-20   <none>           <none>
+trivy-system            trivy-operator-5cbf845bf9-fbrtt              1/1     Running            1 (14h ago)        4d11h   172.16.209.15   k8-node-20   <none>           <none>
+trivy-system            scan-vulnerabilityreport-756595f7cd-nghjj    0/1     Completed          0                  4d11h   <none>          k8-node-20   <none>           <none>
+trivy-system            node-collector-9b759b4d8-lh6l4               0/1     Completed          0                  4d11h   <none>          k8-manager   <none>           <none>
+trivy-system            scan-vulnerabilityreport-85f5c7c74-l8mp4     0/3     Completed          0                  4d11h   <none>          k8-node-20   <none>           <none>
+trivy-system            scan-vulnerabilityreport-8678cd695d-9d6pk    0/1     Completed          0                  4d11h   <none>          k8-node-20   <none>           <none>
+trivy-system            scan-vulnerabilityreport-56bff54df6-4flwj    0/1     Completed          0                  4d11h   <none>          k8-node-20   <none>           <none>
+trivy-system            scan-vulnerabilityreport-74b9cf67dd-ms9rc    0/1     Completed          0                  4d11h   <none>          k8-node-20   <none>           <none>
+kube-system             metrics-server-f947544c5-vjz97               0/1     CrashLoopBackOff   2081 (3m18s ago)   4d8h    172.16.209.36   k8-node-20   <none>           <none>
+zabbix                  zabbix-server-554759d44b-mf4q5               1/1     Running            1 (14h ago)        4d8h    172.16.74.35    k8-manager   <none>           <none>
+calico-system           csi-node-driver-q6fsx                        2/2     Running            4 (14h ago)        4d5h    172.16.64.151   k8-node-40   <none>           <none>
+kube-system             kube-proxy-kblfg                             1/1     Running            2 (14h ago)        4d5h    192.168.1.40    k8-node-40   <none>           <none>
+metallb-system          speaker-qlr7k                                1/1     Running            7 (14h ago)        4d5h    192.168.1.40    k8-node-40   <none>           <none>
+zabbix                  zabbix-agent-qz6g2                           1/1     Running            9 (14h ago)        4d5h    192.168.1.40    k8-node-40   <none>           <none>
+itop                    mysql-6c885b98c4-lhd4q                       1/1     Running            1 (14h ago)        2d14h   172.16.209.46   k8-node-20   <none>           <none>
+itop                    itop-64676894dc-f7fr9                        1/1     Running            1 (14h ago)        2d14h   172.16.209.29   k8-node-20   <none>           <none>
+local-path-storage      local-path-provisioner-6bc759bc5-tfcgj       1/1     Running            1 (14h ago)        2d11h   172.16.209.24   k8-node-20   <none>           <none>
+elk                     elasticsearch-0                              1/1     Running            1 (14h ago)        2d11h   172.16.209.13   k8-node-20   <none>           <none>
+elk                     kibana-6d8d8d9d96-jvww7                      1/1     Running            1 (14h ago)        2d11h   172.16.209.11   k8-node-20   <none>           <none>
+calico-system           calico-kube-controllers-7cf5864d67-9fzv7     1/1     Running            0                  13h     172.16.146.28   k8-node-30   <none>           <none>
+calico-system           calico-node-pjgs8                            1/1     Running            1 (13h ago)        13h     192.168.1.30    k8-node-30   <none>           <none>
+calico-system           calico-node-zgvjv                            1/1     Running            0                  13h     192.168.1.10    k8-manager   <none>           <none>
+calico-system           calico-node-jd4cl                            1/1     Running            0                  13h     192.168.1.40    k8-node-40   <none>           <none>
+calico-system           calico-node-2cvj7                            1/1     Running            0                  13h     192.168.1.20    k8-node-20   <none>           <none>
+actions-runner-system   gha-rs-controller-cd9ccc9c5-2bn9d            1/1     Running            0                  12h     172.16.74.18    k8-manager   <none>           <none>
+actions-runner-system   swarm-runners-scaleset-7d4866c5-listener     1/1     Running            0                  12h     172.16.74.8     k8-manager   <none>           <none>
+planka                  planka-fc7bbcf8b-rm5bp                       1/1     Running            0                  12h     172.16.209.33   k8-node-20   <none>           <none>
+ingress-nginx           ingress-nginx-admission-create-xvdwb         0/1     Completed          0                  11h     172.16.74.55    k8-manager   <none>           <none>
+ingress-nginx           ingress-nginx-admission-patch-s482f          0/1     Completed          0                  11h     172.16.74.29    k8-manager   <none>           <none>
+planka                  planka-db-6f8857ffc9-rkd5t                   1/1     Running            1 (11h ago)        11h     172.16.209.9    k8-node-20   <none>           <none>
+ingress-nginx           ingress-nginx-controller-d8c96cf68-8wclx     1/1     Running            0                  11h     172.16.74.17    k8-manager   <none>           <none>
+actions-runner-system   swarm-runners-scaleset-hkss5-runner-rfb8r    1/1     Running            0                  29s     172.16.74.3     k8-manager   <none>           <none></pre>
+      </div>
+    </div>
+
+    <!-- Network Section -->
+    <div id="network" class="content-section" style="display:none;">
+      <div class="card">
+        <h2>Servicios (LoadBalancer / NodePort)</h2>
+        <pre>elk                    kibana                               LoadBalancer   10.103.107.124   192.168.1.240   5601:32497/TCP               2d11h   app=kibana
+ingress-nginx          ingress-nginx-controller             LoadBalancer   10.107.218.204   192.168.1.250   80:31217/TCP,443:30093/TCP   11h     app.kubernetes.io/component=controller,app.kubernetes.io/instance=ingress-nginx,app.kubernetes.io/name=ingress-nginx
+itop                   itop                                 LoadBalancer   10.103.185.4     192.168.1.243   80:30455/TCP                 2d14h   app=itop
+kubernetes-dashboard   kubernetes-dashboard                 LoadBalancer   10.98.228.11     192.168.1.242   443:31225/TCP                4d12h   k8s-app=kubernetes-dashboard
+planka                 planka                               LoadBalancer   10.98.251.148    192.168.1.244   80:30735/TCP                 12h     app=planka
+zabbix                 zabbix-web                           LoadBalancer   10.102.145.85    192.168.1.241   80:31123/TCP                 26d     app=zabbix-web</pre>
+      </div>
+      <div class="card">
+        <h2>Reglas de Ingress</h2>
+        <pre>NAMESPACE              NAME                           CLASS   HOSTS               ADDRESS         PORTS   AGE
+itop                   itop-ingress                   nginx   itsm.ka0s.io        192.168.1.250   80      11h
+kubernetes-dashboard   kubernetes-dashboard-ingress   nginx   dashboard.ka0s.io   192.168.1.250   80      4d11h
+planka                 planka                         nginx   planka.ka0s.io      192.168.1.250   80      11h
+zabbix                 zabbix-ingress                 nginx   noc.ka0s.io         192.168.1.250   80      11h</pre>
+      </div>
+    </div>
+
+    <!-- Infra Section -->
+    <div id="infra" class="content-section" style="display:none;">
+      <div class="card">
+        <h2>Ingress Controller</h2>
+        <pre>NAME                                       READY   STATUS      RESTARTS   AGE   IP             NODE         NOMINATED NODE   READINESS GATES
+ingress-nginx-admission-create-xvdwb       0/1     Completed   0          11h   172.16.74.55   k8-manager   <none>           <none>
+ingress-nginx-admission-patch-s482f        0/1     Completed   0          11h   172.16.74.29   k8-manager   <none>           <none>
+ingress-nginx-controller-d8c96cf68-8wclx   1/1     Running     0          11h   172.16.74.17   k8-manager   <none>           <none></pre>
+      </div>
+      <div class="card">
+        <h2>MetalLB System</h2>
+        <pre>NAME                          READY   STATUS    RESTARTS       AGE    IP             NODE         NOMINATED NODE   READINESS GATES
+controller-5cbffbc46b-qpvsv   1/1     Running   16 (14h ago)   41d    172.16.74.44   k8-manager   <none>           <none>
+speaker-fzckw                 1/1     Running   10 (14h ago)   47d    192.168.1.20   k8-node-20   <none>           <none>
+speaker-jtkrt                 1/1     Running   17 (14h ago)   47d    192.168.1.10   k8-manager   <none>           <none>
+speaker-qlr7k                 1/1     Running   7 (14h ago)    4d5h   192.168.1.40   k8-node-40   <none>           <none>
+speaker-xfb9s                 1/1     Running   11 (13h ago)   32d    192.168.1.30   k8-node-30   <none>           <none></pre>
+      </div>
+      <div class="card">
+        <h2>CoreDNS System</h2>
+        <pre>NAME                       READY   STATUS    RESTARTS      AGE   IP             NODE         NOMINATED NODE   READINESS GATES
+coredns-668d6bf9bc-blvkl   1/1     Running   3 (14h ago)   52d   172.16.74.54   k8-manager   <none>           <none>
+coredns-668d6bf9bc-l86hn   1/1     Running   3 (14h ago)   52d   172.16.74.50   k8-manager   <none>           <none></pre>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>

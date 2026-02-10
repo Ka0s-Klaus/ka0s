@@ -1,0 +1,110 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wazuh-dashboard
+  namespace: soc
+  labels:
+    app: wazuh-dashboard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wazuh-dashboard
+  template:
+    metadata:
+      labels:
+        app: wazuh-dashboard
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: k8-node-20
+      containers:
+        - name: wazuh-dashboard
+          image: wazuh/wazuh-dashboard:4.9.0
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+          ports:
+            - containerPort: 5601
+              name: dashboard
+          env:
+            - name: WAZUH_API_URL
+              value: "https://wazuh-manager:55000"
+            - name: OPENSEARCH_URL
+              value: "https://wazuh-indexer:9200"
+            - name: OPENSEARCH_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: wazuh-auth
+                  key: admin_username
+            - name: OPENSEARCH_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: wazuh-auth
+                  key: admin_password
+            # TLS Config
+            - name: SERVER_SSL_ENABLED
+              value: "false" # Ingress handles TLS
+            - name: OPENSEARCH_SSL_VERIFICATIONMODE
+              value: "certificate"
+            - name: OPENSEARCH_REQUESTHEADERSALLOWLIST
+              value: "securitytenant,Authorization"
+            - name: OPENSEARCH_SSL_CERTIFICATEAUTHORITIES
+              value: "/usr/share/wazuh-dashboard/certs/root-ca.pem"
+          volumeMounts:
+            - name: certificates
+              mountPath: /usr/share/wazuh-dashboard/certs
+              readOnly: true
+      volumes:
+        - name: certificates
+          secret:
+            secretName: wazuh-dashboard-certs
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wazuh-dashboard
+  namespace: soc
+  labels:
+    app: wazuh-dashboard
+spec:
+  type: ClusterIP
+  selector:
+    app: wazuh-dashboard
+  ports:
+    - port: 5601
+      targetPort: 5601
+      protocol: TCP
+      name: http
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: wazuh-dashboard-ingress
+  namespace: soc
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    # Session affinity for dashboard stability
+    nginx.ingress.kubernetes.io/affinity: "cookie"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - soc.ka0s.io
+      secretName: ka0s-wildcard-tls
+  rules:
+    - host: soc.ka0s.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: wazuh-dashboard
+                port:
+                  number: 5601

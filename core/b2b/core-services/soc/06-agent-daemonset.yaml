@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: wazuh-agent
+  namespace: soc
+  labels:
+    app: wazuh-agent
+spec:
+  selector:
+    matchLabels:
+      app: wazuh-agent
+  template:
+    metadata:
+      labels:
+        app: wazuh-agent
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+        # Wazuh Agent Container
+        - name: wazuh-agent
+          image: wazuh/wazuh-agent:4.9.0
+          env:
+            - name: WAZUH_MANAGER
+              value: "wazuh-manager.soc.svc"
+            - name: WAZUH_AGENT_GROUP
+              value: "default"
+          volumeMounts:
+            - name: wazuh-agent-conf
+              mountPath: /var/ossec/etc/ossec.conf
+              subPath: ossec.conf
+              readOnly: true
+            - name: var-log
+              mountPath: /var/log
+              readOnly: true
+            - name: suricata-logs
+              mountPath: /var/log/suricata
+              readOnly: true
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+
+        # Suricata Sidecar Container
+        - name: suricata
+          image: jasonish/suricata:latest
+          securityContext:
+            capabilities:
+              add: ["NET_ADMIN", "NET_RAW", "SYS_NICE"]
+          volumeMounts:
+            - name: suricata-conf
+              mountPath: /etc/suricata/suricata.yaml
+              subPath: suricata.yaml
+              readOnly: true
+            - name: suricata-logs
+              mountPath: /var/log/suricata
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+            requests:
+              cpu: 500m
+              memory: 512Mi
+      volumes:
+        - name: wazuh-agent-conf
+          configMap:
+            name: wazuh-agent-conf
+        - name: suricata-conf
+          configMap:
+            name: suricata-conf
+        - name: var-log
+          hostPath:
+            path: /var/log
+        - name: suricata-logs
+          emptyDir: {}

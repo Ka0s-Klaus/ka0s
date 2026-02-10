@@ -1,0 +1,125 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: wazuh-indexer
+  namespace: soc
+  labels:
+    app: wazuh-indexer
+spec:
+  serviceName: wazuh-indexer
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wazuh-indexer
+  template:
+    metadata:
+      labels:
+        app: wazuh-indexer
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: k8-node-20
+      securityContext:
+        fsGroup: 1000
+      initContainers:
+        - name: fix-permissions
+          image: busybox
+          command: ["sh", "-c", "chown -R 1000:1000 /usr/share/wazuh-indexer/data"]
+          volumeMounts:
+            - name: wazuh-indexer-data
+              mountPath: /usr/share/wazuh-indexer/data
+        - name: increase-vm-max-map
+          image: busybox
+          command: ["sysctl", "-w", "vm.max_map_count=262144"]
+          securityContext:
+            privileged: true
+      containers:
+        - name: wazuh-indexer
+          image: wazuh/wazuh-indexer:4.9.0
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "1000m"
+            limits:
+              memory: "4Gi"
+              cpu: "2000m"
+          ports:
+            - containerPort: 9200
+              name: indexer-rest
+            - containerPort: 9300
+              name: indexer-nodes
+          env:
+            - name: OPENSEARCH_JAVA_OPTS
+              value: "-Xms1g -Xmx1g"
+            - name: NETWORK_HOST
+              value: "0.0.0.0"
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: CLUSTER_INITIAL_MASTER_NODES
+              value: "wazuh-indexer-0"
+            - name: DISCOVERY_SEED_HOSTS
+              value: "wazuh-indexer-0.wazuh-indexer"
+            - name: CLUSTER_NAME
+              value: "wazuh-cluster"
+            # TLS Configuration
+            - name: PLUGINS_SECURITY_SSL_HTTP_ENABLED
+              value: "true"
+            - name: PLUGINS_SECURITY_SSL_HTTP_PEMKEY_FILEPATH
+              value: "indexer.key"
+            - name: PLUGINS_SECURITY_SSL_HTTP_PEMCERT_FILEPATH
+              value: "indexer.pem"
+            - name: PLUGINS_SECURITY_SSL_HTTP_PEMTRUSTEDCAS_FILEPATH
+              value: "root-ca.pem"
+            - name: PLUGINS_SECURITY_SSL_TRANSPORT_ENABLED
+              value: "true"
+            - name: PLUGINS_SECURITY_SSL_TRANSPORT_PEMKEY_FILEPATH
+              value: "indexer.key"
+            - name: PLUGINS_SECURITY_SSL_TRANSPORT_PEMCERT_FILEPATH
+              value: "indexer.pem"
+            - name: PLUGINS_SECURITY_SSL_TRANSPORT_PEMTRUSTEDCAS_FILEPATH
+              value: "root-ca.pem"
+            - name: PLUGINS_SECURITY_SSL_TRANSPORT_ENFORCE_HOSTNAME_VERIFICATION
+              value: "false"
+            - name: PLUGINS_SECURITY_RESTAPI_ROLES_ENABLED
+              value: "all_access,security_rest_api_access"
+            - name: PLUGINS_SECURITY_SYSTEM_INDICES_ENABLED
+              value: "true"
+            - name: PLUGINS_SECURITY_SYSTEM_INDICES_INDICES
+              value: ".opendistro-alerting-config,.opendistro-alerting-alert*,.opendistro-ism-config,.opendistro-dism-config,.opendistro-job-scheduler-lock"
+            - name: WAZUH_INDEXER_ADMIN_DN
+              value: "CN=admin,OU=Wazuh,O=Wazuh,L=California,C=US"
+            - name: WAZUH_INDEXER_CHECK_CERTIFICATES
+              value: "false"
+          volumeMounts:
+            - name: wazuh-indexer-data
+              mountPath: /usr/share/wazuh-indexer/data
+            - name: certificates
+              mountPath: /usr/share/wazuh-indexer/config/certs
+              readOnly: true
+      volumes:
+        - name: wazuh-indexer-data
+          persistentVolumeClaim:
+            claimName: wazuh-indexer-pvc-v2
+        - name: certificates
+          secret:
+            secretName: wazuh-indexer-certs
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wazuh-indexer
+  namespace: soc
+  labels:
+    app: wazuh-indexer
+spec:
+  type: ClusterIP
+  selector:
+    app: wazuh-indexer
+  ports:
+    - name: indexer-rest
+      port: 9200
+      targetPort: 9200
+    - name: indexer-nodes
+      port: 9300
+      targetPort: 9300
