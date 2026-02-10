@@ -37,10 +37,20 @@ on:
 
 jobs:
   create-api-user:
-    runs-on: swarm-runners-scaleset
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Check connectivity to iTop
+        env:
+          ITOP_URL: ${{ secrets.ITOP_URL || vars.ITOP_URL }}
+        run: |
+          set -euo pipefail
+          BASE="${ITOP_URL%/}"
+          URL="${BASE}/webservices/rest.php?version=1.3"
+          echo "Checking: ${URL}"
+          curl -fsS -o /dev/null -I "${URL}"
 
       - name: Create iTop API user
         env:
