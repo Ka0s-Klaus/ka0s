@@ -66,7 +66,7 @@ spec:
             - name: PLUGINS_SECURITY_SSL_HTTP_ENABLED
               value: "true"
             - name: PLUGINS_SECURITY_SSL_HTTP_PEMKEY_FILEPATH
-              value: "indexer.key"
+              value: "indexer-key.pem"
             - name: PLUGINS_SECURITY_SSL_HTTP_PEMCERT_FILEPATH
               value: "indexer.pem"
             - name: PLUGINS_SECURITY_SSL_HTTP_PEMTRUSTEDCAS_FILEPATH
@@ -74,7 +74,7 @@ spec:
             - name: PLUGINS_SECURITY_SSL_TRANSPORT_ENABLED
               value: "true"
             - name: PLUGINS_SECURITY_SSL_TRANSPORT_PEMKEY_FILEPATH
-              value: "indexer.key"
+              value: "indexer-key.pem"
             - name: PLUGINS_SECURITY_SSL_TRANSPORT_PEMCERT_FILEPATH
               value: "indexer.pem"
             - name: PLUGINS_SECURITY_SSL_TRANSPORT_PEMTRUSTEDCAS_FILEPATH
@@ -104,6 +104,7 @@ spec:
         - name: certificates
           secret:
             secretName: wazuh-indexer-certs
+            defaultMode: 420
 ---
 apiVersion: v1
 kind: Service

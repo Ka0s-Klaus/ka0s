@@ -34,7 +34,7 @@ roleRef:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: wazuh-cert-generator-v6
+  name: wazuh-cert-generator-v7
   namespace: soc
 spec:
   ttlSecondsAfterFinished: 600
@@ -120,9 +120,9 @@ spec:
                 --from-file=root-ca.pem=$ROOT_CA_PEM \
                 --from-file=root-ca.key=$ROOT_CA_KEY \
                 --from-file=indexer.pem=$INDEXER_PEM \
-                --from-file=indexer.key=$INDEXER_KEY \
+                --from-file=indexer-key.pem=$INDEXER_KEY \
                 --from-file=admin.pem=$ADMIN_PEM \
-                --from-file=admin.key=$ADMIN_KEY \
+                --from-file=admin-key.pem=$ADMIN_KEY \
                 --dry-run=client -o yaml | kubectl apply -f -
 
               # Manager Certs
