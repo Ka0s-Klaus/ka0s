@@ -70,6 +70,7 @@ class ItopClient:
 
     def request(self, payload):
         headers = _basic_auth_header(self.user, self.password)
+        headers["Content-Type"] = "application/x-www-form-urlencoded"
         encoded = urllib.parse.urlencode({"json_data": json.dumps(payload)}).encode("utf-8")
         req = urllib.request.Request(self.rest_url, data=encoded, headers=headers, method="POST")
         with urllib.request.urlopen(req, context=self.ctx) as resp:
@@ -130,6 +131,11 @@ def _ensure_ok(resp):
     raise RuntimeError(msg)
 
 
+def _oql_escape(value):
+    return str(value).replace("'", "\\'")
+
+
+
 def _detect_profile_class(client):
     for candidate in ("URP_Profiles", "URP_Profile"):
         try:
@@ -144,7 +150,7 @@ def _detect_profile_class(client):
 def _get_profile_id(client, profile_class, profile_name):
     if not profile_class:
         raise RuntimeError("Profile class not detected (URP_Profiles/URP_Profile)")
-    oql = f"SELECT {profile_class} WHERE name = '{profile_name.replace(\"'\", \"\\\\'\")}'"
+    oql = f"SELECT {profile_class} WHERE name = '{_oql_escape(profile_name)}'"
     resp = client.core_get(profile_class, oql, output_fields="id,name", limit=1)
     _ensure_ok(resp)
     key = _first_object_key(resp)
@@ -154,7 +160,7 @@ def _get_profile_id(client, profile_class, profile_name):
 
 
 def _find_org_id(client, org_name):
-    oql = f"SELECT Organization WHERE name = '{org_name.replace(\"'\", \"\\\\'\")}'"
+    oql = f"SELECT Organization WHERE name = '{_oql_escape(org_name)}'"
     resp = client.core_get("Organization", oql, output_fields="id,name", limit=1)
     _ensure_ok(resp)
     key = _first_object_key(resp)
@@ -165,13 +171,13 @@ def _find_org_id(client, org_name):
 
 def _find_person_id(client, email, first_name, last_name, org_id):
     if email:
-        oql = f"SELECT Person WHERE email = '{email.replace(\"'\", \"\\\\'\")}'"
+        oql = f"SELECT Person WHERE email = '{_oql_escape(email)}'"
     else:
         parts = []
         if first_name:
-            parts.append(f"first_name = '{first_name.replace(\"'\", \"\\\\'\")}'")
+            parts.append(f"first_name = '{_oql_escape(first_name)}'")
         if last_name:
-            parts.append(f"name = '{last_name.replace(\"'\", \"\\\\'\")}'")
+            parts.append(f"name = '{_oql_escape(last_name)}'")
         if org_id:
             parts.append(f"org_id = {org_id}" if isinstance(org_id, int) else f"org_id = '{org_id}'")
         where = " AND ".join(parts) if parts else "1=0"
@@ -197,7 +203,7 @@ def _create_person(client, org_id, first_name, last_name, email):
 
 
 def _find_user_id(client, login):
-    oql = f"SELECT UserLocal WHERE login = '{login.replace(\"'\", \"\\\\'\")}'"
+    oql = f"SELECT UserLocal WHERE login = '{_oql_escape(login)}'"
     resp = client.core_get("UserLocal", oql, output_fields="id,login,status", limit=1)
     _ensure_ok(resp)
     key = _first_object_key(resp)
