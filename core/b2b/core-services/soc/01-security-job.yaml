@@ -11,8 +11,11 @@ metadata:
   namespace: soc
 rules:
   - apiGroups: [""]
-    resources: ["secrets"]
-    verbs: ["create", "get", "patch", "delete"]
+    resources: ["secrets", "pods", "events", "services"]
+    verbs: ["create", "get", "patch", "delete", "list", "watch"]
+  - apiGroups: ["batch"]
+    resources: ["jobs"]
+    verbs: ["create", "get", "patch", "delete", "list", "watch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -31,7 +34,7 @@ roleRef:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: wazuh-cert-generator-v3
+  name: wazuh-cert-generator-v6
   namespace: soc
 spec:
   ttlSecondsAfterFinished: 600
@@ -45,30 +48,33 @@ spec:
           command: ["sh", "-c"]
           args:
             - |
-              cat > /config/certs.yml <<EOF
-              instances:
-                - name: wazuh-indexer
-                  ip: 
-                    - 127.0.0.1
-                  dns:
-                    - wazuh-indexer.soc.svc
-                - name: wazuh-manager
-                  ip: 
-                    - 127.0.0.1
-                  dns:
-                    - wazuh-manager.soc.svc
-                - name: wazuh-dashboard
-                  ip: 
-                    - 127.0.0.1
-                  dns:
-                    - wazuh-dashboard.soc.svc
+              cat > /config/config.yml <<EOF
+              nodes:
+                indexer:
+                  - name: wazuh-indexer
+                    ip: wazuh-indexer.soc.svc
+                server:
+                  - name: wazuh-manager
+                    ip: wazuh-manager.soc.svc
+                dashboard:
+                  - name: wazuh-dashboard
+                    ip: wazuh-dashboard.soc.svc
               EOF
           volumeMounts:
             - name: config-vol
               mountPath: /config
 
         - name: generator
-          image: wazuh/wazuh-certs-generator:0.0.4
+          image: debian:bookworm-slim
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              apt-get update && apt-get install -y curl openssl tar
+              curl -sO https://packages.wazuh.com/4.9/wazuh-certs-tool.sh
+              cp /config/config.yml ./config.yml
+              bash ./wazuh-certs-tool.sh -A
+              cp -r wazuh-certificates/* /certificates/
+              ls -R /certificates
           volumeMounts:
             - name: config-vol
               mountPath: /config
@@ -81,17 +87,14 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
+              echo "DEBUG: Current Pods and Events:"
+              kubectl get pods -n soc
+              kubectl get events -n soc --sort-by=.metadata.creationTimestamp || true
+
               echo "Checking generated certificates..."
               ls -R /shared
               
               echo "Creating Wazuh Secrets..."
-              
-              # Copy files to flat structure if needed, or reference them directly
-              # wazuh-certs-generator output structure might vary. 
-              # Typically: /certificates/wazuh-indexer.pem, etc. or /certificates/wazuh-indexer/node.pem
-              
-              # We assume they are in /shared (mounted to /certificates in generator)
-              # Let's try to find them.
               
               ROOT_CA_PEM=$(find /shared -name "root-ca.pem" | head -n 1)
               ROOT_CA_KEY=$(find /shared -name "root-ca.key" | head -n 1)

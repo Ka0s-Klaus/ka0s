@@ -1,1 +1,2185 @@
-[]
+[
+  {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+      "creationTimestamp": "2026-02-10T14:31:18Z",
+      "generateName": "wazuh-agent-",
+      "labels": {
+        "app": "wazuh-agent",
+        "controller-revision-hash": "5fdf4c86f5",
+        "pod-template-generation": "6"
+      },
+      "name": "wazuh-agent-8b9c9",
+      "namespace": "soc",
+      "ownerReferences": [
+        {
+          "apiVersion": "apps/v1",
+          "blockOwnerDeletion": true,
+          "controller": true,
+          "kind": "DaemonSet",
+          "name": "wazuh-agent",
+          "uid": "5bf44853-a07f-4e8e-a899-f612c715abd9"
+        }
+      ],
+      "resourceVersion": "10168090",
+      "uid": "4da042f0-b671-4e3d-b0ed-a1db9accc438"
+    },
+    "spec": {
+      "affinity": {
+        "nodeAffinity": {
+          "requiredDuringSchedulingIgnoredDuringExecution": {
+            "nodeSelectorTerms": [
+              {
+                "matchFields": [
+                  {
+                    "key": "metadata.name",
+                    "operator": "In",
+                    "values": [
+                      "k8-node-20"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "containers": [
+        {
+          "env": [
+            {
+              "name": "WAZUH_MANAGER",
+              "value": "wazuh-manager.soc.svc"
+            },
+            {
+              "name": "WAZUH_AGENT_GROUP",
+              "value": "default"
+            }
+          ],
+          "image": "wazuh/wazuh-agent:4.9.0-1",
+          "imagePullPolicy": "IfNotPresent",
+          "name": "wazuh-agent",
+          "resources": {
+            "limits": {
+              "cpu": "500m",
+              "memory": "512Mi"
+            },
+            "requests": {
+              "cpu": "100m",
+              "memory": "256Mi"
+            }
+          },
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/var/ossec/etc/ossec.conf",
+              "name": "wazuh-agent-conf",
+              "readOnly": true,
+              "subPath": "ossec.conf"
+            },
+            {
+              "mountPath": "/var/log",
+              "name": "var-log",
+              "readOnly": true
+            },
+            {
+              "mountPath": "/var/log/suricata",
+              "name": "suricata-logs",
+              "readOnly": true
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-p7vsn",
+              "readOnly": true
+            }
+          ]
+        },
+        {
+          "image": "jasonish/suricata:latest",
+          "imagePullPolicy": "Always",
+          "name": "suricata",
+          "resources": {
+            "limits": {
+              "cpu": "1",
+              "memory": "1Gi"
+            },
+            "requests": {
+              "cpu": "500m",
+              "memory": "512Mi"
+            }
+          },
+          "securityContext": {
+            "capabilities": {
+              "add": [
+                "NET_ADMIN",
+                "NET_RAW",
+                "SYS_NICE"
+              ]
+            }
+          },
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/etc/suricata/suricata.yaml",
+              "name": "suricata-final-conf",
+              "readOnly": true,
+              "subPath": "suricata.yaml"
+            },
+            {
+              "mountPath": "/var/log/suricata",
+              "name": "suricata-logs"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-p7vsn",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "dnsPolicy": "ClusterFirstWithHostNet",
+      "enableServiceLinks": true,
+      "hostNetwork": true,
+      "initContainers": [
+        {
+          "args": [
+            "IFACE=$(ip route get 1 | awk '{print $5;exit}')\necho \"Detected interface: $IFACE\"\nsed \"s/eth0/$IFACE/g\" /template/suricata.yaml > /config/suricata.yaml\n"
+          ],
+          "command": [
+            "sh",
+            "-c"
+          ],
+          "image": "busybox",
+          "imagePullPolicy": "Always",
+          "name": "config-init",
+          "resources": {},
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/template",
+              "name": "suricata-conf"
+            },
+            {
+              "mountPath": "/config",
+              "name": "suricata-final-conf"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-p7vsn",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "nodeName": "k8-node-20",
+      "preemptionPolicy": "PreemptLowerPriority",
+      "priority": 0,
+      "restartPolicy": "Always",
+      "schedulerName": "default-scheduler",
+      "securityContext": {},
+      "serviceAccount": "default",
+      "serviceAccountName": "default",
+      "terminationGracePeriodSeconds": 30,
+      "tolerations": [
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/not-ready",
+          "operator": "Exists"
+        },
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/unreachable",
+          "operator": "Exists"
+        },
+        {
+          "effect": "NoSchedule",
+          "key": "node.kubernetes.io/disk-pressure",
+          "operator": "Exists"
+        },
+        {
+          "effect": "NoSchedule",
+          "key": "node.kubernetes.io/memory-pressure",
+          "operator": "Exists"
+        },
+        {
+          "effect": "NoSchedule",
+          "key": "node.kubernetes.io/pid-pressure",
+          "operator": "Exists"
+        },
+        {
+          "effect": "NoSchedule",
+          "key": "node.kubernetes.io/unschedulable",
+          "operator": "Exists"
+        },
+        {
+          "effect": "NoSchedule",
+          "key": "node.kubernetes.io/network-unavailable",
+          "operator": "Exists"
+        }
+      ],
+      "volumes": [
+        {
+          "configMap": {
+            "defaultMode": 420,
+            "name": "wazuh-agent-conf"
+          },
+          "name": "wazuh-agent-conf"
+        },
+        {
+          "configMap": {
+            "defaultMode": 420,
+            "name": "suricata-conf"
+          },
+          "name": "suricata-conf"
+        },
+        {
+          "emptyDir": {},
+          "name": "suricata-final-conf"
+        },
+        {
+          "hostPath": {
+            "path": "/var/log",
+            "type": ""
+          },
+          "name": "var-log"
+        },
+        {
+          "emptyDir": {},
+          "name": "suricata-logs"
+        },
+        {
+          "name": "kube-api-access-p7vsn",
+          "projected": {
+            "defaultMode": 420,
+            "sources": [
+              {
+                "serviceAccountToken": {
+                  "expirationSeconds": 3607,
+                  "path": "token"
+                }
+              },
+              {
+                "configMap": {
+                  "items": [
+                    {
+                      "key": "ca.crt",
+                      "path": "ca.crt"
+                    }
+                  ],
+                  "name": "kube-root-ca.crt"
+                }
+              },
+              {
+                "downwardAPI": {
+                  "items": [
+                    {
+                      "fieldRef": {
+                        "apiVersion": "v1",
+                        "fieldPath": "metadata.namespace"
+                      },
+                      "path": "namespace"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "status": {
+      "conditions": [
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-10T14:34:21Z",
+          "status": "True",
+          "type": "PodReadyToStartContainers"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-10T14:34:24Z",
+          "status": "True",
+          "type": "Initialized"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-10T14:34:00Z",
+          "message": "containers with unready status: [wazuh-agent suricata]",
+          "reason": "ContainersNotReady",
+          "status": "False",
+          "type": "Ready"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-10T14:34:00Z",
+          "message": "containers with unready status: [wazuh-agent suricata]",
+          "reason": "ContainersNotReady",
+          "status": "False",
+          "type": "ContainersReady"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-10T14:34:00Z",
+          "status": "True",
+          "type": "PodScheduled"
+        }
+      ],
+      "containerStatuses": [
+        {
+          "containerID": "containerd://40b8e5f6b162be884889ab5f34029739a0d1fb6898b7e397e7215e8a5913c924",
+          "image": "docker.io/jasonish/suricata:latest",
+          "imageID": "docker.io/jasonish/suricata@sha256:3c7777b38f54d0dc44c710549b51b6ffedfacdd7f258c8c2d176e126958feef4",
+          "lastState": {
+            "terminated": {
+              "containerID": "containerd://40b8e5f6b162be884889ab5f34029739a0d1fb6898b7e397e7215e8a5913c924",
+              "exitCode": 1,
+              "finishedAt": "2026-02-10T14:40:12Z",
+              "reason": "Error",
+              "startedAt": "2026-02-10T14:40:12Z"
+            }
+          },
+          "name": "suricata",
+          "ready": false,
+          "restartCount": 6,
+          "started": false,
+          "state": {
+            "waiting": {
+              "message": "back-off 5m0s restarting failed container=suricata pod=wazuh-agent-8b9c9_soc(4da042f0-b671-4e3d-b0ed-a1db9accc438)",
+              "reason": "CrashLoopBackOff"
+            }
+          },
+          "volumeMounts": [
+            {
+              "mountPath": "/etc/suricata/suricata.yaml",
+              "name": "suricata-final-conf",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            },
+            {
+              "mountPath": "/var/log/suricata",
+              "name": "suricata-logs"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-p7vsn",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            }
+          ]
+        },
+        {
+          "image": "wazuh/wazuh-agent:4.9.0-1",
+          "imageID": "",
+          "lastState": {},
+          "name": "wazuh-agent",
+          "ready": false,
+          "restartCount": 0,
+          "started": false,
+          "state": {
+            "waiting": {
+              "message": "Back-off pulling image \"wazuh/wazuh-agent:4.9.0-1\": ErrImagePull: rpc error: code = NotFound desc = failed to pull and unpack image \"docker.io/wazuh/wazuh-agent:4.9.0-1\": failed to resolve image: docker.io/wazuh/wazuh-agent:4.9.0-1: not found",
+              "reason": "ImagePullBackOff"
+            }
+          },
+          "volumeMounts": [
+            {
+              "mountPath": "/var/ossec/etc/ossec.conf",
+              "name": "wazuh-agent-conf",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            },
+            {
+              "mountPath": "/var/log",
+              "name": "var-log",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            },
+            {
+              "mountPath": "/var/log/suricata",
+              "name": "suricata-logs",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-p7vsn",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            }
+          ]
+        }
+      ],
+      "hostIP": "192.168.1.20",
+      "hostIPs": [
+        {
+          "ip": "192.168.1.20"
+        }
+      ],
+      "initContainerStatuses": [
+        {
+          "containerID": "containerd://be9377370a6bfad936665e506c74bbcdccf27221f628fb507ae120857a8b8c17",
+          "image": "docker.io/library/busybox:latest",
+          "imageID": "docker.io/library/busybox@sha256:b3255e7dfbcd10cb367af0d409747d511aeb66dfac98cf30e97e87e4207dd76f",
+          "lastState": {},
+          "name": "config-init",
+          "ready": true,
+          "restartCount": 0,
+          "started": false,
+          "state": {
+            "terminated": {
+              "containerID": "containerd://be9377370a6bfad936665e506c74bbcdccf27221f628fb507ae120857a8b8c17",
+              "exitCode": 0,
+              "finishedAt": "2026-02-10T14:34:20Z",
+              "reason": "Completed",
+              "startedAt": "2026-02-10T14:34:20Z"
+            }
+          },
+          "volumeMounts": [
+            {
+              "mountPath": "/template",
+              "name": "suricata-conf"
+            },
+            {
+              "mountPath": "/config",
+              "name": "suricata-final-conf"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-p7vsn",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            }
+          ]
+        }
+      ],
+      "phase": "Pending",
+      "podIP": "192.168.1.20",
+      "podIPs": [
+        {
+          "ip": "192.168.1.20"
+        }
+      ],
+      "qosClass": "Burstable",
+      "startTime": "2026-02-10T14:34:00Z"
+    }
+  },
+  {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+      "creationTimestamp": "2026-02-10T14:31:24Z",
+      "generateName": "wazuh-agent-",
+      "labels": {
+        "app": "wazuh-agent",
+        "controller-revision-hash": "5fdf4c86f5",
+        "pod-template-generation": "6"
+      },
+      "name": "wazuh-agent-dj4f8",
+      "namespace": "soc",
+      "ownerReferences": [
+        {
+          "apiVersion": "apps/v1",
+          "blockOwnerDeletion": true,
+          "controller": true,
+          "kind": "DaemonSet",
+          "name": "wazuh-agent",
+          "uid": "5bf44853-a07f-4e8e-a899-f612c715abd9"
+        }
+      ],
+      "resourceVersion": "10167851",
+      "uid": "61cad851-3824-466c-b86c-2fa6c88f60c5"
+    },
+    "spec": {
+      "affinity": {
+        "nodeAffinity": {
+          "requiredDuringSchedulingIgnoredDuringExecution": {
+            "nodeSelectorTerms": [
+              {
+                "matchFields": [
+                  {
+                    "key": "metadata.name",
+                    "operator": "In",
+                    "values": [
+                      "k8-node-30"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "containers": [
+        {
+          "env": [
+            {
+              "name": "WAZUH_MANAGER",
+              "value": "wazuh-manager.soc.svc"
+            },
+            {
+              "name": "WAZUH_AGENT_GROUP",
+              "value": "default"
+            }
+          ],
+          "image": "wazuh/wazuh-agent:4.9.0-1",
+          "imagePullPolicy": "IfNotPresent",
+          "name": "wazuh-agent",
+          "resources": {
+            "limits": {
+              "cpu": "500m",
+              "memory": "512Mi"
+            },
+            "requests": {
+              "cpu": "100m",
+              "memory": "256Mi"
+            }
+          },
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/var/ossec/etc/ossec.conf",
+              "name": "wazuh-agent-conf",
+              "readOnly": true,
+              "subPath": "ossec.conf"
+            },
+            {
+              "mountPath": "/var/log",
+              "name": "var-log",
+              "readOnly": true
+            },
+            {
+              "mountPath": "/var/log/suricata",
+              "name": "suricata-logs",
+              "readOnly": true
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-zxdpj",
+              "readOnly": true
+            }
+          ]
+        },
+        {
+          "image": "jasonish/suricata:latest",
+          "imagePullPolicy": "Always",
+          "name": "suricata",
+          "resources": {
+            "limits": {
+              "cpu": "1",
+              "memory": "1Gi"
+            },
+            "requests": {
+              "cpu": "500m",
+              "memory": "512Mi"
+            }
+          },
+          "securityContext": {
+            "capabilities": {
+              "add": [
+                "NET_ADMIN",
+                "NET_RAW",
+                "SYS_NICE"
+              ]
+            }
+          },
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/etc/suricata/suricata.yaml",
+              "name": "suricata-final-conf",
+              "readOnly": true,
+              "subPath": "suricata.yaml"
+            },
+            {
+              "mountPath": "/var/log/suricata",
+              "name": "suricata-logs"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-zxdpj",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "dnsPolicy": "ClusterFirstWithHostNet",
+      "enableServiceLinks": true,
+      "hostNetwork": true,
+      "initContainers": [
+        {
+          "args": [
+            "IFACE=$(ip route get 1 | awk '{print $5;exit}')\necho \"Detected interface: $IFACE\"\nsed \"s/eth0/$IFACE/g\" /template/suricata.yaml > /config/suricata.yaml\n"
+          ],
+          "command": [
+            "sh",
+            "-c"
+          ],
+          "image": "busybox",
+          "imagePullPolicy": "Always",
+          "name": "config-init",
+          "resources": {},
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/template",
+              "name": "suricata-conf"
+            },
+            {
+              "mountPath": "/config",
+              "name": "suricata-final-conf"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-zxdpj",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "nodeName": "k8-node-30",
+      "preemptionPolicy": "PreemptLowerPriority",
+      "priority": 0,
+      "restartPolicy": "Always",
+      "schedulerName": "default-scheduler",
+      "securityContext": {},
+      "serviceAccount": "default",
+      "serviceAccountName": "default",
+      "terminationGracePeriodSeconds": 30,
+      "tolerations": [
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/not-ready",
+          "operator": "Exists"
+        },
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/unreachable",
+          "operator": "Exists"
+        },
+        {
+          "effect": "NoSchedule",
+          "key": "node.kubernetes.io/disk-pressure",
+          "operator": "Exists"
+        },
+        {
+          "effect": "NoSchedule",
+          "key": "node.kubernetes.io/memory-pressure",
+          "operator": "Exists"
+        },
+        {
+          "effect": "NoSchedule",
+          "key": "node.kubernetes.io/pid-pressure",
+          "operator": "Exists"
+        },
+        {
+          "effect": "NoSchedule",
+          "key": "node.kubernetes.io/unschedulable",
+          "operator": "Exists"
+        },
+        {
+          "effect": "NoSchedule",
+          "key": "node.kubernetes.io/network-unavailable",
+          "operator": "Exists"
+        }
+      ],
+      "volumes": [
+        {
+          "configMap": {
+            "defaultMode": 420,
+            "name": "wazuh-agent-conf"
+          },
+          "name": "wazuh-agent-conf"
+        },
+        {
+          "configMap": {
+            "defaultMode": 420,
+            "name": "suricata-conf"
+          },
+          "name": "suricata-conf"
+        },
+        {
+          "emptyDir": {},
+          "name": "suricata-final-conf"
+        },
+        {
+          "hostPath": {
+            "path": "/var/log",
+            "type": ""
+          },
+          "name": "var-log"
+        },
+        {
+          "emptyDir": {},
+          "name": "suricata-logs"
+        },
+        {
+          "name": "kube-api-access-zxdpj",
+          "projected": {
+            "defaultMode": 420,
+            "sources": [
+              {
+                "serviceAccountToken": {
+                  "expirationSeconds": 3607,
+                  "path": "token"
+                }
+              },
+              {
+                "configMap": {
+                  "items": [
+                    {
+                      "key": "ca.crt",
+                      "path": "ca.crt"
+                    }
+                  ],
+                  "name": "kube-root-ca.crt"
+                }
+              },
+              {
+                "downwardAPI": {
+                  "items": [
+                    {
+                      "fieldRef": {
+                        "apiVersion": "v1",
+                        "fieldPath": "metadata.namespace"
+                      },
+                      "path": "namespace"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "status": {
+      "conditions": [
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-10T14:31:36Z",
+          "status": "True",
+          "type": "PodReadyToStartContainers"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-10T14:31:40Z",
+          "status": "True",
+          "type": "Initialized"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-10T14:31:24Z",
+          "message": "containers with unready status: [wazuh-agent suricata]",
+          "reason": "ContainersNotReady",
+          "status": "False",
+          "type": "Ready"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-10T14:31:24Z",
+          "message": "containers with unready status: [wazuh-agent suricata]",
+          "reason": "ContainersNotReady",
+          "status": "False",
+          "type": "ContainersReady"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-10T14:31:24Z",
+          "status": "True",
+          "type": "PodScheduled"
+        }
+      ],
+      "containerStatuses": [
+        {
+          "containerID": "containerd://117f4c487a1aa4149e379a6416371fe7644dafb3f4fb2a2be240700e7a9ea6a0",
+          "image": "docker.io/jasonish/suricata:latest",
+          "imageID": "docker.io/jasonish/suricata@sha256:3c7777b38f54d0dc44c710549b51b6ffedfacdd7f258c8c2d176e126958feef4",
+          "lastState": {
+            "terminated": {
+              "containerID": "containerd://117f4c487a1aa4149e379a6416371fe7644dafb3f4fb2a2be240700e7a9ea6a0",
+              "exitCode": 1,
+              "finishedAt": "2026-02-10T14:38:39Z",
+              "reason": "Error",
+              "startedAt": "2026-02-10T14:38:39Z"
+            }
+          },
+          "name": "suricata",
+          "ready": false,
+          "restartCount": 6,
+          "started": false,
+          "state": {
+            "waiting": {
+              "message": "back-off 5m0s restarting failed container=suricata pod=wazuh-agent-dj4f8_soc(61cad851-3824-466c-b86c-2fa6c88f60c5)",
+              "reason": "CrashLoopBackOff"
+            }
+          },
+          "volumeMounts": [
+            {
+              "mountPath": "/etc/suricata/suricata.yaml",
+              "name": "suricata-final-conf",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            },
+            {
+              "mountPath": "/var/log/suricata",
+              "name": "suricata-logs"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-zxdpj",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            }
+          ]
+        },
+        {
+          "image": "wazuh/wazuh-agent:4.9.0-1",
+          "imageID": "",
+          "lastState": {},
+          "name": "wazuh-agent",
+          "ready": false,
+          "restartCount": 0,
+          "started": false,
+          "state": {
+            "waiting": {
+              "message": "Back-off pulling image \"wazuh/wazuh-agent:4.9.0-1\": ErrImagePull: rpc error: code = NotFound desc = failed to pull and unpack image \"docker.io/wazuh/wazuh-agent:4.9.0-1\": failed to resolve image: docker.io/wazuh/wazuh-agent:4.9.0-1: not found",
+              "reason": "ImagePullBackOff"
+            }
+          },
+          "volumeMounts": [
+            {
+              "mountPath": "/var/ossec/etc/ossec.conf",
+              "name": "wazuh-agent-conf",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            },
+            {
+              "mountPath": "/var/log",
+              "name": "var-log",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            },
+            {
+              "mountPath": "/var/log/suricata",
+              "name": "suricata-logs",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-zxdpj",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            }
+          ]
+        }
+      ],
+      "hostIP": "192.168.1.30",
+      "hostIPs": [
+        {
+          "ip": "192.168.1.30"
+        }
+      ],
+      "initContainerStatuses": [
+        {
+          "containerID": "containerd://d4ecb0e1774d420c6d88f3fd245fc7b0b05c9e7db9dac286ef847ee8530b0fea",
+          "image": "docker.io/library/busybox:latest",
+          "imageID": "docker.io/library/busybox@sha256:b3255e7dfbcd10cb367af0d409747d511aeb66dfac98cf30e97e87e4207dd76f",
+          "lastState": {},
+          "name": "config-init",
+          "ready": true,
+          "restartCount": 0,
+          "started": false,
+          "state": {
+            "terminated": {
+              "containerID": "containerd://d4ecb0e1774d420c6d88f3fd245fc7b0b05c9e7db9dac286ef847ee8530b0fea",
+              "exitCode": 0,
+              "finishedAt": "2026-02-10T14:31:35Z",
+              "reason": "Completed",
+              "startedAt": "2026-02-10T14:31:35Z"
+            }
+          },
+          "volumeMounts": [
+            {
+              "mountPath": "/template",
+              "name": "suricata-conf"
+            },
+            {
+              "mountPath": "/config",
+              "name": "suricata-final-conf"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-zxdpj",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            }
+          ]
+        }
+      ],
+      "phase": "Pending",
+      "podIP": "192.168.1.30",
+      "podIPs": [
+        {
+          "ip": "192.168.1.30"
+        }
+      ],
+      "qosClass": "Burstable",
+      "startTime": "2026-02-10T14:31:24Z"
+    }
+  },
+  {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+      "creationTimestamp": "2026-02-10T14:31:19Z",
+      "generateName": "wazuh-agent-",
+      "labels": {
+        "app": "wazuh-agent",
+        "controller-revision-hash": "5fdf4c86f5",
+        "pod-template-generation": "6"
+      },
+      "name": "wazuh-agent-lc2lz",
+      "namespace": "soc",
+      "ownerReferences": [
+        {
+          "apiVersion": "apps/v1",
+          "blockOwnerDeletion": true,
+          "controller": true,
+          "kind": "DaemonSet",
+          "name": "wazuh-agent",
+          "uid": "5bf44853-a07f-4e8e-a899-f612c715abd9"
+        }
+      ],
+      "resourceVersion": "10167651",
+      "uid": "bebbb5bf-7179-43f5-bd9d-974f44c0ff6a"
+    },
+    "spec": {
+      "affinity": {
+        "nodeAffinity": {
+          "requiredDuringSchedulingIgnoredDuringExecution": {
+            "nodeSelectorTerms": [
+              {
+                "matchFields": [
+                  {
+                    "key": "metadata.name",
+                    "operator": "In",
+                    "values": [
+                      "k8-node-40"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "containers": [
+        {
+          "env": [
+            {
+              "name": "WAZUH_MANAGER",
+              "value": "wazuh-manager.soc.svc"
+            },
+            {
+              "name": "WAZUH_AGENT_GROUP",
+              "value": "default"
+            }
+          ],
+          "image": "wazuh/wazuh-agent:4.9.0-1",
+          "imagePullPolicy": "IfNotPresent",
+          "name": "wazuh-agent",
+          "resources": {
+            "limits": {
+              "cpu": "500m",
+              "memory": "512Mi"
+            },
+            "requests": {
+              "cpu": "100m",
+              "memory": "256Mi"
+            }
+          },
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/var/ossec/etc/ossec.conf",
+              "name": "wazuh-agent-conf",
+              "readOnly": true,
+              "subPath": "ossec.conf"
+            },
+            {
+              "mountPath": "/var/log",
+              "name": "var-log",
+              "readOnly": true
+            },
+            {
+              "mountPath": "/var/log/suricata",
+              "name": "suricata-logs",
+              "readOnly": true
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-f78rj",
+              "readOnly": true
+            }
+          ]
+        },
+        {
+          "image": "jasonish/suricata:latest",
+          "imagePullPolicy": "Always",
+          "name": "suricata",
+          "resources": {
+            "limits": {
+              "cpu": "1",
+              "memory": "1Gi"
+            },
+            "requests": {
+              "cpu": "500m",
+              "memory": "512Mi"
+            }
+          },
+          "securityContext": {
+            "capabilities": {
+              "add": [
+                "NET_ADMIN",
+                "NET_RAW",
+                "SYS_NICE"
+              ]
+            }
+          },
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/etc/suricata/suricata.yaml",
+              "name": "suricata-final-conf",
+              "readOnly": true,
+              "subPath": "suricata.yaml"
+            },
+            {
+              "mountPath": "/var/log/suricata",
+              "name": "suricata-logs"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-f78rj",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "dnsPolicy": "ClusterFirstWithHostNet",
+      "enableServiceLinks": true,
+      "hostNetwork": true,
+      "initContainers": [
+        {
+          "args": [
+            "IFACE=$(ip route get 1 | awk '{print $5;exit}')\necho \"Detected interface: $IFACE\"\nsed \"s/eth0/$IFACE/g\" /template/suricata.yaml > /config/suricata.yaml\n"
+          ],
+          "command": [
+            "sh",
+            "-c"
+          ],
+          "image": "busybox",
+          "imagePullPolicy": "Always",
+          "name": "config-init",
+          "resources": {},
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/template",
+              "name": "suricata-conf"
+            },
+            {
+              "mountPath": "/config",
+              "name": "suricata-final-conf"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-f78rj",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "nodeName": "k8-node-40",
+      "preemptionPolicy": "PreemptLowerPriority",
+      "priority": 0,
+      "restartPolicy": "Always",
+      "schedulerName": "default-scheduler",
+      "securityContext": {},
+      "serviceAccount": "default",
+      "serviceAccountName": "default",
+      "terminationGracePeriodSeconds": 30,
+      "tolerations": [
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/not-ready",
+          "operator": "Exists"
+        },
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/unreachable",
+          "operator": "Exists"
+        },
+        {
+          "effect": "NoSchedule",
+          "key": "node.kubernetes.io/disk-pressure",
+          "operator": "Exists"
+        },
+        {
+          "effect": "NoSchedule",
+          "key": "node.kubernetes.io/memory-pressure",
+          "operator": "Exists"
+        },
+        {
+          "effect": "NoSchedule",
+          "key": "node.kubernetes.io/pid-pressure",
+          "operator": "Exists"
+        },
+        {
+          "effect": "NoSchedule",
+          "key": "node.kubernetes.io/unschedulable",
+          "operator": "Exists"
+        },
+        {
+          "effect": "NoSchedule",
+          "key": "node.kubernetes.io/network-unavailable",
+          "operator": "Exists"
+        }
+      ],
+      "volumes": [
+        {
+          "configMap": {
+            "defaultMode": 420,
+            "name": "wazuh-agent-conf"
+          },
+          "name": "wazuh-agent-conf"
+        },
+        {
+          "configMap": {
+            "defaultMode": 420,
+            "name": "suricata-conf"
+          },
+          "name": "suricata-conf"
+        },
+        {
+          "emptyDir": {},
+          "name": "suricata-final-conf"
+        },
+        {
+          "hostPath": {
+            "path": "/var/log",
+            "type": ""
+          },
+          "name": "var-log"
+        },
+        {
+          "emptyDir": {},
+          "name": "suricata-logs"
+        },
+        {
+          "name": "kube-api-access-f78rj",
+          "projected": {
+            "defaultMode": 420,
+            "sources": [
+              {
+                "serviceAccountToken": {
+                  "expirationSeconds": 3607,
+                  "path": "token"
+                }
+              },
+              {
+                "configMap": {
+                  "items": [
+                    {
+                      "key": "ca.crt",
+                      "path": "ca.crt"
+                    }
+                  ],
+                  "name": "kube-root-ca.crt"
+                }
+              },
+              {
+                "downwardAPI": {
+                  "items": [
+                    {
+                      "fieldRef": {
+                        "apiVersion": "v1",
+                        "fieldPath": "metadata.namespace"
+                      },
+                      "path": "namespace"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "status": {
+      "conditions": [
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-10T14:31:23Z",
+          "status": "True",
+          "type": "PodReadyToStartContainers"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-10T14:31:23Z",
+          "status": "True",
+          "type": "Initialized"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-10T14:31:19Z",
+          "message": "containers with unready status: [wazuh-agent suricata]",
+          "reason": "ContainersNotReady",
+          "status": "False",
+          "type": "Ready"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-10T14:31:19Z",
+          "message": "containers with unready status: [wazuh-agent suricata]",
+          "reason": "ContainersNotReady",
+          "status": "False",
+          "type": "ContainersReady"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-10T14:31:19Z",
+          "status": "True",
+          "type": "PodScheduled"
+        }
+      ],
+      "containerStatuses": [
+        {
+          "containerID": "containerd://c9acd7ef43f715e7473c3c50382826244ee65c0f90051ce2d7d61590c34e1b3f",
+          "image": "docker.io/jasonish/suricata:latest",
+          "imageID": "docker.io/jasonish/suricata@sha256:3c7777b38f54d0dc44c710549b51b6ffedfacdd7f258c8c2d176e126958feef4",
+          "lastState": {
+            "terminated": {
+              "containerID": "containerd://c9acd7ef43f715e7473c3c50382826244ee65c0f90051ce2d7d61590c34e1b3f",
+              "exitCode": 1,
+              "finishedAt": "2026-02-10T14:37:20Z",
+              "reason": "Error",
+              "startedAt": "2026-02-10T14:37:20Z"
+            }
+          },
+          "name": "suricata",
+          "ready": false,
+          "restartCount": 6,
+          "started": false,
+          "state": {
+            "waiting": {
+              "message": "back-off 5m0s restarting failed container=suricata pod=wazuh-agent-lc2lz_soc(bebbb5bf-7179-43f5-bd9d-974f44c0ff6a)",
+              "reason": "CrashLoopBackOff"
+            }
+          },
+          "volumeMounts": [
+            {
+              "mountPath": "/etc/suricata/suricata.yaml",
+              "name": "suricata-final-conf",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            },
+            {
+              "mountPath": "/var/log/suricata",
+              "name": "suricata-logs"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-f78rj",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            }
+          ]
+        },
+        {
+          "image": "wazuh/wazuh-agent:4.9.0-1",
+          "imageID": "",
+          "lastState": {},
+          "name": "wazuh-agent",
+          "ready": false,
+          "restartCount": 0,
+          "started": false,
+          "state": {
+            "waiting": {
+              "message": "Back-off pulling image \"wazuh/wazuh-agent:4.9.0-1\": ErrImagePull: rpc error: code = NotFound desc = failed to pull and unpack image \"docker.io/wazuh/wazuh-agent:4.9.0-1\": failed to resolve image: docker.io/wazuh/wazuh-agent:4.9.0-1: not found",
+              "reason": "ImagePullBackOff"
+            }
+          },
+          "volumeMounts": [
+            {
+              "mountPath": "/var/ossec/etc/ossec.conf",
+              "name": "wazuh-agent-conf",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            },
+            {
+              "mountPath": "/var/log",
+              "name": "var-log",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            },
+            {
+              "mountPath": "/var/log/suricata",
+              "name": "suricata-logs",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-f78rj",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            }
+          ]
+        }
+      ],
+      "hostIP": "192.168.1.40",
+      "hostIPs": [
+        {
+          "ip": "192.168.1.40"
+        }
+      ],
+      "initContainerStatuses": [
+        {
+          "containerID": "containerd://77de7730a0af8eb9d40a0100b684078a45b68f9f6ec414fc728938b068e93163",
+          "image": "docker.io/library/busybox:latest",
+          "imageID": "docker.io/library/busybox@sha256:b3255e7dfbcd10cb367af0d409747d511aeb66dfac98cf30e97e87e4207dd76f",
+          "lastState": {},
+          "name": "config-init",
+          "ready": true,
+          "restartCount": 0,
+          "started": false,
+          "state": {
+            "terminated": {
+              "containerID": "containerd://77de7730a0af8eb9d40a0100b684078a45b68f9f6ec414fc728938b068e93163",
+              "exitCode": 0,
+              "finishedAt": "2026-02-10T14:31:22Z",
+              "reason": "Completed",
+              "startedAt": "2026-02-10T14:31:22Z"
+            }
+          },
+          "volumeMounts": [
+            {
+              "mountPath": "/template",
+              "name": "suricata-conf"
+            },
+            {
+              "mountPath": "/config",
+              "name": "suricata-final-conf"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-f78rj",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            }
+          ]
+        }
+      ],
+      "phase": "Pending",
+      "podIP": "192.168.1.40",
+      "podIPs": [
+        {
+          "ip": "192.168.1.40"
+        }
+      ],
+      "qosClass": "Burstable",
+      "startTime": "2026-02-10T14:31:19Z"
+    }
+  },
+  {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+      "creationTimestamp": "2026-02-10T14:31:19Z",
+      "generateName": "wazuh-agent-",
+      "labels": {
+        "app": "wazuh-agent",
+        "controller-revision-hash": "5fdf4c86f5",
+        "pod-template-generation": "6"
+      },
+      "name": "wazuh-agent-qrrgs",
+      "namespace": "soc",
+      "ownerReferences": [
+        {
+          "apiVersion": "apps/v1",
+          "blockOwnerDeletion": true,
+          "controller": true,
+          "kind": "DaemonSet",
+          "name": "wazuh-agent",
+          "uid": "5bf44853-a07f-4e8e-a899-f612c715abd9"
+        }
+      ],
+      "resourceVersion": "10167605",
+      "uid": "de4d890c-bc33-45f5-8ac9-7170ab037fda"
+    },
+    "spec": {
+      "affinity": {
+        "nodeAffinity": {
+          "requiredDuringSchedulingIgnoredDuringExecution": {
+            "nodeSelectorTerms": [
+              {
+                "matchFields": [
+                  {
+                    "key": "metadata.name",
+                    "operator": "In",
+                    "values": [
+                      "k8-manager"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "containers": [
+        {
+          "env": [
+            {
+              "name": "WAZUH_MANAGER",
+              "value": "wazuh-manager.soc.svc"
+            },
+            {
+              "name": "WAZUH_AGENT_GROUP",
+              "value": "default"
+            }
+          ],
+          "image": "wazuh/wazuh-agent:4.9.0-1",
+          "imagePullPolicy": "IfNotPresent",
+          "name": "wazuh-agent",
+          "resources": {
+            "limits": {
+              "cpu": "500m",
+              "memory": "512Mi"
+            },
+            "requests": {
+              "cpu": "100m",
+              "memory": "256Mi"
+            }
+          },
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/var/ossec/etc/ossec.conf",
+              "name": "wazuh-agent-conf",
+              "readOnly": true,
+              "subPath": "ossec.conf"
+            },
+            {
+              "mountPath": "/var/log",
+              "name": "var-log",
+              "readOnly": true
+            },
+            {
+              "mountPath": "/var/log/suricata",
+              "name": "suricata-logs",
+              "readOnly": true
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-hzsk7",
+              "readOnly": true
+            }
+          ]
+        },
+        {
+          "image": "jasonish/suricata:latest",
+          "imagePullPolicy": "Always",
+          "name": "suricata",
+          "resources": {
+            "limits": {
+              "cpu": "1",
+              "memory": "1Gi"
+            },
+            "requests": {
+              "cpu": "500m",
+              "memory": "512Mi"
+            }
+          },
+          "securityContext": {
+            "capabilities": {
+              "add": [
+                "NET_ADMIN",
+                "NET_RAW",
+                "SYS_NICE"
+              ]
+            }
+          },
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/etc/suricata/suricata.yaml",
+              "name": "suricata-final-conf",
+              "readOnly": true,
+              "subPath": "suricata.yaml"
+            },
+            {
+              "mountPath": "/var/log/suricata",
+              "name": "suricata-logs"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-hzsk7",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "dnsPolicy": "ClusterFirstWithHostNet",
+      "enableServiceLinks": true,
+      "hostNetwork": true,
+      "initContainers": [
+        {
+          "args": [
+            "IFACE=$(ip route get 1 | awk '{print $5;exit}')\necho \"Detected interface: $IFACE\"\nsed \"s/eth0/$IFACE/g\" /template/suricata.yaml > /config/suricata.yaml\n"
+          ],
+          "command": [
+            "sh",
+            "-c"
+          ],
+          "image": "busybox",
+          "imagePullPolicy": "Always",
+          "name": "config-init",
+          "resources": {},
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/template",
+              "name": "suricata-conf"
+            },
+            {
+              "mountPath": "/config",
+              "name": "suricata-final-conf"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-hzsk7",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "nodeName": "k8-manager",
+      "preemptionPolicy": "PreemptLowerPriority",
+      "priority": 0,
+      "restartPolicy": "Always",
+      "schedulerName": "default-scheduler",
+      "securityContext": {},
+      "serviceAccount": "default",
+      "serviceAccountName": "default",
+      "terminationGracePeriodSeconds": 30,
+      "tolerations": [
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/not-ready",
+          "operator": "Exists"
+        },
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/unreachable",
+          "operator": "Exists"
+        },
+        {
+          "effect": "NoSchedule",
+          "key": "node.kubernetes.io/disk-pressure",
+          "operator": "Exists"
+        },
+        {
+          "effect": "NoSchedule",
+          "key": "node.kubernetes.io/memory-pressure",
+          "operator": "Exists"
+        },
+        {
+          "effect": "NoSchedule",
+          "key": "node.kubernetes.io/pid-pressure",
+          "operator": "Exists"
+        },
+        {
+          "effect": "NoSchedule",
+          "key": "node.kubernetes.io/unschedulable",
+          "operator": "Exists"
+        },
+        {
+          "effect": "NoSchedule",
+          "key": "node.kubernetes.io/network-unavailable",
+          "operator": "Exists"
+        }
+      ],
+      "volumes": [
+        {
+          "configMap": {
+            "defaultMode": 420,
+            "name": "wazuh-agent-conf"
+          },
+          "name": "wazuh-agent-conf"
+        },
+        {
+          "configMap": {
+            "defaultMode": 420,
+            "name": "suricata-conf"
+          },
+          "name": "suricata-conf"
+        },
+        {
+          "emptyDir": {},
+          "name": "suricata-final-conf"
+        },
+        {
+          "hostPath": {
+            "path": "/var/log",
+            "type": ""
+          },
+          "name": "var-log"
+        },
+        {
+          "emptyDir": {},
+          "name": "suricata-logs"
+        },
+        {
+          "name": "kube-api-access-hzsk7",
+          "projected": {
+            "defaultMode": 420,
+            "sources": [
+              {
+                "serviceAccountToken": {
+                  "expirationSeconds": 3607,
+                  "path": "token"
+                }
+              },
+              {
+                "configMap": {
+                  "items": [
+                    {
+                      "key": "ca.crt",
+                      "path": "ca.crt"
+                    }
+                  ],
+                  "name": "kube-root-ca.crt"
+                }
+              },
+              {
+                "downwardAPI": {
+                  "items": [
+                    {
+                      "fieldRef": {
+                        "apiVersion": "v1",
+                        "fieldPath": "metadata.namespace"
+                      },
+                      "path": "namespace"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "status": {
+      "conditions": [
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-10T14:31:21Z",
+          "status": "True",
+          "type": "PodReadyToStartContainers"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-10T14:31:21Z",
+          "status": "True",
+          "type": "Initialized"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-10T14:31:20Z",
+          "message": "containers with unready status: [wazuh-agent suricata]",
+          "reason": "ContainersNotReady",
+          "status": "False",
+          "type": "Ready"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-10T14:31:20Z",
+          "message": "containers with unready status: [wazuh-agent suricata]",
+          "reason": "ContainersNotReady",
+          "status": "False",
+          "type": "ContainersReady"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-10T14:31:19Z",
+          "status": "True",
+          "type": "PodScheduled"
+        }
+      ],
+      "containerStatuses": [
+        {
+          "containerID": "containerd://519d6bbc73e453e71d56ae35a0b3cc41fef03db9f054672de48cdc98dc2e1c89",
+          "image": "docker.io/jasonish/suricata:latest",
+          "imageID": "docker.io/jasonish/suricata@sha256:3c7777b38f54d0dc44c710549b51b6ffedfacdd7f258c8c2d176e126958feef4",
+          "lastState": {
+            "terminated": {
+              "containerID": "containerd://519d6bbc73e453e71d56ae35a0b3cc41fef03db9f054672de48cdc98dc2e1c89",
+              "exitCode": 1,
+              "finishedAt": "2026-02-10T14:37:08Z",
+              "reason": "Error",
+              "startedAt": "2026-02-10T14:37:08Z"
+            }
+          },
+          "name": "suricata",
+          "ready": false,
+          "restartCount": 6,
+          "started": false,
+          "state": {
+            "waiting": {
+              "message": "back-off 5m0s restarting failed container=suricata pod=wazuh-agent-qrrgs_soc(de4d890c-bc33-45f5-8ac9-7170ab037fda)",
+              "reason": "CrashLoopBackOff"
+            }
+          },
+          "volumeMounts": [
+            {
+              "mountPath": "/etc/suricata/suricata.yaml",
+              "name": "suricata-final-conf",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            },
+            {
+              "mountPath": "/var/log/suricata",
+              "name": "suricata-logs"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-hzsk7",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            }
+          ]
+        },
+        {
+          "image": "wazuh/wazuh-agent:4.9.0-1",
+          "imageID": "",
+          "lastState": {},
+          "name": "wazuh-agent",
+          "ready": false,
+          "restartCount": 0,
+          "started": false,
+          "state": {
+            "waiting": {
+              "message": "Back-off pulling image \"wazuh/wazuh-agent:4.9.0-1\": ErrImagePull: rpc error: code = NotFound desc = failed to pull and unpack image \"docker.io/wazuh/wazuh-agent:4.9.0-1\": failed to resolve image: docker.io/wazuh/wazuh-agent:4.9.0-1: not found",
+              "reason": "ImagePullBackOff"
+            }
+          },
+          "volumeMounts": [
+            {
+              "mountPath": "/var/ossec/etc/ossec.conf",
+              "name": "wazuh-agent-conf",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            },
+            {
+              "mountPath": "/var/log",
+              "name": "var-log",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            },
+            {
+              "mountPath": "/var/log/suricata",
+              "name": "suricata-logs",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-hzsk7",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            }
+          ]
+        }
+      ],
+      "hostIP": "192.168.1.10",
+      "hostIPs": [
+        {
+          "ip": "192.168.1.10"
+        }
+      ],
+      "initContainerStatuses": [
+        {
+          "containerID": "containerd://949d455eab16b968eb0889c92aa9df4291aa0492e54f132d648100c385277b44",
+          "image": "docker.io/library/busybox:latest",
+          "imageID": "docker.io/library/busybox@sha256:b3255e7dfbcd10cb367af0d409747d511aeb66dfac98cf30e97e87e4207dd76f",
+          "lastState": {},
+          "name": "config-init",
+          "ready": true,
+          "restartCount": 0,
+          "started": false,
+          "state": {
+            "terminated": {
+              "containerID": "containerd://949d455eab16b968eb0889c92aa9df4291aa0492e54f132d648100c385277b44",
+              "exitCode": 0,
+              "finishedAt": "2026-02-10T14:31:21Z",
+              "reason": "Completed",
+              "startedAt": "2026-02-10T14:31:21Z"
+            }
+          },
+          "volumeMounts": [
+            {
+              "mountPath": "/template",
+              "name": "suricata-conf"
+            },
+            {
+              "mountPath": "/config",
+              "name": "suricata-final-conf"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-hzsk7",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            }
+          ]
+        }
+      ],
+      "phase": "Pending",
+      "podIP": "192.168.1.10",
+      "podIPs": [
+        {
+          "ip": "192.168.1.10"
+        }
+      ],
+      "qosClass": "Burstable",
+      "startTime": "2026-02-10T14:31:20Z"
+    }
+  },
+  {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+      "creationTimestamp": "2026-02-10T14:34:01Z",
+      "generateName": "wazuh-indexer-",
+      "labels": {
+        "app": "wazuh-indexer",
+        "apps.kubernetes.io/pod-index": "0",
+        "controller-revision-hash": "wazuh-indexer-5d59cfbbc4",
+        "statefulset.kubernetes.io/pod-name": "wazuh-indexer-0"
+      },
+      "name": "wazuh-indexer-0",
+      "namespace": "soc",
+      "ownerReferences": [
+        {
+          "apiVersion": "apps/v1",
+          "blockOwnerDeletion": true,
+          "controller": true,
+          "kind": "StatefulSet",
+          "name": "wazuh-indexer",
+          "uid": "bbf6245b-b719-4fbb-9c2d-1df5d9223a07"
+        }
+      ],
+      "resourceVersion": "10166842",
+      "uid": "5dd5be4b-40cd-49ed-ba1c-1c616ef3d8b8"
+    },
+    "spec": {
+      "containers": [
+        {
+          "env": [
+            {
+              "name": "OPENSEARCH_JAVA_OPTS",
+              "value": "-Xms1g -Xmx1g"
+            },
+            {
+              "name": "NETWORK_HOST",
+              "value": "0.0.0.0"
+            },
+            {
+              "name": "NODE_NAME",
+              "valueFrom": {
+                "fieldRef": {
+                  "apiVersion": "v1",
+                  "fieldPath": "metadata.name"
+                }
+              }
+            },
+            {
+              "name": "CLUSTER_INITIAL_MASTER_NODES",
+              "value": "wazuh-indexer-0"
+            },
+            {
+              "name": "DISCOVERY_SEED_HOSTS",
+              "value": "wazuh-indexer-0.wazuh-indexer"
+            },
+            {
+              "name": "CLUSTER_NAME",
+              "value": "wazuh-cluster"
+            },
+            {
+              "name": "PLUGINS_SECURITY_SSL_HTTP_ENABLED",
+              "value": "true"
+            },
+            {
+              "name": "PLUGINS_SECURITY_SSL_HTTP_PEMKEY_FILEPATH",
+              "value": "indexer.key"
+            },
+            {
+              "name": "PLUGINS_SECURITY_SSL_HTTP_PEMCERT_FILEPATH",
+              "value": "indexer.pem"
+            },
+            {
+              "name": "PLUGINS_SECURITY_SSL_HTTP_PEMTRUSTEDCAS_FILEPATH",
+              "value": "root-ca.pem"
+            },
+            {
+              "name": "PLUGINS_SECURITY_SSL_TRANSPORT_ENABLED",
+              "value": "true"
+            },
+            {
+              "name": "PLUGINS_SECURITY_SSL_TRANSPORT_PEMKEY_FILEPATH",
+              "value": "indexer.key"
+            },
+            {
+              "name": "PLUGINS_SECURITY_SSL_TRANSPORT_PEMCERT_FILEPATH",
+              "value": "indexer.pem"
+            },
+            {
+              "name": "PLUGINS_SECURITY_SSL_TRANSPORT_PEMTRUSTEDCAS_FILEPATH",
+              "value": "root-ca.pem"
+            },
+            {
+              "name": "PLUGINS_SECURITY_SSL_TRANSPORT_ENFORCE_HOSTNAME_VERIFICATION",
+              "value": "false"
+            },
+            {
+              "name": "PLUGINS_SECURITY_RESTAPI_ROLES_ENABLED",
+              "value": "all_access,security_rest_api_access"
+            },
+            {
+              "name": "PLUGINS_SECURITY_SYSTEM_INDICES_ENABLED",
+              "value": "true"
+            },
+            {
+              "name": "PLUGINS_SECURITY_SYSTEM_INDICES_INDICES",
+              "value": ".opendistro-alerting-config,.opendistro-alerting-alert*,.opendistro-ism-config,.opendistro-dism-config,.opendistro-job-scheduler-lock"
+            },
+            {
+              "name": "WAZUH_INDEXER_ADMIN_DN",
+              "value": "CN=admin,OU=Wazuh,O=Wazuh,L=California,C=US"
+            },
+            {
+              "name": "WAZUH_INDEXER_CHECK_CERTIFICATES",
+              "value": "false"
+            }
+          ],
+          "image": "wazuh/wazuh-indexer:4.9.0",
+          "imagePullPolicy": "IfNotPresent",
+          "name": "wazuh-indexer",
+          "ports": [
+            {
+              "containerPort": 9200,
+              "name": "indexer-rest",
+              "protocol": "TCP"
+            },
+            {
+              "containerPort": 9300,
+              "name": "indexer-nodes",
+              "protocol": "TCP"
+            }
+          ],
+          "resources": {
+            "limits": {
+              "cpu": "2",
+              "memory": "4Gi"
+            },
+            "requests": {
+              "cpu": "1",
+              "memory": "2Gi"
+            }
+          },
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/usr/share/wazuh-indexer/data",
+              "name": "wazuh-indexer-data"
+            },
+            {
+              "mountPath": "/usr/share/wazuh-indexer/config/certs",
+              "name": "certificates",
+              "readOnly": true
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-56gf5",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "dnsPolicy": "ClusterFirst",
+      "enableServiceLinks": true,
+      "hostname": "wazuh-indexer-0",
+      "initContainers": [
+        {
+          "command": [
+            "sh",
+            "-c",
+            "chown -R 1000:1000 /usr/share/wazuh-indexer/data"
+          ],
+          "image": "busybox",
+          "imagePullPolicy": "Always",
+          "name": "fix-permissions",
+          "resources": {},
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/usr/share/wazuh-indexer/data",
+              "name": "wazuh-indexer-data"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-56gf5",
+              "readOnly": true
+            }
+          ]
+        },
+        {
+          "command": [
+            "sysctl",
+            "-w",
+            "vm.max_map_count=262144"
+          ],
+          "image": "busybox",
+          "imagePullPolicy": "Always",
+          "name": "increase-vm-max-map",
+          "resources": {},
+          "securityContext": {
+            "privileged": true
+          },
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-56gf5",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "nodeSelector": {
+        "kubernetes.io/hostname": "k8-node-20"
+      },
+      "preemptionPolicy": "PreemptLowerPriority",
+      "priority": 0,
+      "restartPolicy": "Always",
+      "schedulerName": "default-scheduler",
+      "securityContext": {
+        "fsGroup": 1000
+      },
+      "serviceAccount": "default",
+      "serviceAccountName": "default",
+      "subdomain": "wazuh-indexer",
+      "terminationGracePeriodSeconds": 30,
+      "tolerations": [
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/not-ready",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        },
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/unreachable",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        }
+      ],
+      "volumes": [
+        {
+          "name": "wazuh-indexer-data",
+          "persistentVolumeClaim": {
+            "claimName": "wazuh-indexer-pvc-v2"
+          }
+        },
+        {
+          "name": "certificates",
+          "secret": {
+            "defaultMode": 420,
+            "secretName": "wazuh-indexer-certs"
+          }
+        },
+        {
+          "name": "kube-api-access-56gf5",
+          "projected": {
+            "defaultMode": 420,
+            "sources": [
+              {
+                "serviceAccountToken": {
+                  "expirationSeconds": 3607,
+                  "path": "token"
+                }
+              },
+              {
+                "configMap": {
+                  "items": [
+                    {
+                      "key": "ca.crt",
+                      "path": "ca.crt"
+                    }
+                  ],
+                  "name": "kube-root-ca.crt"
+                }
+              },
+              {
+                "downwardAPI": {
+                  "items": [
+                    {
+                      "fieldRef": {
+                        "apiVersion": "v1",
+                        "fieldPath": "metadata.namespace"
+                      },
+                      "path": "namespace"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "status": {
+      "conditions": [
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-10T14:34:01Z",
+          "message": "0/4 nodes are available: 1 Insufficient cpu, 1 node(s) didn't match Pod's node affinity/selector, 2 node(s) were unschedulable. preemption: 0/4 nodes are available: 1 No preemption victims found for incoming pod, 3 Preemption is not helpful for scheduling.",
+          "reason": "Unschedulable",
+          "status": "False",
+          "type": "PodScheduled"
+        }
+      ],
+      "phase": "Pending",
+      "qosClass": "Burstable"
+    }
+  }
+]
