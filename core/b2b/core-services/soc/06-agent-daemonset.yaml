@@ -61,6 +61,15 @@ spec:
         # Suricata Sidecar Container
         - name: suricata
           image: jasonish/suricata:latest
+          command: ["sh", "-c"]
+          args:
+            - |
+              echo "Starting Suricata..."
+              if command -v suricata-update > /dev/null; then
+                  echo "Updating rules..."
+                  suricata-update || echo "Rule update failed, proceeding with existing rules"
+              fi
+              exec /usr/bin/suricata -c /etc/suricata/suricata.yaml -v
           securityContext:
             capabilities:
               add: ["NET_ADMIN", "NET_RAW", "SYS_NICE"]
