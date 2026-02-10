@@ -31,7 +31,7 @@ roleRef:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: wazuh-cert-generator-v2
+  name: wazuh-cert-generator-v3
   namespace: soc
 spec:
   ttlSecondsAfterFinished: 600
@@ -40,12 +40,12 @@ spec:
       serviceAccountName: wazuh-cert-generator
       restartPolicy: OnFailure
       initContainers:
-        - name: generator
-          image: wazuh/wazuh-certs-tool:4.9.0
-          command: ["/bin/bash", "-c"]
+        - name: config-writer
+          image: busybox
+          command: ["sh", "-c"]
           args:
             - |
-              cat > /config/instances.yml <<EOF
+              cat > /config/certs.yml <<EOF
               instances:
                 - name: wazuh-indexer
                   ip: 
@@ -63,45 +63,81 @@ spec:
                   dns:
                     - wazuh-dashboard.soc.svc
               EOF
-              /tool/wazuh-certs-tool.sh -A /config/instances.yml
-              cp -r /certs/* /shared/
           volumeMounts:
+            - name: config-vol
+              mountPath: /config
+
+        - name: generator
+          image: wazuh/wazuh-certs-generator:0.0.4
+          volumeMounts:
+            - name: config-vol
+              mountPath: /config
             - name: shared-certs
-              mountPath: /shared
+              mountPath: /certificates
+
       containers:
         - name: uploader
           image: bitnami/kubectl:latest
           command: ["/bin/bash", "-c"]
           args:
             - |
+              echo "Checking generated certificates..."
+              ls -R /shared
+              
               echo "Creating Wazuh Secrets..."
               
+              # Copy files to flat structure if needed, or reference them directly
+              # wazuh-certs-generator output structure might vary. 
+              # Typically: /certificates/wazuh-indexer.pem, etc. or /certificates/wazuh-indexer/node.pem
+              
+              # We assume they are in /shared (mounted to /certificates in generator)
+              # Let's try to find them.
+              
+              ROOT_CA_PEM=$(find /shared -name "root-ca.pem" | head -n 1)
+              ROOT_CA_KEY=$(find /shared -name "root-ca.key" | head -n 1)
+              
+              # Indexer
+              INDEXER_PEM=$(find /shared -name "wazuh-indexer.pem" | head -n 1)
+              INDEXER_KEY=$(find /shared -name "wazuh-indexer-key.pem" | head -n 1)
+              ADMIN_PEM=$(find /shared -name "admin.pem" | head -n 1)
+              ADMIN_KEY=$(find /shared -name "admin-key.pem" | head -n 1)
+              
+              # Manager
+              MANAGER_PEM=$(find /shared -name "wazuh-manager.pem" | head -n 1)
+              MANAGER_KEY=$(find /shared -name "wazuh-manager-key.pem" | head -n 1)
+              
+              # Dashboard
+              DASHBOARD_PEM=$(find /shared -name "wazuh-dashboard.pem" | head -n 1)
+              DASHBOARD_KEY=$(find /shared -name "wazuh-dashboard-key.pem" | head -n 1)
+              
+              if [ -z "$ROOT_CA_PEM" ]; then echo "Error: Certs not found"; exit 1; fi
+
               # Indexer Certs
               kubectl create secret generic wazuh-indexer-certs -n soc \
-                --from-file=root-ca.pem=/shared/root-ca.pem \
-                --from-file=root-ca.key=/shared/root-ca.key \
-                --from-file=indexer.pem=/shared/wazuh-indexer.pem \
-                --from-file=indexer.key=/shared/wazuh-indexer-key.pem \
-                --from-file=admin.pem=/shared/admin.pem \
-                --from-file=admin.key=/shared/admin-key.pem \
+                --from-file=root-ca.pem=$ROOT_CA_PEM \
+                --from-file=root-ca.key=$ROOT_CA_KEY \
+                --from-file=indexer.pem=$INDEXER_PEM \
+                --from-file=indexer.key=$INDEXER_KEY \
+                --from-file=admin.pem=$ADMIN_PEM \
+                --from-file=admin.key=$ADMIN_KEY \
                 --dry-run=client -o yaml | kubectl apply -f -
 
               # Manager Certs
               kubectl create secret generic wazuh-manager-certs -n soc \
-                --from-file=root-ca.pem=/shared/root-ca.pem \
-                --from-file=root-ca.key=/shared/root-ca.key \
-                --from-file=server.pem=/shared/wazuh-manager.pem \
-                --from-file=server.key=/shared/wazuh-manager-key.pem \
+                --from-file=root-ca.pem=$ROOT_CA_PEM \
+                --from-file=root-ca.key=$ROOT_CA_KEY \
+                --from-file=server.pem=$MANAGER_PEM \
+                --from-file=server.key=$MANAGER_KEY \
                 --dry-run=client -o yaml | kubectl apply -f -
 
               # Dashboard Certs
               kubectl create secret generic wazuh-dashboard-certs -n soc \
-                --from-file=root-ca.pem=/shared/root-ca.pem \
-                --from-file=root-ca.key=/shared/root-ca.key \
-                --from-file=dashboard.pem=/shared/wazuh-dashboard.pem \
-                --from-file=dashboard.key=/shared/wazuh-dashboard-key.pem \
+                --from-file=root-ca.pem=$ROOT_CA_PEM \
+                --from-file=root-ca.key=$ROOT_CA_KEY \
+                --from-file=dashboard.pem=$DASHBOARD_PEM \
+                --from-file=dashboard.key=$DASHBOARD_KEY \
                 --dry-run=client -o yaml | kubectl apply -f -
-              
+
               # Admin Password (Auto-generated if not exists)
               if ! kubectl get secret wazuh-auth -n soc; then
                 PASSWORD=$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 16)
@@ -119,4 +155,6 @@ spec:
               mountPath: /shared
       volumes:
         - name: shared-certs
+          emptyDir: {}
+        - name: config-vol
           emptyDir: {}
