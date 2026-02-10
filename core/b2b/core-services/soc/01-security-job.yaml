@@ -11,8 +11,11 @@ metadata:
   namespace: soc
 rules:
   - apiGroups: [""]
-    resources: ["secrets"]
-    verbs: ["create", "get", "patch", "delete"]
+    resources: ["secrets", "pods", "events", "services"]
+    verbs: ["create", "get", "patch", "delete", "list", "watch"]
+  - apiGroups: ["batch"]
+    resources: ["jobs"]
+    verbs: ["create", "get", "patch", "delete", "list", "watch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -31,7 +34,7 @@ roleRef:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: wazuh-cert-generator-v3
+  name: wazuh-cert-generator-v4
   namespace: soc
 spec:
   ttlSecondsAfterFinished: 600
@@ -81,6 +84,10 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
+              echo "DEBUG: Current Pods and Events:"
+              kubectl get pods -n soc
+              kubectl get events -n soc --sort-by=.metadata.creationTimestamp || true
+
               echo "Checking generated certificates..."
               ls -R /shared
               
