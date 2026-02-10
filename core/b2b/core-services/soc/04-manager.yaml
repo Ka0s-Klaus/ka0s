@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wazuh-manager
+  namespace: soc
+  labels:
+    app: wazuh-manager
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: wazuh-manager
+  template:
+    metadata:
+      labels:
+        app: wazuh-manager
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: k8-node-20
+      initContainers:
+        - name: wait-for-indexer
+          image: busybox
+          command: ['sh', '-c', 'until nc -z wazuh-indexer 9200; do echo waiting for wazuh-indexer; sleep 2; done;']
+      containers:
+        - name: wazuh-manager
+          image: wazuh/wazuh-manager:4.7.2
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "500m"
+            limits:
+              memory: "2Gi"
+              cpu: "1000m"
+          ports:
+            - containerPort: 1514
+              name: agents-event
+            - containerPort: 1515
+              name: agents-reg
+            - containerPort: 55000
+              name: api
+          env:
+            - name: INDEXER_URL
+              value: "https://wazuh-indexer:9200"
+            - name: INDEXER_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: wazuh-auth
+                  key: admin_username
+            - name: INDEXER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: wazuh-auth
+                  key: admin_password
+          volumeMounts:
+            - name: wazuh-manager-data
+              mountPath: /var/ossec/data
+            - name: certificates
+              mountPath: /etc/filebeat/certs
+              readOnly: true
+            - name: auth-certs
+              mountPath: /etc/filebeat/auth
+              readOnly: true
+      volumes:
+        - name: wazuh-manager-data
+          persistentVolumeClaim:
+            claimName: wazuh-manager-pvc
+        - name: certificates
+          secret:
+            secretName: wazuh-manager-certs
+        - name: auth-certs
+          secret:
+            secretName: wazuh-manager-certs
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wazuh-manager
+  namespace: soc
+  labels:
+    app: wazuh-manager
+spec:
+  type: ClusterIP
+  selector:
+    app: wazuh-manager
+  ports:
+    - name: agents-event
+      port: 1514
+      targetPort: 1514
+    - name: agents-reg
+      port: 1515
+      targetPort: 1515
+    - name: api
+      port: 55000
+      targetPort: 55000

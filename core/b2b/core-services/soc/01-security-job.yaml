@@ -1,0 +1,122 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: wazuh-cert-generator
+  namespace: soc
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: wazuh-cert-generator-role
+  namespace: soc
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["create", "get", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: wazuh-cert-generator-binding
+  namespace: soc
+subjects:
+  - kind: ServiceAccount
+    name: wazuh-cert-generator
+    namespace: soc
+roleRef:
+  kind: Role
+  name: wazuh-cert-generator-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: wazuh-cert-generator
+  namespace: soc
+spec:
+  ttlSecondsAfterFinished: 600
+  template:
+    spec:
+      serviceAccountName: wazuh-cert-generator
+      restartPolicy: OnFailure
+      initContainers:
+        - name: generator
+          image: wazuh/wazuh-certs-tool:4.7.2
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              cat > /config/instances.yml <<EOF
+              instances:
+                - name: wazuh-indexer
+                  ip: 
+                    - 127.0.0.1
+                  dns:
+                    - wazuh-indexer.soc.svc
+                - name: wazuh-manager
+                  ip: 
+                    - 127.0.0.1
+                  dns:
+                    - wazuh-manager.soc.svc
+                - name: wazuh-dashboard
+                  ip: 
+                    - 127.0.0.1
+                  dns:
+                    - wazuh-dashboard.soc.svc
+              EOF
+              /tool/wazuh-certs-tool.sh -A /config/instances.yml
+              cp -r /certs/* /shared/
+          volumeMounts:
+            - name: shared-certs
+              mountPath: /shared
+      containers:
+        - name: uploader
+          image: bitnami/kubectl:latest
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              echo "Creating Wazuh Secrets..."
+              
+              # Indexer Certs
+              kubectl create secret generic wazuh-indexer-certs -n soc \
+                --from-file=root-ca.pem=/shared/root-ca.pem \
+                --from-file=root-ca.key=/shared/root-ca.key \
+                --from-file=indexer.pem=/shared/wazuh-indexer.pem \
+                --from-file=indexer.key=/shared/wazuh-indexer-key.pem \
+                --from-file=admin.pem=/shared/admin.pem \
+                --from-file=admin.key=/shared/admin-key.pem \
+                --dry-run=client -o yaml | kubectl apply -f -
+
+              # Manager Certs
+              kubectl create secret generic wazuh-manager-certs -n soc \
+                --from-file=root-ca.pem=/shared/root-ca.pem \
+                --from-file=root-ca.key=/shared/root-ca.key \
+                --from-file=server.pem=/shared/wazuh-manager.pem \
+                --from-file=server.key=/shared/wazuh-manager-key.pem \
+                --dry-run=client -o yaml | kubectl apply -f -
+
+              # Dashboard Certs
+              kubectl create secret generic wazuh-dashboard-certs -n soc \
+                --from-file=root-ca.pem=/shared/root-ca.pem \
+                --from-file=root-ca.key=/shared/root-ca.key \
+                --from-file=dashboard.pem=/shared/wazuh-dashboard.pem \
+                --from-file=dashboard.key=/shared/wazuh-dashboard-key.pem \
+                --dry-run=client -o yaml | kubectl apply -f -
+              
+              # Admin Password (Auto-generated if not exists)
+              if ! kubectl get secret wazuh-auth -n soc; then
+                PASSWORD=$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 16)
+                kubectl create secret generic wazuh-auth -n soc \
+                  --from-literal=admin_username=admin \
+                  --from-literal=admin_password=$PASSWORD
+                echo "Generated wazuh-auth secret with random password."
+              else
+                echo "wazuh-auth secret already exists."
+              fi
+
+              echo "All secrets created successfully."
+          volumeMounts:
+            - name: shared-certs
+              mountPath: /shared
+      volumes:
+        - name: shared-certs
+          emptyDir: {}
