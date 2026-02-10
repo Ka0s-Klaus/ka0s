@@ -46,7 +46,7 @@ spec:
               subPath: ossec.conf
               readOnly: true
             - name: var-log
-              mountPath: /var/log
+              mountPath: /host/var/log
               readOnly: true
             - name: suricata-logs
               mountPath: /var/log/suricata
@@ -66,10 +66,16 @@ spec:
           args:
             - |
               echo "Starting Suricata..."
+              if [ ! -f /etc/suricata/suricata.yaml ]; then
+                echo "Error: Configuration file not found!"
+                exit 1
+              fi
               if command -v suricata-update > /dev/null; then
                   echo "Updating rules..."
                   suricata-update || echo "Rule update failed, proceeding with existing rules"
               fi
+              echo "Launching Suricata with config:"
+              grep "interface" /etc/suricata/suricata.yaml
               exec /usr/bin/suricata -c /etc/suricata/suricata.yaml -v
           securityContext:
             capabilities:
