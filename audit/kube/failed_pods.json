@@ -3,14 +3,14 @@
     "apiVersion": "v1",
     "kind": "Pod",
     "metadata": {
-      "creationTimestamp": "2026-02-10T12:54:49Z",
+      "creationTimestamp": "2026-02-10T14:31:18Z",
       "generateName": "wazuh-agent-",
       "labels": {
         "app": "wazuh-agent",
         "controller-revision-hash": "5fdf4c86f5",
-        "pod-template-generation": "4"
+        "pod-template-generation": "6"
       },
-      "name": "wazuh-agent-kvcjd",
+      "name": "wazuh-agent-8b9c9",
       "namespace": "soc",
       "ownerReferences": [
         {
@@ -22,8 +22,944 @@
           "uid": "5bf44853-a07f-4e8e-a899-f612c715abd9"
         }
       ],
-      "resourceVersion": "10143202",
-      "uid": "d7a096e6-a891-4eb3-9a1c-66a505f67e8e"
+      "resourceVersion": "10168090",
+      "uid": "4da042f0-b671-4e3d-b0ed-a1db9accc438"
+    },
+    "spec": {
+      "affinity": {
+        "nodeAffinity": {
+          "requiredDuringSchedulingIgnoredDuringExecution": {
+            "nodeSelectorTerms": [
+              {
+                "matchFields": [
+                  {
+                    "key": "metadata.name",
+                    "operator": "In",
+                    "values": [
+                      "k8-node-20"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "containers": [
+        {
+          "env": [
+            {
+              "name": "WAZUH_MANAGER",
+              "value": "wazuh-manager.soc.svc"
+            },
+            {
+              "name": "WAZUH_AGENT_GROUP",
+              "value": "default"
+            }
+          ],
+          "image": "wazuh/wazuh-agent:4.9.0-1",
+          "imagePullPolicy": "IfNotPresent",
+          "name": "wazuh-agent",
+          "resources": {
+            "limits": {
+              "cpu": "500m",
+              "memory": "512Mi"
+            },
+            "requests": {
+              "cpu": "100m",
+              "memory": "256Mi"
+            }
+          },
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/var/ossec/etc/ossec.conf",
+              "name": "wazuh-agent-conf",
+              "readOnly": true,
+              "subPath": "ossec.conf"
+            },
+            {
+              "mountPath": "/var/log",
+              "name": "var-log",
+              "readOnly": true
+            },
+            {
+              "mountPath": "/var/log/suricata",
+              "name": "suricata-logs",
+              "readOnly": true
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-p7vsn",
+              "readOnly": true
+            }
+          ]
+        },
+        {
+          "image": "jasonish/suricata:latest",
+          "imagePullPolicy": "Always",
+          "name": "suricata",
+          "resources": {
+            "limits": {
+              "cpu": "1",
+              "memory": "1Gi"
+            },
+            "requests": {
+              "cpu": "500m",
+              "memory": "512Mi"
+            }
+          },
+          "securityContext": {
+            "capabilities": {
+              "add": [
+                "NET_ADMIN",
+                "NET_RAW",
+                "SYS_NICE"
+              ]
+            }
+          },
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/etc/suricata/suricata.yaml",
+              "name": "suricata-final-conf",
+              "readOnly": true,
+              "subPath": "suricata.yaml"
+            },
+            {
+              "mountPath": "/var/log/suricata",
+              "name": "suricata-logs"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-p7vsn",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "dnsPolicy": "ClusterFirstWithHostNet",
+      "enableServiceLinks": true,
+      "hostNetwork": true,
+      "initContainers": [
+        {
+          "args": [
+            "IFACE=$(ip route get 1 | awk '{print $5;exit}')\necho \"Detected interface: $IFACE\"\nsed \"s/eth0/$IFACE/g\" /template/suricata.yaml > /config/suricata.yaml\n"
+          ],
+          "command": [
+            "sh",
+            "-c"
+          ],
+          "image": "busybox",
+          "imagePullPolicy": "Always",
+          "name": "config-init",
+          "resources": {},
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/template",
+              "name": "suricata-conf"
+            },
+            {
+              "mountPath": "/config",
+              "name": "suricata-final-conf"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-p7vsn",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "nodeName": "k8-node-20",
+      "preemptionPolicy": "PreemptLowerPriority",
+      "priority": 0,
+      "restartPolicy": "Always",
+      "schedulerName": "default-scheduler",
+      "securityContext": {},
+      "serviceAccount": "default",
+      "serviceAccountName": "default",
+      "terminationGracePeriodSeconds": 30,
+      "tolerations": [
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/not-ready",
+          "operator": "Exists"
+        },
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/unreachable",
+          "operator": "Exists"
+        },
+        {
+          "effect": "NoSchedule",
+          "key": "node.kubernetes.io/disk-pressure",
+          "operator": "Exists"
+        },
+        {
+          "effect": "NoSchedule",
+          "key": "node.kubernetes.io/memory-pressure",
+          "operator": "Exists"
+        },
+        {
+          "effect": "NoSchedule",
+          "key": "node.kubernetes.io/pid-pressure",
+          "operator": "Exists"
+        },
+        {
+          "effect": "NoSchedule",
+          "key": "node.kubernetes.io/unschedulable",
+          "operator": "Exists"
+        },
+        {
+          "effect": "NoSchedule",
+          "key": "node.kubernetes.io/network-unavailable",
+          "operator": "Exists"
+        }
+      ],
+      "volumes": [
+        {
+          "configMap": {
+            "defaultMode": 420,
+            "name": "wazuh-agent-conf"
+          },
+          "name": "wazuh-agent-conf"
+        },
+        {
+          "configMap": {
+            "defaultMode": 420,
+            "name": "suricata-conf"
+          },
+          "name": "suricata-conf"
+        },
+        {
+          "emptyDir": {},
+          "name": "suricata-final-conf"
+        },
+        {
+          "hostPath": {
+            "path": "/var/log",
+            "type": ""
+          },
+          "name": "var-log"
+        },
+        {
+          "emptyDir": {},
+          "name": "suricata-logs"
+        },
+        {
+          "name": "kube-api-access-p7vsn",
+          "projected": {
+            "defaultMode": 420,
+            "sources": [
+              {
+                "serviceAccountToken": {
+                  "expirationSeconds": 3607,
+                  "path": "token"
+                }
+              },
+              {
+                "configMap": {
+                  "items": [
+                    {
+                      "key": "ca.crt",
+                      "path": "ca.crt"
+                    }
+                  ],
+                  "name": "kube-root-ca.crt"
+                }
+              },
+              {
+                "downwardAPI": {
+                  "items": [
+                    {
+                      "fieldRef": {
+                        "apiVersion": "v1",
+                        "fieldPath": "metadata.namespace"
+                      },
+                      "path": "namespace"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "status": {
+      "conditions": [
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-10T14:34:21Z",
+          "status": "True",
+          "type": "PodReadyToStartContainers"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-10T14:34:24Z",
+          "status": "True",
+          "type": "Initialized"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-10T14:34:00Z",
+          "message": "containers with unready status: [wazuh-agent suricata]",
+          "reason": "ContainersNotReady",
+          "status": "False",
+          "type": "Ready"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-10T14:34:00Z",
+          "message": "containers with unready status: [wazuh-agent suricata]",
+          "reason": "ContainersNotReady",
+          "status": "False",
+          "type": "ContainersReady"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-10T14:34:00Z",
+          "status": "True",
+          "type": "PodScheduled"
+        }
+      ],
+      "containerStatuses": [
+        {
+          "containerID": "containerd://40b8e5f6b162be884889ab5f34029739a0d1fb6898b7e397e7215e8a5913c924",
+          "image": "docker.io/jasonish/suricata:latest",
+          "imageID": "docker.io/jasonish/suricata@sha256:3c7777b38f54d0dc44c710549b51b6ffedfacdd7f258c8c2d176e126958feef4",
+          "lastState": {
+            "terminated": {
+              "containerID": "containerd://40b8e5f6b162be884889ab5f34029739a0d1fb6898b7e397e7215e8a5913c924",
+              "exitCode": 1,
+              "finishedAt": "2026-02-10T14:40:12Z",
+              "reason": "Error",
+              "startedAt": "2026-02-10T14:40:12Z"
+            }
+          },
+          "name": "suricata",
+          "ready": false,
+          "restartCount": 6,
+          "started": false,
+          "state": {
+            "waiting": {
+              "message": "back-off 5m0s restarting failed container=suricata pod=wazuh-agent-8b9c9_soc(4da042f0-b671-4e3d-b0ed-a1db9accc438)",
+              "reason": "CrashLoopBackOff"
+            }
+          },
+          "volumeMounts": [
+            {
+              "mountPath": "/etc/suricata/suricata.yaml",
+              "name": "suricata-final-conf",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            },
+            {
+              "mountPath": "/var/log/suricata",
+              "name": "suricata-logs"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-p7vsn",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            }
+          ]
+        },
+        {
+          "image": "wazuh/wazuh-agent:4.9.0-1",
+          "imageID": "",
+          "lastState": {},
+          "name": "wazuh-agent",
+          "ready": false,
+          "restartCount": 0,
+          "started": false,
+          "state": {
+            "waiting": {
+              "message": "Back-off pulling image \"wazuh/wazuh-agent:4.9.0-1\": ErrImagePull: rpc error: code = NotFound desc = failed to pull and unpack image \"docker.io/wazuh/wazuh-agent:4.9.0-1\": failed to resolve image: docker.io/wazuh/wazuh-agent:4.9.0-1: not found",
+              "reason": "ImagePullBackOff"
+            }
+          },
+          "volumeMounts": [
+            {
+              "mountPath": "/var/ossec/etc/ossec.conf",
+              "name": "wazuh-agent-conf",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            },
+            {
+              "mountPath": "/var/log",
+              "name": "var-log",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            },
+            {
+              "mountPath": "/var/log/suricata",
+              "name": "suricata-logs",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-p7vsn",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            }
+          ]
+        }
+      ],
+      "hostIP": "192.168.1.20",
+      "hostIPs": [
+        {
+          "ip": "192.168.1.20"
+        }
+      ],
+      "initContainerStatuses": [
+        {
+          "containerID": "containerd://be9377370a6bfad936665e506c74bbcdccf27221f628fb507ae120857a8b8c17",
+          "image": "docker.io/library/busybox:latest",
+          "imageID": "docker.io/library/busybox@sha256:b3255e7dfbcd10cb367af0d409747d511aeb66dfac98cf30e97e87e4207dd76f",
+          "lastState": {},
+          "name": "config-init",
+          "ready": true,
+          "restartCount": 0,
+          "started": false,
+          "state": {
+            "terminated": {
+              "containerID": "containerd://be9377370a6bfad936665e506c74bbcdccf27221f628fb507ae120857a8b8c17",
+              "exitCode": 0,
+              "finishedAt": "2026-02-10T14:34:20Z",
+              "reason": "Completed",
+              "startedAt": "2026-02-10T14:34:20Z"
+            }
+          },
+          "volumeMounts": [
+            {
+              "mountPath": "/template",
+              "name": "suricata-conf"
+            },
+            {
+              "mountPath": "/config",
+              "name": "suricata-final-conf"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-p7vsn",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            }
+          ]
+        }
+      ],
+      "phase": "Pending",
+      "podIP": "192.168.1.20",
+      "podIPs": [
+        {
+          "ip": "192.168.1.20"
+        }
+      ],
+      "qosClass": "Burstable",
+      "startTime": "2026-02-10T14:34:00Z"
+    }
+  },
+  {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+      "creationTimestamp": "2026-02-10T14:31:24Z",
+      "generateName": "wazuh-agent-",
+      "labels": {
+        "app": "wazuh-agent",
+        "controller-revision-hash": "5fdf4c86f5",
+        "pod-template-generation": "6"
+      },
+      "name": "wazuh-agent-dj4f8",
+      "namespace": "soc",
+      "ownerReferences": [
+        {
+          "apiVersion": "apps/v1",
+          "blockOwnerDeletion": true,
+          "controller": true,
+          "kind": "DaemonSet",
+          "name": "wazuh-agent",
+          "uid": "5bf44853-a07f-4e8e-a899-f612c715abd9"
+        }
+      ],
+      "resourceVersion": "10167851",
+      "uid": "61cad851-3824-466c-b86c-2fa6c88f60c5"
+    },
+    "spec": {
+      "affinity": {
+        "nodeAffinity": {
+          "requiredDuringSchedulingIgnoredDuringExecution": {
+            "nodeSelectorTerms": [
+              {
+                "matchFields": [
+                  {
+                    "key": "metadata.name",
+                    "operator": "In",
+                    "values": [
+                      "k8-node-30"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "containers": [
+        {
+          "env": [
+            {
+              "name": "WAZUH_MANAGER",
+              "value": "wazuh-manager.soc.svc"
+            },
+            {
+              "name": "WAZUH_AGENT_GROUP",
+              "value": "default"
+            }
+          ],
+          "image": "wazuh/wazuh-agent:4.9.0-1",
+          "imagePullPolicy": "IfNotPresent",
+          "name": "wazuh-agent",
+          "resources": {
+            "limits": {
+              "cpu": "500m",
+              "memory": "512Mi"
+            },
+            "requests": {
+              "cpu": "100m",
+              "memory": "256Mi"
+            }
+          },
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/var/ossec/etc/ossec.conf",
+              "name": "wazuh-agent-conf",
+              "readOnly": true,
+              "subPath": "ossec.conf"
+            },
+            {
+              "mountPath": "/var/log",
+              "name": "var-log",
+              "readOnly": true
+            },
+            {
+              "mountPath": "/var/log/suricata",
+              "name": "suricata-logs",
+              "readOnly": true
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-zxdpj",
+              "readOnly": true
+            }
+          ]
+        },
+        {
+          "image": "jasonish/suricata:latest",
+          "imagePullPolicy": "Always",
+          "name": "suricata",
+          "resources": {
+            "limits": {
+              "cpu": "1",
+              "memory": "1Gi"
+            },
+            "requests": {
+              "cpu": "500m",
+              "memory": "512Mi"
+            }
+          },
+          "securityContext": {
+            "capabilities": {
+              "add": [
+                "NET_ADMIN",
+                "NET_RAW",
+                "SYS_NICE"
+              ]
+            }
+          },
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/etc/suricata/suricata.yaml",
+              "name": "suricata-final-conf",
+              "readOnly": true,
+              "subPath": "suricata.yaml"
+            },
+            {
+              "mountPath": "/var/log/suricata",
+              "name": "suricata-logs"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-zxdpj",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "dnsPolicy": "ClusterFirstWithHostNet",
+      "enableServiceLinks": true,
+      "hostNetwork": true,
+      "initContainers": [
+        {
+          "args": [
+            "IFACE=$(ip route get 1 | awk '{print $5;exit}')\necho \"Detected interface: $IFACE\"\nsed \"s/eth0/$IFACE/g\" /template/suricata.yaml > /config/suricata.yaml\n"
+          ],
+          "command": [
+            "sh",
+            "-c"
+          ],
+          "image": "busybox",
+          "imagePullPolicy": "Always",
+          "name": "config-init",
+          "resources": {},
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/template",
+              "name": "suricata-conf"
+            },
+            {
+              "mountPath": "/config",
+              "name": "suricata-final-conf"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-zxdpj",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "nodeName": "k8-node-30",
+      "preemptionPolicy": "PreemptLowerPriority",
+      "priority": 0,
+      "restartPolicy": "Always",
+      "schedulerName": "default-scheduler",
+      "securityContext": {},
+      "serviceAccount": "default",
+      "serviceAccountName": "default",
+      "terminationGracePeriodSeconds": 30,
+      "tolerations": [
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/not-ready",
+          "operator": "Exists"
+        },
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/unreachable",
+          "operator": "Exists"
+        },
+        {
+          "effect": "NoSchedule",
+          "key": "node.kubernetes.io/disk-pressure",
+          "operator": "Exists"
+        },
+        {
+          "effect": "NoSchedule",
+          "key": "node.kubernetes.io/memory-pressure",
+          "operator": "Exists"
+        },
+        {
+          "effect": "NoSchedule",
+          "key": "node.kubernetes.io/pid-pressure",
+          "operator": "Exists"
+        },
+        {
+          "effect": "NoSchedule",
+          "key": "node.kubernetes.io/unschedulable",
+          "operator": "Exists"
+        },
+        {
+          "effect": "NoSchedule",
+          "key": "node.kubernetes.io/network-unavailable",
+          "operator": "Exists"
+        }
+      ],
+      "volumes": [
+        {
+          "configMap": {
+            "defaultMode": 420,
+            "name": "wazuh-agent-conf"
+          },
+          "name": "wazuh-agent-conf"
+        },
+        {
+          "configMap": {
+            "defaultMode": 420,
+            "name": "suricata-conf"
+          },
+          "name": "suricata-conf"
+        },
+        {
+          "emptyDir": {},
+          "name": "suricata-final-conf"
+        },
+        {
+          "hostPath": {
+            "path": "/var/log",
+            "type": ""
+          },
+          "name": "var-log"
+        },
+        {
+          "emptyDir": {},
+          "name": "suricata-logs"
+        },
+        {
+          "name": "kube-api-access-zxdpj",
+          "projected": {
+            "defaultMode": 420,
+            "sources": [
+              {
+                "serviceAccountToken": {
+                  "expirationSeconds": 3607,
+                  "path": "token"
+                }
+              },
+              {
+                "configMap": {
+                  "items": [
+                    {
+                      "key": "ca.crt",
+                      "path": "ca.crt"
+                    }
+                  ],
+                  "name": "kube-root-ca.crt"
+                }
+              },
+              {
+                "downwardAPI": {
+                  "items": [
+                    {
+                      "fieldRef": {
+                        "apiVersion": "v1",
+                        "fieldPath": "metadata.namespace"
+                      },
+                      "path": "namespace"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "status": {
+      "conditions": [
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-10T14:31:36Z",
+          "status": "True",
+          "type": "PodReadyToStartContainers"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-10T14:31:40Z",
+          "status": "True",
+          "type": "Initialized"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-10T14:31:24Z",
+          "message": "containers with unready status: [wazuh-agent suricata]",
+          "reason": "ContainersNotReady",
+          "status": "False",
+          "type": "Ready"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-10T14:31:24Z",
+          "message": "containers with unready status: [wazuh-agent suricata]",
+          "reason": "ContainersNotReady",
+          "status": "False",
+          "type": "ContainersReady"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-10T14:31:24Z",
+          "status": "True",
+          "type": "PodScheduled"
+        }
+      ],
+      "containerStatuses": [
+        {
+          "containerID": "containerd://117f4c487a1aa4149e379a6416371fe7644dafb3f4fb2a2be240700e7a9ea6a0",
+          "image": "docker.io/jasonish/suricata:latest",
+          "imageID": "docker.io/jasonish/suricata@sha256:3c7777b38f54d0dc44c710549b51b6ffedfacdd7f258c8c2d176e126958feef4",
+          "lastState": {
+            "terminated": {
+              "containerID": "containerd://117f4c487a1aa4149e379a6416371fe7644dafb3f4fb2a2be240700e7a9ea6a0",
+              "exitCode": 1,
+              "finishedAt": "2026-02-10T14:38:39Z",
+              "reason": "Error",
+              "startedAt": "2026-02-10T14:38:39Z"
+            }
+          },
+          "name": "suricata",
+          "ready": false,
+          "restartCount": 6,
+          "started": false,
+          "state": {
+            "waiting": {
+              "message": "back-off 5m0s restarting failed container=suricata pod=wazuh-agent-dj4f8_soc(61cad851-3824-466c-b86c-2fa6c88f60c5)",
+              "reason": "CrashLoopBackOff"
+            }
+          },
+          "volumeMounts": [
+            {
+              "mountPath": "/etc/suricata/suricata.yaml",
+              "name": "suricata-final-conf",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            },
+            {
+              "mountPath": "/var/log/suricata",
+              "name": "suricata-logs"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-zxdpj",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            }
+          ]
+        },
+        {
+          "image": "wazuh/wazuh-agent:4.9.0-1",
+          "imageID": "",
+          "lastState": {},
+          "name": "wazuh-agent",
+          "ready": false,
+          "restartCount": 0,
+          "started": false,
+          "state": {
+            "waiting": {
+              "message": "Back-off pulling image \"wazuh/wazuh-agent:4.9.0-1\": ErrImagePull: rpc error: code = NotFound desc = failed to pull and unpack image \"docker.io/wazuh/wazuh-agent:4.9.0-1\": failed to resolve image: docker.io/wazuh/wazuh-agent:4.9.0-1: not found",
+              "reason": "ImagePullBackOff"
+            }
+          },
+          "volumeMounts": [
+            {
+              "mountPath": "/var/ossec/etc/ossec.conf",
+              "name": "wazuh-agent-conf",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            },
+            {
+              "mountPath": "/var/log",
+              "name": "var-log",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            },
+            {
+              "mountPath": "/var/log/suricata",
+              "name": "suricata-logs",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-zxdpj",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            }
+          ]
+        }
+      ],
+      "hostIP": "192.168.1.30",
+      "hostIPs": [
+        {
+          "ip": "192.168.1.30"
+        }
+      ],
+      "initContainerStatuses": [
+        {
+          "containerID": "containerd://d4ecb0e1774d420c6d88f3fd245fc7b0b05c9e7db9dac286ef847ee8530b0fea",
+          "image": "docker.io/library/busybox:latest",
+          "imageID": "docker.io/library/busybox@sha256:b3255e7dfbcd10cb367af0d409747d511aeb66dfac98cf30e97e87e4207dd76f",
+          "lastState": {},
+          "name": "config-init",
+          "ready": true,
+          "restartCount": 0,
+          "started": false,
+          "state": {
+            "terminated": {
+              "containerID": "containerd://d4ecb0e1774d420c6d88f3fd245fc7b0b05c9e7db9dac286ef847ee8530b0fea",
+              "exitCode": 0,
+              "finishedAt": "2026-02-10T14:31:35Z",
+              "reason": "Completed",
+              "startedAt": "2026-02-10T14:31:35Z"
+            }
+          },
+          "volumeMounts": [
+            {
+              "mountPath": "/template",
+              "name": "suricata-conf"
+            },
+            {
+              "mountPath": "/config",
+              "name": "suricata-final-conf"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-zxdpj",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            }
+          ]
+        }
+      ],
+      "phase": "Pending",
+      "podIP": "192.168.1.30",
+      "podIPs": [
+        {
+          "ip": "192.168.1.30"
+        }
+      ],
+      "qosClass": "Burstable",
+      "startTime": "2026-02-10T14:31:24Z"
+    }
+  },
+  {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+      "creationTimestamp": "2026-02-10T14:31:19Z",
+      "generateName": "wazuh-agent-",
+      "labels": {
+        "app": "wazuh-agent",
+        "controller-revision-hash": "5fdf4c86f5",
+        "pod-template-generation": "6"
+      },
+      "name": "wazuh-agent-lc2lz",
+      "namespace": "soc",
+      "ownerReferences": [
+        {
+          "apiVersion": "apps/v1",
+          "blockOwnerDeletion": true,
+          "controller": true,
+          "kind": "DaemonSet",
+          "name": "wazuh-agent",
+          "uid": "5bf44853-a07f-4e8e-a899-f612c715abd9"
+        }
+      ],
+      "resourceVersion": "10167651",
+      "uid": "bebbb5bf-7179-43f5-bd9d-974f44c0ff6a"
     },
     "spec": {
       "affinity": {
@@ -91,7 +1027,7 @@
             },
             {
               "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-mvkf6",
+              "name": "kube-api-access-f78rj",
               "readOnly": true
             }
           ]
@@ -134,7 +1070,7 @@
             },
             {
               "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-mvkf6",
+              "name": "kube-api-access-f78rj",
               "readOnly": true
             }
           ]
@@ -169,7 +1105,7 @@
             },
             {
               "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-mvkf6",
+              "name": "kube-api-access-f78rj",
               "readOnly": true
             }
           ]
@@ -252,7 +1188,7 @@
           "name": "suricata-logs"
         },
         {
-          "name": "kube-api-access-mvkf6",
+          "name": "kube-api-access-f78rj",
           "projected": {
             "defaultMode": 420,
             "sources": [
@@ -295,19 +1231,19 @@
       "conditions": [
         {
           "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:54:58Z",
+          "lastTransitionTime": "2026-02-10T14:31:23Z",
           "status": "True",
           "type": "PodReadyToStartContainers"
         },
         {
           "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:55:00Z",
+          "lastTransitionTime": "2026-02-10T14:31:23Z",
           "status": "True",
           "type": "Initialized"
         },
         {
           "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:54:49Z",
+          "lastTransitionTime": "2026-02-10T14:31:19Z",
           "message": "containers with unready status: [wazuh-agent suricata]",
           "reason": "ContainersNotReady",
           "status": "False",
@@ -315,7 +1251,7 @@
         },
         {
           "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:54:49Z",
+          "lastTransitionTime": "2026-02-10T14:31:19Z",
           "message": "containers with unready status: [wazuh-agent suricata]",
           "reason": "ContainersNotReady",
           "status": "False",
@@ -323,23 +1259,23 @@
         },
         {
           "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:54:49Z",
+          "lastTransitionTime": "2026-02-10T14:31:19Z",
           "status": "True",
           "type": "PodScheduled"
         }
       ],
       "containerStatuses": [
         {
-          "containerID": "containerd://fcc077943330f9d2d8472c37bb9576c66d5149bea5544b1b2b0b5ca5620c2549",
+          "containerID": "containerd://c9acd7ef43f715e7473c3c50382826244ee65c0f90051ce2d7d61590c34e1b3f",
           "image": "docker.io/jasonish/suricata:latest",
           "imageID": "docker.io/jasonish/suricata@sha256:3c7777b38f54d0dc44c710549b51b6ffedfacdd7f258c8c2d176e126958feef4",
           "lastState": {
             "terminated": {
-              "containerID": "containerd://fcc077943330f9d2d8472c37bb9576c66d5149bea5544b1b2b0b5ca5620c2549",
+              "containerID": "containerd://c9acd7ef43f715e7473c3c50382826244ee65c0f90051ce2d7d61590c34e1b3f",
               "exitCode": 1,
-              "finishedAt": "2026-02-10T13:01:08Z",
+              "finishedAt": "2026-02-10T14:37:20Z",
               "reason": "Error",
-              "startedAt": "2026-02-10T13:01:08Z"
+              "startedAt": "2026-02-10T14:37:20Z"
             }
           },
           "name": "suricata",
@@ -348,7 +1284,7 @@
           "started": false,
           "state": {
             "waiting": {
-              "message": "back-off 5m0s restarting failed container=suricata pod=wazuh-agent-kvcjd_soc(d7a096e6-a891-4eb3-9a1c-66a505f67e8e)",
+              "message": "back-off 5m0s restarting failed container=suricata pod=wazuh-agent-lc2lz_soc(bebbb5bf-7179-43f5-bd9d-974f44c0ff6a)",
               "reason": "CrashLoopBackOff"
             }
           },
@@ -365,7 +1301,7 @@
             },
             {
               "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-mvkf6",
+              "name": "kube-api-access-f78rj",
               "readOnly": true,
               "recursiveReadOnly": "Disabled"
             }
@@ -406,7 +1342,7 @@
             },
             {
               "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-mvkf6",
+              "name": "kube-api-access-f78rj",
               "readOnly": true,
               "recursiveReadOnly": "Disabled"
             }
@@ -421,7 +1357,7 @@
       ],
       "initContainerStatuses": [
         {
-          "containerID": "containerd://3a6787ec942317c6695303bb7b51e2f871d09c10daaf325cc53312cd44b11d09",
+          "containerID": "containerd://77de7730a0af8eb9d40a0100b684078a45b68f9f6ec414fc728938b068e93163",
           "image": "docker.io/library/busybox:latest",
           "imageID": "docker.io/library/busybox@sha256:b3255e7dfbcd10cb367af0d409747d511aeb66dfac98cf30e97e87e4207dd76f",
           "lastState": {},
@@ -431,11 +1367,11 @@
           "started": false,
           "state": {
             "terminated": {
-              "containerID": "containerd://3a6787ec942317c6695303bb7b51e2f871d09c10daaf325cc53312cd44b11d09",
+              "containerID": "containerd://77de7730a0af8eb9d40a0100b684078a45b68f9f6ec414fc728938b068e93163",
               "exitCode": 0,
-              "finishedAt": "2026-02-10T12:54:59Z",
+              "finishedAt": "2026-02-10T14:31:22Z",
               "reason": "Completed",
-              "startedAt": "2026-02-10T12:54:58Z"
+              "startedAt": "2026-02-10T14:31:22Z"
             }
           },
           "volumeMounts": [
@@ -449,7 +1385,7 @@
             },
             {
               "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-mvkf6",
+              "name": "kube-api-access-f78rj",
               "readOnly": true,
               "recursiveReadOnly": "Disabled"
             }
@@ -464,21 +1400,21 @@
         }
       ],
       "qosClass": "Burstable",
-      "startTime": "2026-02-10T12:54:49Z"
+      "startTime": "2026-02-10T14:31:19Z"
     }
   },
   {
     "apiVersion": "v1",
     "kind": "Pod",
     "metadata": {
-      "creationTimestamp": "2026-02-10T12:54:27Z",
+      "creationTimestamp": "2026-02-10T14:31:19Z",
       "generateName": "wazuh-agent-",
       "labels": {
         "app": "wazuh-agent",
         "controller-revision-hash": "5fdf4c86f5",
-        "pod-template-generation": "4"
+        "pod-template-generation": "6"
       },
-      "name": "wazuh-agent-mxkvx",
+      "name": "wazuh-agent-qrrgs",
       "namespace": "soc",
       "ownerReferences": [
         {
@@ -490,711 +1426,8 @@
           "uid": "5bf44853-a07f-4e8e-a899-f612c715abd9"
         }
       ],
-      "resourceVersion": "10140441",
-      "uid": "e6d17dd0-c86d-466a-8744-4ab7be8bb6d1"
-    },
-    "spec": {
-      "affinity": {
-        "nodeAffinity": {
-          "requiredDuringSchedulingIgnoredDuringExecution": {
-            "nodeSelectorTerms": [
-              {
-                "matchFields": [
-                  {
-                    "key": "metadata.name",
-                    "operator": "In",
-                    "values": [
-                      "k8-node-20"
-                    ]
-                  }
-                ]
-              }
-            ]
-          }
-        }
-      },
-      "containers": [
-        {
-          "env": [
-            {
-              "name": "WAZUH_MANAGER",
-              "value": "wazuh-manager.soc.svc"
-            },
-            {
-              "name": "WAZUH_AGENT_GROUP",
-              "value": "default"
-            }
-          ],
-          "image": "wazuh/wazuh-agent:4.9.0-1",
-          "imagePullPolicy": "IfNotPresent",
-          "name": "wazuh-agent",
-          "resources": {
-            "limits": {
-              "cpu": "500m",
-              "memory": "512Mi"
-            },
-            "requests": {
-              "cpu": "100m",
-              "memory": "256Mi"
-            }
-          },
-          "terminationMessagePath": "/dev/termination-log",
-          "terminationMessagePolicy": "File",
-          "volumeMounts": [
-            {
-              "mountPath": "/var/ossec/etc/ossec.conf",
-              "name": "wazuh-agent-conf",
-              "readOnly": true,
-              "subPath": "ossec.conf"
-            },
-            {
-              "mountPath": "/var/log",
-              "name": "var-log",
-              "readOnly": true
-            },
-            {
-              "mountPath": "/var/log/suricata",
-              "name": "suricata-logs",
-              "readOnly": true
-            },
-            {
-              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-7zfwg",
-              "readOnly": true
-            }
-          ]
-        },
-        {
-          "image": "jasonish/suricata:latest",
-          "imagePullPolicy": "Always",
-          "name": "suricata",
-          "resources": {
-            "limits": {
-              "cpu": "1",
-              "memory": "1Gi"
-            },
-            "requests": {
-              "cpu": "500m",
-              "memory": "512Mi"
-            }
-          },
-          "securityContext": {
-            "capabilities": {
-              "add": [
-                "NET_ADMIN",
-                "NET_RAW",
-                "SYS_NICE"
-              ]
-            }
-          },
-          "terminationMessagePath": "/dev/termination-log",
-          "terminationMessagePolicy": "File",
-          "volumeMounts": [
-            {
-              "mountPath": "/etc/suricata/suricata.yaml",
-              "name": "suricata-final-conf",
-              "readOnly": true,
-              "subPath": "suricata.yaml"
-            },
-            {
-              "mountPath": "/var/log/suricata",
-              "name": "suricata-logs"
-            },
-            {
-              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-7zfwg",
-              "readOnly": true
-            }
-          ]
-        }
-      ],
-      "dnsPolicy": "ClusterFirstWithHostNet",
-      "enableServiceLinks": true,
-      "hostNetwork": true,
-      "initContainers": [
-        {
-          "args": [
-            "IFACE=$(ip route get 1 | awk '{print $5;exit}')\necho \"Detected interface: $IFACE\"\nsed \"s/eth0/$IFACE/g\" /template/suricata.yaml > /config/suricata.yaml\n"
-          ],
-          "command": [
-            "sh",
-            "-c"
-          ],
-          "image": "busybox",
-          "imagePullPolicy": "Always",
-          "name": "config-init",
-          "resources": {},
-          "terminationMessagePath": "/dev/termination-log",
-          "terminationMessagePolicy": "File",
-          "volumeMounts": [
-            {
-              "mountPath": "/template",
-              "name": "suricata-conf"
-            },
-            {
-              "mountPath": "/config",
-              "name": "suricata-final-conf"
-            },
-            {
-              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-7zfwg",
-              "readOnly": true
-            }
-          ]
-        }
-      ],
-      "preemptionPolicy": "PreemptLowerPriority",
-      "priority": 0,
-      "restartPolicy": "Always",
-      "schedulerName": "default-scheduler",
-      "securityContext": {},
-      "serviceAccount": "default",
-      "serviceAccountName": "default",
-      "terminationGracePeriodSeconds": 30,
-      "tolerations": [
-        {
-          "effect": "NoExecute",
-          "key": "node.kubernetes.io/not-ready",
-          "operator": "Exists"
-        },
-        {
-          "effect": "NoExecute",
-          "key": "node.kubernetes.io/unreachable",
-          "operator": "Exists"
-        },
-        {
-          "effect": "NoSchedule",
-          "key": "node.kubernetes.io/disk-pressure",
-          "operator": "Exists"
-        },
-        {
-          "effect": "NoSchedule",
-          "key": "node.kubernetes.io/memory-pressure",
-          "operator": "Exists"
-        },
-        {
-          "effect": "NoSchedule",
-          "key": "node.kubernetes.io/pid-pressure",
-          "operator": "Exists"
-        },
-        {
-          "effect": "NoSchedule",
-          "key": "node.kubernetes.io/unschedulable",
-          "operator": "Exists"
-        },
-        {
-          "effect": "NoSchedule",
-          "key": "node.kubernetes.io/network-unavailable",
-          "operator": "Exists"
-        }
-      ],
-      "volumes": [
-        {
-          "configMap": {
-            "defaultMode": 420,
-            "name": "wazuh-agent-conf"
-          },
-          "name": "wazuh-agent-conf"
-        },
-        {
-          "configMap": {
-            "defaultMode": 420,
-            "name": "suricata-conf"
-          },
-          "name": "suricata-conf"
-        },
-        {
-          "emptyDir": {},
-          "name": "suricata-final-conf"
-        },
-        {
-          "hostPath": {
-            "path": "/var/log",
-            "type": ""
-          },
-          "name": "var-log"
-        },
-        {
-          "emptyDir": {},
-          "name": "suricata-logs"
-        },
-        {
-          "name": "kube-api-access-7zfwg",
-          "projected": {
-            "defaultMode": 420,
-            "sources": [
-              {
-                "serviceAccountToken": {
-                  "expirationSeconds": 3607,
-                  "path": "token"
-                }
-              },
-              {
-                "configMap": {
-                  "items": [
-                    {
-                      "key": "ca.crt",
-                      "path": "ca.crt"
-                    }
-                  ],
-                  "name": "kube-root-ca.crt"
-                }
-              },
-              {
-                "downwardAPI": {
-                  "items": [
-                    {
-                      "fieldRef": {
-                        "apiVersion": "v1",
-                        "fieldPath": "metadata.namespace"
-                      },
-                      "path": "namespace"
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        }
-      ]
-    },
-    "status": {
-      "conditions": [
-        {
-          "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:54:27Z",
-          "message": "0/4 nodes are available: 1 Insufficient cpu, 3 node(s) didn't satisfy plugin(s) [NodeAffinity]. preemption: 0/4 nodes are available: 1 No preemption victims found for incoming pod, 3 Preemption is not helpful for scheduling.",
-          "reason": "Unschedulable",
-          "status": "False",
-          "type": "PodScheduled"
-        }
-      ],
-      "phase": "Pending",
-      "qosClass": "Burstable"
-    }
-  },
-  {
-    "apiVersion": "v1",
-    "kind": "Pod",
-    "metadata": {
-      "creationTimestamp": "2026-02-10T12:35:25Z",
-      "deletionGracePeriodSeconds": 30,
-      "deletionTimestamp": "2026-02-10T12:54:57Z",
-      "generateName": "wazuh-agent-",
-      "labels": {
-        "app": "wazuh-agent",
-        "controller-revision-hash": "c6d858b77",
-        "pod-template-generation": "3"
-      },
-      "name": "wazuh-agent-w6tth",
-      "namespace": "soc",
-      "ownerReferences": [
-        {
-          "apiVersion": "apps/v1",
-          "blockOwnerDeletion": true,
-          "controller": true,
-          "kind": "DaemonSet",
-          "name": "wazuh-agent",
-          "uid": "5bf44853-a07f-4e8e-a899-f612c715abd9"
-        }
-      ],
-      "resourceVersion": "10140430",
-      "uid": "e6c5765b-45a4-4886-9ddc-f26aaef33529"
-    },
-    "spec": {
-      "affinity": {
-        "nodeAffinity": {
-          "requiredDuringSchedulingIgnoredDuringExecution": {
-            "nodeSelectorTerms": [
-              {
-                "matchFields": [
-                  {
-                    "key": "metadata.name",
-                    "operator": "In",
-                    "values": [
-                      "k8-node-30"
-                    ]
-                  }
-                ]
-              }
-            ]
-          }
-        }
-      },
-      "containers": [
-        {
-          "env": [
-            {
-              "name": "WAZUH_MANAGER",
-              "value": "wazuh-manager.soc.svc"
-            },
-            {
-              "name": "WAZUH_AGENT_GROUP",
-              "value": "default"
-            }
-          ],
-          "image": "wazuh/wazuh-agent:4.9.0",
-          "imagePullPolicy": "IfNotPresent",
-          "name": "wazuh-agent",
-          "resources": {
-            "limits": {
-              "cpu": "500m",
-              "memory": "512Mi"
-            },
-            "requests": {
-              "cpu": "100m",
-              "memory": "256Mi"
-            }
-          },
-          "terminationMessagePath": "/dev/termination-log",
-          "terminationMessagePolicy": "File",
-          "volumeMounts": [
-            {
-              "mountPath": "/var/ossec/etc/ossec.conf",
-              "name": "wazuh-agent-conf",
-              "readOnly": true,
-              "subPath": "ossec.conf"
-            },
-            {
-              "mountPath": "/var/log",
-              "name": "var-log",
-              "readOnly": true
-            },
-            {
-              "mountPath": "/var/log/suricata",
-              "name": "suricata-logs",
-              "readOnly": true
-            },
-            {
-              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-hhmxp",
-              "readOnly": true
-            }
-          ]
-        },
-        {
-          "image": "jasonish/suricata:latest",
-          "imagePullPolicy": "Always",
-          "name": "suricata",
-          "resources": {
-            "limits": {
-              "cpu": "1",
-              "memory": "1Gi"
-            },
-            "requests": {
-              "cpu": "500m",
-              "memory": "512Mi"
-            }
-          },
-          "securityContext": {
-            "capabilities": {
-              "add": [
-                "NET_ADMIN",
-                "NET_RAW",
-                "SYS_NICE"
-              ]
-            }
-          },
-          "terminationMessagePath": "/dev/termination-log",
-          "terminationMessagePolicy": "File",
-          "volumeMounts": [
-            {
-              "mountPath": "/etc/suricata/suricata.yaml",
-              "name": "suricata-conf",
-              "readOnly": true,
-              "subPath": "suricata.yaml"
-            },
-            {
-              "mountPath": "/var/log/suricata",
-              "name": "suricata-logs"
-            },
-            {
-              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-hhmxp",
-              "readOnly": true
-            }
-          ]
-        }
-      ],
-      "dnsPolicy": "ClusterFirstWithHostNet",
-      "enableServiceLinks": true,
-      "hostNetwork": true,
-      "nodeName": "k8-node-30",
-      "preemptionPolicy": "PreemptLowerPriority",
-      "priority": 0,
-      "restartPolicy": "Always",
-      "schedulerName": "default-scheduler",
-      "securityContext": {},
-      "serviceAccount": "default",
-      "serviceAccountName": "default",
-      "terminationGracePeriodSeconds": 30,
-      "tolerations": [
-        {
-          "effect": "NoExecute",
-          "key": "node.kubernetes.io/not-ready",
-          "operator": "Exists"
-        },
-        {
-          "effect": "NoExecute",
-          "key": "node.kubernetes.io/unreachable",
-          "operator": "Exists"
-        },
-        {
-          "effect": "NoSchedule",
-          "key": "node.kubernetes.io/disk-pressure",
-          "operator": "Exists"
-        },
-        {
-          "effect": "NoSchedule",
-          "key": "node.kubernetes.io/memory-pressure",
-          "operator": "Exists"
-        },
-        {
-          "effect": "NoSchedule",
-          "key": "node.kubernetes.io/pid-pressure",
-          "operator": "Exists"
-        },
-        {
-          "effect": "NoSchedule",
-          "key": "node.kubernetes.io/unschedulable",
-          "operator": "Exists"
-        },
-        {
-          "effect": "NoSchedule",
-          "key": "node.kubernetes.io/network-unavailable",
-          "operator": "Exists"
-        }
-      ],
-      "volumes": [
-        {
-          "configMap": {
-            "defaultMode": 420,
-            "name": "wazuh-agent-conf"
-          },
-          "name": "wazuh-agent-conf"
-        },
-        {
-          "configMap": {
-            "defaultMode": 420,
-            "name": "suricata-conf"
-          },
-          "name": "suricata-conf"
-        },
-        {
-          "hostPath": {
-            "path": "/var/log",
-            "type": ""
-          },
-          "name": "var-log"
-        },
-        {
-          "emptyDir": {},
-          "name": "suricata-logs"
-        },
-        {
-          "name": "kube-api-access-hhmxp",
-          "projected": {
-            "defaultMode": 420,
-            "sources": [
-              {
-                "serviceAccountToken": {
-                  "expirationSeconds": 3607,
-                  "path": "token"
-                }
-              },
-              {
-                "configMap": {
-                  "items": [
-                    {
-                      "key": "ca.crt",
-                      "path": "ca.crt"
-                    }
-                  ],
-                  "name": "kube-root-ca.crt"
-                }
-              },
-              {
-                "downwardAPI": {
-                  "items": [
-                    {
-                      "fieldRef": {
-                        "apiVersion": "v1",
-                        "fieldPath": "metadata.namespace"
-                      },
-                      "path": "namespace"
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        }
-      ]
-    },
-    "status": {
-      "conditions": [
-        {
-          "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:35:40Z",
-          "status": "True",
-          "type": "PodReadyToStartContainers"
-        },
-        {
-          "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:35:25Z",
-          "status": "True",
-          "type": "Initialized"
-        },
-        {
-          "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:35:25Z",
-          "message": "containers with unready status: [wazuh-agent suricata]",
-          "reason": "ContainersNotReady",
-          "status": "False",
-          "type": "Ready"
-        },
-        {
-          "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:35:25Z",
-          "message": "containers with unready status: [wazuh-agent suricata]",
-          "reason": "ContainersNotReady",
-          "status": "False",
-          "type": "ContainersReady"
-        },
-        {
-          "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:35:25Z",
-          "status": "True",
-          "type": "PodScheduled"
-        }
-      ],
-      "containerStatuses": [
-        {
-          "containerID": "containerd://65b48db765a4c66475af31a2723875b6448591b850b188d79837029ed84ccda5",
-          "image": "docker.io/jasonish/suricata:latest",
-          "imageID": "docker.io/jasonish/suricata@sha256:3c7777b38f54d0dc44c710549b51b6ffedfacdd7f258c8c2d176e126958feef4",
-          "lastState": {
-            "terminated": {
-              "containerID": "containerd://65b48db765a4c66475af31a2723875b6448591b850b188d79837029ed84ccda5",
-              "exitCode": 1,
-              "finishedAt": "2026-02-10T12:47:57Z",
-              "reason": "Error",
-              "startedAt": "2026-02-10T12:47:57Z"
-            }
-          },
-          "name": "suricata",
-          "ready": false,
-          "restartCount": 7,
-          "started": false,
-          "state": {
-            "waiting": {
-              "message": "back-off 5m0s restarting failed container=suricata pod=wazuh-agent-w6tth_soc(e6c5765b-45a4-4886-9ddc-f26aaef33529)",
-              "reason": "CrashLoopBackOff"
-            }
-          },
-          "volumeMounts": [
-            {
-              "mountPath": "/etc/suricata/suricata.yaml",
-              "name": "suricata-conf",
-              "readOnly": true,
-              "recursiveReadOnly": "Disabled"
-            },
-            {
-              "mountPath": "/var/log/suricata",
-              "name": "suricata-logs"
-            },
-            {
-              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-hhmxp",
-              "readOnly": true,
-              "recursiveReadOnly": "Disabled"
-            }
-          ]
-        },
-        {
-          "image": "wazuh/wazuh-agent:4.9.0",
-          "imageID": "",
-          "lastState": {},
-          "name": "wazuh-agent",
-          "ready": false,
-          "restartCount": 0,
-          "started": false,
-          "state": {
-            "waiting": {
-              "message": "Back-off pulling image \"wazuh/wazuh-agent:4.9.0\": ErrImagePull: rpc error: code = NotFound desc = failed to pull and unpack image \"docker.io/wazuh/wazuh-agent:4.9.0\": failed to resolve image: docker.io/wazuh/wazuh-agent:4.9.0: not found",
-              "reason": "ImagePullBackOff"
-            }
-          },
-          "volumeMounts": [
-            {
-              "mountPath": "/var/ossec/etc/ossec.conf",
-              "name": "wazuh-agent-conf",
-              "readOnly": true,
-              "recursiveReadOnly": "Disabled"
-            },
-            {
-              "mountPath": "/var/log",
-              "name": "var-log",
-              "readOnly": true,
-              "recursiveReadOnly": "Disabled"
-            },
-            {
-              "mountPath": "/var/log/suricata",
-              "name": "suricata-logs",
-              "readOnly": true,
-              "recursiveReadOnly": "Disabled"
-            },
-            {
-              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-hhmxp",
-              "readOnly": true,
-              "recursiveReadOnly": "Disabled"
-            }
-          ]
-        }
-      ],
-      "hostIP": "192.168.1.30",
-      "hostIPs": [
-        {
-          "ip": "192.168.1.30"
-        }
-      ],
-      "phase": "Pending",
-      "podIP": "192.168.1.30",
-      "podIPs": [
-        {
-          "ip": "192.168.1.30"
-        }
-      ],
-      "qosClass": "Burstable",
-      "startTime": "2026-02-10T12:35:25Z"
-    }
-  },
-  {
-    "apiVersion": "v1",
-    "kind": "Pod",
-    "metadata": {
-      "creationTimestamp": "2026-02-10T12:54:28Z",
-      "generateName": "wazuh-agent-",
-      "labels": {
-        "app": "wazuh-agent",
-        "controller-revision-hash": "5fdf4c86f5",
-        "pod-template-generation": "4"
-      },
-      "name": "wazuh-agent-w7nr4",
-      "namespace": "soc",
-      "ownerReferences": [
-        {
-          "apiVersion": "apps/v1",
-          "blockOwnerDeletion": true,
-          "controller": true,
-          "kind": "DaemonSet",
-          "name": "wazuh-agent",
-          "uid": "5bf44853-a07f-4e8e-a899-f612c715abd9"
-        }
-      ],
-      "resourceVersion": "10143138",
-      "uid": "45480a4d-dc12-4fb4-8d65-b9d26bed29b8"
+      "resourceVersion": "10167605",
+      "uid": "de4d890c-bc33-45f5-8ac9-7170ab037fda"
     },
     "spec": {
       "affinity": {
@@ -1262,7 +1495,7 @@
             },
             {
               "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-r8x89",
+              "name": "kube-api-access-hzsk7",
               "readOnly": true
             }
           ]
@@ -1305,7 +1538,7 @@
             },
             {
               "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-r8x89",
+              "name": "kube-api-access-hzsk7",
               "readOnly": true
             }
           ]
@@ -1340,7 +1573,7 @@
             },
             {
               "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-r8x89",
+              "name": "kube-api-access-hzsk7",
               "readOnly": true
             }
           ]
@@ -1423,7 +1656,7 @@
           "name": "suricata-logs"
         },
         {
-          "name": "kube-api-access-r8x89",
+          "name": "kube-api-access-hzsk7",
           "projected": {
             "defaultMode": 420,
             "sources": [
@@ -1466,19 +1699,19 @@
       "conditions": [
         {
           "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:54:30Z",
+          "lastTransitionTime": "2026-02-10T14:31:21Z",
           "status": "True",
           "type": "PodReadyToStartContainers"
         },
         {
           "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:54:30Z",
+          "lastTransitionTime": "2026-02-10T14:31:21Z",
           "status": "True",
           "type": "Initialized"
         },
         {
           "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:54:28Z",
+          "lastTransitionTime": "2026-02-10T14:31:20Z",
           "message": "containers with unready status: [wazuh-agent suricata]",
           "reason": "ContainersNotReady",
           "status": "False",
@@ -1486,7 +1719,7 @@
         },
         {
           "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:54:28Z",
+          "lastTransitionTime": "2026-02-10T14:31:20Z",
           "message": "containers with unready status: [wazuh-agent suricata]",
           "reason": "ContainersNotReady",
           "status": "False",
@@ -1494,23 +1727,23 @@
         },
         {
           "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:54:28Z",
+          "lastTransitionTime": "2026-02-10T14:31:19Z",
           "status": "True",
           "type": "PodScheduled"
         }
       ],
       "containerStatuses": [
         {
-          "containerID": "containerd://963077d19867228a571d20bd3b6df35730a3d3924522c928e3ec5e00a66fbd6c",
+          "containerID": "containerd://519d6bbc73e453e71d56ae35a0b3cc41fef03db9f054672de48cdc98dc2e1c89",
           "image": "docker.io/jasonish/suricata:latest",
           "imageID": "docker.io/jasonish/suricata@sha256:3c7777b38f54d0dc44c710549b51b6ffedfacdd7f258c8c2d176e126958feef4",
           "lastState": {
             "terminated": {
-              "containerID": "containerd://963077d19867228a571d20bd3b6df35730a3d3924522c928e3ec5e00a66fbd6c",
+              "containerID": "containerd://519d6bbc73e453e71d56ae35a0b3cc41fef03db9f054672de48cdc98dc2e1c89",
               "exitCode": 1,
-              "finishedAt": "2026-02-10T13:00:42Z",
+              "finishedAt": "2026-02-10T14:37:08Z",
               "reason": "Error",
-              "startedAt": "2026-02-10T13:00:42Z"
+              "startedAt": "2026-02-10T14:37:08Z"
             }
           },
           "name": "suricata",
@@ -1519,7 +1752,7 @@
           "started": false,
           "state": {
             "waiting": {
-              "message": "back-off 5m0s restarting failed container=suricata pod=wazuh-agent-w7nr4_soc(45480a4d-dc12-4fb4-8d65-b9d26bed29b8)",
+              "message": "back-off 5m0s restarting failed container=suricata pod=wazuh-agent-qrrgs_soc(de4d890c-bc33-45f5-8ac9-7170ab037fda)",
               "reason": "CrashLoopBackOff"
             }
           },
@@ -1536,7 +1769,7 @@
             },
             {
               "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-r8x89",
+              "name": "kube-api-access-hzsk7",
               "readOnly": true,
               "recursiveReadOnly": "Disabled"
             }
@@ -1577,7 +1810,7 @@
             },
             {
               "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-r8x89",
+              "name": "kube-api-access-hzsk7",
               "readOnly": true,
               "recursiveReadOnly": "Disabled"
             }
@@ -1592,7 +1825,7 @@
       ],
       "initContainerStatuses": [
         {
-          "containerID": "containerd://438840cf79c934643158fe6c7141417327a146c40d4468ff96f7ccfdb9e3e086",
+          "containerID": "containerd://949d455eab16b968eb0889c92aa9df4291aa0492e54f132d648100c385277b44",
           "image": "docker.io/library/busybox:latest",
           "imageID": "docker.io/library/busybox@sha256:b3255e7dfbcd10cb367af0d409747d511aeb66dfac98cf30e97e87e4207dd76f",
           "lastState": {},
@@ -1602,11 +1835,11 @@
           "started": false,
           "state": {
             "terminated": {
-              "containerID": "containerd://438840cf79c934643158fe6c7141417327a146c40d4468ff96f7ccfdb9e3e086",
+              "containerID": "containerd://949d455eab16b968eb0889c92aa9df4291aa0492e54f132d648100c385277b44",
               "exitCode": 0,
-              "finishedAt": "2026-02-10T12:54:30Z",
+              "finishedAt": "2026-02-10T14:31:21Z",
               "reason": "Completed",
-              "startedAt": "2026-02-10T12:54:30Z"
+              "startedAt": "2026-02-10T14:31:21Z"
             }
           },
           "volumeMounts": [
@@ -1620,7 +1853,7 @@
             },
             {
               "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-r8x89",
+              "name": "kube-api-access-hzsk7",
               "readOnly": true,
               "recursiveReadOnly": "Disabled"
             }
@@ -1635,1439 +1868,19 @@
         }
       ],
       "qosClass": "Burstable",
-      "startTime": "2026-02-10T12:54:28Z"
+      "startTime": "2026-02-10T14:31:20Z"
     }
   },
   {
     "apiVersion": "v1",
     "kind": "Pod",
     "metadata": {
-      "annotations": {
-        "cni.projectcalico.org/containerID": "378b3171ae43399b635ef74050682b3bcd7720097ee45687ec619684930cbac4",
-        "cni.projectcalico.org/podIP": "172.16.74.52/32",
-        "cni.projectcalico.org/podIPs": "172.16.74.52/32"
-      },
-      "creationTimestamp": "2026-02-10T12:26:21Z",
-      "finalizers": [
-        "batch.kubernetes.io/job-tracking"
-      ],
-      "generateName": "wazuh-cert-generator-",
-      "labels": {
-        "batch.kubernetes.io/controller-uid": "0faf32ea-6bc7-4e4d-8498-e977bd66b535",
-        "batch.kubernetes.io/job-name": "wazuh-cert-generator",
-        "controller-uid": "0faf32ea-6bc7-4e4d-8498-e977bd66b535",
-        "job-name": "wazuh-cert-generator"
-      },
-      "name": "wazuh-cert-generator-lcc2w",
-      "namespace": "soc",
-      "ownerReferences": [
-        {
-          "apiVersion": "batch/v1",
-          "blockOwnerDeletion": true,
-          "controller": true,
-          "kind": "Job",
-          "name": "wazuh-cert-generator",
-          "uid": "0faf32ea-6bc7-4e4d-8498-e977bd66b535"
-        }
-      ],
-      "resourceVersion": "10143693",
-      "uid": "4bde8848-20b7-45db-b86a-d5fcdc0c672f"
-    },
-    "spec": {
-      "containers": [
-        {
-          "args": [
-            "echo \"Creating Wazuh Secrets...\"\n\n# Indexer Certs\nkubectl create secret generic wazuh-indexer-certs -n soc \\\n  --from-file=root-ca.pem=/shared/root-ca.pem \\\n  --from-file=root-ca.key=/shared/root-ca.key \\\n  --from-file=indexer.pem=/shared/wazuh-indexer.pem \\\n  --from-file=indexer.key=/shared/wazuh-indexer-key.pem \\\n  --from-file=admin.pem=/shared/admin.pem \\\n  --from-file=admin.key=/shared/admin-key.pem \\\n  --dry-run=client -o yaml | kubectl apply -f -\n\n# Manager Certs\nkubectl create secret generic wazuh-manager-certs -n soc \\\n  --from-file=root-ca.pem=/shared/root-ca.pem \\\n  --from-file=root-ca.key=/shared/root-ca.key \\\n  --from-file=server.pem=/shared/wazuh-manager.pem \\\n  --from-file=server.key=/shared/wazuh-manager-key.pem \\\n  --dry-run=client -o yaml | kubectl apply -f -\n\n# Dashboard Certs\nkubectl create secret generic wazuh-dashboard-certs -n soc \\\n  --from-file=root-ca.pem=/shared/root-ca.pem \\\n  --from-file=root-ca.key=/shared/root-ca.key \\\n  --from-file=dashboard.pem=/shared/wazuh-dashboard.pem \\\n  --from-file=dashboard.key=/shared/wazuh-dashboard-key.pem \\\n  --dry-run=client -o yaml | kubectl apply -f -\n\n# Admin Password (Auto-generated if not exists)\nif ! kubectl get secret wazuh-auth -n soc; then\n  PASSWORD=$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 16)\n  kubectl create secret generic wazuh-auth -n soc \\\n    --from-literal=admin_username=admin \\\n    --from-literal=admin_password=$PASSWORD\n  echo \"Generated wazuh-auth secret with random password.\"\nelse\n  echo \"wazuh-auth secret already exists.\"\nfi\n\necho \"All secrets created successfully.\"\n"
-          ],
-          "command": [
-            "/bin/bash",
-            "-c"
-          ],
-          "image": "bitnami/kubectl:latest",
-          "imagePullPolicy": "Always",
-          "name": "uploader",
-          "resources": {},
-          "terminationMessagePath": "/dev/termination-log",
-          "terminationMessagePolicy": "File",
-          "volumeMounts": [
-            {
-              "mountPath": "/shared",
-              "name": "shared-certs"
-            },
-            {
-              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-dq6dk",
-              "readOnly": true
-            }
-          ]
-        }
-      ],
-      "dnsPolicy": "ClusterFirst",
-      "enableServiceLinks": true,
-      "initContainers": [
-        {
-          "args": [
-            "cat > /config/instances.yml <<EOF\ninstances:\n  - name: wazuh-indexer\n    ip: \n      - 127.0.0.1\n    dns:\n      - wazuh-indexer.soc.svc\n  - name: wazuh-manager\n    ip: \n      - 127.0.0.1\n    dns:\n      - wazuh-manager.soc.svc\n  - name: wazuh-dashboard\n    ip: \n      - 127.0.0.1\n    dns:\n      - wazuh-dashboard.soc.svc\nEOF\n/tool/wazuh-certs-tool.sh -A /config/instances.yml\ncp -r /certs/* /shared/\n"
-          ],
-          "command": [
-            "/bin/bash",
-            "-c"
-          ],
-          "image": "wazuh/wazuh-certs-tool:4.7.2",
-          "imagePullPolicy": "IfNotPresent",
-          "name": "generator",
-          "resources": {},
-          "terminationMessagePath": "/dev/termination-log",
-          "terminationMessagePolicy": "File",
-          "volumeMounts": [
-            {
-              "mountPath": "/shared",
-              "name": "shared-certs"
-            },
-            {
-              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-dq6dk",
-              "readOnly": true
-            }
-          ]
-        }
-      ],
-      "nodeName": "k8-manager",
-      "preemptionPolicy": "PreemptLowerPriority",
-      "priority": 0,
-      "restartPolicy": "OnFailure",
-      "schedulerName": "default-scheduler",
-      "securityContext": {},
-      "serviceAccount": "wazuh-cert-generator",
-      "serviceAccountName": "wazuh-cert-generator",
-      "terminationGracePeriodSeconds": 30,
-      "tolerations": [
-        {
-          "effect": "NoExecute",
-          "key": "node.kubernetes.io/not-ready",
-          "operator": "Exists",
-          "tolerationSeconds": 300
-        },
-        {
-          "effect": "NoExecute",
-          "key": "node.kubernetes.io/unreachable",
-          "operator": "Exists",
-          "tolerationSeconds": 300
-        }
-      ],
-      "volumes": [
-        {
-          "emptyDir": {},
-          "name": "shared-certs"
-        },
-        {
-          "name": "kube-api-access-dq6dk",
-          "projected": {
-            "defaultMode": 420,
-            "sources": [
-              {
-                "serviceAccountToken": {
-                  "expirationSeconds": 3607,
-                  "path": "token"
-                }
-              },
-              {
-                "configMap": {
-                  "items": [
-                    {
-                      "key": "ca.crt",
-                      "path": "ca.crt"
-                    }
-                  ],
-                  "name": "kube-root-ca.crt"
-                }
-              },
-              {
-                "downwardAPI": {
-                  "items": [
-                    {
-                      "fieldRef": {
-                        "apiVersion": "v1",
-                        "fieldPath": "metadata.namespace"
-                      },
-                      "path": "namespace"
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        }
-      ]
-    },
-    "status": {
-      "conditions": [
-        {
-          "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:26:35Z",
-          "status": "True",
-          "type": "PodReadyToStartContainers"
-        },
-        {
-          "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:26:21Z",
-          "message": "containers with incomplete status: [generator]",
-          "reason": "ContainersNotInitialized",
-          "status": "False",
-          "type": "Initialized"
-        },
-        {
-          "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:26:21Z",
-          "message": "containers with unready status: [uploader]",
-          "reason": "ContainersNotReady",
-          "status": "False",
-          "type": "Ready"
-        },
-        {
-          "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:26:21Z",
-          "message": "containers with unready status: [uploader]",
-          "reason": "ContainersNotReady",
-          "status": "False",
-          "type": "ContainersReady"
-        },
-        {
-          "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:26:21Z",
-          "status": "True",
-          "type": "PodScheduled"
-        }
-      ],
-      "containerStatuses": [
-        {
-          "image": "bitnami/kubectl:latest",
-          "imageID": "",
-          "lastState": {},
-          "name": "uploader",
-          "ready": false,
-          "restartCount": 0,
-          "started": false,
-          "state": {
-            "waiting": {
-              "reason": "PodInitializing"
-            }
-          },
-          "volumeMounts": [
-            {
-              "mountPath": "/shared",
-              "name": "shared-certs"
-            },
-            {
-              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-dq6dk",
-              "readOnly": true,
-              "recursiveReadOnly": "Disabled"
-            }
-          ]
-        }
-      ],
-      "hostIP": "192.168.1.10",
-      "hostIPs": [
-        {
-          "ip": "192.168.1.10"
-        }
-      ],
-      "initContainerStatuses": [
-        {
-          "image": "wazuh/wazuh-certs-tool:4.7.2",
-          "imageID": "",
-          "lastState": {},
-          "name": "generator",
-          "ready": false,
-          "restartCount": 0,
-          "started": false,
-          "state": {
-            "waiting": {
-              "message": "failed to pull and unpack image \"docker.io/wazuh/wazuh-certs-tool:4.7.2\": failed to resolve image: pull access denied, repository does not exist or may require authorization: server message: insufficient_scope: authorization failed",
-              "reason": "ErrImagePull"
-            }
-          },
-          "volumeMounts": [
-            {
-              "mountPath": "/shared",
-              "name": "shared-certs"
-            },
-            {
-              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-dq6dk",
-              "readOnly": true,
-              "recursiveReadOnly": "Disabled"
-            }
-          ]
-        }
-      ],
-      "phase": "Pending",
-      "podIP": "172.16.74.52",
-      "podIPs": [
-        {
-          "ip": "172.16.74.52"
-        }
-      ],
-      "qosClass": "BestEffort",
-      "startTime": "2026-02-10T12:26:21Z"
-    }
-  },
-  {
-    "apiVersion": "v1",
-    "kind": "Pod",
-    "metadata": {
-      "annotations": {
-        "cni.projectcalico.org/containerID": "5a83569380dc74c058bd65af51968160e26ef287cb4e227206504cd4d8e35cfb",
-        "cni.projectcalico.org/podIP": "172.16.74.57/32",
-        "cni.projectcalico.org/podIPs": "172.16.74.57/32"
-      },
-      "creationTimestamp": "2026-02-10T12:35:21Z",
-      "finalizers": [
-        "batch.kubernetes.io/job-tracking"
-      ],
-      "generateName": "wazuh-cert-generator-v2-",
-      "labels": {
-        "batch.kubernetes.io/controller-uid": "7702f17e-eeeb-4f61-bac5-fe8b05a195e7",
-        "batch.kubernetes.io/job-name": "wazuh-cert-generator-v2",
-        "controller-uid": "7702f17e-eeeb-4f61-bac5-fe8b05a195e7",
-        "job-name": "wazuh-cert-generator-v2"
-      },
-      "name": "wazuh-cert-generator-v2-bp7ft",
-      "namespace": "soc",
-      "ownerReferences": [
-        {
-          "apiVersion": "batch/v1",
-          "blockOwnerDeletion": true,
-          "controller": true,
-          "kind": "Job",
-          "name": "wazuh-cert-generator-v2",
-          "uid": "7702f17e-eeeb-4f61-bac5-fe8b05a195e7"
-        }
-      ],
-      "resourceVersion": "10143445",
-      "uid": "8ada539d-c9b9-4d38-b3fa-f45c9e9b7e08"
-    },
-    "spec": {
-      "containers": [
-        {
-          "args": [
-            "echo \"Creating Wazuh Secrets...\"\n\n# Indexer Certs\nkubectl create secret generic wazuh-indexer-certs -n soc \\\n  --from-file=root-ca.pem=/shared/root-ca.pem \\\n  --from-file=root-ca.key=/shared/root-ca.key \\\n  --from-file=indexer.pem=/shared/wazuh-indexer.pem \\\n  --from-file=indexer.key=/shared/wazuh-indexer-key.pem \\\n  --from-file=admin.pem=/shared/admin.pem \\\n  --from-file=admin.key=/shared/admin-key.pem \\\n  --dry-run=client -o yaml | kubectl apply -f -\n\n# Manager Certs\nkubectl create secret generic wazuh-manager-certs -n soc \\\n  --from-file=root-ca.pem=/shared/root-ca.pem \\\n  --from-file=root-ca.key=/shared/root-ca.key \\\n  --from-file=server.pem=/shared/wazuh-manager.pem \\\n  --from-file=server.key=/shared/wazuh-manager-key.pem \\\n  --dry-run=client -o yaml | kubectl apply -f -\n\n# Dashboard Certs\nkubectl create secret generic wazuh-dashboard-certs -n soc \\\n  --from-file=root-ca.pem=/shared/root-ca.pem \\\n  --from-file=root-ca.key=/shared/root-ca.key \\\n  --from-file=dashboard.pem=/shared/wazuh-dashboard.pem \\\n  --from-file=dashboard.key=/shared/wazuh-dashboard-key.pem \\\n  --dry-run=client -o yaml | kubectl apply -f -\n\n# Admin Password (Auto-generated if not exists)\nif ! kubectl get secret wazuh-auth -n soc; then\n  PASSWORD=$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 16)\n  kubectl create secret generic wazuh-auth -n soc \\\n    --from-literal=admin_username=admin \\\n    --from-literal=admin_password=$PASSWORD\n  echo \"Generated wazuh-auth secret with random password.\"\nelse\n  echo \"wazuh-auth secret already exists.\"\nfi\n\necho \"All secrets created successfully.\"\n"
-          ],
-          "command": [
-            "/bin/bash",
-            "-c"
-          ],
-          "image": "bitnami/kubectl:latest",
-          "imagePullPolicy": "Always",
-          "name": "uploader",
-          "resources": {},
-          "terminationMessagePath": "/dev/termination-log",
-          "terminationMessagePolicy": "File",
-          "volumeMounts": [
-            {
-              "mountPath": "/shared",
-              "name": "shared-certs"
-            },
-            {
-              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-9nv8q",
-              "readOnly": true
-            }
-          ]
-        }
-      ],
-      "dnsPolicy": "ClusterFirst",
-      "enableServiceLinks": true,
-      "initContainers": [
-        {
-          "args": [
-            "cat > /config/instances.yml <<EOF\ninstances:\n  - name: wazuh-indexer\n    ip: \n      - 127.0.0.1\n    dns:\n      - wazuh-indexer.soc.svc\n  - name: wazuh-manager\n    ip: \n      - 127.0.0.1\n    dns:\n      - wazuh-manager.soc.svc\n  - name: wazuh-dashboard\n    ip: \n      - 127.0.0.1\n    dns:\n      - wazuh-dashboard.soc.svc\nEOF\n/tool/wazuh-certs-tool.sh -A /config/instances.yml\ncp -r /certs/* /shared/\n"
-          ],
-          "command": [
-            "/bin/bash",
-            "-c"
-          ],
-          "image": "wazuh/wazuh-certs-tool:4.9.0",
-          "imagePullPolicy": "IfNotPresent",
-          "name": "generator",
-          "resources": {},
-          "terminationMessagePath": "/dev/termination-log",
-          "terminationMessagePolicy": "File",
-          "volumeMounts": [
-            {
-              "mountPath": "/shared",
-              "name": "shared-certs"
-            },
-            {
-              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-9nv8q",
-              "readOnly": true
-            }
-          ]
-        }
-      ],
-      "nodeName": "k8-manager",
-      "preemptionPolicy": "PreemptLowerPriority",
-      "priority": 0,
-      "restartPolicy": "OnFailure",
-      "schedulerName": "default-scheduler",
-      "securityContext": {},
-      "serviceAccount": "wazuh-cert-generator",
-      "serviceAccountName": "wazuh-cert-generator",
-      "terminationGracePeriodSeconds": 30,
-      "tolerations": [
-        {
-          "effect": "NoExecute",
-          "key": "node.kubernetes.io/not-ready",
-          "operator": "Exists",
-          "tolerationSeconds": 300
-        },
-        {
-          "effect": "NoExecute",
-          "key": "node.kubernetes.io/unreachable",
-          "operator": "Exists",
-          "tolerationSeconds": 300
-        }
-      ],
-      "volumes": [
-        {
-          "emptyDir": {},
-          "name": "shared-certs"
-        },
-        {
-          "name": "kube-api-access-9nv8q",
-          "projected": {
-            "defaultMode": 420,
-            "sources": [
-              {
-                "serviceAccountToken": {
-                  "expirationSeconds": 3607,
-                  "path": "token"
-                }
-              },
-              {
-                "configMap": {
-                  "items": [
-                    {
-                      "key": "ca.crt",
-                      "path": "ca.crt"
-                    }
-                  ],
-                  "name": "kube-root-ca.crt"
-                }
-              },
-              {
-                "downwardAPI": {
-                  "items": [
-                    {
-                      "fieldRef": {
-                        "apiVersion": "v1",
-                        "fieldPath": "metadata.namespace"
-                      },
-                      "path": "namespace"
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        }
-      ]
-    },
-    "status": {
-      "conditions": [
-        {
-          "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:35:24Z",
-          "status": "True",
-          "type": "PodReadyToStartContainers"
-        },
-        {
-          "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:35:21Z",
-          "message": "containers with incomplete status: [generator]",
-          "reason": "ContainersNotInitialized",
-          "status": "False",
-          "type": "Initialized"
-        },
-        {
-          "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:35:21Z",
-          "message": "containers with unready status: [uploader]",
-          "reason": "ContainersNotReady",
-          "status": "False",
-          "type": "Ready"
-        },
-        {
-          "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:35:21Z",
-          "message": "containers with unready status: [uploader]",
-          "reason": "ContainersNotReady",
-          "status": "False",
-          "type": "ContainersReady"
-        },
-        {
-          "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:35:21Z",
-          "status": "True",
-          "type": "PodScheduled"
-        }
-      ],
-      "containerStatuses": [
-        {
-          "image": "bitnami/kubectl:latest",
-          "imageID": "",
-          "lastState": {},
-          "name": "uploader",
-          "ready": false,
-          "restartCount": 0,
-          "started": false,
-          "state": {
-            "waiting": {
-              "reason": "PodInitializing"
-            }
-          },
-          "volumeMounts": [
-            {
-              "mountPath": "/shared",
-              "name": "shared-certs"
-            },
-            {
-              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-9nv8q",
-              "readOnly": true,
-              "recursiveReadOnly": "Disabled"
-            }
-          ]
-        }
-      ],
-      "hostIP": "192.168.1.10",
-      "hostIPs": [
-        {
-          "ip": "192.168.1.10"
-        }
-      ],
-      "initContainerStatuses": [
-        {
-          "image": "wazuh/wazuh-certs-tool:4.9.0",
-          "imageID": "",
-          "lastState": {},
-          "name": "generator",
-          "ready": false,
-          "restartCount": 0,
-          "started": false,
-          "state": {
-            "waiting": {
-              "message": "Back-off pulling image \"wazuh/wazuh-certs-tool:4.9.0\": ErrImagePull: failed to pull and unpack image \"docker.io/wazuh/wazuh-certs-tool:4.9.0\": failed to resolve image: pull access denied, repository does not exist or may require authorization: server message: insufficient_scope: authorization failed",
-              "reason": "ImagePullBackOff"
-            }
-          },
-          "volumeMounts": [
-            {
-              "mountPath": "/shared",
-              "name": "shared-certs"
-            },
-            {
-              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-9nv8q",
-              "readOnly": true,
-              "recursiveReadOnly": "Disabled"
-            }
-          ]
-        }
-      ],
-      "phase": "Pending",
-      "podIP": "172.16.74.57",
-      "podIPs": [
-        {
-          "ip": "172.16.74.57"
-        }
-      ],
-      "qosClass": "BestEffort",
-      "startTime": "2026-02-10T12:35:21Z"
-    }
-  },
-  {
-    "apiVersion": "v1",
-    "kind": "Pod",
-    "metadata": {
-      "annotations": {
-        "cni.projectcalico.org/containerID": "6e8f8f7888614272c6cb68a1b153452e4e145f92584c84fe505fdc8fa8b127f3",
-        "cni.projectcalico.org/podIP": "172.16.209.55/32",
-        "cni.projectcalico.org/podIPs": "172.16.209.55/32"
-      },
-      "creationTimestamp": "2026-02-10T13:00:23Z",
-      "finalizers": [
-        "batch.kubernetes.io/job-tracking"
-      ],
-      "generateName": "wazuh-cert-generator-v4-",
-      "labels": {
-        "batch.kubernetes.io/controller-uid": "33bd31c1-f58e-4b7b-954c-191549711543",
-        "batch.kubernetes.io/job-name": "wazuh-cert-generator-v4",
-        "controller-uid": "33bd31c1-f58e-4b7b-954c-191549711543",
-        "job-name": "wazuh-cert-generator-v4"
-      },
-      "name": "wazuh-cert-generator-v4-jrdjc",
-      "namespace": "soc",
-      "ownerReferences": [
-        {
-          "apiVersion": "batch/v1",
-          "blockOwnerDeletion": true,
-          "controller": true,
-          "kind": "Job",
-          "name": "wazuh-cert-generator-v4",
-          "uid": "33bd31c1-f58e-4b7b-954c-191549711543"
-        }
-      ],
-      "resourceVersion": "10143524",
-      "uid": "0cd90123-33cc-4ec1-93e5-b1e78c792e43"
-    },
-    "spec": {
-      "containers": [
-        {
-          "args": [
-            "echo \"DEBUG: Current Pods and Events:\"\nkubectl get pods -n soc\nkubectl get events -n soc --sort-by=.metadata.creationTimestamp || true\n\necho \"Checking generated certificates...\"\nls -R /shared\n\necho \"Creating Wazuh Secrets...\"\n\n# Copy files to flat structure if needed, or reference them directly\n# wazuh-certs-generator output structure might vary. \n# Typically: /certificates/wazuh-indexer.pem, etc. or /certificates/wazuh-indexer/node.pem\n\n# We assume they are in /shared (mounted to /certificates in generator)\n# Let's try to find them.\n\nROOT_CA_PEM=$(find /shared -name \"root-ca.pem\" | head -n 1)\nROOT_CA_KEY=$(find /shared -name \"root-ca.key\" | head -n 1)\n\n# Indexer\nINDEXER_PEM=$(find /shared -name \"wazuh-indexer.pem\" | head -n 1)\nINDEXER_KEY=$(find /shared -name \"wazuh-indexer-key.pem\" | head -n 1)\nADMIN_PEM=$(find /shared -name \"admin.pem\" | head -n 1)\nADMIN_KEY=$(find /shared -name \"admin-key.pem\" | head -n 1)\n\n# Manager\nMANAGER_PEM=$(find /shared -name \"wazuh-manager.pem\" | head -n 1)\nMANAGER_KEY=$(find /shared -name \"wazuh-manager-key.pem\" | head -n 1)\n\n# Dashboard\nDASHBOARD_PEM=$(find /shared -name \"wazuh-dashboard.pem\" | head -n 1)\nDASHBOARD_KEY=$(find /shared -name \"wazuh-dashboard-key.pem\" | head -n 1)\n\nif [ -z \"$ROOT_CA_PEM\" ]; then echo \"Error: Certs not found\"; exit 1; fi\n\n# Indexer Certs\nkubectl create secret generic wazuh-indexer-certs -n soc \\\n  --from-file=root-ca.pem=$ROOT_CA_PEM \\\n  --from-file=root-ca.key=$ROOT_CA_KEY \\\n  --from-file=indexer.pem=$INDEXER_PEM \\\n  --from-file=indexer.key=$INDEXER_KEY \\\n  --from-file=admin.pem=$ADMIN_PEM \\\n  --from-file=admin.key=$ADMIN_KEY \\\n  --dry-run=client -o yaml | kubectl apply -f -\n\n# Manager Certs\nkubectl create secret generic wazuh-manager-certs -n soc \\\n  --from-file=root-ca.pem=$ROOT_CA_PEM \\\n  --from-file=root-ca.key=$ROOT_CA_KEY \\\n  --from-file=server.pem=$MANAGER_PEM \\\n  --from-file=server.key=$MANAGER_KEY \\\n  --dry-run=client -o yaml | kubectl apply -f -\n\n# Dashboard Certs\nkubectl create secret generic wazuh-dashboard-certs -n soc \\\n  --from-file=root-ca.pem=$ROOT_CA_PEM \\\n  --from-file=root-ca.key=$ROOT_CA_KEY \\\n  --from-file=dashboard.pem=$DASHBOARD_PEM \\\n  --from-file=dashboard.key=$DASHBOARD_KEY \\\n  --dry-run=client -o yaml | kubectl apply -f -\n\n# Admin Password (Auto-generated if not exists)\nif ! kubectl get secret wazuh-auth -n soc; then\n  PASSWORD=$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 16)\n  kubectl create secret generic wazuh-auth -n soc \\\n    --from-literal=admin_username=admin \\\n    --from-literal=admin_password=$PASSWORD\n  echo \"Generated wazuh-auth secret with random password.\"\nelse\n  echo \"wazuh-auth secret already exists.\"\nfi\n\necho \"All secrets created successfully.\"\n"
-          ],
-          "command": [
-            "/bin/bash",
-            "-c"
-          ],
-          "image": "bitnami/kubectl:latest",
-          "imagePullPolicy": "Always",
-          "name": "uploader",
-          "resources": {},
-          "terminationMessagePath": "/dev/termination-log",
-          "terminationMessagePolicy": "File",
-          "volumeMounts": [
-            {
-              "mountPath": "/shared",
-              "name": "shared-certs"
-            },
-            {
-              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-hhcq9",
-              "readOnly": true
-            }
-          ]
-        }
-      ],
-      "dnsPolicy": "ClusterFirst",
-      "enableServiceLinks": true,
-      "initContainers": [
-        {
-          "args": [
-            "cat > /config/certs.yml <<EOF\ninstances:\n  - name: wazuh-indexer\n    ip: \n      - 127.0.0.1\n    dns:\n      - wazuh-indexer.soc.svc\n  - name: wazuh-manager\n    ip: \n      - 127.0.0.1\n    dns:\n      - wazuh-manager.soc.svc\n  - name: wazuh-dashboard\n    ip: \n      - 127.0.0.1\n    dns:\n      - wazuh-dashboard.soc.svc\nEOF\n"
-          ],
-          "command": [
-            "sh",
-            "-c"
-          ],
-          "image": "busybox",
-          "imagePullPolicy": "Always",
-          "name": "config-writer",
-          "resources": {},
-          "terminationMessagePath": "/dev/termination-log",
-          "terminationMessagePolicy": "File",
-          "volumeMounts": [
-            {
-              "mountPath": "/config",
-              "name": "config-vol"
-            },
-            {
-              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-hhcq9",
-              "readOnly": true
-            }
-          ]
-        },
-        {
-          "image": "wazuh/wazuh-certs-generator:0.0.4",
-          "imagePullPolicy": "IfNotPresent",
-          "name": "generator",
-          "resources": {},
-          "terminationMessagePath": "/dev/termination-log",
-          "terminationMessagePolicy": "File",
-          "volumeMounts": [
-            {
-              "mountPath": "/config",
-              "name": "config-vol"
-            },
-            {
-              "mountPath": "/certificates",
-              "name": "shared-certs"
-            },
-            {
-              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-hhcq9",
-              "readOnly": true
-            }
-          ]
-        }
-      ],
-      "nodeName": "k8-node-20",
-      "preemptionPolicy": "PreemptLowerPriority",
-      "priority": 0,
-      "restartPolicy": "OnFailure",
-      "schedulerName": "default-scheduler",
-      "securityContext": {},
-      "serviceAccount": "wazuh-cert-generator",
-      "serviceAccountName": "wazuh-cert-generator",
-      "terminationGracePeriodSeconds": 30,
-      "tolerations": [
-        {
-          "effect": "NoExecute",
-          "key": "node.kubernetes.io/not-ready",
-          "operator": "Exists",
-          "tolerationSeconds": 300
-        },
-        {
-          "effect": "NoExecute",
-          "key": "node.kubernetes.io/unreachable",
-          "operator": "Exists",
-          "tolerationSeconds": 300
-        }
-      ],
-      "volumes": [
-        {
-          "emptyDir": {},
-          "name": "shared-certs"
-        },
-        {
-          "emptyDir": {},
-          "name": "config-vol"
-        },
-        {
-          "name": "kube-api-access-hhcq9",
-          "projected": {
-            "defaultMode": 420,
-            "sources": [
-              {
-                "serviceAccountToken": {
-                  "expirationSeconds": 3607,
-                  "path": "token"
-                }
-              },
-              {
-                "configMap": {
-                  "items": [
-                    {
-                      "key": "ca.crt",
-                      "path": "ca.crt"
-                    }
-                  ],
-                  "name": "kube-root-ca.crt"
-                }
-              },
-              {
-                "downwardAPI": {
-                  "items": [
-                    {
-                      "fieldRef": {
-                        "apiVersion": "v1",
-                        "fieldPath": "metadata.namespace"
-                      },
-                      "path": "namespace"
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        }
-      ]
-    },
-    "status": {
-      "conditions": [
-        {
-          "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T13:00:26Z",
-          "status": "True",
-          "type": "PodReadyToStartContainers"
-        },
-        {
-          "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T13:00:23Z",
-          "message": "containers with incomplete status: [generator]",
-          "reason": "ContainersNotInitialized",
-          "status": "False",
-          "type": "Initialized"
-        },
-        {
-          "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T13:00:23Z",
-          "message": "containers with unready status: [uploader]",
-          "reason": "ContainersNotReady",
-          "status": "False",
-          "type": "Ready"
-        },
-        {
-          "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T13:00:23Z",
-          "message": "containers with unready status: [uploader]",
-          "reason": "ContainersNotReady",
-          "status": "False",
-          "type": "ContainersReady"
-        },
-        {
-          "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T13:00:23Z",
-          "status": "True",
-          "type": "PodScheduled"
-        }
-      ],
-      "containerStatuses": [
-        {
-          "image": "bitnami/kubectl:latest",
-          "imageID": "",
-          "lastState": {},
-          "name": "uploader",
-          "ready": false,
-          "restartCount": 0,
-          "started": false,
-          "state": {
-            "waiting": {
-              "reason": "PodInitializing"
-            }
-          },
-          "volumeMounts": [
-            {
-              "mountPath": "/shared",
-              "name": "shared-certs"
-            },
-            {
-              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-hhcq9",
-              "readOnly": true,
-              "recursiveReadOnly": "Disabled"
-            }
-          ]
-        }
-      ],
-      "hostIP": "192.168.1.20",
-      "hostIPs": [
-        {
-          "ip": "192.168.1.20"
-        }
-      ],
-      "initContainerStatuses": [
-        {
-          "containerID": "containerd://17f098d80aa00a08e9a21d8deec20b12601becea5b239fa27b1950a0d9447695",
-          "image": "docker.io/library/busybox:latest",
-          "imageID": "docker.io/library/busybox@sha256:b3255e7dfbcd10cb367af0d409747d511aeb66dfac98cf30e97e87e4207dd76f",
-          "lastState": {},
-          "name": "config-writer",
-          "ready": true,
-          "restartCount": 0,
-          "started": false,
-          "state": {
-            "terminated": {
-              "containerID": "containerd://17f098d80aa00a08e9a21d8deec20b12601becea5b239fa27b1950a0d9447695",
-              "exitCode": 0,
-              "finishedAt": "2026-02-10T13:00:25Z",
-              "reason": "Completed",
-              "startedAt": "2026-02-10T13:00:25Z"
-            }
-          },
-          "volumeMounts": [
-            {
-              "mountPath": "/config",
-              "name": "config-vol"
-            },
-            {
-              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-hhcq9",
-              "readOnly": true,
-              "recursiveReadOnly": "Disabled"
-            }
-          ]
-        },
-        {
-          "containerID": "containerd://e534c5a85a4b0fe8ae8efdded6d60ae35730bf3ab1c460d36aa699ccee43ceae",
-          "image": "docker.io/wazuh/wazuh-certs-generator:0.0.4",
-          "imageID": "docker.io/wazuh/wazuh-certs-generator@sha256:369b4d58509aab074b188596870c81584f7120e653d9ef83c591f0f785dcf325",
-          "lastState": {
-            "terminated": {
-              "containerID": "containerd://e534c5a85a4b0fe8ae8efdded6d60ae35730bf3ab1c460d36aa699ccee43ceae",
-              "exitCode": 1,
-              "finishedAt": "2026-02-10T13:02:15Z",
-              "reason": "Error",
-              "startedAt": "2026-02-10T13:02:14Z"
-            }
-          },
-          "name": "generator",
-          "ready": false,
-          "restartCount": 4,
-          "started": false,
-          "state": {
-            "waiting": {
-              "message": "back-off 1m20s restarting failed container=generator pod=wazuh-cert-generator-v4-jrdjc_soc(0cd90123-33cc-4ec1-93e5-b1e78c792e43)",
-              "reason": "CrashLoopBackOff"
-            }
-          },
-          "volumeMounts": [
-            {
-              "mountPath": "/config",
-              "name": "config-vol"
-            },
-            {
-              "mountPath": "/certificates",
-              "name": "shared-certs"
-            },
-            {
-              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-hhcq9",
-              "readOnly": true,
-              "recursiveReadOnly": "Disabled"
-            }
-          ]
-        }
-      ],
-      "phase": "Pending",
-      "podIP": "172.16.209.55",
-      "podIPs": [
-        {
-          "ip": "172.16.209.55"
-        }
-      ],
-      "qosClass": "BestEffort",
-      "startTime": "2026-02-10T13:00:23Z"
-    }
-  },
-  {
-    "apiVersion": "v1",
-    "kind": "Pod",
-    "metadata": {
-      "creationTimestamp": "2026-02-10T12:26:20Z",
-      "generateName": "wazuh-dashboard-549c8f7698-",
-      "labels": {
-        "app": "wazuh-dashboard",
-        "pod-template-hash": "549c8f7698"
-      },
-      "name": "wazuh-dashboard-549c8f7698-gm6pb",
-      "namespace": "soc",
-      "ownerReferences": [
-        {
-          "apiVersion": "apps/v1",
-          "blockOwnerDeletion": true,
-          "controller": true,
-          "kind": "ReplicaSet",
-          "name": "wazuh-dashboard-549c8f7698",
-          "uid": "797bbdd7-8a23-4163-a5b3-00ae741660e6"
-        }
-      ],
-      "resourceVersion": "10134679",
-      "uid": "8d710b78-c0c7-426c-944b-d61098d66294"
-    },
-    "spec": {
-      "containers": [
-        {
-          "env": [
-            {
-              "name": "WAZUH_API_URL",
-              "value": "https://wazuh-manager:55000"
-            },
-            {
-              "name": "OPENSEARCH_URL",
-              "value": "https://wazuh-indexer:9200"
-            },
-            {
-              "name": "OPENSEARCH_USERNAME",
-              "valueFrom": {
-                "secretKeyRef": {
-                  "key": "admin_username",
-                  "name": "wazuh-auth"
-                }
-              }
-            },
-            {
-              "name": "OPENSEARCH_PASSWORD",
-              "valueFrom": {
-                "secretKeyRef": {
-                  "key": "admin_password",
-                  "name": "wazuh-auth"
-                }
-              }
-            },
-            {
-              "name": "SERVER_SSL_ENABLED",
-              "value": "false"
-            },
-            {
-              "name": "OPENSEARCH_SSL_VERIFICATIONMODE",
-              "value": "certificate"
-            },
-            {
-              "name": "OPENSEARCH_REQUESTHEADERSALLOWLIST",
-              "value": "securitytenant,Authorization"
-            },
-            {
-              "name": "OPENSEARCH_SSL_CERTIFICATEAUTHORITIES",
-              "value": "/usr/share/wazuh-dashboard/certs/root-ca.pem"
-            }
-          ],
-          "image": "wazuh/wazuh-dashboard:4.7.2",
-          "imagePullPolicy": "IfNotPresent",
-          "name": "wazuh-dashboard",
-          "ports": [
-            {
-              "containerPort": 5601,
-              "name": "dashboard",
-              "protocol": "TCP"
-            }
-          ],
-          "resources": {
-            "limits": {
-              "cpu": "1",
-              "memory": "1Gi"
-            },
-            "requests": {
-              "cpu": "250m",
-              "memory": "512Mi"
-            }
-          },
-          "terminationMessagePath": "/dev/termination-log",
-          "terminationMessagePolicy": "File",
-          "volumeMounts": [
-            {
-              "mountPath": "/usr/share/wazuh-dashboard/certs",
-              "name": "certificates",
-              "readOnly": true
-            },
-            {
-              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-bnfs5",
-              "readOnly": true
-            }
-          ]
-        }
-      ],
-      "dnsPolicy": "ClusterFirst",
-      "enableServiceLinks": true,
-      "nodeName": "k8-node-20",
-      "nodeSelector": {
-        "kubernetes.io/hostname": "k8-node-20"
-      },
-      "preemptionPolicy": "PreemptLowerPriority",
-      "priority": 0,
-      "restartPolicy": "Always",
-      "schedulerName": "default-scheduler",
-      "securityContext": {},
-      "serviceAccount": "default",
-      "serviceAccountName": "default",
-      "terminationGracePeriodSeconds": 30,
-      "tolerations": [
-        {
-          "effect": "NoExecute",
-          "key": "node.kubernetes.io/not-ready",
-          "operator": "Exists",
-          "tolerationSeconds": 300
-        },
-        {
-          "effect": "NoExecute",
-          "key": "node.kubernetes.io/unreachable",
-          "operator": "Exists",
-          "tolerationSeconds": 300
-        }
-      ],
-      "volumes": [
-        {
-          "name": "certificates",
-          "secret": {
-            "defaultMode": 420,
-            "secretName": "wazuh-dashboard-certs"
-          }
-        },
-        {
-          "name": "kube-api-access-bnfs5",
-          "projected": {
-            "defaultMode": 420,
-            "sources": [
-              {
-                "serviceAccountToken": {
-                  "expirationSeconds": 3607,
-                  "path": "token"
-                }
-              },
-              {
-                "configMap": {
-                  "items": [
-                    {
-                      "key": "ca.crt",
-                      "path": "ca.crt"
-                    }
-                  ],
-                  "name": "kube-root-ca.crt"
-                }
-              },
-              {
-                "downwardAPI": {
-                  "items": [
-                    {
-                      "fieldRef": {
-                        "apiVersion": "v1",
-                        "fieldPath": "metadata.namespace"
-                      },
-                      "path": "namespace"
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        }
-      ]
-    },
-    "status": {
-      "conditions": [
-        {
-          "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:26:20Z",
-          "status": "False",
-          "type": "PodReadyToStartContainers"
-        },
-        {
-          "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:26:20Z",
-          "status": "True",
-          "type": "Initialized"
-        },
-        {
-          "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:26:20Z",
-          "message": "containers with unready status: [wazuh-dashboard]",
-          "reason": "ContainersNotReady",
-          "status": "False",
-          "type": "Ready"
-        },
-        {
-          "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:26:20Z",
-          "message": "containers with unready status: [wazuh-dashboard]",
-          "reason": "ContainersNotReady",
-          "status": "False",
-          "type": "ContainersReady"
-        },
-        {
-          "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:26:20Z",
-          "status": "True",
-          "type": "PodScheduled"
-        }
-      ],
-      "containerStatuses": [
-        {
-          "image": "wazuh/wazuh-dashboard:4.7.2",
-          "imageID": "",
-          "lastState": {},
-          "name": "wazuh-dashboard",
-          "ready": false,
-          "restartCount": 0,
-          "started": false,
-          "state": {
-            "waiting": {
-              "reason": "ContainerCreating"
-            }
-          },
-          "volumeMounts": [
-            {
-              "mountPath": "/usr/share/wazuh-dashboard/certs",
-              "name": "certificates",
-              "readOnly": true,
-              "recursiveReadOnly": "Disabled"
-            },
-            {
-              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-bnfs5",
-              "readOnly": true,
-              "recursiveReadOnly": "Disabled"
-            }
-          ]
-        }
-      ],
-      "hostIP": "192.168.1.20",
-      "hostIPs": [
-        {
-          "ip": "192.168.1.20"
-        }
-      ],
-      "phase": "Pending",
-      "qosClass": "Burstable",
-      "startTime": "2026-02-10T12:26:20Z"
-    }
-  },
-  {
-    "apiVersion": "v1",
-    "kind": "Pod",
-    "metadata": {
-      "creationTimestamp": "2026-02-10T12:31:09Z",
-      "generateName": "wazuh-dashboard-7b69bfc8f4-",
-      "labels": {
-        "app": "wazuh-dashboard",
-        "pod-template-hash": "7b69bfc8f4"
-      },
-      "name": "wazuh-dashboard-7b69bfc8f4-85dx7",
-      "namespace": "soc",
-      "ownerReferences": [
-        {
-          "apiVersion": "apps/v1",
-          "blockOwnerDeletion": true,
-          "controller": true,
-          "kind": "ReplicaSet",
-          "name": "wazuh-dashboard-7b69bfc8f4",
-          "uid": "fbed4ada-9f95-4eee-ad6d-89732fa99726"
-        }
-      ],
-      "resourceVersion": "10135834",
-      "uid": "89d103ca-97df-4a33-825c-e3e6525c1511"
-    },
-    "spec": {
-      "containers": [
-        {
-          "env": [
-            {
-              "name": "WAZUH_API_URL",
-              "value": "https://wazuh-manager:55000"
-            },
-            {
-              "name": "OPENSEARCH_URL",
-              "value": "https://wazuh-indexer:9200"
-            },
-            {
-              "name": "OPENSEARCH_USERNAME",
-              "valueFrom": {
-                "secretKeyRef": {
-                  "key": "admin_username",
-                  "name": "wazuh-auth"
-                }
-              }
-            },
-            {
-              "name": "OPENSEARCH_PASSWORD",
-              "valueFrom": {
-                "secretKeyRef": {
-                  "key": "admin_password",
-                  "name": "wazuh-auth"
-                }
-              }
-            },
-            {
-              "name": "SERVER_SSL_ENABLED",
-              "value": "false"
-            },
-            {
-              "name": "OPENSEARCH_SSL_VERIFICATIONMODE",
-              "value": "certificate"
-            },
-            {
-              "name": "OPENSEARCH_REQUESTHEADERSALLOWLIST",
-              "value": "securitytenant,Authorization"
-            },
-            {
-              "name": "OPENSEARCH_SSL_CERTIFICATEAUTHORITIES",
-              "value": "/usr/share/wazuh-dashboard/certs/root-ca.pem"
-            }
-          ],
-          "image": "wazuh/wazuh-dashboard:4.9.0",
-          "imagePullPolicy": "IfNotPresent",
-          "name": "wazuh-dashboard",
-          "ports": [
-            {
-              "containerPort": 5601,
-              "name": "dashboard",
-              "protocol": "TCP"
-            }
-          ],
-          "resources": {
-            "limits": {
-              "cpu": "1",
-              "memory": "1Gi"
-            },
-            "requests": {
-              "cpu": "250m",
-              "memory": "512Mi"
-            }
-          },
-          "terminationMessagePath": "/dev/termination-log",
-          "terminationMessagePolicy": "File",
-          "volumeMounts": [
-            {
-              "mountPath": "/usr/share/wazuh-dashboard/certs",
-              "name": "certificates",
-              "readOnly": true
-            },
-            {
-              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-4c7r8",
-              "readOnly": true
-            }
-          ]
-        }
-      ],
-      "dnsPolicy": "ClusterFirst",
-      "enableServiceLinks": true,
-      "nodeName": "k8-node-20",
-      "nodeSelector": {
-        "kubernetes.io/hostname": "k8-node-20"
-      },
-      "preemptionPolicy": "PreemptLowerPriority",
-      "priority": 0,
-      "restartPolicy": "Always",
-      "schedulerName": "default-scheduler",
-      "securityContext": {},
-      "serviceAccount": "default",
-      "serviceAccountName": "default",
-      "terminationGracePeriodSeconds": 30,
-      "tolerations": [
-        {
-          "effect": "NoExecute",
-          "key": "node.kubernetes.io/not-ready",
-          "operator": "Exists",
-          "tolerationSeconds": 300
-        },
-        {
-          "effect": "NoExecute",
-          "key": "node.kubernetes.io/unreachable",
-          "operator": "Exists",
-          "tolerationSeconds": 300
-        }
-      ],
-      "volumes": [
-        {
-          "name": "certificates",
-          "secret": {
-            "defaultMode": 420,
-            "secretName": "wazuh-dashboard-certs"
-          }
-        },
-        {
-          "name": "kube-api-access-4c7r8",
-          "projected": {
-            "defaultMode": 420,
-            "sources": [
-              {
-                "serviceAccountToken": {
-                  "expirationSeconds": 3607,
-                  "path": "token"
-                }
-              },
-              {
-                "configMap": {
-                  "items": [
-                    {
-                      "key": "ca.crt",
-                      "path": "ca.crt"
-                    }
-                  ],
-                  "name": "kube-root-ca.crt"
-                }
-              },
-              {
-                "downwardAPI": {
-                  "items": [
-                    {
-                      "fieldRef": {
-                        "apiVersion": "v1",
-                        "fieldPath": "metadata.namespace"
-                      },
-                      "path": "namespace"
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        }
-      ]
-    },
-    "status": {
-      "conditions": [
-        {
-          "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:31:09Z",
-          "status": "False",
-          "type": "PodReadyToStartContainers"
-        },
-        {
-          "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:31:09Z",
-          "status": "True",
-          "type": "Initialized"
-        },
-        {
-          "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:31:09Z",
-          "message": "containers with unready status: [wazuh-dashboard]",
-          "reason": "ContainersNotReady",
-          "status": "False",
-          "type": "Ready"
-        },
-        {
-          "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:31:09Z",
-          "message": "containers with unready status: [wazuh-dashboard]",
-          "reason": "ContainersNotReady",
-          "status": "False",
-          "type": "ContainersReady"
-        },
-        {
-          "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:31:09Z",
-          "status": "True",
-          "type": "PodScheduled"
-        }
-      ],
-      "containerStatuses": [
-        {
-          "image": "wazuh/wazuh-dashboard:4.9.0",
-          "imageID": "",
-          "lastState": {},
-          "name": "wazuh-dashboard",
-          "ready": false,
-          "restartCount": 0,
-          "started": false,
-          "state": {
-            "waiting": {
-              "reason": "ContainerCreating"
-            }
-          },
-          "volumeMounts": [
-            {
-              "mountPath": "/usr/share/wazuh-dashboard/certs",
-              "name": "certificates",
-              "readOnly": true,
-              "recursiveReadOnly": "Disabled"
-            },
-            {
-              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-4c7r8",
-              "readOnly": true,
-              "recursiveReadOnly": "Disabled"
-            }
-          ]
-        }
-      ],
-      "hostIP": "192.168.1.20",
-      "hostIPs": [
-        {
-          "ip": "192.168.1.20"
-        }
-      ],
-      "phase": "Pending",
-      "qosClass": "Burstable",
-      "startTime": "2026-02-10T12:31:09Z"
-    }
-  },
-  {
-    "apiVersion": "v1",
-    "kind": "Pod",
-    "metadata": {
-      "creationTimestamp": "2026-02-10T12:26:21Z",
+      "creationTimestamp": "2026-02-10T14:34:01Z",
       "generateName": "wazuh-indexer-",
       "labels": {
         "app": "wazuh-indexer",
         "apps.kubernetes.io/pod-index": "0",
-        "controller-revision-hash": "wazuh-indexer-6964f7f475",
+        "controller-revision-hash": "wazuh-indexer-5d59cfbbc4",
         "statefulset.kubernetes.io/pod-name": "wazuh-indexer-0"
       },
       "name": "wazuh-indexer-0",
@@ -3082,8 +1895,8 @@
           "uid": "bbf6245b-b719-4fbb-9c2d-1df5d9223a07"
         }
       ],
-      "resourceVersion": "10134739",
-      "uid": "fd06a379-2e47-4a08-9c4a-8aa69d71792b"
+      "resourceVersion": "10166842",
+      "uid": "5dd5be4b-40cd-49ed-ba1c-1c616ef3d8b8"
     },
     "spec": {
       "containers": [
@@ -3175,7 +1988,7 @@
               "value": "false"
             }
           ],
-          "image": "wazuh/wazuh-indexer:4.7.2",
+          "image": "wazuh/wazuh-indexer:4.9.0",
           "imagePullPolicy": "IfNotPresent",
           "name": "wazuh-indexer",
           "ports": [
@@ -3214,7 +2027,7 @@
             },
             {
               "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-x4lrz",
+              "name": "kube-api-access-56gf5",
               "readOnly": true
             }
           ]
@@ -3243,7 +2056,7 @@
             },
             {
               "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-x4lrz",
+              "name": "kube-api-access-56gf5",
               "readOnly": true
             }
           ]
@@ -3266,13 +2079,12 @@
           "volumeMounts": [
             {
               "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-x4lrz",
+              "name": "kube-api-access-56gf5",
               "readOnly": true
             }
           ]
         }
       ],
-      "nodeName": "k8-node-20",
       "nodeSelector": {
         "kubernetes.io/hostname": "k8-node-20"
       },
@@ -3305,7 +2117,7 @@
         {
           "name": "wazuh-indexer-data",
           "persistentVolumeClaim": {
-            "claimName": "wazuh-indexer-pvc"
+            "claimName": "wazuh-indexer-pvc-v2"
           }
         },
         {
@@ -3316,7 +2128,7 @@
           }
         },
         {
-          "name": "kube-api-access-x4lrz",
+          "name": "kube-api-access-56gf5",
           "projected": {
             "defaultMode": 420,
             "sources": [
@@ -3359,466 +2171,15 @@
       "conditions": [
         {
           "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:26:22Z",
+          "lastTransitionTime": "2026-02-10T14:34:01Z",
+          "message": "0/4 nodes are available: 1 Insufficient cpu, 1 node(s) didn't match Pod's node affinity/selector, 2 node(s) were unschedulable. preemption: 0/4 nodes are available: 1 No preemption victims found for incoming pod, 3 Preemption is not helpful for scheduling.",
+          "reason": "Unschedulable",
           "status": "False",
-          "type": "PodReadyToStartContainers"
-        },
-        {
-          "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:26:22Z",
-          "message": "containers with incomplete status: [fix-permissions increase-vm-max-map]",
-          "reason": "ContainersNotInitialized",
-          "status": "False",
-          "type": "Initialized"
-        },
-        {
-          "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:26:22Z",
-          "message": "containers with unready status: [wazuh-indexer]",
-          "reason": "ContainersNotReady",
-          "status": "False",
-          "type": "Ready"
-        },
-        {
-          "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:26:22Z",
-          "message": "containers with unready status: [wazuh-indexer]",
-          "reason": "ContainersNotReady",
-          "status": "False",
-          "type": "ContainersReady"
-        },
-        {
-          "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:26:22Z",
-          "status": "True",
           "type": "PodScheduled"
         }
       ],
-      "containerStatuses": [
-        {
-          "image": "wazuh/wazuh-indexer:4.7.2",
-          "imageID": "",
-          "lastState": {},
-          "name": "wazuh-indexer",
-          "ready": false,
-          "restartCount": 0,
-          "started": false,
-          "state": {
-            "waiting": {
-              "reason": "PodInitializing"
-            }
-          },
-          "volumeMounts": [
-            {
-              "mountPath": "/usr/share/wazuh-indexer/data",
-              "name": "wazuh-indexer-data"
-            },
-            {
-              "mountPath": "/usr/share/wazuh-indexer/config/certs",
-              "name": "certificates",
-              "readOnly": true,
-              "recursiveReadOnly": "Disabled"
-            },
-            {
-              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-x4lrz",
-              "readOnly": true,
-              "recursiveReadOnly": "Disabled"
-            }
-          ]
-        }
-      ],
-      "hostIP": "192.168.1.20",
-      "hostIPs": [
-        {
-          "ip": "192.168.1.20"
-        }
-      ],
-      "initContainerStatuses": [
-        {
-          "image": "busybox",
-          "imageID": "",
-          "lastState": {},
-          "name": "fix-permissions",
-          "ready": false,
-          "restartCount": 0,
-          "started": false,
-          "state": {
-            "waiting": {
-              "reason": "PodInitializing"
-            }
-          },
-          "volumeMounts": [
-            {
-              "mountPath": "/usr/share/wazuh-indexer/data",
-              "name": "wazuh-indexer-data"
-            },
-            {
-              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-x4lrz",
-              "readOnly": true,
-              "recursiveReadOnly": "Disabled"
-            }
-          ]
-        },
-        {
-          "image": "busybox",
-          "imageID": "",
-          "lastState": {},
-          "name": "increase-vm-max-map",
-          "ready": false,
-          "restartCount": 0,
-          "started": false,
-          "state": {
-            "waiting": {
-              "reason": "PodInitializing"
-            }
-          },
-          "volumeMounts": [
-            {
-              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-x4lrz",
-              "readOnly": true,
-              "recursiveReadOnly": "Disabled"
-            }
-          ]
-        }
-      ],
       "phase": "Pending",
-      "qosClass": "Burstable",
-      "startTime": "2026-02-10T12:26:22Z"
-    }
-  },
-  {
-    "apiVersion": "v1",
-    "kind": "Pod",
-    "metadata": {
-      "creationTimestamp": "2026-02-10T12:31:11Z",
-      "generateName": "wazuh-manager-bc9d8bfc6-",
-      "labels": {
-        "app": "wazuh-manager",
-        "pod-template-hash": "bc9d8bfc6"
-      },
-      "name": "wazuh-manager-bc9d8bfc6-fmq7l",
-      "namespace": "soc",
-      "ownerReferences": [
-        {
-          "apiVersion": "apps/v1",
-          "blockOwnerDeletion": true,
-          "controller": true,
-          "kind": "ReplicaSet",
-          "name": "wazuh-manager-bc9d8bfc6",
-          "uid": "b368bdeb-7eb8-4598-a985-aa3c693b67a8"
-        }
-      ],
-      "resourceVersion": "10135905",
-      "uid": "ad3237b4-c597-44b6-843d-1b136ea722e9"
-    },
-    "spec": {
-      "containers": [
-        {
-          "env": [
-            {
-              "name": "INDEXER_URL",
-              "value": "https://wazuh-indexer:9200"
-            },
-            {
-              "name": "INDEXER_USERNAME",
-              "valueFrom": {
-                "secretKeyRef": {
-                  "key": "admin_username",
-                  "name": "wazuh-auth"
-                }
-              }
-            },
-            {
-              "name": "INDEXER_PASSWORD",
-              "valueFrom": {
-                "secretKeyRef": {
-                  "key": "admin_password",
-                  "name": "wazuh-auth"
-                }
-              }
-            }
-          ],
-          "image": "wazuh/wazuh-manager:4.9.0",
-          "imagePullPolicy": "IfNotPresent",
-          "name": "wazuh-manager",
-          "ports": [
-            {
-              "containerPort": 1514,
-              "name": "agents-event",
-              "protocol": "TCP"
-            },
-            {
-              "containerPort": 1515,
-              "name": "agents-reg",
-              "protocol": "TCP"
-            },
-            {
-              "containerPort": 55000,
-              "name": "api",
-              "protocol": "TCP"
-            }
-          ],
-          "resources": {
-            "limits": {
-              "cpu": "1",
-              "memory": "2Gi"
-            },
-            "requests": {
-              "cpu": "500m",
-              "memory": "1Gi"
-            }
-          },
-          "terminationMessagePath": "/dev/termination-log",
-          "terminationMessagePolicy": "File",
-          "volumeMounts": [
-            {
-              "mountPath": "/var/ossec/data",
-              "name": "wazuh-manager-data"
-            },
-            {
-              "mountPath": "/etc/filebeat/certs",
-              "name": "certificates",
-              "readOnly": true
-            },
-            {
-              "mountPath": "/etc/filebeat/auth",
-              "name": "auth-certs",
-              "readOnly": true
-            },
-            {
-              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-txctm",
-              "readOnly": true
-            }
-          ]
-        }
-      ],
-      "dnsPolicy": "ClusterFirst",
-      "enableServiceLinks": true,
-      "initContainers": [
-        {
-          "command": [
-            "sh",
-            "-c",
-            "until nc -z wazuh-indexer 9200; do echo waiting for wazuh-indexer; sleep 2; done;"
-          ],
-          "image": "busybox",
-          "imagePullPolicy": "Always",
-          "name": "wait-for-indexer",
-          "resources": {},
-          "terminationMessagePath": "/dev/termination-log",
-          "terminationMessagePolicy": "File",
-          "volumeMounts": [
-            {
-              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-txctm",
-              "readOnly": true
-            }
-          ]
-        }
-      ],
-      "nodeName": "k8-node-20",
-      "nodeSelector": {
-        "kubernetes.io/hostname": "k8-node-20"
-      },
-      "preemptionPolicy": "PreemptLowerPriority",
-      "priority": 0,
-      "restartPolicy": "Always",
-      "schedulerName": "default-scheduler",
-      "securityContext": {},
-      "serviceAccount": "default",
-      "serviceAccountName": "default",
-      "terminationGracePeriodSeconds": 30,
-      "tolerations": [
-        {
-          "effect": "NoExecute",
-          "key": "node.kubernetes.io/not-ready",
-          "operator": "Exists",
-          "tolerationSeconds": 300
-        },
-        {
-          "effect": "NoExecute",
-          "key": "node.kubernetes.io/unreachable",
-          "operator": "Exists",
-          "tolerationSeconds": 300
-        }
-      ],
-      "volumes": [
-        {
-          "name": "wazuh-manager-data",
-          "persistentVolumeClaim": {
-            "claimName": "wazuh-manager-pvc"
-          }
-        },
-        {
-          "name": "certificates",
-          "secret": {
-            "defaultMode": 420,
-            "secretName": "wazuh-manager-certs"
-          }
-        },
-        {
-          "name": "auth-certs",
-          "secret": {
-            "defaultMode": 420,
-            "secretName": "wazuh-manager-certs"
-          }
-        },
-        {
-          "name": "kube-api-access-txctm",
-          "projected": {
-            "defaultMode": 420,
-            "sources": [
-              {
-                "serviceAccountToken": {
-                  "expirationSeconds": 3607,
-                  "path": "token"
-                }
-              },
-              {
-                "configMap": {
-                  "items": [
-                    {
-                      "key": "ca.crt",
-                      "path": "ca.crt"
-                    }
-                  ],
-                  "name": "kube-root-ca.crt"
-                }
-              },
-              {
-                "downwardAPI": {
-                  "items": [
-                    {
-                      "fieldRef": {
-                        "apiVersion": "v1",
-                        "fieldPath": "metadata.namespace"
-                      },
-                      "path": "namespace"
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        }
-      ]
-    },
-    "status": {
-      "conditions": [
-        {
-          "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:31:11Z",
-          "status": "False",
-          "type": "PodReadyToStartContainers"
-        },
-        {
-          "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:31:11Z",
-          "message": "containers with incomplete status: [wait-for-indexer]",
-          "reason": "ContainersNotInitialized",
-          "status": "False",
-          "type": "Initialized"
-        },
-        {
-          "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:31:11Z",
-          "message": "containers with unready status: [wazuh-manager]",
-          "reason": "ContainersNotReady",
-          "status": "False",
-          "type": "Ready"
-        },
-        {
-          "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:31:11Z",
-          "message": "containers with unready status: [wazuh-manager]",
-          "reason": "ContainersNotReady",
-          "status": "False",
-          "type": "ContainersReady"
-        },
-        {
-          "lastProbeTime": null,
-          "lastTransitionTime": "2026-02-10T12:31:11Z",
-          "status": "True",
-          "type": "PodScheduled"
-        }
-      ],
-      "containerStatuses": [
-        {
-          "image": "wazuh/wazuh-manager:4.9.0",
-          "imageID": "",
-          "lastState": {},
-          "name": "wazuh-manager",
-          "ready": false,
-          "restartCount": 0,
-          "started": false,
-          "state": {
-            "waiting": {
-              "reason": "PodInitializing"
-            }
-          },
-          "volumeMounts": [
-            {
-              "mountPath": "/var/ossec/data",
-              "name": "wazuh-manager-data"
-            },
-            {
-              "mountPath": "/etc/filebeat/certs",
-              "name": "certificates",
-              "readOnly": true,
-              "recursiveReadOnly": "Disabled"
-            },
-            {
-              "mountPath": "/etc/filebeat/auth",
-              "name": "auth-certs",
-              "readOnly": true,
-              "recursiveReadOnly": "Disabled"
-            },
-            {
-              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-txctm",
-              "readOnly": true,
-              "recursiveReadOnly": "Disabled"
-            }
-          ]
-        }
-      ],
-      "hostIP": "192.168.1.20",
-      "hostIPs": [
-        {
-          "ip": "192.168.1.20"
-        }
-      ],
-      "initContainerStatuses": [
-        {
-          "image": "busybox",
-          "imageID": "",
-          "lastState": {},
-          "name": "wait-for-indexer",
-          "ready": false,
-          "restartCount": 0,
-          "started": false,
-          "state": {
-            "waiting": {
-              "reason": "PodInitializing"
-            }
-          },
-          "volumeMounts": [
-            {
-              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
-              "name": "kube-api-access-txctm",
-              "readOnly": true,
-              "recursiveReadOnly": "Disabled"
-            }
-          ]
-        }
-      ],
-      "phase": "Pending",
-      "qosClass": "Burstable",
-      "startTime": "2026-02-10T12:31:11Z"
+      "qosClass": "Burstable"
     }
   }
 ]
