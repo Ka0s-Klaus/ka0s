@@ -10,6 +10,9 @@ spec:
       containers:
         - name: security-init
           image: wazuh/wazuh-indexer:4.14.2
+          env:
+            - name: OPENSEARCH_JAVA_HOME
+              value: /usr/share/wazuh-indexer/jdk
           command: ["/bin/bash", "-c"]
           args:
             - |
@@ -17,6 +20,9 @@ spec:
               until curl -s -k https://wazuh-indexer:9200; do sleep 5; done
               
               echo "Running securityadmin.sh..."
+              # Fix: Definir variable si no existe, aunque ya la pasamos por env
+              export OPENSEARCH_JAVA_HOME=/usr/share/wazuh-indexer/jdk
+              
               /usr/share/wazuh-indexer/plugins/opensearch-security/tools/securityadmin.sh \
                 -cd /usr/share/wazuh-indexer/plugins/opensearch-security/securityconfig/ \
                 -icl -nhnv \
@@ -25,9 +31,6 @@ spec:
                 -key /usr/share/wazuh-indexer/config/certs/admin-key.pem \
                 -h wazuh-indexer.soc.svc \
                 -p 9300
-          env:
-            - name: OPENSEARCH_JAVA_OPTS
-              value: "-Xms512m -Xmx512m"
           volumeMounts:
             - name: certificates
               mountPath: /usr/share/wazuh-indexer/config/certs
