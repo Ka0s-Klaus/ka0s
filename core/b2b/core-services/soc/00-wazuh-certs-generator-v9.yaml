@@ -1,37 +1,7 @@
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: wazuh-certs-sa
-  namespace: soc
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: wazuh-certs-role
-  namespace: soc
-rules:
-  - apiGroups: [""]
-    resources: ["secrets"]
-    verbs: ["create", "get", "patch", "delete"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: wazuh-certs-rb
-  namespace: soc
-subjects:
-  - kind: ServiceAccount
-    name: wazuh-certs-sa
-    namespace: soc
-roleRef:
-  kind: Role
-  name: wazuh-certs-role
-  apiGroup: rbac.authorization.k8s.io
----
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: wazuh-certs-generator-v8
+  name: wazuh-certs-generator-v9
   namespace: soc
 spec:
   ttlSecondsAfterFinished: 300
@@ -40,21 +10,23 @@ spec:
       serviceAccountName: wazuh-certs-sa
       containers:
         - name: cert-generator
-          image: bitnami/kubectl:latest
-          command: ["/bin/bash", "-c"]
+          image: alpine:latest
+          command: ["/bin/sh", "-c"]
           args:
             - |
               set -e
-              echo ">>> Wazuh Cert Generator v8 <<<"
+              echo ">>> Wazuh Cert Generator v9 (Alpine) <<<"
               
-              # Install openssl (bitnami/kubectl uses debian base usually)
-              if ! command -v openssl &> /dev/null; then
-                  echo "Installing openssl..."
-                  apt-get update && apt-get install -y openssl
-              fi
+              echo "Installing dependencies..."
+              apk add --no-cache openssl curl bash
               
-              mkdir -p /certs
-              cd /certs
+              echo "Installing kubectl..."
+              curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+              chmod +x kubectl
+              mv kubectl /usr/local/bin/kubectl
+              
+              mkdir -p /tmp/certs
+              cd /tmp/certs
               
               # 1. Root CA
               echo "Generating Root CA..."
