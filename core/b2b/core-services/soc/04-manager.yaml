@@ -64,6 +64,14 @@ spec:
             - name: auth-certs
               mountPath: /etc/filebeat/auth
               readOnly: true
+            - name: certificates
+              mountPath: /var/ossec/etc/ssl/server.crt
+              subPath: server.pem
+              readOnly: true
+            - name: certificates
+              mountPath: /var/ossec/etc/ssl/server.key
+              subPath: server.key
+              readOnly: true
       volumes:
         - name: wazuh-manager-data
           persistentVolumeClaim:
