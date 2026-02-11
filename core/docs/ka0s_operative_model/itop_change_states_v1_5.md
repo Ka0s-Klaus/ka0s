@@ -1,7 +1,7 @@
 ## Estados de Cambio
 
 | Estado Cambio |
-|---------------|
+| ------------- |
 | New           |
 | Assessed      |
 | Approved      |

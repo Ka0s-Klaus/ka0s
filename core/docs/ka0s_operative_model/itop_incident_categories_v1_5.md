@@ -1,7 +1,7 @@
 ## Categorías de Incidente
 
 | Categoría Incidente |
-|---------------------|
+| ------------------- |
 | Infraestructura     |
 | IaaS                |
 | CaaS                |

@@ -8,7 +8,11 @@
 
 ## 1. INTRODUCCIÓN
 
-El presente documento define el alcance del servicio de operaciones para la gestión de infraestructuras como servicio (IaaS) y contenedores como servicio (CaaS), estableciendo claramente las responsabilidades del equipo de operaciones, las exclusiones del servicio y las responsabilidades que corresponden al cliente.
+El presente documento define el alcance del servicio de operaciones para la
+gestión de infraestructuras como servicio (IaaS) y contenedores como servicio
+(CaaS), estableciendo claramente las responsabilidades del equipo de
+operaciones, las exclusiones del servicio y las responsabilidades que
+corresponden al cliente.
 
 ---
 
@@ -16,9 +20,11 @@ El presente documento define el alcance del servicio de operaciones para la gest
 
 ### 2.1 Gestión de Infraestructura
 
-- Aprovisionamiento y desaprovisionamiento de recursos de computación (VMs, instancias)
+- Aprovisionamiento y desaprovisionamiento de recursos de computación (VMs,
+  instancias)
 - Gestión de almacenamiento (volúmenes, discos, snapshots)
-- Configuración y mantenimiento de redes virtuales, subredes y grupos de seguridad
+- Configuración y mantenimiento de redes virtuales, subredes y grupos de
+  seguridad
 - Gestión de balanceadores de carga a nivel de infraestructura
 - Configuración de autoescalado de recursos de infraestructura
 
@@ -27,7 +33,8 @@ El presente documento define el alcance del servicio de operaciones para la gest
 ### 2.2 Monitorización y Alertas
 
 - Supervisión de disponibilidad y rendimiento de recursos IaaS
-- Configuración de alertas para métricas de infraestructura (CPU, memoria, disco, red)
+- Configuración de alertas para métricas de infraestructura (CPU, memoria,
+  disco, red)
 - Análisis de logs a nivel de infraestructura
 - Reporting de incidencias relacionadas con la infraestructura
 
@@ -35,10 +42,12 @@ El presente documento define el alcance del servicio de operaciones para la gest
 
 ### 2.3 Seguridad y Cumplimiento
 
-- Aplicación de parches de seguridad a nivel de hipervisor y sistema operativo base
+- Aplicación de parches de seguridad a nivel de hipervisor y sistema operativo
+  base
 - Gestión de políticas de firewall a nivel de infraestructura
 - Configuración de cifrado de datos en reposo y en tránsito
-- Gestión de copias de seguridad y recuperación ante desastres de la infraestructura
+- Gestión de copias de seguridad y recuperación ante desastres de la
+  infraestructura
 - Auditorías periódicas de configuración de seguridad
 
 ---
@@ -56,7 +65,8 @@ El presente documento define el alcance del servicio de operaciones para la gest
 
 ### 3.1 Gestión de Plataforma de Contenedores
 
-- Despliegue y mantenimiento del clúster de orquestación (Kubernetes, OpenShift, etc.)
+- Despliegue y mantenimiento del clúster de orquestación (Kubernetes, OpenShift,
+  etc.)
 - Gestión de nodos del clúster (worker nodes, master nodes)
 - Configuración de namespaces y cuotas de recursos
 - Gestión de networking del clúster (CNI, service mesh)
@@ -87,7 +97,8 @@ El presente documento define el alcance del servicio de operaciones para la gest
 
 - Implementación de RBAC (Role-Based Access Control)
 - Gestión de secretos y configuraciones sensibles
-- Aplicación de políticas de seguridad de pods (Pod Security Policies / Pod Security Standards)
+- Aplicación de políticas de seguridad de pods (Pod Security Policies / Pod
+  Security Standards)
 - Network policies para aislamiento de tráfico
 - Actualizaciones de seguridad de la plataforma de orquestación
 
@@ -116,7 +127,8 @@ El presente documento define el alcance del servicio de operaciones para la gest
 ### 4.2 Exclusiones Específicas de IaaS
 
 - Instalación y configuración de software de aplicación dentro de las VMs
-- Mantenimiento de sistemas operativos de nivel usuario (excepto parches de seguridad base)
+- Mantenimiento de sistemas operativos de nivel usuario (excepto parches de
+  seguridad base)
 - Personalización de imágenes de sistema operativo
 - Migración de datos entre diferentes proveedores cloud
 
@@ -127,7 +139,8 @@ El presente documento define el alcance del servicio de operaciones para la gest
 - Desarrollo de Dockerfiles o manifiestos de aplicación (deployments, services)
 - Optimización de aplicaciones para entornos contenerizados
 - Debugging de contenedores o aplicaciones dentro de pods
-- Gestión de pipelines CI/CD (solo infraestructura base, no configuración de pipelines)
+- Gestión de pipelines CI/CD (solo infraestructura base, no configuración de
+  pipelines)
 - Soporte a frameworks o lenguajes específicos de aplicación
 
 ---
@@ -136,8 +149,10 @@ El presente documento define el alcance del servicio de operaciones para la gest
 
 ### 5.1 Responsabilidades Generales
 
-- Proporcionar requisitos claros y detallados para el aprovisionamiento de recursos
-- Aprobar cambios significativos en la infraestructura antes de su implementación
+- Proporcionar requisitos claros y detallados para el aprovisionamiento de
+  recursos
+- Aprobar cambios significativos en la infraestructura antes de su
+  implementación
 - Mantener actualizada la documentación de sus aplicaciones y arquitecturas
 - Notificar cambios en los requisitos de servicio con antelación razonable
 - Cumplir con las políticas de seguridad y uso establecidas
@@ -149,7 +164,8 @@ El presente documento define el alcance del servicio de operaciones para la gest
 - Gestión y actualización de aplicaciones instaladas en las VMs
 - Configuración de aplicaciones y middleware
 - Gestión de usuarios y permisos a nivel de aplicación
-- Backup de datos de aplicación (el servicio solo cubre backup de infraestructura)
+- Backup de datos de aplicación (el servicio solo cubre backup de
+  infraestructura)
 - Licenciamiento de software ejecutado en la infraestructura
 
 ---
@@ -167,26 +183,27 @@ El presente documento define el alcance del servicio de operaciones para la gest
 
 ## 6. MATRIZ DE RESPONSABILIDADES
 
-La siguiente matriz resume la distribución de responsabilidades entre el equipo de operaciones y el cliente:
+La siguiente matriz resume la distribución de responsabilidades entre el equipo
+de operaciones y el cliente:
 
-| Componente / Actividad | Operaciones | Cliente |
-|-----------------------|-------------|---------|
-| **INFRAESTRUCTURA (IaaS)** | | |
-| Aprovisionamiento de VMs / Instancias | ✓ | - |
-| Parches de SO base | ✓ | - |
-| Instalación de aplicaciones | - | ✓ |
-| Backup de infraestructura | ✓ | - |
-| Backup de datos de aplicación | - | ✓ |
-| **CONTENEDORES (CaaS)** | | |
-| Gestión del clúster Kubernetes | ✓ | - |
-| Desarrollo de imágenes Docker | - | ✓ |
-| Escaneo de vulnerabilidades en imágenes | ✓ | - |
-| Creación de manifiestos (YAML / Helm) | - | ✓ |
-| Gestión de RBAC y políticas de seguridad | ✓ | - |
-| Monitorización de aplicaciones | - | ✓ |
+| Componente / Actividad                   | Operaciones | Cliente |
+| ---------------------------------------- | ----------- | ------- |
+| **INFRAESTRUCTURA (IaaS)**               |             |         |
+| Aprovisionamiento de VMs / Instancias    | ✓           | -       |
+| Parches de SO base                       | ✓           | -       |
+| Instalación de aplicaciones              | -           | ✓       |
+| Backup de infraestructura                | ✓           | -       |
+| Backup de datos de aplicación            | -           | ✓       |
+| **CONTENEDORES (CaaS)**                  |             |         |
+| Gestión del clúster Kubernetes           | ✓           | -       |
+| Desarrollo de imágenes Docker            | -           | ✓       |
+| Escaneo de vulnerabilidades en imágenes  | ✓           | -       |
+| Creación de manifiestos (YAML / Helm)    | -           | ✓       |
+| Gestión de RBAC y políticas de seguridad | ✓           | -       |
+| Monitorización de aplicaciones           | -           | ✓       |
 
-**Leyenda:**  
-✓ = Responsable  
+**Leyenda:**
+✓ = Responsable
 - = No aplica
 
 ---
@@ -203,44 +220,47 @@ La siguiente matriz resume la distribución de responsabilidades entre el equipo
 
 ### 7.2 Tiempos de Respuesta
 
-| Severidad | Descripción | Tiempo de Respuesta |
-|----------|-------------|--------------------|
-| Crítica | Servicio completamente inoperativo | < 1 hora |
-| Alta | Funcionalidad principal afectada | < 4 horas |
-| Media | Funcionalidad secundaria afectada | < 1 día laboral |
-| Baja | Consultas generales o mejoras | < 3 días laborales |
+| Severidad | Descripción                        | Tiempo de Respuesta |
+| --------- | ---------------------------------- | ------------------- |
+| Crítica   | Servicio completamente inoperativo | < 1 hora            |
+| Alta      | Funcionalidad principal afectada   | < 4 horas           |
+| Media     | Funcionalidad secundaria afectada  | < 1 día laboral     |
+| Baja      | Consultas generales o mejoras      | < 3 días laborales  |
 
 ---
 
 ## 8. REVISIÓN Y ACTUALIZACIONES
 
-Este documento será revisado periódicamente y actualizado según sea necesario para reflejar:
+Este documento será revisado periódicamente y actualizado según sea necesario
+para reflejar:
 
 - Cambios en la tecnología y mejores prácticas
 - Nuevos servicios o modificaciones en el alcance
 - Feedback del cliente y lecciones aprendidas
 - Cambios regulatorios o de cumplimiento
 
-La frecuencia de revisión recomendada es **trimestral**, o según se requiera por cambios significativos en el servicio.
+La frecuencia de revisión recomendada es **trimestral**, o según se requiera por
+cambios significativos en el servicio.
 
 ---
 
 ## 9. APROBACIONES
 
-Las partes firmantes reconocen haber leído y aceptado el contenido de este documento:
+Las partes firmantes reconocen haber leído y aceptado el contenido de este
+documento:
 
 ### Equipo de Operaciones
 
-_________________________________  
-Firma  
+\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+Firma
 
-_________________________________  
-Fecha  
+\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+Fecha
 
 ### Representante del Cliente
 
-_________________________________  
-Firma  
+\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+Firma
 
-_________________________________  
-Fecha  
+\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+Fecha

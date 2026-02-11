@@ -4,33 +4,34 @@
 
 **OnPremise | Cloud Pública | Cloud Privada**
 
-**Documento Base:** Servicios, Alcances, Exclusiones y Matriz de Responsabilidades  
-**Versión:** 1.0  
+**Documento Base:** Servicios, Alcances, Exclusiones y Matriz de
+Responsabilidades
+**Versión:** 1.0
 **Fecha:** 28 de enero de 2026
 
 ---
 
 ## TABLA DE CONTENIDOS
 
-1. INFORMACIÓN DEL DOCUMENTO  
-   1.1 Propósito  
-   1.2 Alcance  
-2. DEFINICIONES Y TÉRMINOS  
-3. SERVICIOS DE OPERACIONES  
-   3.1 Gestión de Infraestructura  
-   3.2 Gestión de Red y Conectividad  
-   3.3 Almacenamiento y Backup  
-   3.4 Seguridad y Cumplimiento  
-   3.5 Plataformas de Contenedores  
-   3.6 Monitorización y Observabilidad  
-   3.7 Gestión de Incidentes  
-   3.8 Automatización y Orquestación  
-4. EXCLUSIONES DEL SERVICIO  
-5. RESPONSABILIDADES DEL CLIENTE  
-6. MATRIZ DE RESPONSABILIDADES (RACI)  
-7. NIVELES DE SERVICIO (SLA)  
-8. GOBIERNO Y GESTIÓN  
-9. REVISIÓN Y ACTUALIZACIONES  
+1. INFORMACIÓN DEL DOCUMENTO
+   1.1 Propósito
+   1.2 Alcance
+2. DEFINICIONES Y TÉRMINOS
+3. SERVICIOS DE OPERACIONES
+   3.1 Gestión de Infraestructura
+   3.2 Gestión de Red y Conectividad
+   3.3 Almacenamiento y Backup
+   3.4 Seguridad y Cumplimiento
+   3.5 Plataformas de Contenedores
+   3.6 Monitorización y Observabilidad
+   3.7 Gestión de Incidentes
+   3.8 Automatización y Orquestación
+4. EXCLUSIONES DEL SERVICIO
+5. RESPONSABILIDADES DEL CLIENTE
+6. MATRIZ DE RESPONSABILIDADES (RACI)
+7. NIVELES DE SERVICIO (SLA)
+8. GOBIERNO Y GESTIÓN
+9. REVISIÓN Y ACTUALIZACIONES
 
 ---
 
@@ -38,7 +39,11 @@
 
 ### 1.1 Propósito
 
-Este documento establece el marco de referencia completo para los servicios de operaciones de plataformas tecnológicas. Proporciona una base estandarizada que define servicios prestados, alcances, exclusiones y responsabilidades, aplicable a entornos OnPremise, Cloud Pública y Cloud Privada. Su objetivo es servir como plantilla base para acuerdos de servicio específicos con clientes.
+Este documento establece el marco de referencia completo para los servicios de
+operaciones de plataformas tecnológicas. Proporciona una base estandarizada que
+define servicios prestados, alcances, exclusiones y responsabilidades, aplicable
+a entornos OnPremise, Cloud Pública y Cloud Privada. Su objetivo es servir como
+plantilla base para acuerdos de servicio específicos con clientes.
 
 ### 1.2 Alcance
 
@@ -55,7 +60,7 @@ Este documento establece el marco de referencia completo para los servicios de o
 ## 2. DEFINICIONES Y TÉRMINOS
 
 | Término | Definición |
-|---|---|
+| --- | --- |
 | OnPremise | Infraestructura ubicada físicamente en instalaciones del cliente o datacenter dedicado |
 | Cloud Pública | Servicios cloud de proveedores públicos (AWS, Azure, GCP) con infraestructura compartida |
 | Cloud Privada | Infraestructura cloud dedicada a una organización, OnPremise o alojada |
@@ -215,37 +220,37 @@ Las siguientes actividades están fuera del alcance del servicio de operaciones:
 **R = Responsable | A = Aprobador | C = Consultado | I = Informado**
 
 | Actividad | Operaciones | Cliente |
-|---|---|---|
-| **INFRAESTRUCTURA** |  |  |
+| --- | --- | --- |
+| **INFRAESTRUCTURA** | | |
 | Aprovisionamiento de servidores/VMs | R, A | C, I |
 | Parches de seguridad de SO base | R, A | I |
 | Configuración de alta disponibilidad | R, A | C, I |
 | Dimensionamiento de recursos | R, C | A, C |
-| **APLICACIONES** |  |  |
+| **APLICACIONES** | | |
 | Instalación de aplicaciones | C | R, A |
 | Desarrollo de código | - | R, A |
 | Configuración de aplicaciones | C | R, A |
 | Monitorización de aplicaciones | C, I | R, A |
-| **RED Y CONECTIVIDAD** |  |  |
+| **RED Y CONECTIVIDAD** | | |
 | Diseño de arquitectura de red | R, A | C, I |
 | Configuración de firewalls | R, A | C, I |
 | Gestión de balanceadores de carga | R, A | C, I |
 | Configuración de VPN | R, A | C, I |
-| **ALMACENAMIENTO Y BACKUP** |  |  |
+| **ALMACENAMIENTO Y BACKUP** | | |
 | Provisión de almacenamiento | R, A | C, I |
 | Backup de infraestructura | R, A | I |
 | Backup de datos de aplicación | C | R, A |
 | Definición de políticas de retención | R, C | A, C |
-| **SEGURIDAD** |  |  |
+| **SEGURIDAD** | | |
 | Gestión de IAM (infraestructura) | R, A | C, I |
 | Seguridad de aplicaciones | C, I | R, A |
 | Gestión de certificados SSL/TLS | R, A | C, I |
 | Auditorías de seguridad | R, A | C, I |
-| **MONITORIZACIÓN** |  |  |
+| **MONITORIZACIÓN** | | |
 | Monitorización de infraestructura | R, A | I |
 | Monitorización de aplicaciones | C, I | R, A |
 | Configuración de alertas | R, A | C, I |
-| **CONTENEDORES (CaaS)** |  |  |
+| **CONTENEDORES (CaaS)** | | |
 | Gestión de clúster Kubernetes | R, A | I |
 | Desarrollo de imágenes Docker | - | R, A |
 | Creación de manifiestos YAML | C | R, A |
@@ -256,7 +261,7 @@ Las siguientes actividades están fuera del alcance del servicio de operaciones:
 ## 7. NIVELES DE SERVICIO (SLA)
 
 | Severidad | Descripción | Tiempo Respuesta |
-|---|---|---|
+| --- | --- | --- |
 | Crítica | Servicio completamente inoperativo | < 1 hora |
 | Alta | Funcionalidad principal afectada | < 4 horas |
 | Media | Funcionalidad secundaria afectada | < 1 día laboral |
@@ -288,4 +293,5 @@ Las siguientes actividades están fuera del alcance del servicio de operaciones:
 
 ## 9. REVISIÓN Y ACTUALIZACIONES
 
-Este documento será revisado trimestralmente y actualizado según cambios en tecnología, servicios o requisitos del cliente.
+Este documento será revisado trimestralmente y actualizado según cambios en
+tecnología, servicios o requisitos del cliente.
