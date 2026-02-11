@@ -48,9 +48,11 @@ jobs:
         run: |
           set -euo pipefail
           BASE="${ITOP_URL%/}"
-          URL="${BASE}/webservices/rest.php?version=1.3"
+          URL="https://itsm.ka0s.io/webservices/rest.php?version=1.3"
           echo "Checking: ${URL}"
-          unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY
+          echo "Proxy vars present (names only):"
+          env | grep -i proxy | cut -d= -f1 || true
+          unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY all_proxy ALL_PROXY no_proxy NO_PROXY
           curl --noproxy '*' -fsS -o /dev/null -I "${URL}"
 
       - name: Create iTop API user
@@ -69,5 +71,5 @@ jobs:
           ITOP_TARGET_LANGUAGE: ${{ github.event.inputs.target_language }}
           ITOP_UPDATE_PASSWORD: ${{ github.event.inputs.update_password }}
         run: |
-          unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY
+          unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY all_proxy ALL_PROXY no_proxy NO_PROXY
           python3 devops/core/itop/create-itop-api-user.py
