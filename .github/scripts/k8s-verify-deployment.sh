@@ -7,6 +7,23 @@ EXPECTED_IP=$3
 
 echo "=== Starting Kubernetes Deployment Verification for Namespace: $NAMESPACE ==="
 
+# Debugging for SOC namespace (Run BEFORE checks to ensure logs are captured even if checks fail)
+if [ "$NAMESPACE" == "soc" ]; then
+  echo "--> Debugging SOC: Dumping Wazuh Dashboard Logs..."
+  DASH_POD=$(kubectl get pods -n soc -l app=wazuh-dashboard -o jsonpath='{.items[0].metadata.name}')
+  if [ ! -z "$DASH_POD" ]; then
+    echo "--- Logs for $DASH_POD ---"
+    kubectl logs "$DASH_POD" -n soc --all-containers --tail=100 --prefix=true || echo "Failed to fetch logs"
+  fi
+  
+  echo "--> Debugging SOC: Dumping Wazuh Indexer Logs (tail)..."
+  IDX_POD=$(kubectl get pods -n soc -l app=wazuh-indexer -o jsonpath='{.items[0].metadata.name}')
+  if [ ! -z "$IDX_POD" ]; then
+    echo "--- Logs for $IDX_POD ---"
+    kubectl logs "$IDX_POD" -n soc --all-containers --tail=50 --prefix=true || echo "Failed to fetch logs"
+  fi
+fi
+
 # 1. Check Pods Status
 echo "--> Checking Pods status..."
 PODS_NOT_READY=$(kubectl get pods -n "$NAMESPACE" --no-headers | awk '$3 != "Running" && $3 != "Completed" {print $1, $3}')
@@ -28,23 +45,6 @@ if [ ! -z "$PODS_NOT_READY" ]; then
   exit 1
 else
   echo "✅ All pods are Running or Completed."
-fi
-
-# Debugging for SOC namespace
-if [ "$NAMESPACE" == "soc" ]; then
-  echo "--> Debugging SOC: Dumping Wazuh Dashboard Logs..."
-  DASH_POD=$(kubectl get pods -n soc -l app=wazuh-dashboard -o jsonpath='{.items[0].metadata.name}')
-  if [ ! -z "$DASH_POD" ]; then
-    echo "--- Logs for $DASH_POD ---"
-    kubectl logs "$DASH_POD" -n soc --all-containers --tail=100 --prefix=true || echo "Failed to fetch logs"
-  fi
-  
-  echo "--> Debugging SOC: Dumping Wazuh Indexer Logs (tail)..."
-  IDX_POD=$(kubectl get pods -n soc -l app=wazuh-indexer -o jsonpath='{.items[0].metadata.name}')
-  if [ ! -z "$IDX_POD" ]; then
-    echo "--- Logs for $IDX_POD ---"
-    kubectl logs "$IDX_POD" -n soc --all-containers --tail=50 --prefix=true || echo "Failed to fetch logs"
-  fi
 fi
 
 # 2. Check Service IP (if expected)
