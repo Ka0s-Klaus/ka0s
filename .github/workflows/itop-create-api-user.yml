@@ -45,6 +45,7 @@ jobs:
       - name: Check connectivity to iTop
         env:
           ITOP_URL: ${{ secrets.ITOP_URL || vars.ITOP_URL }}
+          ITOP_TLS_VERIFY: ${{ vars.ITOP_TLS_VERIFY || 'false' }}
         run: |
           set -euo pipefail
           BASE="${ITOP_URL%/}"
@@ -53,13 +54,18 @@ jobs:
           echo "Proxy vars present (names only):"
           env | grep -i proxy | cut -d= -f1 || true
           unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY all_proxy ALL_PROXY no_proxy NO_PROXY
-          curl --noproxy '*' -fsS -o /dev/null -I "${URL}"
+          CURL_TLS_FLAGS=""
+          if [ "${ITOP_TLS_VERIFY}" = "false" ] || [ "${ITOP_TLS_VERIFY}" = "0" ]; then
+            CURL_TLS_FLAGS="-k"
+          fi
+          curl --noproxy '*' ${CURL_TLS_FLAGS} -fsS -o /dev/null -I "${URL}"
 
       - name: Create iTop API user
         env:
           ITOP_URL: ${{ secrets.ITOP_URL || vars.ITOP_URL }}
           ITOP_USER: ${{ secrets.ITOP_API_USER }}
           ITOP_PASSWORD: ${{ secrets.ITOP_API_PASSWORD }}
+          ITOP_TLS_VERIFY: ${{ vars.ITOP_TLS_VERIFY || 'false' }}
 
           ITOP_TARGET_LOGIN: ${{ github.event.inputs.target_login }}
           ITOP_TARGET_PASSWORD: ${{ secrets.ITOP_TARGET_PASSWORD }}
