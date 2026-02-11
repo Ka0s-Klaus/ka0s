@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: wazuh-security-init-v7
+  name: wazuh-security-init-v8
   namespace: soc
 spec:
   ttlSecondsAfterFinished: 600
@@ -20,14 +20,15 @@ spec:
               export JAVA_HOME=/usr/share/wazuh-indexer/jdk
               export PATH=$JAVA_HOME/bin:$PATH
               
-              echo "Waiting for Indexer (DNS: wazuh-indexer.soc.svc)..."
+              echo "Waiting 30s for Indexer stability..."
+              sleep 30
+              
+              echo "Waiting for Indexer port 9200..."
               until curl -s -k https://wazuh-indexer.soc.svc:9200; do sleep 5; done
               
               echo "Running securityadmin.sh..."
-              # Fix: Use explicit cert path and add truststore if needed (but CA should suffice)
-              # The error 'PKIX path building failed' often means the client doesn't trust the server cert.
-              # We explicitly provide -cacert which should match the CA that signed the server cert.
-              
+              # -nhnv: No Hostname Verification
+              # -icl: Ignore Cluster Health (useful for single node init)
               /usr/share/wazuh-indexer/plugins/opensearch-security/tools/securityadmin.sh \
                 -cd /usr/share/wazuh-indexer/plugins/opensearch-security/securityconfig/ \
                 -icl -nhnv \
