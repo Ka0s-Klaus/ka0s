@@ -273,3 +273,4 @@ terceros.
 - **Shadow IT / tags ausentes:** políticas de denegación + tagging obligatorio.
 - **Costes cloud variables:** budgeting + rightsizing + schedules + RI/SP.
 - **Ventanas de cambio insuficientes:** calendario + CAB ágil.
+
