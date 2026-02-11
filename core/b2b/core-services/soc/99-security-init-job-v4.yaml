@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: wazuh-security-init-v3
+  name: wazuh-security-init-v4
   namespace: soc
 spec:
   ttlSecondsAfterFinished: 600
@@ -17,26 +17,20 @@ spec:
           args:
             - |
               set -e
-              echo ">>> Starting Security Init V3 <<<"
-              echo "Checking JDK path..."
-              if [ -d "$OPENSEARCH_JAVA_HOME" ]; then
-                echo "JDK found at $OPENSEARCH_JAVA_HOME"
-                ls -ld $OPENSEARCH_JAVA_HOME
-              else
-                echo "ERROR: JDK path $OPENSEARCH_JAVA_HOME not found!"
-                # Fallback check
-                ls -d /usr/share/wazuh-indexer/jdk* || echo "No JDK found in /usr/share/wazuh-indexer/"
-              fi
-              
-              # Force PATH and JAVA_HOME
-              export JAVA_HOME=$OPENSEARCH_JAVA_HOME
+              export JAVA_HOME=/usr/share/wazuh-indexer/jdk
               export PATH=$JAVA_HOME/bin:$PATH
               
-              echo "Java version check:"
-              java -version || echo "Java command not working"
+              echo ">>> DIAGNOSTICS <<<"
+              echo "Checking CA cert details:"
+              openssl x509 -in /usr/share/wazuh-indexer/config/certs/root-ca.pem -noout -subject -issuer -dates
               
-              echo "Waiting for Indexer to be ready..."
-              until curl -s -k https://wazuh-indexer:9200; do sleep 5; done
+              echo "Checking Admin cert details:"
+              openssl x509 -in /usr/share/wazuh-indexer/config/certs/admin.pem -noout -subject -issuer -dates
+              
+              echo "Checking Server Cert (via openssl):"
+              # Try to connect and show cert info. Using IP to avoid DNS issues if any, but using Service DNS here.
+              # echo "Q" to exit s_client
+              echo "Q" | openssl s_client -connect wazuh-indexer.soc.svc:9300 -showcerts 2>/dev/null | openssl x509 -noout -subject -issuer -dates || echo "OpenSSL check failed or timed out"
               
               echo "Running securityadmin.sh..."
               /usr/share/wazuh-indexer/plugins/opensearch-security/tools/securityadmin.sh \
