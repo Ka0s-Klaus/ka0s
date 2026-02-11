@@ -3,6 +3,14 @@ name: iTop Create API User
 on:
   workflow_dispatch:
     inputs:
+      runner:
+        description: "Runner a usar (si GitHub-hosted no llega a iTop, usa self-hosted)"
+        required: false
+        default: "self-hosted"
+        type: choice
+        options:
+          - self-hosted
+          - github-hosted
       target_login:
         description: "Login del usuario a crear"
         required: false
@@ -37,7 +45,7 @@ on:
 
 jobs:
   create-api-user:
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event.inputs.runner == 'github-hosted' && 'ubuntu-latest' || 'swarm-runners-scaleset' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -58,7 +66,7 @@ jobs:
           if [ "${ITOP_TLS_VERIFY}" = "false" ] || [ "${ITOP_TLS_VERIFY}" = "0" ]; then
             CURL_TLS_FLAGS="-k"
           fi
-          curl --noproxy '*' ${CURL_TLS_FLAGS} -fsS -o /dev/null -I "${URL}"
+          curl --noproxy '*' ${CURL_TLS_FLAGS} -fsS --retry 5 --retry-all-errors --connect-timeout 10 --max-time 30 -o /dev/null -I "${URL}"
 
       - name: Create iTop API user
         env:
