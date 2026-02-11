@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: wazuh-security-init-v2
+  name: wazuh-security-init-v3
   namespace: soc
 spec:
   ttlSecondsAfterFinished: 600
@@ -16,13 +16,29 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
+              set -e
+              echo ">>> Starting Security Init V3 <<<"
+              echo "Checking JDK path..."
+              if [ -d "$OPENSEARCH_JAVA_HOME" ]; then
+                echo "JDK found at $OPENSEARCH_JAVA_HOME"
+                ls -ld $OPENSEARCH_JAVA_HOME
+              else
+                echo "ERROR: JDK path $OPENSEARCH_JAVA_HOME not found!"
+                # Fallback check
+                ls -d /usr/share/wazuh-indexer/jdk* || echo "No JDK found in /usr/share/wazuh-indexer/"
+              fi
+              
+              # Force PATH and JAVA_HOME
+              export JAVA_HOME=$OPENSEARCH_JAVA_HOME
+              export PATH=$JAVA_HOME/bin:$PATH
+              
+              echo "Java version check:"
+              java -version || echo "Java command not working"
+              
               echo "Waiting for Indexer to be ready..."
               until curl -s -k https://wazuh-indexer:9200; do sleep 5; done
               
               echo "Running securityadmin.sh..."
-              # Fix: Definir variable si no existe, aunque ya la pasamos por env
-              export OPENSEARCH_JAVA_HOME=/usr/share/wazuh-indexer/jdk
-              
               /usr/share/wazuh-indexer/plugins/opensearch-security/tools/securityadmin.sh \
                 -cd /usr/share/wazuh-indexer/plugins/opensearch-security/securityconfig/ \
                 -icl -nhnv \
