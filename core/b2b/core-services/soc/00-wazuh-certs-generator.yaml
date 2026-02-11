@@ -5,34 +5,37 @@ metadata:
   namespace: soc
 data:
   instances.yml: |
-    instances:
-      - name: wazuh-indexer
-        ip:
-          - 127.0.0.1
-        dns:
-          - wazuh-indexer
-          - wazuh-indexer.soc.svc
-          - wazuh-indexer.soc.svc.cluster.local
-      - name: wazuh-manager
-        ip:
-          - 127.0.0.1
-        dns:
-          - wazuh-manager
-          - wazuh-manager.soc.svc
-          - wazuh-manager.soc.svc.cluster.local
-      - name: wazuh-dashboard
-        ip:
-          - 127.0.0.1
-        dns:
-          - wazuh-dashboard
-          - wazuh-dashboard.soc.svc
-          - wazuh-dashboard.soc.svc.cluster.local
-          - soc.ka0s.io
+    nodes:
+      indexer:
+        - name: wazuh-indexer
+          ip:
+            - 127.0.0.1
+          dns:
+            - wazuh-indexer
+            - wazuh-indexer.soc.svc
+            - wazuh-indexer.soc.svc.cluster.local
+      server:
+        - name: wazuh-manager
+          ip:
+            - 127.0.0.1
+          dns:
+            - wazuh-manager
+            - wazuh-manager.soc.svc
+            - wazuh-manager.soc.svc.cluster.local
+      dashboard:
+        - name: wazuh-dashboard
+          ip:
+            - 127.0.0.1
+          dns:
+            - wazuh-dashboard
+            - wazuh-dashboard.soc.svc
+            - wazuh-dashboard.soc.svc.cluster.local
+            - soc.ka0s.io
 ---
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: wazuh-certs-generator-official
+  name: wazuh-certs-generator
   namespace: soc
 spec:
   ttlSecondsAfterFinished: 600
@@ -48,7 +51,7 @@ spec:
               set -e
               echo ">>> Wazuh Certs Generator (Official Tool) <<<"
               
-              apt-get update && apt-get install -y curl openssl tar bash
+              apt-get update && apt-get install -y curl openssl tar bash ca-certificates
               
               # Install kubectl
               curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
@@ -60,7 +63,7 @@ spec:
               chmod +x wazuh-certs-tool.sh
               
               # Prepare config
-              cp /config/instances.yml ./instances.yml
+              cp /config/instances.yml ./config.yml
               
               echo "Generating certificates..."
               ./wazuh-certs-tool.sh -A
@@ -68,7 +71,10 @@ spec:
               echo "Processing output..."
               tar -xf wazuh-certificates.tar -C /tmp/
               
-              # Create Secrets
+              # Verify files exist
+              ls -l /tmp/wazuh-certificates/
+              
+              # Update Kubernetes Secrets
               echo "Updating Kubernetes Secrets..."
               
               # 1. Indexer
@@ -97,7 +103,6 @@ spec:
                 --from-file=dashboard-key.pem=/tmp/wazuh-certificates/wazuh-dashboard-key.pem
                 
               echo "Secrets updated successfully!"
-              echo "You MUST restart wazuh-indexer, wazuh-manager, and wazuh-dashboard pods to pick up new certs."
           volumeMounts:
             - name: config
               mountPath: /config
