@@ -50,7 +50,8 @@ jobs:
           BASE="${ITOP_URL%/}"
           URL="${BASE}/webservices/rest.php?version=1.3"
           echo "Checking: ${URL}"
-          curl -fsS -o /dev/null -I "${URL}"
+          unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY
+          curl --noproxy '*' -fsS -o /dev/null -I "${URL}"
 
       - name: Create iTop API user
         env:
@@ -67,4 +68,6 @@ jobs:
           ITOP_TARGET_PROFILES: ${{ github.event.inputs.target_profiles }}
           ITOP_TARGET_LANGUAGE: ${{ github.event.inputs.target_language }}
           ITOP_UPDATE_PASSWORD: ${{ github.event.inputs.update_password }}
-        run: python3 devops/core/itop/create-itop-api-user.py
+        run: |
+          unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY
+          python3 devops/core/itop/create-itop-api-user.py
