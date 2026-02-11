@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: wazuh-security-init-v4
+  name: wazuh-security-init-v5
   namespace: soc
 spec:
   ttlSecondsAfterFinished: 600
@@ -20,19 +20,11 @@ spec:
               export JAVA_HOME=/usr/share/wazuh-indexer/jdk
               export PATH=$JAVA_HOME/bin:$PATH
               
-              echo ">>> DIAGNOSTICS <<<"
-              echo "Checking CA cert details:"
-              openssl x509 -in /usr/share/wazuh-indexer/config/certs/root-ca.pem -noout -subject -issuer -dates
-              
-              echo "Checking Admin cert details:"
-              openssl x509 -in /usr/share/wazuh-indexer/config/certs/admin.pem -noout -subject -issuer -dates
-              
-              echo "Checking Server Cert (via openssl):"
-              # Try to connect and show cert info. Using IP to avoid DNS issues if any, but using Service DNS here.
-              # echo "Q" to exit s_client
-              echo "Q" | openssl s_client -connect wazuh-indexer.soc.svc:9300 -showcerts 2>/dev/null | openssl x509 -noout -subject -issuer -dates || echo "OpenSSL check failed or timed out"
+              echo "Waiting for Indexer (DNS: wazuh-indexer.soc.svc)..."
+              until curl -s -k https://wazuh-indexer.soc.svc:9200; do sleep 5; done
               
               echo "Running securityadmin.sh..."
+              # Use -h wazuh-indexer.soc.svc to match cert SAN
               /usr/share/wazuh-indexer/plugins/opensearch-security/tools/securityadmin.sh \
                 -cd /usr/share/wazuh-indexer/plugins/opensearch-security/securityconfig/ \
                 -icl -nhnv \
