@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: wazuh-certs-config
+  name: wazuh-certs-config-v1
   namespace: soc
 data:
   instances.yml: |
@@ -32,7 +32,7 @@ data:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: wazuh-certs-generator
+  name: wazuh-certs-generator-v1
   namespace: soc
 spec:
   ttlSecondsAfterFinished: 600
@@ -106,5 +106,5 @@ spec:
       volumes:
         - name: config
           configMap:
-            name: wazuh-certs-config
+            name: wazuh-certs-config-v1
       restartPolicy: OnFailure
