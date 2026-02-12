@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: wazuh-certs-config-v1
+  name: wazuh-certs-config-v2
   namespace: soc
 data:
   instances.yml: |
@@ -32,7 +32,7 @@ data:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: wazuh-certs-generator-v1
+  name: wazuh-certs-generator-v2
   namespace: soc
 spec:
   ttlSecondsAfterFinished: 600
@@ -66,7 +66,20 @@ spec:
               ./wazuh-certs-tool.sh -A
               
               echo "Processing output..."
-              tar -xf wazuh-certificates.tar -C /tmp/
+              if [ -f "wazuh-certificates.tar" ]; then
+                tar -xf wazuh-certificates.tar -C /tmp/
+              else
+                 echo "Warning: wazuh-certificates.tar not found, checking directory structure..."
+                 # Fallback: tool might have extracted directly or failed to tar
+                 if [ -d "./wazuh-certificates" ]; then
+                    mkdir -p /tmp/wazuh-certificates
+                    cp -r ./wazuh-certificates/* /tmp/wazuh-certificates/
+                 else
+                    echo "Error: No certificates generated."
+                    ls -la
+                    exit 1
+                 fi
+              fi
               
               # Verify files exist
               ls -l /tmp/wazuh-certificates/
@@ -106,5 +119,5 @@ spec:
       volumes:
         - name: config
           configMap:
-            name: wazuh-certs-config-v1
+            name: wazuh-certs-config-v2
       restartPolicy: OnFailure

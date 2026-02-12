@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: wazuh-security-init-v12
+  name: wazuh-security-init-v13
   namespace: soc
 spec:
   ttlSecondsAfterFinished: 600
@@ -35,7 +35,7 @@ spec:
               echo "Indexer 9200 is UP."
               
               echo "Running securityadmin.sh loop..."
-              RETRIES=5
+              RETRIES=10
               for i in $(seq 1 $RETRIES); do
                 echo "Attempt $i/$RETRIES..."
                 /usr/share/wazuh-indexer/plugins/opensearch-security/tools/securityadmin.sh \
@@ -45,13 +45,14 @@ spec:
                   -cert /usr/share/wazuh-indexer/config/certs/admin.pem \
                   -key /usr/share/wazuh-indexer/config/certs/admin-key.pem \
                   -h wazuh-indexer.soc.svc \
-                  -p 9300 && break
+                  -p 9300 && echo "Security Init SUCCESS" && exit 0
                 
-                echo "Attempt $i failed. Sleeping 10s..."
-                sleep 10
+                echo "Attempt $i failed. Sleeping 15s..."
+                sleep 15
               done
               
-              echo "Security Init Completed."
+              echo "Security Init FAILED after $RETRIES attempts."
+              exit 1
           volumeMounts:
             - name: certificates
               mountPath: /usr/share/wazuh-indexer/config/certs
