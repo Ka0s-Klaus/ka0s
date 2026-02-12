@@ -10,6 +10,11 @@ spec:
       containers:
       - name: security-init
         image: wazuh/wazuh-indexer:4.14.2
+        env:
+          - name: OPENSEARCH_JAVA_HOME
+            value: /usr/share/wazuh-indexer/jdk
+          - name: JAVA_HOME
+            value: /usr/share/wazuh-indexer/jdk
         command: ["/bin/bash", "-c"]
         args:
           - |
