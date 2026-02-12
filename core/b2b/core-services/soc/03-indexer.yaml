@@ -96,19 +96,25 @@ spec:
             - name: WAZUH_INDEXER_CHECK_CERTIFICATES
               value: "false"
           volumeMounts:
-            - name: wazuh-indexer-data
+            - name: wazuh-indexer-data-v2
               mountPath: /usr/share/wazuh-indexer/data
             - name: certificates
               mountPath: /usr/share/wazuh-indexer/config/certs
               readOnly: true
       volumes:
-        - name: wazuh-indexer-data
-          persistentVolumeClaim:
-            claimName: wazuh-indexer-pvc-v2
         - name: certificates
           secret:
             secretName: wazuh-indexer-certs-v3
             defaultMode: 420
+  volumeClaimTemplates:
+    - metadata:
+        name: wazuh-indexer-data-v2
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: local-path
+        resources:
+          requests:
+            storage: 10Gi
 ---
 apiVersion: v1
 kind: Service
