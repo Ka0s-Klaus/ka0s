@@ -51,12 +51,14 @@ spec:
                 cp -r /var/www/html/index.php /web-data/
               fi && \
               if [ -f /web-data/conf/production/config-itop.php ]; then \
-                 echo "Ensuring app_root_url is empty in config-itop.php..." && \
+                 echo "Setting correct app_root_url in config-itop.php..." && \
+                 chmod 660 /web-data/conf/production/config-itop.php && \
                  if grep -q "'app_root_url' =>" /web-data/conf/production/config-itop.php; then
-                   sed -i "s|'app_root_url' => .*|'app_root_url' => '',|" /web-data/conf/production/config-itop.php;
+                   sed -i "s|'app_root_url' => .*|'app_root_url' => 'https://itsm.ka0s.io/',|" /web-data/conf/production/config-itop.php;
                  fi
               fi && \
               chmod -R 775 /web-data/conf && \
+              chmod 444 /web-data/conf/production/config-itop.php && \
               chown -R 33:33 /web-data
           volumeMounts:
             - name: itop-web-persistent-storage
