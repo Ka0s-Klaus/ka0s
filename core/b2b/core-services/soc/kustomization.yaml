@@ -8,15 +8,37 @@ resources:
   - wazuh-indexer-pvc.yaml
   - wazuh-manager-pv.yaml
   - wazuh-manager-pvc.yaml
-  - 00-wazuh-certs-generator.yaml
   - 03-indexer.yaml
   - 04-manager.yaml
   - 05-dashboard.yaml
   - 06-agent-config.yaml
   - 06-agent-daemonset.yaml
-  - 99-security-init.yaml
-  # Deploy base
 
-# Force restart core services Tue Feb 11 11:30:00 CET 2026 - Security Init V10 Fix
-# Official Wazuh Certs Tool Implementation - Force Deploy
-# Force CD run v10 verification - Status Check
+secretGenerator:
+  - name: wazuh-indexer-certs
+    files:
+      - root-ca.pem=wazuh-certificates/root-ca.pem
+      - indexer.pem=wazuh-certificates/wazuh-indexer.pem
+      - indexer-key.pem=wazuh-certificates/wazuh-indexer-key.pem
+      - admin.pem=wazuh-certificates/admin.pem
+      - admin-key.pem=wazuh-certificates/admin-key.pem
+    options:
+      disableNameSuffixHash: true
+
+  - name: wazuh-manager-certs
+    files:
+      - root-ca.pem=wazuh-certificates/root-ca.pem
+      - manager.pem=wazuh-certificates/wazuh-manager.pem
+      - manager-key.pem=wazuh-certificates/wazuh-manager-key.pem
+      - admin.pem=wazuh-certificates/admin.pem
+      - admin-key.pem=wazuh-certificates/admin-key.pem
+    options:
+      disableNameSuffixHash: true
+
+  - name: wazuh-dashboard-certs
+    files:
+      - root-ca.pem=wazuh-certificates/root-ca.pem
+      - dashboard.pem=wazuh-certificates/wazuh-dashboard.pem
+      - dashboard-key.pem=wazuh-certificates/wazuh-dashboard-key.pem
+    options:
+      disableNameSuffixHash: true
