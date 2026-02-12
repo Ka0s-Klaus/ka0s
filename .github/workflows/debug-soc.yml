@@ -1,0 +1,34 @@
+name: Debug SOC Namespace
+on:
+  workflow_dispatch:
+
+jobs:
+  debug:
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Setup Kubectl Tunnel
+        uses: ./.github/actions/kubectl-tunnel
+        with:
+          host: ${{ secrets.KAOS_SSH_HOST_1 }}
+          username: ${{ secrets.KAOS_SSH_USER }}
+          key: ${{ secrets.KAOS_SSH_KEY_PRIV }}
+          port: ${{ secrets.KAOS_SSH_PORT_1 }}
+
+      - name: Inspect SOC Namespace
+        run: |
+          echo "=== ALL RESOURCES ==="
+          kubectl get all -n soc
+          
+          echo "=== STATEFULSET DETAILS ==="
+          kubectl describe statefulset wazuh-indexer -n soc || echo "StatefulSet not found"
+          
+          echo "=== PVC DETAILS ==="
+          kubectl get pvc -n soc
+          kubectl describe pvc wazuh-indexer-data-v2 -n soc || echo "PVC not found"
+          
+          echo "=== PV DETAILS ==="
+          kubectl get pv
+          kubectl describe pv wazuh-indexer-pv-v2 || echo "PV not found"
+          
+          echo "=== EVENTS ==="
+          kubectl get events -n soc --sort-by=.lastTimestamp
