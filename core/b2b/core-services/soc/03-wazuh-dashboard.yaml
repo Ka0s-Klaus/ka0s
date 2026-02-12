@@ -31,13 +31,25 @@ spec:
       labels:
         app: wazuh-dashboard
     spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - wazuh-indexer
+                topologyKey: kubernetes.io/hostname
       containers:
         - name: wazuh-dashboard
           image: wazuh/wazuh-dashboard:4.14.2
           resources:
             requests:
               memory: "1Gi"
-              cpu: "500m"
+              cpu: "250m"
             limits:
               memory: "2Gi"
               cpu: "1000m"
