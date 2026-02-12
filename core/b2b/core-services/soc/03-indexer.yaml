@@ -92,7 +92,7 @@ spec:
             - name: PLUGINS_SECURITY_AUTHCZ_ADMIN_DN
               value: "CN=admin,O=Wazuh,L=California,C=US"
             - name: WAZUH_INDEXER_ADMIN_DN
-              value: "CN=admin,O=Wazuh,L=California,C=US"
+              value: "CN=admin,O=Wazuh,L=California,C=US;C=US, L=California, O=Wazuh, CN=admin"
             - name: WAZUH_INDEXER_CHECK_CERTIFICATES
               value: "false"
           volumeMounts:
@@ -104,7 +104,7 @@ spec:
       volumes:
         - name: certificates
           secret:
-            secretName: wazuh-indexer-certs-v3
+            secretName: wazuh-indexer-certs-v4
             defaultMode: 420
   volumeClaimTemplates:
     - metadata:

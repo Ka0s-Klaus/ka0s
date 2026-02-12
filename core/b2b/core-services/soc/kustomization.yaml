@@ -16,7 +16,7 @@ resources:
   - 06-agent-daemonset.yaml
 
 secretGenerator:
-  - name: wazuh-indexer-certs-v3
+  - name: wazuh-indexer-certs-v4
     files:
       - root-ca.pem=wazuh-certificates/root-ca.pem
       - indexer.pem=wazuh-certificates/wazuh-indexer.pem
@@ -26,17 +26,15 @@ secretGenerator:
     options:
       disableNameSuffixHash: true
 
-  - name: wazuh-manager-certs-v3
+  - name: wazuh-manager-certs-v4
     files:
       - root-ca.pem=wazuh-certificates/root-ca.pem
       - manager.pem=wazuh-certificates/wazuh-manager.pem
       - manager-key.pem=wazuh-certificates/wazuh-manager-key.pem
-      - admin.pem=wazuh-certificates/admin.pem
-      - admin-key.pem=wazuh-certificates/admin-key.pem
     options:
       disableNameSuffixHash: true
 
-  - name: wazuh-dashboard-certs-v3
+  - name: wazuh-dashboard-certs-v4
     files:
       - root-ca.pem=wazuh-certificates/root-ca.pem
       - dashboard.pem=wazuh-certificates/wazuh-dashboard.pem

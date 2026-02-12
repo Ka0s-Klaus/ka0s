@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: wazuh-security-init-v20
+  name: wazuh-security-init-v21
   namespace: soc
 spec:
   ttlSecondsAfterFinished: 600
@@ -18,9 +18,11 @@ spec:
         command: ["/bin/bash", "-c"]
         args:
           - |
-            echo "Waiting for Indexer..."
-            until curl -k -s https://wazuh-indexer:9200; do sleep 5; done
-            echo "Indexer is up. Running securityadmin.sh..."
+            echo "Waiting for Indexer...";
+            until curl -k -s https://wazuh-indexer:9200; do sleep 5; done;
+            echo "Indexer is up. Checking Admin Cert Subject...";
+            /usr/share/wazuh-indexer/jdk/bin/keytool -printcert -file /usr/share/wazuh-indexer/config/certs/admin.pem
+            echo "Running securityadmin.sh...";
             /usr/share/wazuh-indexer/plugins/opensearch-security/tools/securityadmin.sh \
             -cd /usr/share/wazuh-indexer/plugins/opensearch-security/securityconfig/ \
             -nhnv \
@@ -36,4 +38,4 @@ spec:
       volumes:
       - name: certificates
         secret:
-          secretName: wazuh-indexer-certs-v3
+          secretName: wazuh-indexer-certs-v4

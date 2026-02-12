@@ -53,22 +53,21 @@ spec:
             - name: OPENSEARCH_REQUESTHEADERSALLOWLIST
               value: "securitytenant,Authorization"
             - name: OPENSEARCH_SSL_CERTIFICATEAUTHORITIES
-              value: "/usr/share/wazuh-dashboard/certs/root-ca.pem"
+              value: "/usr/share/wazuh-dashboard/config/certs/root-ca.pem"
           volumeMounts:
-            - name: certificates
-              mountPath: /usr/share/wazuh-dashboard/certs
-              readOnly: true
-            - name: dashboard-conf
+            - name: wazuh-dashboard-config
               mountPath: /usr/share/wazuh-dashboard/config/opensearch_dashboards.yml
               subPath: opensearch_dashboards.yml
+            - name: certificates
+              mountPath: /usr/share/wazuh-dashboard/config/certs
               readOnly: true
       volumes:
-        - name: certificates
-          secret:
-            secretName: wazuh-dashboard-certs-v3
-        - name: dashboard-conf
+        - name: wazuh-dashboard-config
           configMap:
             name: wazuh-dashboard-conf
+        - name: certificates
+          secret:
+            secretName: wazuh-dashboard-certs-v4
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -81,10 +80,10 @@ data:
     server.port: 5601
     opensearch.hosts: https://wazuh-indexer:9200
     opensearch.ssl.verificationMode: certificate
-    opensearch.ssl.certificateAuthorities: ["/usr/share/wazuh-dashboard/certs/root-ca.pem"]
+    opensearch.ssl.certificateAuthorities: ["/usr/share/wazuh-dashboard/config/certs/root-ca.pem"]
     server.ssl.enabled: false
-    server.ssl.certificate: "/usr/share/wazuh-dashboard/certs/dashboard.pem"
-    server.ssl.key: "/usr/share/wazuh-dashboard/certs/dashboard-key.pem"
+    server.ssl.certificate: "/usr/share/wazuh-dashboard/config/certs/dashboard.pem"
+    server.ssl.key: "/usr/share/wazuh-dashboard/config/certs/dashboard-key.pem"
 ---
 apiVersion: v1
 kind: Service

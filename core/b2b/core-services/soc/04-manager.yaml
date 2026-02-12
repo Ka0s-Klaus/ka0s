@@ -28,60 +28,56 @@ spec:
       containers:
         - name: wazuh-manager
           image: wazuh/wazuh-manager:4.14.2
+          imagePullPolicy: IfNotPresent
           resources:
             requests:
-              memory: "1Gi"
-              cpu: "500m"
+              memory: "512Mi"
+              cpu: "250m"
             limits:
-              memory: "2Gi"
+              memory: "1Gi"
               cpu: "1000m"
-          ports:
-            - containerPort: 1514
-              name: agents-event
-            - containerPort: 1515
-              name: agents-reg
-            - containerPort: 55000
-              name: api
           env:
             - name: INDEXER_URL
               value: "https://wazuh-indexer:9200"
             - name: INDEXER_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: wazuh-auth
-                  key: admin_username
+              value: "admin"
             - name: INDEXER_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: wazuh-auth
-                  key: admin_password
+              value: "admin"
+          ports:
+            - containerPort: 1514
+              name: agent-connection
+            - containerPort: 1515
+              name: agent-auth
+            - containerPort: 55000
+              name: manager-api
           volumeMounts:
+            - name: wazuh-manager-config
+              mountPath: /var/ossec/etc/ossec.conf
+              subPath: ossec.conf
             - name: wazuh-manager-data
               mountPath: /var/ossec/data
             - name: certificates
-              mountPath: /etc/filebeat/certs
-              readOnly: true
-            - name: auth-certs
-              mountPath: /etc/filebeat/auth
-              readOnly: true
-            - name: certificates
-              mountPath: /var/ossec/etc/ssl/server.crt
+              mountPath: /var/ossec/etc/manager.pem
               subPath: manager.pem
               readOnly: true
             - name: certificates
-              mountPath: /var/ossec/etc/ssl/server.key
+              mountPath: /var/ossec/etc/manager-key.pem
               subPath: manager-key.pem
               readOnly: true
+            - name: certificates
+              mountPath: /var/ossec/etc/root-ca.pem
+              subPath: root-ca.pem
+              readOnly: true
       volumes:
+        - name: wazuh-manager-config
+          configMap:
+            name: wazuh-manager-conf
         - name: wazuh-manager-data
           persistentVolumeClaim:
             claimName: wazuh-manager-pvc
         - name: certificates
           secret:
-            secretName: wazuh-manager-certs-v3
-        - name: auth-certs
-          secret:
-            secretName: wazuh-manager-certs-v3
+            secretName: wazuh-manager-certs-v4
 ---
 apiVersion: v1
 kind: Service
