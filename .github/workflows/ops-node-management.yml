@@ -1,0 +1,64 @@
+name: Ops - Node Management
+on:
+  workflow_dispatch:
+    inputs:
+      node_name:
+        description: 'Nombre del nodo'
+        required: true
+        default: 'k8-node-30'
+        type: choice
+        options:
+        - k8-node-20
+        - k8-node-30
+        - k8-node-40
+      action:
+        description: 'Acción a realizar'
+        required: true
+        type: choice
+        options:
+        - 'taint-restricted'   # Aplica restricted=true:NoSchedule
+        - 'untaint-restricted' # Elimina restricted=true:NoSchedule
+        - 'cordon'            # Marca como Unschedulable
+        - 'uncordon'          # Marca como Schedulable
+
+jobs:
+  manage-node:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Execute Node Operation
+        run: |
+          NODE="${{ inputs.node_name }}"
+          ACTION="${{ inputs.action }}"
+          
+          echo "Processing Node: $NODE with Action: $ACTION"
+          
+          if [ "$ACTION" == "taint-restricted" ]; then
+            # Aplicamos un Taint para que solo los pods con la toleration puedan usuarlo
+            # key=restricted, value=true, effect=NoSchedule
+            kubectl taint nodes $NODE restricted=true:NoSchedule --overwrite
+            echo "✅ Node $NODE tainted with restricted=true:NoSchedule"
+            echo "ℹ️  To use this node, add this toleration to your pod:"
+            echo "    tolerations:"
+            echo "    - key: \"restricted\""
+            echo "      operator: \"Equal\""
+            echo "      value: \"true\""
+            echo "      effect: \"NoSchedule\""
+            
+          elif [ "$ACTION" == "untaint-restricted" ]; then
+            kubectl taint nodes $NODE restricted=true:NoSchedule- || true
+            echo "✅ Node $NODE untainted"
+            
+          elif [ "$ACTION" == "cordon" ]; then
+            kubectl cordon $NODE
+            echo "✅ Node $NODE cordoned (SchedulingDisabled)"
+            
+          elif [ "$ACTION" == "uncordon" ]; then
+            kubectl uncordon $NODE
+            echo "✅ Node $NODE uncordoned (SchedulingEnabled)"
+          fi
+          
+          echo "--- Current Node Status ---"
+          kubectl get nodes -o wide
