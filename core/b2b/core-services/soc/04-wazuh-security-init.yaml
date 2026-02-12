@@ -1,0 +1,38 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: wazuh-security-init
+  namespace: soc
+spec:
+  ttlSecondsAfterFinished: 600
+  template:
+    spec:
+      containers:
+      - name: security-init
+        image: wazuh/wazuh-indexer:4.14.2
+        env:
+          - name: OPENSEARCH_JAVA_HOME
+            value: /usr/share/wazuh-indexer/jdk
+        command: ["/bin/bash", "-c"]
+        args:
+          - |
+            echo "Waiting for Indexer...";
+            until curl -k -s https://wazuh-indexer:9200; do sleep 5; done;
+            echo "Indexer is up. Running securityadmin.sh...";
+            /usr/share/wazuh-indexer/plugins/opensearch-security/tools/securityadmin.sh \
+            -cd /usr/share/wazuh-indexer/plugins/opensearch-security/securityconfig/ \
+            -nhnv \
+            -cacert /usr/share/wazuh-indexer/config/certs/root-ca.pem \
+            -cert /usr/share/wazuh-indexer/config/certs/admin.pem \
+            -key /usr/share/wazuh-indexer/config/certs/admin-key.pem \
+            -h wazuh-indexer
+        volumeMounts:
+        - name: wazuh-indexer-certs
+          mountPath: /usr/share/wazuh-indexer/config/certs
+          readOnly: true
+      restartPolicy: OnFailure
+      volumes:
+      - name: wazuh-indexer-certs
+        secret:
+          secretName: wazuh-indexer-certs
+          defaultMode: 420

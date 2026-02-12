@@ -3,42 +3,14 @@ kind: Kustomization
 namespace: soc
 
 resources:
+  - 00-certs-generator.yaml
   - namespace.yaml
-  - wazuh-indexer-pv.yaml
-  - wazuh-indexer-pvc.yaml
-  - wazuh-manager-pv.yaml
-  - wazuh-manager-pvc.yaml
-  - 02-security-init.yaml
-  - 03-indexer.yaml
-  - 04-manager.yaml
-  - 05-dashboard.yaml
-  - 06-agent-config.yaml
-  - 06-agent-daemonset.yaml
+  - storage.yaml
+  - 01-wazuh-indexer.yaml
+  - 02-wazuh-manager.yaml
+  - 03-wazuh-dashboard.yaml
+  - 04-wazuh-security-init.yaml
 
-secretGenerator:
-  - name: wazuh-indexer-certs-v4
-    files:
-      - root-ca.pem=wazuh-certificates/root-ca.pem
-      - indexer.pem=wazuh-certificates/wazuh-indexer.pem
-      - indexer-key.pem=wazuh-certificates/wazuh-indexer-key.pem
-      - admin.pem=wazuh-certificates/admin.pem
-      - admin-key.pem=wazuh-certificates/admin-key.pem
-    options:
-      disableNameSuffixHash: true
-
-  - name: wazuh-manager-certs-v4
-    files:
-      - root-ca.pem=wazuh-certificates/root-ca.pem
-      - manager.pem=wazuh-certificates/wazuh-manager.pem
-      - manager-key.pem=wazuh-certificates/wazuh-manager-key.pem
-    options:
-      disableNameSuffixHash: true
-
-  - name: wazuh-dashboard-certs-v4
-    files:
-      - root-ca.pem=wazuh-certificates/root-ca.pem
-      - dashboard.pem=wazuh-certificates/wazuh-dashboard.pem
-      - dashboard-key.pem=wazuh-certificates/wazuh-dashboard-key.pem
-    options:
-      disableNameSuffixHash: true
-# Primera version
+commonLabels:
+  environment: production
+  project: ka0s-soc
