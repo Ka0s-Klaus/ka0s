@@ -1,37 +1,46 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: wazuh-certs-generator
+  name: wazuh-setup-sa
   namespace: soc
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: wazuh-certs-manager
+  name: wazuh-setup-role
   namespace: soc
 rules:
-  - apiGroups: [""]
-    resources: ["secrets"]
+  - apiGroups: ["", "apps", "batch", "networking.k8s.io"]
+    resources: 
+      - secrets
+      - configmaps
+      - services
+      - pods
+      - persistentvolumeclaims
+      - statefulsets
+      - deployments
+      - jobs
+      - ingresses
     verbs: ["get", "list", "create", "update", "patch", "delete"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: wazuh-certs-generator-binding
+  name: wazuh-setup-binding
   namespace: soc
 subjects:
   - kind: ServiceAccount
-    name: wazuh-certs-generator
+    name: wazuh-setup-sa
     namespace: soc
 roleRef:
   kind: Role
-  name: wazuh-certs-manager
+  name: wazuh-setup-role
   apiGroup: rbac.authorization.k8s.io
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: wazuh-certs-gen-config
+  name: wazuh-setup-config
   namespace: soc
 data:
   config.yml: |
@@ -60,10 +69,9 @@ data:
     #!/bin/bash
     set -e
     
-    SECRET_NAME="wazuh-indexer-certs"
     NAMESPACE="soc"
     
-    # Instalación de dependencias mínimas
+    # Instalación de dependencias
     echo "Installing dependencies..."
     apt-get update && apt-get install -y curl openssl tar ca-certificates
     
@@ -73,10 +81,22 @@ data:
     chmod +x kubectl
     mv kubectl /usr/local/bin/
     
-    # Verificar si los secretos ya existen para evitar sobrescribir (idempotencia)
-    if kubectl get secret "$SECRET_NAME" -n "$NAMESPACE" > /dev/null 2>&1; then
-      echo "✅ Secrets already exist. Skipping generation to preserve CA trust."
-      # Opcional: Podríamos implementar lógica de rotación aquí si fuera necesario
+    echo "=== CLEANUP PHASE ==="
+    echo "Deleting conflicting resources to allow clean redeploy..."
+    
+    # Borrar recursos conflictivos (StatefulSet inmutable, Jobs viejos, etc)
+    kubectl delete statefulset wazuh-indexer -n "$NAMESPACE" --ignore-not-found
+    kubectl delete deployment wazuh-manager wazuh-dashboard -n "$NAMESPACE" --ignore-not-found
+    kubectl delete job -l app=wazuh-security-init -n "$NAMESPACE" --ignore-not-found
+    kubectl delete service wazuh-indexer wazuh-indexer-headless wazuh-manager wazuh-manager-worker wazuh-dashboard -n "$NAMESPACE" --ignore-not-found
+    
+    echo "Cleanup done."
+    
+    echo "=== CERTIFICATES PHASE ==="
+    
+    # Verificar si los secretos ya existen
+    if kubectl get secret wazuh-indexer-certs -n "$NAMESPACE" > /dev/null 2>&1; then
+      echo "✅ Secrets already exist. Skipping generation."
       exit 0
     fi
     
@@ -90,7 +110,7 @@ data:
     curl -sO https://packages.wazuh.com/4.14/wazuh-certs-tool.sh
     chmod +x wazuh-certs-tool.sh
     
-    # Copiar config desde ConfigMap
+    # Copiar config
     cp /config/config.yml .
     
     # Ejecutar herramienta
@@ -121,20 +141,20 @@ data:
       --from-file=dashboard-key.pem=wazuh-certificates/wazuh-dashboard-key.pem \
       -n "$NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
       
-    echo "🎉 Certificates generated and secrets created successfully!"
+    echo "🎉 Setup completed successfully!"
 ---
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: wazuh-certs-generator
+  name: wazuh-setup-job
   namespace: soc
 spec:
   ttlSecondsAfterFinished: 600
   template:
     spec:
-      serviceAccountName: wazuh-certs-generator
+      serviceAccountName: wazuh-setup-sa
       containers:
-      - name: generator
+      - name: setup
         image: ubuntu:22.04
         command: ["/bin/bash", "/config/run.sh"]
         volumeMounts:
@@ -144,4 +164,4 @@ spec:
       volumes:
       - name: config-volume
         configMap:
-          name: wazuh-certs-gen-config
+          name: wazuh-setup-config
