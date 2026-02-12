@@ -81,10 +81,21 @@ data:
     chmod +x kubectl
     mv kubectl /usr/local/bin/
     
-    echo "=== CLEANUP PHASE ==="
-    echo "Deleting conflicting resources to allow clean redeploy..."
+    echo "=== CHECKING STATUS ==="
     
-    # Borrar recursos conflictivos (StatefulSet inmutable, Jobs viejos, etc)
+    # Verificar si los secretos ya existen (condición de parada)
+    if kubectl get secret wazuh-indexer-certs -n "$NAMESPACE" > /dev/null 2>&1; then
+      echo "✅ Secrets already exist. Environment is initialized."
+      echo "Skipping cleanup and generation to preserve data/uptime."
+      exit 0
+    fi
+    
+    # Si llegamos aquí, es una instalación nueva o un reset forzado (no hay secretos)
+    
+    echo "=== CLEANUP PHASE ==="
+    echo "Secrets not found. Performing full cleanup to ensure clean install..."
+    
+    # Borrar recursos conflictivos
     kubectl delete statefulset wazuh-indexer -n "$NAMESPACE" --ignore-not-found
     kubectl delete deployment wazuh-manager wazuh-dashboard -n "$NAMESPACE" --ignore-not-found
     kubectl delete job -l app=wazuh-security-init -n "$NAMESPACE" --ignore-not-found
@@ -93,13 +104,6 @@ data:
     echo "Cleanup done."
     
     echo "=== CERTIFICATES PHASE ==="
-    
-    # Verificar si los secretos ya existen
-    if kubectl get secret wazuh-indexer-certs -n "$NAMESPACE" > /dev/null 2>&1; then
-      echo "✅ Secrets already exist. Skipping generation."
-      exit 0
-    fi
-    
     echo "🚀 Generating new Wazuh certificates..."
     
     WORKDIR="/tmp/certs-gen"
