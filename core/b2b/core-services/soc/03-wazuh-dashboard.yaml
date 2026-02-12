@@ -66,10 +66,16 @@ spec:
             - name: OPENSEARCH_SSL_CERTIFICATEAUTHORITIES
               value: "/usr/share/wazuh-dashboard/certs/root-ca.pem"
           volumeMounts:
+            - name: wazuh-dashboard-config
+              mountPath: /usr/share/wazuh-dashboard/config/opensearch_dashboards.yml
+              subPath: opensearch_dashboards.yml
             - name: wazuh-dashboard-certs
               mountPath: /usr/share/wazuh-dashboard/certs
               readOnly: true
       volumes:
+        - name: wazuh-dashboard-config
+          configMap:
+            name: wazuh-dashboard-config
         - name: wazuh-dashboard-certs
           secret:
             secretName: wazuh-dashboard-certs
