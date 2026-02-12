@@ -23,12 +23,12 @@ spec:
       securityContext:
         fsGroup: 1000
       initContainers:
-        - name: fix-permissions
-          image: busybox
-          command: ["sh", "-c", "chown -R 1000:1000 /usr/share/wazuh-indexer/data"]
-          volumeMounts:
-            - name: wazuh-indexer-data
-              mountPath: /usr/share/wazuh-indexer/data
+      - name: fix-permissions
+        image: busybox
+        command: ["sh", "-c", "chown -R 1000:1000 /usr/share/wazuh-indexer/data"]
+        volumeMounts:
+        - name: wazuh-indexer-data-v2
+          mountPath: /usr/share/wazuh-indexer/data
         - name: increase-vm-max-map
           image: busybox
           command: ["sysctl", "-w", "vm.max_map_count=262144"]
