@@ -116,6 +116,9 @@ spec:
             - name: wazuh-indexer-certs
               mountPath: /usr/share/wazuh-indexer/config/certs
               readOnly: true
+            - name: wazuh-indexer-conf
+              mountPath: /usr/share/wazuh-indexer/config/opensearch.yml
+              subPath: opensearch.yml
       volumes:
         - name: wazuh-indexer-data
           persistentVolumeClaim:
@@ -124,3 +127,6 @@ spec:
           secret:
             secretName: wazuh-indexer-certs
             defaultMode: 420
+        - name: wazuh-indexer-conf
+          configMap:
+            name: wazuh-indexer-conf
