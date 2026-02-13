@@ -53,6 +53,7 @@ Si, parece increible pero hemos decidido en el equipo usar una terminología "es
 - [Módulo Ka0s Landing Zone (LZ)](./ka0s_lz/ka0s_lz.md)
 - [Módulo Ka0s Markdown Lint](./ka0s_md/ka0s_md.md)
 - [Módulo Ka0s MongoDB Integration](./ka0s_mongo/ka0s_mongo.md)
+- [Módulo Ka0s Onboarding](./ka0s_onboarding/ka0s_onboarding.md)
 - [Módulo Ka0s Release (Klaus)](./ka0s_release/ka0s_release.md)
 - [Módulo Ka0s Security Audit](./ka0s_security/ka0s_security.md)
 - [Módulo Ka0s SSH Connect](./ka0s_ssh_connect/ka0s_ssh_connect.md)
