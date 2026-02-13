@@ -60,6 +60,7 @@ Si, parece increible pero hemos decidido en el equipo usar una terminología "es
 - [Módulo Ka0s Workflow Statistics](./ka0s_summary/ka0s_summary.md)
 - [Módulo Ka0s Template](./ka0s_template/ka0s_template.md)
 - [Módulo Ka0s Version Manager](./ka0s_version/ka0s_version.md)
+- [Watchdog - Node Health](./ka0s_watchdog_node_health/ka0s_watchdog_node_health.md)
 - [Módulo Ka0s YAML Lint](./ka0s_yaml/ka0s_yaml.md)
 - [Ka0s Cluster Restart Module](./kaos_cluster_restart/kaos_cluster_restart.md)
 

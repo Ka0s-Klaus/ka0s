@@ -67,9 +67,17 @@ jobs:
     needs: [job-core]
     if: success()
     runs-on: swarm-runners-scaleset
+    env:
+      GH_TOKEN: ${{ github.token }}
     steps:
       - name: Log Success
         run: echo "Watchdog scan completed successfully."
+
+      - name: Trigger Cluster Audit
+        run: |
+          echo "📸 Triggering post-watchdog cluster audit..."
+          gh workflow run audit-cluster-status.yml --ref main
+
 
   handle-failure:
     needs: [job-core]
@@ -78,3 +86,18 @@ jobs:
     steps:
       - name: Log Failure
         run: echo "Watchdog scan failed to execute."
+
+  end-workflow:
+    needs: [handle-success, handle-failure]
+    if: always()
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Trigger Inspector
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "🔍 Triggering Inspector for Audit..."
+          gh workflow run inspector.yml \
+            --ref main \
+            -f kaos-workflow-id="${{ github.run_id }}" \
+            -f kaos-user-start="${{ github.triggering_actor }}"

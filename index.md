@@ -44,6 +44,7 @@ Bienvenido al centro de documentación del proyecto Ka0s. A continuación encont
 ## 📂 Otros / Sin Categoría
 *   [Módulo Ka0s Issue Templates](core/docs/ka0s_issue_templates/ka0s_issue_templates.md)
 *   [Módulo Ka0s Onboarding](core/docs/ka0s_onboarding/ka0s_onboarding.md)
+*   [Watchdog - Node Health](core/docs/ka0s_watchdog_node_health/ka0s_watchdog_node_health.md)
 
 ---
 *Para ver todos los archivos, navega a [core/docs/](core/docs/).*
