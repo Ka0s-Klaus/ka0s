@@ -19,29 +19,29 @@ Albert Einstein dijo una vez: "... si tu intención es describir la verdad, hazl
 
 ## Nuestra filosofía
 
-El método **KAIZEN** engloba el concepto de la mejora contínua basada en pequeñas acciones concretas, simples y poco onerosas, donde se ven implicados todos los miembros de una empresa. Nosotros hemos adaptado este método a [nuestra filosofía de trabajo](/core/docs/ka0s/ka0s.md).
+El método **KAIZEN** engloba el concepto de la mejora continua basada en pequeñas acciones concretas, simples y poco onerosas, donde se ven implicados todos los miembros de una empresa. Nosotros hemos adaptado este método a [nuestra filosofía de trabajo](/core/docs/ka0s/ka0s.md).
 
 ## ¿Qué es Ka0S?
 
-Si tuviesemos que explicarlo con una única frase, Ka0S sería algo así como ".... la organización fundamental de un sistema, compuesta por sus módulos, las relaciones entre ellos y su entorno, así como los principios que gobiernan su diseño y evolución."
+Si tuviésemos que explicarlo con una única frase, Ka0S sería algo así como ".... la organización fundamental de un sistema, compuesta por sus módulos, las relaciones entre ellos y su entorno, así como los principios que gobiernan su diseño y evolución."
 
-Si entramos mas en detalle, podemos decir que Ka0S es; *... es un framework, basado en código, que permite en todo momento que todos los miembros de una empresa puedan gestionar el ecosistema de herramientas, al que esta asociado Ka0S, permitiendo que en base a una reglas comunes para todos, cada uno pueda mantener y evolucionar los componentes de los cuales es responsable de una manera sencilla, simple y segura.*
+Si entramos más en detalle, podemos decir que Ka0S es; *... es un framework, basado en código, que permite en todo momento que todos los miembros de una empresa puedan gestionar el ecosistema de herramientas, al que esta asociado Ka0S, permitiendo que en base a una reglas comunes para todos, cada uno pueda mantener y evolucionar los componentes de los cuales es responsable de una manera sencilla, simple y segura.*
 
 Ventajas de utilizar Ka0S
 
 - Revisión de código continuo *Permite detectar y corregir errores de manera temprana, mejorando la calidad del código.*
 - Automatización de pruebas *Asegura que todas las funcionalidades se prueben de manera consistente y eficiente.*
 - Refactorización Continua *Facilita la mejora constante del código sin afectar su funcionalidad.*
-- Integración Contínua y Entrega Contínua *Permite integrar y entregar cambios de manera rápida y segura.*
-- Reatroalimentación y reciclaje del código *Fomenta la mejora continua a través de la retroalimentación y la reutilización de componentes.*
+- Integración Continua y Entrega Continua *Permite integrar y entregar cambios de manera rápida y segura.*
+- Retroalimentación y reciclaje del código *Fomenta la mejora continua a través de la retroalimentación y la reutilización de componentes.*
 
-Si quieres saber más a cerca de [Ka0s](./core/docs/README.md).
+Si quieres saber más acerca de [Ka0s](./index.md).
 
 ## ¿Y cómo me lo puedo instalar?
 
-Antes de nada te recomendamos que le eches un vistazo a la [documentación](./core/docs/README.md) para saber más acerca de Ka0S.
+Antes de nada te recomendamos que le eches un vistazo a la [documentación](./index.md) para saber más acerca de Ka0S.
 
-A fecha de hoy es tan secillo como seguir los pasos de:
+A fecha de hoy es tan sencillo como seguir los pasos de:
 
 - Envianos un mensaje de correo a <support@ka0s.io>. *Actualmente estamos trabajando en que la solicitud se haga de manera automática, mediante una template.*
 - Recibirás un mensaje de correo con las instrucciones a aplicar en tu repositorio/organización de GitHub.
@@ -65,7 +65,7 @@ Pero podemos anticiparos que estamos buscando colaboraciones en los siguiente pr
 - Grafana, Loki, CaDvisor, Prometheus
 - Kubernetes
 
-## Realeses
+## Releases
 
 [Release Ka0s-Klaus](core/docs/ka0s_release/kaos-klaus.md)
 
