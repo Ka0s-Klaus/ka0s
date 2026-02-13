@@ -1,0 +1,46 @@
+name: 🚀 Solicitud de Onboarding (Instalación)
+description: Solicita la integración de tu organización o repositorio en el ecosistema Ka0s.
+title: "[ONBOARDING]: <Nombre de tu Organización/Proyecto>"
+labels: ["onboarding", "setup"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### ¡Bienvenido a Ka0s!
+        Gracias por tu interés en adoptar el framework Ka0s. Por favor, completa la siguiente información para que nuestro equipo (o nuestros automatas) puedan procesar tu solicitud.
+
+  - type: input
+    id: org_name
+    attributes:
+      label: Nombre de la Organización o Proyecto
+      description: ¿Cómo se llama la entidad que adoptará Ka0s?
+      placeholder: Ej. Acme Corp
+    validations:
+      required: true
+
+  - type: input
+    id: admin_contact
+    attributes:
+      label: Contacto Administrativo
+      description: Usuario de GitHub o email del responsable técnico.
+      placeholder: "@usuario o email@dominio.com"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Tipo de Entorno Objetivo
+      options:
+        - Kubernetes (Self-Hosted)
+        - Kubernetes (Cloud - AWS/GCP/Azure)
+        - Híbrido
+        - Otro (Especificar en comentarios)
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Contexto Adicional
+      description: Cuéntanos brevemente sobre tu infraestructura actual y qué esperas de Ka0s.

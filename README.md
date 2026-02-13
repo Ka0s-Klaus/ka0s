@@ -39,12 +39,20 @@ Si quieres saber más acerca de [Ka0s](./index.md).
 
 ## ¿Y cómo me lo puedo instalar?
 
-Antes de nada te recomendamos que le eches un vistazo a la [documentación](./index.md) para saber más acerca de Ka0S.
+Ka0s no es un simple binario que se instala, es un **Framework de Operaciones y Automatización**. Adoptar Ka0s significa integrar tu infraestructura y procesos con nuestros estándares.
 
-A fecha de hoy es tan sencillo como seguir los pasos de:
+### Proceso de Onboarding
 
-- Envianos un mensaje de correo a <support@ka0s.io>. *Actualmente estamos trabajando en que la solicitud se haga de manera automática, mediante una template.*
-- Recibirás un mensaje de correo con las instrucciones a aplicar en tu repositorio/organización de GitHub.
+Hemos automatizado el proceso de solicitud para facilitar tu integración. Sigue estos pasos:
+
+1.  **Revisa los requisitos**: Asegúrate de tener acceso administrativo a tu organización de GitHub y, idealmente, un cluster de Kubernetes base.
+2.  **Abre una solicitud**: Utiliza nuestra plantilla de **[Solicitud de Onboarding](https://github.com/Ka0s-Klaus/ka0s/issues/new?template=onboarding_request.yml)**.
+    *   Esto creará un Issue estructurado donde nos proporcionarás los detalles de tu organización y entorno.
+3.  **Procesamiento**:
+    *   Nuestro equipo (y nuestros bots) validarán tu solicitud.
+    *   Recibirás un conjunto de scripts y workflows iniciales para "bootstrapear" tu repositorio con la estructura Ka0s.
+
+Alternativamente, si prefieres el método manual o tienes dudas específicas, puedes escribirnos a <support@ka0s.io>.
 
 ## El equipo
 
@@ -58,9 +66,17 @@ A fecha de hoy es tan sencillo como seguir los pasos de:
 
 ## ¿Y si quiero contribuir con el proyecto?
 
-En estos momentos estamos trabajando en el proceso y el procedimiento para poder abrir la colaboración al proyecto de Ka0S. En breve estará disponible.
-Pero podemos anticiparos que estamos buscando colaboraciones en los siguiente productos:
+¡Nos encanta recibir contribuciones! Ya sea reportando bugs, mejorando la documentación o escribiendo código.
 
+Hemos definido un proceso claro para garantizar la calidad y la seguridad:
+
+1.  **Lee nuestra Guía**: Consulta el archivo [CONTRIBUTING.md](./CONTRIBUTING.md) para entender nuestras normas de desarrollo, flujo de ramas y estándares de commits.
+2.  **Reporta antes de actuar**:
+    *   ¿Encontraste un error? Abre un **[Bug Report](https://github.com/Ka0s-Klaus/ka0s/issues/new?template=bug_report.yml)**.
+    *   ¿Tienes una idea? Abre una **[Solicitud de Funcionalidad](https://github.com/Ka0s-Klaus/ka0s/issues/new?template=feature_request.yml)**.
+3.  **Pull Requests**: Todo cambio debe pasar por un Pull Request (PR) validado por nuestros workflows de CI.
+
+Actualmente buscamos ayuda especial en:
 - Wazuh, SIEM + XDR
 - Grafana, Loki, CaDvisor, Prometheus
 - Kubernetes
@@ -75,9 +91,9 @@ Information about the [license](./LICENSE) under which the project is distribute
 
 ## Contacto
 
-Contact information for questions or support.
+Para soporte, dudas o discusiones sobre el proyecto, utiliza los canales oficiales de GitHub para mantener la trazabilidad y ayudar a otros usuarios.
 
-- **Name:** Ka0S Support
-- **Email:** <support@ka0s.io> (add [KA0S] in the title of email)
-- **GitHub:** [Ka0s (Release Klaus)](https://github.com/Ka0s-Klaus)
-- **Web:** [Ka0s (Release Klaus)](https://www.ka0s.io)
+- **Soporte Técnico**: Abre un [Issue](https://github.com/Ka0s-Klaus/ka0s/issues) con la etiqueta `support`.
+- **Discusiones Generales**: Participa en [GitHub Discussions](https://github.com/Ka0s-Klaus/ka0s/discussions) (si está habilitado).
+- **Email Corporativo**: <support@ka0s.io> (Por favor, usa `[KA0S]` en el asunto).
+- **Web**: [Ka0s.io](https://www.ka0s.io)
