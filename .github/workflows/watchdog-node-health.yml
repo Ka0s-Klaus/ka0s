@@ -1,0 +1,80 @@
+name: Watchdog - Node Health
+on:
+  schedule:
+    - cron: '0 * * * *'  # Run every hour
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  job-core:
+    runs-on: swarm-runners-scaleset
+    outputs:
+      affected_nodes: ${{ steps.check.outputs.nodes }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Setup Kubectl Tunnel
+        uses: ./.github/actions/kubectl-tunnel
+        with:
+          host: ${{ secrets.KAOS_SSH_HOST_1 }}
+          username: ${{ secrets.KAOS_SSH_USER }}
+          key: ${{ secrets.KAOS_SSH_KEY_PRIV }}
+          port: ${{ secrets.KAOS_SSH_PORT_1 }}
+
+      - name: Detect Unhealthy Nodes
+        id: check
+        run: |
+          chmod +x .github/scripts/watchdog-disk-pressure.py
+          NODES=$(python3 .github/scripts/watchdog-disk-pressure.py)
+          
+          if [ -z "$NODES" ]; then
+            echo "✅ All nodes are healthy (No DiskPressure)."
+            echo "nodes=" >> $GITHUB_OUTPUT
+          else
+            echo "⚠️ Found nodes with DiskPressure:"
+            echo "$NODES"
+            # Replace newlines with spaces or keep as multiline for output? 
+            # Multiline strings in output are tricky. Let's use JSON or just space separated.
+            # For loop below handles space separated fine if names don't have spaces.
+            NODES_FLAT=$(echo "$NODES" | tr '\n' ' ')
+            echo "nodes=$NODES_FLAT" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Trigger Isolation Protocol
+        if: steps.check.outputs.nodes != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          NODES="${{ steps.check.outputs.nodes }}"
+          for NODE in $NODES; do
+            echo "🚨 Triggering isolation for node: $NODE"
+            gh workflow run ops-node-management.yml \
+              --ref main \
+              -f node_name="$NODE" \
+              -f action="cordon"
+          done
+
+  handle-success:
+    needs: [job-core]
+    if: success()
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Log Success
+        run: echo "Watchdog scan completed successfully."
+
+  handle-failure:
+    needs: [job-core]
+    if: failure()
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Log Failure
+        run: echo "Watchdog scan failed to execute."
