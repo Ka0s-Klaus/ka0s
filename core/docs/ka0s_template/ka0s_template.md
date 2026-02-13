@@ -14,6 +14,14 @@ Documentación oficial sobre las plantillas de estandarización de workflows y a
     *   Runners, Secretos y GitOps.
     *   Mecanismos de reintento y notificación.
 
+## Componentes Clave
+
+| Componente | Tipo | Descripción | Ubicación |
+| :--- | :--- | :--- | :--- |
+| **Basic Template** | Workflow | Plantilla base para nuevos workflows. Incluye ciclo de vida y auditoría. | `core/templates/workflow/basic-template.yaml` |
+| **Workflow Readme** | Doc | Guía técnica detallada sobre la plantilla y sus variables. | `core/templates/workflow/README.md` |
+| **Docs Template** | Estructura | Estructura de referencia para documentación de módulos (este directorio). | `core/docs/ka0s_template/` |
+
 ## Recursos
 *   [Plantilla YAML](../../templates/workflow/basic-template.yaml)
 *   [README Técnico](../../templates/workflow/README.md)

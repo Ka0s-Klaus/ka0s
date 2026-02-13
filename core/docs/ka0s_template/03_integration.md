@@ -1,30 +1,34 @@
-# Integración Técnica y Detalles de Implementación
+# Integración Técnica
 
-Este documento detalla los componentes técnicos que soportan las plantillas de Ka0s.
+Detalles técnicos sobre la infraestructura que soporta las plantillas de Ka0s.
 
-## Infraestructura de Ejecución
+## Infraestructura de Ejecución (Runners)
+Ka0s utiliza una infraestructura híbrida, pero priorizamos runners auto-hospedados para operaciones sobre el cluster.
 
-### Runners: `swarm-runners-scaleset`
-Nuestras plantillas están optimizadas para ejecutarse en el cluster de runners auto-escalables.
-*   **Ventaja**: Acceso a la red interna (Kubernetes, Bases de Datos) sin exponer puertos.
-*   **Requisito**: No usar `ubuntu-latest` para tareas que requieran acceso a infraestructura interna.
+*   **`swarm-runners-scaleset`**:
+    *   Grupo de runners desplegados dentro del cluster Kubernetes (ARC - Actions Runner Controller).
+    *   **Uso**: Obligatorio para cualquier workflow que interactúe con `kubectl`, redes internas o servicios desplegados.
+    *   **Ventaja**: Latencia cero y acceso directo a la red del cluster.
 
-## Gestión de Identidad (GitOps)
+*   **`ubuntu-latest`** (GitHub Hosted):
+    *   Runners estándar de GitHub.
+    *   **Uso**: Solo para linters, validaciones de código estático (MD, YAML) o tareas que no tocan infraestructura.
 
-Los workflows a menudo necesitan escribir en el repositorio (logs, auditoría). La plantilla incluye la configuración estándar de git:
+## Gestión de Secretos y Variables
+La plantilla asume la existencia de ciertos secretos y variables a nivel de organización o repositorio.
 
-```yaml
-git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
-git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
-```
+### Variables de Entorno Estándar (`env`)
+El sistema inyecta o espera las siguientes variables para contexto:
+*   `KAOS_MODULE`: Identificador único del proceso.
+*   `KAOS_AREA`: Agrupación lógica (ej. `security`, `maintenance`, `ci/cd`).
 
-### Mecanismo de Reintento (Retry)
-Dado que múltiples workflows pueden intentar escribir en el repo simultáneamente, la plantilla implementa un bucle `until` para el `git push`.
-*   **Lógica**: Si el push falla (por conflicto), hace `git pull --rebase` y reintenta hasta 5 veces.
+### Secretos Comunes
+*   `KAOS_WORKER_SSH_KEY`: Llave privada para conectar a nodos vía SSH.
+*   `KAOS_WORKER_SSH_PASS`: Contraseña para elevación de privilegios (sudo) en nodos.
+*   `GH_TOKEN` / `GITHUB_TOKEN`: Token automático para operaciones de Git (commit, push, issues).
 
-## Integración con Issues
+## Ciclo de Vida y Notificaciones
+La integración del ciclo de vida se basa en la dependencia de jobs.
 
-El job `end-workflow` tiene lógica inteligente para detectar si la ejecución pertenece a una tarea específica (rama `feat/123-tarea`).
-*   **Extracción**: `grep` del número en la rama.
-*   **Acción**: Comenta en la issue asociada usando `gh issue comment`.
-*   **Token**: Utiliza `${{ github.token }}` automáticamente.
+*   **Mecanismo**: `needs: [job-core]` + `if: success()` o `if: failure()`.
+*   **Acciones Futuras**: Está planificado migrar la lógica repetitiva de estos pasos a **Composite Actions** (`.github/actions/kaos-notify-success` y `kaos-notify-failure`) para centralizar el formato de los mensajes y canales de notificación (Slack, Email, Issue).

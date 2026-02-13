@@ -1,35 +1,30 @@
-# Concepto y Arquitectura: Plantillas de Automatización
+# Concepto y Arquitectura: Estandarización de Workflows
 
-## Filosofía
-En Ka0s, la automatización no es opcional ni artesanal. Seguimos el principio de **"Golden Path"**: proveer una ruta pavimentada y estandarizada para crear automatizaciones seguras y consistentes.
+## Filosofía "Golden Path"
+En Ka0s, adoptamos la filosofía del **"Golden Path"** (Camino Dorado) para la automatización. Esto significa proveer plantillas soportadas y opinadas que reducen la carga cognitiva y garantizan que todos los procesos automáticos cumplan con los estándares de calidad, seguridad y observabilidad del proyecto desde el día uno.
 
-El directorio `core/templates/workflow` es la fuente de verdad para la creación de cualquier nuevo pipeline de CI/CD u operación.
+El objetivo no es restringir, sino facilitar: "Haz lo correcto, de la manera más fácil".
 
-## Componentes del Estándar
+## Estructura Estándar de un Workflow
+Todo workflow en Ka0s, independientemente de su propósito (CI, CD, Auditoría, Mantenimiento), debe adherirse a una estructura canónica dividida en tres fases lógicas:
 
-### 1. Identidad Unificada
-Todo workflow debe ser identificable y trazable.
-*   **Prefijo**: `[Ka0s]` en el nombre visible.
-*   **Variables de Contexto**:
-    *   `KAOS_MODULE`: Qué es esto.
-    *   `KAOS_CORRELATION_ID`: Identificador único de ejecución (`run_id`).
-    *   `KAOS_ACTOR`: Responsable de la ejecución.
+### 1. Inicialización y Configuración
+*   Definición clara de `name` y `on` (triggers).
+*   Configuración de permisos mínimos (`permissions: contents: read`).
+*   Variables de entorno globales para trazabilidad (`KAOS_MODULE`, `KAOS_AREA`).
 
-### 2. Ciclo de Vida Estructurado
-Abandonamos los scripts monolíticos por una estructura de fases claras:
-1.  **Core Execution**: La lógica de negocio.
-2.  **Handle Success/Failure**: Gestión de estados finales.
-3.  **End Workflow**: Cierre administrativo (notificaciones, auditoría).
+### 2. Núcleo de Ejecución (`job-core`)
+*   Es el job principal donde reside la lógica de negocio.
+*   Debe ser idempotente siempre que sea posible.
+*   Genera salidas (outputs) que determinan el éxito o fallo funcional.
 
-### 3. Inmutabilidad y Auditoría
-Los workflows no solo "hacen cosas", sino que **dejan evidencia**.
-*   Uso de `git` para commitear logs y reportes.
-*   Integración con el sistema de Issues para notificar resultados.
+### 3. Ciclo de Vida y Auditoría
+Garantizamos que **siempre** sepamos qué pasó, cuándo y por qué.
+*   **`handle-success`**: Se ejecuta si `job-core` termina bien. Notifica o registra el éxito.
+*   **`handle-failure`**: Se ejecuta si `job-core` falla. Abre issues, manda alertas o registra el error.
+*   **`end-workflow`**: (Opcional pero recomendado) Cierre formal de la auditoría.
 
-## Estructura de Archivos
-```
-core/templates/
-└── workflow/
-    ├── basic-template.yaml  # La plantilla maestra
-    └── README.md            # Guía rápida de implementación
-```
+## Beneficios
+*   **Observabilidad Uniforme**: Todos los workflows reportan de la misma manera.
+*   **Mantenibilidad**: Si mejoramos la plantilla base, es fácil propagar mejoras.
+*   **Seguridad por Defecto**: Permisos restringidos y manejo seguro de secretos integrados.
