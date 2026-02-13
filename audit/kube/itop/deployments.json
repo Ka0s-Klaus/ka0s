@@ -1,0 +1,350 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "apps/v1",
+            "kind": "Deployment",
+            "metadata": {
+                "annotations": {
+                    "deployment.kubernetes.io/revision": "8",
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"apps/v1\",\"kind\":\"Deployment\",\"metadata\":{\"annotations\":{},\"labels\":{\"app\":\"itop\",\"core.kaos.io/type\":\"b2b-core\"},\"name\":\"itop\",\"namespace\":\"itop\"},\"spec\":{\"replicas\":1,\"selector\":{\"matchLabels\":{\"app\":\"itop\"}},\"strategy\":{\"type\":\"Recreate\"},\"template\":{\"metadata\":{\"labels\":{\"app\":\"itop\"}},\"spec\":{\"containers\":[{\"env\":[{\"name\":\"ITOP_DB_HOST\",\"value\":\"mysql\"},{\"name\":\"ITOP_DB_NAME\",\"value\":\"itop\"},{\"name\":\"ITOP_DB_USER\",\"value\":\"admin\"},{\"name\":\"ITOP_DB_PASSWORD\",\"value\":\"admin\"}],\"image\":\"vbkunin/itop:latest-base\",\"livenessProbe\":{\"initialDelaySeconds\":60,\"periodSeconds\":30,\"tcpSocket\":{\"port\":80}},\"name\":\"itop\",\"ports\":[{\"containerPort\":80}],\"readinessProbe\":{\"initialDelaySeconds\":30,\"periodSeconds\":10,\"tcpSocket\":{\"port\":80}},\"resources\":{\"limits\":{\"cpu\":\"2000m\",\"memory\":\"2Gi\"},\"requests\":{\"cpu\":\"500m\",\"memory\":\"1Gi\"}},\"volumeMounts\":[{\"mountPath\":\"/var/www/html\",\"name\":\"itop-web-persistent-storage\"}]}],\"initContainers\":[{\"command\":[\"sh\",\"-c\",\"if [ ! -f /web-data/conf/production/config-itop.php ]; then\\n  echo \\\"Initializing iTop files...\\\"\\n  cp -r /var/www/html/. /web-data/\\nelse\\n  echo \\\"Config file exists, preserving configuration...\\\"\\n  # Only sync code, preserve config\\n  cp -r /var/www/html/application /web-data/\\n  cp -r /var/www/html/core /web-data/\\n  cp -r /var/www/html/css /web-data/\\n  cp -r /var/www/html/data /web-data/\\n  cp -r /var/www/html/datamodels /web-data/\\n  cp -r /var/www/html/dictionaries /web-data/\\n  cp -r /var/www/html/env-production /web-data/\\n  cp -r /var/www/html/images /web-data/\\n  cp -r /var/www/html/js /web-data/\\n  cp -r /var/www/html/lib /web-data/\\n  cp -r /var/www/html/pages /web-data/\\n  cp -r /var/www/html/portal /web-data/\\n  cp -r /var/www/html/setup /web-data/\\n  cp -r /var/www/html/sources /web-data/\\n  cp -r /var/www/html/webservices /web-data/\\n  cp -r /var/www/html/index.php /web-data/\\nfi \\u0026\\u0026 \\\\\\nif [ -f /web-data/conf/production/config-itop.php ]; then \\\\\\n   echo \\\"Setting correct app_root_url in config-itop.php...\\\" \\u0026\\u0026 \\\\\\n   chmod 660 /web-data/conf/production/config-itop.php \\u0026\\u0026 \\\\\\n   if grep -q \\\"'app_root_url' =\\u003e\\\" /web-data/conf/production/config-itop.php; then\\n     sed -i \\\"s|'app_root_url' =\\u003e .*|'app_root_url' =\\u003e 'https://itsm.ka0s.io/',|\\\" /web-data/conf/production/config-itop.php;\\n   fi\\nfi \\u0026\\u0026 \\\\\\nchmod -R 775 /web-data/conf \\u0026\\u0026 \\\\\\nchmod 444 /web-data/conf/production/config-itop.php \\u0026\\u0026 \\\\\\nchown -R 33:33 /web-data\\n\"],\"image\":\"vbkunin/itop:latest-base\",\"name\":\"init-itop-files\",\"volumeMounts\":[{\"mountPath\":\"/web-data\",\"name\":\"itop-web-persistent-storage\"}]}],\"nodeSelector\":{\"kubernetes.io/hostname\":\"k8-node-20\"},\"volumes\":[{\"name\":\"itop-web-persistent-storage\",\"persistentVolumeClaim\":{\"claimName\":\"itop-web-pvc\"}}]}}}}\n"
+                },
+                "creationTimestamp": "2026-02-06T08:29:22Z",
+                "generation": 8,
+                "labels": {
+                    "app": "itop",
+                    "core.kaos.io/type": "b2b-core"
+                },
+                "name": "itop",
+                "namespace": "itop",
+                "resourceVersion": "10684895",
+                "uid": "d7c6e9f3-112e-471a-a13d-e2eb5be18b0c"
+            },
+            "spec": {
+                "progressDeadlineSeconds": 600,
+                "replicas": 1,
+                "revisionHistoryLimit": 10,
+                "selector": {
+                    "matchLabels": {
+                        "app": "itop"
+                    }
+                },
+                "strategy": {
+                    "type": "Recreate"
+                },
+                "template": {
+                    "metadata": {
+                        "annotations": {
+                            "kubectl.kubernetes.io/restartedAt": "2026-02-09T13:33:55Z"
+                        },
+                        "creationTimestamp": null,
+                        "labels": {
+                            "app": "itop"
+                        }
+                    },
+                    "spec": {
+                        "containers": [
+                            {
+                                "env": [
+                                    {
+                                        "name": "ITOP_DB_HOST",
+                                        "value": "mysql"
+                                    },
+                                    {
+                                        "name": "ITOP_DB_NAME",
+                                        "value": "itop"
+                                    },
+                                    {
+                                        "name": "ITOP_DB_USER",
+                                        "value": "admin"
+                                    },
+                                    {
+                                        "name": "ITOP_DB_PASSWORD",
+                                        "value": "admin"
+                                    }
+                                ],
+                                "image": "vbkunin/itop:latest-base",
+                                "imagePullPolicy": "IfNotPresent",
+                                "livenessProbe": {
+                                    "failureThreshold": 3,
+                                    "initialDelaySeconds": 60,
+                                    "periodSeconds": 30,
+                                    "successThreshold": 1,
+                                    "tcpSocket": {
+                                        "port": 80
+                                    },
+                                    "timeoutSeconds": 1
+                                },
+                                "name": "itop",
+                                "ports": [
+                                    {
+                                        "containerPort": 80,
+                                        "protocol": "TCP"
+                                    }
+                                ],
+                                "readinessProbe": {
+                                    "failureThreshold": 3,
+                                    "initialDelaySeconds": 30,
+                                    "periodSeconds": 10,
+                                    "successThreshold": 1,
+                                    "tcpSocket": {
+                                        "port": 80
+                                    },
+                                    "timeoutSeconds": 1
+                                },
+                                "resources": {
+                                    "limits": {
+                                        "cpu": "2",
+                                        "memory": "2Gi"
+                                    },
+                                    "requests": {
+                                        "cpu": "500m",
+                                        "memory": "1Gi"
+                                    }
+                                },
+                                "terminationMessagePath": "/dev/termination-log",
+                                "terminationMessagePolicy": "File",
+                                "volumeMounts": [
+                                    {
+                                        "mountPath": "/var/www/html",
+                                        "name": "itop-web-persistent-storage"
+                                    }
+                                ]
+                            }
+                        ],
+                        "dnsPolicy": "ClusterFirst",
+                        "initContainers": [
+                            {
+                                "command": [
+                                    "sh",
+                                    "-c",
+                                    "if [ ! -f /web-data/conf/production/config-itop.php ]; then\n  echo \"Initializing iTop files...\"\n  cp -r /var/www/html/. /web-data/\nelse\n  echo \"Config file exists, preserving configuration...\"\n  # Only sync code, preserve config\n  cp -r /var/www/html/application /web-data/\n  cp -r /var/www/html/core /web-data/\n  cp -r /var/www/html/css /web-data/\n  cp -r /var/www/html/data /web-data/\n  cp -r /var/www/html/datamodels /web-data/\n  cp -r /var/www/html/dictionaries /web-data/\n  cp -r /var/www/html/env-production /web-data/\n  cp -r /var/www/html/images /web-data/\n  cp -r /var/www/html/js /web-data/\n  cp -r /var/www/html/lib /web-data/\n  cp -r /var/www/html/pages /web-data/\n  cp -r /var/www/html/portal /web-data/\n  cp -r /var/www/html/setup /web-data/\n  cp -r /var/www/html/sources /web-data/\n  cp -r /var/www/html/webservices /web-data/\n  cp -r /var/www/html/index.php /web-data/\nfi \u0026\u0026 \\\nif [ -f /web-data/conf/production/config-itop.php ]; then \\\n   echo \"Setting correct app_root_url in config-itop.php...\" \u0026\u0026 \\\n   chmod 660 /web-data/conf/production/config-itop.php \u0026\u0026 \\\n   if grep -q \"'app_root_url' =\u003e\" /web-data/conf/production/config-itop.php; then\n     sed -i \"s|'app_root_url' =\u003e .*|'app_root_url' =\u003e 'https://itsm.ka0s.io/',|\" /web-data/conf/production/config-itop.php;\n   fi\nfi \u0026\u0026 \\\nchmod -R 775 /web-data/conf \u0026\u0026 \\\nchmod 444 /web-data/conf/production/config-itop.php \u0026\u0026 \\\nchown -R 33:33 /web-data\n"
+                                ],
+                                "image": "vbkunin/itop:latest-base",
+                                "imagePullPolicy": "IfNotPresent",
+                                "name": "init-itop-files",
+                                "resources": {},
+                                "terminationMessagePath": "/dev/termination-log",
+                                "terminationMessagePolicy": "File",
+                                "volumeMounts": [
+                                    {
+                                        "mountPath": "/web-data",
+                                        "name": "itop-web-persistent-storage"
+                                    }
+                                ]
+                            }
+                        ],
+                        "nodeSelector": {
+                            "kubernetes.io/hostname": "k8-node-20"
+                        },
+                        "restartPolicy": "Always",
+                        "schedulerName": "default-scheduler",
+                        "securityContext": {},
+                        "terminationGracePeriodSeconds": 30,
+                        "volumes": [
+                            {
+                                "name": "itop-web-persistent-storage",
+                                "persistentVolumeClaim": {
+                                    "claimName": "itop-web-pvc"
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            "status": {
+                "availableReplicas": 1,
+                "conditions": [
+                    {
+                        "lastTransitionTime": "2026-02-06T08:45:27Z",
+                        "lastUpdateTime": "2026-02-12T07:26:37Z",
+                        "message": "ReplicaSet \"itop-655d9f67f8\" has successfully progressed.",
+                        "reason": "NewReplicaSetAvailable",
+                        "status": "True",
+                        "type": "Progressing"
+                    },
+                    {
+                        "lastTransitionTime": "2026-02-12T22:49:36Z",
+                        "lastUpdateTime": "2026-02-12T22:49:36Z",
+                        "message": "Deployment has minimum availability.",
+                        "reason": "MinimumReplicasAvailable",
+                        "status": "True",
+                        "type": "Available"
+                    }
+                ],
+                "observedGeneration": 8,
+                "readyReplicas": 1,
+                "replicas": 1,
+                "updatedReplicas": 1
+            }
+        },
+        {
+            "apiVersion": "apps/v1",
+            "kind": "Deployment",
+            "metadata": {
+                "annotations": {
+                    "deployment.kubernetes.io/revision": "4",
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"apps/v1\",\"kind\":\"Deployment\",\"metadata\":{\"annotations\":{},\"labels\":{\"app\":\"mysql\",\"core.kaos.io/type\":\"finops\"},\"name\":\"mysql\",\"namespace\":\"itop\"},\"spec\":{\"replicas\":1,\"selector\":{\"matchLabels\":{\"app\":\"mysql\"}},\"strategy\":{\"type\":\"Recreate\"},\"template\":{\"metadata\":{\"labels\":{\"app\":\"mysql\"}},\"spec\":{\"containers\":[{\"args\":[\"--skip-name-resolve\",\"--innodb-buffer-pool-size=1G\"],\"env\":[{\"name\":\"MYSQL_ROOT_PASSWORD\",\"value\":\"admin\"},{\"name\":\"MYSQL_DATABASE\",\"value\":\"itop\"},{\"name\":\"MYSQL_USER\",\"value\":\"admin\"},{\"name\":\"MYSQL_PASSWORD\",\"value\":\"admin\"}],\"image\":\"mysql:5.7\",\"livenessProbe\":{\"initialDelaySeconds\":30,\"periodSeconds\":10,\"tcpSocket\":{\"port\":3306}},\"name\":\"mysql\",\"ports\":[{\"containerPort\":3306}],\"readinessProbe\":{\"exec\":{\"command\":[\"sh\",\"-c\",\"mysqladmin ping -h localhost -u root -p$MYSQL_ROOT_PASSWORD\"]},\"initialDelaySeconds\":10,\"periodSeconds\":10},\"resources\":{\"limits\":{\"cpu\":\"2000m\",\"memory\":\"2Gi\"},\"requests\":{\"cpu\":\"500m\",\"memory\":\"1Gi\"}},\"volumeMounts\":[{\"mountPath\":\"/var/lib/mysql\",\"name\":\"mysql-persistent-storage\"}]}],\"nodeSelector\":{\"kubernetes.io/hostname\":\"k8-node-20\"},\"volumes\":[{\"name\":\"mysql-persistent-storage\",\"persistentVolumeClaim\":{\"claimName\":\"mysql-pvc\"}}]}}}}\n"
+                },
+                "creationTimestamp": "2026-02-06T08:29:22Z",
+                "generation": 4,
+                "labels": {
+                    "app": "mysql",
+                    "core.kaos.io/type": "finops"
+                },
+                "name": "mysql",
+                "namespace": "itop",
+                "resourceVersion": "10684723",
+                "uid": "ef17a209-ca56-4a5c-b184-0efe06b74ad8"
+            },
+            "spec": {
+                "progressDeadlineSeconds": 600,
+                "replicas": 1,
+                "revisionHistoryLimit": 10,
+                "selector": {
+                    "matchLabels": {
+                        "app": "mysql"
+                    }
+                },
+                "strategy": {
+                    "type": "Recreate"
+                },
+                "template": {
+                    "metadata": {
+                        "annotations": {
+                            "kubectl.kubernetes.io/restartedAt": "2026-02-09T11:14:54Z"
+                        },
+                        "creationTimestamp": null,
+                        "labels": {
+                            "app": "mysql"
+                        }
+                    },
+                    "spec": {
+                        "containers": [
+                            {
+                                "args": [
+                                    "--skip-name-resolve",
+                                    "--innodb-buffer-pool-size=1G"
+                                ],
+                                "env": [
+                                    {
+                                        "name": "MYSQL_ROOT_PASSWORD",
+                                        "value": "admin"
+                                    },
+                                    {
+                                        "name": "MYSQL_DATABASE",
+                                        "value": "itop"
+                                    },
+                                    {
+                                        "name": "MYSQL_USER",
+                                        "value": "admin"
+                                    },
+                                    {
+                                        "name": "MYSQL_PASSWORD",
+                                        "value": "admin"
+                                    }
+                                ],
+                                "image": "mysql:5.7",
+                                "imagePullPolicy": "IfNotPresent",
+                                "livenessProbe": {
+                                    "failureThreshold": 3,
+                                    "initialDelaySeconds": 30,
+                                    "periodSeconds": 10,
+                                    "successThreshold": 1,
+                                    "tcpSocket": {
+                                        "port": 3306
+                                    },
+                                    "timeoutSeconds": 1
+                                },
+                                "name": "mysql",
+                                "ports": [
+                                    {
+                                        "containerPort": 3306,
+                                        "protocol": "TCP"
+                                    }
+                                ],
+                                "readinessProbe": {
+                                    "exec": {
+                                        "command": [
+                                            "sh",
+                                            "-c",
+                                            "mysqladmin ping -h localhost -u root -p$MYSQL_ROOT_PASSWORD"
+                                        ]
+                                    },
+                                    "failureThreshold": 3,
+                                    "initialDelaySeconds": 10,
+                                    "periodSeconds": 10,
+                                    "successThreshold": 1,
+                                    "timeoutSeconds": 1
+                                },
+                                "resources": {
+                                    "limits": {
+                                        "cpu": "2",
+                                        "memory": "2Gi"
+                                    },
+                                    "requests": {
+                                        "cpu": "500m",
+                                        "memory": "1Gi"
+                                    }
+                                },
+                                "terminationMessagePath": "/dev/termination-log",
+                                "terminationMessagePolicy": "File",
+                                "volumeMounts": [
+                                    {
+                                        "mountPath": "/var/lib/mysql",
+                                        "name": "mysql-persistent-storage"
+                                    }
+                                ]
+                            }
+                        ],
+                        "dnsPolicy": "ClusterFirst",
+                        "nodeSelector": {
+                            "kubernetes.io/hostname": "k8-node-20"
+                        },
+                        "restartPolicy": "Always",
+                        "schedulerName": "default-scheduler",
+                        "securityContext": {},
+                        "terminationGracePeriodSeconds": 30,
+                        "volumes": [
+                            {
+                                "name": "mysql-persistent-storage",
+                                "persistentVolumeClaim": {
+                                    "claimName": "mysql-pvc"
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            "status": {
+                "availableReplicas": 1,
+                "conditions": [
+                    {
+                        "lastTransitionTime": "2026-02-06T08:29:22Z",
+                        "lastUpdateTime": "2026-02-09T14:12:40Z",
+                        "message": "ReplicaSet \"mysql-6d89499c7c\" has successfully progressed.",
+                        "reason": "NewReplicaSetAvailable",
+                        "status": "True",
+                        "type": "Progressing"
+                    },
+                    {
+                        "lastTransitionTime": "2026-02-12T22:49:12Z",
+                        "lastUpdateTime": "2026-02-12T22:49:12Z",
+                        "message": "Deployment has minimum availability.",
+                        "reason": "MinimumReplicasAvailable",
+                        "status": "True",
+                        "type": "Available"
+                    }
+                ],
+                "observedGeneration": 4,
+                "readyReplicas": 1,
+                "replicas": 1,
+                "updatedReplicas": 1
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": ""
+    }
+}

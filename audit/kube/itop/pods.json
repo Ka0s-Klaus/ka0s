@@ -1,0 +1,612 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "annotations": {
+                    "cni.projectcalico.org/containerID": "e9cf30d2959e0fdc596cc6ada4c7eaec804758009568795ccfd7642869c81f01",
+                    "cni.projectcalico.org/podIP": "172.16.209.61/32",
+                    "cni.projectcalico.org/podIPs": "172.16.209.61/32",
+                    "kubectl.kubernetes.io/restartedAt": "2026-02-09T13:33:55Z"
+                },
+                "creationTimestamp": "2026-02-12T07:26:02Z",
+                "generateName": "itop-655d9f67f8-",
+                "labels": {
+                    "app": "itop",
+                    "pod-template-hash": "655d9f67f8"
+                },
+                "name": "itop-655d9f67f8-xmdx8",
+                "namespace": "itop",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "apps/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "ReplicaSet",
+                        "name": "itop-655d9f67f8",
+                        "uid": "f1f7afe4-674a-4df0-9492-8720629e3446"
+                    }
+                ],
+                "resourceVersion": "10684891",
+                "uid": "d0989d6c-e009-4ea4-af1b-343c4f55d346"
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "env": [
+                            {
+                                "name": "ITOP_DB_HOST",
+                                "value": "mysql"
+                            },
+                            {
+                                "name": "ITOP_DB_NAME",
+                                "value": "itop"
+                            },
+                            {
+                                "name": "ITOP_DB_USER",
+                                "value": "admin"
+                            },
+                            {
+                                "name": "ITOP_DB_PASSWORD",
+                                "value": "admin"
+                            }
+                        ],
+                        "image": "vbkunin/itop:latest-base",
+                        "imagePullPolicy": "IfNotPresent",
+                        "livenessProbe": {
+                            "failureThreshold": 3,
+                            "initialDelaySeconds": 60,
+                            "periodSeconds": 30,
+                            "successThreshold": 1,
+                            "tcpSocket": {
+                                "port": 80
+                            },
+                            "timeoutSeconds": 1
+                        },
+                        "name": "itop",
+                        "ports": [
+                            {
+                                "containerPort": 80,
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "readinessProbe": {
+                            "failureThreshold": 3,
+                            "initialDelaySeconds": 30,
+                            "periodSeconds": 10,
+                            "successThreshold": 1,
+                            "tcpSocket": {
+                                "port": 80
+                            },
+                            "timeoutSeconds": 1
+                        },
+                        "resources": {
+                            "limits": {
+                                "cpu": "2",
+                                "memory": "2Gi"
+                            },
+                            "requests": {
+                                "cpu": "500m",
+                                "memory": "1Gi"
+                            }
+                        },
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/var/www/html",
+                                "name": "itop-web-persistent-storage"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-hfvvc",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirst",
+                "enableServiceLinks": true,
+                "initContainers": [
+                    {
+                        "command": [
+                            "sh",
+                            "-c",
+                            "if [ ! -f /web-data/conf/production/config-itop.php ]; then\n  echo \"Initializing iTop files...\"\n  cp -r /var/www/html/. /web-data/\nelse\n  echo \"Config file exists, preserving configuration...\"\n  # Only sync code, preserve config\n  cp -r /var/www/html/application /web-data/\n  cp -r /var/www/html/core /web-data/\n  cp -r /var/www/html/css /web-data/\n  cp -r /var/www/html/data /web-data/\n  cp -r /var/www/html/datamodels /web-data/\n  cp -r /var/www/html/dictionaries /web-data/\n  cp -r /var/www/html/env-production /web-data/\n  cp -r /var/www/html/images /web-data/\n  cp -r /var/www/html/js /web-data/\n  cp -r /var/www/html/lib /web-data/\n  cp -r /var/www/html/pages /web-data/\n  cp -r /var/www/html/portal /web-data/\n  cp -r /var/www/html/setup /web-data/\n  cp -r /var/www/html/sources /web-data/\n  cp -r /var/www/html/webservices /web-data/\n  cp -r /var/www/html/index.php /web-data/\nfi \u0026\u0026 \\\nif [ -f /web-data/conf/production/config-itop.php ]; then \\\n   echo \"Setting correct app_root_url in config-itop.php...\" \u0026\u0026 \\\n   chmod 660 /web-data/conf/production/config-itop.php \u0026\u0026 \\\n   if grep -q \"'app_root_url' =\u003e\" /web-data/conf/production/config-itop.php; then\n     sed -i \"s|'app_root_url' =\u003e .*|'app_root_url' =\u003e 'https://itsm.ka0s.io/',|\" /web-data/conf/production/config-itop.php;\n   fi\nfi \u0026\u0026 \\\nchmod -R 775 /web-data/conf \u0026\u0026 \\\nchmod 444 /web-data/conf/production/config-itop.php \u0026\u0026 \\\nchown -R 33:33 /web-data\n"
+                        ],
+                        "image": "vbkunin/itop:latest-base",
+                        "imagePullPolicy": "IfNotPresent",
+                        "name": "init-itop-files",
+                        "resources": {},
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/web-data",
+                                "name": "itop-web-persistent-storage"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-hfvvc",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "nodeName": "k8-node-20",
+                "nodeSelector": {
+                    "kubernetes.io/hostname": "k8-node-20"
+                },
+                "preemptionPolicy": "PreemptLowerPriority",
+                "priority": 0,
+                "restartPolicy": "Always",
+                "schedulerName": "default-scheduler",
+                "securityContext": {},
+                "serviceAccount": "default",
+                "serviceAccountName": "default",
+                "terminationGracePeriodSeconds": 30,
+                "tolerations": [
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/not-ready",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    },
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/unreachable",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    }
+                ],
+                "volumes": [
+                    {
+                        "name": "itop-web-persistent-storage",
+                        "persistentVolumeClaim": {
+                            "claimName": "itop-web-pvc"
+                        }
+                    },
+                    {
+                        "name": "kube-api-access-hfvvc",
+                        "projected": {
+                            "defaultMode": 420,
+                            "sources": [
+                                {
+                                    "serviceAccountToken": {
+                                        "expirationSeconds": 3607,
+                                        "path": "token"
+                                    }
+                                },
+                                {
+                                    "configMap": {
+                                        "items": [
+                                            {
+                                                "key": "ca.crt",
+                                                "path": "ca.crt"
+                                            }
+                                        ],
+                                        "name": "kube-root-ca.crt"
+                                    }
+                                },
+                                {
+                                    "downwardAPI": {
+                                        "items": [
+                                            {
+                                                "fieldRef": {
+                                                    "apiVersion": "v1",
+                                                    "fieldPath": "metadata.namespace"
+                                                },
+                                                "path": "namespace"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-02-12T22:48:59Z",
+                        "status": "True",
+                        "type": "PodReadyToStartContainers"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-02-12T07:26:05Z",
+                        "status": "True",
+                        "type": "Initialized"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-02-12T22:49:36Z",
+                        "status": "True",
+                        "type": "Ready"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-02-12T22:49:36Z",
+                        "status": "True",
+                        "type": "ContainersReady"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-02-12T07:26:02Z",
+                        "status": "True",
+                        "type": "PodScheduled"
+                    }
+                ],
+                "containerStatuses": [
+                    {
+                        "containerID": "containerd://ce797769ac188c7038a76c1fe45d74738818d7cf275eed55bd992c20a7a9a5c8",
+                        "image": "docker.io/vbkunin/itop:latest-base",
+                        "imageID": "docker.io/vbkunin/itop@sha256:d5aa43df39e20ff5dd988b042801b33a33acf9c7fa8f1db84f7231f3a9c44865",
+                        "lastState": {
+                            "terminated": {
+                                "containerID": "containerd://56e94f24826be8cb46d0f15850d9bf7cb508fb2f1f9fd87cbe19efdd1835cee2",
+                                "exitCode": 255,
+                                "finishedAt": "2026-02-12T22:48:20Z",
+                                "reason": "Unknown",
+                                "startedAt": "2026-02-12T07:26:05Z"
+                            }
+                        },
+                        "name": "itop",
+                        "ready": true,
+                        "restartCount": 1,
+                        "started": true,
+                        "state": {
+                            "running": {
+                                "startedAt": "2026-02-12T22:49:04Z"
+                            }
+                        },
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/var/www/html",
+                                "name": "itop-web-persistent-storage"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-hfvvc",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            }
+                        ]
+                    }
+                ],
+                "hostIP": "192.168.1.20",
+                "hostIPs": [
+                    {
+                        "ip": "192.168.1.20"
+                    }
+                ],
+                "initContainerStatuses": [
+                    {
+                        "containerID": "containerd://e9b04d8872d8241d3dcfd0b348a1d6e21c41d0b35cd4b0d6cddcd18dfd501be4",
+                        "image": "docker.io/vbkunin/itop:latest-base",
+                        "imageID": "docker.io/vbkunin/itop@sha256:d5aa43df39e20ff5dd988b042801b33a33acf9c7fa8f1db84f7231f3a9c44865",
+                        "lastState": {},
+                        "name": "init-itop-files",
+                        "ready": true,
+                        "restartCount": 1,
+                        "started": false,
+                        "state": {
+                            "terminated": {
+                                "containerID": "containerd://e9b04d8872d8241d3dcfd0b348a1d6e21c41d0b35cd4b0d6cddcd18dfd501be4",
+                                "exitCode": 0,
+                                "finishedAt": "2026-02-12T22:49:03Z",
+                                "reason": "Completed",
+                                "startedAt": "2026-02-12T22:48:58Z"
+                            }
+                        },
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/web-data",
+                                "name": "itop-web-persistent-storage"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-hfvvc",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            }
+                        ]
+                    }
+                ],
+                "phase": "Running",
+                "podIP": "172.16.209.61",
+                "podIPs": [
+                    {
+                        "ip": "172.16.209.61"
+                    }
+                ],
+                "qosClass": "Burstable",
+                "startTime": "2026-02-12T07:26:02Z"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "annotations": {
+                    "cni.projectcalico.org/containerID": "a9a1b8ce4de955442f57eb97935df140aa5a9212f3d5217152f88bd0e5ddbc40",
+                    "cni.projectcalico.org/podIP": "172.16.209.43/32",
+                    "cni.projectcalico.org/podIPs": "172.16.209.43/32",
+                    "kubectl.kubernetes.io/restartedAt": "2026-02-09T11:14:54Z"
+                },
+                "creationTimestamp": "2026-02-09T14:12:26Z",
+                "generateName": "mysql-6d89499c7c-",
+                "labels": {
+                    "app": "mysql",
+                    "pod-template-hash": "6d89499c7c"
+                },
+                "name": "mysql-6d89499c7c-kqvv5",
+                "namespace": "itop",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "apps/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "ReplicaSet",
+                        "name": "mysql-6d89499c7c",
+                        "uid": "ef32a571-e0fd-4437-885d-1c030b9e2652"
+                    }
+                ],
+                "resourceVersion": "10684717",
+                "uid": "b2a24f64-23c6-433f-b43f-6d82341309d1"
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "args": [
+                            "--skip-name-resolve",
+                            "--innodb-buffer-pool-size=1G"
+                        ],
+                        "env": [
+                            {
+                                "name": "MYSQL_ROOT_PASSWORD",
+                                "value": "admin"
+                            },
+                            {
+                                "name": "MYSQL_DATABASE",
+                                "value": "itop"
+                            },
+                            {
+                                "name": "MYSQL_USER",
+                                "value": "admin"
+                            },
+                            {
+                                "name": "MYSQL_PASSWORD",
+                                "value": "admin"
+                            }
+                        ],
+                        "image": "mysql:5.7",
+                        "imagePullPolicy": "IfNotPresent",
+                        "livenessProbe": {
+                            "failureThreshold": 3,
+                            "initialDelaySeconds": 30,
+                            "periodSeconds": 10,
+                            "successThreshold": 1,
+                            "tcpSocket": {
+                                "port": 3306
+                            },
+                            "timeoutSeconds": 1
+                        },
+                        "name": "mysql",
+                        "ports": [
+                            {
+                                "containerPort": 3306,
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "readinessProbe": {
+                            "exec": {
+                                "command": [
+                                    "sh",
+                                    "-c",
+                                    "mysqladmin ping -h localhost -u root -p$MYSQL_ROOT_PASSWORD"
+                                ]
+                            },
+                            "failureThreshold": 3,
+                            "initialDelaySeconds": 10,
+                            "periodSeconds": 10,
+                            "successThreshold": 1,
+                            "timeoutSeconds": 1
+                        },
+                        "resources": {
+                            "limits": {
+                                "cpu": "2",
+                                "memory": "2Gi"
+                            },
+                            "requests": {
+                                "cpu": "500m",
+                                "memory": "1Gi"
+                            }
+                        },
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/var/lib/mysql",
+                                "name": "mysql-persistent-storage"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-qknsx",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirst",
+                "enableServiceLinks": true,
+                "nodeName": "k8-node-20",
+                "nodeSelector": {
+                    "kubernetes.io/hostname": "k8-node-20"
+                },
+                "preemptionPolicy": "PreemptLowerPriority",
+                "priority": 0,
+                "restartPolicy": "Always",
+                "schedulerName": "default-scheduler",
+                "securityContext": {},
+                "serviceAccount": "default",
+                "serviceAccountName": "default",
+                "terminationGracePeriodSeconds": 30,
+                "tolerations": [
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/not-ready",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    },
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/unreachable",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    }
+                ],
+                "volumes": [
+                    {
+                        "name": "mysql-persistent-storage",
+                        "persistentVolumeClaim": {
+                            "claimName": "mysql-pvc"
+                        }
+                    },
+                    {
+                        "name": "kube-api-access-qknsx",
+                        "projected": {
+                            "defaultMode": 420,
+                            "sources": [
+                                {
+                                    "serviceAccountToken": {
+                                        "expirationSeconds": 3607,
+                                        "path": "token"
+                                    }
+                                },
+                                {
+                                    "configMap": {
+                                        "items": [
+                                            {
+                                                "key": "ca.crt",
+                                                "path": "ca.crt"
+                                            }
+                                        ],
+                                        "name": "kube-root-ca.crt"
+                                    }
+                                },
+                                {
+                                    "downwardAPI": {
+                                        "items": [
+                                            {
+                                                "fieldRef": {
+                                                    "apiVersion": "v1",
+                                                    "fieldPath": "metadata.namespace"
+                                                },
+                                                "path": "namespace"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-02-12T22:49:00Z",
+                        "status": "True",
+                        "type": "PodReadyToStartContainers"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-02-09T14:12:26Z",
+                        "status": "True",
+                        "type": "Initialized"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-02-12T22:49:12Z",
+                        "status": "True",
+                        "type": "Ready"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-02-12T22:49:12Z",
+                        "status": "True",
+                        "type": "ContainersReady"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-02-09T14:12:26Z",
+                        "status": "True",
+                        "type": "PodScheduled"
+                    }
+                ],
+                "containerStatuses": [
+                    {
+                        "containerID": "containerd://5680b224a73791f3e68a0e4958e184977262aee1ef90196ef015b801c9bf838a",
+                        "image": "docker.io/library/mysql:5.7",
+                        "imageID": "docker.io/library/mysql@sha256:4bc6bc963e6d8443453676cae56536f4b8156d78bae03c0145cbe47c2aad73bb",
+                        "lastState": {
+                            "terminated": {
+                                "containerID": "containerd://a207c6aea9f5631b81a65b512b3934886338cda6dc5ff35de8856e07f3e772b0",
+                                "exitCode": 255,
+                                "finishedAt": "2026-02-12T22:48:20Z",
+                                "reason": "Unknown",
+                                "startedAt": "2026-02-11T22:33:03Z"
+                            }
+                        },
+                        "name": "mysql",
+                        "ready": true,
+                        "restartCount": 4,
+                        "started": true,
+                        "state": {
+                            "running": {
+                                "startedAt": "2026-02-12T22:48:59Z"
+                            }
+                        },
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/var/lib/mysql",
+                                "name": "mysql-persistent-storage"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-qknsx",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            }
+                        ]
+                    }
+                ],
+                "hostIP": "192.168.1.20",
+                "hostIPs": [
+                    {
+                        "ip": "192.168.1.20"
+                    }
+                ],
+                "phase": "Running",
+                "podIP": "172.16.209.43",
+                "podIPs": [
+                    {
+                        "ip": "172.16.209.43"
+                    }
+                ],
+                "qosClass": "Burstable",
+                "startTime": "2026-02-09T14:12:26Z"
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": ""
+    }
+}

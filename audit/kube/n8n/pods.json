@@ -1,0 +1,348 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "annotations": {
+                    "cni.projectcalico.org/containerID": "4edbf86e00161dc92348fffa10d78ce0623da68eaa7cd2865c6dc50ace6bb89a",
+                    "cni.projectcalico.org/podIP": "172.16.209.44/32",
+                    "cni.projectcalico.org/podIPs": "172.16.209.44/32"
+                },
+                "creationTimestamp": "2026-02-10T09:34:53Z",
+                "generateName": "n8n-6f66788f78-",
+                "labels": {
+                    "app": "n8n",
+                    "pod-template-hash": "6f66788f78"
+                },
+                "name": "n8n-6f66788f78-k9kwx",
+                "namespace": "n8n",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "apps/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "ReplicaSet",
+                        "name": "n8n-6f66788f78",
+                        "uid": "8a07b49b-6660-4c89-af5b-308c887c594a"
+                    }
+                ],
+                "resourceVersion": "10684831",
+                "uid": "46c55f6a-bdc3-4862-9547-4c7e4abf0f6d"
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "env": [
+                            {
+                                "name": "N8N_HOST",
+                                "value": "n8n.ka0s.io"
+                            },
+                            {
+                                "name": "N8N_PORT",
+                                "value": "5678"
+                            },
+                            {
+                                "name": "N8N_PROTOCOL",
+                                "value": "https"
+                            },
+                            {
+                                "name": "WEBHOOK_URL",
+                                "value": "https://n8n.ka0s.io/"
+                            },
+                            {
+                                "name": "NODE_ENV",
+                                "value": "production"
+                            },
+                            {
+                                "name": "GENERIC_TIMEZONE",
+                                "value": "Europe/Madrid"
+                            }
+                        ],
+                        "image": "n8nio/n8n:latest",
+                        "imagePullPolicy": "IfNotPresent",
+                        "livenessProbe": {
+                            "failureThreshold": 3,
+                            "httpGet": {
+                                "path": "/healthz",
+                                "port": "http",
+                                "scheme": "HTTP"
+                            },
+                            "initialDelaySeconds": 60,
+                            "periodSeconds": 10,
+                            "successThreshold": 1,
+                            "timeoutSeconds": 1
+                        },
+                        "name": "n8n",
+                        "ports": [
+                            {
+                                "containerPort": 5678,
+                                "name": "http",
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "readinessProbe": {
+                            "failureThreshold": 3,
+                            "httpGet": {
+                                "path": "/healthz",
+                                "port": "http",
+                                "scheme": "HTTP"
+                            },
+                            "initialDelaySeconds": 10,
+                            "periodSeconds": 10,
+                            "successThreshold": 1,
+                            "timeoutSeconds": 1
+                        },
+                        "resources": {
+                            "limits": {
+                                "cpu": "1",
+                                "memory": "1Gi"
+                            },
+                            "requests": {
+                                "cpu": "250m",
+                                "memory": "512Mi"
+                            }
+                        },
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/home/node/.n8n",
+                                "name": "n8n-data"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-w5b42",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirst",
+                "enableServiceLinks": true,
+                "initContainers": [
+                    {
+                        "command": [
+                            "sh",
+                            "-c",
+                            "chown -R 1000:1000 /home/node/.n8n"
+                        ],
+                        "image": "busybox",
+                        "imagePullPolicy": "Always",
+                        "name": "fix-permissions",
+                        "resources": {},
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/home/node/.n8n",
+                                "name": "n8n-data"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-w5b42",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "nodeName": "k8-node-20",
+                "nodeSelector": {
+                    "kubernetes.io/hostname": "k8-node-20"
+                },
+                "preemptionPolicy": "PreemptLowerPriority",
+                "priority": 0,
+                "restartPolicy": "Always",
+                "schedulerName": "default-scheduler",
+                "securityContext": {},
+                "serviceAccount": "default",
+                "serviceAccountName": "default",
+                "terminationGracePeriodSeconds": 30,
+                "tolerations": [
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/not-ready",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    },
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/unreachable",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    }
+                ],
+                "volumes": [
+                    {
+                        "name": "n8n-data",
+                        "persistentVolumeClaim": {
+                            "claimName": "n8n-data-pvc"
+                        }
+                    },
+                    {
+                        "name": "kube-api-access-w5b42",
+                        "projected": {
+                            "defaultMode": 420,
+                            "sources": [
+                                {
+                                    "serviceAccountToken": {
+                                        "expirationSeconds": 3607,
+                                        "path": "token"
+                                    }
+                                },
+                                {
+                                    "configMap": {
+                                        "items": [
+                                            {
+                                                "key": "ca.crt",
+                                                "path": "ca.crt"
+                                            }
+                                        ],
+                                        "name": "kube-root-ca.crt"
+                                    }
+                                },
+                                {
+                                    "downwardAPI": {
+                                        "items": [
+                                            {
+                                                "fieldRef": {
+                                                    "apiVersion": "v1",
+                                                    "fieldPath": "metadata.namespace"
+                                                },
+                                                "path": "namespace"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-02-12T22:49:00Z",
+                        "status": "True",
+                        "type": "PodReadyToStartContainers"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-02-10T09:34:56Z",
+                        "status": "True",
+                        "type": "Initialized"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-02-12T22:49:22Z",
+                        "status": "True",
+                        "type": "Ready"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-02-12T22:49:22Z",
+                        "status": "True",
+                        "type": "ContainersReady"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-02-10T09:34:53Z",
+                        "status": "True",
+                        "type": "PodScheduled"
+                    }
+                ],
+                "containerStatuses": [
+                    {
+                        "containerID": "containerd://7336fb6f27a46bc2af1e64a933939be4f9678069d50a0c8f4371f041b6e12446",
+                        "image": "docker.io/n8nio/n8n:latest",
+                        "imageID": "docker.io/n8nio/n8n@sha256:a9beb0dcaa547f0742a322f497af72127338d6ab8f3697b3be44f8ab737726f2",
+                        "lastState": {
+                            "terminated": {
+                                "containerID": "containerd://7fc76a8a09bb9651df8b0446a3fe7965b8d81a6c1ad267965c88a982fdb9a356",
+                                "exitCode": 255,
+                                "finishedAt": "2026-02-12T22:48:20Z",
+                                "reason": "Unknown",
+                                "startedAt": "2026-02-11T22:33:05Z"
+                            }
+                        },
+                        "name": "n8n",
+                        "ready": true,
+                        "restartCount": 4,
+                        "started": true,
+                        "state": {
+                            "running": {
+                                "startedAt": "2026-02-12T22:49:00Z"
+                            }
+                        },
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/home/node/.n8n",
+                                "name": "n8n-data"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-w5b42",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            }
+                        ]
+                    }
+                ],
+                "hostIP": "192.168.1.20",
+                "hostIPs": [
+                    {
+                        "ip": "192.168.1.20"
+                    }
+                ],
+                "initContainerStatuses": [
+                    {
+                        "containerID": "containerd://82085235a1db928ca0cffa6433512b702bcfb9f16653830148553b173166cba6",
+                        "image": "docker.io/library/busybox:latest",
+                        "imageID": "docker.io/library/busybox@sha256:b3255e7dfbcd10cb367af0d409747d511aeb66dfac98cf30e97e87e4207dd76f",
+                        "lastState": {},
+                        "name": "fix-permissions",
+                        "ready": true,
+                        "restartCount": 4,
+                        "started": false,
+                        "state": {
+                            "terminated": {
+                                "containerID": "containerd://82085235a1db928ca0cffa6433512b702bcfb9f16653830148553b173166cba6",
+                                "exitCode": 0,
+                                "finishedAt": "2026-02-12T22:49:00Z",
+                                "reason": "Completed",
+                                "startedAt": "2026-02-12T22:48:59Z"
+                            }
+                        },
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/home/node/.n8n",
+                                "name": "n8n-data"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-w5b42",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            }
+                        ]
+                    }
+                ],
+                "phase": "Running",
+                "podIP": "172.16.209.44",
+                "podIPs": [
+                    {
+                        "ip": "172.16.209.44"
+                    }
+                ],
+                "qosClass": "Burstable",
+                "startTime": "2026-02-10T09:34:53Z"
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": ""
+    }
+}

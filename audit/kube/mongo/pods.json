@@ -1,0 +1,246 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "annotations": {
+                    "cni.projectcalico.org/containerID": "6bf3b97e462f3b62e1cca1810a42e3bb9edc27cd65d267f27d396ce350fa6507",
+                    "cni.projectcalico.org/podIP": "172.16.209.55/32",
+                    "cni.projectcalico.org/podIPs": "172.16.209.55/32"
+                },
+                "creationTimestamp": "2026-01-08T12:48:43Z",
+                "generateName": "mongo-",
+                "labels": {
+                    "app": "mongo",
+                    "apps.kubernetes.io/pod-index": "0",
+                    "controller-revision-hash": "mongo-77ff5ff9f4",
+                    "statefulset.kubernetes.io/pod-name": "mongo-0"
+                },
+                "name": "mongo-0",
+                "namespace": "mongo",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "apps/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "StatefulSet",
+                        "name": "mongo",
+                        "uid": "ea63c1c9-10da-43e6-9c6e-c63ec79d9f3a"
+                    }
+                ],
+                "resourceVersion": "10684725",
+                "uid": "2c0a08e7-a2b6-4955-81fc-cf8455c663b4"
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "env": [
+                            {
+                                "name": "MONGO_INITDB_ROOT_USERNAME",
+                                "value": "root"
+                            },
+                            {
+                                "name": "MONGO_INITDB_ROOT_PASSWORD",
+                                "valueFrom": {
+                                    "secretKeyRef": {
+                                        "key": "mongo-root-password",
+                                        "name": "mongo-secret"
+                                    }
+                                }
+                            }
+                        ],
+                        "image": "mongo:5.0",
+                        "imagePullPolicy": "IfNotPresent",
+                        "name": "mongo",
+                        "ports": [
+                            {
+                                "containerPort": 27017,
+                                "name": "mongo",
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "resources": {},
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/data/db",
+                                "name": "mongo-persistent-storage"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-76q7v",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirst",
+                "enableServiceLinks": true,
+                "hostname": "mongo-0",
+                "nodeName": "k8-node-20",
+                "preemptionPolicy": "PreemptLowerPriority",
+                "priority": 0,
+                "restartPolicy": "Always",
+                "schedulerName": "default-scheduler",
+                "securityContext": {},
+                "serviceAccount": "default",
+                "serviceAccountName": "default",
+                "subdomain": "mongo",
+                "terminationGracePeriodSeconds": 10,
+                "tolerations": [
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/not-ready",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    },
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/unreachable",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    }
+                ],
+                "volumes": [
+                    {
+                        "name": "mongo-persistent-storage",
+                        "persistentVolumeClaim": {
+                            "claimName": "mongo-persistent-storage-mongo-0"
+                        }
+                    },
+                    {
+                        "name": "kube-api-access-76q7v",
+                        "projected": {
+                            "defaultMode": 420,
+                            "sources": [
+                                {
+                                    "serviceAccountToken": {
+                                        "expirationSeconds": 3607,
+                                        "path": "token"
+                                    }
+                                },
+                                {
+                                    "configMap": {
+                                        "items": [
+                                            {
+                                                "key": "ca.crt",
+                                                "path": "ca.crt"
+                                            }
+                                        ],
+                                        "name": "kube-root-ca.crt"
+                                    }
+                                },
+                                {
+                                    "downwardAPI": {
+                                        "items": [
+                                            {
+                                                "fieldRef": {
+                                                    "apiVersion": "v1",
+                                                    "fieldPath": "metadata.namespace"
+                                                },
+                                                "path": "namespace"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-02-12T22:49:12Z",
+                        "status": "True",
+                        "type": "PodReadyToStartContainers"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-08T12:48:48Z",
+                        "status": "True",
+                        "type": "Initialized"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-02-12T22:49:12Z",
+                        "status": "True",
+                        "type": "Ready"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-02-12T22:49:12Z",
+                        "status": "True",
+                        "type": "ContainersReady"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-01-08T12:48:48Z",
+                        "status": "True",
+                        "type": "PodScheduled"
+                    }
+                ],
+                "containerStatuses": [
+                    {
+                        "containerID": "containerd://5b7cd7b018b1d672ca2e4e03223f960bcd36000fb1e521cc236acd3b8f7b65a9",
+                        "image": "docker.io/library/mongo:5.0",
+                        "imageID": "docker.io/library/mongo@sha256:5e3e87afd24d75e722884d777c5713d254f7e88ba65381b5d6484f75a21b73e3",
+                        "lastState": {
+                            "terminated": {
+                                "containerID": "containerd://898a657ebbcbc1f260b96bbac35093bb8927e09e3b361878e9062c94163b592c",
+                                "exitCode": 255,
+                                "finishedAt": "2026-02-12T22:48:20Z",
+                                "reason": "Unknown",
+                                "startedAt": "2026-02-11T22:33:14Z"
+                            }
+                        },
+                        "name": "mongo",
+                        "ready": true,
+                        "restartCount": 7,
+                        "started": true,
+                        "state": {
+                            "running": {
+                                "startedAt": "2026-02-12T22:49:11Z"
+                            }
+                        },
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/data/db",
+                                "name": "mongo-persistent-storage"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-76q7v",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            }
+                        ]
+                    }
+                ],
+                "hostIP": "192.168.1.20",
+                "hostIPs": [
+                    {
+                        "ip": "192.168.1.20"
+                    }
+                ],
+                "phase": "Running",
+                "podIP": "172.16.209.55",
+                "podIPs": [
+                    {
+                        "ip": "172.16.209.55"
+                    }
+                ],
+                "qosClass": "BestEffort",
+                "startTime": "2026-01-08T12:48:48Z"
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": ""
+    }
+}

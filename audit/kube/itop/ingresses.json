@@ -1,0 +1,68 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "networking.k8s.io/v1",
+            "kind": "Ingress",
+            "metadata": {
+                "annotations": {
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"networking.k8s.io/v1\",\"kind\":\"Ingress\",\"metadata\":{\"annotations\":{\"nginx.ingress.kubernetes.io/backend-protocol\":\"HTTP\",\"nginx.ingress.kubernetes.io/force-ssl-redirect\":\"true\",\"nginx.ingress.kubernetes.io/ssl-redirect\":\"true\"},\"name\":\"itop-ingress\",\"namespace\":\"itop\"},\"spec\":{\"ingressClassName\":\"nginx\",\"rules\":[{\"host\":\"itsm.ka0s.io\",\"http\":{\"paths\":[{\"backend\":{\"service\":{\"name\":\"itop\",\"port\":{\"number\":80}}},\"path\":\"/\",\"pathType\":\"Prefix\"}]}}],\"tls\":[{\"hosts\":[\"itsm.ka0s.io\"],\"secretName\":\"ka0s-wildcard-tls\"}]}}\n",
+                    "nginx.ingress.kubernetes.io/backend-protocol": "HTTP",
+                    "nginx.ingress.kubernetes.io/force-ssl-redirect": "true",
+                    "nginx.ingress.kubernetes.io/ssl-redirect": "true"
+                },
+                "creationTimestamp": "2026-02-08T11:31:16Z",
+                "generation": 2,
+                "name": "itop-ingress",
+                "namespace": "itop",
+                "resourceVersion": "9960790",
+                "uid": "86723bd1-0aca-4cdd-8856-8e0929f3a8c2"
+            },
+            "spec": {
+                "ingressClassName": "nginx",
+                "rules": [
+                    {
+                        "host": "itsm.ka0s.io",
+                        "http": {
+                            "paths": [
+                                {
+                                    "backend": {
+                                        "service": {
+                                            "name": "itop",
+                                            "port": {
+                                                "number": 80
+                                            }
+                                        }
+                                    },
+                                    "path": "/",
+                                    "pathType": "Prefix"
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "tls": [
+                    {
+                        "hosts": [
+                            "itsm.ka0s.io"
+                        ],
+                        "secretName": "ka0s-wildcard-tls"
+                    }
+                ]
+            },
+            "status": {
+                "loadBalancer": {
+                    "ingress": [
+                        {
+                            "ip": "192.168.1.250"
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": ""
+    }
+}

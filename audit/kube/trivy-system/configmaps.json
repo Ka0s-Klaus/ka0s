@@ -1,0 +1,169 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "v1",
+            "data": {
+                "ca.crt": "-----BEGIN CERTIFICATE-----\nMIIDBTCCAe2gAwIBAgIIdVZ4OXlm3howDQYJKoZIhvcNAQELBQAwFTETMBEGA1UE\nAxMKa3ViZXJuZXRlczAeFw0yNTEyMTgxODIxNTVaFw0zNTEyMTYxODI2NTVaMBUx\nEzARBgNVBAMTCmt1YmVybmV0ZXMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK\nAoIBAQDRmY/1mdgGLX5JJz4mQmbSxg5C9OxhaR4Z2iQnuZjfqv/Ad186OXBadxRw\neVgeye4P1iWvmjcqY9q3pbdjN2WdE4x1p/tXFN6A4onbZypXN8pkXSAqyf0+D/QX\n5UY7mRtMHjgrOqAQ/0Lr79r6lX8bKvwHq8oiVjpwcHHb08ouq99B7TCJZ5d6EYeQ\n3ZGdbt2Vo/JM2xGfoXm1NBP26L3EnuXCDHlrQp0ERAQM68KRiyCNNDynwjz/DLtX\nofZrG+p2pWYc0C4NvXH3B8/1PjiQ6kcc6noKoBFerfobuVLJmkW+8qhdInmkvRt6\nfVDpzklrxUNMp/rIMbdxxTQ5S4g9AgMBAAGjWTBXMA4GA1UdDwEB/wQEAwICpDAP\nBgNVHRMBAf8EBTADAQH/MB0GA1UdDgQWBBQBfYhN6j9YZrHNfGRZH+zhNzZh/TAV\nBgNVHREEDjAMggprdWJlcm5ldGVzMA0GCSqGSIb3DQEBCwUAA4IBAQBgnq6yWBQd\nC6Z/LReT/E39sJG03rzXz5NRoQBZMONAfvL+jlzRkqK+T70/jGZlu9mNNZFa7fck\npjoO6QXqBHli60feBMJeUTrK5az1V8rPgKpEt34Esy6NVc8S52RzSy78HtQejh2l\nXPNLA/BuGMOP1kuaizM7axYW4luqyankgHNXiKxxoK2qsc+mtELapmtSu1a3oaqx\nV6ZO/4/EoV25KORXWMQ4IZ7sK+dPbr6Mh/GejaZG2N2lTFAWA1a9C2ZootKg8VDO\nKFvVePd227BqD5153nQ7r8u3BckJj+9tfUn/JCTlDnDdx/YFqv64vZU7FWHIW7CU\nwGjni5x+bo3m\n-----END CERTIFICATE-----\n"
+            },
+            "kind": "ConfigMap",
+            "metadata": {
+                "annotations": {
+                    "kubernetes.io/description": "Contains a CA bundle that can be used to verify the kube-apiserver when using internal endpoints such as the internal service IP or kubernetes.default.svc. No other usage is guaranteed across distributions of Kubernetes clusters."
+                },
+                "creationTimestamp": "2026-02-04T11:29:20Z",
+                "name": "kube-root-ca.crt",
+                "namespace": "trivy-system",
+                "resourceVersion": "8882031",
+                "uid": "44adf9ba-2a46-422f-829a-2d07cf1daf22"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "data": {
+                "compliance.failEntriesLimit": "10",
+                "configAuditReports.scanner": "Trivy",
+                "node.collector.imageRef": "ghcr.io/aquasecurity/node-collector:0.3.1",
+                "node.collector.nodeSelector": "true",
+                "nodeCollector.volumeMounts": "[{\"mountPath\":\"/var/lib/etcd\",\"name\":\"var-lib-etcd\",\"readOnly\":true},{\"mountPath\":\"/var/lib/kubelet\",\"name\":\"var-lib-kubelet\",\"readOnly\":true},{\"mountPath\":\"/var/lib/kube-scheduler\",\"name\":\"var-lib-kube-scheduler\",\"readOnly\":true},{\"mountPath\":\"/var/lib/kube-controller-manager\",\"name\":\"var-lib-kube-controller-manager\",\"readOnly\":true},{\"mountPath\":\"/etc/systemd\",\"name\":\"etc-systemd\",\"readOnly\":true},{\"mountPath\":\"/lib/systemd/\",\"name\":\"lib-systemd\",\"readOnly\":true},{\"mountPath\":\"/etc/kubernetes\",\"name\":\"etc-kubernetes\",\"readOnly\":true},{\"mountPath\":\"/etc/cni/net.d/\",\"name\":\"etc-cni-netd\",\"readOnly\":true}]",
+                "nodeCollector.volumes": "[{\"hostPath\":{\"path\":\"/var/lib/etcd\"},\"name\":\"var-lib-etcd\"},{\"hostPath\":{\"path\":\"/var/lib/kubelet\"},\"name\":\"var-lib-kubelet\"},{\"hostPath\":{\"path\":\"/var/lib/kube-scheduler\"},\"name\":\"var-lib-kube-scheduler\"},{\"hostPath\":{\"path\":\"/var/lib/kube-controller-manager\"},\"name\":\"var-lib-kube-controller-manager\"},{\"hostPath\":{\"path\":\"/etc/systemd\"},\"name\":\"etc-systemd\"},{\"hostPath\":{\"path\":\"/lib/systemd\"},\"name\":\"lib-systemd\"},{\"hostPath\":{\"path\":\"/etc/kubernetes\"},\"name\":\"etc-kubernetes\"},{\"hostPath\":{\"path\":\"/etc/cni/net.d/\"},\"name\":\"etc-cni-netd\"}]",
+                "policies.bundle.insecure": "false",
+                "policies.bundle.oci.ref": "ghcr.io/aquasecurity/trivy-checks:0",
+                "report.recordFailedChecksOnly": "true",
+                "scanJob.compressLogs": "true",
+                "scanJob.podTemplateContainerSecurityContext": "{\"allowPrivilegeEscalation\":false,\"capabilities\":{\"drop\":[\"ALL\"]},\"privileged\":false,\"readOnlyRootFilesystem\":true}",
+                "scanJob.useGCRServiceAccount": "true",
+                "vulnerabilityReports.scanner": "Trivy"
+            },
+            "kind": "ConfigMap",
+            "metadata": {
+                "annotations": {
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"data\":{\"compliance.failEntriesLimit\":\"10\",\"configAuditReports.scanner\":\"Trivy\",\"node.collector.imageRef\":\"ghcr.io/aquasecurity/node-collector:0.3.1\",\"node.collector.nodeSelector\":\"true\",\"nodeCollector.volumeMounts\":\"[{\\\"mountPath\\\":\\\"/var/lib/etcd\\\",\\\"name\\\":\\\"var-lib-etcd\\\",\\\"readOnly\\\":true},{\\\"mountPath\\\":\\\"/var/lib/kubelet\\\",\\\"name\\\":\\\"var-lib-kubelet\\\",\\\"readOnly\\\":true},{\\\"mountPath\\\":\\\"/var/lib/kube-scheduler\\\",\\\"name\\\":\\\"var-lib-kube-scheduler\\\",\\\"readOnly\\\":true},{\\\"mountPath\\\":\\\"/var/lib/kube-controller-manager\\\",\\\"name\\\":\\\"var-lib-kube-controller-manager\\\",\\\"readOnly\\\":true},{\\\"mountPath\\\":\\\"/etc/systemd\\\",\\\"name\\\":\\\"etc-systemd\\\",\\\"readOnly\\\":true},{\\\"mountPath\\\":\\\"/lib/systemd/\\\",\\\"name\\\":\\\"lib-systemd\\\",\\\"readOnly\\\":true},{\\\"mountPath\\\":\\\"/etc/kubernetes\\\",\\\"name\\\":\\\"etc-kubernetes\\\",\\\"readOnly\\\":true},{\\\"mountPath\\\":\\\"/etc/cni/net.d/\\\",\\\"name\\\":\\\"etc-cni-netd\\\",\\\"readOnly\\\":true}]\",\"nodeCollector.volumes\":\"[{\\\"hostPath\\\":{\\\"path\\\":\\\"/var/lib/etcd\\\"},\\\"name\\\":\\\"var-lib-etcd\\\"},{\\\"hostPath\\\":{\\\"path\\\":\\\"/var/lib/kubelet\\\"},\\\"name\\\":\\\"var-lib-kubelet\\\"},{\\\"hostPath\\\":{\\\"path\\\":\\\"/var/lib/kube-scheduler\\\"},\\\"name\\\":\\\"var-lib-kube-scheduler\\\"},{\\\"hostPath\\\":{\\\"path\\\":\\\"/var/lib/kube-controller-manager\\\"},\\\"name\\\":\\\"var-lib-kube-controller-manager\\\"},{\\\"hostPath\\\":{\\\"path\\\":\\\"/etc/systemd\\\"},\\\"name\\\":\\\"etc-systemd\\\"},{\\\"hostPath\\\":{\\\"path\\\":\\\"/lib/systemd\\\"},\\\"name\\\":\\\"lib-systemd\\\"},{\\\"hostPath\\\":{\\\"path\\\":\\\"/etc/kubernetes\\\"},\\\"name\\\":\\\"etc-kubernetes\\\"},{\\\"hostPath\\\":{\\\"path\\\":\\\"/etc/cni/net.d/\\\"},\\\"name\\\":\\\"etc-cni-netd\\\"}]\",\"policies.bundle.insecure\":\"false\",\"policies.bundle.oci.ref\":\"ghcr.io/aquasecurity/trivy-checks:0\",\"report.recordFailedChecksOnly\":\"true\",\"scanJob.compressLogs\":\"true\",\"scanJob.podTemplateContainerSecurityContext\":\"{\\\"allowPrivilegeEscalation\\\":false,\\\"capabilities\\\":{\\\"drop\\\":[\\\"ALL\\\"]},\\\"privileged\\\":false,\\\"readOnlyRootFilesystem\\\":true}\",\"scanJob.useGCRServiceAccount\":\"true\",\"vulnerabilityReports.scanner\":\"Trivy\"},\"kind\":\"ConfigMap\",\"metadata\":{\"annotations\":{},\"labels\":{\"app.kubernetes.io/instance\":\"trivy-operator\",\"app.kubernetes.io/managed-by\":\"kubectl\",\"app.kubernetes.io/name\":\"trivy-operator\",\"app.kubernetes.io/version\":\"0.22.0\"},\"name\":\"trivy-operator\",\"namespace\":\"trivy-system\"}}\n"
+                },
+                "creationTimestamp": "2026-02-04T11:29:21Z",
+                "labels": {
+                    "app.kubernetes.io/instance": "trivy-operator",
+                    "app.kubernetes.io/managed-by": "kubectl",
+                    "app.kubernetes.io/name": "trivy-operator",
+                    "app.kubernetes.io/version": "0.22.0"
+                },
+                "name": "trivy-operator",
+                "namespace": "trivy-system",
+                "resourceVersion": "8882090",
+                "uid": "ff9dd106-cc6f-40a5-91e0-c4c3209de1bd"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "data": {
+                "CONTROLLER_CACHE_SYNC_TIMEOUT": "5m",
+                "OPERATOR_ACCESS_GLOBAL_SECRETS_SERVICE_ACCOUNTS": "true",
+                "OPERATOR_BATCH_DELETE_DELAY": "10s",
+                "OPERATOR_BATCH_DELETE_LIMIT": "10",
+                "OPERATOR_BUILT_IN_TRIVY_SERVER": "false",
+                "OPERATOR_CACHE_REPORT_TTL": "120h",
+                "OPERATOR_CLUSTER_COMPLIANCE_ENABLED": "true",
+                "OPERATOR_CLUSTER_SBOM_CACHE_ENABLED": "false",
+                "OPERATOR_CONCURRENT_NODE_COLLECTOR_LIMIT": "1",
+                "OPERATOR_CONCURRENT_SCAN_JOBS_LIMIT": "10",
+                "OPERATOR_CONFIG_AUDIT_SCANNER_ENABLED": "true",
+                "OPERATOR_CONFIG_AUDIT_SCANNER_SCAN_ONLY_CURRENT_REVISIONS": "true",
+                "OPERATOR_EXPOSED_SECRET_SCANNER_ENABLED": "true",
+                "OPERATOR_HEALTH_PROBE_BIND_ADDRESS": ":9090",
+                "OPERATOR_INFRA_ASSESSMENT_SCANNER_ENABLED": "true",
+                "OPERATOR_LOG_DEV_MODE": "false",
+                "OPERATOR_MERGE_RBAC_FINDING_WITH_CONFIG_AUDIT": "false",
+                "OPERATOR_METRICS_BIND_ADDRESS": ":8080",
+                "OPERATOR_METRICS_CLUSTER_COMPLIANCE_INFO_ENABLED": "false",
+                "OPERATOR_METRICS_CONFIG_AUDIT_INFO_ENABLED": "false",
+                "OPERATOR_METRICS_EXPOSED_SECRET_INFO_ENABLED": "false",
+                "OPERATOR_METRICS_FINDINGS_ENABLED": "true",
+                "OPERATOR_METRICS_IMAGE_INFO_ENABLED": "false",
+                "OPERATOR_METRICS_INFRA_ASSESSMENT_INFO_ENABLED": "false",
+                "OPERATOR_METRICS_RBAC_ASSESSMENT_INFO_ENABLED": "false",
+                "OPERATOR_METRICS_VULN_ID_ENABLED": "false",
+                "OPERATOR_PRIVATE_REGISTRY_SCAN_SECRETS_NAMES": "{}",
+                "OPERATOR_RBAC_ASSESSMENT_SCANNER_ENABLED": "true",
+                "OPERATOR_SBOM_GENERATION_ENABLED": "true",
+                "OPERATOR_SCANNER_REPORT_TTL": "24h",
+                "OPERATOR_SCAN_JOB_RETRY_AFTER": "30s",
+                "OPERATOR_SCAN_JOB_TIMEOUT": "5m",
+                "OPERATOR_SCAN_JOB_TTL": "",
+                "OPERATOR_SEND_DELETED_REPORTS": "false",
+                "OPERATOR_VULNERABILITY_SCANNER_ENABLED": "true",
+                "OPERATOR_VULNERABILITY_SCANNER_SCAN_ONLY_CURRENT_REVISIONS": "true",
+                "OPERATOR_WEBHOOK_BROADCAST_CUSTOM_HEADERS": "",
+                "OPERATOR_WEBHOOK_BROADCAST_TIMEOUT": "30s",
+                "OPERATOR_WEBHOOK_BROADCAST_URL": "",
+                "TRIVY_SERVER_HEALTH_CHECK_CACHE_EXPIRATION": "10h"
+            },
+            "kind": "ConfigMap",
+            "metadata": {
+                "annotations": {
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"data\":{\"CONTROLLER_CACHE_SYNC_TIMEOUT\":\"5m\",\"OPERATOR_ACCESS_GLOBAL_SECRETS_SERVICE_ACCOUNTS\":\"true\",\"OPERATOR_BATCH_DELETE_DELAY\":\"10s\",\"OPERATOR_BATCH_DELETE_LIMIT\":\"10\",\"OPERATOR_BUILT_IN_TRIVY_SERVER\":\"false\",\"OPERATOR_CACHE_REPORT_TTL\":\"120h\",\"OPERATOR_CLUSTER_COMPLIANCE_ENABLED\":\"true\",\"OPERATOR_CLUSTER_SBOM_CACHE_ENABLED\":\"false\",\"OPERATOR_CONCURRENT_NODE_COLLECTOR_LIMIT\":\"1\",\"OPERATOR_CONCURRENT_SCAN_JOBS_LIMIT\":\"10\",\"OPERATOR_CONFIG_AUDIT_SCANNER_ENABLED\":\"true\",\"OPERATOR_CONFIG_AUDIT_SCANNER_SCAN_ONLY_CURRENT_REVISIONS\":\"true\",\"OPERATOR_EXPOSED_SECRET_SCANNER_ENABLED\":\"true\",\"OPERATOR_HEALTH_PROBE_BIND_ADDRESS\":\":9090\",\"OPERATOR_INFRA_ASSESSMENT_SCANNER_ENABLED\":\"true\",\"OPERATOR_LOG_DEV_MODE\":\"false\",\"OPERATOR_MERGE_RBAC_FINDING_WITH_CONFIG_AUDIT\":\"false\",\"OPERATOR_METRICS_BIND_ADDRESS\":\":8080\",\"OPERATOR_METRICS_CLUSTER_COMPLIANCE_INFO_ENABLED\":\"false\",\"OPERATOR_METRICS_CONFIG_AUDIT_INFO_ENABLED\":\"false\",\"OPERATOR_METRICS_EXPOSED_SECRET_INFO_ENABLED\":\"false\",\"OPERATOR_METRICS_FINDINGS_ENABLED\":\"true\",\"OPERATOR_METRICS_IMAGE_INFO_ENABLED\":\"false\",\"OPERATOR_METRICS_INFRA_ASSESSMENT_INFO_ENABLED\":\"false\",\"OPERATOR_METRICS_RBAC_ASSESSMENT_INFO_ENABLED\":\"false\",\"OPERATOR_METRICS_VULN_ID_ENABLED\":\"false\",\"OPERATOR_PRIVATE_REGISTRY_SCAN_SECRETS_NAMES\":\"{}\",\"OPERATOR_RBAC_ASSESSMENT_SCANNER_ENABLED\":\"true\",\"OPERATOR_SBOM_GENERATION_ENABLED\":\"true\",\"OPERATOR_SCANNER_REPORT_TTL\":\"24h\",\"OPERATOR_SCAN_JOB_RETRY_AFTER\":\"30s\",\"OPERATOR_SCAN_JOB_TIMEOUT\":\"5m\",\"OPERATOR_SCAN_JOB_TTL\":\"\",\"OPERATOR_SEND_DELETED_REPORTS\":\"false\",\"OPERATOR_VULNERABILITY_SCANNER_ENABLED\":\"true\",\"OPERATOR_VULNERABILITY_SCANNER_SCAN_ONLY_CURRENT_REVISIONS\":\"true\",\"OPERATOR_WEBHOOK_BROADCAST_CUSTOM_HEADERS\":\"\",\"OPERATOR_WEBHOOK_BROADCAST_TIMEOUT\":\"30s\",\"OPERATOR_WEBHOOK_BROADCAST_URL\":\"\",\"TRIVY_SERVER_HEALTH_CHECK_CACHE_EXPIRATION\":\"10h\"},\"kind\":\"ConfigMap\",\"metadata\":{\"annotations\":{},\"labels\":{\"app.kubernetes.io/instance\":\"trivy-operator\",\"app.kubernetes.io/managed-by\":\"kubectl\",\"app.kubernetes.io/name\":\"trivy-operator\",\"app.kubernetes.io/version\":\"0.22.0\"},\"name\":\"trivy-operator-config\",\"namespace\":\"trivy-system\"}}\n"
+                },
+                "creationTimestamp": "2026-02-04T11:29:21Z",
+                "labels": {
+                    "app.kubernetes.io/instance": "trivy-operator",
+                    "app.kubernetes.io/managed-by": "kubectl",
+                    "app.kubernetes.io/name": "trivy-operator",
+                    "app.kubernetes.io/version": "0.22.0"
+                },
+                "name": "trivy-operator-config",
+                "namespace": "trivy-system",
+                "resourceVersion": "8882092",
+                "uid": "38b02b9d-7dd2-4107-9cea-9e28592f0212"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "data": {
+                "trivy.additionalVulnerabilityReportFields": "",
+                "trivy.command": "image",
+                "trivy.dbRepository": "ghcr.io/aquasecurity/trivy-db",
+                "trivy.dbRepositoryInsecure": "false",
+                "trivy.filesystemScanCacheDir": "/var/trivyoperator/trivy-db",
+                "trivy.imagePullPolicy": "IfNotPresent",
+                "trivy.imageScanCacheDir": "/tmp/trivy/.cache",
+                "trivy.includeDevDeps": "false",
+                "trivy.javaDbRepository": "ghcr.io/aquasecurity/trivy-java-db",
+                "trivy.mode": "Standalone",
+                "trivy.repository": "ghcr.io/aquasecurity/trivy",
+                "trivy.resources.limits.cpu": "500m",
+                "trivy.resources.limits.memory": "500M",
+                "trivy.resources.requests.cpu": "100m",
+                "trivy.resources.requests.memory": "100M",
+                "trivy.sbomSources": "",
+                "trivy.severity": "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL",
+                "trivy.skipJavaDBUpdate": "false",
+                "trivy.slow": "true",
+                "trivy.supportedConfigAuditKinds": "Workload,Service,Role,ClusterRole,NetworkPolicy,Ingress,LimitRange,ResourceQuota",
+                "trivy.tag": "0.53.0",
+                "trivy.timeout": "5m0s",
+                "trivy.useBuiltinRegoPolicies": "true",
+                "trivy.useEmbeddedRegoPolicies": "false"
+            },
+            "kind": "ConfigMap",
+            "metadata": {
+                "annotations": {
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"data\":{\"trivy.additionalVulnerabilityReportFields\":\"\",\"trivy.command\":\"image\",\"trivy.dbRepository\":\"ghcr.io/aquasecurity/trivy-db\",\"trivy.dbRepositoryInsecure\":\"false\",\"trivy.filesystemScanCacheDir\":\"/var/trivyoperator/trivy-db\",\"trivy.imagePullPolicy\":\"IfNotPresent\",\"trivy.imageScanCacheDir\":\"/tmp/trivy/.cache\",\"trivy.includeDevDeps\":\"false\",\"trivy.javaDbRepository\":\"ghcr.io/aquasecurity/trivy-java-db\",\"trivy.mode\":\"Standalone\",\"trivy.repository\":\"ghcr.io/aquasecurity/trivy\",\"trivy.resources.limits.cpu\":\"500m\",\"trivy.resources.limits.memory\":\"500M\",\"trivy.resources.requests.cpu\":\"100m\",\"trivy.resources.requests.memory\":\"100M\",\"trivy.sbomSources\":\"\",\"trivy.severity\":\"UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL\",\"trivy.skipJavaDBUpdate\":\"false\",\"trivy.slow\":\"true\",\"trivy.supportedConfigAuditKinds\":\"Workload,Service,Role,ClusterRole,NetworkPolicy,Ingress,LimitRange,ResourceQuota\",\"trivy.tag\":\"0.53.0\",\"trivy.timeout\":\"5m0s\",\"trivy.useBuiltinRegoPolicies\":\"true\",\"trivy.useEmbeddedRegoPolicies\":\"false\"},\"kind\":\"ConfigMap\",\"metadata\":{\"annotations\":{},\"labels\":{\"app.kubernetes.io/instance\":\"trivy-operator\",\"app.kubernetes.io/managed-by\":\"kubectl\",\"app.kubernetes.io/name\":\"trivy-operator\",\"app.kubernetes.io/version\":\"0.22.0\"},\"name\":\"trivy-operator-trivy-config\",\"namespace\":\"trivy-system\"}}\n"
+                },
+                "creationTimestamp": "2026-02-04T11:29:21Z",
+                "labels": {
+                    "app.kubernetes.io/instance": "trivy-operator",
+                    "app.kubernetes.io/managed-by": "kubectl",
+                    "app.kubernetes.io/name": "trivy-operator",
+                    "app.kubernetes.io/version": "0.22.0"
+                },
+                "name": "trivy-operator-trivy-config",
+                "namespace": "trivy-system",
+                "resourceVersion": "8882093",
+                "uid": "86f4700c-96e5-4f05-95ed-19ec93e70e6f"
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": ""
+    }
+}

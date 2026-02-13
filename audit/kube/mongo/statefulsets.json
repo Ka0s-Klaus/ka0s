@@ -1,0 +1,134 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "apps/v1",
+            "kind": "StatefulSet",
+            "metadata": {
+                "annotations": {
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"apps/v1\",\"kind\":\"StatefulSet\",\"metadata\":{\"annotations\":{},\"name\":\"mongo\",\"namespace\":\"mongo\"},\"spec\":{\"replicas\":1,\"selector\":{\"matchLabels\":{\"app\":\"mongo\"}},\"serviceName\":\"mongo\",\"template\":{\"metadata\":{\"labels\":{\"app\":\"mongo\"}},\"spec\":{\"containers\":[{\"env\":[{\"name\":\"MONGO_INITDB_ROOT_USERNAME\",\"value\":\"root\"},{\"name\":\"MONGO_INITDB_ROOT_PASSWORD\",\"valueFrom\":{\"secretKeyRef\":{\"key\":\"mongo-root-password\",\"name\":\"mongo-secret\"}}}],\"image\":\"mongo:5.0\",\"name\":\"mongo\",\"ports\":[{\"containerPort\":27017,\"name\":\"mongo\"}],\"volumeMounts\":[{\"mountPath\":\"/data/db\",\"name\":\"mongo-persistent-storage\"}]}],\"terminationGracePeriodSeconds\":10}},\"volumeClaimTemplates\":[{\"metadata\":{\"name\":\"mongo-persistent-storage\"},\"spec\":{\"accessModes\":[\"ReadWriteOnce\"],\"resources\":{\"requests\":{\"storage\":\"8Gi\"}},\"storageClassName\":\"local-path\"}}]}}\n"
+                },
+                "creationTimestamp": "2026-01-08T12:48:43Z",
+                "generation": 1,
+                "name": "mongo",
+                "namespace": "mongo",
+                "resourceVersion": "10684728",
+                "uid": "ea63c1c9-10da-43e6-9c6e-c63ec79d9f3a"
+            },
+            "spec": {
+                "persistentVolumeClaimRetentionPolicy": {
+                    "whenDeleted": "Retain",
+                    "whenScaled": "Retain"
+                },
+                "podManagementPolicy": "OrderedReady",
+                "replicas": 1,
+                "revisionHistoryLimit": 10,
+                "selector": {
+                    "matchLabels": {
+                        "app": "mongo"
+                    }
+                },
+                "serviceName": "mongo",
+                "template": {
+                    "metadata": {
+                        "creationTimestamp": null,
+                        "labels": {
+                            "app": "mongo"
+                        }
+                    },
+                    "spec": {
+                        "containers": [
+                            {
+                                "env": [
+                                    {
+                                        "name": "MONGO_INITDB_ROOT_USERNAME",
+                                        "value": "root"
+                                    },
+                                    {
+                                        "name": "MONGO_INITDB_ROOT_PASSWORD",
+                                        "valueFrom": {
+                                            "secretKeyRef": {
+                                                "key": "mongo-root-password",
+                                                "name": "mongo-secret"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "image": "mongo:5.0",
+                                "imagePullPolicy": "IfNotPresent",
+                                "name": "mongo",
+                                "ports": [
+                                    {
+                                        "containerPort": 27017,
+                                        "name": "mongo",
+                                        "protocol": "TCP"
+                                    }
+                                ],
+                                "resources": {},
+                                "terminationMessagePath": "/dev/termination-log",
+                                "terminationMessagePolicy": "File",
+                                "volumeMounts": [
+                                    {
+                                        "mountPath": "/data/db",
+                                        "name": "mongo-persistent-storage"
+                                    }
+                                ]
+                            }
+                        ],
+                        "dnsPolicy": "ClusterFirst",
+                        "restartPolicy": "Always",
+                        "schedulerName": "default-scheduler",
+                        "securityContext": {},
+                        "terminationGracePeriodSeconds": 10
+                    }
+                },
+                "updateStrategy": {
+                    "rollingUpdate": {
+                        "partition": 0
+                    },
+                    "type": "RollingUpdate"
+                },
+                "volumeClaimTemplates": [
+                    {
+                        "apiVersion": "v1",
+                        "kind": "PersistentVolumeClaim",
+                        "metadata": {
+                            "creationTimestamp": null,
+                            "name": "mongo-persistent-storage"
+                        },
+                        "spec": {
+                            "accessModes": [
+                                "ReadWriteOnce"
+                            ],
+                            "resources": {
+                                "requests": {
+                                    "storage": "8Gi"
+                                }
+                            },
+                            "storageClassName": "local-path",
+                            "volumeMode": "Filesystem"
+                        },
+                        "status": {
+                            "phase": "Pending"
+                        }
+                    }
+                ]
+            },
+            "status": {
+                "availableReplicas": 1,
+                "collisionCount": 0,
+                "currentReplicas": 1,
+                "currentRevision": "mongo-77ff5ff9f4",
+                "observedGeneration": 1,
+                "readyReplicas": 1,
+                "replicas": 1,
+                "updateRevision": "mongo-77ff5ff9f4",
+                "updatedReplicas": 1
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": ""
+    }
+}
