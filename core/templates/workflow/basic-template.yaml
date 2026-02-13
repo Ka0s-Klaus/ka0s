@@ -1,119 +1,143 @@
-name: Ka0s Workflow Base Template
+name: "[Ka0s] Template Workflow" # Estandarizar nombre: [Ka0s] <Nombre Descriptivo>
 
 on:
   workflow_dispatch:
     inputs:
-      example-input:
-        description: "Ejemplo de entrada para el workflow"
+      reason:
+        description: 'Motivo de la ejecución manual'
         required: false
-        default: ""
+        default: 'Mantenimiento manual'
   push:
-    paths:
-      - '**.yml'
-      - '**.yaml'
-      - '**.json'
-      - '**.md'
-      - '**.py'
-      - '**.js'
-      - '**.html'
     branches:
-      - 'main'
-      - 'H*'
-      - 'F*'
-      - 'RN*'
-  schedule:
-    - cron: '0 0 * * *' # Ejemplo: ejecución diaria a medianoche
+      - main
+    paths:
+      - 'core/**' # Ajustar al alcance del workflow
 
 permissions:
-  contents: write
-  actions: write
-  issues: write
-  pull-requests: write
+  contents: write # Requerido para commits automáticos (audit logs, reportes)
+  issues: write   # Requerido para notificar en issues
+  actions: read   # Requerido para llamar a otros workflows/actions
 
 env:
-  KAOS_CODE: ${{ github.run_id }}
-  KAOS_MODULE: "[Ka0S] Base Workflow"
-  KAOS_PATH_RESUME: "audit/kaos/"
+  KAOS_MODULE: "[Ka0S] Template" # Nombre del módulo para logs
+  KAOS_CORRELATION_ID: ${{ github.run_id }}
   KAOS_ACTOR: ${{ github.actor }}
 
 jobs:
-  job-core:
-    name: "Core Job"
-    runs-on:
-      group: ka0s
+  # -----------------------------------------------------------------------------
+  # JOB 1: CORE EXECUTION
+  # Lógica principal del workflow.
+  # -----------------------------------------------------------------------------
+  core-execution:
+    name: Core Execution
+    runs-on: swarm-runners-scaleset # Estándar de runners en Ka0s
+    outputs:
+      status: ${{ job.status }}
     steps:
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
+          fetch-depth: 0 # Necesario para git diff y análisis de historia
+
       - name: Setup Environment
         run: |
-          echo "Configurando entorno..."
-      - name: Main Execution
-        run: |
-          echo "Ejecutando proceso principal..."
-      - name: Upload Results
-        run: |
-          echo "Subiendo resultados..."
-          git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
-          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
-          git pull --rebase
-          git add *
-          git commit -m "[Ka0S] Subiendo archivos de resultado de ejecución..." || echo "Sin cambios para subir"
-          git push origin ${{ github.ref }} --force-with-lease
+          echo "Iniciando módulo: ${{ env.KAOS_MODULE }}"
+          echo "Run ID: ${{ env.KAOS_CORRELATION_ID }}"
+          echo "Actor: ${{ env.KAOS_ACTOR }}"
 
+      # [BLOQUE PERSONALIZABLE] Lógica del workflow
+      - name: Main Logic
+        run: |
+          echo "Ejecutando lógica principal..."
+          # ./ruta/a/script.sh
+
+      # [OPCIONAL] Commit de resultados/evidencias
+      - name: Commit & Push Results
+        if: success() # Solo si la lógica anterior tuvo éxito
+        run: |
+          git config --global user.name "${{ secrets.KAOS_BOT_NAME || 'Ka0s Bot' }}"
+          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL || 'bot@ka0s.io' }}"
+          
+          # Ajustar ruta de archivos a commitear
+          # git add audit/outputs/
+          
+          if ! git diff --staged --quiet; then
+            git commit -m "chore(ka0s): update artifacts ${{ env.KAOS_MODULE }} run ${{ env.KAOS_CORRELATION_ID }} [skip ci]"
+            # Reintento básico de push para evitar conflictos de concurrencia
+            count=0
+            until git push origin HEAD:${{ github.ref_name }} || [ $count -eq 5 ]; do
+              echo "Push fallido, reintentando..."
+              git pull --rebase origin ${{ github.ref_name }}
+              ((count++))
+              sleep 2
+            done
+          else
+            echo "No hay cambios para subir."
+          fi
+
+  # -----------------------------------------------------------------------------
+  # JOB 2: HANDLE SUCCESS (Opcional)
+  # Notificaciones o limpieza en caso de éxito.
+  # -----------------------------------------------------------------------------
   handle-success:
-    name: "Handle Success"
-    runs-on:
-      group: ka0s
-    needs: [job-core]
-    if: ${{ success() }}
+    name: Handle Success
+    needs: [core-execution]
+    if: success()
+    runs-on: swarm-runners-scaleset
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
-      - name: Success Message
-        run: |
-          echo "Proceso finalizado correctamente."
-          RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
-          gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}."
+      - name: Notify Success
+        run: echo "✅ Workflow ${{ env.KAOS_MODULE }} completado correctamente."
 
+  # -----------------------------------------------------------------------------
+  # JOB 3: HANDLE FAILURE (Opcional)
+  # Notificaciones o limpieza en caso de error.
+  # -----------------------------------------------------------------------------
   handle-failure:
-    name: "Handle Failure"
-    runs-on:
-      group: ka0s
-    needs: [job-core]
-    if: ${{ failure() }}
+    name: Handle Failure
+    needs: [core-execution]
+    if: failure()
+    runs-on: swarm-runners-scaleset
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
-      - name: Failure Message
-        run: |
-          echo "Error detectado en el proceso."
-          RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
-          gh issue comment $RNNUMBER --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}."
+      - name: Notify Failure
+        run: echo "❌ Workflow ${{ env.KAOS_MODULE }} falló. Revisar logs."
 
+  # -----------------------------------------------------------------------------
+  # JOB 4: END WORKFLOW (Opcional/Estándar)
+  # Acciones finales: Notificaciones a Issues, Trigger de Inspector, Limpieza global.
+  # Basado en el estándar de .github/workflows/kaos.yml
+  # -----------------------------------------------------------------------------
   end-workflow:
-    name: "End Workflow"
-    runs-on:
-      group: ka0s
-    needs: [job-core, handle-success, handle-failure]
-    if: ${{ always() }}
+    name: End Workflow
+    runs-on: swarm-runners-scaleset
+    needs: [core-execution, handle-success, handle-failure]
+    if: always() # Se ejecuta siempre para garantizar cierre
+    env:
+      GH_TOKEN: ${{ github.token }}
     steps:
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
-      - name: End Message
+
+      # Instalar GH CLI si es necesario (Descomentar si el runner no lo tiene)
+      # - name: Install GH CLI
+      #   uses: ./.github/actions/install-gh-cli
+
+      - name: Finalize Process
         run: |
-          echo "Finalizando workflow..."
-          RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
-          gh issue comment $RNNUMBER --body "Se finaliza Ka0s ${{ env.KAOS_CODE }}"
-          gh workflow run inspector.yml --ref 'main' -f kaos-issue-id=$RNNUMBER -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start=""
+          echo "Finalizando proceso ${{ env.KAOS_MODULE }}..."
+          
+          # Extracción del número de issue desde la rama (convención H*, F*, etc.)
+          RNNUMBER=$(echo "${{ github.ref_name }}" | grep -o '[0-9]*' || true)
+          
+          if [ -n "$RNNUMBER" ]; then
+            echo "Notificando a Issue #$RNNUMBER..."
+            gh issue comment $RNNUMBER --body "Se finaliza ${{ env.KAOS_MODULE }} - Run ID: ${{ env.KAOS_CORRELATION_ID }}"
+            
+            # Disparar Inspector (Auditoría) - Descomentar si aplica
+            # echo "Disparando Inspector..."
+            # gh workflow run inspector.yml --ref 'main' \
+            #   -f kaos-issue-id="$RNNUMBER" \
+            #   -f kaos-workflow-id="${{ env.KAOS_CORRELATION_ID }}" \
+            #   -f kaos-user-start="${{ env.KAOS_ACTOR }}"
+          else
+             echo "No se detectó número de issue en la referencia ${{ github.ref_name }}."
+          fi
