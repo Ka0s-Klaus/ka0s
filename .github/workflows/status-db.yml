@@ -89,7 +89,7 @@ jobs:
           echo "Process completed successfully ${{ env.KAOS_CODE }}"
           # RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
           # gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data_${{ env.KAOS_CODE }}.log"
-  handle_failure:
+  handle-failure:
     runs-on: swarm-runners-scaleset
     needs: [job-core, handle-success]
     if: ${{ failure() }} 
@@ -114,24 +114,17 @@ jobs:
           echo "Created issue"
           gh issue create  --title "${{ env.KAOS_MODULE }} Error detected in ${{ env.KAOS_CODE }}" --label "bug" --body "Please check the logs 'https://github.com/Ka0s-Klaus/ka0s/actions/runs/${{ env.KAOS_CODE }}' for more information of error."
   end-workflow:
+    needs: [handle-success, handle-failure]
+    if: always()
     runs-on: swarm-runners-scaleset
-    needs: [job-core, handle-success, handle_failure]
-    if: ${{ always() }} 
-    env:
-        GH_TOKEN: ${{ secrets.KAOS_ACTIONS_TOKEN }}
     steps:
-      - id: repo
-        name: Checkout code
-        if: ${{ always() }}
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          # token: ${{ secrets.KAOS_REPO_TOKEN }}
-      - id: end-process
-        name: Finaliza el workflow
+      - name: Trigger Inspector
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          echo "End process ${{ env.KAOS_CODE }}"
-          # RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
-          # gh issue comment $RNNUMBER --body "Se finaliza swarm-runners ${{ env.KAOS_CODE }}"
-          # gh workflow run inspector.yml --ref 'main' -f kaos-issue-id= -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start=""
+          echo "🔍 Triggering Inspector for Audit..."
+          gh workflow run inspector.yml \
+            --ref main \
+            -f kaos-workflow-id="${{ github.run_id }}" \
+            -f kaos-user-start="${{ github.triggering_actor }}"
         

@@ -121,26 +121,16 @@ jobs:
             echo "Error detected in ${{ env.KAOS_MODULE }}, creating issue..."
             
   end-workflow:
+    needs: [handle-success, handle-failure]
+    if: always()
     runs-on: swarm-runners-scaleset
-    needs: [job-core, handle-success, handle-failure, commit-results]
-    if: ${{ always() }} 
-    env:
-      GH_TOKEN: ${{ github.token }}
     steps:
-      - id: repo
-        name: Checkout code
-        if: ${{ always() }}
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          # token: ${{ secrets.KAOS_REPO_TOKEN }}
-
-      # con esta parte suplimos que la imagen no disponga de la cli de GH    
-      - name: Install GH CLI
-        uses: ./.github/actions/install-gh-cli
-
-      - id: end-process
-        name: Finaliza el workflow
+      - name: Trigger Inspector
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          echo "End process"
-          gh workflow run inspector.yml --ref ${{ github.ref }} -f kaos-workflow-id="${{ env.KAOS_CODE }}"
+          echo "🔍 Triggering Inspector for Audit..."
+          gh workflow run inspector.yml \
+            --ref main \
+            -f kaos-workflow-id="${{ github.run_id }}" \
+            -f kaos-user-start="${{ github.triggering_actor }}"

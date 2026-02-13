@@ -145,7 +145,7 @@ jobs:
            RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
            gh issue comment $RNNUMBER --body "✅ HTML Compliance finalizado correctamente ${{ env.KAOS_CODE }}."
 
-  handle_failure:
+  handle-failure:
     runs-on: swarm-runners-scaleset
     needs: [job-core, handle-success]
     if: ${{ failure() }} 
@@ -161,15 +161,16 @@ jobs:
           gh issue comment $RNNUMBER --body "❌ El proceso de Compliance HTML ha fallado ${{ env.KAOS_CODE }}."
 
   end-workflow:
+    needs: [handle-success, handle-failure]
+    if: always()
     runs-on: swarm-runners-scaleset
-    needs: [job-core, handle-success, handle_failure]
-    if: ${{ always() }} 
     steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/install-gh-cli
-      - name: End Workflow
+      - name: Trigger Inspector
         env:
-            GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
         run: |
-          RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
-          gh workflow run inspector.yml --ref 'main' -f kaos-issue-id=$RNNUMBER -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start=""
+          echo "🔍 Triggering Inspector for Audit..."
+          gh workflow run inspector.yml \
+            --ref main \
+            -f kaos-workflow-id="${{ github.run_id }}" \
+            -f kaos-user-start="${{ github.triggering_actor }}"
