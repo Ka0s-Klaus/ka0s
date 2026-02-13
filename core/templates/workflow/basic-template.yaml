@@ -107,37 +107,25 @@ jobs:
   # Basado en el estándar de .github/workflows/kaos.yml
   # -----------------------------------------------------------------------------
   end-workflow:
-    name: End Workflow
+    needs: [handle-success, handle-failure]
+    if: always()
     runs-on: swarm-runners-scaleset
-    needs: [core-execution, handle-success, handle-failure]
-    if: always() # Se ejecuta siempre para garantizar cierre
-    env:
-      GH_TOKEN: ${{ github.token }}
     steps:
-      - name: Checkout Code
+      - id: repo
+        name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      # Instalar GH CLI si es necesario (Descomentar si el runner no lo tiene)
-      # - name: Install GH CLI
-      #   uses: ./.github/actions/install-gh-cli
-
-      - name: Finalize Process
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+        
+      - name: Trigger Inspector
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          echo "Finalizando proceso ${{ env.KAOS_MODULE }}..."
-          
-          # Extracción del número de issue desde la rama (convención H*, F*, etc.)
-          RNNUMBER=$(echo "${{ github.ref_name }}" | grep -o '[0-9]*' || true)
-          
-          if [ -n "$RNNUMBER" ]; then
-            echo "Notificando a Issue #$RNNUMBER..."
-            gh issue comment $RNNUMBER --body "Se finaliza ${{ env.KAOS_MODULE }} - Run ID: ${{ env.KAOS_CORRELATION_ID }}"
-            
-            # Disparar Inspector (Auditoría) - Descomentar si aplica
-            # echo "Disparando Inspector..."
-            # gh workflow run inspector.yml --ref 'main' \
-            #   -f kaos-issue-id="$RNNUMBER" \
-            #   -f kaos-workflow-id="${{ env.KAOS_CORRELATION_ID }}" \
-            #   -f kaos-user-start="${{ env.KAOS_ACTOR }}"
-          else
-             echo "No se detectó número de issue en la referencia ${{ github.ref_name }}."
-          fi
+          echo "🔍 Triggering Inspector for Audit..."
+          gh workflow run inspector.yml \
+            --ref main \
+            -f kaos-workflow-id="${{ github.run_id }}" \
+            -f kaos-user-start="${{ github.triggering_actor }}"
