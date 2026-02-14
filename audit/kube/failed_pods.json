@@ -1,1 +1,1212 @@
-[]
+[
+  {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+      "annotations": {
+        "cni.projectcalico.org/containerID": "d1bd9814a18feb430fa2043e2fb29b34efdcd54032933a697faba0a56b15f8ca",
+        "cni.projectcalico.org/podIP": "",
+        "cni.projectcalico.org/podIPs": ""
+      },
+      "creationTimestamp": "2026-02-14T06:45:00Z",
+      "generateName": "mongodb-sync-29517525-",
+      "labels": {
+        "batch.kubernetes.io/controller-uid": "12850671-26fa-4b7e-851d-0cc6079d8755",
+        "batch.kubernetes.io/job-name": "mongodb-sync-29517525",
+        "controller-uid": "12850671-26fa-4b7e-851d-0cc6079d8755",
+        "job-name": "mongodb-sync-29517525"
+      },
+      "name": "mongodb-sync-29517525-9z5b4",
+      "namespace": "elk",
+      "ownerReferences": [
+        {
+          "apiVersion": "batch/v1",
+          "blockOwnerDeletion": true,
+          "controller": true,
+          "kind": "Job",
+          "name": "mongodb-sync-29517525",
+          "uid": "12850671-26fa-4b7e-851d-0cc6079d8755"
+        }
+      ],
+      "resourceVersion": "10988849",
+      "uid": "65ef8e5f-93f6-46e7-ace4-84027c193c25"
+    },
+    "spec": {
+      "containers": [
+        {
+          "command": [
+            "/bin/bash",
+            "-c",
+            "set -e\n\n# Aumentar límite de archivos abiertos\nulimit -n 4096\n\necho \"→ Instalando dependencias...\"\npip install --quiet pymongo requests urllib3\n\necho \"→ Ejecutando script de sincronización...\"\npython3 -u /scripts/sync.py\n"
+          ],
+          "env": [
+            {
+              "name": "MONGO_HOST",
+              "value": "mongo.mongo.svc.cluster.local"
+            },
+            {
+              "name": "MONGO_PORT",
+              "value": "27017"
+            },
+            {
+              "name": "MONGO_USERNAME",
+              "value": "root"
+            },
+            {
+              "name": "MONGO_PASSWORD",
+              "valueFrom": {
+                "secretKeyRef": {
+                  "key": "mongo-root-password",
+                  "name": "mongo-secret",
+                  "optional": false
+                }
+              }
+            },
+            {
+              "name": "MONGO_AUTH_DB",
+              "value": "admin"
+            },
+            {
+              "name": "ELASTICSEARCH_HOST",
+              "value": "elasticsearch.elk.svc.cluster.local"
+            },
+            {
+              "name": "ELASTICSEARCH_PORT",
+              "value": "9200"
+            },
+            {
+              "name": "BATCH_SIZE",
+              "value": "50"
+            },
+            {
+              "name": "MAX_DOCS_PER_COLLECTION",
+              "value": "10000"
+            },
+            {
+              "name": "MAX_DOC_SIZE_BYTES",
+              "value": "524288"
+            },
+            {
+              "name": "CONTENT_FIELD_MAX_SIZE",
+              "value": "102400"
+            },
+            {
+              "name": "LARGE_FIELD_THRESHOLD",
+              "value": "51200"
+            }
+          ],
+          "image": "python:3.11-slim",
+          "imagePullPolicy": "IfNotPresent",
+          "name": "mongodb-sync",
+          "resources": {
+            "limits": {
+              "cpu": "1",
+              "memory": "1Gi"
+            },
+            "requests": {
+              "cpu": "200m",
+              "memory": "512Mi"
+            }
+          },
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/scripts",
+              "name": "sync-script"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-bmwst",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "dnsPolicy": "ClusterFirst",
+      "enableServiceLinks": true,
+      "nodeName": "k8-manager",
+      "preemptionPolicy": "PreemptLowerPriority",
+      "priority": 0,
+      "restartPolicy": "Never",
+      "schedulerName": "default-scheduler",
+      "securityContext": {},
+      "serviceAccount": "default",
+      "serviceAccountName": "default",
+      "terminationGracePeriodSeconds": 30,
+      "tolerations": [
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/not-ready",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        },
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/unreachable",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        }
+      ],
+      "volumes": [
+        {
+          "configMap": {
+            "defaultMode": 420,
+            "name": "mongodb-sync-script"
+          },
+          "name": "sync-script"
+        },
+        {
+          "name": "kube-api-access-bmwst",
+          "projected": {
+            "defaultMode": 420,
+            "sources": [
+              {
+                "serviceAccountToken": {
+                  "expirationSeconds": 3607,
+                  "path": "token"
+                }
+              },
+              {
+                "configMap": {
+                  "items": [
+                    {
+                      "key": "ca.crt",
+                      "path": "ca.crt"
+                    }
+                  ],
+                  "name": "kube-root-ca.crt"
+                }
+              },
+              {
+                "downwardAPI": {
+                  "items": [
+                    {
+                      "fieldRef": {
+                        "apiVersion": "v1",
+                        "fieldPath": "metadata.namespace"
+                      },
+                      "path": "namespace"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "status": {
+      "conditions": [
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-14T06:45:42Z",
+          "status": "False",
+          "type": "PodReadyToStartContainers"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-14T06:45:00Z",
+          "status": "True",
+          "type": "Initialized"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-14T06:45:41Z",
+          "reason": "PodFailed",
+          "status": "False",
+          "type": "Ready"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-14T06:45:41Z",
+          "reason": "PodFailed",
+          "status": "False",
+          "type": "ContainersReady"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-14T06:45:00Z",
+          "status": "True",
+          "type": "PodScheduled"
+        }
+      ],
+      "containerStatuses": [
+        {
+          "containerID": "containerd://c6c65a750f1897dff5dc9e572c3771ce2bbdb42fbba8fd27379212016ebf2d99",
+          "image": "docker.io/library/python:3.11-slim",
+          "imageID": "docker.io/library/python@sha256:db27ce7778e5f581d5d97812ee577a01a9fffbfa612c47fc521fa684e3389c9b",
+          "lastState": {},
+          "name": "mongodb-sync",
+          "ready": false,
+          "restartCount": 0,
+          "started": false,
+          "state": {
+            "terminated": {
+              "containerID": "containerd://c6c65a750f1897dff5dc9e572c3771ce2bbdb42fbba8fd27379212016ebf2d99",
+              "exitCode": 1,
+              "finishedAt": "2026-02-14T06:45:40Z",
+              "reason": "Error",
+              "startedAt": "2026-02-14T06:45:01Z"
+            }
+          },
+          "volumeMounts": [
+            {
+              "mountPath": "/scripts",
+              "name": "sync-script"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-bmwst",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            }
+          ]
+        }
+      ],
+      "hostIP": "192.168.1.10",
+      "hostIPs": [
+        {
+          "ip": "192.168.1.10"
+        }
+      ],
+      "phase": "Failed",
+      "podIP": "172.16.74.29",
+      "podIPs": [
+        {
+          "ip": "172.16.74.29"
+        }
+      ],
+      "qosClass": "Burstable",
+      "startTime": "2026-02-14T06:45:00Z"
+    }
+  },
+  {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+      "annotations": {
+        "cni.projectcalico.org/containerID": "da024050b606c43fff77aa68f6e2a2938b649c49ff370256118a5db53c08b9f5",
+        "cni.projectcalico.org/podIP": "",
+        "cni.projectcalico.org/podIPs": ""
+      },
+      "creationTimestamp": "2026-02-14T07:00:00Z",
+      "generateName": "mongodb-sync-29517540-",
+      "labels": {
+        "batch.kubernetes.io/controller-uid": "aac653c6-76eb-4520-bc6c-2703c107be4d",
+        "batch.kubernetes.io/job-name": "mongodb-sync-29517540",
+        "controller-uid": "aac653c6-76eb-4520-bc6c-2703c107be4d",
+        "job-name": "mongodb-sync-29517540"
+      },
+      "name": "mongodb-sync-29517540-vd829",
+      "namespace": "elk",
+      "ownerReferences": [
+        {
+          "apiVersion": "batch/v1",
+          "blockOwnerDeletion": true,
+          "controller": true,
+          "kind": "Job",
+          "name": "mongodb-sync-29517540",
+          "uid": "aac653c6-76eb-4520-bc6c-2703c107be4d"
+        }
+      ],
+      "resourceVersion": "10991444",
+      "uid": "9d530ed5-dc91-47ba-9c63-5f4216c2f498"
+    },
+    "spec": {
+      "containers": [
+        {
+          "command": [
+            "/bin/bash",
+            "-c",
+            "set -e\n\n# Aumentar límite de archivos abiertos\nulimit -n 4096\n\necho \"→ Instalando dependencias...\"\npip install --quiet pymongo requests urllib3\n\necho \"→ Ejecutando script de sincronización...\"\npython3 -u /scripts/sync.py\n"
+          ],
+          "env": [
+            {
+              "name": "MONGO_HOST",
+              "value": "mongo.mongo.svc.cluster.local"
+            },
+            {
+              "name": "MONGO_PORT",
+              "value": "27017"
+            },
+            {
+              "name": "MONGO_USERNAME",
+              "value": "root"
+            },
+            {
+              "name": "MONGO_PASSWORD",
+              "valueFrom": {
+                "secretKeyRef": {
+                  "key": "mongo-root-password",
+                  "name": "mongo-secret",
+                  "optional": false
+                }
+              }
+            },
+            {
+              "name": "MONGO_AUTH_DB",
+              "value": "admin"
+            },
+            {
+              "name": "ELASTICSEARCH_HOST",
+              "value": "elasticsearch.elk.svc.cluster.local"
+            },
+            {
+              "name": "ELASTICSEARCH_PORT",
+              "value": "9200"
+            },
+            {
+              "name": "BATCH_SIZE",
+              "value": "50"
+            },
+            {
+              "name": "MAX_DOCS_PER_COLLECTION",
+              "value": "10000"
+            },
+            {
+              "name": "MAX_DOC_SIZE_BYTES",
+              "value": "524288"
+            },
+            {
+              "name": "CONTENT_FIELD_MAX_SIZE",
+              "value": "102400"
+            },
+            {
+              "name": "LARGE_FIELD_THRESHOLD",
+              "value": "51200"
+            }
+          ],
+          "image": "python:3.11-slim",
+          "imagePullPolicy": "IfNotPresent",
+          "name": "mongodb-sync",
+          "resources": {
+            "limits": {
+              "cpu": "1",
+              "memory": "1Gi"
+            },
+            "requests": {
+              "cpu": "200m",
+              "memory": "512Mi"
+            }
+          },
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/scripts",
+              "name": "sync-script"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-c8p9l",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "dnsPolicy": "ClusterFirst",
+      "enableServiceLinks": true,
+      "nodeName": "k8-manager",
+      "preemptionPolicy": "PreemptLowerPriority",
+      "priority": 0,
+      "restartPolicy": "Never",
+      "schedulerName": "default-scheduler",
+      "securityContext": {},
+      "serviceAccount": "default",
+      "serviceAccountName": "default",
+      "terminationGracePeriodSeconds": 30,
+      "tolerations": [
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/not-ready",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        },
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/unreachable",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        }
+      ],
+      "volumes": [
+        {
+          "configMap": {
+            "defaultMode": 420,
+            "name": "mongodb-sync-script"
+          },
+          "name": "sync-script"
+        },
+        {
+          "name": "kube-api-access-c8p9l",
+          "projected": {
+            "defaultMode": 420,
+            "sources": [
+              {
+                "serviceAccountToken": {
+                  "expirationSeconds": 3607,
+                  "path": "token"
+                }
+              },
+              {
+                "configMap": {
+                  "items": [
+                    {
+                      "key": "ca.crt",
+                      "path": "ca.crt"
+                    }
+                  ],
+                  "name": "kube-root-ca.crt"
+                }
+              },
+              {
+                "downwardAPI": {
+                  "items": [
+                    {
+                      "fieldRef": {
+                        "apiVersion": "v1",
+                        "fieldPath": "metadata.namespace"
+                      },
+                      "path": "namespace"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "status": {
+      "conditions": [
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-14T07:00:38Z",
+          "status": "False",
+          "type": "PodReadyToStartContainers"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-14T07:00:00Z",
+          "status": "True",
+          "type": "Initialized"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-14T07:00:37Z",
+          "reason": "PodFailed",
+          "status": "False",
+          "type": "Ready"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-14T07:00:37Z",
+          "reason": "PodFailed",
+          "status": "False",
+          "type": "ContainersReady"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-14T07:00:00Z",
+          "status": "True",
+          "type": "PodScheduled"
+        }
+      ],
+      "containerStatuses": [
+        {
+          "containerID": "containerd://ec0b2f00a2e58492ab5f6e8f83facec517cd170981bb70de7988eaa3439c99e0",
+          "image": "docker.io/library/python:3.11-slim",
+          "imageID": "docker.io/library/python@sha256:db27ce7778e5f581d5d97812ee577a01a9fffbfa612c47fc521fa684e3389c9b",
+          "lastState": {},
+          "name": "mongodb-sync",
+          "ready": false,
+          "restartCount": 0,
+          "started": false,
+          "state": {
+            "terminated": {
+              "containerID": "containerd://ec0b2f00a2e58492ab5f6e8f83facec517cd170981bb70de7988eaa3439c99e0",
+              "exitCode": 1,
+              "finishedAt": "2026-02-14T07:00:36Z",
+              "reason": "Error",
+              "startedAt": "2026-02-14T07:00:01Z"
+            }
+          },
+          "volumeMounts": [
+            {
+              "mountPath": "/scripts",
+              "name": "sync-script"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-c8p9l",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            }
+          ]
+        }
+      ],
+      "hostIP": "192.168.1.10",
+      "hostIPs": [
+        {
+          "ip": "192.168.1.10"
+        }
+      ],
+      "phase": "Failed",
+      "podIP": "172.16.74.62",
+      "podIPs": [
+        {
+          "ip": "172.16.74.62"
+        }
+      ],
+      "qosClass": "Burstable",
+      "startTime": "2026-02-14T07:00:00Z"
+    }
+  },
+  {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+      "annotations": {
+        "kubectl.kubernetes.io/restartedAt": "2026-02-09T13:33:55Z"
+      },
+      "creationTimestamp": "2026-02-14T06:43:41Z",
+      "generateName": "itop-655d9f67f8-",
+      "labels": {
+        "app": "itop",
+        "pod-template-hash": "655d9f67f8"
+      },
+      "name": "itop-655d9f67f8-8dds7",
+      "namespace": "itop",
+      "ownerReferences": [
+        {
+          "apiVersion": "apps/v1",
+          "blockOwnerDeletion": true,
+          "controller": true,
+          "kind": "ReplicaSet",
+          "name": "itop-655d9f67f8",
+          "uid": "f1f7afe4-674a-4df0-9492-8720629e3446"
+        }
+      ],
+      "resourceVersion": "10988267",
+      "uid": "665e98fb-ec9a-40ac-bcfe-8e20909c0214"
+    },
+    "spec": {
+      "containers": [
+        {
+          "env": [
+            {
+              "name": "ITOP_DB_HOST",
+              "value": "mysql"
+            },
+            {
+              "name": "ITOP_DB_NAME",
+              "value": "itop"
+            },
+            {
+              "name": "ITOP_DB_USER",
+              "value": "admin"
+            },
+            {
+              "name": "ITOP_DB_PASSWORD",
+              "value": "admin"
+            }
+          ],
+          "image": "vbkunin/itop:latest-base",
+          "imagePullPolicy": "IfNotPresent",
+          "livenessProbe": {
+            "failureThreshold": 3,
+            "initialDelaySeconds": 60,
+            "periodSeconds": 30,
+            "successThreshold": 1,
+            "tcpSocket": {
+              "port": 80
+            },
+            "timeoutSeconds": 1
+          },
+          "name": "itop",
+          "ports": [
+            {
+              "containerPort": 80,
+              "protocol": "TCP"
+            }
+          ],
+          "readinessProbe": {
+            "failureThreshold": 3,
+            "initialDelaySeconds": 30,
+            "periodSeconds": 10,
+            "successThreshold": 1,
+            "tcpSocket": {
+              "port": 80
+            },
+            "timeoutSeconds": 1
+          },
+          "resources": {
+            "limits": {
+              "cpu": "2",
+              "memory": "2Gi"
+            },
+            "requests": {
+              "cpu": "500m",
+              "memory": "1Gi"
+            }
+          },
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/var/www/html",
+              "name": "itop-web-persistent-storage"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-tt8mt",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "dnsPolicy": "ClusterFirst",
+      "enableServiceLinks": true,
+      "initContainers": [
+        {
+          "command": [
+            "sh",
+            "-c",
+            "if [ ! -f /web-data/conf/production/config-itop.php ]; then\n  echo \"Initializing iTop files...\"\n  cp -r /var/www/html/. /web-data/\nelse\n  echo \"Config file exists, preserving configuration...\"\n  # Only sync code, preserve config\n  cp -r /var/www/html/application /web-data/\n  cp -r /var/www/html/core /web-data/\n  cp -r /var/www/html/css /web-data/\n  cp -r /var/www/html/data /web-data/\n  cp -r /var/www/html/datamodels /web-data/\n  cp -r /var/www/html/dictionaries /web-data/\n  cp -r /var/www/html/env-production /web-data/\n  cp -r /var/www/html/images /web-data/\n  cp -r /var/www/html/js /web-data/\n  cp -r /var/www/html/lib /web-data/\n  cp -r /var/www/html/pages /web-data/\n  cp -r /var/www/html/portal /web-data/\n  cp -r /var/www/html/setup /web-data/\n  cp -r /var/www/html/sources /web-data/\n  cp -r /var/www/html/webservices /web-data/\n  cp -r /var/www/html/index.php /web-data/\nfi && \\\nif [ -f /web-data/conf/production/config-itop.php ]; then \\\n   echo \"Setting correct app_root_url in config-itop.php...\" && \\\n   chmod 660 /web-data/conf/production/config-itop.php && \\\n   if grep -q \"'app_root_url' =>\" /web-data/conf/production/config-itop.php; then\n     sed -i \"s|'app_root_url' => .*|'app_root_url' => 'https://itsm.ka0s.io/',|\" /web-data/conf/production/config-itop.php;\n   fi\nfi && \\\nchmod -R 775 /web-data/conf && \\\nchmod 444 /web-data/conf/production/config-itop.php && \\\nchown -R 33:33 /web-data\n"
+          ],
+          "image": "vbkunin/itop:latest-base",
+          "imagePullPolicy": "IfNotPresent",
+          "name": "init-itop-files",
+          "resources": {},
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/web-data",
+              "name": "itop-web-persistent-storage"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-tt8mt",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "nodeSelector": {
+        "kubernetes.io/hostname": "k8-node-20"
+      },
+      "preemptionPolicy": "PreemptLowerPriority",
+      "priority": 0,
+      "restartPolicy": "Always",
+      "schedulerName": "default-scheduler",
+      "securityContext": {},
+      "serviceAccount": "default",
+      "serviceAccountName": "default",
+      "terminationGracePeriodSeconds": 30,
+      "tolerations": [
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/not-ready",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        },
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/unreachable",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        }
+      ],
+      "volumes": [
+        {
+          "name": "itop-web-persistent-storage",
+          "persistentVolumeClaim": {
+            "claimName": "itop-web-pvc"
+          }
+        },
+        {
+          "name": "kube-api-access-tt8mt",
+          "projected": {
+            "defaultMode": 420,
+            "sources": [
+              {
+                "serviceAccountToken": {
+                  "expirationSeconds": 3607,
+                  "path": "token"
+                }
+              },
+              {
+                "configMap": {
+                  "items": [
+                    {
+                      "key": "ca.crt",
+                      "path": "ca.crt"
+                    }
+                  ],
+                  "name": "kube-root-ca.crt"
+                }
+              },
+              {
+                "downwardAPI": {
+                  "items": [
+                    {
+                      "fieldRef": {
+                        "apiVersion": "v1",
+                        "fieldPath": "metadata.namespace"
+                      },
+                      "path": "namespace"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "status": {
+      "conditions": [
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-14T06:43:41Z",
+          "message": "0/4 nodes are available: 1 node(s) didn't match Pod's node affinity/selector, 1 node(s) had untolerated taint {node.kubernetes.io/unreachable: }, 2 node(s) were unschedulable. preemption: 0/4 nodes are available: 4 Preemption is not helpful for scheduling.",
+          "reason": "Unschedulable",
+          "status": "False",
+          "type": "PodScheduled"
+        }
+      ],
+      "phase": "Pending",
+      "qosClass": "Burstable"
+    }
+  },
+  {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+      "annotations": {
+        "kubectl.kubernetes.io/restartedAt": "2026-02-09T11:14:54Z"
+      },
+      "creationTimestamp": "2026-02-14T06:43:41Z",
+      "generateName": "mysql-6d89499c7c-",
+      "labels": {
+        "app": "mysql",
+        "pod-template-hash": "6d89499c7c"
+      },
+      "name": "mysql-6d89499c7c-bwdcl",
+      "namespace": "itop",
+      "ownerReferences": [
+        {
+          "apiVersion": "apps/v1",
+          "blockOwnerDeletion": true,
+          "controller": true,
+          "kind": "ReplicaSet",
+          "name": "mysql-6d89499c7c",
+          "uid": "ef32a571-e0fd-4437-885d-1c030b9e2652"
+        }
+      ],
+      "resourceVersion": "10988318",
+      "uid": "8ddf371b-9e0c-4cc1-96ed-b0d43ee8b2c7"
+    },
+    "spec": {
+      "containers": [
+        {
+          "args": [
+            "--skip-name-resolve",
+            "--innodb-buffer-pool-size=1G"
+          ],
+          "env": [
+            {
+              "name": "MYSQL_ROOT_PASSWORD",
+              "value": "admin"
+            },
+            {
+              "name": "MYSQL_DATABASE",
+              "value": "itop"
+            },
+            {
+              "name": "MYSQL_USER",
+              "value": "admin"
+            },
+            {
+              "name": "MYSQL_PASSWORD",
+              "value": "admin"
+            }
+          ],
+          "image": "mysql:5.7",
+          "imagePullPolicy": "IfNotPresent",
+          "livenessProbe": {
+            "failureThreshold": 3,
+            "initialDelaySeconds": 30,
+            "periodSeconds": 10,
+            "successThreshold": 1,
+            "tcpSocket": {
+              "port": 3306
+            },
+            "timeoutSeconds": 1
+          },
+          "name": "mysql",
+          "ports": [
+            {
+              "containerPort": 3306,
+              "protocol": "TCP"
+            }
+          ],
+          "readinessProbe": {
+            "exec": {
+              "command": [
+                "sh",
+                "-c",
+                "mysqladmin ping -h localhost -u root -p$MYSQL_ROOT_PASSWORD"
+              ]
+            },
+            "failureThreshold": 3,
+            "initialDelaySeconds": 10,
+            "periodSeconds": 10,
+            "successThreshold": 1,
+            "timeoutSeconds": 1
+          },
+          "resources": {
+            "limits": {
+              "cpu": "2",
+              "memory": "2Gi"
+            },
+            "requests": {
+              "cpu": "500m",
+              "memory": "1Gi"
+            }
+          },
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/var/lib/mysql",
+              "name": "mysql-persistent-storage"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-brnj4",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "dnsPolicy": "ClusterFirst",
+      "enableServiceLinks": true,
+      "nodeSelector": {
+        "kubernetes.io/hostname": "k8-node-20"
+      },
+      "preemptionPolicy": "PreemptLowerPriority",
+      "priority": 0,
+      "restartPolicy": "Always",
+      "schedulerName": "default-scheduler",
+      "securityContext": {},
+      "serviceAccount": "default",
+      "serviceAccountName": "default",
+      "terminationGracePeriodSeconds": 30,
+      "tolerations": [
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/not-ready",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        },
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/unreachable",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        }
+      ],
+      "volumes": [
+        {
+          "name": "mysql-persistent-storage",
+          "persistentVolumeClaim": {
+            "claimName": "mysql-pvc"
+          }
+        },
+        {
+          "name": "kube-api-access-brnj4",
+          "projected": {
+            "defaultMode": 420,
+            "sources": [
+              {
+                "serviceAccountToken": {
+                  "expirationSeconds": 3607,
+                  "path": "token"
+                }
+              },
+              {
+                "configMap": {
+                  "items": [
+                    {
+                      "key": "ca.crt",
+                      "path": "ca.crt"
+                    }
+                  ],
+                  "name": "kube-root-ca.crt"
+                }
+              },
+              {
+                "downwardAPI": {
+                  "items": [
+                    {
+                      "fieldRef": {
+                        "apiVersion": "v1",
+                        "fieldPath": "metadata.namespace"
+                      },
+                      "path": "namespace"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "status": {
+      "conditions": [
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-14T06:43:41Z",
+          "message": "0/4 nodes are available: 1 node(s) didn't match Pod's node affinity/selector, 1 node(s) had untolerated taint {node.kubernetes.io/unreachable: }, 2 node(s) were unschedulable. preemption: 0/4 nodes are available: 4 Preemption is not helpful for scheduling.",
+          "reason": "Unschedulable",
+          "status": "False",
+          "type": "PodScheduled"
+        }
+      ],
+      "phase": "Pending",
+      "qosClass": "Burstable"
+    }
+  },
+  {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+      "creationTimestamp": "2026-02-14T06:43:41Z",
+      "generateName": "n8n-6f66788f78-",
+      "labels": {
+        "app": "n8n",
+        "pod-template-hash": "6f66788f78"
+      },
+      "name": "n8n-6f66788f78-cbgjf",
+      "namespace": "n8n",
+      "ownerReferences": [
+        {
+          "apiVersion": "apps/v1",
+          "blockOwnerDeletion": true,
+          "controller": true,
+          "kind": "ReplicaSet",
+          "name": "n8n-6f66788f78",
+          "uid": "8a07b49b-6660-4c89-af5b-308c887c594a"
+        }
+      ],
+      "resourceVersion": "10988312",
+      "uid": "99fe9456-8a5b-491c-9ffb-fffac86ffdc5"
+    },
+    "spec": {
+      "containers": [
+        {
+          "env": [
+            {
+              "name": "N8N_HOST",
+              "value": "n8n.ka0s.io"
+            },
+            {
+              "name": "N8N_PORT",
+              "value": "5678"
+            },
+            {
+              "name": "N8N_PROTOCOL",
+              "value": "https"
+            },
+            {
+              "name": "WEBHOOK_URL",
+              "value": "https://n8n.ka0s.io/"
+            },
+            {
+              "name": "NODE_ENV",
+              "value": "production"
+            },
+            {
+              "name": "GENERIC_TIMEZONE",
+              "value": "Europe/Madrid"
+            }
+          ],
+          "image": "n8nio/n8n:latest",
+          "imagePullPolicy": "IfNotPresent",
+          "livenessProbe": {
+            "failureThreshold": 3,
+            "httpGet": {
+              "path": "/healthz",
+              "port": "http",
+              "scheme": "HTTP"
+            },
+            "initialDelaySeconds": 60,
+            "periodSeconds": 10,
+            "successThreshold": 1,
+            "timeoutSeconds": 1
+          },
+          "name": "n8n",
+          "ports": [
+            {
+              "containerPort": 5678,
+              "name": "http",
+              "protocol": "TCP"
+            }
+          ],
+          "readinessProbe": {
+            "failureThreshold": 3,
+            "httpGet": {
+              "path": "/healthz",
+              "port": "http",
+              "scheme": "HTTP"
+            },
+            "initialDelaySeconds": 10,
+            "periodSeconds": 10,
+            "successThreshold": 1,
+            "timeoutSeconds": 1
+          },
+          "resources": {
+            "limits": {
+              "cpu": "1",
+              "memory": "1Gi"
+            },
+            "requests": {
+              "cpu": "250m",
+              "memory": "512Mi"
+            }
+          },
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/home/node/.n8n",
+              "name": "n8n-data"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-4g87q",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "dnsPolicy": "ClusterFirst",
+      "enableServiceLinks": true,
+      "initContainers": [
+        {
+          "command": [
+            "sh",
+            "-c",
+            "chown -R 1000:1000 /home/node/.n8n"
+          ],
+          "image": "busybox",
+          "imagePullPolicy": "Always",
+          "name": "fix-permissions",
+          "resources": {},
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/home/node/.n8n",
+              "name": "n8n-data"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-4g87q",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "nodeSelector": {
+        "kubernetes.io/hostname": "k8-node-20"
+      },
+      "preemptionPolicy": "PreemptLowerPriority",
+      "priority": 0,
+      "restartPolicy": "Always",
+      "schedulerName": "default-scheduler",
+      "securityContext": {},
+      "serviceAccount": "default",
+      "serviceAccountName": "default",
+      "terminationGracePeriodSeconds": 30,
+      "tolerations": [
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/not-ready",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        },
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/unreachable",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        }
+      ],
+      "volumes": [
+        {
+          "name": "n8n-data",
+          "persistentVolumeClaim": {
+            "claimName": "n8n-data-pvc"
+          }
+        },
+        {
+          "name": "kube-api-access-4g87q",
+          "projected": {
+            "defaultMode": 420,
+            "sources": [
+              {
+                "serviceAccountToken": {
+                  "expirationSeconds": 3607,
+                  "path": "token"
+                }
+              },
+              {
+                "configMap": {
+                  "items": [
+                    {
+                      "key": "ca.crt",
+                      "path": "ca.crt"
+                    }
+                  ],
+                  "name": "kube-root-ca.crt"
+                }
+              },
+              {
+                "downwardAPI": {
+                  "items": [
+                    {
+                      "fieldRef": {
+                        "apiVersion": "v1",
+                        "fieldPath": "metadata.namespace"
+                      },
+                      "path": "namespace"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "status": {
+      "conditions": [
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-14T06:43:41Z",
+          "message": "0/4 nodes are available: 1 node(s) didn't match Pod's node affinity/selector, 1 node(s) had untolerated taint {node.kubernetes.io/unreachable: }, 2 node(s) were unschedulable. preemption: 0/4 nodes are available: 4 Preemption is not helpful for scheduling.",
+          "reason": "Unschedulable",
+          "status": "False",
+          "type": "PodScheduled"
+        }
+      ],
+      "phase": "Pending",
+      "qosClass": "Burstable"
+    }
+  }
+]
