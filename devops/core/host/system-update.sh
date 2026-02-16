@@ -51,7 +51,7 @@ if ! command -v sshpass &> /dev/null; then
 fi
 
 # Command to execute on all nodes
-UPDATE_CMD="echo '$SUDO_PASS' | sudo -S sh -c 'apt update && apt upgrade -y'"
+UPDATE_CMD="echo '$SUDO_PASS' | sudo -S sh -c 'apt update && apt upgrade -y && reboot now'"
 
 # 1. Update Localhost (k8-manager)
 log "--- Updating k8-manager (Local) ---"

@@ -153,7 +153,7 @@ jobs:
         run: |
           # Si todo ha ido correcto añadimos el contenido del fichero 
           gh issue comment ${{ needs.job-core.outputs.KAOS_NUMBER }} --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero ${{ env.KAOS_CODE }}.log"
-  handle_failure:
+  handle-failure:
     runs-on: swarm-runners-scaleset
     needs: [job-core, handle-success]
     if: ${{ failure() }} 
@@ -180,26 +180,16 @@ jobs:
           echo "Add comment to origin target"
           gh issue comment ${{ needs.job-core.outputs.KAOS_NUMBER }} --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero ${{ env.KAOS_CODE }}.log"
   end-workflow:
+    needs: [handle-success, handle-failure]
+    if: always()
     runs-on: swarm-runners-scaleset
-    needs: [job-core, handle-success, handle_failure]
-    if: ${{ always() }} 
-    env:
-        GH_TOKEN: ${{ github.token }}
     steps:
-      - id: repo
-        name: Checkout code
-        if: ${{ always() }}
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      # con esta parte suplimos que la imagen no disponga de la cli de GH    
-      - name: Install GH CLI
-        uses: ./.github/actions/install-gh-cli
-
-      - id: end-process
-        name: Finaliza el workflow
+      - name: Trigger Inspector
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          echo "End process"
-          gh issue comment ${{ needs.job-core.outputs.KAOS_NUMBER }} --body "Se finaliza Ka0s ${{ env.KAOS_CODE }}"
-          gh workflow run inspector.yml --ref 'main' -f kaos-issue-id=$RNNUMBER -f kaos-workflow-id="${{ env.KAOS_CODE }}" -f kaos-user-start=""
+          echo "🔍 Triggering Inspector for Audit..."
+          gh workflow run inspector.yml \
+            --ref main \
+            -f kaos-workflow-id="${{ github.run_id }}" \
+            -f kaos-user-start="${{ github.triggering_actor }}"

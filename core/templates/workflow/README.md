@@ -1,36 +1,48 @@
-# Plantilla Base para Workflows de GitHub Actions
+# Plantilla Base para Workflows de GitHub Actions (Ka0s)
 
-Esta plantilla (`basic-template.yaml`) proporciona una estructura estandarizada para crear workflows en el ecosistema Ka0s, siguiendo las mejores prácticas recomendadas por GitHub Actions.
+Esta plantilla (`basic-template.yaml`) define el estándar mínimo y recomendado para todos los workflows del ecosistema Ka0s. Su objetivo es garantizar consistencia, trazabilidad y mantenibilidad.
 
-## Estructura General
-- **Activadores (`on`)**: Permite ejecutar el workflow manualmente (`workflow_dispatch`), por cambios en archivos relevantes (`push`) y de forma programada (`schedule`).
-- **Permisos (`permissions`)**: Define los permisos mínimos necesarios para operar con repositorios, acciones e issues.
-- **Variables de entorno (`env`)**: Centraliza variables clave para trazabilidad y configuración.
-- **Jobs**:
-  - `job-core`: Paso principal donde se ejecuta el proceso.
-  - `handle-success`: Gestiona el éxito del workflow y notifica en GitHub Issues.
-  - `handle-failure`: Gestiona errores y notifica en GitHub Issues.
-  - `end-workflow`: Finaliza el workflow y puede disparar otros procesos (ej. ejecución de inspector).
+## Estándares Clave
 
-## Uso
-1. **Copia la plantilla** en tu workflow y personaliza los pasos de ejecución principal (`Main Execution`).
-2. **Agrega o modifica variables de entorno** según las necesidades de tu proceso.
-3. **Incluye pasos adicionales** en `job-core` para instalar dependencias, ejecutar scripts, validar resultados, etc.
-4. **Utiliza los jobs de manejo de éxito y error** para mantener trazabilidad y comunicación automática en issues.
-5. **Adapta los activadores** (`on`) para ajustarse a los eventos relevantes de tu repositorio.
+### 1. Nomenclatura e Identidad
+- **Name**: Debe comenzar con `[Ka0s] ` seguido de un nombre descriptivo.
+- **Variables de Entorno (`env`)**:
+  - `KAOS_MODULE`: Obligatorio. Identifica el módulo para logs y auditoría (ej. `[Ka0S] Audit Host`).
+  - `KAOS_CORRELATION_ID`: Se usa `${{ github.run_id }}` para trazar ejecuciones.
+  - `KAOS_ACTOR`: Identifica quién disparó el evento.
 
-## Recomendaciones
-- Mantén la configuración de permisos lo más restrictiva posible.
-- Centraliza la gestión de secretos usando `secrets` de GitHub.
-- Documenta cada paso y variable para facilitar el mantenimiento.
-- Sube siempre los resultados relevantes como artefactos o archivos al repositorio.
-- Unifica los mensajes y lógica de comentarios en issues para facilitar la auditoría.
-- Actualiza la plantilla conforme evolucione el ecosistema Ka0s y las mejores prácticas de GitHub Actions.
+### 2. Infraestructura (Runners)
+- **Runs-on**: Se debe usar `swarm-runners-scaleset` por defecto para aprovechar el pool de runners escalables del proyecto.
+  - *Evitar `ubuntu-latest` salvo justificación explícita.*
 
-## Referencias
-- [Documentación oficial de GitHub Actions](https://docs.github.com/en/actions)
-- [Guía de sintaxis de workflows](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions)
+### 3. Permisos
+Se debe seguir el principio de menor privilegio, pero reconociendo las necesidades comunes de los bots de Ka0s:
+```yaml
+permissions:
+  contents: write # Para commits automáticos (logs, reportes)
+  issues: write   # Para comentar estados en issues
+  actions: read   # Para invocar workflows compuestos
+```
+
+### 4. Estructura de Jobs
+Se recomienda una estructura de 4 fases para facilitar la observabilidad y el ciclo de vida completo:
+1.  **Core Execution**: Donde ocurre la lógica principal.
+2.  **Handle Success**: (Opcional) Notificaciones o limpieza tras éxito.
+3.  **Handle Failure**: (Opcional) Alertas críticas tras fallo.
+4.  **End Workflow**: (Estándar) Cierre del ciclo. Se ejecuta siempre (`always()`). Responsable de notificar el fin del proceso en las issues asociadas y disparar auditorías externas (ej. `inspector.yml`).
+
+### 5. Manejo de Artefactos y Commits
+Para workflows que generan evidencia (auditoría, reportes):
+- Configurar identidad de Git usando `secrets.KAOS_BOT_NAME` y `secrets.KAOS_BOT_EMAIL`.
+- Implementar lógica de **reintento (retry)** en el `git push` para manejar condiciones de carrera en entornos concurrentes.
+
+## Ejemplo de Uso
+
+Copia el archivo `basic-template.yaml` a `.github/workflows/tu-nuevo-workflow.yml` y ajusta:
+1.  El valor de `KAOS_MODULE`.
+2.  Los triggers en `on:` (push paths, schedule, etc.).
+3.  El paso `Main Logic` con tu script o acciones.
+4.  Si generas archivos, descomenta y ajusta el bloque `Commit & Push Results`.
 
 ---
-
-Esta plantilla está pensada para ser el punto de partida de cualquier workflow en Ka0s. Personalízala según tus necesidades y mantén la estandarización para facilitar la colaboración y el mantenimiento.
+*Referencia mantenida por el equipo de DevOps de Ka0s.*
