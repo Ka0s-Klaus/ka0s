@@ -30,3 +30,7 @@ Configuraciones que deben validarse en los nodos master/manager (requiere acceso
 ## 5. Vulnerabilidades e Imágenes
 *   **Uso de Tags `latest`**: Detectar despliegues que usan la etiqueta `:latest` (práctica insegura por falta de inmutabilidad).
 *   **Imágenes desde Registros No Confiables**: Validar que las imágenes provengan de registros aprobados.
+
+## 6. Auditoría de Secretos
+
+*   **Revisión periódica de secretos**: Ejecutar el workflow `Ka0s Secrets Audit` para identificar secretos definidos pero no usados y secretos usados en código que no estén definidos en GitHub.
