@@ -4,6 +4,224 @@
     "kind": "Pod",
     "metadata": {
       "annotations": {
+        "actions.github.com/patch-id": "3001",
+        "actions.github.com/runner-group-name": "Default",
+        "actions.github.com/runner-scale-set-name": "swarm-runners-scaleset",
+        "actions.github.com/runner-spec-hash": "774f57d754",
+        "cni.projectcalico.org/containerID": "c03e9c033c908bc5ebdbb05968d0e66ed86d208bcc4b94138961d69b21fc889e",
+        "cni.projectcalico.org/podIP": "172.16.209.62/32",
+        "cni.projectcalico.org/podIPs": "172.16.209.62/32"
+      },
+      "creationTimestamp": "2026-02-17T22:25:38Z",
+      "labels": {
+        "actions-ephemeral-runner": "True",
+        "actions.github.com/organization": "Ka0s-Klaus",
+        "actions.github.com/repository": "Ka0s",
+        "actions.github.com/scale-set-name": "swarm-runners-scaleset",
+        "actions.github.com/scale-set-namespace": "actions-runner-system",
+        "app.kubernetes.io/component": "runner",
+        "app.kubernetes.io/instance": "swarm-runners-scaleset",
+        "app.kubernetes.io/managed-by": "Helm",
+        "app.kubernetes.io/name": "swarm-runners-scaleset",
+        "app.kubernetes.io/part-of": "gha-runner-scale-set",
+        "app.kubernetes.io/version": "0.13.1",
+        "helm.sh/chart": "gha-rs-0.13.1",
+        "pod-template-hash": "64bb6d455b"
+      },
+      "name": "swarm-runners-scaleset-hkss5-runner-mjhfg",
+      "namespace": "actions-runner-system",
+      "ownerReferences": [
+        {
+          "apiVersion": "actions.github.com/v1alpha1",
+          "blockOwnerDeletion": true,
+          "controller": true,
+          "kind": "EphemeralRunner",
+          "name": "swarm-runners-scaleset-hkss5-runner-mjhfg",
+          "uid": "48e9adbb-c3d7-4828-9f44-2f8ec2241bce"
+        }
+      ],
+      "resourceVersion": "11835209",
+      "uid": "baaf0762-491b-46fe-861b-41a099cf9bda"
+    },
+    "spec": {
+      "containers": [
+        {
+          "command": [
+            "/home/runner/run.sh"
+          ],
+          "env": [
+            {
+              "name": "ACTIONS_RUNNER_INPUT_JITCONFIG",
+              "valueFrom": {
+                "secretKeyRef": {
+                  "key": "jitToken",
+                  "name": "swarm-runners-scaleset-hkss5-runner-mjhfg"
+                }
+              }
+            },
+            {
+              "name": "GITHUB_ACTIONS_RUNNER_EXTRA_USER_AGENT",
+              "value": "actions-runner-controller/0.13.1"
+            }
+          ],
+          "image": "ghcr.io/actions/actions-runner:latest",
+          "imagePullPolicy": "Always",
+          "name": "runner",
+          "resources": {},
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-bz4nm",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "dnsPolicy": "ClusterFirst",
+      "enableServiceLinks": true,
+      "nodeName": "k8-node-20",
+      "preemptionPolicy": "PreemptLowerPriority",
+      "priority": 0,
+      "restartPolicy": "Never",
+      "schedulerName": "default-scheduler",
+      "securityContext": {},
+      "serviceAccount": "swarm-runners-scaleset-gha-rs-no-permission",
+      "serviceAccountName": "swarm-runners-scaleset-gha-rs-no-permission",
+      "terminationGracePeriodSeconds": 30,
+      "tolerations": [
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/not-ready",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        },
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/unreachable",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        }
+      ],
+      "volumes": [
+        {
+          "name": "kube-api-access-bz4nm",
+          "projected": {
+            "defaultMode": 420,
+            "sources": [
+              {
+                "serviceAccountToken": {
+                  "expirationSeconds": 3607,
+                  "path": "token"
+                }
+              },
+              {
+                "configMap": {
+                  "items": [
+                    {
+                      "key": "ca.crt",
+                      "path": "ca.crt"
+                    }
+                  ],
+                  "name": "kube-root-ca.crt"
+                }
+              },
+              {
+                "downwardAPI": {
+                  "items": [
+                    {
+                      "fieldRef": {
+                        "apiVersion": "v1",
+                        "fieldPath": "metadata.namespace"
+                      },
+                      "path": "namespace"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "status": {
+      "conditions": [
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-17T22:25:38Z",
+          "status": "False",
+          "type": "PodReadyToStartContainers"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-17T22:25:38Z",
+          "status": "True",
+          "type": "Initialized"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-17T22:25:38Z",
+          "message": "containers with unready status: [runner]",
+          "reason": "ContainersNotReady",
+          "status": "False",
+          "type": "Ready"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-17T22:25:38Z",
+          "message": "containers with unready status: [runner]",
+          "reason": "ContainersNotReady",
+          "status": "False",
+          "type": "ContainersReady"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-02-17T22:25:38Z",
+          "status": "True",
+          "type": "PodScheduled"
+        }
+      ],
+      "containerStatuses": [
+        {
+          "image": "ghcr.io/actions/actions-runner:latest",
+          "imageID": "",
+          "lastState": {},
+          "name": "runner",
+          "ready": false,
+          "restartCount": 0,
+          "started": false,
+          "state": {
+            "waiting": {
+              "reason": "ContainerCreating"
+            }
+          },
+          "volumeMounts": [
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-bz4nm",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            }
+          ]
+        }
+      ],
+      "hostIP": "192.168.1.20",
+      "hostIPs": [
+        {
+          "ip": "192.168.1.20"
+        }
+      ],
+      "phase": "Pending",
+      "qosClass": "BestEffort",
+      "startTime": "2026-02-17T22:25:38Z"
+    }
+  },
+  {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+      "annotations": {
         "cni.projectcalico.org/containerID": "1458460569f989e074b608282b872faf99698353c5cd92015c389f28e6c36843",
         "cni.projectcalico.org/podIP": "",
         "cni.projectcalico.org/podIPs": ""
