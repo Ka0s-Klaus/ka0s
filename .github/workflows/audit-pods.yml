@@ -46,6 +46,14 @@ jobs:
             echo "No changes in failed pods report."
           fi
 
+      - name: Check iTop connectivity
+        if: success()
+        env:
+          ITOP_URL: ${{ secrets.ITOP_URL || vars.ITOP_URL }}
+        run: |
+          echo "Checking connectivity to $ITOP_URL/webservices/rest.php?version=1.3"
+          curl --silent --show-error --fail --insecure --max-time 10 "$ITOP_URL/webservices/rest.php?version=1.3" || exit 1
+
       - name: Process Tickets in iTop
         if: success()
         env:
