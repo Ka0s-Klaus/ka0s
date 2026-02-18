@@ -231,15 +231,39 @@ def main():
 
     # Resolve/Close ticket
     def resolve_and_close(key):
-        # Resolve first
+        # Optional: assign to API user before resolving (common iTop workflow)
+        agent_oql = (
+            f"SELECT Person JOIN User ON User.contactid = Person.id "
+            f"WHERE User.login = '{itop_user}'"
+        )
+        payload_assign = {
+            "operation": "core/apply_stimulus",
+            "class": itop_class,
+            "key": key,
+            "stimulus": "ev_assign",
+            "comment": "Asignación automática vía GitHub",
+            "fields": {
+                "agent_id": agent_oql,
+                "public_log": {
+                    "add_item": {
+                        "message": f"Asignado automáticamente a {itop_user}",
+                        "format": "text",
+                    }
+                },
+            },
+        }
+        _ = itop_call(itop_url, itop_user, itop_pass, payload_assign)
+
+        # Resolve first (provide solution)
         payload_resolve = {
             "operation": "core/apply_stimulus",
             "class": itop_class,
             "key": key,
             "stimulus": "ev_resolve",
-            "comment": "Cierre automático vía GitHub",
+            "comment": "Resolución automática vía GitHub",
             "fields": {
                 "solution": f"Cerrado desde GitHub: {issue_html_url}",
+                "resolution_code": "assistance",
                 "public_log": {
                     "add_item": {
                         "message": f"Cierre desde GitHub: {issue_html_url}",
@@ -252,7 +276,8 @@ def main():
         if r1.get("status") != "ok":
             # Fallback: at least append public_log
             return update_ticket(key)
-        # Close
+
+        # Then close (set satisfaction/comment when applicable)
         payload_close = {
             "operation": "core/apply_stimulus",
             "class": itop_class,
@@ -260,12 +285,14 @@ def main():
             "stimulus": "ev_close",
             "comment": "Cierre automático vía GitHub",
             "fields": {
+                "user_satisfaction": 4,
+                "user_comment": "Cierre automático por sincronización con GitHub",
                 "public_log": {
                     "add_item": {
                         "message": "Ticket cerrado automáticamente",
                         "format": "text",
                     }
-                }
+                },
             },
         }
         r2 = itop_call(itop_url, itop_user, itop_pass, payload_close)
