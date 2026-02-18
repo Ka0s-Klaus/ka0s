@@ -29,7 +29,7 @@ audit_log = {
 # --- Funciones de la API de iTop ---
 
 def itop_api_call(operation, class_name, key, fields=None):
-    """Función genérica para realizar llamadas a la API REST de iTop."""
+    """Función genérica para realizar llamadas a la API REST de iTop con verificación de errores mejorada."""
     api_url = f"{ITOP_URL}/webservices/rest.php?version={ITOP_API_VERSION}"
     
     payload = {
@@ -41,8 +41,13 @@ def itop_api_call(operation, class_name, key, fields=None):
     if fields:
         payload["fields"] = fields
 
+    # Preparamos el detalle de la acción para el log de auditoría
+    action_detail = {
+        "step": f"itop_api_call/{operation}",
+        "request_payload": payload
+    }
+
     try:
-        # Deshabilitamos la verificación SSL. Añadimos un supresor de advertencias.
         from requests.packages.urllib3.exceptions import InsecureRequestWarning
         requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
         
@@ -53,16 +58,40 @@ def itop_api_call(operation, class_name, key, fields=None):
             timeout=30,
             verify=False
         )
-        response.raise_for_status()
-        return response.json()
+        response.raise_for_status()  # Esto captura errores HTTP (4xx, 5xx)
+        
+        response_data = response.json()
+        action_detail["response_data"] = response_data
+
+        # --- NUEVA VERIFICACIÓN DE ERRORES LÓGICOS DE ITOP ---
+        # Si la respuesta no contiene 'objects' pero sí 'code' y 'message', es un error de iTop.
+        if "objects" not in response_data and "code" in response_data and response_data["code"] != 0:
+            error_message = f"iTop API Error: {response_data.get('message', 'No message')}"
+            raise requests.exceptions.HTTPError(error_message) # Forzamos una excepción para ser capturada abajo
+
+        audit_log["actions"].append(action_detail)
+        return response_data
+
     except requests.exceptions.RequestException as e:
         audit_log["status"] = "error"
-        audit_log["error_message"] = str(e)
-        if e.response is not None:
-            audit_log["error_details"] = e.response.text
-        # Imprimimos el log de auditoría y salimos
+        # Si el error ya tiene un mensaje (como el que forzamos arriba), lo usamos.
+        error_message_str = str(e)
+        audit_log["error_message"] = error_message_str
+        
+        # Añadimos la respuesta completa al log si está disponible
+        if hasattr(e, 'response') and e.response is not None:
+            try:
+                audit_log["error_details"] = e.response.json()
+            except json.JSONDecodeError:
+                audit_log["error_details"] = e.response.text
+        else:
+            # Si no hay objeto response, puede que el error venga de nuestra verificación manual
+            if "iTop API Error" in error_message_str:
+                 audit_log["error_details"] = action_detail.get("response_data")
+
         print(json.dumps(audit_log))
         sys.exit(1)
+
 
 def find_itop_incident_by_github_ref(github_ref):
     """Busca un incidente en iTop usando la referencia de GitHub en el log."""
