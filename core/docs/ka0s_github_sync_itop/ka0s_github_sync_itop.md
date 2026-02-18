@@ -14,5 +14,4 @@ Sincronización automática de eventos de GitHub Issues hacia iTop, con auditor�
 | :--- | :--- | :--- |
 | Workflow | GitHub Actions | [.github/workflows/github-sync-itop.yml](file:///Users/santale/ka0s-klaus/ka0s/.github/workflows/github-sync-itop.yml) |
 | Script Sync | Python | .github/scripts/github-sync-itop.py |
-| Evidencias | JSON | audit/sync/*.json |
-
+| Evidencias | JSON | audit/sync/<timestamp>_<itop_ref>_<issue>.json |

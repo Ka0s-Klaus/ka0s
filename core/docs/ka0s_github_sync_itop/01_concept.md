@@ -12,11 +12,26 @@ El workflow escucha eventos de Issues en GitHub y sincroniza la información rel
 - Runtime: `swarm-runners-scaleset`.
 - Dependencias: Python 3.10 + `requests`.
 - Lógica: script de sincronización que consume variables del evento y credenciales de iTop.
-- Evidencias: salida JSON movida a `audit/sync/<timestamp>_issue_<ID>.json` y commit automático.
+- Evidencias: salida JSON movida a `audit/sync/<timestamp>_<itop_ref>_<issue>.json` y commit automático.
+
+## Comportamiento Funcional
+- Detección de tipo ITSM por etiquetas del Issue:
+  - `itop-incident` → `Incident`
+  - `itop-problem` → `Problem`
+  - `itop-change` → `Change`
+  - `itop-request` → `UserRequest` (valor por defecto)
+- Trazabilidad: inserta un marcador en el título del ticket `[GH:#<n> <owner>/<repo>]` y realiza la búsqueda por título.
+- Comentarios: cualquier comentario en la Issue crea una entrada en `public_log` del ticket en iTop.
+- Cierre: al cerrar la Issue se aplica una secuencia robusta en iTop:
+  1. `ev_assign` al usuario API (por OQL de login)
+  2. `ev_resolve` con `solution` y `resolution_code`
+  3. `ev_close` con `user_satisfaction` y `user_comment`
+  En caso de fallo en estímulos, se registra en `public_log` sin interrumpir el flujo.
 
 ## Variables y Secretos
 - `ITOP_URL`: URL base de iTop.
-- `ITOP_API_USER` / `ITOP_API_PASSWORD`: credenciales de acceso a la API.
+- `ITOP_API_USER` / `ITOP_API_PASSWORD`: credenciales de la API.
+- `ITOP_ORIGIN`: nombre de la Organización en iTop (requerida por el datamodel).
 - Eventos GitHub:
   - `GITHUB_EVENT_NAME`, `GITHUB_EVENT_ACTION`.
   - `GITHUB_ISSUE_PAYLOAD`, `GITHUB_COMMENT_PAYLOAD`, `GITHUB_REPO_FULL_NAME`.
@@ -26,4 +41,3 @@ El workflow escucha eventos de Issues en GitHub y sincroniza la información rel
 2. Preparación de Python y dependencias.
 3. Ejecución del script de sincronización y generación de `result.json`.
 4. Persistencia de evidencias en `audit/sync/` y commit condicional.
-
