@@ -1,0 +1,106 @@
+name: CI Kubernetes Validation
+on:
+  push:
+    branches:
+      - '**'
+      - '!main'
+    paths:
+      - 'core/b2b/core-services/**'
+      - '!core/b2b/core-services/kube/**'
+
+permissions:
+  contents: write
+
+env:
+  KAOS_MODULE: "CI-K8S-VALIDATION"
+
+jobs:
+  validate-manifests:
+    name: Validate Kubernetes Manifests
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Trivy
+        run: |
+          if ! command -v trivy &> /dev/null; then
+            echo "Installing Trivy..."
+            curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin
+          else
+            echo "Trivy is already installed."
+          fi
+
+      - name: Run Trivy Config Scan
+        run: |
+          mkdir -p audit/kube
+          # Sanitize branch name (replace slashes with dashes)
+          SAFE_BRANCH_NAME=$(echo "${{ github.ref_name }}" | tr '/' '-')
+          # Report file path validation: audit/kube
+          REPORT_FILE="audit/kube/validation-report-${SAFE_BRANCH_NAME}-${{ github.run_id }}.md"
+          echo "REPORT_FILE=$REPORT_FILE" >> $GITHUB_ENV
+          
+          echo "# Kubernetes Manifest Validation Report" > "$REPORT_FILE"
+          echo "- **Generated at**: $(date)" >> "$REPORT_FILE"
+          echo "- **Commit**: ${{ github.sha }}" >> "$REPORT_FILE"
+          echo "- **Date**: $(date)" >> "$REPORT_FILE"
+          echo "" >> "$REPORT_FILE"
+          echo "## Trivy Configuration Check (Best Practices & Security)" >> "$REPORT_FILE"
+          
+          BEFORE="${{ github.event.before }}"
+          AFTER="${{ github.sha }}"
+          
+          if [ -z "$BEFORE" ] || [ "$BEFORE" == "0000000000000000000000000000000000000000" ]; then
+            BEFORE="HEAD~1"
+          fi
+          
+          CHANGED_SERVICES=$(git diff --name-only "$BEFORE" "$AFTER" | \
+            grep "^core/b2b/core-services/" | \
+            grep -v "^core/b2b/core-services/kube/" | \
+            cut -d/ -f1-4 | \
+            sort | uniq)
+            
+          if [ -z "$CHANGED_SERVICES" ]; then
+            echo "No relevant services changed." >> "$REPORT_FILE"
+            # We exit successfully even if no services match (might be a false positive trigger due to path matching or other files)
+            exit 0
+          fi
+          
+          for SERVICE in $CHANGED_SERVICES; do
+            if [ ! -d "$SERVICE" ]; then continue; fi
+            
+            echo "### Scanning: $SERVICE" >> "$REPORT_FILE"
+            echo '```' >> "$REPORT_FILE"
+            echo "Running Trivy on $SERVICE..."
+            trivy config --severity HIGH,CRITICAL "$SERVICE" >> "$REPORT_FILE" 2>&1 || true
+            echo '```' >> "$REPORT_FILE"
+          done
+
+      - name: Commit Validation Report
+        run: |
+          git config --global user.name "Ka0s CI Bot"
+          git config --global user.email "ci@ka0s.io"
+          
+          git add ${{ env.REPORT_FILE }}
+          if git diff --staged --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "chore(ci): add validation report [skip ci]"
+            git push origin HEAD:${{ github.ref_name }}
+          fi
+
+  handle-success:
+    runs-on: swarm-runners-scaleset
+    needs: [validate-manifests]
+    if: ${{ success() }}
+    steps: 
+      - run: echo "${{ env.KAOS_MODULE }} Success."
+          
+  handle-failure:
+    runs-on: swarm-runners-scaleset
+    needs: [validate-manifests]
+    if: ${{ failure() }} 
+    steps: 
+      - run: echo "Error detected in ${{ env.KAOS_MODULE }}."
