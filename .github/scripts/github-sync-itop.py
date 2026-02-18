@@ -121,8 +121,8 @@ def create_itop_incident(issue_data, github_ref):
     )
     
     fields = {
-        "org_id": "SELECT Organization WHERE name = 'Demo'", # IMPORTANTE: Ajusta tu organización
-        "caller_id": "SELECT Person WHERE email = 'github@example.com'", # IMPORTANTE: Ajusta un llamante genérico
+        "org_id": "SELECT Organization WHERE name = 'Ka0s Inc'", # IMPORTANTE: Ajusta tu organización
+        "caller_id": "SELECT Person WHERE email = 'asantacana@kyndryl.com'", # IMPORTANTE: Ajusta un llamante genérico
         "title": issue_data['title'],
         "description": description,
         "status": "new",
