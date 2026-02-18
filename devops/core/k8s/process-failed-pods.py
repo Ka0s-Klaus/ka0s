@@ -57,11 +57,7 @@ def itop_request(url, data, headers):
         sys.exit(1)
 
 def get_open_tickets(itop_url, headers):
-    """
-    Recupera todos los UserRequest abiertos creados por la auditoría.
-    Filtra por: Class=UserRequest, Status!=closed/resolved, Origin=monitoring, Title like '[K8s Audit]%'
-    """
-    oql = "SELECT UserRequest WHERE origin='monitoring' AND status NOT IN ('resolved', 'closed') AND title LIKE '[K8s Audit]%'"
+    oql = "SELECT UserRequest WHERE status NOT IN ('resolved', 'closed') AND title LIKE '[K8s Audit]%'"
     
     payload = {
         "operation": "core/get",
@@ -85,7 +81,7 @@ def get_open_tickets(itop_url, headers):
     
     return tickets
 
-def create_ticket(pod, itop_url, itop_user, headers):
+def create_ticket(pod, itop_url, itop_user, headers, origin_value):
     metadata = pod.get('metadata', {})
     status = pod.get('status', {})
     namespace = metadata.get('namespace', 'unknown')
@@ -115,7 +111,7 @@ def create_ticket(pod, itop_url, itop_user, headers):
             "caller_id": user_oql,
             "title": f"[K8s Audit] Pod Failed: {pod_key}",
             "description": description,
-            "origin": "monitoring",
+            "origin": origin_value,
             "impact": 2,
             "urgency": 2
         }
@@ -168,6 +164,7 @@ def main():
     itop_user = os.environ.get('ITOP_USER')
     itop_pass = os.environ.get('ITOP_PASSWORD')
     file_path = os.environ.get('FAILED_PODS_FILE', 'audit/kube/failed_pods.json')
+    itop_origin = os.environ.get('ITOP_ORIGIN', 'portal')
 
     if not all([itop_url, itop_user, itop_pass]):
         print("[ERROR] Missing env vars.")
@@ -203,7 +200,7 @@ def main():
     # A. Detectar Nuevos Fallos (Están en K8s, NO en iTop)
     for pod_key, pod_data in current_failed_pods.items():
         if pod_key not in open_tickets:
-            create_ticket(pod_data, itop_url, itop_user, headers)
+            create_ticket(pod_data, itop_url, itop_user, headers, itop_origin)
         else:
             print(f"[SKIP] Ticket already exists for {pod_key} ({open_tickets[pod_key]})")
 
