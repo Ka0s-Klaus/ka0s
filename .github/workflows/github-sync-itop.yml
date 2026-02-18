@@ -8,7 +8,7 @@ on:
 
 jobs:
   sync-to-itop:
-    runs-on: ubuntu-latest
+    runs-on: swarm-runners-scaleset
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -35,7 +35,7 @@ jobs:
           GITHUB_ISSUE_PAYLOAD: ${{ toJSON(github.event.issue) }}
           GITHUB_COMMENT_PAYLOAD: ${{ toJSON(github.event.comment) }}
           GITHUB_REPO_FULL_NAME: ${{ github.repository }}
-        run: python .github/workflows/sync_script.py > result.json
+        run: python .github/scripts/github-sync-itop.py > result.json
 
       - name: Save audit log
         run: |
