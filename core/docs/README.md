@@ -44,6 +44,7 @@ Si, parece increible pero hemos decidido en el equipo usar una terminología "es
 - [Ka0s Delete Namespace Module](./ka0s_delete_ns/ka0s_delete_ns.md)
 - [Módulo Ka0s Docker](./ka0s_docker/ka0s_docker.md)
 - [Módulo Ka0s Execution](./ka0s_execution/ka0s_execution.md)
+- [Módulo Ka0s GitHub → iTop Sync](./ka0s_github_sync_itop/ka0s_github_sync_itop.md)
 - [Módulo Ka0s HTML Lint](./ka0s_html/ka0s_html.md)
 - [Módulo Ka0s Init](./ka0s_init/ka0s_init.md)
 - [Módulo Ka0s Inspector](./ka0s_inspector/ka0s_inspector.md)
