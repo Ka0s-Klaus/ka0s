@@ -28,6 +28,16 @@ El workflow escucha eventos de Issues en GitHub y sincroniza la información rel
   3. `ev_close` con `user_satisfaction` y `user_comment`
   En caso de fallo en estímulos, se registra en `public_log` sin interrumpir el flujo.
 
+## Mapa de Eventos GitHub → Operaciones iTop
+
+| Evento GitHub              | Acción        | Operación iTop            | Tipo JSON en `audit/sync`                 | Notas clave                               |
+|----------------------------|--------------|---------------------------|-------------------------------------------|-------------------------------------------|
+| `issues`                   | `opened`     | `core/create`             | `operation: "create"`                    | Crea ticket nuevo con marcador en título. |
+| `issues`                   | `edited`     | `core/update`             | `operation: "update"`                    | Actualiza descripción y añade `public_log`.|
+| `issues`                   | `closed`     | `ev_assign` → `ev_resolve` → `ev_close` | `operation: "close"`                     | Asigna, resuelve y cierra el ticket.      |
+| `issue_comment`            | `created`    | `core/update` (`public_log`) | `operation: "add_comment"`             | Añade comentario a `public_log`.          |
+| `issue_comment` (sin ticket previo) | `created`    | `core/create`             | `operation: "create_from_comment"`       | Crea ticket mínimo y registra el comentario.|
+
 ## Variables y Secretos
 - `ITOP_URL`: URL base de iTop.
 - `ITOP_API_USER` / `ITOP_API_PASSWORD`: credenciales de la API.
