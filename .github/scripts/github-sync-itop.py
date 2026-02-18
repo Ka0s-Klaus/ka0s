@@ -35,7 +35,8 @@ def itop_api_call(operation, class_name, key, fields=None):
             api_url,
             auth=(ITOP_API_USER, ITOP_API_PASSWORD),
             data={"json_payload": json.dumps(payload)},
-            timeout=30
+            timeout=30,
+            verify=False
         )
         response.raise_for_status()
         return response.json()
