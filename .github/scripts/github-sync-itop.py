@@ -168,7 +168,7 @@ def main():
     def find_existing_by_marker():
         if not marker:
             return None
-        oql = f'SELECT {itop_class} WHERE description LIKE "%{marker}%"'
+        oql = f'SELECT {itop_class} WHERE title LIKE "%{marker}%"'
         payload = {
             "operation": "core/get",
             "class": itop_class,
