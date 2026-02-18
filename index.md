@@ -42,6 +42,7 @@ Bienvenido al centro de documentación del proyecto Ka0s. A continuación encont
 *   [Ka0s Cluster Restart Module](core/docs/kaos_cluster_restart/kaos_cluster_restart.md)
 
 ## 📂 Otros / Sin Categoría
+*   [Módulo Ka0s Audit Failed Pods](core/docs/ka0s_audit_pods/ka0s_audit_pods.md)
 *   [Módulo Ka0s Issue Templates](core/docs/ka0s_issue_templates/ka0s_issue_templates.md)
 *   [Módulo Ka0s Onboarding](core/docs/ka0s_onboarding/ka0s_onboarding.md)
 *   [Watchdog - Node Health](core/docs/ka0s_watchdog_node_health/ka0s_watchdog_node_health.md)

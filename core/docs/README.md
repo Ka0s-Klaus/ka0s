@@ -35,6 +35,7 @@ Si, parece increible pero hemos decidido en el equipo usar una terminología "es
 
 - [Módulo Ka0s (Core Orchestrator)](./ka0s/ka0s.md)
 - [🗺️ Mapa de Arquitectura Ka0s](./ka0s_architecture/README.md)
+- [Módulo Ka0s Audit Failed Pods](./ka0s_audit_pods/ka0s_audit_pods.md)
 - [Ka0s Kubernetes CI/CD Automation](./ka0s_ci_cd_k8s/ka0s_ci_cd_k8s.md)
 - [Módulo Ka0s Cluster Update](./ka0s_cluster_update/ka0s_cluster_update.md)
 - [Módulo Ka0s Core](./ka0s_core/ka0s_core.md)
