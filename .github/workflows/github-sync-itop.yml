@@ -66,8 +66,8 @@ jobs:
       - name: Commit and push audit file
         if: steps.save_audit.outputs.audit_file_created == 'true' # Solo se ejecuta si el paso anterior creó un fichero
         run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git config --global user.name "Ka0s Bot"
+          git config --global user.email "bot@ka0s.io"
           git add ${{ env.AUDIT_FILE }}
           # El '|| true' evita que el workflow falle si no hay nada que commitear (aunque no debería pasar)
           git diff --staged --quiet || git commit -m "AUDIT: Add sync log for issue #${{ github.event.issue.number }}"
