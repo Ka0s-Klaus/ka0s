@@ -25,34 +25,50 @@ jobs:
 
       - name: Run Sync Script
         id: sync_script
-        # Añadimos 'continue-on-error' para que el job no se marque como fallido inmediatamente
-        continue-on-error: true 
+        continue-on-error: true # Permite que el workflow continúe si este paso falla
         env:
-          # ... (tus variables de entorno)
-        run: python .github/scripts/github-sync-itop.py > result.json
+          ITOP_URL: ${{ secrets.ITOP_URL }}
+          ITOP_API_USER: ${{ secrets.ITOP_API_USER }}
+          ITOP_API_PASSWORD: ${{ secrets.ITOP_API_PASSWORD }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          GITHUB_EVENT_ACTION: ${{ github.event.action }}
+          GITHUB_ISSUE_PAYLOAD: ${{ toJSON(github.event.issue) }}
+          GITHUB_COMMENT_PAYLOAD: ${{ toJSON(github.event.comment) }}
+          GITHUB_REPO_FULL_NAME: ${{ github.repository }}
+        run: python .github/workflows/sync_script.py > result.json
 
       - name: Save audit log
-        # Este paso se ejecutará siempre, incluso si el script falló
-        if: always()
+        id: save_audit # Damos un ID a este paso
+        if: always() # Siempre se ejecuta
         run: |
-          # Comprobamos si el fichero de resultado existe y no está vacío
+          # Si result.json no existe o está vacío, no hacemos nada.
           if [ ! -s result.json ]; then
             echo "result.json no encontrado o vacío. No se creará log de auditoría."
+            # Establecemos una salida para que el siguiente paso sepa que no debe ejecutarse
+            echo "audit_file_created=false" >> $GITHUB_OUTPUT
             exit 0
           fi
+          
+          # Instalamos jq para leer el JSON de forma segura
+          sudo apt-get install -y jq
+          
           mkdir -p audit/sync
           TIMESTAMP=$(date -u +"%Y%m%d_%H%M%S")
-          ISSUE_ID=$(jq -r '.github_ref | split("/")[-1]' result.json || echo "unknown")
+          # Usamos jq para extraer el número de issue del JSON de forma segura
+          ISSUE_ID=$(jq -r '.github_ref | split("/")[-1] // "unknown"' result.json)
           FILENAME="audit/sync/${TIMESTAMP}_issue_${ISSUE_ID}.json"
+          
           mv result.json $FILENAME
+          
           echo "AUDIT_FILE=$FILENAME" >> $GITHUB_ENV
+          echo "audit_file_created=true" >> $GITHUB_OUTPUT
 
       - name: Commit and push audit file
-        # Este paso también se ejecutará siempre
-        if: always()
+        if: steps.save_audit.outputs.audit_file_created == 'true' # Solo se ejecuta si el paso anterior creó un fichero
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add ${{ env.AUDIT_FILE }}
-          git diff --staged --quiet || git commit -m "AUDIT: Add sync log for issue #${{ fromJson(steps.sync_script.outputs.json).github_ref | split('/')[-1] || github.event.issue.number }}"
+          # El '|| true' evita que el workflow falle si no hay nada que commitear (aunque no debería pasar)
+          git diff --staged --quiet || git commit -m "AUDIT: Add sync log for issue #${{ github.event.issue.number }}"
           git push
