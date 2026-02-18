@@ -139,7 +139,13 @@ def main():
         print(json.dumps(audit_log))
         sys.exit(1)
 
-    issue_number = ISSUE_PAYLOAD.get("number")
+    # Para comentarios, el payload de la issue está en un nivel diferente
+    if EVENT_NAME == "issue_comment":
+        issue_payload_source = ISSUE_PAYLOAD
+    else:
+        issue_payload_source = ISSUE_PAYLOAD
+
+    issue_number = issue_payload_source.get("number")
     if not issue_number:
         audit_log["status"] = "skipped"
         audit_log["error_message"] = "El evento no contenía un número de issue."
@@ -149,18 +155,50 @@ def main():
     github_ref = f"github_ref:{REPO_NAME}/issues/{issue_number}"
     audit_log["github_ref"] = github_ref
     
+    # --- LÓGICA DE AUTO-REPARACIÓN ---
+    
+    # 1. Siempre buscamos el incidente primero.
     incident = find_itop_incident_by_github_ref(github_ref)
-    incident_id = incident['id'] if incident else None
 
+    # 2. Si el incidente NO existe, y el evento NO es la apertura de una issue ya cerrada, lo creamos.
+    #    Esto evita crear un incidente en iTop para una issue que se creó y cerró antes de que la integración existiera.
+    if not incident and issue_payload_source.get("state") == "open":
+        audit_log["actions"].append({
+            "step": "auto_repair",
+            "result": "incident_not_found_creating_it",
+            "trigger_event": EVENT_NAME
+        })
+        create_itop_incident(issue_payload_source, github_ref)
+        # Después de crearlo, lo volvemos a buscar para tener su ID y continuar con la acción original si es necesario.
+        incident = find_itop_incident_by_github_ref(github_ref)
+
+    # Si después de intentar crearlo sigue sin existir (porque la issue estaba cerrada), paramos.
+    if not incident:
+        audit_log["status"] = "skipped"
+        audit_log["actions"].append({
+            "step": "final_check",
+            "result": "incident_does_not_exist_and_cannot_be_created_skipping"
+        })
+        print(json.dumps(audit_log))
+        return
+
+    incident_id = incident['id']
+
+    # --- Flujo basado en el evento de GitHub ---
+    
+    # Ya hemos manejado 'opened' con la lógica de creación anterior.
+    # Ahora solo procesamos las acciones sobre un incidente que YA existe.
+    
     if EVENT_NAME == "issues":
-        if EVENT_ACTION == "opened":
-            if not incident:
-                create_itop_incident(ISSUE_PAYLOAD, github_ref)
-        elif EVENT_ACTION == "edited" and incident:
-            update_itop_incident(incident_id, {"title": ISSUE_PAYLOAD['title']})
-        elif EVENT_ACTION == "closed" and incident:
+        if EVENT_ACTION == "edited":
+            # El título es el único campo que actualizamos en una edición por ahora.
+            update_itop_incident(incident_id, {"title": issue_payload_source['title']})
+
+        elif EVENT_ACTION == "closed":
+            # Mapeo: closed (GitHub) -> resolved (iTop)
             update_itop_incident(incident_id, {"status": "resolved"})
-    elif EVENT_NAME == "issue_comment" and EVENT_ACTION == "created" and incident:
+
+    elif EVENT_NAME == "issue_comment" and EVENT_ACTION == "created":
         add_comment_to_itop_incident(incident_id, COMMENT_PAYLOAD)
     
     # Imprimir el log de auditoría final en formato JSON
