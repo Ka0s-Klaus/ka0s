@@ -35,7 +35,7 @@ jobs:
           GITHUB_ISSUE_PAYLOAD: ${{ toJSON(github.event.issue) }}
           GITHUB_COMMENT_PAYLOAD: ${{ toJSON(github.event.comment) }}
           GITHUB_REPO_FULL_NAME: ${{ github.repository }}
-        run: python .github/scripts/github-sync-itop.py
+        run: python .github/scripts/github-sync-itop.py > result.json
 
       - name: Save audit log
         run: |
