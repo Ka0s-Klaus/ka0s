@@ -1,0 +1,35 @@
+name: 🛠️ Solicitud de Servicio (Service Request)
+description: Pide soporte o una acción estándar; se sincroniza con iTop.
+title: "[REQUEST]: <Resumen corto>"
+labels: ["itop-request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe tu solicitud. Se creará/actualizará una UserRequest en iTop.
+
+  - type: input
+    id: requester
+    attributes:
+      label: Solicitante (si aplica)
+      placeholder: Nombre o @usuario
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Descripción
+      description: Detalles de la tarea solicitada.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Prioridad
+      options:
+        - Baja
+        - Media
+        - Alta
+    validations:
+      required: true
+

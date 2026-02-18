@@ -1,0 +1,55 @@
+name: 🚨 Incidencia (Incident)
+description: Reporta una incidencia operacional para crear/actualizar un ticket en iTop.
+title: "[INCIDENT]: <Resumen corto>"
+labels: ["itop-incident", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Completa los campos para registrar la incidencia. Esta información se sincronizará con iTop.
+
+  - type: input
+    id: service
+    attributes:
+      label: Servicio / CI afectado
+      description: Nombre del servicio o CI impactado.
+      placeholder: Ej. web-frontend, DB cluster
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Descripción
+      description: Explica el síntoma, alcance y condiciones.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: impact
+    attributes:
+      label: Impacto
+      options:
+        - Bajo
+        - Medio
+        - Alto
+    validations:
+      required: true
+
+  - type: dropdown
+    id: urgency
+    attributes:
+      label: Urgencia
+      options:
+        - Baja
+        - Media
+        - Alta
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Pasos / Evidencias
+      description: Adjunta logs, enlaces o pasos de reproducción.
+

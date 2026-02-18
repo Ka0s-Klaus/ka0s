@@ -1,4 +1,4 @@
-name: iTop Sync from GitHub Issue
+name: "[Ka0s] GitHub → iTop Sync"
 
 on:
   issues:
@@ -6,14 +6,25 @@ on:
   issue_comment:
     types: [created]
 
+permissions:
+  contents: write
+  issues: write
+  actions: read
+
+env:
+  KAOS_MODULE: "[Ka0S] GitHub → iTop Sync"
+  KAOS_CORRELATION_ID: ${{ github.run_id }}
+  KAOS_ACTOR: ${{ github.actor }}
+
 jobs:
-  sync-to-itop:
+  core-execution:
     runs-on: swarm-runners-scaleset
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -25,11 +36,11 @@ jobs:
 
       - name: Run Sync Script
         id: sync_script
-        continue-on-error: true # Permite que el workflow continúe si este paso falla
         env:
-          ITOP_URL: ${{ secrets.ITOP_URL }}
+          ITOP_URL: ${{ secrets.ITOP_URL || vars.ITOP_URL }}
           ITOP_API_USER: ${{ secrets.ITOP_API_USER }}
           ITOP_API_PASSWORD: ${{ secrets.ITOP_API_PASSWORD }}
+          ITOP_ORIGIN: ${{ secrets.ITOP_ORIGIN || vars.ITOP_ORIGIN }}
           GITHUB_EVENT_NAME: ${{ github.event_name }}
           GITHUB_EVENT_ACTION: ${{ github.event.action }}
           GITHUB_ISSUE_PAYLOAD: ${{ toJSON(github.event.issue) }}
@@ -66,9 +77,60 @@ jobs:
       - name: Commit and push audit file
         if: steps.save_audit.outputs.audit_file_created == 'true' # Solo se ejecuta si el paso anterior creó un fichero
         run: |
-          git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
-          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
+          git config --global user.name "${{ secrets.KAOS_BOT_NAME || 'Ka0s Bot' }}"
+          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL || 'bot@ka0s.io' }}"
           git add audit/sync/*
-          # El '|| true' evita que el workflow falle si no hay nada que commitear (aunque no debería pasar)
-          git diff --staged --quiet || git commit -m "AUDIT: Add sync log for issue #${{ github.event.issue.number }}"
-          git push
+          if ! git diff --staged --quiet; then
+            git commit -m "chore(ka0s): audit sync for issue #${{ github.event.issue.number }} run ${{ env.KAOS_CORRELATION_ID }} [skip ci]"
+            count=0
+            until git push origin HEAD:${{ github.ref_name }} || [ $count -eq 5 ]; do
+              echo "Push fallido, reintentando..."
+              git pull --rebase origin ${{ github.ref_name }}
+              ((count++))
+              sleep 2
+            done
+          else
+            echo "No hay cambios para subir."
+          fi
+
+  handle-success:
+    name: Handle Success
+    needs: [core-execution]
+    if: success()
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Notify Success
+        run: echo "✅ Workflow ${{ env.KAOS_MODULE }} completado correctamente."
+
+  handle-failure:
+    name: Handle Failure
+    needs: [core-execution]
+    if: failure()
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Notify Failure
+        run: echo "❌ Workflow ${{ env.KAOS_MODULE }} falló. Revisar logs."
+
+  end-workflow:
+    needs: [handle-success, handle-failure]
+    if: always()
+    runs-on: swarm-runners-scaleset
+    steps:
+      - id: repo
+        name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+
+      - name: Trigger Inspector
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "🔍 Triggering Inspector for Audit..."
+          gh workflow run inspector.yml \
+            --ref main \
+            -f kaos-workflow-id="${{ github.run_id }}" \
+            -f kaos-user-start="${{ github.triggering_actor }}"

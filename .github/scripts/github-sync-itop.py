@@ -1,237 +1,342 @@
 import os
-import sys
 import json
-import requests
+import sys
+import re
 from datetime import datetime
 
-# --- Configuración y Carga de Datos ---
-# (Esta parte no cambia)
-ITOP_URL = os.environ.get("ITOP_URL")
-ITOP_API_USER = os.environ.get("ITOP_API_USER")
-ITOP_API_PASSWORD = os.environ.get("ITOP_API_PASSWORD")
-ITOP_API_VERSION = "1.3"
+import requests
 
-EVENT_NAME = os.environ.get("GITHUB_EVENT_NAME")
-EVENT_ACTION = os.environ.get("GITHUB_EVENT_ACTION")
-ISSUE_PAYLOAD = json.loads(os.environ.get("GITHUB_ISSUE_PAYLOAD", "{}"))
-COMMENT_PAYLOAD = json.loads(os.environ.get("GITHUB_COMMENT_PAYLOAD", "{}"))
-REPO_NAME = os.environ.get("GITHUB_REPO_FULL_NAME")
 
-# Objeto para el log de auditoría
-audit_log = {
-    "timestamp_utc": datetime.utcnow().isoformat(),
-    "github_event": f"{EVENT_NAME}/{EVENT_ACTION}",
-    "status": "success",
-    "actions": [],
-    "error_message": None
-}
+def env(name, default=None, required=False):
+    val = os.environ.get(name, default)
+    if required and (val is None or str(val).strip() == ""):
+        raise RuntimeError(f"Missing required env: {name}")
+    return val
 
-# --- Funciones de la API de iTop ---
 
-def itop_api_call(operation, class_name, key, fields=None):
-    """Función genérica para realizar llamadas a la API REST de iTop con verificación de errores mejorada."""
-    api_url = f"{ITOP_URL}/webservices/rest.php?version={ITOP_API_VERSION}"
-    
-    payload = {
-        "operation": operation,
-        "class": class_name,
-        "key": key,
-        "output_fields": "id, private_log",
-    }
-    if fields:
-        payload["fields"] = fields
-
-    # Preparamos el detalle de la acción para el log de auditoría
-    action_detail = {
-        "step": f"itop_api_call/{operation}",
-        "request_payload": payload
-    }
+def itop_call(base_url, user, password, payload):
+    url = f"{base_url.rstrip('/')}/webservices/rest.php?version=1.3"
+    try:
+        r = requests.post(
+            url,
+            auth=(user, password),
+            data={"json_data": json.dumps(payload)},
+            timeout=15,
+            verify=False,  # iTop suele usar TLS autosignado en entornos lab
+        )
+    except requests.RequestException as e:
+        return {"status": "error", "error": f"HTTP error: {str(e)}", "payload": payload}
 
     try:
-        from requests.packages.urllib3.exceptions import InsecureRequestWarning
-        requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
-        
-        response = requests.post(
-            api_url,
-            auth=(ITOP_API_USER, ITOP_API_PASSWORD),
-            data={"json_data": json.dumps(payload)},
-            timeout=30,
-            verify=False
-        )
-        response.raise_for_status()  # Esto captura errores HTTP (4xx, 5xx)
-        
-        response_data = response.json()
-        action_detail["response_data"] = response_data
+        data = r.json()
+    except Exception:
+        return {"status": "error", "error": f"Non-JSON response: {r.text}", "payload": payload}
 
-        # --- NUEVA VERIFICACIÓN DE ERRORES LÓGICOS DE ITOP ---
-        # Si la respuesta no contiene 'objects' pero sí 'code' y 'message', es un error de iTop.
-        if "objects" not in response_data and "code" in response_data and response_data["code"] != 0:
-            error_message = f"iTop API Error: {response_data.get('message', 'No message')}"
-            raise requests.exceptions.HTTPError(error_message) # Forzamos una excepción para ser capturada abajo
-
-        audit_log["actions"].append(action_detail)
-        return response_data
-
-    except requests.exceptions.RequestException as e:
-        audit_log["status"] = "error"
-        # Si el error ya tiene un mensaje (como el que forzamos arriba), lo usamos.
-        error_message_str = str(e)
-        audit_log["error_message"] = error_message_str
-        
-        # Añadimos la respuesta completa al log si está disponible
-        if hasattr(e, 'response') and e.response is not None:
-            try:
-                audit_log["error_details"] = e.response.json()
-            except json.JSONDecodeError:
-                audit_log["error_details"] = e.response.text
-        else:
-            # Si no hay objeto response, puede que el error venga de nuestra verificación manual
-            if "iTop API Error" in error_message_str:
-                 audit_log["error_details"] = action_detail.get("response_data")
-
-        print(json.dumps(audit_log))
-        sys.exit(1)
+    if r.status_code != 200 or data.get("code") not in (0, "0", None):
+        return {"status": "error", "http": r.status_code, "response": data, "payload": payload}
+    return {"status": "ok", "response": data}
 
 
-def find_itop_incident_by_github_ref(github_ref):
-    """Busca un incidente en iTop usando la referencia de GitHub en el log."""
-    action_detail = {"step": "find_incident", "github_ref": github_ref}
-    query = f"SELECT Incident WHERE private_log LIKE '%{github_ref}%'"
-    response = itop_api_call("core/get", "Incident", {"oql": query})
-    
-    if response and "objects" in response and response["objects"]:
-        incident_key = list(response["objects"].keys())[0]
-        incident_data = response["objects"][incident_key]["fields"]
-        action_detail["result"] = "found"
-        action_detail["incident_id"] = incident_data['id']
-        audit_log["actions"].append(action_detail)
-        return incident_data
-    
-    action_detail["result"] = "not_found"
-    audit_log["actions"].append(action_detail)
-    return None
+def map_priority(val):
+    if not val:
+        return None
+    v = str(val).strip().lower()
+    if v in ("baja", "low"):  # 1
+        return 1
+    if v in ("media", "medium"):  # 2
+        return 2
+    if v in ("alta", "high"):  # 3
+        return 3
+    # fallback
+    try:
+        return int(v)
+    except Exception:
+        return None
 
-def create_itop_incident(issue_data, github_ref):
-    """Crea un nuevo incidente en iTop."""
-    action_detail = {"step": "create_incident"}
-    description = (
-        f"Incidente creado desde GitHub Issue.\n\n"
-        f"URL: {issue_data['html_url']}\n\n"
-        f"--- DESCRIPCIÓN ---\n{issue_data['body']}"
-    )
-    
-    fields = {
-        "org_id": "SELECT Organization WHERE name = 'Ka0s Inc'", # IMPORTANTE: Ajusta tu organización
-        "caller_id": "SELECT Person WHERE email = 'asantacana@kyndryl.com'", # IMPORTANTE: Ajusta un llamante genérico
-        "title": issue_data['title'],
-        "description": description,
-        "status": "new",
-        "impact": "3",
-        "urgency": "3",
-        "private_log": f"{{'message': 'Referencia de GitHub: {github_ref}'}}"
-    }
-    
-    response = itop_api_call("core/create", "Incident", key={}, fields=fields)
-    created_incident_key = list(response["objects"].keys())[0]
-    created_incident_id = response["objects"][created_incident_key]["fields"]["id"]
-    action_detail["result"] = "success"
-    action_detail["incident_id"] = created_incident_id
-    audit_log["actions"].append(action_detail)
 
-def update_itop_incident(incident_id, updates):
-    """Actualiza un incidente existente en iTop."""
-    action_detail = {"step": "update_incident", "incident_id": incident_id, "updates": updates}
-    itop_api_call("core/update", "Incident", key={"id": incident_id}, fields=updates)
-    action_detail["result"] = "success"
-    audit_log["actions"].append(action_detail)
+def detect_type(labels):
+    lset = {l.lower() for l in labels}
+    if "itop-incident" in lset:
+        return "Incident"
+    if "itop-problem" in lset:
+        return "Problem"
+    if "itop-change" in lset:
+        return "Change"
+    if "itop-request" in lset:
+        return "UserRequest"
+    # default to UserRequest
+    return "UserRequest"
 
-def add_comment_to_itop_incident(incident_id, comment_data):
-    """Añade un comentario al log del incidente."""
-    action_detail = {"step": "add_comment", "incident_id": incident_id}
-    comment_text = (
-        f"Nuevo comentario desde GitHub por @{comment_data['user']['login']}:\n\n"
-        f"{comment_data['body']}"
-    )
-    # Escapamos JSON para el log de iTop
-    escaped_comment = json.dumps(comment_text)
-    update_itop_incident(incident_id, {"private_log": f"{{'message': {escaped_comment}}}"})
-    action_detail["result"] = "success"
-    audit_log["actions"].append(action_detail)
 
-# --- Lógica Principal del Workflow ---
+def build_marker(owner_repo, issue_number):
+    return f"[GH:#{issue_number} {owner_repo}]"
+
+
+def extract_fields_from_body(body_text):
+    # Busca patrones simples por cabeceras Markdown de templates
+    fields = {}
+    if not body_text:
+        return fields
+    # Impacto
+    m = re.search(r"(?im)^###\s*Impacto\s*\n+([\s\S]*?)(\n###|$)", body_text)
+    if m:
+        fields["impact"] = m.group(1).strip()
+    # Urgencia / Prioridad
+    m = re.search(r"(?im)^###\s*Urgencia\s*\n+([\s\S]*?)(\n###|$)", body_text)
+    if m:
+        fields["urgency"] = m.group(1).strip()
+    m = re.search(r"(?im)^###\s*Prioridad\s*\n+([\s\S]*?)(\n###|$)", body_text)
+    if m:
+        fields["priority"] = m.group(1).strip()
+    # Servicio / CI
+    m = re.search(r"(?im)^Servicio\s*\/\s*CI\s*.*\n+([\s\S]*?)(\n###|$)", body_text)
+    if m:
+        fields["service"] = m.group(1).strip()
+    return fields
+
 
 def main():
-    """Punto de entrada del script."""
-    if not all([ITOP_URL, ITOP_API_USER, ITOP_API_PASSWORD]):
-        audit_log["status"] = "error"
-        audit_log["error_message"] = "Faltan secretos de iTop (ITOP_URL, ITOP_API_USER, ITOP_API_PASSWORD)."
-        print(json.dumps(audit_log))
-        sys.exit(1)
+    itop_url = env("ITOP_URL", required=True)
+    itop_user = env("ITOP_API_USER", required=True)
+    itop_pass = env("ITOP_API_PASSWORD", required=True)
+    itop_origin = env("ITOP_ORIGIN", default=None)
 
-    # Para comentarios, el payload de la issue está en un nivel diferente
-    if EVENT_NAME == "issue_comment":
-        issue_payload_source = ISSUE_PAYLOAD
+    event_name = env("GITHUB_EVENT_NAME", required=True)
+    event_action = env("GITHUB_EVENT_ACTION", required=True)
+    issue_payload = env("GITHUB_ISSUE_PAYLOAD")
+    comment_payload = env("GITHUB_COMMENT_PAYLOAD")
+    repo_full = env("GITHUB_REPO_FULL_NAME", required=True)
+
+    result = {
+        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "github_event": event_name,
+        "github_action": event_action,
+        "github_repo": repo_full,
+    }
+
+    issue = None
+    if issue_payload:
+        try:
+            issue = json.loads(issue_payload)
+        except Exception:
+            pass
+
+    comment = None
+    if comment_payload:
+        try:
+            comment = json.loads(comment_payload)
+        except Exception:
+            pass
+
+    if event_name not in ("issues", "issue_comment"):
+        result.update({"status": "skipped", "reason": "unsupported_event"})
+        print(json.dumps(result, indent=2))
+        return
+
+    if event_name == "issues" and not issue:
+        result.update({"status": "skipped", "reason": "no_issue_payload"})
+        print(json.dumps(result, indent=2))
+        return
+
+    # Common identifiers
+    if issue:
+        issue_number = issue.get("number")
+        issue_title = issue.get("title") or "(sin título)"
+        issue_body = issue.get("body") or ""
+        issue_html_url = issue.get("html_url") or f"https://github.com/{repo_full}/issues/{issue_number}"
+        labels = [lbl.get("name", "") for lbl in issue.get("labels", [])]
     else:
-        issue_payload_source = ISSUE_PAYLOAD
+        # issue_comment events also bring issue
+        issue_number = None
+        issue_title = None
+        issue_body = None
+        issue_html_url = None
+        labels = []
 
-    issue_number = issue_payload_source.get("number")
-    if not issue_number:
-        audit_log["status"] = "skipped"
-        audit_log["error_message"] = "El evento no contenía un número de issue."
-        print(json.dumps(audit_log))
-        return
+    itop_class = detect_type(labels)
+    marker = build_marker(repo_full, issue_number) if issue_number else None
 
-    github_ref = f"github_ref:{REPO_NAME}/issues/{issue_number}"
-    audit_log["github_ref"] = github_ref
-    
-    # --- LÓGICA DE AUTO-REPARACIÓN ---
-    
-    # 1. Siempre buscamos el incidente primero.
-    incident = find_itop_incident_by_github_ref(github_ref)
+    # Build base fields
+    parsed = extract_fields_from_body(issue_body or "")
+    impact_val = map_priority(parsed.get("impact")) if parsed.get("impact") else None
+    urgency_val = map_priority(parsed.get("urgency") or parsed.get("priority")) if (parsed.get("urgency") or parsed.get("priority")) else None
 
-    # 2. Si el incidente NO existe, y el evento NO es la apertura de una issue ya cerrada, lo creamos.
-    #    Esto evita crear un incidente en iTop para una issue que se creó y cerró antes de que la integración existiera.
-    if not incident and issue_payload_source.get("state") == "open":
-        audit_log["actions"].append({
-            "step": "auto_repair",
-            "result": "incident_not_found_creating_it",
-            "trigger_event": EVENT_NAME
-        })
-        create_itop_incident(issue_payload_source, github_ref)
-        # Después de crearlo, lo volvemos a buscar para tener su ID y continuar con la acción original si es necesario.
-        incident = find_itop_incident_by_github_ref(github_ref)
+    description_extra = f"\n\n---\nOrigen: GitHub\nIssue: {issue_html_url}\nRepo: {repo_full}\n"
+    final_description = (issue_body or "").strip() + description_extra
 
-    # Si después de intentar crearlo sigue sin existir (porque la issue estaba cerrada), paramos.
-    if not incident:
-        audit_log["status"] = "skipped"
-        audit_log["actions"].append({
-            "step": "final_check",
-            "result": "incident_does_not_exist_and_cannot_be_created_skipping"
-        })
-        print(json.dumps(audit_log))
-        return
+    # Helper to find existing ticket by marker in description
+    def find_existing_by_marker():
+        if not marker:
+            return None
+        oql = f'SELECT {itop_class} WHERE description LIKE "%{marker}%"'
+        payload = {
+            "operation": "core/get",
+            "class": itop_class,
+            "key": oql,
+            "output_fields": "id,ref,title,status"
+        }
+        resp = itop_call(itop_url, itop_user, itop_pass, payload)
+        if resp.get("status") != "ok":
+            return None
+        objects = resp.get("response", {}).get("objects", {}) or {}
+        if not objects:
+            return None
+        # Return the first object's key (ref or id)
+        first = next(iter(objects.values()))
+        key = first.get("key") or first.get("fields", {}).get("ref") or first.get("fields", {}).get("id")
+        return key
 
-    incident_id = incident['id']
+    # Create ticket
+    def create_ticket():
+        fields = {
+            "title": f"{marker} {issue_title}" if marker else issue_title,
+            "description": final_description,
+            "status": "new",
+        }
+        if impact_val is not None:
+            fields["impact"] = impact_val
+        if urgency_val is not None:
+            fields["urgency"] = urgency_val
+        if itop_origin:
+            fields["org_id"] = {"name": itop_origin}
 
-    # --- Flujo basado en el evento de GitHub ---
-    
-    # Ya hemos manejado 'opened' con la lógica de creación anterior.
-    # Ahora solo procesamos las acciones sobre un incidente que YA existe.
-    
-    if EVENT_NAME == "issues":
-        if EVENT_ACTION == "edited":
-            # El título es el único campo que actualizamos en una edición por ahora.
-            update_itop_incident(incident_id, {"title": issue_payload_source['title']})
+        payload = {
+            "operation": "core/create",
+            "class": itop_class,
+            "fields": fields,
+        }
+        return itop_call(itop_url, itop_user, itop_pass, payload)
 
-        elif EVENT_ACTION == "closed":
-            # Mapeo: closed (GitHub) -> resolved (iTop)
-            update_itop_incident(incident_id, {"status": "resolved"})
+    # Update ticket
+    def update_ticket(key, on_comment=False):
+        u_fields = {}
+        # Keep description source of truth; append if edited
+        if not on_comment and final_description:
+            u_fields["description"] = final_description
+        # Always add a public log entry with context
+        message = f"GitHub {event_name}/{event_action}: {issue_html_url}"
+        if on_comment and comment:
+            message = f"Comentario de GitHub por {comment.get('user', {}).get('login')}:\n\n{comment.get('body','')}\n\n{issue_html_url}"
+        u_fields["public_log"] = {"add_item": {"message": message, "format": "text"}}
 
-    elif EVENT_NAME == "issue_comment" and EVENT_ACTION == "created":
-        add_comment_to_itop_incident(incident_id, COMMENT_PAYLOAD)
-    
-    # Imprimir el log de auditoría final en formato JSON
-    print(json.dumps(audit_log))
+        payload = {
+            "operation": "core/update",
+            "class": itop_class,
+            "key": key,
+            "fields": u_fields,
+        }
+        return itop_call(itop_url, itop_user, itop_pass, payload)
+
+    # Resolve/Close ticket
+    def resolve_and_close(key):
+        # Resolve first
+        payload_resolve = {
+            "operation": "core/apply_stimulus",
+            "class": itop_class,
+            "key": key,
+            "stimulus": "ev_resolve",
+            "comment": "Cierre automático vía GitHub",
+            "fields": {
+                "solution": f"Cerrado desde GitHub: {issue_html_url}",
+                "public_log": {
+                    "add_item": {
+                        "message": f"Cierre desde GitHub: {issue_html_url}",
+                        "format": "text",
+                    }
+                },
+            },
+        }
+        r1 = itop_call(itop_url, itop_user, itop_pass, payload_resolve)
+        if r1.get("status") != "ok":
+            # Fallback: at least append public_log
+            return update_ticket(key)
+        # Close
+        payload_close = {
+            "operation": "core/apply_stimulus",
+            "class": itop_class,
+            "key": key,
+            "stimulus": "ev_close",
+            "comment": "Cierre automático vía GitHub",
+            "fields": {
+                "public_log": {
+                    "add_item": {
+                        "message": "Ticket cerrado automáticamente",
+                        "format": "text",
+                    }
+                }
+            },
+        }
+        r2 = itop_call(itop_url, itop_user, itop_pass, payload_close)
+        if r2.get("status") != "ok":
+            # Fallback: log only
+            return update_ticket(key)
+        return r2
+
+    # Route by event
+    if event_name == "issues":
+        result["github_ref"] = f"https://github.com/{repo_full}/issues/{issue_number}"
+        key = find_existing_by_marker()
+
+        if event_action == "opened":
+            if key:
+                upd = update_ticket(key)
+                result.update({"operation": "update", "itop_class": itop_class, "itop_key": key, "update": upd})
+            else:
+                crt = create_ticket()
+                result.update({"operation": "create", "itop_class": itop_class, "create": crt})
+
+        elif event_action == "edited":
+            if key:
+                upd = update_ticket(key)
+                result.update({"operation": "update", "itop_class": itop_class, "itop_key": key, "update": upd})
+            else:
+                # If not found, create (idempotent behavior)
+                crt = create_ticket()
+                result.update({"operation": "create", "itop_class": itop_class, "create": crt})
+
+        elif event_action == "closed":
+            if key:
+                cls = resolve_and_close(key)
+                result.update({"operation": "close", "itop_class": itop_class, "itop_key": key, "close": cls})
+            else:
+                # Create then close as last resort
+                crt = create_ticket()
+                if crt.get("status") == "ok":
+                    # Extract key from response
+                    objects = crt.get("response", {}).get("objects", {}) or {}
+                    if objects:
+                        first = next(iter(objects.values()))
+                        new_key = first.get("key") or first.get("fields", {}).get("ref") or first.get("fields", {}).get("id")
+                        cls = resolve_and_close(new_key)
+                        result.update({"operation": "create_close", "itop_class": itop_class, "itop_key": new_key, "create": crt, "close": cls})
+                    else:
+                        result.update({"operation": "create_close", "itop_class": itop_class, "create": crt})
+                else:
+                    result.update({"operation": "create_close", "itop_class": itop_class, "create": crt})
+        else:
+            result.update({"status": "skipped", "reason": f"unsupported_action:{event_action}"})
+
+    elif event_name == "issue_comment" and comment and issue:
+        result["github_ref"] = issue.get("html_url") or f"https://github.com/{repo_full}/issues/{issue.get('number')}"
+        key = find_existing_by_marker()
+        if key:
+            upd = update_ticket(key, on_comment=True)
+            result.update({"operation": "add_comment", "itop_class": itop_class, "itop_key": key, "update": upd})
+        else:
+            # If ticket not present yet, create minimal and add log
+            crt = create_ticket()
+            result.update({"operation": "create_from_comment", "itop_class": itop_class, "create": crt})
+    else:
+        result.update({"status": "skipped", "reason": "unsupported_event_payload"})
+
+    print(json.dumps(result, indent=2))
+
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+        sys.exit(0)
+    except Exception as e:
+        err = {"status": "error", "error": str(e)}
+        print(json.dumps(err, indent=2))
+        sys.exit(1)
