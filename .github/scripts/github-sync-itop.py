@@ -203,6 +203,7 @@ def main():
         payload = {
             "operation": "core/create",
             "class": itop_class,
+            "comment": f"Creado automáticamente desde GitHub: {issue_html_url}",
             "fields": fields,
         }
         return itop_call(itop_url, itop_user, itop_pass, payload)
@@ -223,6 +224,7 @@ def main():
             "operation": "core/update",
             "class": itop_class,
             "key": key,
+            "comment": f"Actualizado automáticamente desde GitHub: {issue_html_url}",
             "fields": u_fields,
         }
         return itop_call(itop_url, itop_user, itop_pass, payload)
