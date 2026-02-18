@@ -8,10 +8,13 @@ on:
 
 jobs:
   sync-to-itop:
-    runs-on: swarm-runners-scaleset
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        # Necesitamos un token para poder hacer push de vuelta al repo
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -22,17 +25,37 @@ jobs:
         run: pip install requests
 
       - name: Run Sync Script
+        id: sync_script # Añadimos un ID para referenciar la salida
         env:
-          # Secretos del repositorio para acceder a iTop
           ITOP_URL: ${{ secrets.ITOP_URL }}
           ITOP_API_USER: ${{ secrets.ITOP_API_USER }}
           ITOP_API_PASSWORD: ${{ secrets.ITOP_API_PASSWORD }}
-          
-          # Contexto del evento de GitHub
           GITHUB_EVENT_NAME: ${{ github.event_name }}
           GITHUB_EVENT_ACTION: ${{ github.event.action }}
           GITHUB_ISSUE_PAYLOAD: ${{ toJSON(github.event.issue) }}
           GITHUB_COMMENT_PAYLOAD: ${{ toJSON(github.event.comment) }}
           GITHUB_REPO_FULL_NAME: ${{ github.repository }}
+        run: python .github/workflows/sync_script.py > result.json
 
-        run: python .github/scripts/github-sync-itop.py
+      - name: Save audit log
+        run: |
+          mkdir -p audit/sync
+          # Creamos un nombre de fichero único basado en la fecha y el ID de la issue
+          TIMESTAMP=$(date -u +"%Y%m%d_%H%M%S")
+          ISSUE_ID=${{ github.event.issue.number }}
+          FILENAME="audit/sync/${TIMESTAMP}_issue_${ISSUE_ID}.json"
+          
+          # Movemos el resultado al fichero de auditoría
+          mv result.json $FILENAME
+          
+          # Guardamos el nombre del fichero para el siguiente paso
+          echo "AUDIT_FILE=$FILENAME" >> $GITHUB_ENV
+
+      - name: Commit and push audit file
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add ${{ env.AUDIT_FILE }}
+          # Solo hacemos commit si hay algo que añadir
+          git diff --staged --quiet || git commit -m "AUDIT: Add sync log for issue #${{ github.event.issue.number }}"
+          git push
