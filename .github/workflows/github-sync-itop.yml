@@ -79,6 +79,20 @@ jobs:
           FILENAME="audit/sync/${TIMESTAMP}_${SAFE_ITOP_REF}_${ISSUE_ID}.json"
           
           mv result.json $FILENAME
+
+          # Si hay error en la llamada a iTop, generamos además un fichero de error explícito
+          HAS_ERROR=$(jq -r '
+            if (.status? == "error") then "true"
+            elif (.create?.status? == "error") then "true"
+            elif (.update?.status? == "error") then "true"
+            elif (.close?.status? == "error") then "true"
+            else "false" end
+          ' "$FILENAME")
+
+          if [ "$HAS_ERROR" = "true" ]; then
+            ERROR_FILENAME="audit/sync/${TIMESTAMP}_${SAFE_ITOP_REF}_${ISSUE_ID}_ERROR.json"
+            cp "$FILENAME" "$ERROR_FILENAME"
+          fi
           
           echo "AUDIT_FILE=$FILENAME" >> $GITHUB_ENV
           echo "audit_file_created=true" >> $GITHUB_OUTPUT
