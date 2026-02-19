@@ -54,6 +54,19 @@ def map_priority(val):
         return None
 
 
+def map_origin(val):
+    if not val:
+        return None
+    v = str(val).strip().lower()
+    if v in ("portal",):
+        return "portal"
+    if v in ("telefono", "teléfono", "phone"):
+        return "phone"
+    if v in ("email", "correo", "mail"):
+        return "mail"
+    return None
+
+
 def detect_type(labels):
     lset = {l.lower() for l in labels}
     if "itop-incident" in lset:
@@ -73,22 +86,27 @@ def build_marker(owner_repo, issue_number):
 
 
 def extract_fields_from_body(body_text):
-    # Busca patrones simples por cabeceras Markdown de templates
     fields = {}
     if not body_text:
         return fields
-    # Impacto
+    m = re.search(r"(?im)^###\s*Organizaci[óo]n\s*\n+([\s\S]*?)(\n###|$)", body_text)
+    if m:
+        fields["organization"] = m.group(1).strip()
+    m = re.search(r"(?im)^###\s*Solicitante.*\n+([\s\S]*?)(\n###|$)", body_text)
+    if m:
+        fields["requester"] = m.group(1).strip()
+    m = re.search(r"(?im)^###\s*Origen\s*\n+([\s\S]*?)(\n###|$)", body_text)
+    if m:
+        fields["origin"] = m.group(1).strip()
     m = re.search(r"(?im)^###\s*Impacto\s*\n+([\s\S]*?)(\n###|$)", body_text)
     if m:
         fields["impact"] = m.group(1).strip()
-    # Urgencia / Prioridad
     m = re.search(r"(?im)^###\s*Urgencia\s*\n+([\s\S]*?)(\n###|$)", body_text)
     if m:
         fields["urgency"] = m.group(1).strip()
     m = re.search(r"(?im)^###\s*Prioridad\s*\n+([\s\S]*?)(\n###|$)", body_text)
     if m:
         fields["priority"] = m.group(1).strip()
-    # Servicio / CI
     m = re.search(r"(?im)^Servicio\s*\/\s*CI\s*.*\n+([\s\S]*?)(\n###|$)", body_text)
     if m:
         fields["service"] = m.group(1).strip()
@@ -156,13 +174,38 @@ def main():
     itop_class = detect_type(labels)
     marker = build_marker(repo_full, issue_number) if issue_number else None
 
-    # Build base fields
     parsed = extract_fields_from_body(issue_body or "")
     impact_val = map_priority(parsed.get("impact")) if parsed.get("impact") else None
     urgency_val = map_priority(parsed.get("urgency") or parsed.get("priority")) if (parsed.get("urgency") or parsed.get("priority")) else None
+    origin_val = map_origin(parsed.get("origin")) if parsed.get("origin") else None
 
-    description_extra = f"\n\n---\nOrigen: GitHub\nIssue: {issue_html_url}\nRepo: {repo_full}\n"
-    final_description = (issue_body or "").strip() + description_extra
+    summary_parts = []
+    if issue_title:
+        summary_parts.append(f"Resumen: {issue_title}")
+    if parsed.get("organization"):
+        summary_parts.append(f"Organizacion: {parsed.get('organization')}")
+    if parsed.get("requester"):
+        summary_parts.append(f"Solicitante: {parsed.get('requester')}")
+    if parsed.get("origin"):
+        summary_parts.append(f"Origen: {parsed.get('origin')}")
+    if parsed.get("impact"):
+        summary_parts.append(f"Impacto: {parsed.get('impact')}")
+    if parsed.get("urgency"):
+        summary_parts.append(f"Urgencia: {parsed.get('urgency')}")
+
+    summary_block = "\n".join(summary_parts).strip()
+    description_extra = (
+        "\n\n---\nOrigen: GitHub\n"
+        f"Issue: {issue_html_url}\n"
+        f"Repo: {repo_full}\n"
+    )
+    body_block = (issue_body or "").strip()
+    final_description = (
+        (summary_block + "\n\n---\n" if summary_block else "")
+        + "Descripcion original (GitHub):\n\n"
+        + body_block
+        + description_extra
+    )
 
     # Helper to find existing ticket by marker in description
     def find_existing_by_marker():
@@ -197,6 +240,13 @@ def main():
             fields["impact"] = impact_val
         if urgency_val is not None:
             fields["urgency"] = urgency_val
+        requester = parsed.get("requester")
+        if requester:
+            clean_requester = requester.lstrip("@").strip()
+            if clean_requester:
+                fields["caller_id"] = {"name": clean_requester}
+        if origin_val is not None:
+            fields["origin"] = origin_val
         if itop_origin:
             fields["org_id"] = {"name": itop_origin}
 
