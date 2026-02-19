@@ -66,13 +66,13 @@ jobs:
           mkdir -p audit/sync
           TIMESTAMP=$(date -u +"%Y%m%d_%H%M%S")
           # Extraemos el número de issue del JSON de forma segura
-          ISSUE_ID=$(jq -r '.github_ref | split("/")[-1] // "unknown"' result.json)
+          ISSUE_ID=$(jq -r '.github_ref | split("/")[-1] // "NOREF"' result.json)
           # Intentamos obtener la referencia de iTop (ref) de la respuesta; si no existe, caemos a itop_key; si no, unknown
           ITOP_REF=$(jq -r '
             (try (.create.response.objects | to_entries[0].value.fields.ref) catch empty) //
             (try (.update.response.objects | to_entries[0].value.fields.ref) catch empty) //
             (try (.close.response.objects  | to_entries[0].value.fields.ref) catch empty) //
-            .itop_key // "unknown"' result.json)
+            .itop_key // "NOREF"' result.json)
           # Saneamos la ref para nombre de fichero
           SAFE_ITOP_REF=$(echo "$ITOP_REF" | tr ' /:\\' '____')
           # Nuevo esquema: <timestamp>_<itop_ref>_<issue>.json

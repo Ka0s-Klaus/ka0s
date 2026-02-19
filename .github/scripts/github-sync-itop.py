@@ -295,7 +295,7 @@ def main():
         requester = parsed.get("requester")
         caller_id = resolve_caller(itop_url, itop_user, itop_pass, requester)
         if caller_id is not None:
-            fields["caller_id"] = {"id": caller_id}
+            fields["caller_id"] = caller_id
         if origin_val is not None:
             fields["origin"] = origin_val
         if itop_origin:
