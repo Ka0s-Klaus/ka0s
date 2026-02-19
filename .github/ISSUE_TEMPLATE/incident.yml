@@ -8,23 +8,75 @@ body:
       value: |
         Completa los campos para registrar la incidencia. Esta información se sincronizará con iTop.
 
+  # Campos obligatorios para la integración con iTop
   - type: input
-    id: service
+    id: requester
     attributes:
-      label: Servicio / CI afectado
-      description: Nombre del servicio o CI impactado.
-      placeholder: Ej. web-frontend, DB cluster
+      label: Solicitante
+      description: Usuario de GitHub o nombre completo para asignar en iTop.
+      placeholder: Nombre o @usuario
     validations:
       required: true
 
-  - type: textarea
-    id: description
+  - type: dropdown
+    id: origin
     attributes:
-      label: Descripción
-      description: Explica el síntoma, alcance y condiciones.
+      label: Origen
+      options:
+        - Portal
+        - Monitoring
     validations:
       required: true
 
+  # ==============================
+  # Campos Específicos Zabbix / Trigger
+  # ==============================
+  - type: input
+    id: trigger_name
+    attributes:
+      label: Trigger Name
+      description: "{{TRIGGER.NAME}}"
+
+  - type: input
+    id: host_name
+    attributes:
+      label: Host Name
+      description: "{{HOST.NAME}}"
+
+  - type: dropdown
+    id: trigger_severity
+    attributes:
+      label: Trigger Severity
+      description: "{{TRIGGER.SEVERITY}}"
+      options:
+        - Information
+        - Warning
+        - Average
+        - High
+        - Disaster
+
+  - type: input
+    id: event_datetime
+    attributes:
+      label: Event Date & Time
+      description: "{{EVENT.DATE}} {{EVENT.TIME}}"
+      placeholder: "YYYY-MM-DD HH:MM:SS"
+
+  - type: input
+    id: event_id
+    attributes:
+      label: Event ID
+      description: "{{EVENT.ID}}"
+
+  - type: input
+    id: item_name
+    attributes:
+      label: Item Name
+      description: "{{ITEM.NAME}}"
+
+  # ==============================
+  # Clasificación iTop
+  # ==============================
   - type: dropdown
     id: impact
     attributes:
@@ -46,10 +98,3 @@ body:
         - Alta
     validations:
       required: true
-
-  - type: textarea
-    id: reproduction
-    attributes:
-      label: Pasos / Evidencias
-      description: Adjunta logs, enlaces o pasos de reproducción.
-
