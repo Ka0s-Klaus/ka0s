@@ -87,25 +87,36 @@ def resolve_caller(itop_url, itop_user, itop_pass, raw_requester):
     if not name:
         return None
     safe_name = name.replace("'", "\\'")
-    oql = f"SELECT Person WHERE friendlyname = '{safe_name}'"
-    payload = {
-        "operation": "core/get",
-        "class": "Person",
-        "key": oql,
-        "output_fields": "id,friendlyname",
-    }
-    resp = itop_call(itop_url, itop_user, itop_pass, payload)
-    if resp.get("status") != "ok":
-        return None
-    objects = resp.get("response", {}).get("objects", {}) or {}
-    if not objects:
-        return None
-    first = next(iter(objects.values()))
-    fields = first.get("fields", {}) or {}
-    person_id = fields.get("id")
-    if not person_id:
-        return None
-    return int(person_id) if str(person_id).isdigit() else person_id
+
+    oql_candidates = [
+        (
+            "SELECT Person JOIN User ON User.contactid = Person.id "
+            f"WHERE User.login = '{safe_name}'"
+        ),
+        f"SELECT Person WHERE friendlyname = '{safe_name}'",
+    ]
+
+    for oql in oql_candidates:
+        payload = {
+            "operation": "core/get",
+            "class": "Person",
+            "key": oql,
+            "output_fields": "id,friendlyname",
+        }
+        resp = itop_call(itop_url, itop_user, itop_pass, payload)
+        if resp.get("status") != "ok":
+            continue
+        objects = resp.get("response", {}).get("objects", {}) or {}
+        if not objects:
+            continue
+        first = next(iter(objects.values()))
+        fields = first.get("fields", {}) or {}
+        person_id = fields.get("id")
+        if not person_id:
+            continue
+        return int(person_id) if str(person_id).isdigit() else person_id
+
+    return None
 
 
 def detect_type(labels):
