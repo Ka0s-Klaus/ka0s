@@ -37,15 +37,35 @@ def itop_call(base_url, user, password, payload):
     return {"status": "ok", "response": data}
 
 
+def env_int(name, default=None):
+    val = os.environ.get(name)
+    if val is None or str(val).strip() == "":
+        return default
+    try:
+        return int(str(val).strip())
+    except Exception:
+        return default
+
+
 def map_priority(val):
     if not val:
         return None
     v = str(val).strip().lower()
-    if v in ("baja", "low"):  # 1
+    env_map = {
+        "baja": env_int("ITOP_URGENCY_BAJA"),
+        "low": env_int("ITOP_URGENCY_LOW"),
+        "media": env_int("ITOP_URGENCY_MEDIA"),
+        "medium": env_int("ITOP_URGENCY_MEDIUM"),
+        "alta": env_int("ITOP_URGENCY_ALTA"),
+        "high": env_int("ITOP_URGENCY_HIGH"),
+    }
+    if v in env_map and env_map[v] is not None:
+        return env_map[v]
+    if v in ("baja", "low"):
         return 1
-    if v in ("media", "medium"):  # 2
+    if v in ("media", "medium"):
         return 2
-    if v in ("alta", "high"):  # 3
+    if v in ("alta", "high"):
         return 3
     # fallback
     try:
@@ -58,6 +78,18 @@ def map_impact(val):
     if not val:
         return None
     v = str(val).strip().lower()
+    env_map = {
+        "persona": env_int("ITOP_IMPACT_PERSONA"),
+        "person": env_int("ITOP_IMPACT_PERSON"),
+        "user": env_int("ITOP_IMPACT_USER"),
+        "servicio": env_int("ITOP_IMPACT_SERVICIO"),
+        "service": env_int("ITOP_IMPACT_SERVICE"),
+        "empresa": env_int("ITOP_IMPACT_EMPRESA"),
+        "business": env_int("ITOP_IMPACT_BUSINESS"),
+        "company": env_int("ITOP_IMPACT_COMPANY"),
+    }
+    if v in env_map and env_map[v] is not None:
+        return env_map[v]
     if v in ("persona", "person", "user"):
         return 1
     if v in ("servicio", "service"):
