@@ -164,6 +164,7 @@ def main():
     itop_user = os.environ.get('ITOP_USER')
     itop_pass = os.environ.get('ITOP_PASSWORD')
     file_path = os.environ.get('FAILED_PODS_FILE', 'audit/kube/failed_pods.json')
+    audit_output_dir = os.environ.get('ITOP_AUDIT_OUTPUT_DIR', 'audit/itop')
     itop_origin = os.environ.get('ITOP_ORIGIN', 'portal')
 
     if not all([itop_url, itop_user, itop_pass]):
@@ -195,19 +196,48 @@ def main():
     open_tickets = get_open_tickets(itop_url, headers)
     print(f"[INFO] Open Audit Tickets: {len(open_tickets)}")
 
-    # 3. Reconciliación
-    
-    # A. Detectar Nuevos Fallos (Están en K8s, NO en iTop)
+    actions = []
+
     for pod_key, pod_data in current_failed_pods.items():
         if pod_key not in open_tickets:
             create_ticket(pod_data, itop_url, itop_user, headers, itop_origin)
+            actions.append({
+                "type": "create_ticket",
+                "pod": pod_key
+            })
         else:
             print(f"[SKIP] Ticket already exists for {pod_key} ({open_tickets[pod_key]})")
+            actions.append({
+                "type": "skip_existing_ticket",
+                "pod": pod_key,
+                "ticket_id": open_tickets[pod_key]
+            })
 
-    # B. Detectar Recuperaciones (Están en iTop, NO en K8s)
     for pod_key, ticket_id in open_tickets.items():
         if pod_key not in current_failed_pods:
             close_ticket(pod_key, ticket_id, itop_url, itop_user, headers)
+            actions.append({
+                "type": "close_ticket",
+                "pod": pod_key,
+                "ticket_id": ticket_id
+            })
+
+    try:
+        os.makedirs(audit_output_dir, exist_ok=True)
+        output_path = os.path.join(
+            audit_output_dir,
+            f"failed_pods_itop_reconciliation_{os.environ.get('GITHUB_RUN_ID', 'local')}.json"
+        )
+        payload = {
+            "failed_pods_count": len(current_failed_pods),
+            "open_tickets_count": len(open_tickets),
+            "actions": actions
+        }
+        with open(output_path, 'w', encoding='utf-8') as out_f:
+            json.dump(payload, out_f, ensure_ascii=False, indent=2)
+        print(f"[INFO] Reconciliation summary written to {output_path}")
+    except Exception as e:
+        print(f"[WARN] Could not write reconciliation summary: {e}")
 
 if __name__ == "__main__":
     main()
