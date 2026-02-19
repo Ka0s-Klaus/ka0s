@@ -11,6 +11,7 @@ Este workflow se dispara automáticamente ante eventos de Issues:
 - El paso de sincronización genera `result.json`.
 - Si existe y tiene contenido, se mueve a `audit/sync/<timestamp>_<itop_ref>_<issue>.json`.
 - Se realiza `git add` y commit condicional usando la identidad del bot.
+ - Si la llamada a iTop devuelve error (`status: "error"` en `create`/`update`/`close`), se genera además un fichero `*_ERROR.json` con el mismo contenido en `audit/sync/`.
 
 ## Validación Funcional
 1. Crea un Issue de prueba y espera a que corra el workflow.
@@ -29,6 +30,10 @@ Este workflow se dispara automáticamente ante eventos de Issues:
   - Verificar que `ITOP_API_USER` existe como `User` en iTop y está vinculado a un `Person`.
   - Confirmar que `ITOP_ORIGIN` está definido y correcto.
   - Revisar que los estímulos `ev_assign`, `ev_resolve`, `ev_close` están disponibles para la clase/estado actual.
+
+### Desajustes en Impacto / Urgencia
+- Si el impacto/urgencia visibles en iTop no coinciden con lo esperado desde GitHub, inspeccionar el JSON de auditoría para ver los valores numéricos enviados (`impact`, `urgency`).
+- Ajustar las variables opcionales `ITOP_IMPACT_*` y `ITOP_URGENCY_*` en GitHub para mapear los textos de la plantilla a los códigos reales del datamodel de iTop.
 
 ## Ejemplos Reales de Auditoría
 
@@ -138,3 +143,7 @@ Ejemplo histórico: `create_from_comment` creando un segundo ticket para la mism
 ```
 
 Este comportamiento se corrigió cambiando la búsqueda OQL a `title LIKE "%[GH:#<n> <owner>/<repo>]"%"`, garantizando que los comentarios se agregan al `public_log` del ticket original mediante la operación `add_comment`/`update`.
+
+### Ejemplos recientes (Impact/Urgency y errores)
+- Casos como `20260219_150314_R-000186_4180.json` muestran cómo el workflow persiste el impacto/urgencia numéricos calculados a partir de los textos de la plantilla (`Impact: Department`, `Urgency: low`) y cómo la prioridad resultante se alinea con la matriz de iTop.
+- Cuando la creación/actualización falla (por ejemplo, errores en `caller_id` o en datos obligatorios), el workflow genera automáticamente un segundo fichero con sufijo `_ERROR.json` en `audit/sync/` que contiene la respuesta completa de iTop para diagnóstico.

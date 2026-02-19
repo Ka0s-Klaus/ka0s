@@ -12,7 +12,7 @@ El workflow escucha eventos de Issues en GitHub y sincroniza la información rel
 - Runtime: `swarm-runners-scaleset`.
 - Dependencias: Python 3.10 + `requests`.
 - Lógica: script de sincronización que consume variables del evento y credenciales de iTop.
-- Evidencias: salida JSON movida a `audit/sync/<timestamp>_<itop_ref>_<issue>.json` y commit automático.
+- Evidencias: salida JSON movida a `audit/sync/<timestamp>_<itop_ref>_<issue>.json` y commit automático. En caso de error en la llamada a iTop se genera además `*_ERROR.json` con el mismo contenido para facilitar el filtrado.
 
 ## Comportamiento Funcional
 - Detección de tipo ITSM por etiquetas del Issue:
@@ -42,6 +42,7 @@ El workflow escucha eventos de Issues en GitHub y sincroniza la información rel
 - `ITOP_URL`: URL base de iTop.
 - `ITOP_API_USER` / `ITOP_API_PASSWORD`: credenciales de la API.
 - `ITOP_ORIGIN`: nombre de la Organización en iTop (requerida por el datamodel).
+- `ITOP_IMPACT_*` / `ITOP_URGENCY_*`: opcionales. Permiten alinear los valores numéricos de impacto/urgencia con el datamodel concreto de la instancia de iTop.
 - Eventos GitHub:
   - `GITHUB_EVENT_NAME`, `GITHUB_EVENT_ACTION`.
   - `GITHUB_ISSUE_PAYLOAD`, `GITHUB_COMMENT_PAYLOAD`, `GITHUB_REPO_FULL_NAME`.

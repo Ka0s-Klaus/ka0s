@@ -4,7 +4,9 @@
 - Workflow orquestador: `.github/workflows/github-sync-itop.yml`.
 - Runtime: Python 3.10 + librería `requests`.
 - Secretos: `ITOP_URL`, `ITOP_API_USER`, `ITOP_API_PASSWORD`.
- - Variables: `ITOP_ORIGIN` (nombre de la Organización).
+- Variables:
+  - `ITOP_ORIGIN` (nombre de la Organización).
+  - `ITOP_IMPACT_*` / `ITOP_URGENCY_*` para alinear el mapeo impacto/urgencia con el datamodel local.
 
 ## Interoperabilidad
 - Soporta eventos de Issues y Comentarios para mantener sincronización con iTop.
