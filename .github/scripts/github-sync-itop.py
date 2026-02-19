@@ -54,6 +54,19 @@ def map_priority(val):
         return None
 
 
+def map_impact(val):
+    if not val:
+        return None
+    v = str(val).strip().lower()
+    if v in ("persona", "person", "user"):
+        return 1
+    if v in ("servicio", "service"):
+        return 2
+    if v in ("empresa", "business", "company"):
+        return 3
+    return map_priority(v)
+
+
 def map_origin(val):
     if not val:
         return None
@@ -203,7 +216,7 @@ def main():
     marker = build_marker(repo_full, issue_number) if issue_number else None
 
     parsed = extract_fields_from_body(issue_body or "")
-    impact_val = map_priority(parsed.get("impact")) if parsed.get("impact") else None
+    impact_val = map_impact(parsed.get("impact")) if parsed.get("impact") else None
     urgency_val = map_priority(parsed.get("urgency") or parsed.get("priority")) if (parsed.get("urgency") or parsed.get("priority")) else None
     origin_val = map_origin(parsed.get("origin")) if parsed.get("origin") else None
 
