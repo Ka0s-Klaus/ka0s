@@ -58,15 +58,18 @@ def map_priority(val):
         "medium": env_int("ITOP_URGENCY_MEDIUM"),
         "alta": env_int("ITOP_URGENCY_ALTA"),
         "high": env_int("ITOP_URGENCY_HIGH"),
+        "critical": env_int("ITOP_URGENCY_CRITICAL"),
     }
     if v in env_map and env_map[v] is not None:
         return env_map[v]
-    if v in ("baja", "low"):
+    if v in ("low", "baja"):
         return 1
-    if v in ("media", "medium"):
+    if v in ("medium", "media"):
         return 2
-    if v in ("alta", "high"):
+    if v in ("high", "alta"):
         return 3
+    if v in ("critical", "critica", "crítica"):
+        return 4
     # fallback
     try:
         return int(v)
@@ -79,21 +82,25 @@ def map_impact(val):
         return None
     v = str(val).strip().lower()
     env_map = {
-        "persona": env_int("ITOP_IMPACT_PERSONA"),
-        "person": env_int("ITOP_IMPACT_PERSON"),
-        "user": env_int("ITOP_IMPACT_USER"),
-        "servicio": env_int("ITOP_IMPACT_SERVICIO"),
+        "department": env_int("ITOP_IMPACT_DEPARTMENT"),
+        "departamento": env_int("ITOP_IMPACT_DEPARTAMENTO"),
         "service": env_int("ITOP_IMPACT_SERVICE"),
+        "servicio": env_int("ITOP_IMPACT_SERVICIO"),
+        "person": env_int("ITOP_IMPACT_PERSON"),
+        "persona": env_int("ITOP_IMPACT_PERSONA"),
+        "user": env_int("ITOP_IMPACT_USER"),
         "empresa": env_int("ITOP_IMPACT_EMPRESA"),
         "business": env_int("ITOP_IMPACT_BUSINESS"),
         "company": env_int("ITOP_IMPACT_COMPANY"),
     }
     if v in env_map and env_map[v] is not None:
         return env_map[v]
-    if v in ("persona", "person", "user"):
+    if v in ("department", "departamento"):
         return 1
-    if v in ("servicio", "service"):
+    if v in ("service", "servicio"):
         return 2
+    if v in ("person", "persona", "user"):
+        return 3
     if v in ("empresa", "business", "company"):
         return 3
     return map_priority(v)
