@@ -67,6 +67,34 @@ def map_origin(val):
     return None
 
 
+def resolve_caller(itop_url, itop_user, itop_pass, raw_requester):
+    if not raw_requester:
+        return None
+    name = raw_requester.lstrip("@").strip()
+    if not name:
+        return None
+    safe_name = name.replace("'", "\\'")
+    oql = f"SELECT Person WHERE friendlyname = '{safe_name}'"
+    payload = {
+        "operation": "core/get",
+        "class": "Person",
+        "key": oql,
+        "output_fields": "id,friendlyname",
+    }
+    resp = itop_call(itop_url, itop_user, itop_pass, payload)
+    if resp.get("status") != "ok":
+        return None
+    objects = resp.get("response", {}).get("objects", {}) or {}
+    if not objects:
+        return None
+    first = next(iter(objects.values()))
+    fields = first.get("fields", {}) or {}
+    person_id = fields.get("id")
+    if not person_id:
+        return None
+    return int(person_id) if str(person_id).isdigit() else person_id
+
+
 def detect_type(labels):
     lset = {l.lower() for l in labels}
     if "itop-incident" in lset:
@@ -241,10 +269,9 @@ def main():
         if urgency_val is not None:
             fields["urgency"] = urgency_val
         requester = parsed.get("requester")
-        if requester:
-            clean_requester = requester.lstrip("@").strip()
-            if clean_requester:
-                fields["caller_id"] = {"name": clean_requester}
+        caller_id = resolve_caller(itop_url, itop_user, itop_pass, requester)
+        if caller_id is not None:
+            fields["caller_id"] = {"id": caller_id}
         if origin_val is not None:
             fields["origin"] = origin_val
         if itop_origin:
