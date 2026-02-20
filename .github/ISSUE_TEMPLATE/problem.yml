@@ -8,6 +8,65 @@ body:
       value: |
         Usa esta plantilla para problemas raíz que requieren análisis permanente.
 
+  - type: dropdown
+    id: organization
+    attributes:
+      label: Organizacion (mandatory en iTop)
+      options:
+        - Ka0s Inc
+        - Test 1
+        - Test 2
+    validations:
+      required: true
+
+  - type: input
+    id: requester
+    attributes:
+      label: Solicitante (Caller en iTop, opcional)
+      placeholder: ka0sc0re
+
+  - type: dropdown
+    id: origin
+    attributes:
+      label: Origen
+      options:
+        - Portal
+    validations:
+      required: true
+
+  - type: dropdown
+    id: impact
+    attributes:
+      label: Impacto (mandatory)
+      options:
+        - Department
+        - Service
+        - Person
+    validations:
+      required: true
+
+  - type: dropdown
+    id: urgency
+    attributes:
+      label: Urgencia (mandatory)
+      options:
+        - critical
+        - high
+        - medium
+        - low
+    validations:
+      required: true
+
+  - type: input
+    id: service
+    attributes:
+      label: Servicio / CI (nombre visible en iTop)
+
+  - type: input
+    id: service_subcategory
+    attributes:
+      label: Subcategoría de Servicio (Service Subcategory)
+
   - type: input
     id: related_incidents
     attributes:
@@ -17,10 +76,30 @@ body:
   - type: textarea
     id: description
     attributes:
-      label: Descripción
+      label: Descripción (mandatory)
       description: ¿Qué patrón observas? ¿Cuál podría ser la causa raíz?
     validations:
       required: true
+
+  - type: input
+    id: product
+    attributes:
+      label: Producto (si aplica)
+
+  - type: input
+    id: related_change
+    attributes:
+      label: Cambio Relacionado (Change)
+
+  - type: input
+    id: team
+    attributes:
+      label: Equipo (Team responsable, si aplica)
+
+  - type: input
+    id: agent
+    attributes:
+      label: Agente (Person asignada, si aplica)
 
   - type: textarea
     id: hypothesis
@@ -33,4 +112,3 @@ body:
     attributes:
       label: Plan de Investigación
       description: Pasos, owners y métricas.
-
