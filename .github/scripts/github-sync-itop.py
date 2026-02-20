@@ -158,8 +158,8 @@ def resolve_caller(itop_url, itop_user, itop_pass, raw_requester):
     return None
 
 
-def detect_type(labels):
-    lset = {l.lower() for l in labels}
+def detect_type(labels, title=None):
+    lset = {label.lower() for label in labels}
     if "itop-incident" in lset:
         return "Incident"
     if "itop-problem" in lset:
@@ -168,7 +168,16 @@ def detect_type(labels):
         return "Change"
     if "itop-request" in lset:
         return "UserRequest"
-    # default to UserRequest
+    if title:
+        t = title.lower()
+        if "[incident" in t:
+            return "Incident"
+        if "[problem" in t:
+            return "Problem"
+        if "[change" in t:
+            return "Change"
+        if "[request" in t:
+            return "UserRequest"
     return "UserRequest"
 
 
@@ -262,7 +271,7 @@ def main():
         issue_html_url = None
         labels = []
 
-    itop_class = detect_type(labels)
+    itop_class = detect_type(labels, issue_title)
     marker = build_marker(repo_full, issue_number) if issue_number else None
 
     parsed = extract_fields_from_body(issue_body or "")
