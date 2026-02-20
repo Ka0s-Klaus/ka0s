@@ -7,6 +7,7 @@ Sincronización automática de eventos de GitHub Issues hacia iTop, con auditor�
 1.  [Concepto y Arquitectura](./01_concept.md)
 2.  [Guía de Uso y Validación](./02_usage_validation.md)
 3.  [Integración en el Ecosistema](./03_integration.md)
+4.  [Incidencias Zabbix HIGH → GitHub Issue](./04_zabbix_high_incident.md)
 
 ## Componentes Clave
 
