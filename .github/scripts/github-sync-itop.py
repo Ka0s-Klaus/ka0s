@@ -363,11 +363,13 @@ def main():
         # Keep description source of truth; append if edited
         if not on_comment and final_description:
             u_fields["description"] = final_description
-        # Always add a public log entry with context
         message = f"GitHub {event_name}/{event_action}: {issue_html_url}"
         if on_comment and comment:
             message = f"Comentario de GitHub por {comment.get('user', {}).get('login')}:\n\n{comment.get('body','')}\n\n{issue_html_url}"
-        u_fields["public_log"] = {"add_item": {"message": message, "format": "text"}}
+        if itop_class == "Problem":
+            u_fields["private_log"] = {"add_item": {"message": message, "format": "text"}}
+        else:
+            u_fields["public_log"] = {"add_item": {"message": message, "format": "text"}}
 
         payload = {
             "operation": "core/update",
