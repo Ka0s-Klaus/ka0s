@@ -7,6 +7,12 @@ on:
 
 permissions:
   contents: write
+  issues: write
+  actions: write
+
+env:
+  KAOS_MODULE: "[Ka0s] Audit Cluster Status"
+  KAOS_CODE: ${{ github.run_id }}
 
 jobs:
   audit-cluster:
@@ -32,17 +38,66 @@ jobs:
         run: |
           git config --global user.name "Ka0s Bot"
           git config --global user.email "bot@ka0s.io"
-          
-          # Ensure we have the latest changes before committing
           git pull --rebase origin main || git pull origin main
-          
-          git add audit/kube/cluster-report-*.md audit/kube/cluster-dashboard-*.html || true
-          
+          git add audit/kube/cluster-report-*.md audit/kube/cluster-report-*.json audit/kube/cluster-dashboard-*.html || true
           if ! git diff --staged --quiet; then
             git commit -m "[Audit] Cluster status report $(date +'%Y-%m-%d %H:%M')"
-            
-            # Try push, if fails due to race condition, pull-rebase and retry once
             git push || (git pull --rebase origin main && git push)
           else
             echo "No new cluster status reports to commit."
           fi
+
+  handle-success:
+    runs-on: swarm-runners-scaleset
+    needs: [audit-cluster]
+    if: ${{ success() }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Success notification
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "Cluster status audit completed successfully for run ${{ env.KAOS_CODE }}."
+
+  handle-failure:
+    runs-on: swarm-runners-scaleset
+    needs: [audit-cluster, handle-success]
+    if: ${{ failure() }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+      - name: Create incident issue
+        env:
+          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+        run: |
+          gh issue create \
+            --title "${{ env.KAOS_MODULE }} Error detected in ${{ env.KAOS_CODE }}" \
+            --label "bug" \
+            --body "Cluster status audit failed. Please review the GitHub Actions logs (https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) and the cluster reports under audit/kube/cluster-report-*.md, audit/kube/cluster-report-*.json and audit/kube/cluster-dashboard-*.html."
+
+  end-workflow:
+    needs: [handle-success, handle-failure]
+    if: always()
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+      - name: Trigger Inspector
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run inspector.yml \
+            --ref main \
+            -f kaos-workflow-id="${{ github.run_id }}" \
+            -f kaos-user-start="${{ github.triggering_actor }}"
