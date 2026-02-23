@@ -207,6 +207,12 @@ def extract_fields_from_body(body_text):
     m = re.search(r"(?im)^###\s*Prioridad\s*\n+([\s\S]*?)(\n###|$)", body_text)
     if m:
         fields["priority"] = m.group(1).strip()
+    m = re.search(
+        r"(?im)^###\s*Tipo de cambio\s*\n+([\s\S]*?)(\n###|$)",
+        body_text,
+    )
+    if m:
+        fields["change_type"] = m.group(1).strip()
     m = re.search(r"(?im)^Servicio\s*\/\s*CI\s*.*\n+([\s\S]*?)(\n###|$)", body_text)
     if m:
         fields["service"] = m.group(1).strip()
@@ -290,6 +296,17 @@ def main():
         elif v in ("no", "n", "false"):
             outage_flag = "no"
 
+    change_type_raw = parsed.get("change_type")
+    effective_class = itop_class
+    if itop_class == "Change" and change_type_raw:
+        ct = change_type_raw.strip().lower()
+        if ct.startswith("emerg"):
+            effective_class = "EmergencyChange"
+        elif ct.startswith("rout"):
+            effective_class = "RoutineChange"
+        else:
+            effective_class = "NormalChange"
+
     summary_parts = []
     if issue_title:
         summary_parts.append(f"Resumen: {issue_title}")
@@ -322,10 +339,10 @@ def main():
     def find_existing_by_marker():
         if not marker:
             return None
-        oql = f'SELECT {itop_class} WHERE title LIKE "%{marker}%"'
+        oql = f'SELECT {effective_class} WHERE title LIKE "%{marker}%"'
         payload = {
             "operation": "core/get",
-            "class": itop_class,
+            "class": effective_class,
             "key": oql,
             "output_fields": "id,ref,title,status"
         }
@@ -364,7 +381,7 @@ def main():
 
         payload = {
             "operation": "core/create",
-            "class": itop_class,
+            "class": effective_class,
             "comment": f"Creado automáticamente desde GitHub: {issue_html_url}",
             "fields": fields,
         }
@@ -386,7 +403,7 @@ def main():
 
         payload = {
             "operation": "core/update",
-            "class": itop_class,
+            "class": effective_class,
             "key": key,
             "comment": f"Actualizado automáticamente desde GitHub: {issue_html_url}",
             "fields": u_fields,
@@ -402,7 +419,7 @@ def main():
         )
         payload_assign = {
             "operation": "core/apply_stimulus",
-            "class": itop_class,
+            "class": effective_class,
             "key": key,
             "stimulus": "ev_assign",
             "comment": "Asignación automática vía GitHub",
@@ -473,39 +490,93 @@ def main():
         if event_action == "opened":
             if key:
                 upd = update_ticket(key)
-                result.update({"operation": "update", "itop_class": itop_class, "itop_key": key, "update": upd})
+                result.update(
+                    {
+                        "operation": "update",
+                        "itop_class": effective_class,
+                        "itop_key": key,
+                        "update": upd,
+                    }
+                )
             else:
                 crt = create_ticket()
-                result.update({"operation": "create", "itop_class": itop_class, "create": crt})
+                result.update(
+                    {
+                        "operation": "create",
+                        "itop_class": effective_class,
+                        "create": crt,
+                    }
+                )
 
         elif event_action == "edited":
             if key:
                 upd = update_ticket(key)
-                result.update({"operation": "update", "itop_class": itop_class, "itop_key": key, "update": upd})
+                result.update(
+                    {
+                        "operation": "update",
+                        "itop_class": effective_class,
+                        "itop_key": key,
+                        "update": upd,
+                    }
+                )
             else:
-                # If not found, create (idempotent behavior)
                 crt = create_ticket()
-                result.update({"operation": "create", "itop_class": itop_class, "create": crt})
+                result.update(
+                    {
+                        "operation": "create",
+                        "itop_class": effective_class,
+                        "create": crt,
+                    }
+                )
 
         elif event_action == "closed":
             if key:
                 cls = resolve_and_close(key)
-                result.update({"operation": "close", "itop_class": itop_class, "itop_key": key, "close": cls})
+                result.update(
+                    {
+                        "operation": "close",
+                        "itop_class": effective_class,
+                        "itop_key": key,
+                        "close": cls,
+                    }
+                )
             else:
-                # Create then close as last resort
                 crt = create_ticket()
                 if crt.get("status") == "ok":
-                    # Extract key from response
                     objects = crt.get("response", {}).get("objects", {}) or {}
                     if objects:
                         first = next(iter(objects.values()))
-                        new_key = first.get("key") or first.get("fields", {}).get("ref") or first.get("fields", {}).get("id")
+                        new_key = (
+                            first.get("key")
+                            or first.get("fields", {}).get("ref")
+                            or first.get("fields", {}).get("id")
+                        )
                         cls = resolve_and_close(new_key)
-                        result.update({"operation": "create_close", "itop_class": itop_class, "itop_key": new_key, "create": crt, "close": cls})
+                        result.update(
+                            {
+                                "operation": "create_close",
+                                "itop_class": effective_class,
+                                "itop_key": new_key,
+                                "create": crt,
+                                "close": cls,
+                            }
+                        )
                     else:
-                        result.update({"operation": "create_close", "itop_class": itop_class, "create": crt})
+                        result.update(
+                            {
+                                "operation": "create_close",
+                                "itop_class": effective_class,
+                                "create": crt,
+                            }
+                        )
                 else:
-                    result.update({"operation": "create_close", "itop_class": itop_class, "create": crt})
+                    result.update(
+                        {
+                            "operation": "create_close",
+                            "itop_class": effective_class,
+                            "create": crt,
+                        }
+                    )
         else:
             result.update({"status": "skipped", "reason": f"unsupported_action:{event_action}"})
 
