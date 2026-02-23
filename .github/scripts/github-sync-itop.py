@@ -396,10 +396,15 @@ def main():
         message = f"GitHub {event_name}/{event_action}: {issue_html_url}"
         if on_comment and comment:
             message = f"Comentario de GitHub por {comment.get('user', {}).get('login')}:\n\n{comment.get('body','')}\n\n{issue_html_url}"
-        if itop_class == "Problem":
-            u_fields["private_log"] = {"add_item": {"message": message, "format": "text"}}
-        else:
-            u_fields["public_log"] = {"add_item": {"message": message, "format": "text"}}
+        log_attr = "public_log"
+        if itop_class in ("Problem", "Change"):
+            log_attr = "private_log"
+        u_fields[log_attr] = {
+            "add_item": {
+                "message": message,
+                "format": "text",
+            }
+        }
 
         payload = {
             "operation": "core/update",
@@ -417,6 +422,10 @@ def main():
             f"SELECT Person JOIN User ON User.contactid = Person.id "
             f"WHERE User.login = '{itop_user}'"
         )
+        log_attr = "public_log"
+        if itop_class in ("Problem", "Change"):
+            log_attr = "private_log"
+
         payload_assign = {
             "operation": "core/apply_stimulus",
             "class": effective_class,
@@ -425,7 +434,7 @@ def main():
             "comment": "Asignación automática vía GitHub",
             "fields": {
                 "agent_id": agent_oql,
-                "public_log": {
+                log_attr: {
                     "add_item": {
                         "message": f"Asignado automáticamente a {itop_user}",
                         "format": "text",
@@ -438,14 +447,14 @@ def main():
         # Resolve first (provide solution)
         payload_resolve = {
             "operation": "core/apply_stimulus",
-            "class": itop_class,
+            "class": effective_class,
             "key": key,
             "stimulus": "ev_resolve",
             "comment": "Resolución automática vía GitHub",
             "fields": {
                 "solution": f"Cerrado desde GitHub: {issue_html_url}",
                 "resolution_code": "assistance",
-                "public_log": {
+                log_attr: {
                     "add_item": {
                         "message": f"Cierre desde GitHub: {issue_html_url}",
                         "format": "text",
@@ -461,14 +470,14 @@ def main():
         # Then close (set satisfaction/comment when applicable)
         payload_close = {
             "operation": "core/apply_stimulus",
-            "class": itop_class,
+            "class": effective_class,
             "key": key,
             "stimulus": "ev_close",
             "comment": "Cierre automático vía GitHub",
             "fields": {
                 "user_satisfaction": 4,
                 "user_comment": "Cierre automático por sincronización con GitHub",
-                "public_log": {
+                log_attr: {
                     "add_item": {
                         "message": "Ticket cerrado automáticamente",
                         "format": "text",
