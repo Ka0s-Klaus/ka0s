@@ -344,7 +344,7 @@ def main():
         caller_id = resolve_caller(itop_url, itop_user, itop_pass, requester)
         if caller_id is not None:
             fields["caller_id"] = caller_id
-        if origin_val is not None:
+        if origin_val is not None and itop_class in ("UserRequest", "Incident"):
             fields["origin"] = origin_val
         if itop_origin:
             fields["org_id"] = {"name": itop_origin}
