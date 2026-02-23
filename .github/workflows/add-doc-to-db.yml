@@ -124,15 +124,7 @@ jobs:
           gh issue create \
             --title "${{ env.KAOS_MODULE }} Error detected in ${{ env.KAOS_CODE }}" \
             --label "bug" \
-            --body "Please check the logs and MongoDB audit reports for more information.
-
-Logs de ejecución:
-- https://github.com/Ka0s-Klaus/ka0s/actions/runs/${{ env.KAOS_CODE }}
-
-Reportes MongoDB en el repositorio:
-- Ruta base: audit/mongodb/
-- Ejemplo de fichero de reporte JSON: ${{
-              env.REPORT_PATH }}${{ env.REPORT_FILENAME_DB }}"
+            --body "Please check the GitHub Actions logs (https://github.com/${{ github.repository }}/actions/runs/${{ env.KAOS_CODE }}) and the MongoDB audit reports under audit/mongodb/ (for example: ${{ env.REPORT_PATH }}${{ env.REPORT_FILENAME_DB }})."
   end-workflow:
     needs: [handle-success, handle-failure]
     if: always()
