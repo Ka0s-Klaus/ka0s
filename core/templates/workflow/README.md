@@ -28,7 +28,10 @@ permissions:
 Se recomienda una estructura de 4 fases para facilitar la observabilidad y el ciclo de vida completo:
 1.  **Core Execution**: Donde ocurre la lógica principal.
 2.  **Handle Success**: (Opcional) Notificaciones o limpieza tras éxito.
-3.  **Handle Failure**: (Opcional) Alertas críticas tras fallo.
+3.  **Handle Failure**: (Recomendado) Crea una incidencia automática usando la plantilla de incidente (`.github/ISSUE_TEMPLATE/incident.yml`), con:
+    - Resumen del fallo, módulo (`KAOS_MODULE`), `run_id`, `actor` y `ref`.
+    - Etiquetas `itop-incident` y `triage`.
+    - Enlace directo a los logs de la ejecución.
 4.  **End Workflow**: (Estándar) Cierre del ciclo. Se ejecuta siempre (`always()`). Responsable de notificar el fin del proceso en las issues asociadas y disparar auditorías externas (ej. `inspector.yml`).
 
 ### 5. Manejo de Artefactos y Commits
