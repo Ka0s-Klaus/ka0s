@@ -36,7 +36,7 @@
   - Título del issue ← title (Requerido por GitHub)
   - Servicio Afectado ← service (Requerido en template)
   - Descripción ← description (Requerido en template)
-  - Impaco ← impact (Requerido en template)
+  - Impacto ← impact (Requerido en template)
   - Urgencia ← urgency (Requerido en template)
 - Opcionales en la plantilla:
   - Pasos / Evidencias ← reproduction (Opcional)
@@ -49,20 +49,45 @@
 
 ### Change (iTop)
 - Plantilla: `.github/ISSUE_TEMPLATE/change.yml`
-- Obligatorios (iTop):
-  - Título del issue ← title (Obligatorio)
-  - Descripción ← description (Obligatorio)
-  - Solicitante ← caller (Requester) (Obligatorio)
-  - Organización ← organization (Obligatorio)
-- Requeridos en la plantilla (no obligatorios en iTop):
-  - CIs impactados ← service (Requerido en template)
-  - Origen - origin (Requerido en template)
-  - Impacto - impact (Requerido en template)
-  - Urgencia - urgency (Requerido en template)
-- Opcionales:
-  - Plan de vuelta atrás ← Fallback plan, backout (Opcional; puede ser obligatorio en estado Planned según flujo)
-  - Fecha de inicio/fin/interrupción ← start_date / end_date / outage (Opcionales; presentes pero desactivados en la template)
-  - Riesgo ← risk (Opcional; campo auxiliar)
+
+- Módulo estándar (itop-change-mgmt)
+  - Obligatorios (iTop):
+    - Título del issue ← title (Obligatorio)
+    - Descripción ← description (Obligatorio)
+    - Organización ← organization (Obligatorio)
+    - Solicitante ← caller (Obligatorio)
+    - Ref (Obligatorio en iTop, generado automáticamente; no se captura en GitHub)
+  - Requeridos en la plantilla (no obligatorios en iTop):
+    - CIs impactados ← service (Requerido en template)
+    - Origen ← origin (Requerido en template)
+    - Impacto ← impact (Requerido en template)
+    - Urgencia ← urgency (Requerido en template)
+  - Opcionales (iTop):
+    - Plan de vuelta atrás ← backout (Opcional; pasa a obligatorio en estado Planned)
+    - Outage (Opcional)
+    - Start date / End date (Opcionales)
+    - Category, Team, Agent, Change manager, Status, Parent change, fechas de sistema (Opcionales/solo lectura según ciclo de vida)
+  - Presentes pero desactivados en la template:
+    - start_date / end_date / outage (descomentar si se planifica ejecución)
+
+- Módulo ITIL (itop-change-mgmt-itil)
+  - Obligatorios (iTop):
+    - Título del issue ← title (Obligatorio)
+    - Descripción ← description (Obligatorio)
+    - Outage (Obligatorio)
+    - Ref (Obligatorio en iTop, generado automáticamente; no se captura en GitHub)
+    - Organización (habitualmente requerida por el datamodel/instancia; fijada vía `ITOP_ORIGIN`)
+  - No obligatorios (iTop) pero disponibles:
+    - Impact (Existe en ITIL; No obligatorio)
+    - Caller (No obligatorio en ITIL)
+    - Equipos/roles adicionales: Supervisor/Manager (No obligatorios)
+    - Start date / End date (pueden ser obligatorios en determinados estados del ciclo ITIL)
+    - Plan de vuelta atrás ← backout (puede ser obligatorio según estado)
+  - Requeridos en la plantilla (para priorización/operación):
+    - Origen, Impacto, Urgencia (metadatos auxiliares; Urgencia no es campo nativo en ITIL Change)
+    - CIs impactados ← service (relación de CIs)
+  - Recomendación ITIL:
+    - Activar el campo `outage` en la template o establecer un valor por defecto en el flujo de sincronización, ya que es obligatorio en ITIL.
 
 ### Flujo de sincronización
 1. Creación/edición/cierre de Issue dispara el workflow `github-sync-itop`.
