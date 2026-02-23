@@ -18,7 +18,9 @@ Este workflow se dispara automáticamente ante eventos de Issues:
 2. Revisa el job `sync-to-itop` y confirma que no hay errores.
 3. Verifica la aparición de un nuevo archivo en `audit/sync/` con la referencia iTop en el nombre (ej. `R-000130`).
 4. Si tienes acceso a iTop, comprueba que el ticket/clase correspondiente se ha creado/actualizado.
-5. Añade un comentario en la Issue y valida que el `public_log` del ticket se actualiza (no se crean tickets nuevos).
+5. Añade un comentario en la Issue y valida que el log del ticket se actualiza (no se crean tickets nuevos):
+   - `UserRequest`/`Incident` → `public_log`
+   - `Problem`/`Change` → `private_log`
 6. Cierra la Issue y valida que el ticket pasa por asignación/resolución/cierre.
 
 ## Troubleshooting
@@ -64,7 +66,7 @@ Archivo: [20260218_193424_issue_4161.json](file:///Users/santale/ka0s-klaus/ka0s
 }
 ```
 
-### Comentario en Issue (issue_comment.created → add_comment)
+### Comentario en Issue (issue_comment.created → add_comment) — UserRequest/Incident
 Archivo: [20260218_200530_R-000133_4162.json](file:///Users/santale/ka0s-klaus/ka0s/audit/sync/20260218_200530_R-000133_4162.json)
 
 ```json
@@ -80,6 +82,30 @@ Archivo: [20260218_200530_R-000133_4162.json](file:///Users/santale/ka0s-klaus/k
     "payload": {
       "fields": {
         "public_log": {
+          "add_item": { "message": "Comentario de GitHub por ..." }
+        }
+      }
+    }
+  }
+}
+```
+
+### Comentario en Issue (issue_comment.created → add_comment) — Change (NormalChange)
+Archivo: [20260223_143015_C-000509_4216.json](file:///Users/santale/ka0s-klaus/ka0s/audit/sync/20260223_143015_C-000509_4216.json)
+
+```json
+{
+  "github_event": "issue_comment",
+  "github_action": "created",
+  "operation": "add_comment",
+  "itop_class": "Change",
+  "itop_key": "245",
+  "update": {
+    "status": "ok",
+    "response": { "code": 0 },
+    "payload": {
+      "fields": {
+        "private_log": {
           "add_item": { "message": "Comentario de GitHub por ..." }
         }
       }
@@ -122,7 +148,28 @@ Archivo: [20260218_201511_R-000133_4162.json](file:///Users/santale/ka0s-klaus/k
 }
 ```
 
-Tras este evento, el ticket debe transicionar a resuelto/cerrado en iTop, con entradas en `public_log` que reflejan la acción de cierre.
+Tras este evento, el ticket debe transicionar a resuelto/cerrado en iTop, con entradas en el log correspondiente a la clase (`public_log` o `private_log`).
+
+### Cierre de Change (issues.closed → close) — NormalChange
+Ejemplo de cierre de un cambio donde los estímulos usan la subclase efectiva y se registran entradas en `private_log`.
+
+```json
+{
+  "github_event": "issues",
+  "github_action": "closed",
+  "operation": "close",
+  "itop_class": "Change",
+  "itop_key": "<ID_ITOP>",
+  "close": {
+    "status": "ok",
+    "response": { "code": 0 }
+  }
+}
+```
+
+Notas de validación:
+- La clase efectiva usada en los estímulos es `NormalChange`/`RoutineChange`/`EmergencyChange` según "Tipo de cambio".
+- Las entradas de log para cambios se escriben en `private_log` durante `ev_assign`, `ev_resolve` y `ev_close`.
 
 ### Notas históricas (antes de la corrección de create_from_comment)
 En las primeras ejecuciones, los eventos `issue_comment.created` buscaban el marcador únicamente en la descripción. Como el marcador se añadía al título, el flujo no encontraba el ticket existente y ejecutaba `core/create` de nuevo.
