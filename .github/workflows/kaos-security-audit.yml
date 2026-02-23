@@ -7,6 +7,13 @@ on:
 
 permissions:
   contents: write
+  issues: write
+  actions: read
+
+env:
+  KAOS_MODULE: "[Ka0S] Security Audit"
+  KAOS_CORRELATION_ID: ${{ github.run_id }}
+  KAOS_ACTOR: ${{ github.actor }}
 
 jobs:
   audit-cluster:
@@ -73,12 +80,31 @@ jobs:
       - id: handle-success-execution
         run: |
           echo "${{ env.KAOS_MODULE }} Success in runid ${{ github.run_id }} initiated."
-          
   handle_failure:
-      runs-on: swarm-runners-scaleset
-      needs: [audit-cluster]
-      if: ${{ failure() }} 
-      steps: 
-        - id: check-execution
-          run: |
-            echo "Error detected in ${{ env.KAOS_MODULE }}, creating issue..."
+    runs-on: swarm-runners-scaleset
+    needs: [audit-cluster]
+    if: ${{ failure() }} 
+    steps:
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+      - name: Create Incident Issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue create \
+            --title "[INCIDENT]: Error en ${{ env.KAOS_MODULE }} (run ${{ env.KAOS_CORRELATION_ID }})" \
+            --label "itop-incident" \
+            --label "triage" \
+            --body "Servicio / CI afectado: N/D
+          Descripción:
+          - Módulo: ${{ env.KAOS_MODULE }}
+          - Workflow: ${{ github.workflow }}
+          - Run ID: ${{ github.run_id }}
+          - Actor: ${{ env.KAOS_ACTOR }}
+          - Ref: ${{ github.ref }}
+
+          Impacto: Medio
+          Urgencia: Media
+
+          Pasos / Evidencias:
+          - Logs de ejecución: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"

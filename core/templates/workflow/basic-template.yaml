@@ -98,8 +98,29 @@ jobs:
     if: failure()
     runs-on: swarm-runners-scaleset
     steps:
-      - name: Notify Failure
-        run: echo "❌ Workflow ${{ env.KAOS_MODULE }} falló. Revisar logs."
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+      - name: Create Incident Issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue create \
+            --title "[INCIDENT]: Error en ${{ env.KAOS_MODULE }} (run ${{ env.KAOS_CORRELATION_ID }})" \
+            --label "itop-incident" \
+            --label "triage" \
+            --body "Servicio / CI afectado: N/D
+          Descripción:
+          - Módulo: ${{ env.KAOS_MODULE }}
+          - Workflow: ${{ github.workflow }}
+          - Run ID: ${{ github.run_id }}
+          - Actor: ${{ env.KAOS_ACTOR }}
+          - Ref: ${{ github.ref }}
+
+          Impacto: Medio
+          Urgencia: Media
+
+          Pasos / Evidencias:
+          - Logs de ejecución: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
   # -----------------------------------------------------------------------------
   # JOB 4: END WORKFLOW (Opcional/Estándar)

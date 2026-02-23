@@ -158,8 +158,8 @@ def resolve_caller(itop_url, itop_user, itop_pass, raw_requester):
     return None
 
 
-def detect_type(labels):
-    lset = {l.lower() for l in labels}
+def detect_type(labels, title=None):
+    lset = {label.lower() for label in labels}
     if "itop-incident" in lset:
         return "Incident"
     if "itop-problem" in lset:
@@ -168,7 +168,16 @@ def detect_type(labels):
         return "Change"
     if "itop-request" in lset:
         return "UserRequest"
-    # default to UserRequest
+    if title:
+        t = title.lower()
+        if "[incident" in t:
+            return "Incident"
+        if "[problem" in t:
+            return "Problem"
+        if "[change" in t:
+            return "Change"
+        if "[request" in t:
+            return "UserRequest"
     return "UserRequest"
 
 
@@ -201,6 +210,9 @@ def extract_fields_from_body(body_text):
     m = re.search(r"(?im)^Servicio\s*\/\s*CI\s*.*\n+([\s\S]*?)(\n###|$)", body_text)
     if m:
         fields["service"] = m.group(1).strip()
+    m = re.search(r"(?im)^###\s*Outage\s*\n+([\s\S]*?)(\n###|$)", body_text)
+    if m:
+        fields["outage"] = m.group(1).strip()
     return fields
 
 
@@ -262,13 +274,21 @@ def main():
         issue_html_url = None
         labels = []
 
-    itop_class = detect_type(labels)
+    itop_class = detect_type(labels, issue_title)
     marker = build_marker(repo_full, issue_number) if issue_number else None
 
     parsed = extract_fields_from_body(issue_body or "")
     impact_val = map_impact(parsed.get("impact")) if parsed.get("impact") else None
     urgency_val = map_priority(parsed.get("urgency") or parsed.get("priority")) if (parsed.get("urgency") or parsed.get("priority")) else None
     origin_val = map_origin(parsed.get("origin")) if parsed.get("origin") else None
+    outage_flag = None
+    raw_outage = parsed.get("outage")
+    if raw_outage:
+        v = raw_outage.strip().lower()
+        if v in ("yes", "si", "sí", "y", "true"):
+            outage_flag = "yes"
+        elif v in ("no", "n", "false"):
+            outage_flag = "no"
 
     summary_parts = []
     if issue_title:
@@ -335,8 +355,10 @@ def main():
         caller_id = resolve_caller(itop_url, itop_user, itop_pass, requester)
         if caller_id is not None:
             fields["caller_id"] = caller_id
-        if origin_val is not None:
+        if origin_val is not None and itop_class in ("UserRequest", "Incident"):
             fields["origin"] = origin_val
+        if outage_flag is not None and itop_class == "Change":
+            fields["outage"] = outage_flag
         if itop_origin:
             fields["org_id"] = {"name": itop_origin}
 
@@ -354,11 +376,13 @@ def main():
         # Keep description source of truth; append if edited
         if not on_comment and final_description:
             u_fields["description"] = final_description
-        # Always add a public log entry with context
         message = f"GitHub {event_name}/{event_action}: {issue_html_url}"
         if on_comment and comment:
             message = f"Comentario de GitHub por {comment.get('user', {}).get('login')}:\n\n{comment.get('body','')}\n\n{issue_html_url}"
-        u_fields["public_log"] = {"add_item": {"message": message, "format": "text"}}
+        if itop_class == "Problem":
+            u_fields["private_log"] = {"add_item": {"message": message, "format": "text"}}
+        else:
+            u_fields["public_log"] = {"add_item": {"message": message, "format": "text"}}
 
         payload = {
             "operation": "core/update",

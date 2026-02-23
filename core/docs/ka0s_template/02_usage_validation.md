@@ -23,6 +23,7 @@ Para crear una nueva automatización, no empieces desde un archivo en blanco.
 
 4.  **Conectar Ciclo de Vida**:
     Asegúrate de que `handle-success` y `handle-failure` sigan dependiendo (`needs`) de `job-core`.
+    - `handle-failure` debe crear automáticamente una incidencia usando la plantilla de incidente, etiquetada como `itop-incident` y `triage`, incluyendo enlace al run y contexto del módulo.
 
 ## 2. Checklist de Calidad
 Antes de subir tu workflow, verifica:
