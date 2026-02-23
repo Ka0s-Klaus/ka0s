@@ -5318,3 +5318,18 @@
   - core/b2b/core-services/elk/build-logstash-image.sh
   - version.txt
 ---------------------------------
+## Version 0.6.3
+- **Branch**: refs/pull/4206/merge
+- **Commit**: [Ka0S] Uploading Markdown compliance audit logs
+- **Author**: Ka0s
+- **Date**: Mon Feb 23 11:21:28 UTC 2026
+- **Message**: H4200 request recomendaciones de auditoria
+- **Files Changed**:
+  - .github/workflows/add-doc-to-db.yml
+  - audit/kaos/22303207065-files-in-commit.txt
+  - audit/kaos/22303207065.json
+  - audit/mdlint/mdlint-results-22303231423.txt
+  - devops/core/mongo/scripts/add-doc-to-db.md
+  - devops/core/mongo/scripts/add-doc-to-db.py
+  - version.txt
+---------------------------------

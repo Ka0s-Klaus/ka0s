@@ -31,15 +31,29 @@ python3 add-doc-to-db.py
 | Permisos insuficientes | `python3 add-doc-to-db.py` | `❌ Error de operación: not authorized` |
 | Eliminación de archivos | `python3 add-doc-to-db.py` | `[DEBUG] Archivos eliminados en: ...` |
 
-## 📊 Métricas Recopiladas
+## 📊 Esquema del Reporte JSON
+
+Cada ejecución genera un fichero JSON en `REPORT_PATH` (por defecto `audit/mongodb/`) con el siguiente esquema base orientado a AIOps:
+
 ```json
 {
+  "type": "mongo_document_loader",
+  "source": "/ruta/absoluta/al/directorio/scan",
+  "timestamp": "2024-03-18T12:34:56.789Z",
   "databases_created": 2,
   "collections_created": 5,
   "documents_inserted": 342,
   "errors": []
 }
 ```
+
+- `type`: Identifica el tipo de proceso que ha generado el reporte.
+- `source`: Ruta absoluta del directorio escaneado (`REPORT_SCAN`).
+- `timestamp`: Momento de inicio de la ejecución.
+- `databases_created`: Número de bases de datos nuevas creadas.
+- `collections_created`: Número de colecciones nuevas creadas.
+- `documents_inserted`: Total de documentos insertados.
+- `errors`: Lista de errores encontrados durante el proceso (si los hay).
 
 ## 🛑 Códigos de Error
 

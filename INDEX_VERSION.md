@@ -218,3 +218,4 @@
 - **Version**: 0.6.0 - **Description**: F2927 test launch workflows from itop services
 - **Version**: 0.6.1 - **Description**: H1276 modulo observabilidad
 - **Version**: 0.6.2 - **Description**: H1276 modulo observabilidad
+- **Version**: 0.6.3 - **Description**: H4200 request recomendaciones de auditoria
