@@ -8,6 +8,38 @@ body:
       value: |
         Completa los detalles del cambio propuesto. Será mapeado a un Change en iTop.
 
+  # Campos obligatorios para la integración con iTop (Caller, Organization, etc.)
+  - type: input
+    id: requester
+    attributes:
+      label: Solicitante
+      description: Usuario de GitHub o nombre completo para asignar en iTop.
+      placeholder: Nombre o @usuario
+    validations:
+      required: true
+
+  - type: input
+    id: organization
+    attributes:
+      label: Organización
+      description: Organización en iTop (si aplica).
+      placeholder: Ej. KA0S
+    validations:
+      required: true
+
+  - type: dropdown
+    id: origin
+    attributes:
+      label: Origen
+      options:
+        - portal
+        - monitoring
+        - phone
+        - mail
+    validations:
+      required: true
+
+  # Detalle del Cambio
   - type: input
     id: service
     attributes:
@@ -24,15 +56,69 @@ body:
     validations:
       required: true
 
+  # Clasificación iTop
+  - type: dropdown
+    id: impact
+    attributes:
+      label: Impacto
+      options:
+        - A person
+        - A service
+        - A department
+    validations:
+      required: true
+
+  - type: dropdown
+    id: urgency
+    attributes:
+      label: Urgencia
+      options:
+        - critical
+        - high
+        - medium
+        - low
+    validations:
+      required: true
+
+  # Planificación y Riesgo (para estado Planned)
   - type: textarea
     id: risk
     attributes:
       label: Evaluación de Riesgo
       description: Probabilidad e impacto; mitigaciones.
+    validations:
+      required: false
 
   - type: textarea
     id: backout
     attributes:
       label: Plan de Retroceso
-      description: Pasos para revertir en caso de fallo.
+      description: Pasos para revertir en caso de fallo (Fallback plan).
+    validations:
+      required: false
 
+  # - type: input
+  #   id: start_date
+  #   attributes:
+  #     label: Fecha de Inicio Planificada
+  #     placeholder: YYYY-MM-DD HH:MM:SS
+  #   validations:
+  #     required: false
+
+  # - type: input
+  #   id: end_date
+  #   attributes:
+  #     label: Fecha de Fin Planificada
+  #     placeholder: YYYY-MM-DD HH:MM:SS
+  #   validations:
+  #     required: false
+
+  # - type: dropdown
+  #   id: outage
+  #   attributes:
+  #     label: ¿Implica Corte de Servicio (Outage)?
+  #     options:
+  #       - "no"
+  #       - "yes"
+  #   validations:
+  #     required: false
