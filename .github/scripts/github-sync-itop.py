@@ -207,6 +207,12 @@ def extract_fields_from_body(body_text):
     m = re.search(r"(?im)^###\s*Prioridad\s*\n+([\s\S]*?)(\n###|$)", body_text)
     if m:
         fields["priority"] = m.group(1).strip()
+    m = re.search(
+        r"(?im)^###\s*Tipo de cambio\s*\n+([\s\S]*?)(\n###|$)",
+        body_text,
+    )
+    if m:
+        fields["change_type"] = m.group(1).strip()
     m = re.search(r"(?im)^Servicio\s*\/\s*CI\s*.*\n+([\s\S]*?)(\n###|$)", body_text)
     if m:
         fields["service"] = m.group(1).strip()
