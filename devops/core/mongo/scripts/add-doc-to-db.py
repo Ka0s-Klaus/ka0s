@@ -18,6 +18,8 @@ try:
     client = MongoClient(conn_str, serverSelectionTimeoutMS=5000)
     
     log = {
+        'type': 'mongo_document_loader',
+        'source': os.path.abspath(scan_root),
         'timestamp': datetime.now().isoformat(),
         'databases_created': 0,
         'collections_created': 0,
