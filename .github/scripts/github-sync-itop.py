@@ -210,7 +210,7 @@ def extract_fields_from_body(body_text):
     m = re.search(r"(?im)^Servicio\s*\/\s*CI\s*.*\n+([\s\S]*?)(\n###|$)", body_text)
     if m:
         fields["service"] = m.group(1).strip()
-    m = re.search(r"(?im)^###\s*Outage\s*\n+([\s\S]*?)(\n###|$)", body_text)
+    m = re.search(r"(?im)^###\s*Outage\b.*\n+([\s\S]*?)(\n###|$)", body_text)
     if m:
         fields["outage"] = m.group(1).strip()
     return fields
