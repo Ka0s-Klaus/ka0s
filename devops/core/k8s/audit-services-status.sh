@@ -16,6 +16,7 @@ mkdir -p "$RESULTS_DIR"
 TS=$(date +'%Y%m%d-%H%M%S')
 MD_FILE="$RESULTS_DIR/cluster-report-$TS.md"
 HTML_FILE="$RESULTS_DIR/cluster-dashboard-$TS.html"
+JSON_FILE="$RESULTS_DIR/cluster-report-$TS.json"
 
 echo "[INFO] Generando informes en $RESULTS_DIR"
 
@@ -307,4 +308,6 @@ cat <<EOF > "$HTML_FILE"
 EOF
 
 echo "[INFO] HTML generado: $HTML_FILE"
+SUMMARY_TS=$(date -Iseconds)
+kubectl get svc -A -o json | jq --arg ts "$SUMMARY_TS" '{ type: "k8s_cluster_status_summary", timestamp: $ts, services: [ .items[] | { namespace: .metadata.namespace, name: .metadata.name, type: .spec.type, cluster_ip: .spec.clusterIP, external_ip: ( .status.loadBalancer.ingress[0].ip // .status.loadBalancer.ingress[0].hostname // "" ), ports: ( .spec.ports | map("\(.port)/\(.protocol)") ) } ] }' > "$JSON_FILE"
 echo "[SUCCESS] Auditoría completada."
