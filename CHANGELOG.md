@@ -5318,3 +5318,67 @@
   - core/b2b/core-services/elk/build-logstash-image.sh
   - version.txt
 ---------------------------------
+## Version 0.6.3
+- **Branch**: refs/pull/4206/merge
+- **Commit**: [Ka0S] Uploading Markdown compliance audit logs
+- **Author**: Ka0s
+- **Date**: Mon Feb 23 11:21:28 UTC 2026
+- **Message**: H4200 request recomendaciones de auditoria
+- **Files Changed**:
+  - .github/workflows/add-doc-to-db.yml
+  - audit/kaos/22303207065-files-in-commit.txt
+  - audit/kaos/22303207065.json
+  - audit/mdlint/mdlint-results-22303231423.txt
+  - devops/core/mongo/scripts/add-doc-to-db.md
+  - devops/core/mongo/scripts/add-doc-to-db.py
+  - version.txt
+---------------------------------
+## Version 0.6.4
+- **Branch**: refs/pull/4211/merge
+- **Commit**: [Ka0S] Uploading Autom add docs to MongoDB...
+- **Author**: Ka0s
+- **Date**: Mon Feb 23 11:57:16 UTC 2026
+- **Message**: H4200 request recomendaciones de auditoria
+- **Files Changed**:
+  - .github/workflows/add-doc-to-db.yml
+  - audit/inspector/22303207065.json
+  - audit/inspector/22303207065.log
+  - audit/inspector/22303238326.json
+  - audit/inspector/22303238326.log
+  - audit/inspector/22303249122.json
+  - audit/inspector/22303249122.log
+  - audit/inspector/22303434297.json
+  - audit/inspector/22303434297.log
+  - audit/inspector/22303434321.json
+  - audit/inspector/22303434321.log
+  - audit/inspector/22303434721.json
+  - audit/inspector/22303434721.log
+  - audit/inspector/22303434963.json
+  - audit/inspector/22303434963.log
+  - audit/inspector/22303435165.json
+  - audit/inspector/22303435165.log
+  - audit/inspector/22303435464.json
+  - audit/inspector/22303435464.log
+  - audit/inspector/22303435776.json
+  - audit/inspector/22303435776.log
+  - audit/inspector/22303543346.json
+  - audit/inspector/22303543346.log
+  - audit/inspector/22303671852.json
+  - audit/inspector/22303671852.log
+  - audit/kaos/22303207065-files-in-commit.txt
+  - audit/kaos/22303207065.json
+  - audit/mdlint/mdlint-results-22303231423.txt
+  - audit/mongodb/22303238326.json
+  - audit/sync/20260223_110620_R-000477_4189.json
+  - audit/sync/20260223_110634_R-000478_4188.json
+  - audit/sync/20260223_110645_R-000479_4186.json
+  - audit/sync/20260223_110646_R-000480_4187.json
+  - audit/sync/20260223_110653_R-000481_4184.json
+  - audit/sync/20260223_111319_NOREF_4204.json
+  - audit/sync/20260223_111319_NOREF_4204_ERROR.json
+  - audit/sync/20260223_111719_R-000487_4197.json
+  - audit/sync/20260223_111735_R-000488_4196.json
+  - audit/sync/20260223_111738_R-000490_4193.json
+  - audit/sync/20260223_111900_R-000491_4192.json
+  - version.txt
+---------------------------------

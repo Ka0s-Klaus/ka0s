@@ -121,7 +121,10 @@ jobs:
         run: |
           echo "Error detected in process"
           echo "Created issue"
-          gh issue create  --title "${{ env.KAOS_MODULE }} Error detected in ${{ env.KAOS_CODE }}" --label "bug" --body "Please check the logs 'https://github.com/Ka0s-Klaus/ka0s/actions/runs/${{ env.KAOS_CODE }}' for more information of error."
+          gh issue create \
+            --title "${{ env.KAOS_MODULE }} Error detected in ${{ env.KAOS_CODE }}" \
+            --label "bug" \
+            --body "Please check the GitHub Actions logs (https://github.com/${{ github.repository }}/actions/runs/${{ env.KAOS_CODE }}) and the MongoDB audit reports under audit/mongodb/ (for example: ${{ env.REPORT_PATH }}${{ env.REPORT_FILENAME_DB }})."
   end-workflow:
     needs: [handle-success, handle-failure]
     if: always()
