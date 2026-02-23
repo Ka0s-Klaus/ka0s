@@ -210,6 +210,9 @@ def extract_fields_from_body(body_text):
     m = re.search(r"(?im)^Servicio\s*\/\s*CI\s*.*\n+([\s\S]*?)(\n###|$)", body_text)
     if m:
         fields["service"] = m.group(1).strip()
+    m = re.search(r"(?im)^###\s*Outage\s*\n+([\s\S]*?)(\n###|$)", body_text)
+    if m:
+        fields["outage"] = m.group(1).strip()
     return fields
 
 
@@ -278,6 +281,14 @@ def main():
     impact_val = map_impact(parsed.get("impact")) if parsed.get("impact") else None
     urgency_val = map_priority(parsed.get("urgency") or parsed.get("priority")) if (parsed.get("urgency") or parsed.get("priority")) else None
     origin_val = map_origin(parsed.get("origin")) if parsed.get("origin") else None
+    outage_flag = None
+    raw_outage = parsed.get("outage")
+    if raw_outage:
+        v = raw_outage.strip().lower()
+        if v in ("yes", "si", "sí", "y", "true"):
+            outage_flag = "yes"
+        elif v in ("no", "n", "false"):
+            outage_flag = "no"
 
     summary_parts = []
     if issue_title:
@@ -346,6 +357,8 @@ def main():
             fields["caller_id"] = caller_id
         if origin_val is not None and itop_class in ("UserRequest", "Incident"):
             fields["origin"] = origin_val
+        if outage_flag is not None and itop_class == "Change":
+            fields["outage"] = outage_flag
         if itop_origin:
             fields["org_id"] = {"name": itop_origin}
 
