@@ -171,6 +171,54 @@ Notas de validación:
 - La clase efectiva usada en los estímulos es `NormalChange`/`RoutineChange`/`EmergencyChange` según "Tipo de cambio".
 - Las entradas de log para cambios se escriben en `private_log` durante `ev_assign`, `ev_resolve` y `ev_close`.
 
+### Cierre de Change (issues.closed → close) — EmergencyChange
+Ejemplo genérico de cierre de un cambio de emergencia. Se aplican los mismos estímulos y el log se registra en `private_log`.
+
+```json
+{
+  "github_event": "issues",
+  "github_action": "closed",
+  "operation": "close",
+  "itop_class": "Change",
+  "itop_key": "<ID_ITOP>",
+  "close": {
+    "status": "ok",
+    "response": { "code": 0 },
+    "payload": {
+      "operation": "core/apply_stimulus",
+      "class": "EmergencyChange",
+      "fields": {
+        "private_log": { "add_item": { "message": "Ticket cerrado automáticamente" } }
+      }
+    }
+  }
+}
+```
+
+### Cierre de Change con Outage=no (issues.closed → close) — RoutineChange
+Ejemplo genérico donde el cambio es rutinario (`RoutineChange`) y `outage` es `no`. El cierre sigue la misma secuencia y registra en `private_log`.
+
+```json
+{
+  "github_event": "issues",
+  "github_action": "closed",
+  "operation": "close",
+  "itop_class": "Change",
+  "itop_key": "<ID_ITOP>",
+  "close": {
+    "status": "ok",
+    "response": { "code": 0 },
+    "payload": {
+      "operation": "core/apply_stimulus",
+      "class": "RoutineChange",
+      "fields": {
+        "private_log": { "add_item": { "message": "Ticket cerrado automáticamente" } }
+      }
+    }
+  }
+}
+```
+
 ### Notas históricas (antes de la corrección de create_from_comment)
 En las primeras ejecuciones, los eventos `issue_comment.created` buscaban el marcador únicamente en la descripción. Como el marcador se añadía al título, el flujo no encontraba el ticket existente y ejecutaba `core/create` de nuevo.
 
