@@ -7,6 +7,14 @@ La sincronización se invoca automáticamente tras un despliegue exitoso en el f
 - **services**: Lista de servicios modificados en el commit (detectados por `git diff`).
 - **status**: Por defecto `production`.
 
+### 1.2. Sincronización Programada (Full Sync)
+Adicionalmente, existe un flujo programado `itop-cmdb-full-sync.yml` que se ejecuta diariamente a las **02:00 UTC**.
+- **Objetivo**: Detectar "Drift" (desviaciones) y asegurar que servicios desplegados manualmente o fuera del CD también se registren.
+- **Lógica**:
+    1.  Escanea el clúster usando `kubectl`.
+    2.  Ignora namespaces de sistema (`kube-system`, `cattle-system`, etc.).
+    3.  Sincroniza todos los servicios encontrados con estado `production`.
+
 ## 2. Uso Manual (Workflow Dispatch)
 Es posible ejecutar la sincronización manualmente desde la pestaña "Actions" de GitHub para correcciones o bajas.
 
