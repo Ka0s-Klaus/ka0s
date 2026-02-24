@@ -220,3 +220,5 @@
 - **Version**: 0.6.2 - **Description**: H1276 modulo observabilidad
 - **Version**: 0.6.3 - **Description**: H4200 request recomendaciones de auditoria
 - **Version**: 0.6.4 - **Description**: H4200 request recomendaciones de auditoria
+- **Version**: 0.6.5 - **Description**: H4200 request recomendaciones de auditoria
+- **Version**: 0.6.6 - **Description**: H4200 request recomendaciones de auditoria

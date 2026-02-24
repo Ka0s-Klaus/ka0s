@@ -15,33 +15,39 @@ El workflow escucha eventos de Issues en GitHub y sincroniza la información rel
 - Evidencias: salida JSON movida a `audit/sync/<timestamp>_<itop_ref>_<issue>.json` y commit automático. En caso de error en la llamada a iTop se genera además `*_ERROR.json` con el mismo contenido para facilitar el filtrado.
 
 ## Comportamiento Funcional
-- Detección de tipo ITSM por etiquetas del Issue:
+- Detección de tipo ITSM por etiquetas del Issue y título:
   - `itop-incident` → `Incident`
   - `itop-problem` → `Problem`
-  - `itop-change` → `Change`
+  - `itop-change` → `Change` (mapeado a subclase efectiva: `NormalChange`, `RoutineChange` o `EmergencyChange` según el campo "Tipo de cambio" de la plantilla)
   - `itop-request` → `UserRequest` (valor por defecto)
 - Trazabilidad: inserta un marcador en el título del ticket `[GH:#<n> <owner>/<repo>]` y realiza la búsqueda por título.
-- Comentarios: cualquier comentario en la Issue crea una entrada en `public_log` del ticket en iTop.
+- Comentarios: el atributo de log depende de la clase en iTop:
+  - `UserRequest`/`Incident` → `public_log`
+  - `Problem`/`Change` (incluye `NormalChange`, `RoutineChange`, `EmergencyChange`) → `private_log`
 - Cierre: al cerrar la Issue se aplica una secuencia robusta en iTop:
   1. `ev_assign` al usuario API (por OQL de login)
   2. `ev_resolve` con `solution` y `resolution_code`
   3. `ev_close` con `user_satisfaction` y `user_comment`
-  En caso de fallo en estímulos, se registra en `public_log` sin interrumpir el flujo.
+  En caso de fallo en estímulos, se registra en el log correspondiente a la clase (`public_log` o `private_log`) sin interrumpir el flujo.
 
 ## Mapa de Eventos GitHub → Operaciones iTop
 
 | Evento GitHub              | Acción        | Operación iTop            | Tipo JSON en `audit/sync`                 | Notas clave                               |
 |----------------------------|--------------|---------------------------|-------------------------------------------|-------------------------------------------|
 | `issues`                   | `opened`     | `core/create`             | `operation: "create"`                    | Crea ticket nuevo con marcador en título. |
-| `issues`                   | `edited`     | `core/update`             | `operation: "update"`                    | Actualiza descripción y añade `public_log`.|
-| `issues`                   | `closed`     | `ev_assign` → `ev_resolve` → `ev_close` | `operation: "close"`                     | Asigna, resuelve y cierra el ticket.      |
-| `issue_comment`            | `created`    | `core/update` (`public_log`) | `operation: "add_comment"`             | Añade comentario a `public_log`.          |
+| `issues`                   | `edited`     | `core/update`             | `operation: "update"`                    | Actualiza descripción y añade log según clase.|
+| `issues`                   | `closed`     | `ev_assign` → `ev_resolve` → `ev_close` | `operation: "close"`                     | Asigna, resuelve y cierra el ticket (log según clase). |
+| `issue_comment`            | `created`    | `core/update` (log según clase) | `operation: "add_comment"`             | UR/Incident: `public_log`; Problem/Change: `private_log`.|
 | `issue_comment` (sin ticket previo) | `created`    | `core/create`             | `operation: "create_from_comment"`       | Crea ticket mínimo y registra el comentario.|
 
 ## Variables y Secretos
 - `ITOP_URL`: URL base de iTop.
 - `ITOP_API_USER` / `ITOP_API_PASSWORD`: credenciales de la API.
 - `ITOP_ORIGIN`: nombre de la Organización en iTop (requerida por el datamodel).
+- Notas de mapeo:
+  - El campo `Origen` (origin) solo se envía para `UserRequest` e `Incident`.
+  - El campo `Outage` solo aplica a `Change` y se mapea a `outage: "yes"|"no"`.
+  - Para `Change` se selecciona la subclase efectiva a partir de "Tipo de cambio": `Normal` → `NormalChange`, `Routine` → `RoutineChange`, `Emergency` → `EmergencyChange`.
 - `ITOP_IMPACT_*` / `ITOP_URGENCY_*`: opcionales. Permiten alinear los valores numéricos de impacto/urgencia con el datamodel concreto de la instancia de iTop.
 - Eventos GitHub:
   - `GITHUB_EVENT_NAME`, `GITHUB_EVENT_ACTION`.

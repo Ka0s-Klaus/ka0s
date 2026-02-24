@@ -95,7 +95,7 @@ def map_impact(val):
     }
     if v in env_map and env_map[v] is not None:
         return env_map[v]
-    if v in ("department", "departamento"):
+    if v in ("department", "departamento", "departament"):
         return 1
     if v in ("service", "servicio"):
         return 2
@@ -207,6 +207,15 @@ def extract_fields_from_body(body_text):
     m = re.search(r"(?im)^###\s*Prioridad\s*\n+([\s\S]*?)(\n###|$)", body_text)
     if m:
         fields["priority"] = m.group(1).strip()
+    m = re.search(r"(?im)^###\s*Estado\s*\n+([\s\S]*?)(\n###|$)", body_text)
+    if m:
+        fields["status"] = m.group(1).strip()
+    m = re.search(
+        r"(?im)^###\s*Tipo de cambio\s*\n+([\s\S]*?)(\n###|$)",
+        body_text,
+    )
+    if m:
+        fields["change_type"] = m.group(1).strip()
     m = re.search(r"(?im)^Servicio\s*\/\s*CI\s*.*\n+([\s\S]*?)(\n###|$)", body_text)
     if m:
         fields["service"] = m.group(1).strip()
@@ -279,8 +288,21 @@ def main():
 
     parsed = extract_fields_from_body(issue_body or "")
     impact_val = map_impact(parsed.get("impact")) if parsed.get("impact") else None
-    urgency_val = map_priority(parsed.get("urgency") or parsed.get("priority")) if (parsed.get("urgency") or parsed.get("priority")) else None
+    # Urgency uses map_priority logic (1=low..4=critical)
+    urgency_val = map_priority(parsed.get("urgency")) if parsed.get("urgency") else None
+    # Priority uses map_priority logic too
+    priority_val = map_priority(parsed.get("priority")) if parsed.get("priority") else None
+    
     origin_val = map_origin(parsed.get("origin")) if parsed.get("origin") else None
+    
+    status_raw = parsed.get("status")
+    status_val = "new"
+    if status_raw:
+        # Simple mapping: New -> new, Assigned -> assigned, Escalated TTO -> escalated_tto
+        s = status_raw.strip().lower().replace(" ", "_")
+        if s:
+            status_val = s
+
     outage_flag = None
     raw_outage = parsed.get("outage")
     if raw_outage:
@@ -314,6 +336,10 @@ def main():
         summary_parts.append(f"Impacto: {parsed.get('impact')}")
     if parsed.get("urgency"):
         summary_parts.append(f"Urgencia: {parsed.get('urgency')}")
+    if parsed.get("priority"):
+        summary_parts.append(f"Prioridad: {parsed.get('priority')}")
+    if parsed.get("status"):
+        summary_parts.append(f"Estado: {parsed.get('status')}")
 
     summary_block = "\n".join(summary_parts).strip()
     description_extra = (
@@ -356,12 +382,14 @@ def main():
         fields = {
             "title": f"{marker} {issue_title}" if marker else issue_title,
             "description": final_description,
-            "status": "new",
+            "status": status_val,
         }
         if impact_val is not None:
             fields["impact"] = impact_val
         if urgency_val is not None:
             fields["urgency"] = urgency_val
+        if priority_val is not None:
+            fields["priority"] = priority_val
         requester = parsed.get("requester")
         caller_id = resolve_caller(itop_url, itop_user, itop_pass, requester)
         if caller_id is not None:
@@ -390,10 +418,15 @@ def main():
         message = f"GitHub {event_name}/{event_action}: {issue_html_url}"
         if on_comment and comment:
             message = f"Comentario de GitHub por {comment.get('user', {}).get('login')}:\n\n{comment.get('body','')}\n\n{issue_html_url}"
-        if itop_class == "Problem":
-            u_fields["private_log"] = {"add_item": {"message": message, "format": "text"}}
-        else:
-            u_fields["public_log"] = {"add_item": {"message": message, "format": "text"}}
+        log_attr = "public_log"
+        if itop_class in ("Problem", "Change"):
+            log_attr = "private_log"
+        u_fields[log_attr] = {
+            "add_item": {
+                "message": message,
+                "format": "text",
+            }
+        }
 
         payload = {
             "operation": "core/update",
@@ -411,6 +444,10 @@ def main():
             f"SELECT Person JOIN User ON User.contactid = Person.id "
             f"WHERE User.login = '{itop_user}'"
         )
+        log_attr = "public_log"
+        if itop_class in ("Problem", "Change"):
+            log_attr = "private_log"
+
         payload_assign = {
             "operation": "core/apply_stimulus",
             "class": effective_class,
@@ -419,7 +456,7 @@ def main():
             "comment": "Asignación automática vía GitHub",
             "fields": {
                 "agent_id": agent_oql,
-                "public_log": {
+                log_attr: {
                     "add_item": {
                         "message": f"Asignado automáticamente a {itop_user}",
                         "format": "text",
@@ -432,14 +469,14 @@ def main():
         # Resolve first (provide solution)
         payload_resolve = {
             "operation": "core/apply_stimulus",
-            "class": itop_class,
+            "class": effective_class,
             "key": key,
             "stimulus": "ev_resolve",
             "comment": "Resolución automática vía GitHub",
             "fields": {
                 "solution": f"Cerrado desde GitHub: {issue_html_url}",
                 "resolution_code": "assistance",
-                "public_log": {
+                log_attr: {
                     "add_item": {
                         "message": f"Cierre desde GitHub: {issue_html_url}",
                         "format": "text",
@@ -455,14 +492,14 @@ def main():
         # Then close (set satisfaction/comment when applicable)
         payload_close = {
             "operation": "core/apply_stimulus",
-            "class": itop_class,
+            "class": effective_class,
             "key": key,
             "stimulus": "ev_close",
             "comment": "Cierre automático vía GitHub",
             "fields": {
                 "user_satisfaction": 4,
                 "user_comment": "Cierre automático por sincronización con GitHub",
-                "public_log": {
+                log_attr: {
                     "add_item": {
                         "message": "Ticket cerrado automáticamente",
                         "format": "text",

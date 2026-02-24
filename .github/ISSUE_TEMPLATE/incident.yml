@@ -8,7 +8,63 @@ body:
       value: |
         Completa los campos para registrar la incidencia. Esta información se sincronizará con iTop.
 
-  # Campos obligatorios para la integración con iTop
+  - type: input
+    id: organization
+    attributes:
+      label: Organización
+      description: Nombre de la organización (ej. MyCompany).
+      placeholder: Ka0s Inc
+    validations:
+      required: true
+
+  - type: input
+    id: requester
+    attributes:
+      label: Solicitante
+      description: Email o login del solicitante (debe existir en iTop como Persona).
+      placeholder: "@ka0sc0re"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: status
+    attributes:
+      label: Estado
+      options:
+        - New
+        - Assigned
+        - Pending
+        - Escalated TTO
+        - Escalated TTR
+        - Resolved
+        - Closed
+      default: 0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: impact
+    attributes:
+      label: Impacto
+      options:
+        - Department
+        - Service
+        - Person
+    validations:
+      required: true
+
+  - type: dropdown
+    id: urgency
+    attributes:
+      label: Urgencia
+      options:
+        - critical
+        - high
+        - medium
+        - low
+    validations:
+      required: true
+
   - type: input
     id: requester
     attributes:
@@ -39,296 +95,8 @@ body:
     validations:
       required: true
 
-  # ==============================
-  # Campos Específicos Zabbix / Trigger
-  # ==============================
-  - type: input
-    id: zabbix_server
-    attributes:
-      label: Zabbix Server
-      description: "{{ZABBIX.URL}} (si está disponible)"
-      placeholder: https://zabbix.example.com
-    validations:
-      required: false
-
-  - type: input
-    id: trigger_name
-    attributes:
-      label: Trigger Name
-      description: "{{TRIGGER.NAME}}"
-    validations:
-      required: false
-
-  - type: input
-    id: trigger_id
-    attributes:
-      label: Trigger ID
-      description: "{{TRIGGER.ID}}"
-    validations:
-      required: false
-
-  - type: input
-    id: host_name
-    attributes:
-      label: Host Name
-      description: "{{HOST.NAME}}"
-    validations:
-      required: false
-
-  - type: input
-    id: host_visible_name
-    attributes:
-      label: Host Visible Name
-      description: "{{HOST.HOST}}"
-    validations:
-      required: false
-
-  - type: input
-    id: host_ip
-    attributes:
-      label: Host IP
-      description: "{{HOST.IP}}"
-    validations:
-      required: false
-
-  - type: input
-    id: host_dns
-    attributes:
-      label: Host DNS
-      description: "{{HOST.DNS}}"
-    validations:
-      required: false
-
-  - type: input
-    id: host_groups
-    attributes:
-      label: Host Groups
-      description: "{{HOSTGROUP.NAME}}"
-    validations:
-      required: false
-
-  - type: dropdown
-    id: trigger_severity
-    attributes:
-      label: Trigger Severity
-      description: "{{TRIGGER.SEVERITY}}"
-      options:
-        - Information
-        - Warning
-        - Average
-        - High
-        - Disaster
-    validations:
-      required: false
-
-  - type: input
-    id: trigger_status
-    attributes:
-      label: Trigger Status
-      description: "{{TRIGGER.STATUS}}"
-    validations:
-      required: false
-
-  - type: input
-    id: trigger_value
-    attributes:
-      label: Trigger Value
-      description: "{{TRIGGER.VALUE}}"
-    validations:
-      required: false
-
-  - type: input
-    id: event_datetime
-    attributes:
-      label: Event Date & Time
-      description: "{{EVENT.DATE}} {{EVENT.TIME}}"
-      placeholder: "YYYY-MM-DD HH:MM:SS"
-    validations:
-      required: false
-
-  - type: input
-    id: event_id
-    attributes:
-      label: Event ID
-      description: "{{EVENT.ID}}"
-    validations:
-      required: false
-
-  - type: input
-    id: event_name
-    attributes:
-      label: Event Name
-      description: "{{EVENT.NAME}}"
-    validations:
-      required: false
-
-  - type: input
-    id: event_status
-    attributes:
-      label: Event Status
-      description: "{{EVENT.STATUS}}"
-    validations:
-      required: false
-
-  - type: input
-    id: event_age
-    attributes:
-      label: Event Age
-      description: "{{EVENT.AGE}}"
-    validations:
-      required: false
-
-  - type: input
-    id: event_duration
-    attributes:
-      label: Event Duration
-      description: "{{EVENT.DURATION}}"
-    validations:
-      required: false
-
-  - type: input
-    id: recovery_datetime
-    attributes:
-      label: Recovery Date & Time
-      description: "{{EVENT.RECOVERY.DATE}} {{EVENT.RECOVERY.TIME}}"
-      placeholder: "YYYY-MM-DD HH:MM:SS"
-    validations:
-      required: false
-
-  - type: input
-    id: recovery_event_id
-    attributes:
-      label: Recovery Event ID
-      description: "{{EVENT.RECOVERY.ID}}"
-    validations:
-      required: false
-
-  - type: input
-    id: item_name
-    attributes:
-      label: Item Name
-      description: "{{ITEM.NAME}}"
-    validations:
-      required: false
-
-  - type: input
-    id: item_key
-    attributes:
-      label: Item Key
-      description: "{{ITEM.KEY}}"
-    validations:
-      required: false
-
-  - type: input
-    id: item_id
-    attributes:
-      label: Item ID
-      description: "{{ITEM.ID}}"
-    validations:
-      required: false
-
-  - type: input
-    id: item_lastvalue
-    attributes:
-      label: Item Last Value
-      description: "{{ITEM.LASTVALUE}}"
-    validations:
-      required: false
-
-  - type: textarea
-    id: trigger_description
-    attributes:
-      label: Trigger Description
-      description: "{{TRIGGER.DESCRIPTION}}"
-    validations:
-      required: false
-
-  - type: input
-    id: trigger_url
-    attributes:
-      label: Trigger URL
-      description: "{{TRIGGER.URL}}"
-    validations:
-      required: false
-
-  - type: textarea
-    id: trigger_opdata
-    attributes:
-      label: Trigger Operational Data
-      description: "{{TRIGGER.OPDATA}}"
-    validations:
-      required: false
-
-  - type: textarea
-    id: trigger_expression
-    attributes:
-      label: Trigger Problem Expression
-      description: "{{TRIGGER.EXPRESSION}}"
-    validations:
-      required: false
-
-  - type: textarea
-    id: event_tags
-    attributes:
-      label: Event Tags
-      description: "{{EVENT.TAGS}}"
-    validations:
-      required: false
-
-  - type: input
-    id: event_ack_status
-    attributes:
-      label: Event Acknowledged Status
-      description: "{{EVENT.ACK.STATUS}}"
-    validations:
-      required: false
-
-  - type: textarea
-    id: event_update_message
-    attributes:
-      label: Event Update Message
-      description: "{{EVENT.UPDATE.MESSAGE}}"
-    validations:
-      required: false
-      
-  # ==============================
-  # Clasificación iTop
-  # ==============================
-  - type: dropdown
-    id: impact
-    attributes:
-      label: Impacto
-      options:
-        - A person
-        - A service
-        - A department
-    validations:
-      required: true
-
-  - type: dropdown
-    id: urgency
-    attributes:
-      label: Urgencia
-      options:
-        - critical
-        - high
-        - medium
-        - low
-    validations:
-      required: true
-
-  - type: markdown
-    attributes:
-      value: |
-        **Prioridad**: se calcula automáticamente a partir de **Impacto** + **Urgencia** (datamodel estándar iTop).
-
   - type: textarea
     id: additional_notes
     attributes:
-      label: Notas adicionales
-      description: Contexto operativo, acciones realizadas o información complementaria.
-    validations:
-      required: false
-
-
-  
+      label: Pasos / Evidencias
+      description: Adjunta logs, enlaces o pasos de reproducción.
