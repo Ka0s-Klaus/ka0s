@@ -5,6 +5,7 @@ import urllib.request
 import urllib.parse
 import ssl
 import base64
+from datetime import datetime
 
 # =================================================================================================
 # [Ka0S] Process Failed Pods -> iTop Tickets (Reconciliation Mode)
@@ -229,6 +230,9 @@ def main():
             f"failed_pods_itop_reconciliation_{os.environ.get('GITHUB_RUN_ID', 'local')}.json"
         )
         payload = {
+            "type": "k8s_failed_pods_itop_reconciliation",
+            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "source": os.path.abspath(file_path),
             "failed_pods_count": len(current_failed_pods),
             "open_tickets_count": len(open_tickets),
             "actions": actions

@@ -92,10 +92,7 @@ jobs:
           gh issue create \
             --title "${{ env.KAOS_MODULE }} Error detected in ${{ env.KAOS_CODE }}" \
             --label "bug" \
-            --body "Error detected in ${{ env.KAOS_MODULE }}. Please check the logs and audit files:
-            - Workflow run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-            - Failed pods report: audit/kube/failed_pods.json
-            - iTop reconciliation (if generated): audit/itop/"
+            --body "Error detected in ${{ env.KAOS_MODULE }}. Please check the logs and audit files: Workflow run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}; Failed pods report: audit/kube/failed_pods.json; iTop reconciliation (if generated): audit/itop/."
             
   end-workflow:
     needs: [handle-success, handle-failure]
