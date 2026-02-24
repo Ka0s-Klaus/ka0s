@@ -17,6 +17,15 @@
     *   **💡 Solicitud de Funcionalidad**: Úsala para ideas.
         *   *Consejo*: Sé claro en el "Pitch". ¿Por qué esto es importante para todos?
 
+    *   **🚨 Incidencia (Incident)**: Úsala para reportar interrupciones o degradaciones de servicio.
+        *   *Requisitos*: Indica Servicio/CI afectado, Descripción, Impacto y Urgencia.
+        *   *Evidencia*: Adjunta pasos/evidencias en el campo correspondiente.
+
+    *   **🔄 Cambio (Change)**: Úsala para proponer un cambio controlado sincronizado con iTop.
+        *   *Requisitos*: Completa Solicitante, Organización, Origen, Servicio, Descripción, Impacto y Urgencia.
+        *   *Planificación*: Si aplica, indica Fecha de Inicio/Fin, evaluación de Riesgo y Plan de Retroceso.
+        *   *Formato de fechas*: `YYYY-MM-DD HH:MM:SS`. Evita datos sensibles; usa referencias a evidencias.
+
 ### Validación Automática
 
 GitHub Forms incluye validaciones básicas en el frontend:
@@ -26,6 +35,6 @@ GitHub Forms incluye validaciones básicas en el frontend:
 ## Flujo de Trabajo Posterior
 
 Una vez creado el Issue:
-1.  **Etiquetado Automático**: El sistema asigna labels como `bug`, `enhancement` o `onboarding` automáticamente.
+1.  **Etiquetado Automático**: El sistema asigna labels como `bug`, `enhancement`, `onboarding`, `incident` o `change` automáticamente.
 2.  **Triaje Humano**: El equipo revisa la solicitud.
-3.  **Conversión a Tarea**: Si es aceptado, puede convertirse en una tarea de desarrollo o disparar un workflow de GitHub Actions (en el caso de Onboarding).
+3.  **Conversión a Tarea**: Si es aceptado, puede convertirse en una tarea de desarrollo o disparar un workflow de GitHub Actions (Onboarding) o una sincronización con iTop (Cambio).

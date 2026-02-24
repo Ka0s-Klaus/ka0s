@@ -21,3 +21,5 @@ Documentación oficial sobre las plantillas de Issues de GitHub para la estandar
 | **Onboarding Request** | Issue Template | Solicitud formal de adopción de Ka0s. | `.github/ISSUE_TEMPLATE/onboarding_request.yml` |
 | **Bug Report** | Issue Template | Plantilla para reporte estructurado de errores. | `.github/ISSUE_TEMPLATE/bug_report.yml` |
 | **Feature Request** | Issue Template | Plantilla para propuestas de mejora. | `.github/ISSUE_TEMPLATE/feature_request.yml` |
+| **Incidencia (Incident)** | Issue Template | Plantilla para incidencias operacionales e integración con iTop. | `.github/ISSUE_TEMPLATE/incident.yml` |
+| **Cambio (Change)** | Issue Template | Plantilla para cambios controlados e integración con iTop. | `.github/ISSUE_TEMPLATE/change.yml` |
