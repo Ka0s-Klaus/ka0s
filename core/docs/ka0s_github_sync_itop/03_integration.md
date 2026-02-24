@@ -8,6 +8,15 @@
   - `ITOP_ORIGIN` (nombre de la Organización).
   - `ITOP_IMPACT_*` / `ITOP_URGENCY_*` para alinear el mapeo impacto/urgencia con el datamodel local.
 
+## Mapeo de Campos por Clase
+
+| Clase iTop | Template GitHub | Campos Obligatorios (Sync) | Campos Opcionales | Notas |
+|---|---|---|---|---|
+| **UserRequest** | - | Título, Descripción, Org, Caller | Impacto, Urgencia, Origen | Clase por defecto. Log: `public_log`. |
+| **Incident** | `incident.yml` | Título, Descripción, Org, Caller, Estado, Impacto, Urgencia | Servicio, Origen | `status` mapeado explícitamente. `priority` se calcula en iTop. Log: `public_log`. |
+| **Problem** | `problem.yml` | Título, Descripción, Org, Servicio, Impacto, Urgencia | - | Log: `private_log`. |
+| **Change** | `change.yml` | Título, Descripción, Org, Tipo de Cambio | Outage | Log: `private_log`. Subclases según Tipo (`Normal`, `Routine`, `Emergency`). |
+
 ## Interoperabilidad
 - Soporta eventos de Issues y Comentarios para mantener sincronización con iTop.
 - Genera evidencias inmutables en `audit/sync/` para trazabilidad.
@@ -38,4 +47,5 @@
 - Los estímulos `ev_assign`, `ev_resolve`, `ev_close` deben estar habilitados en el ciclo de vida de la clase.
  - Notas de envío de campos:
    - `origin` se envía solo para `UserRequest` e `Incident`.
+   - `status` se envía explícitamente para `Incident` si está presente en la plantilla.
    - `impact`/`urgency` se calculan desde la plantilla; pueden ajustarse con `ITOP_IMPACT_*` y `ITOP_URGENCY_*`.

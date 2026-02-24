@@ -207,6 +207,9 @@ def extract_fields_from_body(body_text):
     m = re.search(r"(?im)^###\s*Prioridad\s*\n+([\s\S]*?)(\n###|$)", body_text)
     if m:
         fields["priority"] = m.group(1).strip()
+    m = re.search(r"(?im)^###\s*Estado\s*\n+([\s\S]*?)(\n###|$)", body_text)
+    if m:
+        fields["status"] = m.group(1).strip()
     m = re.search(
         r"(?im)^###\s*Tipo de cambio\s*\n+([\s\S]*?)(\n###|$)",
         body_text,
@@ -285,8 +288,21 @@ def main():
 
     parsed = extract_fields_from_body(issue_body or "")
     impact_val = map_impact(parsed.get("impact")) if parsed.get("impact") else None
-    urgency_val = map_priority(parsed.get("urgency") or parsed.get("priority")) if (parsed.get("urgency") or parsed.get("priority")) else None
+    # Urgency uses map_priority logic (1=low..4=critical)
+    urgency_val = map_priority(parsed.get("urgency")) if parsed.get("urgency") else None
+    # Priority uses map_priority logic too
+    priority_val = map_priority(parsed.get("priority")) if parsed.get("priority") else None
+    
     origin_val = map_origin(parsed.get("origin")) if parsed.get("origin") else None
+    
+    status_raw = parsed.get("status")
+    status_val = "new"
+    if status_raw:
+        # Simple mapping: New -> new, Assigned -> assigned, Escalated TTO -> escalated_tto
+        s = status_raw.strip().lower().replace(" ", "_")
+        if s:
+            status_val = s
+
     outage_flag = None
     raw_outage = parsed.get("outage")
     if raw_outage:
@@ -320,6 +336,10 @@ def main():
         summary_parts.append(f"Impacto: {parsed.get('impact')}")
     if parsed.get("urgency"):
         summary_parts.append(f"Urgencia: {parsed.get('urgency')}")
+    if parsed.get("priority"):
+        summary_parts.append(f"Prioridad: {parsed.get('priority')}")
+    if parsed.get("status"):
+        summary_parts.append(f"Estado: {parsed.get('status')}")
 
     summary_block = "\n".join(summary_parts).strip()
     description_extra = (
@@ -362,12 +382,14 @@ def main():
         fields = {
             "title": f"{marker} {issue_title}" if marker else issue_title,
             "description": final_description,
-            "status": "new",
+            "status": status_val,
         }
         if impact_val is not None:
             fields["impact"] = impact_val
         if urgency_val is not None:
             fields["urgency"] = urgency_val
+        if priority_val is not None:
+            fields["priority"] = priority_val
         requester = parsed.get("requester")
         caller_id = resolve_caller(itop_url, itop_user, itop_pass, requester)
         if caller_id is not None:
