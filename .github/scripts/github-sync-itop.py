@@ -95,7 +95,7 @@ def map_impact(val):
     }
     if v in env_map and env_map[v] is not None:
         return env_map[v]
-    if v in ("department", "departamento"):
+    if v in ("department", "departamento", "departament"):
         return 1
     if v in ("service", "servicio"):
         return 2
