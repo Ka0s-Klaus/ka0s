@@ -1,0 +1,92 @@
+name: "Ka0s CMDB Sync -> iTop"
+
+on:
+  workflow_call:
+    inputs:
+      services:
+        description: "Comma separated list of services to sync"
+        required: true
+        type: string
+      status:
+        description: "Status to set (production, implementation, obsolete)"
+        default: "production"
+        type: string
+    secrets:
+      ITOP_URL:
+        required: true
+      ITOP_API_USER:
+        required: true
+      ITOP_API_PASSWORD:
+        required: true
+      ITOP_ORIGIN:
+        required: false
+
+  workflow_dispatch:
+    inputs:
+      services:
+        description: "Comma separated list of services to sync"
+        required: true
+        type: string
+      status:
+        description: "Status to set"
+        default: "production"
+        type: choice
+        options:
+          - production
+          - implementation
+          - obsolete
+
+jobs:
+  sync-cmdb:
+    name: Sync Services to iTop
+    runs-on: swarm-runners-scaleset
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github/scripts
+          fetch-depth: 0 # Need full history for pushing commits if needed, though we only need write access here
+      
+      - name: Set up Python
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          
+      - name: Install Dependencies
+        run: pip install requests
+        
+      - name: Run CMDB Sync
+        id: sync
+        env:
+          ITOP_URL: ${{ secrets.ITOP_URL }}
+          ITOP_API_USER: ${{ secrets.ITOP_API_USER }}
+          ITOP_API_PASSWORD: ${{ secrets.ITOP_API_PASSWORD }}
+          ITOP_ORIGIN: ${{ secrets.ITOP_ORIGIN || vars.ITOP_ORIGIN || 'Demo' }}
+        run: |
+          echo "Syncing Services: ${{ inputs.services }}"
+          python .github/scripts/itop-cmdb-sync.py \
+            --services "${{ inputs.services }}" \
+            --status "${{ inputs.status }}"
+
+      - name: Commit Audit Log
+        if: steps.sync.outputs.audit_file != ''
+        run: |
+          git config --global user.name "Ka0s CI Bot"
+          git config --global user.email "ci@ka0s.io"
+          
+          AUDIT_FILE="${{ steps.sync.outputs.audit_file }}"
+          git add "$AUDIT_FILE"
+          
+          if git diff --staged --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "chore(audit): add cmdb sync log [skip ci]"
+            # Pull before push to avoid conflicts in high concurrency
+            git pull --rebase origin HEAD
+            git push origin HEAD
+          fi
