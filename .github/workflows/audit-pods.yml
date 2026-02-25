@@ -62,7 +62,7 @@ jobs:
           ITOP_URL: ${{ secrets.ITOP_URL || vars.ITOP_URL }}
           ITOP_USER: ${{ secrets.ITOP_API_USER }}
           ITOP_PASSWORD: ${{ secrets.ITOP_API_PASSWORD }}
-          ITOP_ORIGIN: ${{ secrets.ITOP_ORIGIN || vars.ITOP_ORIGIN }}
+          ITOP_ORIGIN: ${{ secrets.ITOP_ORIGIN || vars.ITOP_ORIGIN || 'Ka0s Inc' }}
           FAILED_PODS_FILE: 'audit/kube/failed_pods.json'
           ITOP_AUDIT_OUTPUT_DIR: 'audit/itop'
         run: python3 devops/core/k8s/process-failed-pods.py

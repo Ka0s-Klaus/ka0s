@@ -166,8 +166,8 @@ def main():
     itop_pass = os.environ.get('ITOP_PASSWORD')
     file_path = os.environ.get('FAILED_PODS_FILE', 'audit/kube/failed_pods.json')
     audit_output_dir = os.environ.get('ITOP_AUDIT_OUTPUT_DIR', 'audit/itop')
-    # Default to 'monitoring' and force lowercase to match iTop enum codes
-    itop_origin = os.environ.get('ITOP_ORIGIN', 'monitoring').lower()
+    # Default to 'Ka0s Inc' as requested by user
+    itop_origin = os.environ.get('ITOP_ORIGIN') or 'Ka0s Inc'
 
     if not all([itop_url, itop_user, itop_pass]):
         print("[ERROR] Missing env vars.")
