@@ -58,25 +58,6 @@ jobs:
           FAILED_PODS_FILE: 'audit/kube/failed_pods.json'
         run: python3 devops/core/k8s/create-github-problem.py
 
-      - name: Check iTop connectivity
-        if: success()
-        env:
-          ITOP_URL: ${{ secrets.ITOP_URL || vars.ITOP_URL }}
-        run: |
-          echo "Checking connectivity to $ITOP_URL/webservices/rest.php?version=1.3"
-          curl --silent --show-error --fail --insecure --max-time 10 "$ITOP_URL/webservices/rest.php?version=1.3" || exit 1
-
-      - name: Process Tickets in iTop
-        if: success()
-        env:
-          ITOP_URL: ${{ secrets.ITOP_URL || vars.ITOP_URL }}
-          ITOP_USER: ${{ secrets.ITOP_API_USER }}
-          ITOP_PASSWORD: ${{ secrets.ITOP_API_PASSWORD }}
-          ITOP_ORIGIN: ${{ secrets.ITOP_ORIGIN || vars.ITOP_ORIGIN || 'Ka0s Inc' }}
-          FAILED_PODS_FILE: 'audit/kube/failed_pods.json'
-          ITOP_AUDIT_OUTPUT_DIR: 'audit/itop'
-        run: python3 devops/core/k8s/process-failed-pods.py
-
   handle-success:
     runs-on: swarm-runners-scaleset
     needs: [audit-pods]
