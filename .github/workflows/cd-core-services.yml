@@ -20,6 +20,8 @@ jobs:
   deploy-services:
     name: Deploy Changed Services
     runs-on: swarm-runners-scaleset
+    outputs:
+      services: ${{ steps.deploy_step.outputs.services }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -35,6 +37,7 @@ jobs:
           port: ${{ secrets.KAOS_SSH_PORT_1 }}
 
       - name: Detect and Deploy
+        id: deploy_step
         run: |
           echo "Detecting changes..."
           
@@ -59,6 +62,10 @@ jobs:
             grep -v "^core/b2b/core-services/kube/" | \
             cut -d/ -f1-4 | \
             sort | uniq)
+          
+          # Convert to comma-separated for output
+          SERVICES_CSV=$(echo "$CHANGED_SERVICES" | tr '\n' ',' | sed 's/,$//')
+          echo "services=$SERVICES_CSV" >> $GITHUB_OUTPUT
           
           if [ -z "$CHANGED_SERVICES" ]; then
             echo "No relevant services changed in this push."
@@ -189,56 +196,29 @@ jobs:
           fi
 
 
+  sync-cmdb:
+    needs: [deploy-services]
+    if: ${{ success() && needs.deploy-services.outputs.services != '' }}
+    uses: ./.github/workflows/itop-cmdb-sync.yml
+    with:
+      services: ${{ needs.deploy-services.outputs.services }}
+      status: "production"
+    secrets:
+      ITOP_URL: ${{ secrets.ITOP_URL }}
+      ITOP_API_USER: ${{ secrets.ITOP_API_USER }}
+      ITOP_API_PASSWORD: ${{ secrets.ITOP_API_PASSWORD }}
+      ITOP_ORIGIN: ${{ secrets.ITOP_ORIGIN || vars.ITOP_ORIGIN }}
+
   handle-success:
     runs-on: swarm-runners-scaleset
-    needs: [deploy-services]
+    needs: [deploy-services, sync-cmdb]
     if: ${{ success() }}
     steps: 
-      - run: echo "${{ env.KAOS_MODULE }} Success in runid ${{ github.run_id }}."
+      - run: echo "CD-CORE-SERVICES & CMDB Sync Success in runid ${{ github.run_id }}."
           
   handle-failure:
     runs-on: swarm-runners-scaleset
-    needs: [deploy-services]
+    needs: [deploy-services, sync-cmdb]
     if: ${{ failure() }} 
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-      - name: Install GH CLI
-        uses: ./.github/actions/install-gh-cli
-      - name: Create Failure Issue
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh issue create \
-            --title "${{ env.KAOS_MODULE }} Error detected in ${{ env.KAOS_CODE }}" \
-            --label "bug" \
-            --label "cd-failure" \
-            --body "Error detected during Core Services Deployment. 
-            - Workflow Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-            - Service: ${{ env.LAST_SERVICE }}
-            - Namespace: ${{ env.LAST_NAMESPACE }}
-            - Audit Reports: audit/deploy/deployment-report-${{ env.LAST_SERVICE }}-${{ github.run_id }}.md"
-
-  end-workflow:
-    needs: [handle-success, handle-failure]
-    if: always()
-    runs-on: swarm-runners-scaleset
-    steps:
-      - id: repo
-        name: Checkout Repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Install GH CLI
-        uses: ./.github/actions/install-gh-cli
-        
-      - name: Trigger Inspector
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          echo "🔍 Triggering Inspector for Audit..."
-          gh workflow run inspector.yml \
-            --ref main \
-            -f kaos-workflow-id="${{ github.run_id }}" \
-            -f kaos-user-start="${{ github.triggering_actor }}"
+    steps: 
+      - run: echo "Error detected in CD-CORE-SERVICES or CMDB Sync."

@@ -5,7 +5,7 @@ import urllib.request
 import urllib.parse
 import ssl
 import base64
-from datetime import datetime
+from datetime import datetime, timezone
 
 # =================================================================================================
 # [Ka0S] Process Failed Pods -> iTop Tickets (Reconciliation Mode)
@@ -166,7 +166,8 @@ def main():
     itop_pass = os.environ.get('ITOP_PASSWORD')
     file_path = os.environ.get('FAILED_PODS_FILE', 'audit/kube/failed_pods.json')
     audit_output_dir = os.environ.get('ITOP_AUDIT_OUTPUT_DIR', 'audit/itop')
-    itop_origin = os.environ.get('ITOP_ORIGIN', 'portal')
+    # Default to 'Ka0s Inc' as requested by user
+    itop_origin = os.environ.get('ITOP_ORIGIN') or 'Ka0s Inc'
 
     if not all([itop_url, itop_user, itop_pass]):
         print("[ERROR] Missing env vars.")
@@ -231,7 +232,7 @@ def main():
         )
         payload = {
             "type": "k8s_failed_pods_itop_reconciliation",
-            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "source": os.path.abspath(file_path),
             "failed_pods_count": len(current_failed_pods),
             "open_tickets_count": len(open_tickets),

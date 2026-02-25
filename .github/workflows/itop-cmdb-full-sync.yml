@@ -1,0 +1,133 @@
+name: "[Ka0s] CMDB Full Sync -> iTop (Scheduled)"
+
+on:
+  schedule:
+    # Runs at 02:00 UTC every day
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Motivo de la ejecución manual'
+        required: false
+        default: 'Sincronización manual bajo demanda'
+
+permissions:
+  contents: write # Needed for committing audit logs
+
+env:
+  KAOS_MODULE: "[Ka0s] CMDB Full Sync"
+  KAOS_CORRELATION_ID: ${{ github.run_id }}
+  KAOS_ACTOR: ${{ github.actor }}
+
+jobs:
+  full-sync:
+    name: Full Cluster Sync
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github/scripts
+          fetch-depth: 0
+
+      - name: Setup Environment
+        run: |
+          echo "Iniciando módulo: ${{ env.KAOS_MODULE }}"
+          echo "Run ID: ${{ env.KAOS_CORRELATION_ID }}"
+          echo "Actor: ${{ env.KAOS_ACTOR }}"
+
+      - name: Setup Kubectl Tunnel
+        uses: ./.github/actions/kubectl-tunnel
+        with:
+          host: ${{ secrets.KAOS_SSH_HOST_1 }}
+          username: ${{ secrets.KAOS_SSH_USER }}
+          key: ${{ secrets.KAOS_SSH_KEY_PRIV }}
+          port: ${{ secrets.KAOS_SSH_PORT_1 }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Dependencies
+        run: pip install requests
+
+      - name: Discover Services
+        id: discover
+        run: |
+          echo "🔍 Discovering Services in Cluster..."
+          
+          # Get all Namespaces that are NOT system namespaces
+          NAMESPACES=$(kubectl get ns --no-headers -o custom-columns=":metadata.name" | grep -vE "^(kube-|cattle-|metallb-|ingress-|local-path)")
+          
+          echo "Found Namespaces: $NAMESPACES"
+          
+          SERVICES_LIST=""
+          
+          for NS in $NAMESPACES; do
+             # Get services in this namespace
+             SVCS=$(kubectl get svc -n "$NS" --no-headers -o custom-columns=":metadata.name" 2>/dev/null || true)
+             if [ ! -z "$SVCS" ]; then
+                # Append to list (replace newlines with comma)
+                CLEAN_SVCS=$(echo "$SVCS" | tr '\n' ',' | sed 's/,$//')
+                SERVICES_LIST="${SERVICES_LIST}${CLEAN_SVCS},"
+             fi
+          done
+          
+          # Remove trailing comma
+          SERVICES_LIST=$(echo "$SERVICES_LIST" | sed 's/,$//')
+          
+          if [ -z "$SERVICES_LIST" ]; then
+             echo "⚠️ No services found matching criteria."
+             echo "services=" >> $GITHUB_OUTPUT
+          else
+             echo "✅ Found Services: $SERVICES_LIST"
+             echo "services=$SERVICES_LIST" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Sync to iTop
+        if: steps.discover.outputs.services != ''
+        id: sync
+        env:
+          ITOP_URL: ${{ secrets.ITOP_URL }}
+          ITOP_API_USER: ${{ secrets.ITOP_API_USER }}
+          ITOP_API_PASSWORD: ${{ secrets.ITOP_API_PASSWORD }}
+          ITOP_ORIGIN: ${{ secrets.ITOP_ORIGIN || vars.ITOP_ORIGIN || 'Demo' }}
+        run: |
+          python .github/scripts/itop-cmdb-sync.py \
+            --services "${{ steps.discover.outputs.services }}" \
+            --status "production"
+
+      - name: Commit Audit Log
+        if: steps.sync.outputs.audit_file != ''
+        run: |
+          git config --global user.name "${{ secrets.KAOS_BOT_NAME || 'Ka0s Bot' }}"
+          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL || 'bot@ka0s.io' }}"
+          
+          AUDIT_FILE="${{ steps.sync.outputs.audit_file }}"
+          git add "$AUDIT_FILE"
+          
+          if git diff --staged --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "chore(audit): add daily cmdb full sync log ${{ env.KAOS_CORRELATION_ID }} [skip ci]"
+            
+            # Reintento básico de push para evitar conflictos de concurrencia
+            count=0
+            until git push origin HEAD:${{ github.ref_name }} || [ $count -eq 5 ]; do
+              echo "Push fallido, reintentando..."
+              git pull --rebase origin ${{ github.ref_name }}
+              ((count++))
+              sleep 2
+            done
+          fi
+
+  handle-failure:
+    name: Handle Failure
+    needs: [full-sync]
+    if: failure()
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Notify Failure
+        run: echo "❌ Workflow ${{ env.KAOS_MODULE }} falló. Revisar logs."

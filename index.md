@@ -43,6 +43,7 @@ Bienvenido al centro de documentación del proyecto Ka0s. A continuación encont
 
 ## 📂 Otros / Sin Categoría
 *   [Módulo Ka0s Audit Failed Pods](core/docs/ka0s_audit_pods/ka0s_audit_pods.md)
+*   [Módulo Ka0s CMDB Sync](core/docs/ka0s_cmdb_sync/ka0s_cmdb_sync.md)
 *   [Módulo Ka0s GitHub → iTop Sync](core/docs/ka0s_github_sync_itop/ka0s_github_sync_itop.md)
 *   [Módulo Ka0s Issue Templates](core/docs/ka0s_issue_templates/ka0s_issue_templates.md)
 *   [Módulo Ka0s Onboarding](core/docs/ka0s_onboarding/ka0s_onboarding.md)
