@@ -49,7 +49,10 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Install dependencies
-        run: pip install pymongo
+        run: |
+          pip install pymongo
+          echo "Simulating failure for test..."
+          exit 1
 
       - name: Create database MongoDB
         run: |
