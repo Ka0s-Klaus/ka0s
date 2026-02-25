@@ -48,6 +48,9 @@ jobs:
             echo "No changes in failed pods or iTop reconciliation reports."
           fi
 
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+
       - name: Create GitHub Issue (Problem)
         if: success()
         env:
