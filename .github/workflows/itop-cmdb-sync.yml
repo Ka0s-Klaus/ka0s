@@ -46,17 +46,13 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          sparse-checkout: |
-            .github/scripts
-          fetch-depth: 0 # Need full history for pushing commits if needed, though we only need write access here
-      
-      - name: Set up Python
-      
+          fetch-depth: 0
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
-          
+
       - name: Install Dependencies
         run: pip install requests
         
