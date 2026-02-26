@@ -10,6 +10,8 @@ on:
 
 permissions:
   contents: write
+  issues: write
+  actions: read
 
 jobs:
   rolling-restart:
@@ -54,3 +56,70 @@ jobs:
           else
             echo "No logs to commit."
           fi
+
+  handle-success:
+    needs: [rolling-restart]
+    if: success()
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Log Success
+        run: echo "Cluster restart sequence completed successfully."
+
+  handle-failure:
+    name: Handle Failure
+    needs: [rolling-restart, handle-success]
+    if: failure()
+    runs-on: swarm-runners-scaleset
+    steps:
+      - id: repo
+        name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+      - name: Create Incident Issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --title "[INCIDENT]: Fallo en workflow ${{ github.workflow }}" \
+            --label "itop-incident,triage,automated" \
+            --body "### Organización
+          Ka0s
+          
+          ### Proyecto
+          ${{ env.KAOS_MODULE }}
+          
+          ### Fecha
+          $(date +'%Y-%m-%d %H:%M:%S')
+          
+          ### Descripción de la Incidencia
+          El workflow **${{ github.workflow }}** ha fallado.
+          - **Run ID**: ${{ github.run_id }}
+          - **Actor**: ${{ github.actor }}
+          - **Evento**: ${{ github.event_name }}
+          
+          ### Logs y Evidencias
+          Por favor revisar los logs de la ejecución: [Run Link](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          "
+
+  end-workflow:
+    needs: [handle-success, handle-failure]
+    if: always()
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+      - name: Trigger Inspector
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run inspector.yml \
+            -f workflow_name="${{ github.workflow }}" \
+            -f run_id="${{ github.run_id }}" \
+            -f status="${{ job.status }}"

@@ -135,33 +135,59 @@ jobs:
 
   handle-failure:
     name: Handle Failure
-    needs: [core-execution]
+    needs: [core-execution, handle-success]
     if: failure()
     runs-on: swarm-runners-scaleset
     steps:
-      - name: Notify Failure
-        run: echo "❌ Workflow ${{ env.KAOS_MODULE }} falló. Revisar logs."
+      - id: repo
+        name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+      - name: Create Incident Issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --title "[INCIDENT]: Fallo en workflow ${{ github.workflow }}" \
+            --label "itop-incident,triage,automated" \
+            --body "### Organización
+          Ka0s
+          
+          ### Proyecto
+          ${{ env.KAOS_MODULE }}
+          
+          ### Fecha
+          $(date +'%Y-%m-%d %H:%M:%S')
+          
+          ### Descripción de la Incidencia
+          El workflow **${{ github.workflow }}** ha fallado.
+          - **Run ID**: ${{ github.run_id }}
+          - **Actor**: ${{ github.actor }}
+          - **Evento**: ${{ github.event_name }}
+          
+          ### Logs y Evidencias
+          Por favor revisar los logs de la ejecución: [Run Link](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          "
 
   end-workflow:
     needs: [handle-success, handle-failure]
     if: always()
     runs-on: swarm-runners-scaleset
     steps:
-      - id: repo
-        name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
       - name: Install GH CLI
         uses: ./.github/actions/install-gh-cli
-
       - name: Trigger Inspector
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          echo "🔍 Triggering Inspector for Audit..."
           gh workflow run inspector.yml \
-            --ref main \
-            -f kaos-workflow-id="${{ github.run_id }}" \
-            -f kaos-user-start="${{ github.triggering_actor }}"
+            -f workflow_name="${{ github.workflow }}" \
+            -f run_id="${{ github.run_id }}" \
+            -f status="${{ job.status }}"
