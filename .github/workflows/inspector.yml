@@ -14,6 +14,19 @@ on:
         description: 'User initiated process'
         default: ""
         required: false
+      # Standardized Inputs for Automatic Trigger
+      workflow_name:
+        description: 'Name of the workflow triggering the inspector'
+        default: ""
+        required: false
+      run_id:
+        description: 'Run ID of the workflow execution'
+        default: ""
+        required: false
+      status:
+        description: 'Final status of the workflow'
+        default: ""
+        required: false
 permissions:
   contents: write
   actions: write
@@ -42,12 +55,23 @@ jobs:
           MAX_ATTEMPTS: ${{ env.MAX_ATTEMPTS || 10 }} # Número máximo de intentos
           SLEEP_SECONDS: ${{ env.SLEEP_SECONDS || 12 }} # Intervalo entre intentos
         run: |
-          echo "Checking the execution of the workflow..."
+          # Determine Workflow ID (Support legacy kaos-workflow-id and standard run_id)
+          TARGET_RUN_ID="${{ github.event.inputs.kaos-workflow-id }}"
+          if [ -z "$TARGET_RUN_ID" ]; then
+            TARGET_RUN_ID="${{ github.event.inputs.run_id }}"
+          fi
+          
+          if [ -z "$TARGET_RUN_ID" ]; then
+             echo "❌ Error: No Workflow ID provided (neither kaos-workflow-id nor run_id)."
+             exit 1
+          fi
+
+          echo "Checking the execution of the workflow $TARGET_RUN_ID..."
           ATTEMPT=1
           SUCCESS=false
           while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
-            gh run view -v ${{ github.event.inputs.kaos-workflow-id }} --log > ${{ env.KAOS_OUTPUT_EXECUTION }}${{ github.event.inputs.kaos-workflow-id }}.log 2>/dev/null
-            gh run view -v ${{ github.event.inputs.kaos-workflow-id }} --json ${{ env.KAOS_EXP_FULL_LOGS }} > ${{ env.KAOS_OUTPUT_EXECUTION }}${{ github.event.inputs.kaos-workflow-id }}.json 2>/dev/null
+            gh run view -v $TARGET_RUN_ID --log > ${{ env.KAOS_OUTPUT_EXECUTION }}$TARGET_RUN_ID.log 2>/dev/null
+            gh run view -v $TARGET_RUN_ID --json ${{ env.KAOS_EXP_FULL_LOGS }} > ${{ env.KAOS_OUTPUT_EXECUTION }}$TARGET_RUN_ID.json 2>/dev/null
             if [ $? -eq 0 ]; then
               SUCCESS=true
               break
@@ -62,7 +86,7 @@ jobs:
             exit 1
           fi
           echo "Extract resume of execution code..."
-          gh run view -v ${{ github.event.inputs.kaos-workflow-id }} --json ${{ env.KAOS_EXP_FULL_LOGS }} > ${{ env.KAOS_OUTPUT_EXECUTION }}${{ github.event.inputs.kaos-workflow-id }}.json
+          gh run view -v $TARGET_RUN_ID --json ${{ env.KAOS_EXP_FULL_LOGS }} > ${{ env.KAOS_OUTPUT_EXECUTION }}$TARGET_RUN_ID.json
       - id: upload-files
         name: Upload Files
         run: |
@@ -91,11 +115,17 @@ jobs:
     steps: 
       - id: handle-success-execution
         run: |
+          # Determine Workflow ID for messaging
+          TARGET_RUN_ID="${{ github.event.inputs.kaos-workflow-id }}"
+          if [ -z "$TARGET_RUN_ID" ]; then
+            TARGET_RUN_ID="${{ github.event.inputs.run_id }}"
+          fi
+
           # Si todo ha ido correctamente pasamos la tarjeta a done
           # Añadimos a cada paso el mensaje de éxito incluido en la issue original
           echo "${{ env.KAOS_MODULE }} Success in runid XXX initiated by ${{ github.event.inputs.kaos-user-start }} through issue number ${{ github.event.inputs.kaos-issue-id }}."
           echo "La ejecución solicitada en el issue ${{ github.event.inputs.kaos-issue-id }} ha sido completada con éxito."
-          echo "El código ejecutado y el log de su ejecución se encuentran en ${{ env.KAOS_OUTPUT_EXECUTION }} clave ${{ github.event.inputs.kaos-workflow-id }}"
+          echo "El código ejecutado y el log de su ejecución se encuentran en ${{ env.KAOS_OUTPUT_EXECUTION }} clave $TARGET_RUN_ID"
           echo "Se añaden los ficheros de la ejecución ${{ github.event.inputs.kaos-issue-id }} al repositorio."
           if [ -z "${{ github.event.inputs.kaos-issue-id }}" ]; then
             echo "No se ha encontrado el issue asociado a la ejecución."
