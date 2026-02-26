@@ -103,33 +103,20 @@ jobs:
             --body "### Organización
           Ka0s
           
-          ### Solicitante
-          @${{ github.actor }}
+          ### Proyecto
+          ${{ env.KAOS_MODULE }}
           
-          ### Estado
-          New
+          ### Fecha
+          $(date +'%Y-%m-%d %H:%M:%S')
           
-          ### Impacto
-          Service
-          
-          ### Urgencia
-          Medium
-          
-          ### Servicio / CI afectado
-          GitHub Actions / ${{ github.workflow }}
-          
-          ### Descripción
-          El workflow **${{ github.workflow }}** ha fallado durante su ejecución.
-          
-          **Detalles Técnicos:**
-          - **Módulo**: ${{ env.KAOS_MODULE }}
+          ### Descripción de la Incidencia
+          El workflow **${{ github.workflow }}** ha fallado.
           - **Run ID**: ${{ github.run_id }}
-          - **Commit**: ${{ github.sha }}
-          - **Branch/Ref**: ${{ github.ref_name }}
           - **Actor**: ${{ github.actor }}
+          - **Evento**: ${{ github.event_name }}
           
-          ### Pasos / Evidencias
-          Logs de ejecución: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          ### Logs y Evidencias
+          Por favor revisar los logs de la ejecución: [Run Link](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
           "
 
   end-workflow:
