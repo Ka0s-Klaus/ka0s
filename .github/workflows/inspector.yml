@@ -67,12 +67,16 @@ jobs:
           fi
 
           echo "Checking the execution of the workflow $TARGET_RUN_ID..."
+          
+          # Ensure output directory exists
+          mkdir -p "${{ env.KAOS_OUTPUT_EXECUTION }}"
+
           ATTEMPT=1
           SUCCESS=false
           while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
-            gh run view -v $TARGET_RUN_ID --log > ${{ env.KAOS_OUTPUT_EXECUTION }}$TARGET_RUN_ID.log 2>/dev/null
-            gh run view -v $TARGET_RUN_ID --json ${{ env.KAOS_EXP_FULL_LOGS }} > ${{ env.KAOS_OUTPUT_EXECUTION }}$TARGET_RUN_ID.json 2>/dev/null
-            if [ $? -eq 0 ]; then
+            # Use conditional execution to prevent 'set -e' from aborting the script on command failure
+            if gh run view -v $TARGET_RUN_ID --log > "${{ env.KAOS_OUTPUT_EXECUTION }}$TARGET_RUN_ID.log" 2>/dev/null && \
+               gh run view -v $TARGET_RUN_ID --json ${{ env.KAOS_EXP_FULL_LOGS }} > "${{ env.KAOS_OUTPUT_EXECUTION }}$TARGET_RUN_ID.json" 2>/dev/null; then
               SUCCESS=true
               break
             else
