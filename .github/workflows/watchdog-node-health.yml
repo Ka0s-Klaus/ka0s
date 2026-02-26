@@ -7,6 +7,10 @@ on:
 permissions:
   actions: write
   contents: read
+  issues: write
+
+env:
+  KAOS_MODULE: "[Ka0S] Watchdog Node Health"
 
 jobs:
   job-core:
@@ -89,33 +93,73 @@ jobs:
 
 
   handle-failure:
-    needs: [job-core]
+    name: Handle Failure
+    needs: [job-core] # Nota: handle-success no es necesario aquí como dependencia si no se encadena
     if: failure()
     runs-on: swarm-runners-scaleset
     steps:
-      - name: Log Failure
-        run: echo "Watchdog scan failed to execute."
+      - id: repo
+        name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+      - name: Create Incident Issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --title "[INCIDENT]: Fallo en workflow ${{ github.workflow }}" \
+            --label "itop-incident,triage,automated" \
+            --body "### Organización
+          Ka0s
+          
+          ### Solicitante
+          @${{ github.actor }}
+          
+          ### Estado
+          New
+          
+          ### Impacto
+          Service
+          
+          ### Urgencia
+          Medium
+          
+          ### Servicio / CI afectado
+          GitHub Actions / ${{ github.workflow }}
+          
+          ### Descripción
+          El workflow **${{ github.workflow }}** ha fallado durante su ejecución.
+          
+          **Detalles Técnicos:**
+          - **Módulo**: ${{ env.KAOS_MODULE }}
+          - **Run ID**: ${{ github.run_id }}
+          - **Commit**: ${{ github.sha }}
+          - **Branch/Ref**: ${{ github.ref_name }}
+          - **Actor**: ${{ github.actor }}
+          
+          ### Pasos / Evidencias
+          Logs de ejecución: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          "
 
   end-workflow:
     needs: [handle-success, handle-failure]
     if: always()
     runs-on: swarm-runners-scaleset
     steps:
-      - id: repo
-        name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
       - name: Install GH CLI
         uses: ./.github/actions/install-gh-cli
-        
       - name: Trigger Inspector
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          echo "🔍 Triggering Inspector for Audit..."
           gh workflow run inspector.yml \
-            --ref main \
-            -f kaos-workflow-id="${{ github.run_id }}" \
-            -f kaos-user-start="${{ github.triggering_actor }}"
+            -f workflow_name="${{ github.workflow }}" \
+            -f run_id="${{ github.run_id }}" \
+            -f status="${{ job.status }}"

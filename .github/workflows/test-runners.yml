@@ -1,30 +1,101 @@
-name: 'Ka0s Test Swarm Runners ScaleSet'
-
+name: Ka0s Test Runners
 on:
-  workflow_dispatch: # Permite la ejecución manual desde la pestaña "Actions"
-  # schedule:
-      # - cron: '*/5 * * * *'  # Se ejecuta cada 5 minutos
+  workflow_dispatch:
+
 permissions:
   contents: read
-  actions: write
   issues: write
+  actions: read
+
+env:
+  KAOS_MODULE: "[Ka0S] Test Runners"
 
 jobs:
   test-runner:
-    name: 'Run a test job on a Swarm runner ScaleSet'
-    
-    # ¡Esta es la parte más importante!
-    # El trabajo solo se ejecutará en un runner que tenga TODAS estas etiquetas.
     runs-on: swarm-runners-scaleset
-
     steps:
-      - name: 'Checkout code'
+      - name: Checkout
         uses: actions/checkout@v4
+      - name: Run Dummy Command
+        run: echo "Runner is active and working!"
 
-      - name: 'Show runner hostname and working directory'
+  handle-success:
+    name: Handle Success
+    needs: [test-runner]
+    if: success()
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Log Success
+        run: echo "Runner test completed successfully."
+
+  handle-failure:
+    name: Handle Failure
+    needs: [test-runner, handle-success]
+    if: failure()
+    runs-on: swarm-runners-scaleset
+    steps:
+      - id: repo
+        name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+      - name: Create Incident Issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "¡Hola desde un runner autoescalado en Docker Swarm!"
-          echo "El hostname de este runner es: $(hostname)"
-          echo "Estoy ejecutando el trabajo en el directorio:"
-          pwd
-          ls -la
+          gh issue create \
+            --title "[INCIDENT]: Fallo en workflow ${{ github.workflow }}" \
+            --label "itop-incident,triage,automated" \
+            --body "### Organización
+          Ka0s
+          
+          ### Solicitante
+          @${{ github.actor }}
+          
+          ### Estado
+          New
+          
+          ### Impacto
+          Service
+          
+          ### Urgencia
+          Medium
+          
+          ### Servicio / CI afectado
+          GitHub Actions / ${{ github.workflow }}
+          
+          ### Descripción
+          El workflow **${{ github.workflow }}** ha fallado durante su ejecución.
+          
+          **Detalles Técnicos:**
+          - **Módulo**: ${{ env.KAOS_MODULE }}
+          - **Run ID**: ${{ github.run_id }}
+          - **Commit**: ${{ github.sha }}
+          - **Branch/Ref**: ${{ github.ref_name }}
+          - **Actor**: ${{ github.actor }}
+          
+          ### Pasos / Evidencias
+          Logs de ejecución: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          "
+
+  end-workflow:
+    needs: [handle-success, handle-failure]
+    if: always()
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+      - name: Trigger Inspector
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run inspector.yml \
+            -f workflow_name="${{ github.workflow }}" \
+            -f run_id="${{ github.run_id }}" \
+            -f status="${{ job.status }}"

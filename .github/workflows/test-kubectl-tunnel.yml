@@ -3,6 +3,11 @@ name: 'Ka0s Test Kubectl Tunnel'
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+  issues: write
+  actions: read
+
 env:
   KAOS_MODULE: "[Ka0S] Kubectl Tunnel Test"
 
@@ -35,11 +40,74 @@ jobs:
         run: |
           echo "${{ env.KAOS_MODULE }} Success in runid ${{ github.run_id }} initiated."
           
-  handle_failure:
-      runs-on: swarm-runners-scaleset
-      needs: [test-tunnel]
-      if: ${{ failure() }} 
-      steps: 
-        - id: check-execution
-          run: |
-            echo "Error detected in ${{ env.KAOS_MODULE }}, creating issue..."
+  handle-failure:
+    name: Handle Failure
+    needs: [test-tunnel, handle-success]
+    if: failure()
+    runs-on: swarm-runners-scaleset
+    steps:
+      - id: repo
+        name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+      - name: Create Incident Issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --title "[INCIDENT]: Fallo en workflow ${{ github.workflow }}" \
+            --label "itop-incident,triage,automated" \
+            --body "### Organización
+          Ka0s
+          
+          ### Solicitante
+          @${{ github.actor }}
+          
+          ### Estado
+          New
+          
+          ### Impacto
+          Service
+          
+          ### Urgencia
+          Medium
+          
+          ### Servicio / CI afectado
+          GitHub Actions / ${{ github.workflow }}
+          
+          ### Descripción
+          El workflow **${{ github.workflow }}** ha fallado durante su ejecución.
+          
+          **Detalles Técnicos:**
+          - **Módulo**: ${{ env.KAOS_MODULE }}
+          - **Run ID**: ${{ github.run_id }}
+          - **Commit**: ${{ github.sha }}
+          - **Branch/Ref**: ${{ github.ref_name }}
+          - **Actor**: ${{ github.actor }}
+          
+          ### Pasos / Evidencias
+          Logs de ejecución: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          "
+
+  end-workflow:
+    needs: [handle-success, handle-failure]
+    if: always()
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+      - name: Trigger Inspector
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run inspector.yml \
+            -f workflow_name="${{ github.workflow }}" \
+            -f run_id="${{ github.run_id }}" \
+            -f status="${{ job.status }}"

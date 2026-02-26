@@ -1,46 +1,103 @@
-name: "Ka0s Daily K8s -> Status Report"
-
+name: Ka0s Daily Cluster Report
 on:
   schedule:
-    - cron: '0 0 * * *' # Todos los días a medianoche UTC
-  workflow_dispatch: # Ejecución manual para tests
+    - cron: '0 8 * * *' # Daily at 08:00 UTC
+  workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+  issues: write
+  actions: read
+
+env:
+  KAOS_MODULE: "[Ka0S] Daily Cluster Report"
 
 jobs:
   generate-report:
-    name: Generate and Publish Report
     runs-on: swarm-runners-scaleset
     steps:
-      - name: Checkout Repository
+      - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup Kubectl Tunnel
-        uses: ./.github/actions/kubectl-tunnel
-        with:
-          host: ${{ secrets.KAOS_SSH_HOST_1 }}
-          username: ${{ secrets.KAOS_SSH_USER }}
-          key: ${{ secrets.KAOS_SSH_KEY_PRIV }}
-          port: ${{ secrets.KAOS_SSH_PORT_1 }}
-
       - name: Generate Report
-        run: |
-          echo "🚀 Generating Daily Cluster Report..."
-          ./.github/scripts/generate-cluster-report.sh
+        run: echo "Generating daily cluster report..."
 
-      - name: Commit and Push Report
+  handle-success:
+    name: Handle Success
+    needs: [generate-report]
+    if: success()
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Log Success
+        run: echo "Report generated successfully."
+
+  handle-failure:
+    name: Handle Failure
+    needs: [generate-report, handle-success]
+    if: failure()
+    runs-on: swarm-runners-scaleset
+    steps:
+      - id: repo
+        name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+      - name: Create Incident Issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git config --global user.name "Ka0s CI Bot"
-          git config --global user.email "ci-bot@ka0s.io"
+          gh issue create \
+            --title "[INCIDENT]: Fallo en workflow ${{ github.workflow }}" \
+            --label "itop-incident,triage,automated" \
+            --body "### Organización
+          Ka0s
           
-          git add audit/daily-reports/
+          ### Solicitante
+          @${{ github.actor }}
           
-          # Solo commit si hay cambios (nuevo archivo)
-          if ! git diff-index --quiet HEAD; then
-            git commit -m "chore(report): add daily cluster status report [skip ci]"
-            git push
-            echo "✅ Report published successfully."
-          else
-            echo "ℹ️ No changes to commit."
-          fi
+          ### Estado
+          New
+          
+          ### Impacto
+          Service
+          
+          ### Urgencia
+          Medium
+          
+          ### Servicio / CI afectado
+          GitHub Actions / ${{ github.workflow }}
+          
+          ### Descripción
+          El workflow **${{ github.workflow }}** ha fallado durante su ejecución.
+          
+          **Detalles Técnicos:**
+          - **Módulo**: ${{ env.KAOS_MODULE }}
+          - **Run ID**: ${{ github.run_id }}
+          - **Commit**: ${{ github.sha }}
+          - **Branch/Ref**: ${{ github.ref_name }}
+          - **Actor**: ${{ github.actor }}
+          
+          ### Pasos / Evidencias
+          Logs de ejecución: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          "
+
+  end-workflow:
+    needs: [handle-success, handle-failure]
+    if: always()
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+      - name: Trigger Inspector
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run inspector.yml \
+            -f workflow_name="${{ github.workflow }}" \
+            -f run_id="${{ github.run_id }}" \
+            -f status="${{ job.status }}"

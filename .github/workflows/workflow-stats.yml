@@ -410,48 +410,76 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
-          # gh issue comment $RNNUMBER --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data_${{ env.KAOS_CODE }}.log"
           echo "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data_${{ env.KAOS_CODE }}.log"
 
   handle-failure:
+    name: Handle Failure
     runs-on: swarm-runners-scaleset
     needs: [job-core, handle-success]
-    if: ${{ failure() }}
+    if: failure()
     steps:
       - id: repo
         name: Checkout code
-        if: ${{ always() }}
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      # con esta parte suplimos que la imagen no disponga de la cli de GH    
       - name: Install GH CLI
         uses: ./.github/actions/install-gh-cli
-
-      - id: handle-failure-execution
-        name: handle-failure-execution
+      - name: Create Incident Issue
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Error detected in process"
-          # RNNUMBER=$(echo "${{ github.ref }}" | grep -o '[0-9]*')
-          # gh issue comment $RNNUMBER --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero core/results/event_data${{ env.KAOS_CODE }}.log"
-          # Creamos la issue dado que ha fallado el modulo principal
-          gh issue create  --title "[Ka0S] Error detected in ${{ env.KAOS_MODULE }}" --body "Error detected in ${{ env.KAOS_MODULE }}. Please check the logs for ${{ github.run_id }} more information of error."
+          gh issue create \
+            --title "[INCIDENT]: Fallo en workflow ${{ github.workflow }}" \
+            --label "itop-incident,triage,automated" \
+            --body "### Organización
+          Ka0s
+          
+          ### Solicitante
+          @${{ github.actor }}
+          
+          ### Estado
+          New
+          
+          ### Impacto
+          Service
+          
+          ### Urgencia
+          Medium
+          
+          ### Servicio / CI afectado
+          GitHub Actions / ${{ github.workflow }}
+          
+          ### Descripción
+          El workflow **${{ github.workflow }}** ha fallado durante su ejecución.
+          
+          **Detalles Técnicos:**
+          - **Módulo**: ${{ env.KAOS_MODULE }}
+          - **Run ID**: ${{ github.run_id }}
+          - **Commit**: ${{ github.sha }}
+          - **Branch/Ref**: ${{ github.ref_name }}
+          - **Actor**: ${{ github.actor }}
+          
+          ### Pasos / Evidencias
+          Logs de ejecución: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          "
 
   end-workflow:
     needs: [handle-success, handle-failure]
     if: always()
     runs-on: swarm-runners-scaleset
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
       - name: Trigger Inspector
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          echo "🔍 Triggering Inspector for Audit..."
           gh workflow run inspector.yml \
-            --ref main \
-            -f kaos-workflow-id="${{ github.run_id }}" \
-            -f kaos-user-start="${{ github.triggering_actor }}"
+            -f workflow_name="${{ github.workflow }}" \
+            -f run_id="${{ github.run_id }}" \
+            -f status="${{ job.status }}"
