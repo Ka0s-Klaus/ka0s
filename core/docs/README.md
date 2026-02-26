@@ -72,7 +72,7 @@ Si, parece increible pero hemos decidido en el equipo usar una terminología "es
 ## Releases
 
 >- [Ka0s - Klaus](./ka0s_release/kaos-klaus.md)
->- Ka0s - Proyecto D
+>- Ka0s - Proyecto David (24102025)
 
 ## Nuestra metodología
 
