@@ -54,7 +54,7 @@ jobs:
       - name: Create GitHub Issue (Problem)
         if: success()
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
           FAILED_PODS_FILE: 'audit/kube/failed_pods.json'
         run: python3 devops/core/k8s/create-github-problem.py
 
@@ -82,7 +82,7 @@ jobs:
         uses: ./.github/actions/install-gh-cli
       - name: Create Incident Issue
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
         run: |
           gh issue create \
             --title "[INCIDENT]: Fallo en workflow ${{ github.workflow }}" \
