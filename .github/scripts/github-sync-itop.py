@@ -442,7 +442,11 @@ def main():
         # Changes in iTop have complex workflows (approval, implementation, etc.)
         # Auto-closing them from GitHub is risky. We just add a log entry.
         if "Change" in effective_class:
-            print(f"Skipping auto-close for {effective_class} {key}; adding log entry instead.")
+            msg = (
+                f"Skipping auto-close for {effective_class} {key}; "
+                "adding log entry instead.\n"
+            )
+            sys.stderr.write(msg)
             return update_ticket(key)
 
         # Optional: assign to API user before resolving (common iTop workflow)
