@@ -32,10 +32,10 @@ El script utiliza IDs fijos obtenidos de la API de GitHub GraphQL para el proyec
 | **Changes** | `f3009b5e` |
 | **Request** | `b97b75b7` |
 
-### 4. Estructura del Script
-El paso `Route Issue to Project` realiza dos llamadas principales a la CLI `gh`:
-1.  `gh project item-add`: Añade el Issue al proyecto (estado inicial nulo).
-2.  `gh project item-edit`: Actualiza el campo `Status` si se detecta una etiqueta conocida (`itop-*`).
+###35→### 4. Estructura del Script
+36→El paso `Route Issue to Project` realiza dos llamadas principales a la CLI `gh`:
+37→1.  `gh api graphql`: Añade el Issue al proyecto utilizando una mutación GraphQL (`addProjectV2Item`). Se prefiere este método sobre `gh project item-add` para evitar errores de resolución del "Owner" en entornos de CI (`unknown owner type`) y para mayor compatibilidad con tokens de corta duración.
+38→2.  `gh project item-edit`: Actualiza el campo `Status` utilizando el ID del item obtenido en el paso anterior, si se detecta una etiqueta conocida (`itop-*`).
 
 ### 5. Manejo de Errores
 *   Si `gh project item-add` falla (ej. token inválido), el workflow termina con error.

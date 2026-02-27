@@ -6,7 +6,7 @@ on:
     types: [opened]
 
 permissions:
-  issues: read
+  issues: write
   repository-projects: write
   actions: write # Required for triggering inspector
 
@@ -18,7 +18,7 @@ env:
 jobs:
   core-execution:
     name: Route to Project
-    runs-on: ubuntu-latest
+    runs-on: swarm-runners-scaleset
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -44,10 +44,18 @@ jobs:
           echo "Processing Issue: ${{ github.event.issue.html_url }}"
           
           # 1. Añadir el Issue al Proyecto
-          # Devuelve JSON con el ID del Item creado en el proyecto
-          # Usamos --url porque --content-id no es soportado en esta versión de gh CLI
-          ITEM_JSON=$(gh project item-add "$PROJECT_NUMBER" --owner "$PROJECT_OWNER" --url "${{ github.event.issue.html_url }}" --format json)
-          ITEM_ID=$(echo "$ITEM_JSON" | jq -r '.id')
+          # Usamos GraphQL API directamente para evitar errores de resolución de Owner en gh CLI ("unknown owner type")
+          # y para ser agnósticos a si se usa GITHUB_TOKEN o PAT (siempre que tenga permisos).
+          ITEM_JSON=$(gh api graphql -f query='
+            mutation($projectId: ID!, $contentId: ID!) {
+              addProjectV2Item(input: {projectId: $projectId, contentId: $contentId}) {
+                item {
+                  id
+                }
+              }
+            }' -f projectId="$PROJECT_NODE_ID" -f contentId="$ISSUE_NODE_ID")
+            
+          ITEM_ID=$(echo "$ITEM_JSON" | jq -r '.data.addProjectV2Item.item.id')
           
           if [ -z "$ITEM_ID" ] || [ "$ITEM_ID" = "null" ]; then
             echo "::error::Failed to add issue to project."
@@ -91,7 +99,7 @@ jobs:
     name: Handle Success
     needs: [core-execution]
     if: success()
-    runs-on: ubuntu-latest
+    runs-on: swarm-runners-scaleset
     steps:
       - name: Notify Success
         run: echo "✅ Workflow ${{ env.KAOS_MODULE }} completado correctamente."
@@ -100,7 +108,7 @@ jobs:
     name: Handle Failure
     needs: [core-execution]
     if: failure()
-    runs-on: ubuntu-latest
+    runs-on: swarm-runners-scaleset
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -151,7 +159,7 @@ jobs:
   end-workflow:
     needs: [handle-success, handle-failure]
     if: always()
-    runs-on: ubuntu-latest
+    runs-on: swarm-runners-scaleset
     steps:
       - id: repo
         name: Checkout Repository
