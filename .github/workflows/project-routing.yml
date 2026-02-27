@@ -1,0 +1,167 @@
+name: Project Routing
+run-name: Route Issue #${{ github.event.issue.number }} to Ka0sc0re Project
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: read
+  repository-projects: write
+  actions: write # Required for triggering inspector
+
+env:
+  KAOS_MODULE: "[Ka0S] Project Routing"
+  KAOS_CORRELATION_ID: ${{ github.run_id }}
+  KAOS_ACTOR: ${{ github.actor }}
+
+jobs:
+  core-execution:
+    name: Route to Project
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Route Issue to Project
+        env:
+          # Usamos KAOS_REPO_TOKEN para tener permisos a nivel de Organización
+          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN || secrets.GITHUB_TOKEN }}
+          ISSUE_NODE_ID: ${{ github.event.issue.node_id }}
+          PROJECT_NUMBER: 4
+          PROJECT_OWNER: "Ka0s-Klaus"
+          # IDs obtenidos de la API del Proyecto
+          PROJECT_NODE_ID: "PVT_kwDOC79-F84AxdYh"
+          STATUS_FIELD_ID: "PVTSSF_lADOC79-F84AxdYhzgnkTfg"
+          # Option IDs
+          OPT_ISSUES: "493fe49c"
+          OPT_PROBLEMS: "e74f7166"
+          OPT_CHANGES: "f3009b5e"
+          OPT_REQUEST: "b97b75b7"
+        run: |
+          echo "Processing Issue: ${{ github.event.issue.html_url }}"
+          
+          # 1. Añadir el Issue al Proyecto
+          # Devuelve JSON con el ID del Item creado en el proyecto
+          ITEM_JSON=$(gh project item-add "$PROJECT_NUMBER" --owner "$PROJECT_OWNER" --content-id "$ISSUE_NODE_ID" --format json)
+          ITEM_ID=$(echo "$ITEM_JSON" | jq -r '.id')
+          
+          if [ -z "$ITEM_ID" ] || [ "$ITEM_ID" = "null" ]; then
+            echo "::error::Failed to add issue to project."
+            exit 1
+          fi
+          
+          echo "Item added to project. Item ID: $ITEM_ID"
+          
+          # 2. Determinar el Estado según las etiquetas
+          LABELS="${{ join(github.event.issue.labels.*.name, ',') }}"
+          TARGET_OPTION_ID=""
+          TARGET_NAME=""
+          
+          if [[ "$LABELS" == *"itop-incident"* ]]; then
+            TARGET_OPTION_ID="$OPT_ISSUES"
+            TARGET_NAME="Issues"
+          elif [[ "$LABELS" == *"itop-problem"* ]]; then
+            TARGET_OPTION_ID="$OPT_PROBLEMS"
+            TARGET_NAME="Problems"
+          elif [[ "$LABELS" == *"itop-change"* ]]; then
+            TARGET_OPTION_ID="$OPT_CHANGES"
+            TARGET_NAME="Changes"
+          elif [[ "$LABELS" == *"itop-request"* ]]; then
+            TARGET_OPTION_ID="$OPT_REQUEST"
+            TARGET_NAME="Request"
+          fi
+          
+          # 3. Actualizar el campo Estado si hubo coincidencia
+          if [ -n "$TARGET_OPTION_ID" ]; then
+            echo "Setting Status to: $TARGET_NAME ($TARGET_OPTION_ID)"
+            gh project item-edit \
+              --id "$ITEM_ID" \
+              --project-id "$PROJECT_NODE_ID" \
+              --field-id "$STATUS_FIELD_ID" \
+              --single-select-option-id "$TARGET_OPTION_ID"
+          else
+            echo "No matching label found for auto-routing status. Issue added to Inbox."
+          fi
+
+  handle-success:
+    name: Handle Success
+    needs: [core-execution]
+    if: success()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Success
+        run: echo "✅ Workflow ${{ env.KAOS_MODULE }} completado correctamente."
+
+  handle-failure:
+    name: Handle Failure
+    needs: [core-execution]
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+      - name: Create Incident Issue
+        env:
+          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN || secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --title "[INCIDENT]: Fallo en workflow ${{ github.workflow }}" \
+            --label "itop-incident,triage,automated" \
+            --body "### Organización
+          Ka0s
+          
+          ### Solicitante
+          @${{ github.actor }}
+          
+          ### Estado
+          New
+          
+          ### Impacto
+          Service
+          
+          ### Urgencia
+          Medium
+          
+          ### Servicio / CI afectado
+          GitHub Actions / ${{ github.workflow }}
+          
+          ### Descripción
+          El workflow **${{ github.workflow }}** ha fallado durante su ejecución.
+          
+          **Detalles Técnicos:**
+          - **Módulo**: ${{ env.KAOS_MODULE }}
+          - **Run ID**: ${{ github.run_id }}
+          - **Commit**: ${{ github.sha }}
+          - **Branch/Ref**: ${{ github.ref_name }}
+          - **Actor**: ${{ github.actor }}
+          
+          ### Pasos / Evidencias
+          Logs de ejecución: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          "
+
+  end-workflow:
+    needs: [handle-success, handle-failure]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - id: repo
+        name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+        
+      - name: Trigger Inspector
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "🔍 Triggering Inspector for Audit..."
+          gh workflow run inspector.yml \
+            --ref main \
+            -f kaos-workflow-id="${{ github.run_id }}" \
+            -f kaos-user-start="${{ github.triggering_actor }}"

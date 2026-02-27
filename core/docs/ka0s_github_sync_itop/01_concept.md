@@ -28,7 +28,7 @@ El workflow escucha eventos de Issues en GitHub y sincroniza la información rel
   1. `ev_assign` al usuario API (por OQL de login)
   2. `ev_resolve` con `solution` y `resolution_code`
   3. `ev_close` con `user_satisfaction` y `user_comment`
-  **Excepción**: Para tickets de tipo `Change` (y sus subclases), **NO se realiza el cierre automático** debido a la complejidad de sus flujos de trabajo. En su lugar, se añade una entrada en el `private_log` indicando que la Issue de GitHub ha sido cerrada.
+  **Excepción**: Para tickets de tipo `Change` (y sus subclases), **NO se realiza el cierre automático** debido a la complejidad de sus flujos de trabajo ITIL. En su lugar, se añade una entrada en el `private_log` indicando que la Issue de GitHub ha sido cerrada, delegando el cierre formal a la consola de iTop.
 
 ## Mapa de Eventos GitHub → Operaciones iTop
 

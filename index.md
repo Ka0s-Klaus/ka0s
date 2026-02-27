@@ -47,6 +47,7 @@ Bienvenido al centro de documentación del proyecto Ka0s. A continuación encont
 *   [Módulo Ka0s GitHub → iTop Sync](core/docs/ka0s_github_sync_itop/ka0s_github_sync_itop.md)
 *   [Módulo Ka0s Issue Templates](core/docs/ka0s_issue_templates/ka0s_issue_templates.md)
 *   [Módulo Ka0s Onboarding](core/docs/ka0s_onboarding/ka0s_onboarding.md)
+*   [Ka0s Project Routing](core/docs/ka0s_project_routing/ka0s_project_routing.md)
 *   [Watchdog - Node Health](core/docs/ka0s_watchdog_node_health/ka0s_watchdog_node_health.md)
 
 ---
