@@ -20,8 +20,9 @@ Este workflow se dispara automáticamente ante eventos de Issues:
 4. Si tienes acceso a iTop, comprueba que el ticket/clase correspondiente se ha creado/actualizado.
 5. Añade un comentario en la Issue y valida que el log del ticket se actualiza (no se crean tickets nuevos):
    - `UserRequest`/`Incident` → `public_log`
-   - `Problem`/`Change` → `private_log`
-6. Cierra la Issue y valida que el ticket pasa por asignación/resolución/cierre.
+23.   - `Problem`/`Change` → `private_log`
+24. Cierra la Issue y valida que el ticket pasa por asignación/resolución/cierre.
+    - **Nota**: Si es un ticket de tipo `Change`, el ticket **no cambiará de estado** (solo se añadirá un log en `private_log`).
 
 ## Troubleshooting
 - `result.json` vacío o inexistente: revisar logs del script Python.
@@ -150,69 +151,24 @@ Archivo: [20260218_201511_R-000133_4162.json](file:///Users/santale/ka0s-klaus/k
 
 Tras este evento, el ticket debe transicionar a resuelto/cerrado en iTop, con entradas en el log correspondiente a la clase (`public_log` o `private_log`).
 
-### Cierre de Change (issues.closed → close) — NormalChange
-Ejemplo de cierre de un cambio donde los estímulos usan la subclase efectiva y se registran entradas en `private_log`.
+### Cierre de Change (issues.closed → close)
+**Nota**: Desde la versión 2026, los tickets de tipo `Change` **no se cierran automáticamente** para respetar los flujos ITIL. En su lugar, se añade una entrada en el log.
 
 ```json
 {
   "github_event": "issues",
   "github_action": "closed",
-  "operation": "close",
+  "operation": "update",
   "itop_class": "Change",
   "itop_key": "<ID_ITOP>",
-  "close": {
-    "status": "ok",
-    "response": { "code": 0 }
-  }
-}
-```
-
-Notas de validación:
-- La clase efectiva usada en los estímulos es `NormalChange`/`RoutineChange`/`EmergencyChange` según "Tipo de cambio".
-- Las entradas de log para cambios se escriben en `private_log` durante `ev_assign`, `ev_resolve` y `ev_close`.
-
-### Cierre de Change (issues.closed → close) — EmergencyChange
-Ejemplo genérico de cierre de un cambio de emergencia. Se aplican los mismos estímulos y el log se registra en `private_log`.
-
-```json
-{
-  "github_event": "issues",
-  "github_action": "closed",
-  "operation": "close",
-  "itop_class": "Change",
-  "itop_key": "<ID_ITOP>",
-  "close": {
+  "update": {
     "status": "ok",
     "response": { "code": 0 },
     "payload": {
-      "operation": "core/apply_stimulus",
-      "class": "EmergencyChange",
       "fields": {
-        "private_log": { "add_item": { "message": "Ticket cerrado automáticamente" } }
-      }
-    }
-  }
-}
-```
-
-### Cierre de Change con Outage=no (issues.closed → close) — RoutineChange
-Ejemplo genérico donde el cambio es rutinario (`RoutineChange`) y `outage` es `no`. El cierre sigue la misma secuencia y registra en `private_log`.
-
-```json
-{
-  "github_event": "issues",
-  "github_action": "closed",
-  "operation": "close",
-  "itop_class": "Change",
-  "itop_key": "<ID_ITOP>",
-  "close": {
-    "status": "ok",
-    "response": { "code": 0 },
-    "payload": {
-      "operation": "core/apply_stimulus",
-      "class": "RoutineChange",
-      "fields": {
-        "private_log": { "add_item": { "message": "Ticket cerrado automáticamente" } }
+        "private_log": {
+          "add_item": { "message": "GitHub issues/closed: https://github.com/..." }
+        }
       }
     }
   }

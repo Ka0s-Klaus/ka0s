@@ -36,6 +36,7 @@
 - Uso de secretos para autenticación con iTop (nunca embebidos en código).
 - Principio de mínimo privilegio en permisos del workflow.
 - Permisos actuales: `contents: write`, `issues: write`, `actions: write`.
+- Uso de `KAOS_REPO_TOKEN` (o PAT equivalente) para permitir que los eventos generados por el bot disparen otros workflows (evitando la limitación recursiva de `GITHUB_TOKEN`).
 - Evita inyección directa de inputs en `run:` a través de variables de entorno.
 
 ## Runners

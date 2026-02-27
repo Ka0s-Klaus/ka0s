@@ -28,7 +28,7 @@ El workflow escucha eventos de Issues en GitHub y sincroniza la información rel
   1. `ev_assign` al usuario API (por OQL de login)
   2. `ev_resolve` con `solution` y `resolution_code`
   3. `ev_close` con `user_satisfaction` y `user_comment`
-  En caso de fallo en estímulos, se registra en el log correspondiente a la clase (`public_log` o `private_log`) sin interrumpir el flujo.
+  **Excepción**: Para tickets de tipo `Change` (y sus subclases), **NO se realiza el cierre automático** debido a la complejidad de sus flujos de trabajo. En su lugar, se añade una entrada en el `private_log` indicando que la Issue de GitHub ha sido cerrada.
 
 ## Mapa de Eventos GitHub → Operaciones iTop
 
@@ -36,7 +36,7 @@ El workflow escucha eventos de Issues en GitHub y sincroniza la información rel
 |----------------------------|--------------|---------------------------|-------------------------------------------|-------------------------------------------|
 | `issues`                   | `opened`     | `core/create`             | `operation: "create"`                    | Crea ticket nuevo con marcador en título. |
 | `issues`                   | `edited`     | `core/update`             | `operation: "update"`                    | Actualiza descripción y añade log según clase.|
-| `issues`                   | `closed`     | `ev_assign` → `ev_resolve` → `ev_close` | `operation: "close"`                     | Asigna, resuelve y cierra el ticket (log según clase). |
+| `issues`                   | `closed`     | `ev_assign` → `ev_resolve` → `ev_close` | `operation: "close"`                     | Asigna, resuelve y cierra el ticket (log según clase). **Nota**: Para `Change`, solo añade log (`operation: "update"`). |
 | `issue_comment`            | `created`    | `core/update` (log según clase) | `operation: "add_comment"`             | UR/Incident: `public_log`; Problem/Change: `private_log`.|
 | `issue_comment` (sin ticket previo) | `created`    | `core/create`             | `operation: "create_from_comment"`       | Crea ticket mínimo y registra el comentario.|
 
