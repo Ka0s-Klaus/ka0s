@@ -1,0 +1,88 @@
+{
+  "timestamp": "2026-02-27T13:46:56.724710Z",
+  "github_event": "issue_comment",
+  "github_action": "created",
+  "github_repo": "Ka0s-Klaus/ka0s",
+  "github_ref": "https://github.com/Ka0s-Klaus/ka0s/issues/4261",
+  "operation": "add_comment",
+  "itop_class": "Problem",
+  "itop_key": "321",
+  "update": {
+    "status": "ok",
+    "response": {
+      "code": 0,
+      "message": null,
+      "objects": {
+        "Problem::321": {
+          "code": 0,
+          "message": "updated",
+          "class": "Problem",
+          "key": "321",
+          "fields": {
+            "operational_status": "ongoing",
+            "ref": "P-000664",
+            "org_id": "1",
+            "org_name": "Ka0s Inc",
+            "caller_id": "0",
+            "caller_name": "",
+            "team_id": "0",
+            "team_name": "",
+            "team_email": "",
+            "agent_id": "0",
+            "agent_name": "",
+            "title": "[GH:#4261 Ka0s-Klaus/ka0s] [PROBLEM]: Pod elk/mongodb-sync-29529840-b2mvk Failed",
+            "description": "<p>Resumen: [PROBLEM]: Pod elk/mongodb-sync-29529840-b2mvk Failed\nSolicitante: Ka0s Bot\nOrigen: Portal\n\n---\nDescripcion original (GitHub):\n\n### Organizacion (mandatory en iTop)\nKa0s Inc\n\n### Solicitante (Caller en iTop, opcional)\nKa0s Bot\n\n### Origen\nPortal\n\n### Impacto (mandatory)\nService\n\n### Urgencia (mandatory)\nmedium\n\n### Servicio / CI (nombre visible en iTop)\nelk/mongodb-sync-29529840-b2mvk\n\n### Descripci\u00f3n (mandatory)\nEl pod `mongodb-sync-29529840-b2mvk` en el namespace `elk` ha fallado.\n**Estado actual:** `Failed`\n\n**Condiciones:**\n- **PodReadyToStartContainers**: No reason - No message\n- **Ready**: PodFailed - No message\n- **ContainersReady**: PodFailed - No message\n\n\n### Hip\u00f3tesis\nDetectado autom\u00e1ticamente por auditor\u00eda de pods.\n\n### Plan de Investigaci\u00f3n\n1. `kubectl describe pod mongodb-sync-29529840-b2mvk -n elk`\n2. `kubectl logs mongodb-sync-29529840-b2mvk -n elk`\n\n---\nOrigen: GitHub\nIssue: https://github.com/Ka0s-Klaus/ka0s/issues/4261\nRepo: Ka0s-Klaus/ka0s\n</p>",
+            "start_date": "2026-02-25 10:32:15",
+            "end_date": "",
+            "last_update": "2026-02-27 14:46:57",
+            "close_date": "",
+            "private_log": {
+              "entries": [
+                {
+                  "date": "2026-02-27 14:46:57",
+                  "user_login": "Github iTop",
+                  "user_id": "8",
+                  "message": "Comentario de GitHub por ka0score:\n\nkubectl describe pod mongodb-sync-29529840-b2mvk -n elk\nName:             mongodb-sync-29529840-b2mvk\nNamespace:        elk\nPriority:         0\nService Account:  default\nNode:             k8-node-20/192.168.1.20\nStart Time:       Sun, 22 Feb 2026 20:00:00 +0000\nLabels:           batch.kubernetes.io/controller-uid=4eefd7fa-e81c-4c7b-b4d2-61ebbec0cc90\n                  batch.kubernetes.io/job-name=mongodb-sync-29529840\n                  controller-uid=4eefd7fa-e81c-4c7b-b4d2-61ebbec0cc90\n                  job-name=mongodb-sync-29529840\nAnnotations:      cni.projectcalico.org/containerID: c1e8598d831683864724af4fe36ce2927b75bf94f1661f2e8c7f7d8e6239d485\n                  cni.projectcalico.org/podIP:\n                  cni.projectcalico.org/podIPs:\nStatus:           Failed\nIP:\nIPs:              <none>\nControlled By:    Job/mongodb-sync-29529840\nContainers:\n  mongodb-sync:\n    Container ID:  containerd://4d5c078bbd1f5953ae65e30e79eabf7f88bbc3b7854f1b9d486f93876a6fba22\n    Image:         python:3.11-slim\n    Image ID:      docker.io/library/python@sha256:db27ce7778e5f581d5d97812ee577a01a9fffbfa612c47fc521fa684e3389c9b\n    Port:          <none>\n    Host Port:     <none>\n    Command:\n      /bin/bash\n      -c\n      set -e\n\n      # Aumentar l\u00edmite de archivos abiertos\n      ulimit -n 4096\n\n      echo \"\u2192 Instalando dependencias...\"\n      pip install --quiet pymongo requests urllib3\n\n      echo \"\u2192 Ejecutando script de sincronizaci\u00f3n...\"\n      python3 -u /scripts/sync.py\n\n    State:          Terminated\n      Reason:       Error\n      Exit Code:    1\n      Started:      Sun, 22 Feb 2026 20:00:01 +0000\n      Finished:     Sun, 22 Feb 2026 20:00:15 +0000\n    Ready:          False\n    Restart Count:  0\n    Limits:\n      cpu:     1\n      memory:  1Gi\n    Requests:\n      cpu:     200m\n      memory:  512Mi\n    Environment:\n      MONGO_HOST:               mongo.mongo.svc.cluster.local\n      MONGO_PORT:               27017\n      MONGO_USERNAME:           root\n      MONGO_PASSWORD:           <set to the key 'mongo-root-password' in secret 'mongo-secret'>  Optional: false\n      MONGO_AUTH_DB:            admin\n      ELASTICSEARCH_HOST:       elasticsearch.elk.svc.cluster.local\n      ELASTICSEARCH_PORT:       9200\n      BATCH_SIZE:               50\n      MAX_DOCS_PER_COLLECTION:  10000\n      MAX_DOC_SIZE_BYTES:       524288\n      CONTENT_FIELD_MAX_SIZE:   102400\n      LARGE_FIELD_THRESHOLD:    51200\n    Mounts:\n      /scripts from sync-script (rw)\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-47hgg (ro)\nConditions:\n  Type                        Status\n  PodReadyToStartContainers   False\n  Initialized                 True\n  Ready                       False\n  ContainersReady             False\n  PodScheduled                True\nVolumes:\n  sync-script:\n    Type:      ConfigMap (a volume populated by a ConfigMap)\n    Name:      mongodb-sync-script\n    Optional:  false\n  kube-api-access-47hgg:\n    Type:                    Projected (a volume that contains injected data from multiple sources)\n    TokenExpirationSeconds:  3607\n    ConfigMapName:           kube-root-ca.crt\n    ConfigMapOptional:       <nil>\n    DownwardAPI:             true\nQoS Class:                   Burstable\nNode-Selectors:              <none>\nTolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s\n                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s\nEvents:                      <none>\n\nhttps://github.com/Ka0s-Klaus/ka0s/issues/4261",
+                  "message_html": "Comentario de GitHub por ka0score:<br/><br/>kubectl describe pod mongodb-sync-29529840-b2mvk -n elk<br/>Name:             mongodb-sync-29529840-b2mvk<br/>Namespace:        elk<br/>Priority:         0<br/>Service Account:  default<br/>Node:             k8-node-20/192.168.1.20<br/>Start Time:       Sun, 22 Feb 2026 20:00:00 +0000<br/>Labels:           batch.kubernetes.io/controller-uid=4eefd7fa-e81c-4c7b-b4d2-61ebbec0cc90<br/>                  batch.kubernetes.io/job-name=mongodb-sync-29529840<br/>                  controller-uid=4eefd7fa-e81c-4c7b-b4d2-61ebbec0cc90<br/>                  job-name=mongodb-sync-29529840<br/>Annotations:      cni.projectcalico.org/containerID: c1e8598d831683864724af4fe36ce2927b75bf94f1661f2e8c7f7d8e6239d485<br/>                  cni.projectcalico.org/podIP:<br/>                  cni.projectcalico.org/podIPs:<br/>Status:           Failed<br/>IP:<br/>IPs:              &lt;none&gt;<br/>Controlled By:    Job/mongodb-sync-29529840<br/>Containers:<br/>  mongodb-sync:<br/>    Container ID:  containerd://4d5c078bbd1f5953ae65e30e79eabf7f88bbc3b7854f1b9d486f93876a6fba22<br/>    Image:         python:3.11-slim<br/>    Image ID:      docker.io/library/python@sha256:db27ce7778e5f581d5d97812ee577a01a9fffbfa612c47fc521fa684e3389c9b<br/>    Port:          &lt;none&gt;<br/>    Host Port:     &lt;none&gt;<br/>    Command:<br/>      /bin/bash<br/>      -c<br/>      set -e<br/><br/>      # Aumentar l\u00edmite de archivos abiertos<br/>      ulimit -n 4096<br/><br/>      echo &quot;\u2192 Instalando dependencias...&quot;<br/>      pip install --quiet pymongo requests urllib3<br/><br/>      echo &quot;\u2192 Ejecutando script de sincronizaci\u00f3n...&quot;<br/>      python3 -u /scripts/sync.py<br/><br/>    State:          Terminated<br/>      Reason:       Error<br/>      Exit Code:    1<br/>      Started:      Sun, 22 Feb 2026 20:00:01 +0000<br/>      Finished:     Sun, 22 Feb 2026 20:00:15 +0000<br/>    Ready:          False<br/>    Restart Count:  0<br/>    Limits:<br/>      cpu:     1<br/>      memory:  1Gi<br/>    Requests:<br/>      cpu:     200m<br/>      memory:  512Mi<br/>    Environment:<br/>      MONGO_HOST:               mongo.mongo.svc.cluster.local<br/>      MONGO_PORT:               27017<br/>      MONGO_USERNAME:           root<br/>      MONGO_PASSWORD:           &lt;set to the key &apos;mongo-root-password&apos; in secret &apos;mongo-secret&apos;&gt;  Optional: false<br/>      MONGO_AUTH_DB:            admin<br/>      ELASTICSEARCH_HOST:       elasticsearch.elk.svc.cluster.local<br/>      ELASTICSEARCH_PORT:       9200<br/>      BATCH_SIZE:               50<br/>      MAX_DOCS_PER_COLLECTION:  10000<br/>      MAX_DOC_SIZE_BYTES:       524288<br/>      CONTENT_FIELD_MAX_SIZE:   102400<br/>      LARGE_FIELD_THRESHOLD:    51200<br/>    Mounts:<br/>      /scripts from sync-script (rw)<br/>      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-47hgg (ro)<br/>Conditions:<br/>  Type                        Status<br/>  PodReadyToStartContainers   False<br/>  Initialized                 True<br/>  Ready                       False<br/>  ContainersReady             False<br/>  PodScheduled                True<br/>Volumes:<br/>  sync-script:<br/>    Type:      ConfigMap (a volume populated by a ConfigMap)<br/>    Name:      mongodb-sync-script<br/>    Optional:  false<br/>  kube-api-access-47hgg:<br/>    Type:                    Projected (a volume that contains injected data from multiple sources)<br/>    TokenExpirationSeconds:  3607<br/>    ConfigMapName:           kube-root-ca.crt<br/>    ConfigMapOptional:       &lt;nil&gt;<br/>    DownwardAPI:             true<br/>QoS Class:                   Burstable<br/>Node-Selectors:              &lt;none&gt;<br/>Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s<br/>                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s<br/>Events:                      &lt;none&gt;<br/><br/>https://github.com/Ka0s-Klaus/ka0s/issues/4261"
+                }
+              ]
+            },
+            "contacts_list": [],
+            "functionalcis_list": [],
+            "workorders_list": [],
+            "status": "new",
+            "service_id": "0",
+            "service_name": "",
+            "servicesubcategory_id": "0",
+            "servicesubcategory_name": "",
+            "product": "",
+            "impact": "1",
+            "urgency": "1",
+            "priority": "1",
+            "related_change_id": "0",
+            "related_change_ref": "",
+            "assignment_date": "",
+            "resolution_date": "",
+            "knownerrors_list": [],
+            "related_request_list": [],
+            "related_incident_list": [],
+            "finalclass": "Problem",
+            "friendlyname": "P-000664",
+            "org_id_friendlyname": "Ka0s Inc",
+            "org_id_obsolescence_flag": "",
+            "caller_id_friendlyname": "",
+            "caller_id_obsolescence_flag": "",
+            "team_id_friendlyname": "",
+            "team_id_obsolescence_flag": "",
+            "agent_id_friendlyname": "",
+            "agent_id_obsolescence_flag": "",
+            "service_id_friendlyname": "",
+            "servicesubcategory_id_friendlyname": "",
+            "related_change_id_friendlyname": "",
+            "related_change_id_finalclass_recall": ""
+          }
+        }
+      }
+    }
+  }
+}
