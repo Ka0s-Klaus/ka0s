@@ -189,34 +189,34 @@ def extract_fields_from_body(body_text):
     fields = {}
     if not body_text:
         return fields
-    m = re.search(r"(?im)^###\s*Organizaci[óo]n\s*\n+([\s\S]*?)(\n###|$)", body_text)
+    m = re.search(r"(?im)^###\s*Organizaci[óo]n.*\n+([\s\S]*?)(\n###|$)", body_text)
     if m:
         fields["organization"] = m.group(1).strip()
     m = re.search(r"(?im)^###\s*Solicitante.*\n+([\s\S]*?)(\n###|$)", body_text)
     if m:
         fields["requester"] = m.group(1).strip()
-    m = re.search(r"(?im)^###\s*Origen\s*\n+([\s\S]*?)(\n###|$)", body_text)
+    m = re.search(r"(?im)^###\s*Origen.*\n+([\s\S]*?)(\n###|$)", body_text)
     if m:
         fields["origin"] = m.group(1).strip()
-    m = re.search(r"(?im)^###\s*Impacto\s*\n+([\s\S]*?)(\n###|$)", body_text)
+    m = re.search(r"(?im)^###\s*Impacto.*\n+([\s\S]*?)(\n###|$)", body_text)
     if m:
         fields["impact"] = m.group(1).strip()
-    m = re.search(r"(?im)^###\s*Urgencia\s*\n+([\s\S]*?)(\n###|$)", body_text)
+    m = re.search(r"(?im)^###\s*Urgencia.*\n+([\s\S]*?)(\n###|$)", body_text)
     if m:
         fields["urgency"] = m.group(1).strip()
-    m = re.search(r"(?im)^###\s*Prioridad\s*\n+([\s\S]*?)(\n###|$)", body_text)
+    m = re.search(r"(?im)^###\s*Prioridad.*\n+([\s\S]*?)(\n###|$)", body_text)
     if m:
         fields["priority"] = m.group(1).strip()
-    m = re.search(r"(?im)^###\s*Estado\s*\n+([\s\S]*?)(\n###|$)", body_text)
+    m = re.search(r"(?im)^###\s*Estado.*\n+([\s\S]*?)(\n###|$)", body_text)
     if m:
         fields["status"] = m.group(1).strip()
     m = re.search(
-        r"(?im)^###\s*Tipo de cambio\s*\n+([\s\S]*?)(\n###|$)",
+        r"(?im)^###\s*Tipo de cambio.*\n+([\s\S]*?)(\n###|$)",
         body_text,
     )
     if m:
         fields["change_type"] = m.group(1).strip()
-    m = re.search(r"(?im)^Servicio\s*\/\s*CI\s*.*\n+([\s\S]*?)(\n###|$)", body_text)
+    m = re.search(r"(?im)^###\s*Servicio\s*\/\s*CI\s*.*\n+([\s\S]*?)(\n###|$)", body_text)
     if m:
         fields["service"] = m.group(1).strip()
     m = re.search(r"(?im)^###\s*Outage\b.*\n+([\s\S]*?)(\n###|$)", body_text)
