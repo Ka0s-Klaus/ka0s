@@ -25,6 +25,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+
       - name: Route Issue to Project
         env:
           # Usamos KAOS_REPO_TOKEN para tener permisos a nivel de Organización
@@ -119,7 +122,7 @@ jobs:
         uses: ./.github/actions/install-gh-cli
       - name: Create Incident Issue
         env:
-          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN || secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
         run: |
           gh issue create \
             --title "[INCIDENT]: Fallo en workflow ${{ github.workflow }}" \
