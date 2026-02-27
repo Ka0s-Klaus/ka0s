@@ -22,6 +22,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.KAOS_REPO_TOKEN || secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -182,7 +185,7 @@ jobs:
         uses: ./.github/actions/install-gh-cli
       - name: Trigger Inspector
         env:
-          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           gh workflow run inspector.yml \
             -f workflow_name="${{ github.workflow }}" \
