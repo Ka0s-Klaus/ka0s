@@ -45,7 +45,8 @@ jobs:
           
           # 1. Añadir el Issue al Proyecto
           # Devuelve JSON con el ID del Item creado en el proyecto
-          ITEM_JSON=$(gh project item-add "$PROJECT_NUMBER" --owner "$PROJECT_OWNER" --content-id "$ISSUE_NODE_ID" --format json)
+          # Usamos --url porque --content-id no es soportado en esta versión de gh CLI
+          ITEM_JSON=$(gh project item-add "$PROJECT_NUMBER" --owner "$PROJECT_OWNER" --url "${{ github.event.issue.html_url }}" --format json)
           ITEM_ID=$(echo "$ITEM_JSON" | jq -r '.id')
           
           if [ -z "$ITEM_ID" ] || [ "$ITEM_ID" = "null" ]; then
@@ -101,6 +102,11 @@ jobs:
     if: failure()
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Install GH CLI
         uses: ./.github/actions/install-gh-cli
       - name: Create Incident Issue

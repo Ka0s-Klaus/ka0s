@@ -98,6 +98,11 @@ jobs:
     if: failure()
     runs-on: swarm-runners-scaleset
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Install GH CLI
         uses: ./.github/actions/install-gh-cli
       - name: Create Incident Issue
