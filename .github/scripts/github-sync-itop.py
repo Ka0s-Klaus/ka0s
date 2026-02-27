@@ -439,6 +439,12 @@ def main():
 
     # Resolve/Close ticket
     def resolve_and_close(key):
+        # Changes in iTop have complex workflows (approval, implementation, etc.)
+        # Auto-closing them from GitHub is risky. We just add a log entry.
+        if "Change" in effective_class:
+            print(f"Skipping auto-close for {effective_class} {key}; adding log entry instead.")
+            return update_ticket(key)
+
         # Optional: assign to API user before resolving (common iTop workflow)
         agent_oql = (
             f"SELECT Person JOIN User ON User.contactid = Person.id "
