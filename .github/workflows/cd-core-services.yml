@@ -195,30 +195,16 @@ jobs:
             git push origin HEAD:${{ github.ref_name }}
           fi
 
-
-  sync-cmdb:
-    needs: [deploy-services]
-    if: ${{ success() && needs.deploy-services.outputs.services != '' }}
-    uses: ./.github/workflows/itop-cmdb-sync.yml
-    with:
-      services: ${{ needs.deploy-services.outputs.services }}
-      status: "production"
-    secrets:
-      ITOP_URL: ${{ secrets.ITOP_URL }}
-      ITOP_API_USER: ${{ secrets.ITOP_API_USER }}
-      ITOP_API_PASSWORD: ${{ secrets.ITOP_API_PASSWORD }}
-      ITOP_ORIGIN: ${{ secrets.ITOP_ORIGIN || vars.ITOP_ORIGIN }}
-
   handle-success:
     runs-on: swarm-runners-scaleset
-    needs: [deploy-services, sync-cmdb]
+    needs: [deploy-services]
     if: ${{ success() }}
     steps: 
       - run: echo "CD-CORE-SERVICES & CMDB Sync Success in runid ${{ github.run_id }}."
           
   handle-failure:
     name: Handle Failure
-    needs: [deploy-services, sync-cmdb]
+    needs: [deploy-services]
     if: failure()
     runs-on: swarm-runners-scaleset
     steps:
