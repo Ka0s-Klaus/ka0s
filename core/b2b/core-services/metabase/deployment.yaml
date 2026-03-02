@@ -24,7 +24,7 @@ spec:
           name: http
         env:
         - name: MB_DB_TYPE
-          value: postgres
+          value: "postgres"
         - name: MB_DB_DBNAME
           valueFrom:
             secretKeyRef:
@@ -50,12 +50,13 @@ spec:
             secretKeyRef:
               name: metabase-db-secret
               key: DB_HOST
-        - name: MB_DB_SSL
-          value: "true"
-        - name: MB_DB_ADDITIONAL_OPTIONS
-          value: "sslmode=require"
         - name: MB_SITE_URL
           value: "https://metabase.ka0s.io"
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            export MB_DB_CONNECTION_URI="postgres://$MB_DB_USER:$MB_DB_PASS@$MB_DB_HOST:$MB_DB_PORT/$MB_DB_DBNAME?sslmode=require"
+            /app/run_metabase.sh
         resources:
           limits:
             memory: "2Gi"
