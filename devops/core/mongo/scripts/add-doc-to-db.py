@@ -66,13 +66,42 @@ try:
                     if not collection.find_one({'hash': file_hash}):
                         with open(file_path, 'r') as f:
                             content = f.read()
-                            
-                        collection.insert_one({
+                        
+                        doc = {
                             'filename': file,
                             'content': content,
                             'hash': file_hash,
                             'import_date': datetime.now()
-                        })
+                        }
+
+                        # Procesamiento específico para JSON
+                        if ext == 'json':
+                            try:
+                                json_content = json.loads(content)
+                                doc['data'] = json_content
+                                
+                                # Calcular Lead Time si existen los campos estándar de GitHub Actions
+                                if isinstance(json_content, dict):
+                                    created_at = json_content.get('createdAt') or json_content.get('created_at')
+                                    updated_at = json_content.get('updatedAt') or json_content.get('updated_at')
+                                    
+                                    if created_at and updated_at:
+                                        # Manejo básico de formatos ISO (puede requerir ajuste según el formato exacto)
+                                        try:
+                                            # Eliminar la 'Z' si existe para compatibilidad con fromisoformat en versiones antiguas
+                                            t_start = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
+                                            t_end = datetime.fromisoformat(updated_at.replace('Z', '+00:00'))
+                                            duration = (t_end - t_start).total_seconds()
+                                            
+                                            doc['duration_seconds'] = duration
+                                            doc['lead_time_minutes'] = round(duration / 60, 2)
+                                            print(f"[DEBUG] Calculated duration for {file}: {duration}s")
+                                        except ValueError as ve:
+                                            print(f"[WARN] Error parsing dates in {file}: {ve}")
+                            except json.JSONDecodeError:
+                                print(f"[WARN] Could not parse JSON content for {file}")
+
+                        collection.insert_one(doc)
                         log['documents_inserted'] += 1
                 except Exception as e:
                     log['errors'].append(f"Error en {file_path}: {str(e)}")
