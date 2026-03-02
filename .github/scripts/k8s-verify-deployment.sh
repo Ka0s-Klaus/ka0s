@@ -43,23 +43,25 @@ function finalize_json() {
   fi
 }
 
-# Debugging: Always attempt to dump Wazuh logs if present (to debug dashboard issues)
-echo "--> Debugging: Checking for Wazuh Dashboard Logs..."
-DASH_POD=$(kubectl get pods -n "$NAMESPACE" -l app=wazuh-dashboard -o jsonpath='{.items[0].metadata.name}' || true)
-if [ ! -z "$DASH_POD" ]; then
-  echo "--- Logs for $DASH_POD ---"
-  kubectl logs "$DASH_POD" -n "$NAMESPACE" --all-containers --tail=100 --prefix=true || echo "Failed to fetch logs"
-else
-  echo "No wazuh-dashboard pod found."
-fi
+# Debugging: Check for specific logs if service is Wazuh related
+if [[ "$SERVICE_NAME" == *"wazuh"* ]]; then
+  echo "--> Debugging: Checking for Wazuh Dashboard Logs..."
+  DASH_POD=$(kubectl get pods -n "$NAMESPACE" -l app=wazuh-dashboard -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)
+  if [ ! -z "$DASH_POD" ]; then
+    echo "--- Logs for $DASH_POD ---"
+    kubectl logs "$DASH_POD" -n "$NAMESPACE" --all-containers --tail=100 --prefix=true || echo "Failed to fetch logs"
+  else
+    echo "No wazuh-dashboard pod found."
+  fi
 
-echo "--> Debugging: Checking for Wazuh Indexer Logs..."
-IDX_POD=$(kubectl get pods -n "$NAMESPACE" -l app=wazuh-indexer -o jsonpath='{.items[0].metadata.name}' || true)
-if [ ! -z "$IDX_POD" ]; then
-  echo "--- Logs for $IDX_POD ---"
-  kubectl logs "$IDX_POD" -n "$NAMESPACE" --all-containers --tail=50 --prefix=true || echo "Failed to fetch logs"
-else
-  echo "No wazuh-indexer pod found."
+  echo "--> Debugging: Checking for Wazuh Indexer Logs..."
+  IDX_POD=$(kubectl get pods -n "$NAMESPACE" -l app=wazuh-indexer -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)
+  if [ ! -z "$IDX_POD" ]; then
+    echo "--- Logs for $IDX_POD ---"
+    kubectl logs "$IDX_POD" -n "$NAMESPACE" --all-containers --tail=50 --prefix=true || echo "Failed to fetch logs"
+  else
+    echo "No wazuh-indexer pod found."
+  fi
 fi
 
 # 1. Check Pods Status
@@ -117,15 +119,21 @@ fi
 
 # 3. Check Endpoints
 echo "--> Checking Endpoints for Service $SERVICE_NAME..."
-ENDPOINTS=$(kubectl get endpoints "$SERVICE_NAME" -n "$NAMESPACE" -o jsonpath='{.subsets[*].addresses[*].ip}')
 
-if [ -z "$ENDPOINTS" ]; then
-  echo "WARNING: Service $SERVICE_NAME has no active endpoints! (Pods might not be ready or matching labels are wrong)"
-  update_json_check "endpoints" "warning" "Service $SERVICE_NAME has no active endpoints."
-  # We warn but don't fail immediately to allow log inspection
+# Check if service exists first
+if kubectl get svc "$SERVICE_NAME" -n "$NAMESPACE" >/dev/null 2>&1; then
+  ENDPOINTS=$(kubectl get endpoints "$SERVICE_NAME" -n "$NAMESPACE" -o jsonpath='{.subsets[*].addresses[*].ip}')
+
+  if [ -z "$ENDPOINTS" ]; then
+    echo "WARNING: Service $SERVICE_NAME has no active endpoints! (Pods might not be ready or matching labels are wrong)"
+    update_json_check "endpoints" "warning" "Service $SERVICE_NAME has no active endpoints."
+  else
+    echo "✅ Endpoints found: $ENDPOINTS"
+    update_json_check "endpoints" "success" "Endpoints found: $ENDPOINTS"
+  fi
 else
-  echo "✅ Endpoints found: $ENDPOINTS"
-  update_json_check "endpoints" "success" "Endpoints found: $ENDPOINTS"
+  echo "ℹ️  Service '$SERVICE_NAME' not found in namespace '$NAMESPACE'. Skipping endpoint check."
+  update_json_check "endpoints" "skipped" "Service object not found (deployment-only?)"
 fi
 
 echo "=== Verification Successful (with possible warnings) ==="
