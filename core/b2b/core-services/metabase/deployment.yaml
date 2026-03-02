@@ -59,17 +59,23 @@ spec:
           requests:
             memory: "1Gi"
             cpu: "500m"
+        startupProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          failureThreshold: 30
+          periodSeconds: 10
         readinessProbe:
           httpGet:
             path: /api/health
             port: 3000
-          initialDelaySeconds: 60
+          initialDelaySeconds: 10
           periodSeconds: 10
           timeoutSeconds: 5
         livenessProbe:
           httpGet:
             path: /api/health
             port: 3000
-          initialDelaySeconds: 120
+          initialDelaySeconds: 10
           periodSeconds: 20
           timeoutSeconds: 5
