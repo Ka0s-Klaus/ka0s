@@ -114,6 +114,12 @@ jobs:
               echo "⏳ Waiting for rollout..."
               # Intentar esperar rollout de deployments si existen en el kustomization
               kubectl rollout status deployment -n "$NAMESPACE" --timeout=60s || echo "⚠️ Rollout wait warning (maybe no deployment or timeout)"
+              
+              # Si hay un Job de validación (como nfs-validation-job), esperamos a que termine
+              if kubectl get job -n "$NAMESPACE" | grep -q "validation"; then
+                 echo "⏳ Validation Job detected. Waiting for completion..."
+                 kubectl wait --for=condition=complete job -l job-name=nfs-validation-job -n "$NAMESPACE" --timeout=120s || echo "⚠️ Validation Job timed out or failed"
+              fi
 
               echo "📊 Generating Post-Deploy Report for $SERVICE..."
               REPORT_FILE="deployment-report-$SERVICE_NAME-${{ github.run_id }}.txt"
