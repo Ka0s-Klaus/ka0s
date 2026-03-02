@@ -25,15 +25,15 @@ spec:
               mountPath: /opt/cloudbeaver/workspace
           livenessProbe:
             httpGet:
-              path: /api/server_status
+              path: /status
               port: 8978
-            initialDelaySeconds: 30
+            initialDelaySeconds: 60
             periodSeconds: 10
           readinessProbe:
             httpGet:
-              path: /api/server_status
+              path: /status
               port: 8978
-            initialDelaySeconds: 15
+            initialDelaySeconds: 45
             periodSeconds: 10
           resources:
             requests:
