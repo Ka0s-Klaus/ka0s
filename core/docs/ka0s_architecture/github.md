@@ -23,6 +23,37 @@ Para mantener los workflows limpios (DRY - Don't Repeat Yourself), la lógica co
 Scripts auxiliares (Python, Bash) invocados por los workflows para tareas que exceden la complejidad de un comando de una línea en YAML.
 - Ejemplos: `generate-cluster-report.sh`, `update-docs-index.py`.
 
+## 4. Estándares de Implementación
+
+### 4.1. Nomenclatura de Archivos de Salida
+Para garantizar la trazabilidad y unicidad de los artefactos generados por los workflows (logs, reportes, estadísticas), se DEBE seguir estrictamente el siguiente formato de nomenclatura:
+
+`AAAAMMDD_HHMMSS_WorkflowID_nombre_del_servicio.extension`
+
+**Componentes:**
+1.  **Timestamp**: `AAAAMMDD_HHMMSS` (AñoMesDía_HoraMinutoSegundo).
+    *   *Fuente*: `date +%Y%m%d_%H%M%S` (en shell) o equivalente en otros lenguajes.
+    *   *Propósito*: Ordenación cronológica natural.
+2.  **Workflow ID**: `WorkflowID` (Identificador único de la ejecución).
+    *   *Fuente*: `${{ github.run_id }}` (Contexto de GitHub Actions).
+    *   *Propósito*: Enlace directo a la ejecución específica en GitHub Actions para depuración.
+3.  **Nombre del Servicio**: `nombre_del_servicio` (Descripción breve del contenido).
+    *   *Ejemplos*: `cluster-report`, `mdlint`, `security-audit`.
+    *   *Propósito*: Identificación rápida del tipo de artefacto.
+
+**Ejemplo de Implementación en Workflow:**
+
+```yaml
+- name: Calculate Timestamp
+  id: calculate-timestamp
+  run: echo "TIMESTAMP=$(date +'%Y%m%d_%H%M%S')" >> $GITHUB_ENV
+
+- name: Generate Report
+  run: |
+    FILENAME="${{ env.TIMESTAMP }}_${{ github.run_id }}_my-service-report.md"
+    ./generate-report.sh > "$FILENAME"
+```
+
 ## Principios de Diseño
 - **Seguridad**: Uso estricto de secretos (`${{ secrets }}`) y permisos mínimos.
 - **Modularidad**: Preferencia por Actions locales sobre pasos `run:` extensos.
