@@ -55,6 +55,7 @@ Si, parece increible pero hemos decidido en el equipo usar una terminología "es
 - [Documentación del Módulo: Ka0s Kubectl Tunnel](./ka0s_kubectl_tunnel/ka0s_kubectl_tunnel.md)
 - [Módulo Ka0s Landing Zone (LZ)](./ka0s_lz/ka0s_lz.md)
 - [Módulo Ka0s Markdown Lint](./ka0s_md/ka0s_md.md)
+- [Módulo Ka0s Metabase](./ka0s_metabase/ka0s_metabase.md)
 - [Módulo Ka0s MongoDB Integration](./ka0s_mongo/ka0s_mongo.md)
 - [Módulo Ka0s Onboarding](./ka0s_onboarding/ka0s_onboarding.md)
 - [Ka0s Project Routing](./ka0s_project_routing/ka0s_project_routing.md)
