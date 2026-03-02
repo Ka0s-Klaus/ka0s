@@ -139,7 +139,16 @@ jobs:
               # Si hay un Job de validación (como nfs-validation-job), esperamos a que termine
               if kubectl get job -n "$NAMESPACE" | grep -q "validation"; then
                  echo "⏳ Validation Job detected. Waiting for completion..."
-                 kubectl wait --for=condition=complete job -l job-name=nfs-validation-job -n "$NAMESPACE" --timeout=120s || echo "⚠️ Validation Job timed out or failed"
+                 
+                 # Extract job name containing "validation"
+                 VALIDATION_JOB_NAME=$(kubectl get job -n "$NAMESPACE" --no-headers | awk '{print $1}' | grep "validation" | head -n 1)
+                 
+                 if [ ! -z "$VALIDATION_JOB_NAME" ]; then
+                    echo "   Running wait for job/$VALIDATION_JOB_NAME"
+                    kubectl wait --for=condition=complete "job/$VALIDATION_JOB_NAME" -n "$NAMESPACE" --timeout=120s || echo "⚠️ Validation Job timed out or failed"
+                 else
+                    echo "⚠️ Could not determine validation job name despite detection."
+                 fi
               fi
 
               echo "📊 Generating Post-Deploy Report for $SERVICE..."
