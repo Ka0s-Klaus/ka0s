@@ -69,6 +69,8 @@ jobs:
           
           # 2. Determinar el Estado según las etiquetas
           LABELS="${{ join(github.event.issue.labels.*.name, ',') }}"
+          echo "Labels detected: $LABELS"
+          
           TARGET_OPTION_ID=""
           TARGET_NAME=""
           
@@ -89,11 +91,21 @@ jobs:
           # 3. Actualizar el campo Estado si hubo coincidencia
           if [ -n "$TARGET_OPTION_ID" ]; then
             echo "Setting Status to: $TARGET_NAME ($TARGET_OPTION_ID)"
-            gh project item-edit \
-              --id "$ITEM_ID" \
-              --project-id "$PROJECT_NODE_ID" \
-              --field-id "$STATUS_FIELD_ID" \
-              --single-select-option-id "$TARGET_OPTION_ID"
+            gh api graphql -f query='
+              mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
+                updateProjectV2ItemFieldValue(input: {
+                  projectId: $projectId
+                  itemId: $itemId
+                  fieldId: $fieldId
+                  value: { 
+                    singleSelectOptionId: $optionId 
+                  }
+                }) {
+                  projectV2Item {
+                    id
+                  }
+                }
+              }' -f projectId="$PROJECT_NODE_ID" -f itemId="$ITEM_ID" -f fieldId="$STATUS_FIELD_ID" -f optionId="$TARGET_OPTION_ID"
           else
             echo "No matching label found for auto-routing status. Issue added to Inbox."
           fi
