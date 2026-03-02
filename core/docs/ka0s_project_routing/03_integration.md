@@ -2,41 +2,36 @@
 
 ## Componentes del Sistema
 
-### 1. Workflow de GitHub Actions
-*   **Archivo**: `.github/workflows/project-routing.yml`
-*   **Disparador**: `issues: [opened]`
-*   **Ejecutor**: `ubuntu-latest` (no requiere runners self-hosted complejos para esta tarea ligera).
+### 1. Configuración de Plantillas (.github/ISSUE_TEMPLATE)
+El sistema se basa en la propiedad `projects` dentro del frontmatter de las plantillas de Issue Forms.
 
-### 2. Autenticación y Permisos
-*   **Token**: `KAOS_REPO_TOKEN` (o fallback a `GITHUB_TOKEN`).
-*   **Scope Requerido**: `project:write` (o equivalente en Fine-Grained Tokens para la Organización).
-*   **Permiso del Workflow**:
-    ```yaml
-    permissions:
-      issues: read
-      repository-projects: write
-      actions: write
-    ```
+**Ejemplo de Implementación (`incident.yml`):**
+```yaml
+name: 🚨 Incidencia (Incident)
+description: Reporta una incidencia operacional para crear/actualizar un ticket en iTop.
+title: "[INCIDENT]: "
+labels: ["itop-incident", "triage"]
+projects: ["Ka0s-Klaus/4"] # ID del Proyecto de Organización
+body:
+  # ... (resto de la plantilla)
+```
 
-### 3. Configuración del Proyecto (Project V2)
-El script utiliza IDs fijos obtenidos de la API de GitHub GraphQL para el proyecto **Ka0sC0re**.
+### 2. Archivos Modificados
+Todas las plantillas activas han sido actualizadas:
+*   `bug_report.yml`
+*   `change.yml`
+*   `feature_request.yml`
+*   `incident.yml`
+*   `onboarding_request.yml`
+*   `problem.yml`
+*   `service_request.yml`
 
-*   **Project ID**: `PVT_kwDOC79-F84AxdYh` (#4)
-*   **Campo Status**: `PVTSSF_lADOC79-F84AxdYhzgnkTfg`
+### 3. Eliminación de Componentes Antiguos
+Se han eliminado los siguientes componentes que gestionaban el enrutamiento anteriormente:
+*   `.github/workflows/project-routing.yml`: Workflow obsoleto.
+*   `.github/scripts/project-routing.sh`: Script de soporte (si existía).
 
-#### Mapeo de Opciones (Single Select)
-| Nombre Columna | ID Opción (`SingleSelectOptionId`) |
-| :--- | :--- |
-| **Issues** | `493fe49c` |
-| **Problems** | `e74f7166` |
-| **Changes** | `f3009b5e` |
-| **Request** | `b97b75b7` |
-
-###35→### 4. Estructura del Script
-36→El paso `Route Issue to Project` realiza dos llamadas principales a la API GraphQL de GitHub:
-37→1.  `addProjectV2Item`: Añade el Issue al proyecto. Se utiliza GraphQL en lugar de `gh project item-add` para evitar errores de resolución del "Owner" en entornos de CI (`unknown owner type`) y para mayor compatibilidad con tokens de corta duración.
-38→2.  `updateProjectV2ItemFieldValue`: Actualiza el campo `Status` utilizando el ID del item obtenido en el paso anterior, si se detecta una etiqueta conocida (`itop-*`). También se utiliza GraphQL para garantizar consistencia y evitar errores de CLI.
-
-### 5. Manejo de Errores
-*   Si `gh project item-add` falla (ej. token inválido), el workflow termina con error.
-*   Si no se encuentra una etiqueta conocida, el issue se añade pero se imprime un aviso "No matching label found".
+### 4. Requisitos Previos
+Para que esta integración funcione correctamente:
+1.  **Proyecto Existente**: El proyecto `Ka0s-Klaus/4` debe existir y ser accesible para la organización.
+2.  **Permisos**: El repositorio debe tener permisos para asociar issues al proyecto de organización.

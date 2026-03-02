@@ -1,28 +1,27 @@
-# Concepto: Enrutamiento Automático de Proyectos
+# Concepto: Enrutamiento de Proyectos (Nativo)
 
 ## Objetivo
-Automatizar la asignación y clasificación inicial de **Issues** en el Proyecto de Organización **Ka0sC0re** (Proyecto #4), eliminando la necesidad de intervención manual por parte de los desarrolladores o gestores.
+Asignar automáticamente los nuevos **Issues** al Proyecto de Organización **Ka0sC0re** (Proyecto #4) utilizando las capacidades nativas de GitHub Issue Forms.
 
 ## Problema
-GitHub Issue Templates no permite asignar nativamente:
-1.  **Proyectos V2 (Beta)**: Solo permite Proyectos clásicos.
-2.  **Estado Inicial (Columna)**: Los issues siempre entran en "Todo" o "No Status" por defecto.
+Anteriormente se utilizaba un workflow complejo (`project-routing.yml`) para realizar esta asignación mediante scripts y llamadas a la API, lo cual introducía latencia, posibles fallos de ejecución y mantenimiento de código adicional.
 
-## Solución: Workflow `project-routing.yml`
-Se ha implementado un flujo de trabajo que reacciona a la creación de nuevos issues (`issues: [opened]`) y utiliza la **GitHub CLI (`gh`)** para interactuar con la API de Proyectos de la organización.
+## Solución: Configuración Nativa en Plantillas
+GitHub permite definir el proyecto de destino directamente en el encabezado (frontmatter) de las plantillas de Issues (`.github/ISSUE_TEMPLATE/*.yml`).
 
-### Lógica de Enrutamiento
-El sistema detecta el tipo de Issue basándose en las etiquetas (`labels`) asignadas por la plantilla y mueve el ítem a la columna correspondiente en el tablero Kanban.
+### Implementación
+Cada plantilla de issue incluye ahora la siguiente configuración:
 
-| Etiqueta (Label) | Tipo de Issue | Columna Destino (Status) |
-| :--- | :--- | :--- |
-| `itop-incident` | Incidencia | **Issues** |
-| `itop-problem` | Problema | **Problems** |
-| `itop-change` | Cambio | **Changes** |
-| `itop-request` | Solicitud | **Request** |
-| *(otros)* | *(cualquiera)* | *(Inbox / No Status)* |
+```yaml
+projects: ["Ka0s-Klaus/4"]
+```
 
-## Beneficios
-1.  **Organización Inmediata**: Los tickets aparecen en su carril correcto desde el segundo cero.
-2.  **Visibilidad**: El equipo de Ka0sC0re tiene una visión clara de la carga de trabajo por tipo.
-3.  **Estandarización**: Se evitan errores humanos en la clasificación inicial.
+Esto garantiza que:
+1.  **Inmediatez**: El issue se asocia al proyecto en el mismo momento de su creación.
+2.  **Fiabilidad**: No depende de runners, tiempos de espera ni tokens de API en workflows.
+3.  **Simplicidad**: Se elimina código de mantenimiento (Scripts y Workflows).
+
+## Estado y Columnas
+Los issues nuevos entrarán en el estado por defecto del proyecto (generalmente "Todo" o "No Status"). La clasificación posterior se realizará mediante:
+1.  **Automatización del Proyecto**: Reglas configuradas dentro de la vista del Proyecto ("Workflows" del Proyecto V2).
+2.  **Triage Manual**: Durante la revisión inicial del ticket.
