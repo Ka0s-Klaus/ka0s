@@ -29,6 +29,28 @@ spec:
             secretKeyRef:
               name: mongo-secret
               key: mongo-root-password
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "200m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        startupProbe:
+          tcpSocket:
+            port: 27017
+          failureThreshold: 30
+          periodSeconds: 10
+        livenessProbe:
+          tcpSocket:
+            port: 27017
+          initialDelaySeconds: 10
+          periodSeconds: 20
+        readinessProbe:
+          tcpSocket:
+            port: 27017
+          initialDelaySeconds: 5
+          periodSeconds: 10
         volumeMounts:
         - name: mongo-persistent-storage
           mountPath: /data/db
@@ -37,7 +59,7 @@ spec:
       name: mongo-persistent-storage
     spec:
       accessModes: [ "ReadWriteOnce" ]
-      storageClassName: "local-path"
+      storageClassName: "nfs-client"
       resources:
         requests:
           storage: 8Gi
