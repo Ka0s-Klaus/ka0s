@@ -52,11 +52,6 @@ spec:
               key: DB_HOST
         - name: MB_SITE_URL
           value: "https://metabase.ka0s.io"
-        command: ["/bin/sh", "-c"]
-        args:
-          - |
-            export MB_DB_CONNECTION_URI="postgres://$MB_DB_USER:$MB_DB_PASS@$MB_DB_HOST:$MB_DB_PORT/$MB_DB_DBNAME?sslmode=require"
-            /app/run_metabase.sh
         resources:
           limits:
             memory: "2Gi"
