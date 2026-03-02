@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metabase
+  namespace: metabase
+  labels:
+    app: metabase
+    managed-by: ka0s-core-cd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: metabase
+  template:
+    metadata:
+      labels:
+        app: metabase
+    spec:
+      containers:
+      - name: metabase
+        image: metabase/metabase:v0.50.23
+        ports:
+        - containerPort: 3000
+          name: http
+        env:
+        - name: MB_DB_TYPE
+          value: postgres
+        - name: MB_DB_DBNAME
+          valueFrom:
+            secretKeyRef:
+              name: metabase-db-secret
+              key: DB_NAME
+        - name: MB_DB_PORT
+          valueFrom:
+            secretKeyRef:
+              name: metabase-db-secret
+              key: DB_PORT
+        - name: MB_DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: metabase-db-secret
+              key: DB_USER
+        - name: MB_DB_PASS
+          valueFrom:
+            secretKeyRef:
+              name: metabase-db-secret
+              key: DB_PASSWORD
+        - name: MB_DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: metabase-db-secret
+              key: DB_HOST
+        - name: MB_SITE_URL
+          value: "https://metabase.ka0s.io"
+        resources:
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 120
+          periodSeconds: 20
+          timeoutSeconds: 5
