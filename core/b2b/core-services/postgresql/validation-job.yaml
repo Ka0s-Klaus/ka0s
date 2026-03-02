@@ -3,6 +3,8 @@ kind: Job
 metadata:
   name: postgres-validation-job
   namespace: postgresql
+  labels:
+    app: postgresql
   annotations:
     "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-delete-policy": before-hook-creation
@@ -10,6 +12,9 @@ spec:
   ttlSecondsAfterFinished: 600
   backoffLimit: 4
   template:
+    metadata:
+      labels:
+        app: postgresql
     spec:
       restartPolicy: OnFailure
       containers:
@@ -24,18 +29,20 @@ spec:
         command: ["sh", "-c"]
         args:
           - |
+            set -e
             echo "Waiting for PostgreSQL to be ready..."
-            until pg_isready -h postgresql -U ka0s_admin; do
-              echo "Waiting for database..."
-              sleep 2
+            until pg_isready -h postgresql -U ka0s_admin -d ka0s_core; do
+              echo "Waiting for database ka0s_core..."
+              sleep 5
             done
             
-            echo "Running validation query..."
-            psql -h postgresql -U ka0s_admin -d ka0s_core -c "SELECT 1 as validation_check;"
+            echo "Database is ready. Waiting 5s for stability..."
+            sleep 5
             
-            if [ $? -eq 0 ]; then
-              echo "✅ Connection successful and query executed."
-            else
-              echo "❌ Connection failed."
+            echo "Running validation query..."
+            psql -h postgresql -U ka0s_admin -d ka0s_core -c "SELECT 1 as validation_check;" || {
+              echo "❌ Connection failed with exit code $?"
               exit 1
-            fi
+            }
+            
+            echo "✅ Connection successful and query executed."
