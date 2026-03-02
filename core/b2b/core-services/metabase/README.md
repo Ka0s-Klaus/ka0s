@@ -15,6 +15,7 @@ This service is deployed using **GitOps**. The database is hosted in the central
 ## Access
 
 - URL: https://metabase.ka0s.io
+- TLS: Managed by `cert-manager` (letsencrypt-prod).
 - Login: Setup on first access.
 
 ## Configuration

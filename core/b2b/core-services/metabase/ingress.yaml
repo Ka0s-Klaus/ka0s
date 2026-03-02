@@ -8,12 +8,13 @@ metadata:
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
     nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
     nginx.ingress.kubernetes.io/proxy-body-size: "64m"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
 spec:
   ingressClassName: nginx
   tls:
     - hosts:
         - metabase.ka0s.io
-      secretName: ka0s-wildcard-tls
+      secretName: metabase-tls
   rules:
     - host: metabase.ka0s.io
       http:
