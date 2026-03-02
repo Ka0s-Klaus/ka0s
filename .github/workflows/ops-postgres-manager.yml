@@ -1,0 +1,56 @@
+name: "Ka0s Ops: Manage PostgreSQL"
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform'
+        required: true
+        type: choice
+        options:
+          - create-db
+          - drop-db
+      db_name:
+        description: 'Database Name (e.g., metabase_db)'
+        required: true
+        type: string
+      db_user:
+        description: 'Database User (e.g., metabase_user)'
+        required: true
+        type: string
+      target_namespace:
+        description: 'Namespace to create the secret in (for create-db)'
+        required: false
+        type: string
+        default: 'default'
+
+permissions:
+  contents: read
+  actions: write
+
+env:
+  KAOS_MODULE: "[Ka0s] Ops PostgreSQL"
+
+jobs:
+  manage-db:
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Kubectl Tunnel
+        uses: ./.github/actions/kubectl-tunnel
+        with:
+          host: ${{ secrets.KAOS_SSH_HOST_1 }}
+          username: ${{ secrets.KAOS_SSH_USER }}
+          key: ${{ secrets.KAOS_SSH_KEY_PRIV }}
+          port: ${{ secrets.KAOS_SSH_PORT_1 }}
+
+      - name: Execute Database Operation
+        env:
+          ACTION: ${{ inputs.action }}
+          DB_NAME: ${{ inputs.db_name }}
+          DB_USER: ${{ inputs.db_user }}
+          TARGET_NS: ${{ inputs.target_namespace }}
+        run: |
+          chmod +x .github/scripts/manage-postgres-db.sh
+          ./.github/scripts/manage-postgres-db.sh "$ACTION" "$DB_NAME" "$DB_USER" "$TARGET_NS"
