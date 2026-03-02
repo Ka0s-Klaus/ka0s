@@ -130,6 +130,14 @@ jobs:
               fi
               echo "🎯 Target Namespace: $NAMESPACE"
 
+              # Crear namespace si no existe (idempotente)
+              kubectl create namespace "$NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
+              
+              # Delete old validation jobs to force re-run
+              kubectl delete job -n "$NAMESPACE" -l "app=$SERVICE_NAME" --ignore-not-found
+              
+              # Aplicar manifiestos con Kustomize
+              echo "   Applying manifests..."
               kubectl apply -k "$SERVICE/"
               
               echo "⏳ Waiting for rollout..."
