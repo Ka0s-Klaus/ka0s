@@ -37,8 +37,11 @@ if [ "$ACTION" == "create-db" ]; then
   
   # Create User and Database (Idempotent-ish check via SQL)
   # We execute this inside the pod
-  # Connect to default 'postgres' database for administrative tasks
-  kubectl exec -i $PG_POD -n $PG_NS -- psql -U $PG_ADMIN_USER -d postgres <<EOF
+  # Connect to 'template1' which always exists to list DBs and create new ones
+  echo "🔍 Listing databases for debug..."
+  kubectl exec -i $PG_POD -n $PG_NS -- psql -U $PG_ADMIN_USER -d template1 -c "\l" || echo "⚠️ Could not list databases"
+
+  kubectl exec -i $PG_POD -n $PG_NS -- psql -U $PG_ADMIN_USER -d template1 <<EOF
 DO \$\$
 BEGIN
   IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '$DB_USER') THEN
@@ -88,7 +91,7 @@ EOF
 elif [ "$ACTION" == "drop-db" ]; then
   echo "⚠️  Dropping Database '$DB_NAME' and User '$DB_USER'..."
   
-  kubectl exec -i $PG_POD -n $PG_NS -- psql -U $PG_ADMIN_USER -d postgres <<EOF
+  kubectl exec -i $PG_POD -n $PG_NS -- psql -U $PG_ADMIN_USER -d template1 <<EOF
 DROP DATABASE IF EXISTS $DB_NAME;
 DROP ROLE IF EXISTS $DB_USER;
 EOF
