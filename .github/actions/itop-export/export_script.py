@@ -8,6 +8,11 @@ def main():
     parser = argparse.ArgumentParser(description='Export iTop data to JSON')
     parser.add_argument('--date', help='Date to export (YYYY-MM-DD)', default=None)
     parser.add_argument('--output-dir', help='Output directory', default='audit/itop')
+    parser.add_argument(
+        '--workflow-id', 
+        help='GitHub Workflow Run ID', 
+        default=os.environ.get('GITHUB_RUN_ID', 'manual')
+    )
     args = parser.parse_args()
 
     # Configuración desde variables de entorno
@@ -29,6 +34,9 @@ def main():
     date_str = target_date.strftime('%Y-%m-%d')
     start_time = target_date.strftime('%Y-%m-%d 00:00:00')
     end_time = target_date.strftime('%Y-%m-%d 23:59:59')
+    
+    timestamp_file = datetime.now().strftime('%Y%m%d_%H%M%S')
+    workflow_id = args.workflow_id
     
     print(f"Exportando datos para la fecha: {date_str}")
     print(f"Rango: {start_time} a {end_time}")
@@ -68,10 +76,10 @@ def main():
     print("-----------------------------------------------------")
 
     targets = [
-        {"class": "UserRequest", "filename": f"requerimientos_{date_str}.json"},
-        {"class": "Incident", "filename": f"incidentes_{date_str}.json"},
-        {"class": "Problem", "filename": f"problemas_{date_str}.json"},
-        {"class": "Change", "filename": f"cambios_{date_str}.json"}
+        {"class": "UserRequest", "filename": f"{timestamp_file}_{workflow_id}_itop-requerimientos.json"},
+        {"class": "Incident", "filename": f"{timestamp_file}_{workflow_id}_itop-incidentes.json"},
+        {"class": "Problem", "filename": f"{timestamp_file}_{workflow_id}_itop-problemas.json"},
+        {"class": "Change", "filename": f"{timestamp_file}_{workflow_id}_itop-cambios.json"}
     ]
 
     os.makedirs(args.output_dir, exist_ok=True)

@@ -34,12 +34,34 @@ jobs:
           remote-results-path: '/tmp/results'
           local-results-path: 'audit/kube/'
 
+      - name: Standardize Report Names
+        run: |
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+          # Renombrar reportes Markdown
+          for f in audit/kube/cluster-report-*.md; do
+            [ -e "$f" ] || continue
+            mv "$f" "audit/kube/${TIMESTAMP}_${{ github.run_id }}_cluster-report.md"
+          done
+          # Renombrar reportes JSON
+          for f in audit/kube/cluster-report-*.json; do
+            [ -e "$f" ] || continue
+            mv "$f" "audit/kube/${TIMESTAMP}_${{ github.run_id }}_cluster-report.json"
+          done
+          # Renombrar dashboards HTML
+          for f in audit/kube/cluster-dashboard-*.html; do
+            [ -e "$f" ] || continue
+            mv "$f" "audit/kube/${TIMESTAMP}_${{ github.run_id }}_cluster-dashboard.html"
+          done
+
       - name: Commit Audit Reports
         run: |
           git config --global user.name "Ka0s Bot"
           git config --global user.email "bot@ka0s.io"
           git pull --rebase origin main || git pull origin main
-          git add audit/kube/cluster-report-*.md audit/kube/cluster-report-*.json audit/kube/cluster-dashboard-*.html || true
+          git add audit/kube/${{ github.run_id }}_*.md audit/kube/${{ github.run_id }}_*.json audit/kube/${{ github.run_id }}_*.html || true
+          # También agregar los renombrados si el patrón anterior falla
+          git add audit/kube/*_${{ github.run_id }}_*.md audit/kube/*_${{ github.run_id }}_*.json audit/kube/*_${{ github.run_id }}_*.html || true
+          
           if ! git diff --staged --quiet; then
             git commit -m "[Audit] Cluster status report $(date +'%Y-%m-%d %H:%M')"
             git push || (git pull --rebase origin main && git push)

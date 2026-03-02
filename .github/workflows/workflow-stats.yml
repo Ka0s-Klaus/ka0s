@@ -54,6 +54,10 @@ jobs:
       - name: Install GH CLI
         uses: ./.github/actions/install-gh-cli
 
+      - name: Calculate Timestamp
+        id: timestamp
+        run: echo "TIMESTAMP=$(date +%Y%m%d_%H%M%S)" >> $GITHUB_ENV
+
       - name: Generate names
         run: |
           git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
@@ -63,16 +67,16 @@ jobs:
           # Created files of actually workflows
           echo "Created files of actually workflows"
           gh workflow list -a --json id,name,path,state | \
-            tee audit/workflows/actually-workflows.json | \
-            jq -r '["id", "name", "path", "state"],(.[]? // [] | [.id,.name,.path,.state]) | @csv' > audit/workflows/actually-workflows.csv
+            tee ${{ env.KAOS_PATH_RESUME }}${{ env.TIMESTAMP }}_${{ github.run_id }}_workflow-stats-list.json | \
+            jq -r '["id", "name", "path", "state"],(.[]? // [] | [.id,.name,.path,.state]) | @csv' > ${{ env.KAOS_PATH_RESUME }}${{ env.TIMESTAMP }}_${{ github.run_id }}_workflow-stats-list.csv
 
       - name: Generate executed
         run: |
           # Inicializar archivo si no existe
-          [ -f "${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json" ] || echo '[]' > "${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json"
+          [ -f "${{ env.KAOS_PATH_RESUME }}${{ env.TIMESTAMP }}_${{ github.run_id }}_workflow-runs-temp.json" ] || echo '[]' > "${{ env.KAOS_PATH_RESUME }}${{ env.TIMESTAMP }}_${{ github.run_id }}_workflow-runs-temp.json"
           
           # Mostramos el fichero del que tenemos que partir
-          jq -r '.[].id' ${{ env.KAOS_PATH_RESUME }}actually-workflows.json | while read -r workflow_id; do
+          jq -r '.[].id' ${{ env.KAOS_PATH_RESUME }}${{ env.TIMESTAMP }}_${{ github.run_id }}_workflow-stats-list.json | while read -r workflow_id; do
             # 1. Obtener datos paginados
             TEMP_RAW=$(mktemp)
             gh api --paginate \
@@ -102,17 +106,17 @@ jobs:
               # 3. Combinación segura
               if [ -s processed.json ]; then
                 jq -s 'add | unique_by(.id) | sort_by(-.created_at)' \
-                  ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json \
+                  ${{ env.KAOS_PATH_RESUME }}${{ env.TIMESTAMP }}_${{ github.run_id }}_workflow-runs-temp.json \
                   processed.json > merged.json
                 
-                mv merged.json ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json
+                mv merged.json ${{ env.KAOS_PATH_RESUME }}${{ env.TIMESTAMP }}_${{ github.run_id }}_workflow-runs-temp.json
               fi
             fi
             rm -f "$TEMP_RAW" processed.json
           done
 
           # 4. Generar output final
-          jq 'sort_by(-.created_at)' ${{ env.KAOS_PATH_RESUME }}workflows-runs-${{ env.KAOS_CODE }}.json > ${{ env.KAOS_PATH_RESUME }}actually-workflows-runs.json
+          jq 'sort_by(-.created_at)' ${{ env.KAOS_PATH_RESUME }}${{ env.TIMESTAMP }}_${{ github.run_id }}_workflow-runs-temp.json > ${{ env.KAOS_PATH_RESUME }}${{ env.TIMESTAMP }}_${{ github.run_id }}_workflow-runs.json
           jq -r '
             (["id", "name", "head_branch", "head_sha", "run_number", "event", "status", "conclusion", "workflow_id", "url", "created_at", "updated_at", "run_started_at"] | @csv),
             (.[] | [
@@ -130,7 +134,10 @@ jobs:
               .updated_at,
               .run_started_at
             ] | @csv)
-          ' ${{ env.KAOS_PATH_RESUME }}actually-workflows-runs.json > ${{ env.KAOS_PATH_RESUME }}actually-workflows-runs.csv
+          ' ${{ env.KAOS_PATH_RESUME }}${{ env.TIMESTAMP }}_${{ github.run_id }}_workflow-runs.json > ${{ env.KAOS_PATH_RESUME }}${{ env.TIMESTAMP }}_${{ github.run_id }}_workflow-runs.csv
+          
+          # Limpiar temporal
+          rm -f ${{ env.KAOS_PATH_RESUME }}${{ env.TIMESTAMP }}_${{ github.run_id }}_workflow-runs-temp.json
 
       - name: Extraer issues completas en JSON y texto plano
         run: |

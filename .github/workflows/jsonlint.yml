@@ -56,13 +56,17 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Calculate Timestamp
+        id: timestamp
+        run: echo "TIMESTAMP=$(date +%Y%m%d_%H%M%S)" >> $GITHUB_ENV
+
       - id: install-tools
         name: Run Ka0s Lint JSON Action
         uses: ./.github/actions/kaos-lint-json
         with:
           file_path: ${{ github.event.inputs.kaos-files }}
           fix: 'true'
-          path_resume: ${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt
+          path_resume: ${{ env.KAOS_PATH_RESUME }}${{ env.TIMESTAMP }}_${{ github.run_id }}_jsonlint.txt
       
       - name: Report Status
         if: failure()
@@ -93,7 +97,7 @@ jobs:
         if: always()
         run: |
              # Subir logs de auditoría si existen
-             if [ -f "${{ env.KAOS_PATH_RESUME }}jsonlint-results-${{ github.run_id }}.txt" ]; then
+             if [ -f "${{ env.KAOS_PATH_RESUME }}${{ env.TIMESTAMP }}_${{ github.run_id }}_jsonlint.txt" ]; then
                 git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
                 git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
                 git pull --rebase

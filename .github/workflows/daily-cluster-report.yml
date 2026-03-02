@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   issues: write
   actions: write
 
@@ -19,7 +19,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Generate Report
-        run: echo "Generating daily cluster report..."
+        run: |
+          chmod +x .github/scripts/generate-cluster-report.sh
+          ./.github/scripts/generate-cluster-report.sh "${{ github.run_id }}"
+
+      - name: Commit Report
+        run: |
+          git config --global user.name "Ka0s Bot"
+          git config --global user.email "bot@ka0s.io"
+          git add audit/daily-reports/
+          # Check if there are changes before committing
+          if ! git diff --staged --quiet; then
+            git commit -m "chore(audit): add daily cluster report ${{ github.run_id }}"
+            git pull --rebase origin main
+            git push origin main
+          else
+            echo "No changes to commit."
+          fi
 
   handle-success:
     name: Handle Success

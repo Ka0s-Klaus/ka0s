@@ -3,9 +3,10 @@ set -e
 
 # Configuración
 REPORT_DIR="audit/daily-reports"
-DATE=$(date +%Y-%m-%d)
-TIMESTAMP=$(date +%H-%M-%S)
-REPORT_FILE="${REPORT_DIR}/report-${DATE}.md"
+WORKFLOW_ID="${1:-unknown}"
+DATE_STR=$(date +%Y%m%d_%H%M%S)
+# Formato: AAAAMMDD_HHMMSS_WorkflowID_nombre_del_servicio.extension
+REPORT_FILE="${REPORT_DIR}/${DATE_STR}_${WORKFLOW_ID}_daily-cluster-report.md"
 mkdir -p "$REPORT_DIR"
 
 # Función para encabezados
@@ -16,7 +17,7 @@ section() {
 }
 
 # Inicio del Reporte
-echo "# 📊 Ka0s Cluster Daily Report - $DATE" > "$REPORT_FILE"
+echo "# 📊 Ka0s Cluster Daily Report - $DATE_STR" > "$REPORT_FILE"
 echo "**Generado a las:** $(date)" >> "$REPORT_FILE"
 echo "" >> "$REPORT_FILE"
 
