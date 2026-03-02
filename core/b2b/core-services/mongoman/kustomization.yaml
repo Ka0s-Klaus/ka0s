@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: mongo
+
+resources:
+  - deployment.yaml
+  - service.yaml
+  - ingress.yaml
+  - namespace.yaml
+
+# Patch the existing secret to add the URI for MongoMan
+# Note: In a real GitOps flow with SealedSecrets or similar, this would be different.
+# For now, we assume we can patch the secret or we need to ensure the URI is available.
+# Since we don't want to hardcode the password in git if possible, but we need to provide the URI.
+# The previous deployment used separate env vars which was safer for k8s secrets.
+# MongoMan requires a full URI.
+generators:
+  - secret-patch.yaml

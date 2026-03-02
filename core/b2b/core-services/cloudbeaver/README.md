@@ -4,7 +4,7 @@
 
 Permite administrar PostgreSQL y otras bases de datos SQL.
 
-> ⚠️ **Nota Importante sobre MongoDB**: La versión Community de CloudBeaver no soporta conexiones NoSQL/MongoDB. Para gestionar MongoDB, hemos desplegado **Mongo Express** en `https://mongo-admin.ka0s.io`.
+> ⚠️ **Nota Importante sobre MongoDB**: La versión Community de CloudBeaver no soporta conexiones NoSQL/MongoDB. Para gestionar MongoDB, hemos desplegado **MongoMan** en `https://mongo-admin.ka0s.io`.
 
 ## 🚀 Acceso
 - **URL Pública**: `https://db-admin.ka0s.io`
