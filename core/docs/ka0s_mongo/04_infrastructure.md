@@ -28,12 +28,6 @@ El despliegue de MongoDB en Ka0s está diseñado para ser resiliente, persistent
 - **Puerto**: 27017.
 - **Acceso**: Restringido al interior del clúster. Para acceso externo, se debe usar `kubectl port-forward`.
 
-### 4. Interfaz de Gestión (MongoMan)
-- **Rol**: UI Web para administración visual de bases de datos, colecciones y documentos.
-- **Acceso**: https://mongo-admin.ka0s.io
-- **Despliegue**: Deployment independiente en namespace `mongo`.
-- **Seguridad**: Detrás de Ingress con terminación TLS.
-
 ## Gestión de Configuración
 Todo el despliegue se gestiona mediante **Kustomize** en `core/b2b/core-services/mongo/`, permitiendo:
 - Gestión de Secretos (`mongo-secret.yaml`).
