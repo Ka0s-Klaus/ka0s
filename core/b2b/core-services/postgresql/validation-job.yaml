@@ -1,0 +1,41 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: postgres-validation-job
+  namespace: postgresql
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  ttlSecondsAfterFinished: 600
+  backoffLimit: 4
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: check-db
+        image: postgres:16-alpine
+        env:
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: POSTGRES_PASSWORD
+        command: ["sh", "-c"]
+        args:
+          - |
+            echo "Waiting for PostgreSQL to be ready..."
+            until pg_isready -h postgresql -U ka0s_admin; do
+              echo "Waiting for database..."
+              sleep 2
+            done
+            
+            echo "Running validation query..."
+            psql -h postgresql -U ka0s_admin -d ka0s_core -c "SELECT 1 as validation_check;"
+            
+            if [ $? -eq 0 ]; then
+              echo "✅ Connection successful and query executed."
+            else
+              echo "❌ Connection failed."
+              exit 1
+            fi

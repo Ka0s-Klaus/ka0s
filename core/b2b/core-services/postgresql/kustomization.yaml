@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: postgresql
+
+resources:
+- namespace.yaml
+- secret.yaml
+- service.yaml
+- statefulset.yaml
+- validation-job.yaml
+
+images:
+- name: postgres
+  newTag: 16-alpine
+
+commonLabels:
+  app: postgresql
+  managed-by: ka0s-core-cd
