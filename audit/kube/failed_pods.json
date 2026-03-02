@@ -1,1 +1,530 @@
-[]
+[
+  {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+      "annotations": {
+        "cni.projectcalico.org/containerID": "eb3712645ee77426099552696f97415b6fc4b1dcd9eb4f7b8c9e023e6cc8aaad",
+        "cni.projectcalico.org/podIP": "172.16.209.40/32",
+        "cni.projectcalico.org/podIPs": "172.16.209.40/32"
+      },
+      "creationTimestamp": "2026-03-02T21:06:39Z",
+      "generateName": "mongo-express-6486f7f4fd-",
+      "labels": {
+        "app": "mongo-express",
+        "pod-template-hash": "6486f7f4fd"
+      },
+      "name": "mongo-express-6486f7f4fd-mxmcz",
+      "namespace": "mongo",
+      "ownerReferences": [
+        {
+          "apiVersion": "apps/v1",
+          "blockOwnerDeletion": true,
+          "controller": true,
+          "kind": "ReplicaSet",
+          "name": "mongo-express-6486f7f4fd",
+          "uid": "d27ac664-ce49-484d-905d-f0e50385e84f"
+        }
+      ],
+      "resourceVersion": "14835865",
+      "uid": "b78d2362-aa5c-417e-9e02-9adfc4e6feaf"
+    },
+    "spec": {
+      "containers": [
+        {
+          "env": [
+            {
+              "name": "ME_CONFIG_MONGODB_SERVER",
+              "value": "mongo.mongo.svc.cluster.local"
+            },
+            {
+              "name": "ME_CONFIG_MONGODB_ADMINUSERNAME",
+              "value": "root"
+            },
+            {
+              "name": "ME_CONFIG_MONGODB_ADMINPASSWORD",
+              "valueFrom": {
+                "secretKeyRef": {
+                  "key": "mongo-root-password",
+                  "name": "mongo-secret"
+                }
+              }
+            },
+            {
+              "name": "ME_CONFIG_BASICAUTH_USERNAME",
+              "value": "ka0s"
+            },
+            {
+              "name": "ME_CONFIG_BASICAUTH_PASSWORD",
+              "valueFrom": {
+                "secretKeyRef": {
+                  "key": "mongo-root-password",
+                  "name": "mongo-secret"
+                }
+              }
+            }
+          ],
+          "image": "mongo-express:1.0.2",
+          "imagePullPolicy": "IfNotPresent",
+          "livenessProbe": {
+            "failureThreshold": 3,
+            "httpGet": {
+              "path": "/",
+              "port": 8081,
+              "scheme": "HTTP"
+            },
+            "initialDelaySeconds": 30,
+            "periodSeconds": 10,
+            "successThreshold": 1,
+            "timeoutSeconds": 1
+          },
+          "name": "mongo-express",
+          "ports": [
+            {
+              "containerPort": 8081,
+              "protocol": "TCP"
+            }
+          ],
+          "readinessProbe": {
+            "failureThreshold": 3,
+            "httpGet": {
+              "path": "/",
+              "port": 8081,
+              "scheme": "HTTP"
+            },
+            "initialDelaySeconds": 15,
+            "periodSeconds": 10,
+            "successThreshold": 1,
+            "timeoutSeconds": 1
+          },
+          "resources": {
+            "limits": {
+              "cpu": "500m",
+              "memory": "256Mi"
+            },
+            "requests": {
+              "cpu": "100m",
+              "memory": "128Mi"
+            }
+          },
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-5gwfq",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "dnsPolicy": "ClusterFirst",
+      "enableServiceLinks": true,
+      "nodeName": "k8-node-20",
+      "preemptionPolicy": "PreemptLowerPriority",
+      "priority": 0,
+      "restartPolicy": "Always",
+      "schedulerName": "default-scheduler",
+      "securityContext": {},
+      "serviceAccount": "default",
+      "serviceAccountName": "default",
+      "terminationGracePeriodSeconds": 30,
+      "tolerations": [
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/not-ready",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        },
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/unreachable",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        }
+      ],
+      "volumes": [
+        {
+          "name": "kube-api-access-5gwfq",
+          "projected": {
+            "defaultMode": 420,
+            "sources": [
+              {
+                "serviceAccountToken": {
+                  "expirationSeconds": 3607,
+                  "path": "token"
+                }
+              },
+              {
+                "configMap": {
+                  "items": [
+                    {
+                      "key": "ca.crt",
+                      "path": "ca.crt"
+                    }
+                  ],
+                  "name": "kube-root-ca.crt"
+                }
+              },
+              {
+                "downwardAPI": {
+                  "items": [
+                    {
+                      "fieldRef": {
+                        "apiVersion": "v1",
+                        "fieldPath": "metadata.namespace"
+                      },
+                      "path": "namespace"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "status": {
+      "conditions": [
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-02T21:07:11Z",
+          "status": "True",
+          "type": "PodReadyToStartContainers"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-02T21:06:39Z",
+          "status": "True",
+          "type": "Initialized"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-02T21:06:39Z",
+          "message": "containers with unready status: [mongo-express]",
+          "reason": "ContainersNotReady",
+          "status": "False",
+          "type": "Ready"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-02T21:06:39Z",
+          "message": "containers with unready status: [mongo-express]",
+          "reason": "ContainersNotReady",
+          "status": "False",
+          "type": "ContainersReady"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-02T21:06:39Z",
+          "status": "True",
+          "type": "PodScheduled"
+        }
+      ],
+      "containerStatuses": [
+        {
+          "image": "mongo-express:1.0.2",
+          "imageID": "",
+          "lastState": {},
+          "name": "mongo-express",
+          "ready": false,
+          "restartCount": 0,
+          "started": false,
+          "state": {
+            "waiting": {
+              "message": "Back-off pulling image \"mongo-express:1.0.2\": ErrImagePull: rpc error: code = DeadlineExceeded desc = failed to pull and unpack image \"docker.io/library/mongo-express:1.0.2\": failed to copy: httpReadSeeker: failed open: failed to do request: Get \"https://docker-images-prod.6aa30f8b08e16409b46e0173d6de2f56.r2.cloudflarestorage.com/registry-v2/docker/registry/v2/blobs/sha256/87/870141b735e7d896bde590765c341cdc64fb6d3284b5f6a81f70ec936e4d0b83/data?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=f1baa2dd9b876aeb89efebbfc9e5d5f4%2F20260302%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260302T212613Z&X-Amz-Expires=1200&X-Amz-SignedHeaders=host&X-Amz-Signature=0fe2a88c2058f618db992224f6db8824794d11dda1ee0345376d951a14dd2411\": dial tcp 172.64.66.1:443: i/o timeout",
+              "reason": "ImagePullBackOff"
+            }
+          },
+          "volumeMounts": [
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-5gwfq",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            }
+          ]
+        }
+      ],
+      "hostIP": "192.168.1.20",
+      "hostIPs": [
+        {
+          "ip": "192.168.1.20"
+        }
+      ],
+      "phase": "Pending",
+      "podIP": "172.16.209.40",
+      "podIPs": [
+        {
+          "ip": "172.16.209.40"
+        }
+      ],
+      "qosClass": "Burstable",
+      "startTime": "2026-03-02T21:06:39Z"
+    }
+  },
+  {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+      "annotations": {
+        "cni.projectcalico.org/containerID": "e720a25b4cb6024264a6c8bff5db48e25b949fe1b8707f9e9ac0a51fa5b02dba",
+        "cni.projectcalico.org/podIP": "172.16.209.12/32",
+        "cni.projectcalico.org/podIPs": "172.16.209.12/32"
+      },
+      "creationTimestamp": "2026-03-02T21:22:22Z",
+      "generateName": "mongo-express-66f49f976b-",
+      "labels": {
+        "app": "mongo-express",
+        "pod-template-hash": "66f49f976b"
+      },
+      "name": "mongo-express-66f49f976b-2jfr5",
+      "namespace": "mongo",
+      "ownerReferences": [
+        {
+          "apiVersion": "apps/v1",
+          "blockOwnerDeletion": true,
+          "controller": true,
+          "kind": "ReplicaSet",
+          "name": "mongo-express-66f49f976b",
+          "uid": "958240a8-7769-4c60-aa2a-ff378290a9ee"
+        }
+      ],
+      "resourceVersion": "14836198",
+      "uid": "8e037ecb-726d-4ece-985a-991ea0487409"
+    },
+    "spec": {
+      "containers": [
+        {
+          "env": [
+            {
+              "name": "ME_CONFIG_MONGODB_SERVER",
+              "value": "mongo.mongo.svc.cluster.local"
+            },
+            {
+              "name": "ME_CONFIG_MONGODB_ADMINUSERNAME",
+              "value": "root"
+            },
+            {
+              "name": "ME_CONFIG_MONGODB_ADMINPASSWORD",
+              "valueFrom": {
+                "secretKeyRef": {
+                  "key": "mongo-root-password",
+                  "name": "mongo-secret"
+                }
+              }
+            },
+            {
+              "name": "ME_CONFIG_BASICAUTH_USERNAME",
+              "value": "ka0s"
+            },
+            {
+              "name": "ME_CONFIG_BASICAUTH_PASSWORD",
+              "valueFrom": {
+                "secretKeyRef": {
+                  "key": "mongo-root-password",
+                  "name": "mongo-secret"
+                }
+              }
+            }
+          ],
+          "image": "mongo-express:latest",
+          "imagePullPolicy": "IfNotPresent",
+          "livenessProbe": {
+            "failureThreshold": 3,
+            "httpGet": {
+              "path": "/",
+              "port": 8081,
+              "scheme": "HTTP"
+            },
+            "initialDelaySeconds": 30,
+            "periodSeconds": 10,
+            "successThreshold": 1,
+            "timeoutSeconds": 1
+          },
+          "name": "mongo-express",
+          "ports": [
+            {
+              "containerPort": 8081,
+              "protocol": "TCP"
+            }
+          ],
+          "readinessProbe": {
+            "failureThreshold": 3,
+            "httpGet": {
+              "path": "/",
+              "port": 8081,
+              "scheme": "HTTP"
+            },
+            "initialDelaySeconds": 15,
+            "periodSeconds": 10,
+            "successThreshold": 1,
+            "timeoutSeconds": 1
+          },
+          "resources": {
+            "limits": {
+              "cpu": "500m",
+              "memory": "256Mi"
+            },
+            "requests": {
+              "cpu": "100m",
+              "memory": "128Mi"
+            }
+          },
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-72t9q",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "dnsPolicy": "ClusterFirst",
+      "enableServiceLinks": true,
+      "nodeName": "k8-node-20",
+      "preemptionPolicy": "PreemptLowerPriority",
+      "priority": 0,
+      "restartPolicy": "Always",
+      "schedulerName": "default-scheduler",
+      "securityContext": {},
+      "serviceAccount": "default",
+      "serviceAccountName": "default",
+      "terminationGracePeriodSeconds": 30,
+      "tolerations": [
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/not-ready",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        },
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/unreachable",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        }
+      ],
+      "volumes": [
+        {
+          "name": "kube-api-access-72t9q",
+          "projected": {
+            "defaultMode": 420,
+            "sources": [
+              {
+                "serviceAccountToken": {
+                  "expirationSeconds": 3607,
+                  "path": "token"
+                }
+              },
+              {
+                "configMap": {
+                  "items": [
+                    {
+                      "key": "ca.crt",
+                      "path": "ca.crt"
+                    }
+                  ],
+                  "name": "kube-root-ca.crt"
+                }
+              },
+              {
+                "downwardAPI": {
+                  "items": [
+                    {
+                      "fieldRef": {
+                        "apiVersion": "v1",
+                        "fieldPath": "metadata.namespace"
+                      },
+                      "path": "namespace"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "status": {
+      "conditions": [
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-02T21:22:55Z",
+          "status": "True",
+          "type": "PodReadyToStartContainers"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-02T21:22:22Z",
+          "status": "True",
+          "type": "Initialized"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-02T21:22:22Z",
+          "message": "containers with unready status: [mongo-express]",
+          "reason": "ContainersNotReady",
+          "status": "False",
+          "type": "Ready"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-02T21:22:22Z",
+          "message": "containers with unready status: [mongo-express]",
+          "reason": "ContainersNotReady",
+          "status": "False",
+          "type": "ContainersReady"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-02T21:22:22Z",
+          "status": "True",
+          "type": "PodScheduled"
+        }
+      ],
+      "containerStatuses": [
+        {
+          "image": "mongo-express:latest",
+          "imageID": "",
+          "lastState": {},
+          "name": "mongo-express",
+          "ready": false,
+          "restartCount": 0,
+          "started": false,
+          "state": {
+            "waiting": {
+              "message": "Back-off pulling image \"mongo-express:latest\": ErrImagePull: rpc error: code = DeadlineExceeded desc = failed to pull and unpack image \"docker.io/library/mongo-express:latest\": failed to copy: httpReadSeeker: failed open: failed to do request: Get \"https://docker-images-prod.6aa30f8b08e16409b46e0173d6de2f56.r2.cloudflarestorage.com/registry-v2/docker/registry/v2/blobs/sha256/87/870141b735e7d896bde590765c341cdc64fb6d3284b5f6a81f70ec936e4d0b83/data?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=f1baa2dd9b876aeb89efebbfc9e5d5f4%2F20260302%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260302T212720Z&X-Amz-Expires=1200&X-Amz-SignedHeaders=host&X-Amz-Signature=4901ffba41fb05eb3565fde574009b42fb3c2434f8dd325da65efc580ba44471\": dial tcp 172.64.66.1:443: i/o timeout",
+              "reason": "ImagePullBackOff"
+            }
+          },
+          "volumeMounts": [
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-72t9q",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            }
+          ]
+        }
+      ],
+      "hostIP": "192.168.1.20",
+      "hostIPs": [
+        {
+          "ip": "192.168.1.20"
+        }
+      ],
+      "phase": "Pending",
+      "podIP": "172.16.209.12",
+      "podIPs": [
+        {
+          "ip": "172.16.209.12"
+        }
+      ],
+      "qosClass": "Burstable",
+      "startTime": "2026-03-02T21:22:22Z"
+    }
+  }
+]
