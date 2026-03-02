@@ -1,0 +1,22 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: nfs-validation-job
+  namespace: storage-system
+spec:
+  ttlSecondsAfterFinished: 300 # Limpieza automática tras 5 min
+  backoffLimit: 2
+  template:
+    spec:
+      containers:
+      - name: validation
+        image: busybox
+        command: ["sh", "-c", "echo 'Validacion NFS $(date)' > /mnt/nfs/check.txt && cat /mnt/nfs/check.txt && echo 'Escritura y lectura OK'"]
+        volumeMounts:
+        - name: nfs-vol
+          mountPath: "/mnt/nfs"
+      restartPolicy: Never
+      volumes:
+      - name: nfs-vol
+        persistentVolumeClaim:
+          claimName: nfs-validation-pvc
