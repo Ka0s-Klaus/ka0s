@@ -5,9 +5,11 @@ from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure, OperationFailure
 import hashlib
 
+
 def get_file_hash(filepath):
     with open(filepath, 'rb') as f:
         return hashlib.md5(f.read()).hexdigest()
+
 
 try:
     conn_str = os.environ['MONGO_SUPERUSER_CONNECTION']
@@ -47,7 +49,11 @@ try:
         
         # Eliminar esta sección que borra colecciones existentes
         # Procesar extensiones como strings
-        extensions = {str(os.path.splitext(f)[1][1:]) or 'no_extension' for f in files if os.path.isfile(os.path.join(root, f))}
+        extensions = {
+            str(os.path.splitext(f)[1][1:]) or 'no_extension'
+            for f in files
+            if os.path.isfile(os.path.join(root, f))
+        }
         print(f"[DEBUG] Extensiones procesadas: {extensions}")
         
         for ext in extensions:
@@ -80,24 +86,41 @@ try:
                                 json_content = json.loads(content)
                                 doc['data'] = json_content
                                 
-                                # Calcular Lead Time si existen los campos estándar de GitHub Actions
+                                # Calcular Lead Time si existen campos
                                 if isinstance(json_content, dict):
-                                    created_at = json_content.get('createdAt') or json_content.get('created_at')
-                                    updated_at = json_content.get('updatedAt') or json_content.get('updated_at')
+                                    created_at = (
+                                        json_content.get('createdAt') or
+                                        json_content.get('created_at')
+                                    )
+                                    updated_at = (
+                                        json_content.get('updatedAt') or
+                                        json_content.get('updated_at')
+                                    )
                                     
                                     if created_at and updated_at:
-                                        # Manejo básico de formatos ISO (puede requerir ajuste según el formato exacto)
+                                        # Manejo básico de formatos ISO
                                         try:
-                                            # Eliminar la 'Z' si existe para compatibilidad con fromisoformat en versiones antiguas
-                                            t_start = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
-                                            t_end = datetime.fromisoformat(updated_at.replace('Z', '+00:00'))
+                                            # Eliminar 'Z' para compatibilidad
+                                            t_start = datetime.fromisoformat(
+                                                created_at.replace('Z', '+00:00')
+                                            )
+                                            t_end = datetime.fromisoformat(
+                                                updated_at.replace('Z', '+00:00')
+                                            )
                                             duration = (t_end - t_start).total_seconds()
-                                            
+
                                             doc['duration_seconds'] = duration
-                                            doc['lead_time_minutes'] = round(duration / 60, 2)
-                                            print(f"[DEBUG] Calculated duration for {file}: {duration}s")
+                                            doc['lead_time_minutes'] = round(
+                                                duration / 60, 2
+                                            )
+                                            print(
+                                                f"[DEBUG] Duration for {file}: "
+                                                f"{duration}s"
+                                            )
                                         except ValueError as ve:
-                                            print(f"[WARN] Error parsing dates in {file}: {ve}")
+                                            print(
+                                                f"[WARN] Date error {file}: {ve}"
+                                            )
                             except json.JSONDecodeError:
                                 print(f"[WARN] Could not parse JSON content for {file}")
 
