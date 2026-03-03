@@ -118,3 +118,16 @@ jobs:
     steps:
       - name: Notify Failure
         run: echo "❌ Workflow ${{ env.KAOS_MODULE }} falló."
+
+  # -----------------------------------------------------------------------------
+  # JOB 4: END WORKFLOW (AUDIT TRIGGER)
+  # -----------------------------------------------------------------------------
+  end-workflow:
+    name: Finalizar Workflow
+    needs: [core-execution, handle-success, handle-failure]
+    runs-on: swarm-runners-scaleset
+    if: always()
+    steps:
+      - name: Disparar Auditoría
+        run: gh workflow run inspector.yml --ref main
+
