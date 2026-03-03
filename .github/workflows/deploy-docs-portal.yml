@@ -1,0 +1,148 @@
+name: Deploy Docs Portal
+
+on:
+  push:
+    paths:
+      - 'core/docs/**'
+      - 'mkdocs.yml'
+      - 'core/b2b/core-services/docs-portal/**'
+      - '.github/workflows/deploy-docs-portal.yml'
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+  actions: read
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}-docs
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-push:
+    name: Build & Push Docker Image
+    runs-on: swarm-runners-scaleset
+    outputs:
+      image_tag: ${{ steps.meta.outputs.tags }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,format=long
+            type=ref,event=branch
+            latest
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: core/b2b/core-services/docs-portal/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  deploy:
+    name: Deploy to Kubernetes
+    needs: build-and-push
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Install Kustomize
+        run: |
+           curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
+           sudo mv kustomize /usr/local/bin/
+
+      - name: Create Kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG_DATA }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Update Image Tag
+        working-directory: core/b2b/core-services/docs-portal
+        run: |
+          kustomize edit set image ghcr.io/ka0s-klaus/ka0s-docs=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-$(git rev-parse HEAD)
+
+      - name: Deploy
+        working-directory: core/b2b/core-services/docs-portal
+        run: |
+          kustomize build . | kubectl apply -f -
+          kubectl rollout status deployment/docs-portal -n docs-portal --timeout=120s
+
+  handle-success:
+    name: Handle Success
+    needs: [deploy]
+    if: success()
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Log Success
+        run: echo "Docs Portal deployed successfully."
+
+  handle-failure:
+    name: Handle Failure
+    needs: [build-and-push, deploy]
+    if: failure()
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+            fetch-depth: 0
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+      - name: Create Incident Issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --title "[INCIDENT]: Fallo en workflow ${{ github.workflow }}" \
+            --label "incident,automated" \
+            --body "El despliegue del portal de documentación ha fallado. Revisar logs: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+  end-workflow:
+    name: Finalizar Workflow
+    needs: [handle-success, handle-failure]
+    runs-on: swarm-runners-scaleset
+    if: always()
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+            fetch-depth: 0
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+      - name: Disparar Auditoría
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "🔍 Triggering Inspector for Audit..."
+          gh workflow run inspector.yml \
+            --ref main \
+            -f kaos-workflow-id="${{ github.run_id }}" \
+            -f kaos-user-start="${{ github.triggering_actor }}"

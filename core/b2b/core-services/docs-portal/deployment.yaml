@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: docs-portal
+  namespace: docs-portal
+  labels:
+    app: docs-portal
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: docs-portal
+  template:
+    metadata:
+      labels:
+        app: docs-portal
+    spec:
+      containers:
+        - name: docs-portal
+          image: ghcr.io/ka0s-klaus/ka0s-docs:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+            limits:
+              memory: "128Mi"
+              cpu: "200m"
+      imagePullSecrets:
+        - name: ghcr-secret
