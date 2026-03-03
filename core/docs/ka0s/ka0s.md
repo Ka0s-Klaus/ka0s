@@ -19,5 +19,5 @@ Este es el módulo principal del sistema, responsable de la orquestación, detec
 *   [Metodología](./ka0s_metodologia.md)
 
 ## Material Visual
-*   ![Ka0s](/core/imgs/kaos.jpeg)
-*   ![Workflow](/core/imgs/workflow-kaos.png)
+*   ![Ka0s](../imgs/kaos.jpeg)
+*   ![Workflow](../imgs/workflow-kaos.png)

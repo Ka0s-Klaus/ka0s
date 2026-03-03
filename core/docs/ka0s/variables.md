@@ -1,6 +1,6 @@
 # Detallaremos el uso de las variables y sus contenidos
 
-![Ka0s VARS](/core/imgs/kaos-vars.png)
+![Ka0s VARS](../imgs/kaos-vars.png)
 
 ## ORGS
 

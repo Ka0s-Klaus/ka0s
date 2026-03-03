@@ -4,7 +4,7 @@
 
 Ka0s es una metodología que se basa en la simplicidad, la eficiencia y la eficacia. Ka0s es una metodología que se basa en la adaptación, la evolución y la mejora. Ka0s es una metodología que se basa en la tecnología, la innovación y el futuro. Ka0s es una metodología que se basa en la colaboración, la comunidad y la libertad.
 
-![Ka0s](/core/imgs/kaos-core.jpeg)
+![Ka0s](../imgs/kaos-core.jpeg)
 
 Nuestra metodología de desarrallo, que no quiere decir que tenga que ser la tuya por obligación 'se explicara mas en detalle', por ende nuestra manera de trabajar se basa en que Ka0s única y exclusivamente se diseño para trabajar en "origin/main".
 
@@ -30,7 +30,7 @@ Llegados a este punto nos dimos cuenta que con los mínimos recursos y variacion
 
 El core de Ka0s de maneja y controla a través de la funcionalidad de gestión de Proyectos de GitHub usando un template sencillo basado en Kanban que solamente dispone de tres columnas (backlog - in progress - done).
 
-![Ka0s](/core/imgs/ka0s-dashboard.png)
+![Ka0s](../imgs/ka0s-dashboard.png)
 
 Y aquí viene lo bueno, ¿y porque ka0s no tiene su propio módulo de gestión? Pues sencillamente, porque ya existe. No tan solo en GitHub sino en muchas más plataformas.
 
@@ -45,19 +45,19 @@ En nuestro caso nos basamos en las soluciones de GithHub por varios motivos:
 
 Pues sencillo. Una de las características que tuvimos en cuenta es "no repetir tarjetas por entornos". Para lo cual, una misma tarjeta puede trabajar en PATCH y cuando termine pasar a MINOR y así sucesivamente hasta llegar a "origin/main".
 
-![Ka0s](/core/imgs/ka0s-branch.png)
+![Ka0s](../imgs/ka0s-branch.png)
 
 Ventaja, "Un única tarjeta para gobernar todas las acciones asociadas al desarrollo de la misma". Si un poco al rollito de "El Señor de los Anillos", pero vimos que es muy rápido localizar la información, resumirla y localizarla. Esto nos permitió mejorar en un 43% la observabilidad conectada al propio Ka0s.
 
-![Ka0s](/core/imgs/ka0s-info.png)
+![Ka0s](../imgs/ka0s-info.png)
 
 Y aquí os presentamos a uno de los módulos que más trabaja dentro de Ka0s *"inspector.yml"* uno de los módulos más sencillo y al mismo tiempo más importantes de la plataforma, ya que es responsable de realizar la extracción de la información de todo lo que se ha solicitado a cada uno de los diferentes módulos de Ka0s y hacerla disponible para el resto de la plataforma.
 
-![Ka0s](/core/imgs/ka0s-inspector.png)
+![Ka0s](../imgs/ka0s-inspector.png)
 
 Y..... tachán, ¿os acordais de la "sucesión"? Pues inspector solamente se penso para extrar un resumen "lógico" (imagen anterior) y esplicar en "humano" que es lo que ha realizado la lógica.
 
-![Ka0s](/core/imgs/ka0s-inspector-human.png)
+![Ka0s](../imgs/ka0s-inspector-human.png)
 
 Pues al finalizar este módulo y conectarlo a la obsevabilidad nos dimos cuenta de que además le hemos añadido la funcionalidad de saber cuanto tiempo tarda cada ejecución, cada solicitud, casa job, cada step dentro del job y lo más importante, todos los recursos asociados a la ejecución que han solicitados y por cuanto tiempo (esto nos permite extraer hasta el tiempo de computo "CPU + Memoria + Tranferencia de información"). La caña, pensamos en guardar un JSON y un LOG en plan de ..... "por saber lo que ha pasado" y nos dimos cueta de que la "sucessión" entro en juego y al mismoa tiempo añadimos la funcionalidad a la propia plataforma de manejar sus ejecuciones y costes.
 

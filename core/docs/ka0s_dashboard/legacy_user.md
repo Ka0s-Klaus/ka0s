@@ -1,4 +1,4 @@
-![Ka0S](/core/imgs/Portada_Documentacion_Ka0s_Dashboard.png)
+![Ka0S](../imgs/Portada_Documentacion_Ka0s_Dashboard.png)
 # 1.Casos de uso Generales de la web
 El dashboard web está diseñado para mostrar información de manera dinámica a partir de los archivos JSON ubicados en core\web\data. Esto lo hace sumamente flexible y adaptable a cualquier tipo de contenido o de web, ya que para crear la web solo se necesita agregar archivos JSON sin necesidad de modificar nada de Backend, simplemente escribir los datos de una determinada forma que se explicará posteriormente y obtener los resultados en pantalla.
 De esta manera cualquier persona, sin necesidad de que tenga conocimientos de programación, puede crear una web simplemente incluyendo los ficheros de datos que quiera mostrar y haciendo referencia en los JSON en los que inserte la estructura de la web que desee.
@@ -162,7 +162,7 @@ Para mostrar los datos en forma de lista, debemos añadirlo en el archivo JSON d
         }
 ```
 Como podemos ver, tiene un filtro para elegir las columnas que queremos que salgan, para ello ponemos en "columns" las columnas que queramos. Además, podemos añadir al lado de cada columna un color para los datos de esa columna, "ventas: green". También, podemos editar el número de elementos por página en orchestrator.js aquí:  pageSize: 10. Con el código anterior, tenemos el siguiente gráfico:
-![Ka0S](/core/imgs/lista-dashboard.png)
+![Ka0S](../imgs/lista-dashboard.png)
 
 # 3.Agregar y editar gráficos
 
@@ -181,12 +181,12 @@ Para mostrar los datos mediante gráficos deberemos especificarlo en nuestro arc
 ```
 Como vemos en el campo “chartTypes” debemos especificar si queremos un gráfico de barras ("bar") o tipo “tarta” ("doughnut"), en caso de no especificarlo se mostrarán ambos gráficos.
 Así pues con el código anterior tendremos un gráfico como este:
-![Ka0S](/core/imgs/barras.png)
+![Ka0S](../imgs/barras.png)
 
 Además tenemos la opción de personalizar los colores de las barras, imaginemos que queremos mostrarlas con el color verde, únicamente deberemos añadir a nuestro JSON los campos: 
  "barColor": "green",
  "barBorderColor": "white",
-![Ka0S](/core/imgs/barrasve.png)
+![Ka0S](../imgs/barrasve.png)
 
 
 A continuación veamos cómo se mostrarán nuestros datos mediante un gráfico circular, para ellos usaremos el siguiente código de ejemplo:
@@ -199,7 +199,7 @@ A continuación veamos cómo se mostrarán nuestros datos mediante un gráfico c
             "chartTypes": ["doughnut"]
         }
   ```
-![Ka0S](/core/imgs/grafico_circular.png)
+![Ka0S](../imgs/grafico_circular.png)
 
 Y finalmente veamos cómo podemos mostrar los dos tipos de gráficos conjuntamente.
 ```shell
@@ -214,7 +214,7 @@ Y finalmente veamos cómo podemos mostrar los dos tipos de gráficos conjuntamen
             "valueField": "ingresos"
         },
  ```
-![Ka0S](/core/imgs/graficos.png)
+![Ka0S](../imgs/graficos.png)
 
 Como podemos ver ambos gráficos son muy fáciles de configurar y nos servirán para mostrar diferentes tipos de datos según nuestras necesidades.
 
@@ -289,7 +289,7 @@ Como vemos en el código, tenemos varios tipos de métrica para mostrar:
 - **sum** : Suma valores de un campo (ej: ingresos totales).
 
 Todo ello se verá en nuestra web de la siguiente manera.
-![Ka0S](/core/imgs/metricas.png)
+![Ka0S](../imgs/metricas.png)
 
 Además, en este caso también tenemos la oportunidad de personalizar los colores de dichas métricas y adaptarlas así a nuestro gusto o colores de nuestra marca. Así pues imaginemos que los colores de nuestra tienda son el azul y el naranja, deberemos añadir el campo “metricsColors” antes de la plantilla e indicar el color mediante su nombre o con su código HTML.
 ```shell
@@ -306,7 +306,7 @@ Además, en este caso también tenemos la oportunidad de personalizar los colore
 ```
 
 Y así veríamos nuestras métricas.
-![Ka0S](/core/imgs/metricasColo.png)
+![Ka0S](../imgs/metricasColo.png)
 
 
 

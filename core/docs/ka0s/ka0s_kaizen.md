@@ -14,7 +14,7 @@ Basándonos en este significado, podemos establecer que la sencillez es la cuali
 
 Ka0s determina con está regla de oro que todo tiene que conseguirse en tres únicos pasos. Si algo no se consigue en tres pasos, es que no es sencillo, y por tanto, no es eficiente ni eficaz. Si algo no se consigue en tres pasos, es que no es sencillo, y por tanto, no es adaptable, no es modificable, no es ampliable y lo más importante *"no es eficiente"*.
 
-![El_Proceso](/core/imgs/golden_rule.jpeg)
+![El_Proceso](../imgs/golden_rule.jpeg)
 
 ### "Eficiencia"
 
@@ -32,7 +32,7 @@ Pues bien, preguntado a un experto en el tema, nos responde que *"la eficacia es
 
 Pues acabamos de descubir el primer *concepto de oro* dentro de Ka0s, "Sucesión de Fibonacci" (un tio majisimo, cre0¡). La sucesión comienza con dos números naturales (dependiendo de la referencia, con 0 y 1 en ciertos casos, otras inician con 1 y 1) y a partir de estos, **«cada término es la suma de los dos anteriores»**. De una manera sencilla cuando empezamos algo siempre partimos de "0" y realizamos la "1" acción que nos dara como resultado "1" (0,1,1,.....). En resumen, *el concepto de oro de la Sucesión de Fibonacci es la eficacia*. Siempre que se añade un módulo a Ka0s este amplia la funcionalidad del sistema, siguiendo esa sucesión de Fibonacci, y al mismo tiempo reduce el numero de líneas de código, aumentando la eficacia de cada uno de los recursos.
 
-![El_Proceso](/core/imgs/eficacia.jpeg)
+![El_Proceso](../imgs/eficacia.jpeg)
 
 ### "Capacidad de adaptación"
 
@@ -43,7 +43,7 @@ En un mundo en constante cambio y evolución, *la capacida de adaptación* (terc
 
 >-Pero, ¿y si te digo que con Ka0s, no es así? ¿Y si te digo que con Ka0s, la adaptación es sencilla, eficiente y eficaz? ¿Y si te digo que con Ka0s, la adaptación es Ka0s?
 
-![El_Proceso](/core/imgs/adaptacion.png)
+![El_Proceso](../imgs/adaptacion.png)
 
 Tan solo una pequeña pista para seguir; "Ka0s se basa unica y exclusivamente en código". Y, ¿qué es el código? El código es un conjunto de instrucciones que le indican a un sistema cómo hacerlo de manera sencilla, eficiente y eficaz. El código es la base del desarrollo de la tecnología.
 

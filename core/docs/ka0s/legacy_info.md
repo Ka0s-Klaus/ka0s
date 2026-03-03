@@ -1,6 +1,6 @@
 # Documentación del módulo principal de Ka0s
 
-![Ka0S](/core/imgs/kaos.jpeg)
+![Ka0S](../imgs/kaos.jpeg)
 
 ```shell
 - Albert Einstein dijo una vez: "... si tu intención es describir la verdad, hazlo con sencillez, y la elegancia dejasela al sastre."
@@ -60,6 +60,6 @@ Ejemplo: Principio de modularidad, principio de reutilización de código.
 #### Diagrama de Flujo
 
 Y aquí viene lo bueno. Este es el "diagrama básico" del flujo de trabajo de Ka0s, pero fijaros bien en la imagen (ese dibujito de "componentes" nos pueden dar una pequeña pista.
-![Diagrama conceptual del proceso completo](/core/imgs/workflow-ka0s.png)
+![Diagrama conceptual del proceso completo](../imgs/workflow-ka0s.png)
 
 Este diseño nos permite **La capacidad de adaptación es la habilidad de un sistema para ser Ka0s** adaptarnos a cualquier situación.
