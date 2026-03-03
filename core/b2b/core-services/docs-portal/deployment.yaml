@@ -15,18 +15,40 @@ spec:
       labels:
         app: docs-portal
     spec:
+      volumes:
+        - name: repo-volume
+          emptyDir: {}
+      initContainers:
+        - name: git-clone
+          image: alpine/git
+          env:
+            - name: GIT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: git-credentials
+                  key: password
+          command:
+            - /bin/sh
+            - -c
+            - |
+              git clone https://x-access-token:${GIT_TOKEN}@github.com/Ka0s-Klaus/ka0s.git /repo
+          volumeMounts:
+            - name: repo-volume
+              mountPath: /repo
       containers:
         - name: docs-portal
-          image: ghcr.io/ka0s-klaus/ka0s-docs:latest
+          image: squidfunk/mkdocs-material:latest
           imagePullPolicy: Always
+          command: ["mkdocs", "serve", "-f", "/repo/mkdocs.yml", "-a", "0.0.0.0:8000"]
           ports:
-            - containerPort: 80
+            - containerPort: 8000
+          volumeMounts:
+            - name: repo-volume
+              mountPath: /repo
           resources:
             requests:
-              memory: "64Mi"
+              memory: "128Mi"
               cpu: "100m"
             limits:
-              memory: "128Mi"
-              cpu: "200m"
-      imagePullSecrets:
-        - name: ghcr-secret
+              memory: "256Mi"
+              cpu: "500m"

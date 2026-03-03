@@ -12,6 +12,8 @@ on:
     paths:
       - 'core/b2b/core-services/**'
       - '!core/b2b/core-services/kube/**'
+      - 'core/docs/**'
+      - 'mkdocs.yml'
 
 permissions:
   contents: write
@@ -26,6 +28,8 @@ jobs:
   deploy-services:
     name: Deploy Changed Services
     runs-on: swarm-runners-scaleset
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     outputs:
       services: ${{ steps.deploy_step.outputs.services }}
     steps:
@@ -75,13 +79,23 @@ jobs:
             # 2. Filter for core/b2b/core-services/
             # 3. Exclude core/b2b/core-services/kube/
             # 4. Extract the service root path (core/b2b/core-services/<service-name>)
-            # 5. Sort and Uniq
+            # 5. Check for docs changes (core/docs or mkdocs.yml)
             
             CHANGED_SERVICES=$(git diff --name-only "$BEFORE" "$AFTER" | \
               grep "^core/b2b/core-services/" | \
               grep -v "^core/b2b/core-services/kube/" | \
               cut -d/ -f1-4 | \
               sort | uniq)
+              
+            # Check for docs changes
+            DOCS_CHANGED=$(git diff --name-only "$BEFORE" "$AFTER" | grep -E "^core/docs/|^mkdocs.yml")
+            if [ ! -z "$DOCS_CHANGED" ]; then
+              echo "📚 Docs changes detected. Adding docs-portal to deployment list."
+              CHANGED_SERVICES="${CHANGED_SERVICES} core/b2b/core-services/docs-portal"
+            fi
+            
+            # Remove duplicates and empty lines
+            CHANGED_SERVICES=$(echo "$CHANGED_SERVICES" | tr ' ' '\n' | sort | uniq | grep -v "^$")
           fi
           
           # Convert to comma-separated for output
@@ -133,12 +147,27 @@ jobs:
               # Crear namespace si no existe (idempotente)
               kubectl create namespace "$NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
               
+              # Special handling for docs-portal: Inject git credentials
+              if [ "$SERVICE_NAME" == "docs-portal" ]; then
+                 echo "🔑 Injecting git credentials for docs-portal..."
+                 kubectl create secret generic git-credentials \
+                    --from-literal=username="x-access-token" \
+                    --from-literal=password="${{ secrets.GITHUB_TOKEN }}" \
+                    --dry-run=client -o yaml | kubectl apply -n "$NAMESPACE" -f -
+              fi
+              
               # Delete old validation jobs to force re-run
               kubectl delete job -n "$NAMESPACE" -l "app=$SERVICE_NAME" --ignore-not-found
               
               # Aplicar manifiestos con Kustomize
               echo "   Applying manifests..."
               kubectl apply -k "$SERVICE/"
+              
+              # Special handling for docs-portal: Force restart to pull new content
+              if [ "$SERVICE_NAME" == "docs-portal" ]; then
+                 echo "🔄 Restarting docs-portal deployment to pull latest content..."
+                 kubectl rollout restart deployment/docs-portal -n "$NAMESPACE"
+              fi
               
               echo "⏳ Waiting for rollout..."
               # Intentar esperar rollout de deployments si existen en el kustomization
