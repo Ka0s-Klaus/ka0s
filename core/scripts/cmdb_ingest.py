@@ -34,11 +34,15 @@ def log(msg):
     print(f"[CMDB-Ingest] {msg}")
 
 
-def get_itop_object(class_name, name):
+def get_itop_object(class_name, name, dry_run=False):
     """
     Busca un objeto en iTop por su nombre (u otra clave reconciliable).
     Retorna el ID si existe, o None.
     """
+    if dry_run:
+        log(f"[DRY-RUN] Buscando {class_name} '{name}' -> Simulado ID 999")
+        return "999"
+
     params = {
         'version': ITOP_API_VERSION,
         'auth_user': ITOP_USER,
@@ -71,19 +75,20 @@ def get_itop_object(class_name, name):
     return None
 
 
-def resolve_fks(fields):
+def resolve_fks(fields, dry_run=False):
     """
-    Recorre los campos y si encuentra una FK mapeada con valor string, intenta resolverla al ID.
+    Recorre los campos y si encuentra una FK mapeada con valor string,
+    intenta resolverla al ID.
     """
     resolved_fields = fields.copy()
     for field, value in fields.items():
         if field in FK_MAPPING and isinstance(value, str):
             target_class = FK_MAPPING[field]
-            # Caso especial: system_id puede referenciar Server, pero FunctionalCI cubre la mayoría
-            # Si es system_id, intentamos buscar en FunctionalCI
+            # Caso especial: system_id puede referenciar Server,
+            # pero FunctionalCI cubre la mayoría
             
             log(f"Resolviendo FK {field}='{value}' ({target_class})...")
-            obj_id = get_itop_object(target_class, value)
+            obj_id = get_itop_object(target_class, value, dry_run=dry_run)
             
             if obj_id:
                 resolved_fields[field] = obj_id
@@ -93,14 +98,11 @@ def resolve_fks(fields):
                     f"  -> NO ENCONTRADO. Se enviará el nombre original "
                     f"(puede fallar si iTop no lo reconcilia)."
                 )
-                # Nota: Algunas versiones de iTop aceptan {"name": "valor"}
-                # para creación inline o lookup.
-                # Aquí dejamos el string original por si acaso la API lo maneja.
 
     return resolved_fields
 
 
-def create_or_update_ci(data):
+def create_or_update_ci(data, dry_run=False):
     """
     Crea o actualiza un CI en iTop.
     """
@@ -112,20 +114,19 @@ def create_or_update_ci(data):
         return False
 
     # Resolver claves foráneas
-    fields = resolve_fks(fields)
+    fields = resolve_fks(fields, dry_run=dry_run)
     
     # Preparamos la operación
-    # Usamos core/create con politica de reconciliación si es posible, 
-    # pero iTop REST API standard usa core/create para nuevos y core/update para existentes.
-    # Una estrategia robusta es intentar core/get primero para ver si existe.
-    
-    # Asumimos que el campo 'name' es la clave principal para reconciliar (común en CMDB)
     name = fields.get('name')
     existing_id = None
     
     if name:
-        existing_id = get_itop_object(class_name, name)
+        existing_id = get_itop_object(class_name, name, dry_run=dry_run)
     
+    if dry_run:
+        log(f"[DRY-RUN] Create/Update {class_name} '{name}' -> OK")
+        return True
+
     operation = 'core/create'
     json_payload = {
         'operation': operation,
@@ -185,10 +186,16 @@ def main():
         default='devops/core/cmdb',
         help='Directorio con archivos JSON'
     )
+    parser.add_argument(
+        '--dry-run',
+        action='store_true',
+        help='Ejecución simulada sin conexión a iTop'
+    )
     args = parser.parse_args()
 
-    if not ITOP_USER or not ITOP_PASSWORD:
-        log("Error: Variables ITOP_USER e ITOP_PASSWORD son requeridas.")
+    # Validación de credenciales solo si no es dry-run
+    if not args.dry_run and (not ITOP_USER or not ITOP_PASSWORD):
+        log("Error: Variables ITOP_USER e ITOP_PASSWORD son requeridas (o use --dry-run).")
         sys.exit(1)
 
     target_dir = args.dir
@@ -196,7 +203,7 @@ def main():
         log(f"Error: El directorio {target_dir} no existe.")
         sys.exit(1)
 
-    log(f"Iniciando ingesta desde {target_dir}...")
+    log(f"Iniciando ingesta desde {target_dir} (Dry Run: {args.dry_run})...")
     
     files = sorted([f for f in os.listdir(target_dir) if f.endswith('.json')])
     
@@ -210,7 +217,7 @@ def main():
         try:
             with open(filepath, 'r') as f:
                 data = json.load(f)
-                if create_or_update_ci(data):
+                if create_or_update_ci(data, dry_run=args.dry_run):
                     success_count += 1
                 else:
                     fail_count += 1

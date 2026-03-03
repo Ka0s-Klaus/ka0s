@@ -64,11 +64,17 @@ jobs:
       - name: Main Logic
         env:
           ITOP_URL: ${{ secrets.ITOP_URL || vars.ITOP_URL }}
-          ITOP_USER: ${{ secrets.ITOP_USER }}
-          ITOP_PASSWORD: ${{ secrets.ITOP_PASSWORD }}
+          ITOP_USER: ${{ secrets.ITOP_API_USER }}
+          ITOP_PASSWORD: ${{ secrets.ITOP_API_PASSWORD }}
         run: |
           echo "Ejecutando lógica principal de ingesta CMDB..."
-          python core/scripts/cmdb_ingest.py --dir devops/core/cmdb
+          
+          ARGS=""
+          if [ "${{ inputs.dry_run }}" == "true" ]; then
+            ARGS="--dry-run"
+          fi
+          
+          python core/scripts/cmdb_ingest.py --dir devops/core/cmdb $ARGS
 
       # [OPCIONAL] Commit de resultados/evidencias
       # En este caso no generamos artefactos en git, pero mantenemos el bloque
