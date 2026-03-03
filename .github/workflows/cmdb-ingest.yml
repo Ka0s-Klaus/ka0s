@@ -66,6 +66,8 @@ jobs:
           ITOP_URL: ${{ secrets.ITOP_URL || vars.ITOP_URL }}
           ITOP_USER: ${{ secrets.ITOP_API_USER }}
           ITOP_PASSWORD: ${{ secrets.ITOP_API_PASSWORD }}
+          # Desactivar verificación SSL para entorno interno (self-signed)
+          ITOP_SSL_VERIFY: 'false'
         run: |
           echo "Ejecutando lógica principal de ingesta CMDB..."
           

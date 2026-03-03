@@ -9,6 +9,14 @@ ITOP_URL = os.getenv('ITOP_URL', 'https://itsm.ka0s.io/webservices/rest.php')
 ITOP_USER = os.getenv('ITOP_USER')
 ITOP_PASSWORD = os.getenv('ITOP_PASSWORD')
 ITOP_API_VERSION = '1.3'
+# Control de verificación SSL
+# (por defecto True, usar 'false' para entornos dev/self-signed)
+ITOP_SSL_VERIFY = os.getenv('ITOP_SSL_VERIFY', 'true').lower() == 'true'
+
+if not ITOP_SSL_VERIFY:
+    import urllib3
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 
 # Mapeo de campos FK a clases para resolución automática
 FK_MAPPING = {
@@ -56,7 +64,7 @@ def get_itop_object(class_name, name, dry_run=False):
     }
     
     try:
-        response = requests.post(ITOP_URL, data=params)
+        response = requests.post(ITOP_URL, data=params, verify=ITOP_SSL_VERIFY)
         response.raise_for_status()
         data = response.json()
         
@@ -95,8 +103,8 @@ def resolve_fks(fields, dry_run=False):
                 log(f"  -> Resuelto a ID {obj_id}")
             else:
                 log(
-                    f"  -> NO ENCONTRADO. Se enviará el nombre original "
-                    f"(puede fallar si iTop no lo reconcilia)."
+                    "  -> NO ENCONTRADO. Se enviará el nombre original "
+                    "(puede fallar si iTop no lo reconcilia)."
                 )
 
     return resolved_fields
@@ -149,7 +157,11 @@ def create_or_update_ci(data, dry_run=False):
     }
 
     try:
-        response = requests.post(ITOP_URL, data=params)
+        response = requests.post(
+            ITOP_URL,
+            data=params,
+            verify=ITOP_SSL_VERIFY
+        )
         response.raise_for_status()
         res_data = response.json()
 
@@ -162,7 +174,10 @@ def create_or_update_ci(data, dry_run=False):
                 log(f"Éxito: {class_name} '{name}' procesado. ID: {obj_id}")
                 return True
             else:
-                log("Advertencia: Operación exitosa pero sin objetos retornados.")
+                log(
+                    "Advertencia: Operación exitosa pero "
+                    "sin objetos retornados."
+                )
                 return True
         else:
             log(f"Error iTop: {res_data['message']}")
@@ -174,7 +189,6 @@ def create_or_update_ci(data, dry_run=False):
     except Exception as e:
         log(f"Excepción de conexión: {e}")
         return False
-
 
 
 def main():
@@ -195,7 +209,10 @@ def main():
 
     # Validación de credenciales solo si no es dry-run
     if not args.dry_run and (not ITOP_USER or not ITOP_PASSWORD):
-        log("Error: Variables ITOP_USER e ITOP_PASSWORD son requeridas (o use --dry-run).")
+        log(
+            "Error: Variables ITOP_USER e ITOP_PASSWORD son requeridas "
+            "(o use --dry-run)."
+        )
         sys.exit(1)
 
     target_dir = args.dir
@@ -225,10 +242,14 @@ def main():
             log(f"Error leyendo {filename}: {e}")
             fail_count += 1
             
-    log(f"Resumen: {success_count} procesados correctamente, {fail_count} fallidos.")
+    log(
+        f"Resumen: {success_count} procesados correctamente, "
+        f"{fail_count} fallidos."
+    )
     
     if fail_count > 0:
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()
