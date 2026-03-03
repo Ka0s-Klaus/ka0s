@@ -1,0 +1,215 @@
+[
+  {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+      "annotations": {
+        "cni.projectcalico.org/containerID": "2e0ee7be22c110f5bc47c16c26cf90d367254e576590e601394e0f782cb7b292",
+        "cni.projectcalico.org/podIP": "172.16.209.30/32",
+        "cni.projectcalico.org/podIPs": "172.16.209.30/32"
+      },
+      "creationTimestamp": "2026-03-03T11:05:39Z",
+      "generateName": "docs-portal-648b979548-",
+      "labels": {
+        "app": "docs-portal",
+        "pod-template-hash": "648b979548"
+      },
+      "name": "docs-portal-648b979548-n2665",
+      "namespace": "docs-portal",
+      "ownerReferences": [
+        {
+          "apiVersion": "apps/v1",
+          "blockOwnerDeletion": true,
+          "controller": true,
+          "kind": "ReplicaSet",
+          "name": "docs-portal-648b979548",
+          "uid": "dcfdc2a7-34ec-4ba5-a842-72fd94efa74e"
+        }
+      ],
+      "resourceVersion": "15034375",
+      "uid": "c1e47327-f342-4118-a473-d05a978c9059"
+    },
+    "spec": {
+      "containers": [
+        {
+          "image": "ghcr.io/ka0s-klaus/ka0s-docs:latest",
+          "imagePullPolicy": "Always",
+          "name": "docs-portal",
+          "ports": [
+            {
+              "containerPort": 80,
+              "protocol": "TCP"
+            }
+          ],
+          "resources": {
+            "limits": {
+              "cpu": "200m",
+              "memory": "128Mi"
+            },
+            "requests": {
+              "cpu": "100m",
+              "memory": "64Mi"
+            }
+          },
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-vwvqf",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "dnsPolicy": "ClusterFirst",
+      "enableServiceLinks": true,
+      "imagePullSecrets": [
+        {
+          "name": "ghcr-secret"
+        }
+      ],
+      "nodeName": "k8-node-20",
+      "preemptionPolicy": "PreemptLowerPriority",
+      "priority": 0,
+      "restartPolicy": "Always",
+      "schedulerName": "default-scheduler",
+      "securityContext": {},
+      "serviceAccount": "default",
+      "serviceAccountName": "default",
+      "terminationGracePeriodSeconds": 30,
+      "tolerations": [
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/not-ready",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        },
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/unreachable",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        }
+      ],
+      "volumes": [
+        {
+          "name": "kube-api-access-vwvqf",
+          "projected": {
+            "defaultMode": 420,
+            "sources": [
+              {
+                "serviceAccountToken": {
+                  "expirationSeconds": 3607,
+                  "path": "token"
+                }
+              },
+              {
+                "configMap": {
+                  "items": [
+                    {
+                      "key": "ca.crt",
+                      "path": "ca.crt"
+                    }
+                  ],
+                  "name": "kube-root-ca.crt"
+                }
+              },
+              {
+                "downwardAPI": {
+                  "items": [
+                    {
+                      "fieldRef": {
+                        "apiVersion": "v1",
+                        "fieldPath": "metadata.namespace"
+                      },
+                      "path": "namespace"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "status": {
+      "conditions": [
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-03T11:05:40Z",
+          "status": "True",
+          "type": "PodReadyToStartContainers"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-03T11:05:39Z",
+          "status": "True",
+          "type": "Initialized"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-03T11:05:39Z",
+          "message": "containers with unready status: [docs-portal]",
+          "reason": "ContainersNotReady",
+          "status": "False",
+          "type": "Ready"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-03T11:05:39Z",
+          "message": "containers with unready status: [docs-portal]",
+          "reason": "ContainersNotReady",
+          "status": "False",
+          "type": "ContainersReady"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-03T11:05:39Z",
+          "status": "True",
+          "type": "PodScheduled"
+        }
+      ],
+      "containerStatuses": [
+        {
+          "image": "ghcr.io/ka0s-klaus/ka0s-docs:latest",
+          "imageID": "",
+          "lastState": {},
+          "name": "docs-portal",
+          "ready": false,
+          "restartCount": 0,
+          "started": false,
+          "state": {
+            "waiting": {
+              "message": "Back-off pulling image \"ghcr.io/ka0s-klaus/ka0s-docs:latest\": ErrImagePull: failed to pull and unpack image \"ghcr.io/ka0s-klaus/ka0s-docs:latest\": failed to resolve image: failed to authorize: failed to fetch anonymous token: unexpected status from GET request to https://ghcr.io/token?scope=repository%3Aka0s-klaus%2Fka0s-docs%3Apull&service=ghcr.io: 403 Forbidden",
+              "reason": "ImagePullBackOff"
+            }
+          },
+          "volumeMounts": [
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-vwvqf",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            }
+          ]
+        }
+      ],
+      "hostIP": "192.168.1.20",
+      "hostIPs": [
+        {
+          "ip": "192.168.1.20"
+        }
+      ],
+      "phase": "Pending",
+      "podIP": "172.16.209.30",
+      "podIPs": [
+        {
+          "ip": "172.16.209.30"
+        }
+      ],
+      "qosClass": "Burstable",
+      "startTime": "2026-03-03T11:05:39Z"
+    }
+  }
+]
