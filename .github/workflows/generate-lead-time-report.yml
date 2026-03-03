@@ -109,12 +109,30 @@ jobs:
       - name: Notify Failure
         run: echo "❌ Workflow ${{ env.KAOS_MODULE }} falló."
 
+  # -----------------------------------------------------------------------------
+  # JOB 4: END WORKFLOW (AUDIT TRIGGER)
+  # -----------------------------------------------------------------------------
   end-workflow:
     name: Finalizar Workflow
     needs: [core-execution, handle-success, handle-failure]
     runs-on: swarm-runners-scaleset
     if: always()
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+
       - name: Disparar Auditoría
-        run: gh workflow run inspector.yml --ref main
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "🔍 Triggering Inspector for Audit..."
+          gh workflow run inspector.yml \
+            --ref main \
+            -f kaos-workflow-id="${{ github.run_id }}" \
+            -f kaos-user-start="${{ github.triggering_actor }}"
 
