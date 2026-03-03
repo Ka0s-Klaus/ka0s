@@ -31,10 +31,6 @@ env:
   MONGO_SUPERUSER_CONNECTION: ${{ secrets.DB_CONNECTION_STRING }}
 
 jobs:
-  # -----------------------------------------------------------------------------
-  # JOB 1: CORE EXECUTION
-  # Generación del reporte y commit.
-  # -----------------------------------------------------------------------------
   core-execution:
     name: Core Execution
     runs-on: swarm-runners-scaleset
@@ -95,9 +91,6 @@ jobs:
             echo "No hay cambios para subir."
           fi
 
-  # -----------------------------------------------------------------------------
-  # JOB 2: HANDLE SUCCESS
-  # -----------------------------------------------------------------------------
   handle-success:
     name: Handle Success
     needs: [core-execution]
@@ -107,9 +100,6 @@ jobs:
       - name: Notify Success
         run: echo "✅ Workflow ${{ env.KAOS_MODULE }} completado correctamente."
 
-  # -----------------------------------------------------------------------------
-  # JOB 3: HANDLE FAILURE
-  # -----------------------------------------------------------------------------
   handle-failure:
     name: Handle Failure
     needs: [core-execution]
@@ -119,9 +109,6 @@ jobs:
       - name: Notify Failure
         run: echo "❌ Workflow ${{ env.KAOS_MODULE }} falló."
 
-  # -----------------------------------------------------------------------------
-  # JOB 4: END WORKFLOW (AUDIT TRIGGER)
-  # -----------------------------------------------------------------------------
   end-workflow:
     name: Finalizar Workflow
     needs: [core-execution, handle-success, handle-failure]
