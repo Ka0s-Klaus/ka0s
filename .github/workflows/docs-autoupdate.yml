@@ -76,7 +76,7 @@ jobs:
             until git push origin HEAD:${{ github.ref_name }} || [ $count -eq 5 ]; do
               echo "Push fallido, reintentando..."
               git pull --rebase origin ${{ github.ref_name }}
-              ((count++))
+              count=$((count+1))
               sleep 2
             done
           else
@@ -120,38 +120,13 @@ jobs:
         run: |
           gh issue create \
             --title "[INCIDENT]: Fallo en workflow ${{ github.workflow }}" \
-            --label "itop-incident,triage,automated" \
-            --body "### Organización
-          Ka0s
-          
-          ### Solicitante
-          @${{ github.actor }}
-          
-          ### Estado
-          New
-          
-          ### Impacto
-          Service
-          
-          ### Urgencia
-          Medium
-          
-          ### Servicio / CI afectado
-          GitHub Actions / ${{ github.workflow }}
-          
-          ### Descripción
-          El workflow **${{ github.workflow }}** ha fallado durante su ejecución.
-          
-          **Detalles Técnicos:**
-          - **Módulo**: ${{ env.KAOS_MODULE }}
-          - **Run ID**: ${{ github.run_id }}
-          - **Commit**: ${{ github.sha }}
-          - **Branch/Ref**: ${{ github.ref_name }}
-          - **Actor**: ${{ github.actor }}
-          
-          ### Pasos / Evidencias
-          Logs de ejecución: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          "
+            --label "bug" \
+            --body "El workflow **${{ github.workflow }}** ha fallado durante su ejecución.
+            
+            **Detalles:**
+            - Run ID: ${{ github.run_id }}
+            - Actor: ${{ github.actor }}
+            - Logs: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
   # -----------------------------------------------------------------------------
   # JOB 4: END WORKFLOW (Opcional/Estándar)
@@ -177,7 +152,7 @@ jobs:
         run: |
           echo "🔍 Triggering Inspector for Audit..."
           # Verificar si el workflow inspector existe antes de intentar ejecutarlo
-          if gh workflow list | grep -q "inspector.yml"; then
+          if [ -f ".github/workflows/inspector.yml" ]; then
             gh workflow run inspector.yml \
               --ref main \
               -f kaos-workflow-id="${{ github.run_id }}" \
