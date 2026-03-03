@@ -120,7 +120,13 @@ jobs:
           for SERVICE in $CHANGED_SERVICES; do
             # Check if directory still exists (it might have been deleted)
             if [ ! -d "$SERVICE" ]; then
-               echo "⚠️  Service directory $SERVICE was deleted. Skipping."
+               echo "🧹 Service directory $SERVICE was deleted. Running cleanup..."
+               SERVICE_NAME=$(basename "$SERVICE")
+               NAMESPACE="$SERVICE_NAME"
+               echo "Attempting cleanup by label app=$SERVICE_NAME in namespace $NAMESPACE"
+               # Best-effort delete of typical resources owned by this app label
+               kubectl delete ingress,service,deploy,sts,job,cronjob -n "$NAMESPACE" -l "app=$SERVICE_NAME" --ignore-not-found
+               echo "Cleanup completed (if resources existed)."
                continue
             fi
 
