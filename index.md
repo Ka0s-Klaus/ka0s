@@ -53,5 +53,8 @@ Bienvenido al centro de documentación del proyecto Ka0s. A continuación encont
 *   [Módulo Ka0s Onboarding](core/docs/ka0s_onboarding/ka0s_onboarding.md)
 *   [Ka0s Cluster Restart Module](core/docs/kaos_cluster_restart/kaos_cluster_restart.md)
 
+## 📂 Otros / Sin Categoría
+*   [Ka0s Dummy Test](core/docs/ka0s_dummy_test/ka0s_dummy_test.md)
+
 ---
 *Para ver todos los archivos, navega a [core/docs/](core/docs/).*
