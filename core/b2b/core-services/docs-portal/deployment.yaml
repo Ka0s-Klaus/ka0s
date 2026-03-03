@@ -18,9 +18,13 @@ spec:
       volumes:
         - name: repo-volume
           emptyDir: {}
+      securityContext:
+        fsGroup: 1000
       initContainers:
         - name: git-clone
           image: alpine/git
+          securityContext:
+            runAsUser: 0
           env:
             - name: GIT_TOKEN
               valueFrom:
@@ -32,6 +36,7 @@ spec:
             - -c
             - |
               git clone --depth 1 https://x-access-token:${GIT_TOKEN}@github.com/Ka0s-Klaus/ka0s.git /repo
+              chown -R 1000:1000 /repo
           volumeMounts:
             - name: repo-volume
               mountPath: /repo

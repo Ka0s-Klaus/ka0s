@@ -82,13 +82,13 @@ jobs:
             # 5. Check for docs changes (core/docs or mkdocs.yml)
             
             CHANGED_SERVICES=$(git diff --name-only "$BEFORE" "$AFTER" | \
-              grep "^core/b2b/core-services/" | \
+              grep "^core/b2b/core-services/" || true | \
               grep -v "^core/b2b/core-services/kube/" | \
               cut -d/ -f1-4 | \
               sort | uniq)
               
             # Check for docs changes
-            DOCS_CHANGED=$(git diff --name-only "$BEFORE" "$AFTER" | grep -E "^core/docs/|^mkdocs.yml")
+            DOCS_CHANGED=$(git diff --name-only "$BEFORE" "$AFTER" | grep -E "^core/docs/|^mkdocs.yml" || true)
             if [ ! -z "$DOCS_CHANGED" ]; then
               echo "📚 Docs changes detected. Adding docs-portal to deployment list."
               CHANGED_SERVICES="${CHANGED_SERVICES} core/b2b/core-services/docs-portal"
@@ -152,7 +152,7 @@ jobs:
                  echo "🔑 Injecting git credentials for docs-portal..."
                  kubectl create secret generic git-credentials \
                     --from-literal=username="x-access-token" \
-                    --from-literal=password="${{ secrets.GITHUB_TOKEN }}" \
+                    --from-literal=password="$GITHUB_TOKEN" \
                     --dry-run=client -o yaml | kubectl apply -n "$NAMESPACE" -f -
               fi
               
