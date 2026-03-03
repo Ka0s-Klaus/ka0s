@@ -1,0 +1,30 @@
+name: Deploy Docs Portal
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'core/docs/**'
+      - 'mkdocs.yml'
+      - '.github/workflows/deploy-docs-portal.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Restart Docs Portal Pods
+        uses: ./.github/actions/ssh-exec
+        with:
+          host: ${{ secrets.KAOS_SSH_HOST_1 }}
+          username: ${{ secrets.KAOS_SSH_USER }}
+          key: ${{ secrets.KAOS_SSH_KEY_PRIV }}
+          port: ${{ secrets.KAOS_SSH_PORT_1 }}
+          command: "kubectl rollout restart deployment/docs-portal -n docs-portal"
