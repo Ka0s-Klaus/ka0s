@@ -75,27 +75,35 @@ jobs:
                exit 1
             fi
           else
-            # 1. Get changed files
-            # 2. Filter for core/b2b/core-services/
-            # 3. Exclude core/b2b/core-services/kube/
-            # 4. Extract the service root path (core/b2b/core-services/<service-name>)
-            # 5. Check for docs changes (core/docs or mkdocs.yml)
+            # Robust service detection logic
+            echo "🔎 Analyzing changed files..."
             
-            CHANGED_SERVICES=$(git diff --name-only "$BEFORE" "$AFTER" | \
-              grep "^core/b2b/core-services/" || true | \
-              grep -v "^core/b2b/core-services/kube/" | \
-              cut -d/ -f1-4 | \
-              sort | uniq)
-              
-            # Check for docs changes
-            DOCS_CHANGED=$(git diff --name-only "$BEFORE" "$AFTER" | grep -E "^core/docs/|^mkdocs.yml" || true)
-            if [ ! -z "$DOCS_CHANGED" ]; then
-              echo "📚 Docs changes detected. Adding docs-portal to deployment list."
-              CHANGED_SERVICES="${CHANGED_SERVICES} core/b2b/core-services/docs-portal"
+            # Get list of changed files
+            FILES=$(git diff --name-only "$BEFORE" "$AFTER")
+            
+            # Initialize empty list
+            SERVICES_LIST=""
+            
+            # 1. Process core-services changes
+            # Filter files in core/b2b/core-services/ but not in kube/
+            CORE_FILES=$(echo "$FILES" | grep "^core/b2b/core-services/" | grep -v "^core/b2b/core-services/kube/" || true)
+            
+            if [ ! -z "$CORE_FILES" ]; then
+              # Extract service paths: keep only up to the 4th component (core/b2b/core-services/<service>)
+              # Using sed for reliable extraction
+              EXTRACTED=$(echo "$CORE_FILES" | sed -E 's|^(core/b2b/core-services/[^/]+).*|\1|')
+              SERVICES_LIST="$SERVICES_LIST $EXTRACTED"
             fi
             
-            # Remove duplicates and empty lines
-            CHANGED_SERVICES=$(echo "$CHANGED_SERVICES" | tr ' ' '\n' | sort | uniq | grep -v "^$")
+            # 2. Check for docs changes
+            DOCS_FILES=$(echo "$FILES" | grep -E "^core/docs/|^mkdocs.yml" || true)
+            if [ ! -z "$DOCS_FILES" ]; then
+               echo "📚 Docs changes detected. Adding docs-portal to deployment list."
+               SERVICES_LIST="$SERVICES_LIST core/b2b/core-services/docs-portal"
+            fi
+            
+            # 3. Clean up list (sort and unique)
+            CHANGED_SERVICES=$(echo "$SERVICES_LIST" | tr ' ' '\n' | sort | uniq | grep -v "^$")
           fi
           
           # Convert to comma-separated for output
