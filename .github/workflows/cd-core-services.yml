@@ -123,10 +123,25 @@ jobs:
                echo "🧹 Service directory $SERVICE was deleted. Running cleanup..."
                SERVICE_NAME=$(basename "$SERVICE")
                NAMESPACE="$SERVICE_NAME"
-               echo "Attempting cleanup by label app=$SERVICE_NAME in namespace $NAMESPACE"
-               # Best-effort delete of typical resources owned by this app label
+               echo "Cleanup with managed selector"
+               kubectl delete ingress,service,deploy,sts,job,cronjob -n "$NAMESPACE" -l "managed-by=ka0s-core-cd,app=$SERVICE_NAME" --ignore-not-found
+               kubectl delete configmap,secret -n "$NAMESPACE" -l "managed-by=ka0s-core-cd,app=$SERVICE_NAME" --ignore-not-found
+               echo "Fallback cleanup with app selector"
                kubectl delete ingress,service,deploy,sts,job,cronjob -n "$NAMESPACE" -l "app=$SERVICE_NAME" --ignore-not-found
-               echo "Cleanup completed (if resources existed)."
+               kubectl delete configmap,secret -n "$NAMESPACE" -l "app=$SERVICE_NAME" --ignore-not-found
+               if [ "${KAOS_ENABLE_NS_CLEANUP}" = "true" ] && [ "$NAMESPACE" = "$SERVICE_NAME" ]; then
+                 echo "Evaluating namespace cleanup"
+                 RES=$(kubectl get all -n "$NAMESPACE" --no-headers 2>/dev/null | wc -l | tr -d ' ')
+                 PVC=$(kubectl get pvc -n "$NAMESPACE" --no-headers 2>/dev/null | wc -l | tr -d ' ')
+                 CM=$(kubectl get cm -n "$NAMESPACE" --no-headers 2>/dev/null | wc -l | tr -d ' ')
+                 SEC=$(kubectl get secret -n "$NAMESPACE" --no-headers 2>/dev/null | grep -v 'default-token' | wc -l | tr -d ' ')
+                 if [ "${RES:-0}" -eq 0 ] && [ "${PVC:-0}" -eq 0 ] && [ "${CM:-0}" -eq 0 ] && [ "${SEC:-0}" -eq 0 ]; then
+                   echo "Deleting empty namespace $NAMESPACE"
+                   kubectl delete ns "$NAMESPACE" --ignore-not-found
+                 else
+                   echo "Namespace not empty, skipping deletion"
+                 fi
+               fi
                continue
             fi
 
@@ -168,6 +183,7 @@ jobs:
                     --from-literal=username="x-access-token" \
                     --from-literal=password="$GITHUB_TOKEN" \
                     --dry-run=client -o yaml | kubectl apply -n "$NAMESPACE" -f -
+                 kubectl label secret git-credentials -n "$NAMESPACE" app="$SERVICE_NAME" managed-by="ka0s-core-cd" --overwrite
               fi
               
               # Delete old validation jobs to force re-run
