@@ -1,41 +1,187 @@
-name: Docs Auto-Update
+name: "[Ka0s] Docs Auto-Update"
 
 on:
   push:
+    branches:
+      - main
     paths:
       - 'core/docs/**'
       - '.github/scripts/update-docs-index.py'
   workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Motivo de la ejecución manual'
+        required: false
+        default: 'Mantenimiento manual'
 
 permissions:
   contents: write
+  issues: write
+  actions: read
+
+env:
+  KAOS_MODULE: "[Ka0S] Docs Auto-Update"
+  KAOS_CORRELATION_ID: ${{ github.run_id }}
+  KAOS_ACTOR: ${{ github.actor }}
 
 jobs:
-  update-docs-index:
-    runs-on: ubuntu-latest
+  # -----------------------------------------------------------------------------
+  # JOB 1: CORE EXECUTION
+  # Lógica principal del workflow.
+  # -----------------------------------------------------------------------------
+  core-execution:
+    name: Core Execution
+    runs-on: swarm-runners-scaleset
+    outputs:
+      status: ${{ job.status }}
     steps:
-      - name: Checkout
+      - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Environment
+        run: |
+          echo "Iniciando módulo: ${{ env.KAOS_MODULE }}"
+          echo "Run ID: ${{ env.KAOS_CORRELATION_ID }}"
+          echo "Actor: ${{ env.KAOS_ACTOR }}"
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
 
-      - name: Update Docs Index and MkDocs Config
+      # [BLOQUE PERSONALIZABLE] Lógica del workflow
+      - name: Main Logic (Update Docs Index)
         run: |
+          echo "Ejecutando actualización de índices de documentación..."
           python3 .github/scripts/update-docs-index.py
 
-      - name: Commit and Push changes
+      # [OPCIONAL] Commit de resultados/evidencias
+      - name: Commit & Push Results
+        if: success()
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "${{ secrets.KAOS_BOT_NAME || 'Ka0s Bot' }}"
+          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL || 'bot@ka0s.io' }}"
           
-          # Check if there are changes
-          if [[ -n $(git status -s) ]]; then
+          # Verificar cambios en archivos específicos de documentación
+          if ! git diff --quiet core/docs/README.md index.md mkdocs.yml; then
             git add core/docs/README.md index.md mkdocs.yml
-            git commit -m "docs: auto-update index and navigation [skip ci]"
-            git push
+            
+            # Commit con skip ci para evitar bucles, aunque push paths debería evitarlo también
+            git commit -m "chore(docs): auto-update index and navigation ${{ env.KAOS_CORRELATION_ID }} [skip ci]"
+            
+            # Reintento básico de push para evitar conflictos de concurrencia
+            count=0
+            until git push origin HEAD:${{ github.ref_name }} || [ $count -eq 5 ]; do
+              echo "Push fallido, reintentando..."
+              git pull --rebase origin ${{ github.ref_name }}
+              ((count++))
+              sleep 2
+            done
           else
-            echo "No changes to commit."
+            echo "No hay cambios para subir."
+          fi
+
+  # -----------------------------------------------------------------------------
+  # JOB 2: HANDLE SUCCESS (Opcional)
+  # Notificaciones o limpieza en caso de éxito.
+  # -----------------------------------------------------------------------------
+  handle-success:
+    name: Handle Success
+    needs: [core-execution]
+    if: success()
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Notify Success
+        run: echo "✅ Workflow ${{ env.KAOS_MODULE }} completado correctamente."
+
+  # -----------------------------------------------------------------------------
+  # JOB 3: HANDLE FAILURE (Obligatorio)
+  # Notificaciones en caso de error del workflow.
+  # -----------------------------------------------------------------------------
+  handle-failure:
+    name: Handle Failure
+    needs: [core-execution]
+    if: failure()
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+
+      - name: Create Incident Issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --title "[INCIDENT]: Fallo en workflow ${{ github.workflow }}" \
+            --label "itop-incident,triage,automated" \
+            --body "### Organización
+          Ka0s
+          
+          ### Solicitante
+          @${{ github.actor }}
+          
+          ### Estado
+          New
+          
+          ### Impacto
+          Service
+          
+          ### Urgencia
+          Medium
+          
+          ### Servicio / CI afectado
+          GitHub Actions / ${{ github.workflow }}
+          
+          ### Descripción
+          El workflow **${{ github.workflow }}** ha fallado durante su ejecución.
+          
+          **Detalles Técnicos:**
+          - **Módulo**: ${{ env.KAOS_MODULE }}
+          - **Run ID**: ${{ github.run_id }}
+          - **Commit**: ${{ github.sha }}
+          - **Branch/Ref**: ${{ github.ref_name }}
+          - **Actor**: ${{ github.actor }}
+          
+          ### Pasos / Evidencias
+          Logs de ejecución: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          "
+
+  # -----------------------------------------------------------------------------
+  # JOB 4: END WORKFLOW (Opcional/Estándar)
+  # Acciones finales: Notificaciones a Issues, Trigger de Inspector, Limpieza global.
+  # -----------------------------------------------------------------------------
+  end-workflow:
+    needs: [handle-success, handle-failure]
+    if: always()
+    runs-on: swarm-runners-scaleset
+    steps:
+      - id: repo
+        name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+        
+      - name: Trigger Inspector
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "🔍 Triggering Inspector for Audit..."
+          # Verificar si el workflow inspector existe antes de intentar ejecutarlo
+          if gh workflow list | grep -q "inspector.yml"; then
+            gh workflow run inspector.yml \
+              --ref main \
+              -f kaos-workflow-id="${{ github.run_id }}" \
+              -f kaos-user-start="${{ github.triggering_actor }}"
+          else
+            echo "⚠️ Inspector workflow not found, skipping trigger."
           fi
