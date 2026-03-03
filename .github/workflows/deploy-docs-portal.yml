@@ -45,16 +45,17 @@ jobs:
         id: build-push
         run: |
           # Login to Registry
-          echo "${{ secrets.GITHUB_TOKEN }}" | podman login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
+          echo "${{ secrets.GITHUB_TOKEN }}" | sudo podman login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
 
           # Build Image
-          podman build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
+          sudo podman --storage-driver=vfs build \
+            -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
             -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-$(git rev-parse HEAD) \
             -f core/b2b/core-services/docs-portal/Dockerfile .
 
           # Push Image
-          podman push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-          podman push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-$(git rev-parse HEAD)
+          sudo podman --storage-driver=vfs push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          sudo podman --storage-driver=vfs push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-$(git rev-parse HEAD)
 
           # Output Image Tag for next job
           echo "tags=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
