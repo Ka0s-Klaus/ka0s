@@ -242,7 +242,10 @@ def update_mkdocs_config(modules):
 
     if nav_start_index == -1:
         print("Error: 'nav:' section not found in mkdocs.yml")
-        return
+        import sys
+        sys.exit(1)
+
+    print(f"Found 'nav:' section at line {nav_start_index + 1}")
 
     # Keep content up to 'nav:'
     new_content_lines = lines[:nav_start_index+1]
@@ -256,10 +259,12 @@ def update_mkdocs_config(modules):
             new_content_lines.append(f"  - '{cat}':\n")
             # Sort modules by name within category
             sorted_modules = sorted(categorized[cat], key=lambda x: x['name'])
+            print(f"Adding {len(sorted_modules)} modules to category '{cat}'")
             for m in sorted_modules:
                 # m['rel_path_core'] is "./folder/file.md"
                 # mkdocs expects path relative to docs_dir, so "folder/file.md"
                 path = m['rel_path_core'].replace('./', '')
+                print(f"  - {m['name']} -> {path}")
                 new_content_lines.append(f"      - '{m['name']}': {path}\n")
 
     # Write back to file
