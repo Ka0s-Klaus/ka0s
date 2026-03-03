@@ -37,40 +37,21 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Debug Environment
-        # Debugging step
-        run: |
-          echo "User: $(whoami)"
-          echo "Groups: $(groups)"
-          echo "Sudo access:"
-          sudo -l || echo "No sudo access"
-          echo "Podman version:"
-          podman --version || echo "Podman not found"
-          echo "Docker version:"
-          docker --version || echo "Docker not found"
-          echo "Buildah version:"
-          buildah --version || echo "Buildah not found"
-
-      - name: Install Podman
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y podman
-
       - name: Build and Push Image
         id: build-push
         run: |
           # Login to Registry
-          echo "${{ secrets.GITHUB_TOKEN }}" | sudo podman login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
+          echo "${{ secrets.GITHUB_TOKEN }}" | sudo docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
 
           # Build Image
-          sudo podman --storage-driver=vfs build \
+          sudo docker build \
             -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
             -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-$(git rev-parse HEAD) \
             -f core/b2b/core-services/docs-portal/Dockerfile .
 
           # Push Image
-          sudo podman --storage-driver=vfs push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-          sudo podman --storage-driver=vfs push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-$(git rev-parse HEAD)
+          sudo docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          sudo docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-$(git rev-parse HEAD)
 
           # Output Image Tag for next job
           echo "tags=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
