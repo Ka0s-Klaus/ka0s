@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 
 DOCS_DIR = 'core/docs'
 README_PATH = os.path.join(DOCS_DIR, 'README.md')
@@ -242,34 +243,50 @@ def update_mkdocs_config(modules):
 
     if nav_start_index == -1:
         print("Error: 'nav:' section not found in mkdocs.yml")
-        import sys
         sys.exit(1)
 
-    print(f"Found 'nav:' section at line {nav_start_index + 1}")
+    # Find where 'nav:' ends
+    nav_end_index = len(lines)
+    for i in range(nav_start_index + 1, len(lines)):
+        line = lines[i]
+        # Skip empty lines and comments
+        if not line.strip() or line.strip().startswith('#'):
+            continue
+        # If line has no indentation (and it's not empty/comment),
+        # it's a new top-level key
+        if not line.startswith(' ') and not line.startswith('\t'):
+            nav_end_index = i
+            break
+
+    print(
+        f"Found 'nav:' section at line {nav_start_index + 1}, "
+        f"ending at line {nav_end_index + 1}"
+    )
 
     # Keep content up to 'nav:'
-    new_content_lines = lines[:nav_start_index+1]
+    pre_nav = lines[:nav_start_index+1]
+    # Keep content after 'nav:'
+    post_nav = lines[nav_end_index:]
 
+    new_nav_lines = []
     # Add Home link manually as it's static
-    new_content_lines.append("  - Home: README.md\n")
+    new_nav_lines.append("  - Home: README.md\n")
 
     # Build the new nav structure
     for cat in order:
         if cat in categorized and categorized[cat]:
-            new_content_lines.append(f"  - '{cat}':\n")
+            new_nav_lines.append(f"  - '{cat}':\n")
             # Sort modules by name within category
             sorted_modules = sorted(categorized[cat], key=lambda x: x['name'])
-            print(f"Adding {len(sorted_modules)} modules to category '{cat}'")
             for m in sorted_modules:
                 # m['rel_path_core'] is "./folder/file.md"
                 # mkdocs expects path relative to docs_dir, so "folder/file.md"
                 path = m['rel_path_core'].replace('./', '')
-                print(f"  - {m['name']} -> {path}")
-                new_content_lines.append(f"      - '{m['name']}': {path}\n")
+                new_nav_lines.append(f"      - '{m['name']}': {path}\n")
 
     # Write back to file
     with open(MKDOCS_PATH, 'w', encoding='utf-8') as f:
-        f.writelines(new_content_lines)
+        f.writelines(pre_nav + new_nav_lines + post_nav)
     print(f"Updated {MKDOCS_PATH}")
 
 
