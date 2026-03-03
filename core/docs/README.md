@@ -61,6 +61,7 @@ Si, parece increible pero hemos decidido en el equipo usar una terminología "es
 - [Módulo Ka0s Onboarding](./ka0s_onboarding/ka0s_onboarding.md)
 - [Ka0s Project Routing](./ka0s_project_routing/ka0s_project_routing.md)
 - [Módulo Ka0s Release (Klaus)](./ka0s_release/ka0s_release.md)
+- [Reporte Diario de Lead Time](./ka0s_reports/lead_time_report.md)
 - [Módulo Ka0s Security Audit](./ka0s_security/ka0s_security.md)
 - [Módulo Ka0s SSH Connect](./ka0s_ssh_connect/ka0s_ssh_connect.md)
 - [Módulo Ka0s Workflow Statistics](./ka0s_summary/ka0s_summary.md)
