@@ -1,0 +1,30 @@
+name: "Ka0s Debug Docs Portal"
+on:
+  workflow_dispatch:
+
+jobs:
+  debug:
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Debug Docs Portal
+        run: |
+          echo "--- PODS ---"
+          kubectl get pods -n docs-portal -o wide
+          
+          echo "--- SERVICE ---"
+          kubectl get svc -n docs-portal -o wide
+          
+          echo "--- INGRESS ---"
+          kubectl get ingress -n docs-portal -o wide
+          
+          echo "--- DESCRIBE POD ---"
+          kubectl describe pod -l app=docs-portal -n docs-portal
+          
+          echo "--- LOGS (init) ---"
+          kubectl logs -l app=docs-portal -n docs-portal -c git-clone --tail=50 || echo "No init logs"
+          
+          echo "--- LOGS (main) ---"
+          kubectl logs -l app=docs-portal -n docs-portal -c docs-portal --tail=50 || echo "No main logs"
+          
+          echo "--- EVENTS ---"
+          kubectl get events -n docs-portal --sort-by=.lastTimestamp
