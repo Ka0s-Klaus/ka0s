@@ -1,0 +1,41 @@
+name: Docs Auto-Update
+
+on:
+  push:
+    paths:
+      - 'core/docs/**'
+      - '.github/scripts/update-docs-index.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-docs-index:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Update Docs Index and MkDocs Config
+        run: |
+          python3 .github/scripts/update-docs-index.py
+
+      - name: Commit and Push changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Check if there are changes
+          if [[ -n $(git status -s) ]]; then
+            git add core/docs/README.md index.md mkdocs.yml
+            git commit -m "docs: auto-update index and navigation [skip ci]"
+            git push
+          else
+            echo "No changes to commit."
+          fi

@@ -4,28 +4,33 @@ import re
 DOCS_DIR = 'core/docs'
 README_PATH = os.path.join(DOCS_DIR, 'README.md')
 ROOT_INDEX_PATH = 'index.md'
+MKDOCS_PATH = 'mkdocs.yml'
 MARKER_START = '<!-- MODULES_START -->'
 MARKER_END = '<!-- MODULES_END -->'
 
 CATEGORY_MAPPING = {
-    'Arquitectura y Conceptos Core': [
+    'Arquitectura y Conceptos': [
         'ka0s', 'ka0s_core', 'ka0s_init', 'ka0s_lz',
-        'ka0s_architecture', 'ka0s_template'
+        'ka0s_architecture', 'ka0s_template', 'ka0s_project_routing'
     ],
     'CI/CD y Automatización': [
         'ka0s_ci_cd_k8s', 'ka0s_ssh_connect', 'ka0s_kubectl_tunnel',
-        'ka0s_version', 'ka0s_execution', 'ka0s_release'
+        'ka0s_version', 'ka0s_execution', 'ka0s_release', 'ka0s_cmdb_sync',
+        'ka0s_github_sync_itop'
     ],
     'Observabilidad y Reportes': [
         'ka0s_dashboard', 'ka0s_daily_report', 'ka0s_inspector',
-        'ka0s_summary', 'ka0s_itop', 'ka0s_reports', 'ka0s_metabase'
+        'ka0s_summary', 'ka0s_itop', 'ka0s_reports', 'ka0s_metabase',
+        'ka0s_watchdog_node_health', 'ka0s_audit_pods'
     ],
     'Seguridad y Compliance': [
-        'ka0s_security', 'ka0s_html', 'ka0s_json', 'ka0s_md', 'ka0s_yaml'
+        'ka0s_security', 'ka0s_html', 'ka0s_json', 'ka0s_md', 'ka0s_yaml',
+        'ka0s_issue_templates'
     ],
     'Operaciones y Mantenimiento': [
         'ka0s_cluster_update', 'kaos_cluster_restart', 'ka0s_docker',
-        'ka0s_mongo', 'ka0s_delete_ns'
+        'ka0s_mongo', 'ka0s_delete_ns', 'ka0s_cmdb_ingest',
+        'ka0s_onboarding', 'ka0s_docs_portal', 'ka0s_db_admin'
     ]
 }
 
@@ -152,7 +157,7 @@ def update_root_index(modules):
 
     # Define category order
     order = [
-        'Arquitectura y Conceptos Core',
+        'Arquitectura y Conceptos',
         'CI/CD y Automatización',
         'Observabilidad y Reportes',
         'Seguridad y Compliance',
@@ -201,11 +206,74 @@ def update_root_index(modules):
     print(f"Updated {ROOT_INDEX_PATH}")
 
 
+def update_mkdocs_config(modules):
+    if not os.path.exists(MKDOCS_PATH):
+        print(f"Error: {MKDOCS_PATH} not found.")
+        return
+
+    # Group by category
+    categorized = {}
+    for m in modules:
+        cat = m['category']
+        if cat not in categorized:
+            categorized[cat] = []
+        categorized[cat].append(m)
+
+    # Define category order
+    order = [
+        'Arquitectura y Conceptos',
+        'CI/CD y Automatización',
+        'Observabilidad y Reportes',
+        'Seguridad y Compliance',
+        'Operaciones y Mantenimiento',
+        'Otros / Sin Categoría'
+    ]
+
+    # Read existing file content
+    with open(MKDOCS_PATH, 'r', encoding='utf-8') as f:
+        lines = f.readlines()
+
+    # Find where 'nav:' starts
+    nav_start_index = -1
+    for i, line in enumerate(lines):
+        if line.strip().startswith('nav:'):
+            nav_start_index = i
+            break
+
+    if nav_start_index == -1:
+        print("Error: 'nav:' section not found in mkdocs.yml")
+        return
+
+    # Keep content up to 'nav:'
+    new_content_lines = lines[:nav_start_index+1]
+
+    # Add Home link manually as it's static
+    new_content_lines.append("  - Home: README.md\n")
+
+    # Build the new nav structure
+    for cat in order:
+        if cat in categorized and categorized[cat]:
+            new_content_lines.append(f"  - '{cat}':\n")
+            # Sort modules by name within category
+            sorted_modules = sorted(categorized[cat], key=lambda x: x['name'])
+            for m in sorted_modules:
+                # m['rel_path_core'] is "./folder/file.md"
+                # mkdocs expects path relative to docs_dir, so "folder/file.md"
+                path = m['rel_path_core'].replace('./', '')
+                new_content_lines.append(f"      - '{m['name']}': {path}\n")
+
+    # Write back to file
+    with open(MKDOCS_PATH, 'w', encoding='utf-8') as f:
+        f.writelines(new_content_lines)
+    print(f"Updated {MKDOCS_PATH}")
+
+
 def main():
     modules = generate_modules_data()
     if modules:
         update_core_readme(modules)
         update_root_index(modules)
+        update_mkdocs_config(modules)
         print("Done.")
     else:
         print("No modules found.")
