@@ -28,7 +28,7 @@ concurrency:
 jobs:
   build-and-push:
     name: Build & Push Docker Image
-    runs-on: swarm-runners-scaleset
+    runs-on: ubuntu-latest
     outputs:
       image_tag: ${{ steps.build-push.outputs.tags }}
     steps:
@@ -41,17 +41,17 @@ jobs:
         id: build-push
         run: |
           # Login to Registry
-          echo "${{ secrets.GITHUB_TOKEN }}" | sudo docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
 
           # Build Image
-          sudo docker build \
+          docker build \
             -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
             -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-$(git rev-parse HEAD) \
             -f core/b2b/core-services/docs-portal/Dockerfile .
 
           # Push Image
-          sudo docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-          sudo docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-$(git rev-parse HEAD)
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-$(git rev-parse HEAD)
 
           # Output Image Tag for next job
           echo "tags=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
@@ -93,7 +93,7 @@ jobs:
     name: Handle Success
     needs: [deploy]
     if: success()
-    runs-on: swarm-runners-scaleset
+    runs-on: ubuntu-latest
     steps:
       - name: Log Success
         run: echo "Docs Portal deployed successfully."
@@ -102,14 +102,12 @@ jobs:
     name: Handle Failure
     needs: [build-and-push, deploy]
     if: failure()
-    runs-on: swarm-runners-scaleset
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
             fetch-depth: 0
-      - name: Install GH CLI
-        uses: ./.github/actions/install-gh-cli
       - name: Create Incident Issue
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -122,15 +120,13 @@ jobs:
   end-workflow:
     name: Finalizar Workflow
     needs: [handle-success, handle-failure]
-    runs-on: swarm-runners-scaleset
+    runs-on: ubuntu-latest
     if: always()
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
             fetch-depth: 0
-      - name: Install GH CLI
-        uses: ./.github/actions/install-gh-cli
       - name: Disparar Auditoría
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
