@@ -37,6 +37,19 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Debug Environment
+        run: |
+          echo "User: $(whoami)"
+          echo "Groups: $(groups)"
+          echo "Sudo access:"
+          sudo -l || echo "No sudo access"
+          echo "Podman version:"
+          podman --version || echo "Podman not found"
+          echo "Docker version:"
+          docker --version || echo "Docker not found"
+          echo "Buildah version:"
+          buildah --version || echo "Buildah not found"
+
       - name: Install Podman
         run: |
           sudo apt-get update
