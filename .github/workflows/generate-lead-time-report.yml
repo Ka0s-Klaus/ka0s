@@ -129,19 +129,5 @@ jobs:
     if: always()
     steps:
       - name: Disparar Auditoría
-        uses: actions/github-script@v7
-        with:
-          script: |
-            try {
-              await github.rest.actions.createWorkflowDispatch({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                workflow_id: 'inspector.yml',
-                ref: 'main'
-              });
-              console.log("✅ Workflow inspector.yml disparado correctamente.");
-            } catch (error) {
-              console.error("❌ Error al disparar inspector.yml:", error);
-              core.setFailed(error.message);
-            }
+        run: gh workflow run inspector.yml --ref main
 
