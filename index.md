@@ -45,6 +45,7 @@ Bienvenido al centro de documentación del proyecto Ka0s. A continuación encont
 
 ## 📂 Otros / Sin Categoría
 *   [Módulo Ka0s Audit Failed Pods](core/docs/ka0s_audit_pods/ka0s_audit_pods.md)
+*   [Módulo: Ka0s CMDB Ingestion](core/docs/ka0s_cmdb_ingest/ka0s_cmdb_ingest.md)
 *   [Módulo Ka0s CMDB Sync](core/docs/ka0s_cmdb_sync/ka0s_cmdb_sync.md)
 *   [Módulo: Ka0s DB Admin (CloudBeaver)](core/docs/ka0s_db_admin/ka0s_db_admin.md)
 *   [Módulo: Ka0s Docs Portal](core/docs/ka0s_docs_portal/ka0s_docs_portal.md)
