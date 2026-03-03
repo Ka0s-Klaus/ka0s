@@ -1,0 +1,46 @@
+name: Generate Daily Lead Time Report
+
+on:
+  schedule:
+    - cron: '55 23 * * *'  # 23:55 Daily
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate-report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install Dependencies
+        run: pip install pymongo
+
+      - name: Generate Timestamp and Run ID
+        id: meta
+        run: |
+          echo "TIMESTAMP=$(date +%Y%m%d_%H%M%S)" >> $GITHUB_ENV
+          echo "DATE=$(date +%Y-%m-%d)" >> $GITHUB_ENV
+
+      - name: Run Report Generation Script
+        env:
+          MONGO_SUPERUSER_CONNECTION: ${{ secrets.DB_CONNECTION_STRING }}
+        run: |
+          python3 devops/core/mongo/scripts/generate-lead-time-report.py \
+            --date "${{ env.DATE }}" \
+            --output "audit/lead_time/${{ env.TIMESTAMP }}_${{ github.run_id }}_lead-time-report.md"
+
+      - name: Commit and Push Report
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add audit/lead_time/
+          git commit -m "chore: add daily lead time report for ${{ env.DATE }}"
+          git push
