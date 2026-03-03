@@ -31,6 +31,21 @@ jobs:
     outputs:
       image_tag: ${{ steps.meta.outputs.tags }}
     steps:
+      - name: Debug Environment
+        run: |
+          echo "--- OS Info ---"
+          cat /etc/os-release
+          echo "--- Kernel ---"
+          uname -a
+          echo "--- Docker ---"
+          docker --version || echo "Docker not found"
+          echo "--- Podman ---"
+          podman --version || echo "Podman not found"
+          echo "--- Buildah ---"
+          buildah --version || echo "Buildah not found"
+          echo "--- Processes ---"
+          ps aux
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
