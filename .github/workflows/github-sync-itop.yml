@@ -6,6 +6,10 @@ on:
   issue_comment:
     types: [created, edited]
 
+concurrency:
+  group: github-sync-itop-${{ github.ref }}
+  cancel-in-progress: false
+
 permissions:
   contents: read
 
@@ -109,17 +113,27 @@ jobs:
         run: |
           git config --global user.name "${{ secrets.KAOS_BOT_NAME || 'Ka0s Bot' }}"
           git config --global user.email "${{ secrets.KAOS_BOT_EMAIL || 'bot@ka0s.io' }}"
-          git pull
+          # Aseguramos estar actualizados antes de preparar cambios
+          git fetch origin ${{ github.ref_name }}
+          git checkout ${{ github.ref_name }}
+          git pull --rebase origin ${{ github.ref_name }}
           git add audit/sync/*
           if ! git diff --staged --quiet; then
             git commit -m "chore(ka0s): audit sync for issue #${{ github.event.issue.number }} run ${{ env.KAOS_CODE }} [skip ci]"
-            count=0
-            until git push origin HEAD:${{ github.ref_name }} || [ $count -eq 5 ]; do
-              echo "Push fallido, reintentando..."
+            pushed=false
+            for i in 1 2 3 4 5; do
+              if git push origin HEAD:${{ github.ref_name }}; then
+                pushed=true
+                break
+              fi
+              echo "Push fallido (intento $i). Reintentando tras rebase..."
               git pull --rebase origin ${{ github.ref_name }}
-              ((count++))
-              sleep 2
+              sleep $((i*2))
             done
+            if [ "$pushed" != "true" ]; then
+              echo "No se pudo hacer push tras múltiples reintentos."
+              exit 1
+            fi
           else
             echo "No hay cambios para subir."
           fi
