@@ -3,13 +3,10 @@ on:
   issues:
     types: [opened]
 permissions:
-  contents: write
-  actions: write
-  issues: write
-  pull-requests: write
+  contents: read
 env:
   KAOS_MODULE: "[Ka0S] Execution"
-  GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   BRANCH_NAME: ${{ github.ref }}
   KAOS_AUTOMATION_COMPLIANCE: "compliance/core/core.json"
   KAOS_PATH_RESUME: "audit/eresults/"
@@ -28,6 +25,9 @@ jobs:
     runs-on: 
       group: execution
     if: ${{ startsWith(github.event.issue.title, '[E]') && github.ref == 'refs/heads/main' }}
+    permissions:
+      issues: write
+      contents: read
     steps:
       - id: repo
         name: Checkout repository
@@ -35,7 +35,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
       - id: message
         name: Message
         if: ${{ success() }}
@@ -47,6 +46,9 @@ jobs:
     runs-on: 
       group: execution
     needs: job-repo
+    permissions:
+      issues: write
+      contents: read
     steps:
       - id: repo
         name: Checkout repository
@@ -54,7 +56,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
       - id: check-info
         name: Check Info
         if: ${{ success() }}
@@ -77,6 +78,9 @@ jobs:
       KAOS_EXECUTION_TYPE: ${{ steps.extract.outputs.KAOS_EXECUTION_TYPE }}
       KAOS_EXECUTION_VARS: ${{ steps.extract.outputs.KAOS_EXECUTION_VARS }}
     if: ${{ success() }}
+    permissions:
+      issues: write
+      contents: read
     steps:
       - id: repo
         name: Checkout repository
@@ -84,7 +88,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
       - id: extract
         name: extract data
         if: ${{ success() }}
@@ -131,6 +134,9 @@ jobs:
     runs-on: 
       group: execution
     needs: check-data
+    permissions:
+      issues: write
+      contents: read
     steps:
       - id: repo
         name: Checkout repository
@@ -138,7 +144,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
       - id: show
         name: Show data
         if: ${{ success() }}
@@ -159,6 +164,9 @@ jobs:
         KAOS_EXECUTION_RESULT: ${{ steps.execution.outputs.KAOS_EXECUTION_RESULT }}
         KAOS_EXECUTION_STATUS: ${{ steps.execution.outputs.KAOS_EXECUTION_STATUS }}
         KAOS_EXECUTION_RUN_ID: ${{ steps.type.outputs.RUN_ID }}
+    permissions:
+      issues: write
+      contents: read
     steps:
       - id: repo
         name: Checkout repository
@@ -166,7 +174,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
       - id: execution
         name: Start execution
         if: ${{ success() }}
@@ -207,6 +214,9 @@ jobs:
     runs-on: 
       group: swarm-runners
     needs: [start-execution]
+    permissions:
+      issues: write
+      contents: read
     steps:
       - id: repo
         name: Checkout repository
@@ -214,7 +224,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
       - id: end
         name: End execution
         if: ${{ success() }}
@@ -226,6 +235,9 @@ jobs:
       group: swarm-runners
     needs: [end-execution]
     if: ${{ success() }}
+    permissions:
+      issues: write
+      contents: read
     steps: 
       - id: repo
         name: Checkout repository
@@ -233,8 +245,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.KAOS_REPO_TOKEN }}
-      - id: handle-success-execution
         run: |
           # Si todo ha ido correcto añadimos el contenido del fichero 
           gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado de la ejecución se guardará en MongoDB"
@@ -243,6 +253,9 @@ jobs:
         group: swarm-runners
       needs: [job-repo, check-issue, check-data, show-data, start-execution, end-execution]
       if: ${{ failure() }} 
+      permissions:
+        issues: write
+        contents: read
       steps: 
         - id: repo
           name: Checkout repository
@@ -250,18 +263,52 @@ jobs:
           uses: actions/checkout@v4
           with:
             fetch-depth: 0
-            token: ${{ secrets.KAOS_REPO_TOKEN }}
         - id: check-execution
+          env:
+            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           run: |
-            echo "Error detected in process"
-            echo "Created issue"
-            gh issue create  --title "[Ka0S] Error detected in [Ka0s] Execution" --label "bug" --body "Error detected in ${{ env.KAOS_MODULE }}. Please check the logs for ${{ github.run_id }} more information of error."
-            echo "Add comment to origin target"
-            gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero ${{ env.KAOS_CODE }}.log"
+            gh issue create \
+              --title "[INCIDENT]: Fallo en workflow ${{ github.workflow }}" \
+              --label "itop-incident,triage,automated" \
+              --body "### Organización
+            Ka0s
+            
+            ### Solicitante
+            @${{ github.actor }}
+            
+            ### Estado
+            New
+            
+            ### Impacto
+            Service
+            
+            ### Urgencia
+            Medium
+            
+            ### Servicio / CI afectado
+            GitHub Actions / ${{ github.workflow }}
+            
+            ### Descripción
+            El workflow **${{ github.workflow }}** ha fallado durante su ejecución.
+            
+            **Detalles Técnicos:**
+            - **Módulo**: ${{ env.KAOS_MODULE }}
+            - **Run ID**: ${{ github.run_id }}
+            - **Commit**: ${{ github.sha }}
+            - **Branch/Ref**: ${{ github.ref_name }}
+            - **Actor**: ${{ github.actor }}
+            
+            ### Pasos / Evidencias
+            Logs de ejecución: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            "
+            gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body "El proceso no ha finalizado correctamente ${{ env.KAOS_CODE }}."
   end-workflow:
     needs: [handle-success, handle-failure]
     if: always()
     runs-on: swarm-runners-scaleset
+    permissions:
+      actions: write
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

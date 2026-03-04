@@ -28,16 +28,19 @@ on:
         default: ""
         required: false
 permissions:
-  contents: write
-  actions: write
+  contents: read
 env:
   KAOS_MODULE: "[Ka0S] INSPECTOR"
+  KAOS_CODE: ${{ github.run_id }}
   KAOS_OUTPUT_EXECUTION: "audit/inspector/" # Variable de repositorio global
   KAOS_EXP_FULL_LOGS: "conclusion,createdAt,databaseId,event,headBranch,headSha,name,status,updatedAt,url,workflowDatabaseId" # Variables de repositorio global
   KAOS_REPO: "/actions-runner/_work/kaos/kaos" # Variable de repositorio global
 jobs:
   job-core:
     runs-on: swarm-runners-scaleset
+    permissions:
+      contents: write
+      actions: read
     steps:
       - id: repo
         name: Checkout Repository
@@ -140,8 +143,13 @@ jobs:
     runs-on: swarm-runners-scaleset
     needs: [job-core]
     if: ${{ failure() }}
+    permissions:
+      issues: write
+      contents: read
     steps:
       - id: handle-failure-execution
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           echo "Error detected in process"
           echo "Created issue"

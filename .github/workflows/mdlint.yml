@@ -21,14 +21,11 @@ on:
         required: true
   
 permissions:
-  contents: write
-  actions: write
-  issues: write
-  pull-requests: write
+  contents: read
 
 env:
   KAOS_MODULE: "[Ka0S] MDLINT"
-  GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+  GH_TOKEN: ${{ github.token }}
   KAOS_MD_CONFIG: "core/config/.markdownlint.json"
   KAOS_PRETTIER_CONFIG: "compliance/markdown/.prettierrc.json"
   KAOS_PATH_RESUME: "audit/mdlint/"
@@ -40,6 +37,9 @@ env:
 jobs:
   job-core:
     runs-on: swarm-runners-scaleset
+    permissions:
+      contents: write
+      issues: write
     steps:
       - id: repo
         name: Checkout code
@@ -151,9 +151,12 @@ jobs:
 
   handle-failure:
     name: Handle Failure
-    needs: [job-core, handle-success]
+    needs: [job-core]
     if: failure()
     runs-on: swarm-runners-scaleset
+    permissions:
+      issues: write
+      contents: read
     steps:
       - id: repo
         name: Checkout code
@@ -164,7 +167,7 @@ jobs:
         uses: ./.github/actions/install-gh-cli
       - name: Create Incident Issue
         env:
-          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh issue create \
             --title "[INCIDENT]: Fallo en workflow ${{ github.workflow }}" \
@@ -205,6 +208,9 @@ jobs:
     needs: [handle-success, handle-failure]
     if: always()
     runs-on: swarm-runners-scaleset
+    permissions:
+      actions: write
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

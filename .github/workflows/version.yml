@@ -5,9 +5,7 @@ on:
     branches:
       - 'main'
 permissions:
-  contents: write
-  actions: write
-  issues: write
+  contents: read
 env:
   KAOS_MODULE: "[Ka0S] VERSION"
   GH_TOKEN: ${{ github.token }}
@@ -156,8 +154,11 @@ jobs:
   handle-failure:
     name: Handle Failure
     runs-on: swarm-runners-scaleset
-    needs: [job-core, handle-success]
+    needs: [job-core]
     if: failure()
+    permissions:
+      issues: write
+      contents: read
     steps:
       - id: repo
         name: Checkout code
@@ -168,7 +169,7 @@ jobs:
         uses: ./.github/actions/install-gh-cli
       - name: Create Incident Issue
         env:
-          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh issue create \
             --title "[INCIDENT]: Fallo en workflow ${{ github.workflow }}" \

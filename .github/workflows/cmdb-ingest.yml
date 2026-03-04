@@ -19,13 +19,11 @@ on:
       - 'devops/core/cmdb/**'
 
 permissions:
-  contents: write
-  issues: write
-  actions: read
+  contents: read
 
 env:
   KAOS_MODULE: "[Ka0S] CMDB Ingest"
-  KAOS_CORRELATION_ID: ${{ github.run_id }}
+  KAOS_CODE: ${{ github.run_id }}
   KAOS_ACTOR: ${{ github.actor }}
 
 jobs:
@@ -36,6 +34,8 @@ jobs:
   core-execution:
     name: Core Execution
     runs-on: swarm-runners-scaleset
+    permissions:
+      contents: read
     outputs:
       status: ${{ job.status }}
     steps:
@@ -47,7 +47,7 @@ jobs:
       - name: Setup Environment
         run: |
           echo "Iniciando módulo: ${{ env.KAOS_MODULE }}"
-          echo "Run ID: ${{ env.KAOS_CORRELATION_ID }}"
+          echo "Run ID: ${{ env.KAOS_CODE }}"
           echo "Actor: ${{ env.KAOS_ACTOR }}"
 
       - name: Set up Python
@@ -108,6 +108,9 @@ jobs:
     needs: [core-execution]
     if: failure()
     runs-on: swarm-runners-scaleset
+    permissions:
+      issues: write
+      contents: read
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -165,6 +168,9 @@ jobs:
     needs: [handle-success, handle-failure]
     if: always()
     runs-on: swarm-runners-scaleset
+    permissions:
+      actions: write
+      contents: read
     steps:
       - id: repo
         name: Checkout Repository

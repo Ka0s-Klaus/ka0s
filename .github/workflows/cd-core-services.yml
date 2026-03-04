@@ -16,9 +16,7 @@ on:
       - 'mkdocs.yml'
 
 permissions:
-  contents: write
-  issues: write
-  actions: write
+  contents: read
 
 env:
   KAOS_MODULE: "[Ka0s] CD Core Services"
@@ -28,6 +26,8 @@ jobs:
   deploy-services:
     name: Deploy Changed Services
     runs-on: swarm-runners-scaleset
+    permissions:
+      contents: write
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     outputs:
@@ -310,6 +310,9 @@ jobs:
     needs: [deploy-services]
     if: failure()
     runs-on: swarm-runners-scaleset
+    permissions:
+      issues: write
+      contents: read
     steps:
       - id: repo
         name: Checkout code
@@ -361,6 +364,9 @@ jobs:
     needs: [handle-success, handle-failure]
     if: always()
     runs-on: swarm-runners-scaleset
+    permissions:
+      actions: write
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

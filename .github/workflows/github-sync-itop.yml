@@ -7,18 +7,18 @@ on:
     types: [created, edited]
 
 permissions:
-  contents: write
-  issues: write
-  actions: write
+  contents: read
 
 env:
   KAOS_MODULE: "[Ka0S] GitHub → iTop Sync"
-  KAOS_CORRELATION_ID: ${{ github.run_id }}
+  KAOS_CODE: ${{ github.run_id }}
   KAOS_ACTOR: ${{ github.actor }}
 
 jobs:
   core-execution:
     runs-on: swarm-runners-scaleset
+    permissions:
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -112,7 +112,7 @@ jobs:
           git pull
           git add audit/sync/*
           if ! git diff --staged --quiet; then
-            git commit -m "chore(ka0s): audit sync for issue #${{ github.event.issue.number }} run ${{ env.KAOS_CORRELATION_ID }} [skip ci]"
+            git commit -m "chore(ka0s): audit sync for issue #${{ github.event.issue.number }} run ${{ env.KAOS_CODE }} [skip ci]"
             count=0
             until git push origin HEAD:${{ github.ref_name }} || [ $count -eq 5 ]; do
               echo "Push fallido, reintentando..."
@@ -135,9 +135,12 @@ jobs:
 
   handle-failure:
     name: Handle Failure
-    needs: [core-execution, handle-success]
+    needs: [core-execution]
     if: failure()
     runs-on: swarm-runners-scaleset
+    permissions:
+      issues: write
+      contents: read
     steps:
       - id: repo
         name: Checkout code
@@ -148,7 +151,7 @@ jobs:
         uses: ./.github/actions/install-gh-cli
       - name: Create Incident Issue
         env:
-          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh issue create \
             --title "[INCIDENT]: Fallo en workflow ${{ github.workflow }}" \
@@ -176,6 +179,9 @@ jobs:
     needs: [handle-success, handle-failure]
     if: always()
     runs-on: swarm-runners-scaleset
+    permissions:
+      actions: write
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

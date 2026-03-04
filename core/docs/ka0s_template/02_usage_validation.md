@@ -9,11 +9,12 @@ Para crear una nueva automatización, no empieces desde un archivo en blanco.
     Copia el archivo `core/templates/workflow/basic-template.yaml` a `.github/workflows/tu-nuevo-workflow.yml`.
 
 2.  **Personalizar Metadatos**:
-    Edita las variables de entorno al inicio del archivo:
+    Define la identidad estándar:
     ```yaml
     env:
-      KAOS_MODULE: "nombre-de-tu-modulo" # Ej: "node-update"
-      KAOS_AREA: "area-funcional"        # Ej: "infra/k8s"
+      KAOS_MODULE: "[Ka0S] <Nombre Legible>"
+      KAOS_CODE: ${{ github.run_id }}
+      KAOS_ACTOR: ${{ github.actor }}
     ```
 
 3.  **Implementar Lógica (`job-core`)**:
@@ -22,23 +23,26 @@ Para crear una nueva automatización, no empieces desde un archivo en blanco.
     *   Si tu lógica es compleja (>10 líneas de script), **extraela** a un script en `.github/scripts/` y llámalo desde el workflow.
 
 4.  **Conectar Ciclo de Vida**:
-    Asegúrate de que `handle-success` y `handle-failure` sigan dependiendo (`needs`) de `job-core`.
-    - `handle-failure` debe crear automáticamente una incidencia usando la plantilla de incidente, etiquetada como `itop-incident` y `triage`, incluyendo enlace al run y contexto del módulo.
+    - `handle-success`: depende de `core-execution` y corre con éxito.
+    - `handle-failure`: depende de `core-execution` y no de `handle-success`. Crea automáticamente una incidencia etiquetada `itop-incident, triage` con enlace al run.
+    - `end-workflow`: depende de ambos y dispara `inspector.yml` para auditoría global.
 
 ## 2. Checklist de Calidad
 Antes de subir tu workflow, verifica:
 
-*   [ ] **Permisos**: ¿Has definido `permissions`? (Por defecto `contents: read`).
-*   [ ] **Runners**: ¿Usas `runs-on: swarm-runners-scaleset` para tareas internas o `ubuntu-latest` solo si no requiere acceso al cluster?
-*   [ ] **Secretos**: ¿Usas `${{ secrets.NOMBRE }}`? Nunca hardcodees credenciales.
+*   [ ] **Permisos**: Top-level `contents: read`. Eleva solo por job (`contents: write`, `issues: write`, `actions: write` cuando aplique).
+*   [ ] **Runners**: Siempre `runs-on: swarm-runners-scaleset`. `ubuntu-latest` no está permitido en Ka0s.
+*   [ ] **Secretos**: Usa `${{ secrets.NOMBRE }}`. Preferir `GITHUB_TOKEN` para GH CLI; OIDC para clouds; evitar PATs.
+*   [ ] **Pinning**: Acciones fijadas a versión mayor confiable (`actions/checkout@v4`); SHA completo para terceros poco conocidos.
+*   [ ] **Anti-Inyección**: No interpolar inputs de usuario directamente en `run:`. Usa variables de entorno intermedias.
 *   [ ] **Idempotencia**: ¿Qué pasa si el workflow corre dos veces seguidas? (No debería romper nada).
 *   [ ] **Limpieza**: ¿Has borrado los comentarios explicativos de la plantilla?
 
 ## 3. Validación
 Para probar tu workflow sin afectar producción:
 1.  Usa el trigger `workflow_dispatch` para lanzarlo manualmente en una rama de prueba.
-2.  Verifica que se generen los logs en la pestaña "Actions".
-3.  Comprueba que el ciclo de vida (`handle-success`/`failure`) se activa correctamente según el resultado.
+2.  Verifica que se generen los logs en la pestaña "Actions" y que `KAOS_CODE` aparezca en evidencias.
+3.  Comprueba que el ciclo de vida (`handle-success`/`failure`/`end-workflow`) se activa correctamente según el resultado.
 
 ## 4. Plantillas de Problemas (Problem)
 

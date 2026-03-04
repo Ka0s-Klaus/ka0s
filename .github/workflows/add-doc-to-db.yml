@@ -6,10 +6,7 @@ on:
    - cron: '0 */6 * * *'  # Ejecución cada 6 horas en el minuto 0
 
 permissions:
-  contents: write
-  actions: write
-  issues: write
-  pull-requests: write
+  contents: read
 
 env:
   PYTHON_VERSION: '3.9'
@@ -27,6 +24,8 @@ env:
 jobs:
   job-core:
     runs-on: swarm-runners-scaleset
+    permissions:
+      contents: write
     env:
       GITHUB_OUTPUT: ""
     if: ${{ !contains(github.event.head_commit.message, '[swarm-runners] ') }}  
@@ -95,9 +94,12 @@ jobs:
 
   handle-failure:
     name: Handle Failure
-    needs: [job-core, handle-success]
+    needs: [job-core]
     if: failure()
     runs-on: swarm-runners-scaleset
+    permissions:
+      issues: write
+      contents: read
     steps:
       - id: repo
         name: Checkout code
@@ -108,7 +110,7 @@ jobs:
         uses: ./.github/actions/install-gh-cli
       - name: Create Incident Issue
         env:
-          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh issue create \
             --title "[INCIDENT]: Fallo en workflow ${{ github.workflow }}" \
@@ -149,6 +151,9 @@ jobs:
     needs: [handle-success, handle-failure]
     if: always()
     runs-on: swarm-runners-scaleset
+    permissions:
+      actions: write
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
