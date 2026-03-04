@@ -12,19 +12,19 @@ on:
         default: 'Sincronización manual bajo demanda'
 
 permissions:
-  contents: write # Needed for committing audit logs
-  issues: write
-  actions: write
+  contents: read
 
 env:
   KAOS_MODULE: "[Ka0s] CMDB Full Sync"
-  KAOS_CORRELATION_ID: ${{ github.run_id }}
+  KAOS_CODE: ${{ github.run_id }}
   KAOS_ACTOR: ${{ github.actor }}
 
 jobs:
   full-sync:
     name: Full Cluster Sync
     runs-on: swarm-runners-scaleset
+    permissions:
+      contents: write
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -36,7 +36,7 @@ jobs:
       - name: Setup Environment
         run: |
           echo "Iniciando módulo: ${{ env.KAOS_MODULE }}"
-          echo "Run ID: ${{ env.KAOS_CORRELATION_ID }}"
+          echo "Run ID: ${{ env.KAOS_CODE }}"
           echo "Actor: ${{ env.KAOS_ACTOR }}"
 
       - name: Setup Kubectl Tunnel
@@ -113,7 +113,7 @@ jobs:
           if git diff --staged --quiet; then
             echo "No changes to commit."
           else
-            git commit -m "chore(audit): add daily cmdb full sync log ${{ env.KAOS_CORRELATION_ID }} [skip ci]"
+            git commit -m "chore(audit): add daily cmdb full sync log ${{ env.KAOS_CODE }} [skip ci]"
             
             # Reintento básico de push para evitar conflictos de concurrencia
             count=0
@@ -136,9 +136,12 @@ jobs:
 
   handle-failure:
     name: Handle Failure
-    needs: [full-sync, handle-success]
+    needs: [full-sync]
     if: failure()
     runs-on: swarm-runners-scaleset
+    permissions:
+      issues: write
+      contents: read
     steps:
       - id: repo
         name: Checkout code
@@ -149,7 +152,7 @@ jobs:
         uses: ./.github/actions/install-gh-cli
       - name: Create Incident Issue
         env:
-          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh issue create \
             --title "[INCIDENT]: Fallo en workflow ${{ github.workflow }}" \
@@ -190,6 +193,9 @@ jobs:
     needs: [handle-success, handle-failure]
     if: always()
     runs-on: swarm-runners-scaleset
+    permissions:
+      actions: write
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

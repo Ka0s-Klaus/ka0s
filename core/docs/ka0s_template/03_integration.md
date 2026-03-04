@@ -3,16 +3,14 @@
 Detalles técnicos sobre la infraestructura que soporta las plantillas de Ka0s.
 
 ## Infraestructura de Ejecución (Runners)
-Ka0s utiliza una infraestructura híbrida, pero priorizamos runners auto-hospedados para operaciones sobre el cluster.
+Ka0s estandariza el uso de runners auto-hospedados para todas las automatizaciones.
 
 *   **`swarm-runners-scaleset`**:
     *   Grupo de runners desplegados dentro del cluster Kubernetes (ARC - Actions Runner Controller).
-    *   **Uso**: Obligatorio para cualquier workflow que interactúe con `kubectl`, redes internas o servicios desplegados.
+    *   **Uso**: Obligatorio para todos los workflows del repositorio, incluyendo CI, CD y auditorías.
     *   **Ventaja**: Latencia cero y acceso directo a la red del cluster.
 
-*   **`ubuntu-latest`** (GitHub Hosted):
-    *   Runners estándar de GitHub.
-    *   **Uso**: Solo para linters, validaciones de código estático (MD, YAML) o tareas que no tocan infraestructura.
+> Nota: El uso de `ubuntu-latest` (GitHub Hosted) está deshabilitado por la constitución Ka0s para garantizar control y seguridad de ejecución.
 
 ## Gestión de Secretos y Variables
 La plantilla asume la existencia de ciertos secretos y variables a nivel de organización o repositorio.
@@ -20,12 +18,14 @@ La plantilla asume la existencia de ciertos secretos y variables a nivel de orga
 ### Variables de Entorno Estándar (`env`)
 El sistema inyecta o espera las siguientes variables para contexto:
 *   `KAOS_MODULE`: Identificador único del proceso.
-*   `KAOS_AREA`: Agrupación lógica (ej. `security`, `maintenance`, `ci/cd`).
+*   `KAOS_CODE`: Correlación universal de ejecución (`github.run_id`).
+*   `KAOS_ACTOR`: Usuario que dispara la ejecución (`github.actor`).
 
 ### Secretos Comunes
 *   `KAOS_WORKER_SSH_KEY`: Llave privada para conectar a nodos vía SSH.
 *   `KAOS_WORKER_SSH_PASS`: Contraseña para elevación de privilegios (sudo) en nodos.
-*   `GH_TOKEN` / `GITHUB_TOKEN`: Token automático para operaciones de Git (commit, push, issues).
+*   `GITHUB_TOKEN` (preferido): Token automático para operaciones de GitHub (issues, `gh workflow run`, etc.).
+*   OIDC con nubes (AWS/Azure/GCP) en lugar de llaves de larga duración.
 
 ## Ciclo de Vida y Notificaciones
 La integración del ciclo de vida se basa en la dependencia de jobs.

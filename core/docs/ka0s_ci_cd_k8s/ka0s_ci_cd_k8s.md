@@ -23,3 +23,9 @@ El sistema proporciona un flujo de trabajo robusto y auditado que garantiza:
 - [Concepto y Arquitectura](./01_concept.md)
 - [Uso y Validación](./02_usage_validation.md)
 - [Integración Técnica](./03_integration.md)
+
+## Cambios 2026-03-04 (Hardening de Workflows)
+- Permisos por defecto fijados a `contents: read`; elevación a `contents: write` solo cuando se generan y suben informes.
+- En validaciones CI, `handle-failure` deja de depender de `handle-success` y reporta incidencias con `${{ secrets.GITHUB_TOKEN }}` y permisos `issues: write`.
+- `end-workflow` mantiene `actions: write` y `contents: read` para orquestar `inspector.yml`.
+- Incorporación/estandarización de `KAOS_CODE: ${{ github.run_id }}`.

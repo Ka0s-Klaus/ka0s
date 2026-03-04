@@ -6,19 +6,19 @@ on:
     - cron: '0 8 * * 1' # Every Monday at 08:00 UTC
 
 permissions:
-  contents: write
-  issues: write
-  actions: write
+  contents: read
 
 env:
   KAOS_MODULE: "[Ka0S] Security Audit"
-  KAOS_CORRELATION_ID: ${{ github.run_id }}
+  KAOS_CODE: ${{ github.run_id }}
   KAOS_ACTOR: ${{ github.actor }}
 
 jobs:
   audit-cluster:
     name: Audit Kubernetes Security
     runs-on: swarm-runners-scaleset
+    permissions:
+      contents: write
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -66,7 +66,7 @@ jobs:
           
           # Stage and commit first to avoid untracked file conflicts
           git add audit/kube/
-          git commit -m "chore(security): add audit report $(date +%Y-%m-%d)"
+          git commit -m "chore(security): add audit report $(date +%Y-%m-%d) [${{ env.KAOS_CODE }}]"
           
           # Rebase to integrate remote changes
           git pull --rebase origin main
@@ -82,9 +82,12 @@ jobs:
           echo "${{ env.KAOS_MODULE }} Success in runid ${{ github.run_id }} initiated."
   handle-failure:
     name: Handle Failure
-    needs: [audit-cluster, handle-success]
+    needs: [audit-cluster]
     if: failure()
     runs-on: swarm-runners-scaleset
+    permissions:
+      issues: write
+      contents: read
     steps:
       - id: repo
         name: Checkout code
@@ -95,7 +98,7 @@ jobs:
         uses: ./.github/actions/install-gh-cli
       - name: Create Incident Issue
         env:
-          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh issue create \
             --title "[INCIDENT]: Fallo en workflow ${{ github.workflow }}" \
@@ -123,6 +126,9 @@ jobs:
     needs: [handle-success, handle-failure]
     if: always()
     runs-on: swarm-runners-scaleset
+    permissions:
+      actions: write
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

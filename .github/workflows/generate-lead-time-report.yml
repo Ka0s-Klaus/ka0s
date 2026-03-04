@@ -11,9 +11,7 @@ on:
         default: 'Generación manual de reporte'
 
 permissions:
-  contents: write
-  issues: write
-  actions: write
+  contents: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -25,7 +23,7 @@ defaults:
 
 env:
   KAOS_MODULE: "[Ka0s] Lead Time Report"
-  KAOS_CORRELATION_ID: ${{ github.run_id }}
+  KAOS_CODE: ${{ github.run_id }}
   KAOS_ACTOR: ${{ github.actor }}
   PYTHON_VERSION: '3.10'
   MONGO_SUPERUSER_CONNECTION: ${{ secrets.DB_CONNECTION_STRING }}
@@ -34,6 +32,8 @@ jobs:
   core-execution:
     name: Core Execution
     runs-on: swarm-runners-scaleset
+    permissions:
+      contents: write
     outputs:
       status: ${{ job.status }}
     steps:
@@ -45,7 +45,7 @@ jobs:
       - name: Setup Environment
         run: |
           echo "Iniciando módulo: ${{ env.KAOS_MODULE }}"
-          echo "Run ID: ${{ env.KAOS_CORRELATION_ID }}"
+          echo "Run ID: ${{ env.KAOS_CODE }}"
           echo "Actor: ${{ env.KAOS_ACTOR }}"
 
       - name: Setup Python
@@ -77,7 +77,7 @@ jobs:
           git add audit/lead_time/
           
           if ! git diff --staged --quiet; then
-            git commit -m "chore(ka0s): update artifacts ${{ env.KAOS_MODULE }} run ${{ env.KAOS_CORRELATION_ID }} [skip ci]"
+            git commit -m "chore(ka0s): update artifacts ${{ env.KAOS_MODULE }} run ${{ env.KAOS_CODE }} [skip ci]"
             
             # Reintento básico de push
             count=0
@@ -105,15 +105,63 @@ jobs:
     needs: [core-execution]
     if: failure()
     runs-on: swarm-runners-scaleset
+    permissions:
+      issues: write
+      contents: read
     steps:
-      - name: Notify Failure
-        run: echo "❌ Workflow ${{ env.KAOS_MODULE }} falló."
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+      - name: Create Incident Issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --title "[INCIDENT]: Fallo en workflow ${{ github.workflow }}" \
+            --label "itop-incident,triage,automated" \
+            --body "### Organización
+          Ka0s
+          
+          ### Solicitante
+          @${{ github.actor }}
+          
+          ### Estado
+          New
+          
+          ### Impacto
+          Service
+          
+          ### Urgencia
+          Medium
+          
+          ### Servicio / CI afectado
+          GitHub Actions / ${{ github.workflow }}
+          
+          ### Descripción
+          El workflow **${{ github.workflow }}** ha fallado durante su ejecución.
+          
+          **Detalles Técnicos:**
+          - **Módulo**: ${{ env.KAOS_MODULE }}
+          - **Run ID**: ${{ github.run_id }}
+          - **Commit**: ${{ github.sha }}
+          - **Branch/Ref**: ${{ github.ref_name }}
+          - **Actor**: ${{ github.actor }}
+          
+          ### Pasos / Evidencias
+          Logs de ejecución: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          "
 
   end-workflow:
     name: Finalizar Workflow
     needs: [core-execution, handle-success, handle-failure]
     runs-on: swarm-runners-scaleset
     if: always()
+    permissions:
+      actions: write
+      contents: read
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -132,4 +180,3 @@ jobs:
             --ref main \
             -f kaos-workflow-id="${{ github.run_id }}" \
             -f kaos-user-start="${{ github.triggering_actor }}"
-

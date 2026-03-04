@@ -10,3 +10,9 @@ Utilidad central para ejecución remota segura.
 
 ## Histórico
 *   [Documentación Legacy](./legacy_workflow.md)
+
+## Cambios 2026-03-04 (Hardening de Workflows)
+- Permisos globales del workflow ajustados a `contents: read`. Elevación a `contents: write` únicamente en jobs que realizan commits/push (p. ej., `commit-results`).
+- `handle-failure` deja de depender de `handle-success` y usa `${{ secrets.GITHUB_TOKEN }}` con permisos `issues: write` para incidencias.
+- `end-workflow` mantiene `actions: write` y `contents: read` para ejecutar `inspector.yml`.
+- Uso consistente de `KAOS_CODE: ${{ github.run_id }}`.

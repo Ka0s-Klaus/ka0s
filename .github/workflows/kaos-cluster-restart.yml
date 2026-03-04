@@ -9,13 +9,17 @@ on:
         type: string
 
 permissions:
-  contents: write
-  issues: write
-  actions: write
+  contents: read
+
+env:
+  KAOS_MODULE: "[Ka0S] Cluster Safe Restart"
+  KAOS_CODE: ${{ github.run_id }}
 
 jobs:
   rolling-restart:
     runs-on: swarm-runners-scaleset
+    permissions:
+      contents: write
     steps:
       - name: Safety Check
         if: ${{ inputs.confirm != 'RESTART' }}
@@ -67,9 +71,12 @@ jobs:
 
   handle-failure:
     name: Handle Failure
-    needs: [rolling-restart, handle-success]
+    needs: [rolling-restart]
     if: failure()
     runs-on: swarm-runners-scaleset
+    permissions:
+      issues: write
+      contents: read
     steps:
       - id: repo
         name: Checkout code
@@ -80,7 +87,7 @@ jobs:
         uses: ./.github/actions/install-gh-cli
       - name: Create Incident Issue
         env:
-          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh issue create \
             --title "[INCIDENT]: Fallo en workflow ${{ github.workflow }}" \
@@ -108,6 +115,9 @@ jobs:
     needs: [handle-success, handle-failure]
     if: always()
     runs-on: swarm-runners-scaleset
+    permissions:
+      actions: write
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

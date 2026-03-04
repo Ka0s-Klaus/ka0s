@@ -23,8 +23,6 @@ on:
 
 permissions:
   contents: read
-  actions: write
-  issues: write
 
 env:
   KAOS_MODULE: "[Ka0S] Ops Node Management"
@@ -90,9 +88,12 @@ jobs:
 
   handle-failure:
     name: Handle Failure
-    needs: [manage-node, handle-success]
+    needs: [manage-node]
     if: failure()
     runs-on: swarm-runners-scaleset
+    permissions:
+      issues: write
+      contents: read
     steps:
       - id: repo
         name: Checkout code
@@ -103,7 +104,7 @@ jobs:
         uses: ./.github/actions/install-gh-cli
       - name: Create Incident Issue
         env:
-          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh issue create \
             --title "[INCIDENT]: Fallo en workflow ${{ github.workflow }}" \
@@ -144,6 +145,9 @@ jobs:
     needs: [handle-success, handle-failure]
     if: always()
     runs-on: swarm-runners-scaleset
+    permissions:
+      actions: write
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

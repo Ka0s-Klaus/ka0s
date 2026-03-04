@@ -9,17 +9,18 @@ on:
       - '!core/b2b/core-services/kube/**'
 
 permissions:
-  contents: write
-  issues: write
-  actions: write
+  contents: read
 
 env:
   KAOS_MODULE: "CI-K8S-VALIDATION"
+  KAOS_CODE: ${{ github.run_id }}
 
 jobs:
   validate-manifests:
     name: Validate Kubernetes Manifests
     runs-on: swarm-runners-scaleset
+    permissions:
+      contents: write
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -104,9 +105,12 @@ jobs:
 
   handle-failure:
     name: Handle Failure
-    needs: [validate-manifests, handle-success]
+    needs: [validate-manifests]
     if: failure()
     runs-on: swarm-runners-scaleset
+    permissions:
+      issues: write
+      contents: read
     steps:
       - id: repo
         name: Checkout code
@@ -117,7 +121,7 @@ jobs:
         uses: ./.github/actions/install-gh-cli
       - name: Create Incident Issue
         env:
-          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh issue create \
             --title "[INCIDENT]: Fallo en workflow ${{ github.workflow }}" \
@@ -158,6 +162,9 @@ jobs:
     needs: [handle-success, handle-failure]
     if: always()
     runs-on: swarm-runners-scaleset
+    permissions:
+      actions: write
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
