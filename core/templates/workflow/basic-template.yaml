@@ -91,6 +91,7 @@ jobs:
   # -----------------------------------------------------------------------------
   # JOB 3: HANDLE FAILURE (Obligatorio)
   # Notificaciones en caso de error del workflow.
+  # IMPORTANTE: No debe depender de 'handle-success' para evitar ser saltado si el éxito no ocurre.
   # -----------------------------------------------------------------------------
   handle-failure:
     name: Handle Failure
@@ -168,7 +169,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           echo "🔍 Triggering Inspector for Audit..."
+          # Estandarización de inputs para inspector.yml
           gh workflow run inspector.yml \
             --ref main \
-            -f kaos-workflow-id="${{ github.run_id }}" \
+            -f workflow_name="${{ github.workflow }}" \
+            -f run_id="${{ github.run_id }}" \
+            -f status="${{ job.status }}" \
             -f kaos-user-start="${{ github.triggering_actor }}"
