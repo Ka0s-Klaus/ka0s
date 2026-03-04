@@ -5,9 +5,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  actions: write
   contents: read
-  issues: write
 
 env:
   KAOS_MODULE: "[Ka0S] Watchdog Node Health"
@@ -15,6 +13,8 @@ env:
 jobs:
   job-core:
     runs-on: swarm-runners-scaleset
+    permissions:
+      actions: write
     outputs:
       affected_nodes: ${{ steps.check.outputs.nodes }}
     steps:
@@ -71,6 +71,9 @@ jobs:
     needs: [job-core]
     if: success()
     runs-on: swarm-runners-scaleset
+    permissions:
+      actions: write
+      contents: read
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
@@ -97,6 +100,9 @@ jobs:
     needs: [job-core] # Nota: handle-success no es necesario aquí como dependencia si no se encadena
     if: failure()
     runs-on: swarm-runners-scaleset
+    permissions:
+      issues: write
+      contents: read
     steps:
       - id: repo
         name: Checkout code
@@ -107,7 +113,7 @@ jobs:
         uses: ./.github/actions/install-gh-cli
       - name: Create Incident Issue
         env:
-          GH_TOKEN: ${{ secrets.KAOS_REPO_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh issue create \
             --title "[INCIDENT]: Fallo en workflow ${{ github.workflow }}" \

@@ -14,13 +14,11 @@ on:
       - 'core/**' # Ajustar al alcance del workflow
 
 permissions:
-  contents: write # Requerido para commits automáticos (audit logs, reportes)
-  issues: write   # Requerido para notificar en issues
-  actions: read   # Requerido para llamar a otros workflows/actions
+  contents: read
 
 env:
   KAOS_MODULE: "[Ka0S] Template" # Nombre del módulo para logs
-  KAOS_CORRELATION_ID: ${{ github.run_id }}
+  KAOS_CODE: ${{ github.run_id }}
   KAOS_ACTOR: ${{ github.actor }}
 
 jobs:
@@ -31,6 +29,8 @@ jobs:
   core-execution:
     name: Core Execution
     runs-on: swarm-runners-scaleset # Estándar de runners en Ka0s
+    permissions:
+      contents: write
     outputs:
       status: ${{ job.status }}
     steps:
@@ -42,7 +42,7 @@ jobs:
       - name: Setup Environment
         run: |
           echo "Iniciando módulo: ${{ env.KAOS_MODULE }}"
-          echo "Run ID: ${{ env.KAOS_CORRELATION_ID }}"
+          echo "Run ID: ${{ env.KAOS_CODE }}"
           echo "Actor: ${{ env.KAOS_ACTOR }}"
 
       # [BLOQUE PERSONALIZABLE] Lógica del workflow
@@ -62,7 +62,7 @@ jobs:
           # git add audit/outputs/
           
           if ! git diff --staged --quiet; then
-            git commit -m "chore(ka0s): update artifacts ${{ env.KAOS_MODULE }} run ${{ env.KAOS_CORRELATION_ID }} [skip ci]"
+            git commit -m "chore(ka0s): update artifacts ${{ env.KAOS_MODULE }} run ${{ env.KAOS_CODE }} [skip ci]"
             # Reintento básico de push para evitar conflictos de concurrencia
             count=0
             until git push origin HEAD:${{ github.ref_name }} || [ $count -eq 5 ]; do
@@ -98,6 +98,9 @@ jobs:
     needs: [core-execution]
     if: failure()
     runs-on: swarm-runners-scaleset
+    permissions:
+      issues: write
+      contents: read
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -154,6 +157,9 @@ jobs:
     needs: [handle-success, handle-failure]
     if: always()
     runs-on: swarm-runners-scaleset
+    permissions:
+      actions: write
+      contents: read
     steps:
       - id: repo
         name: Checkout Repository

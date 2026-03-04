@@ -34,3 +34,25 @@ Configuraciones que deben validarse en los nodos master/manager (requiere acceso
 ## 6. Auditoría de Secretos
 
 *   **Revisión periódica de secretos**: Ejecutar el workflow `Ka0s Secrets Audit` para identificar secretos definidos pero no usados y secretos usados en código que no estén definidos en GitHub.
+
+## 7. Endurecimiento de GitHub Actions (2025)
+
+Aplicar los siguientes controles a todos los workflows:
+
+- **Mínimo privilegio**:
+  - Nivel global: `permissions: contents: read`.
+  - Elevar solo por job: `contents: write` (commits), `issues: write` (incidencias), `actions: write` (disparar workflows).
+- **Tokens y autenticación**:
+  - Usar `GITHUB_TOKEN` para operaciones de GitHub y GH CLI.
+  - Evitar PATs; preferir OIDC para nubes (AWS/Azure/GCP).
+- **Pinning de acciones**:
+  - Acciones oficiales con versión mayor (p. ej., `actions/checkout@v4`).
+  - Terceros poco conocidos fijados por SHA completo.
+- **Anti-inyección de comandos**:
+  - No interpolar inputs de usuario directamente en `run:`.
+  - Usar variables de entorno intermedias y sanitización básica.
+- **Ciclo de vida estandarizado**:
+  - `handle-failure` no debe depender de `handle-success`.
+  - `end-workflow` debe disparar `inspector.yml` para auditoría (requiere `actions: write`).
+- **Runners**:
+  - Siempre `runs-on: swarm-runners-scaleset`. Deshabilitado `ubuntu-latest`.

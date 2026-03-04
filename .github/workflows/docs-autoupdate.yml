@@ -15,13 +15,11 @@ on:
         default: 'Mantenimiento manual'
 
 permissions:
-  contents: write
-  issues: write
-  actions: write
+  contents: read
 
 env:
   KAOS_MODULE: "[Ka0S] Docs Auto-Update"
-  KAOS_CORRELATION_ID: ${{ github.run_id }}
+  KAOS_CODE: ${{ github.run_id }}
   KAOS_ACTOR: ${{ github.actor }}
 
 jobs:
@@ -32,6 +30,8 @@ jobs:
   core-execution:
     name: Core Execution
     runs-on: swarm-runners-scaleset
+    permissions:
+      contents: write
     outputs:
       status: ${{ job.status }}
     steps:
@@ -43,7 +43,7 @@ jobs:
       - name: Setup Environment
         run: |
           echo "Iniciando módulo: ${{ env.KAOS_MODULE }}"
-          echo "Run ID: ${{ env.KAOS_CORRELATION_ID }}"
+          echo "Run ID: ${{ env.KAOS_CODE }}"
           echo "Actor: ${{ env.KAOS_ACTOR }}"
 
       - name: Set up Python
@@ -69,7 +69,7 @@ jobs:
             git add core/docs/README.md index.md mkdocs.yml
             
             # Commit con skip ci para evitar bucles, aunque push paths debería evitarlo también
-            git commit -m "chore(docs): auto-update index and navigation ${{ env.KAOS_CORRELATION_ID }} [skip ci]"
+            git commit -m "chore(docs): auto-update index and navigation ${{ env.KAOS_CODE }} [skip ci]"
             
             # Reintento básico de push para evitar conflictos de concurrencia
             count=0
@@ -105,6 +105,9 @@ jobs:
     needs: [core-execution]
     if: failure()
     runs-on: swarm-runners-scaleset
+    permissions:
+      issues: write
+      contents: read
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -136,6 +139,9 @@ jobs:
     needs: [handle-success, handle-failure]
     if: always()
     runs-on: swarm-runners-scaleset
+    permissions:
+      actions: write
+      contents: read
     steps:
       - id: repo
         name: Checkout Repository
