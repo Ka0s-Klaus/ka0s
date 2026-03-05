@@ -1,0 +1,99 @@
+name: "[Ka0s] ITIL Config Sync"
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'compliance/itil/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  KAOS_MODULE: "[Ka0S] ITIL Sync"
+  KAOS_CODE: ${{ github.run_id }}
+  KAOS_ACTOR: ${{ github.actor }}
+
+jobs:
+  sync-itil:
+    name: Sync ITIL Configuration
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install Dependencies
+        run: pip install requests pyyaml
+
+      - name: Run Sync Script
+        env:
+          ITOP_URL: ${{ secrets.ITOP_URL }}
+          ITOP_API_USER: ${{ secrets.ITOP_API_USER }}
+          ITOP_API_PASSWORD: ${{ secrets.ITOP_API_PASSWORD }}
+          ITOP_SSL_VERIFY: "false" # Force SSL Verify False
+        run: |
+          python .github/scripts/sync-itil-config.py
+
+  handle-success:
+    name: Handle Success
+    needs: [sync-itil]
+    if: success()
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Notify Success
+        run: echo "✅ ITIL Configuration synced to iTop successfully."
+
+  handle-failure:
+    name: Handle Failure
+    needs: [sync-itil]
+    if: failure()
+    runs-on: swarm-runners-scaleset
+    permissions:
+      issues: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+      - name: Create Incident Issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --title "[INCIDENT]: Fallo en sincronización ITIL" \
+            --label "itop-incident,triage,automated" \
+            --body "Falló la sincronización de archivos de compliance/itil con iTop."
+
+  end-workflow:
+    needs: [handle-success, handle-failure]
+    if: always()
+    runs-on: swarm-runners-scaleset
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+      - name: Trigger Inspector
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run inspector.yml \
+            --ref main \
+            -f workflow_name="${{ github.workflow }}" \
+            -f run_id="${{ github.run_id }}" \
+            -f status="${{ job.status }}"

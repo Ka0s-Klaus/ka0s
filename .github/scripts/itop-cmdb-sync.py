@@ -13,7 +13,8 @@ ITOP_VERSION = "1.3"  # REST API Version
 ORG_NAME = os.environ.get('ITOP_ORIGIN', 'Demo')  # Default Organization
 SSL_VERIFY_ENV = os.environ.get('ITOP_SSL_VERIFY', '').strip().lower()
 # Default: verify SSL unless explicitly set to 'false'
-ITOP_SSL_VERIFY = False if SSL_VERIFY_ENV == 'false' else True
+# Forced to False as per user request
+ITOP_SSL_VERIFY = False
 
 # Audit Log Container
 AUDIT_LOGS = []

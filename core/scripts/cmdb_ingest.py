@@ -10,8 +10,8 @@ ITOP_USER = os.getenv('ITOP_USER')
 ITOP_PASSWORD = os.getenv('ITOP_PASSWORD')
 ITOP_API_VERSION = '1.3'
 # Control de verificación SSL
-# (por defecto True, usar 'false' para entornos dev/self-signed)
-ITOP_SSL_VERIFY = os.getenv('ITOP_SSL_VERIFY', 'true').lower() == 'true'
+# (por defecto False, forzado por usuario)
+ITOP_SSL_VERIFY = False
 
 if not ITOP_SSL_VERIFY:
     import urllib3
