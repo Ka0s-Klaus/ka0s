@@ -379,6 +379,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh workflow run inspector.yml \
+            --ref main \
             -f workflow_name="${{ github.workflow }}" \
             -f run_id="${{ github.run_id }}" \
             -f status="${{ job.status }}"
