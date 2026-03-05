@@ -19,7 +19,7 @@ El workflow `.github/workflows/cmdb-ingest.yml` orquesta la ejecución.
 *   `ITOP_URL`: URL base de la API REST (o `vars.ITOP_URL`).
 *   `ITOP_API_USER`: Usuario técnico con permisos REST/Admin.
 *   `ITOP_API_PASSWORD`: Contraseña del usuario.
-*   `ITOP_SSL_VERIFY`: Controla la verificación de certificados SSL (por defecto 'true', 'false' para entornos internos).
+*   `ITOP_SSL_VERIFY`: **Desactivado (False)**. Se ha forzado a `False` en el código para permitir conexiones con instancias de iTop que usan certificados autofirmados (entornos de laboratorio/dev).
 
 ### Dependencias
 *   Requiere conectividad desde los runners hacia la instancia de iTop (`https://itsm.ka0s.io`).
