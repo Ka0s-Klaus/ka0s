@@ -35,7 +35,6 @@ def call_itop(operation, data, comment=None):
         'class': data.get('class'),
         'comment': comment or f"Automated sync from GitHub Actions {datetime.datetime.now()}",
         'output_fields': data.get('output_fields', 'id, friendlyname'),
-        'version': ITOP_VERSION
     }
 
     # For core/get, we use key (OQL or ID)
@@ -51,14 +50,18 @@ def call_itop(operation, data, comment=None):
     try:
         user = ITOP_USER or ''
         pwd = ITOP_PASSWORD or ''
+        endpoint = f"{ITOP_URL}/webservices/rest.php?version={ITOP_VERSION}"
         response = requests.post(
-            ITOP_URL + '/webservices/rest.php',
+            endpoint,
             auth=(user, pwd),
             data={'json_data': json.dumps(payload)},
             verify=ITOP_SSL_VERIFY
         )
         response.raise_for_status()
-        return response.json()
+        data = response.json()
+        if isinstance(data, dict) and data.get('code', 0) != 0:
+            log(f"iTop returned error code {data.get('code')}: {data.get('message')}")
+        return data
     except Exception as e:
         log(f"Error calling iTop: {e}")
         if response is not None:
