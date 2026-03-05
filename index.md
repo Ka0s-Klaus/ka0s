@@ -54,6 +54,7 @@ Bienvenido al centro de documentación del proyecto Ka0s. A continuación encont
 *   [Ka0s Cluster Restart Module](core/docs/kaos_cluster_restart/kaos_cluster_restart.md)
 
 ## 📂 Otros / Sin Categoría
+*   [Módulo Ka0s ITIL Sync](core/docs/ka0s_itil_sync/ka0s_itil_sync.md)
 *   [Ka0s Remediation: High CPU/Load Workflow](core/docs/ka0s_remediation_high_load/01_concept.md)
 
 ---

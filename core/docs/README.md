@@ -53,6 +53,7 @@ Si, parece increible pero hemos decidido en el equipo usar una terminología "es
 - [Módulo Ka0s Init](./ka0s_init/ka0s_init.md)
 - [Módulo Ka0s Inspector](./ka0s_inspector/ka0s_inspector.md)
 - [Módulo Ka0s Issue Templates](./ka0s_issue_templates/ka0s_issue_templates.md)
+- [Módulo Ka0s ITIL Sync](./ka0s_itil_sync/ka0s_itil_sync.md)
 - [Módulo Ka0s iTop Integration](./ka0s_itop/ka0s_itop.md)
 - [Módulo Ka0s JSON Lint](./ka0s_json/ka0s_json.md)
 - [Documentación del Módulo: Ka0s Kubectl Tunnel](./ka0s_kubectl_tunnel/ka0s_kubectl_tunnel.md)
