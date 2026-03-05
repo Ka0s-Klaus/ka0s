@@ -58,22 +58,6 @@ jobs:
           remote-results-path: '/tmp/ka0s-audit'
           local-results-path: 'audit/incidents/'
 
-      - name: Read Log Content
-        id: read_log
-        run: |
-          LOG_PATH="audit/incidents/${{ steps.filename.outputs.log_name }}"
-          # Leer las primeras 50 líneas para el comentario
-          if [ -f "$LOG_PATH" ]; then
-             CONTENT=$(head -n 50 "$LOG_PATH")
-             # Escapar saltos de línea para JSON/GitHub output
-             CONTENT="${CONTENT//'%'/'%25'}"
-             CONTENT="${CONTENT//$'\n'/'%0A'}"
-             CONTENT="${CONTENT//$'\r'/'%0D'}"
-             echo "content=$CONTENT" >> $GITHUB_OUTPUT
-          else
-             echo "content=Error: Log file not found" >> $GITHUB_OUTPUT
-          fi
-
       - name: Install GH CLI
         uses: ./.github/actions/install-gh-cli
 
@@ -81,22 +65,33 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh issue comment ${{ inputs.issue_number }} --body "
-          ### 🩺 Diagnóstico Automático Ejecutado
-          **Workflow**: ${{ github.workflow }}
-          **Nodo**: ${{ inputs.node_name }}
-          **Log**: \`${{ steps.filename.outputs.log_name }}\`
-
-          <details>
-          <summary>Ver reporte (Top 50 líneas)</summary>
-
-          \`\`\`bash
-          ${{ steps.read_log.outputs.content }}
-          \`\`\`
-          </details>
-
-          > El log completo ha sido archivado en \`audit/incidents/\`.
-          "
+          LOG_PATH="audit/incidents/${{ steps.filename.outputs.log_name }}"
+          COMMENT_FILE="comment_body.md"
+          
+          # Construir el cuerpo del comentario en un archivo temporal
+          echo "### 🩺 Diagnóstico Automático Ejecutado" > $COMMENT_FILE
+          echo "**Workflow**: ${{ github.workflow }}" >> $COMMENT_FILE
+          echo "**Nodo**: ${{ inputs.node_name }}" >> $COMMENT_FILE
+          echo "**Log**: \`${{ steps.filename.outputs.log_name }}\`" >> $COMMENT_FILE
+          echo "" >> $COMMENT_FILE
+          echo "<details>" >> $COMMENT_FILE
+          echo "<summary>Ver reporte (Top 50 líneas)</summary>" >> $COMMENT_FILE
+          echo "" >> $COMMENT_FILE
+          echo "\`\`\`bash" >> $COMMENT_FILE
+          
+          if [ -f "$LOG_PATH" ]; then
+             head -n 50 "$LOG_PATH" >> $COMMENT_FILE
+          else
+             echo "Error: Log file not found at $LOG_PATH" >> $COMMENT_FILE
+          fi
+          
+          echo "\`\`\`" >> $COMMENT_FILE
+          echo "</details>" >> $COMMENT_FILE
+          echo "" >> $COMMENT_FILE
+          echo "> El log completo ha sido archivado en \`audit/incidents/\`." >> $COMMENT_FILE
+          
+          # Usar --body-file para evitar problemas de escaping
+          gh issue comment ${{ inputs.issue_number }} --body-file $COMMENT_FILE
 
       - name: Commit Log Evidence
         if: success()
