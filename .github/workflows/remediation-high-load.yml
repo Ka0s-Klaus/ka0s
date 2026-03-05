@@ -139,29 +139,33 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          INCIDENT_FILE="incident_body.md"
+          
+          # Construir cuerpo del incidente en archivo temporal
+          echo "### Organización" > $INCIDENT_FILE
+          echo "Ka0s" >> $INCIDENT_FILE
+          echo "### Solicitante" >> $INCIDENT_FILE
+          echo "@${{ github.actor }}" >> $INCIDENT_FILE
+          echo "### Estado" >> $INCIDENT_FILE
+          echo "New" >> $INCIDENT_FILE
+          echo "### Impacto" >> $INCIDENT_FILE
+          echo "Service" >> $INCIDENT_FILE
+          echo "### Urgencia" >> $INCIDENT_FILE
+          echo "Medium" >> $INCIDENT_FILE
+          echo "### Servicio / CI afectado" >> $INCIDENT_FILE
+          echo "GitHub Actions / ${{ github.workflow }}" >> $INCIDENT_FILE
+          echo "### Descripción" >> $INCIDENT_FILE
+          echo "El workflow **${{ github.workflow }}** ha fallado durante su ejecución." >> $INCIDENT_FILE
+          echo "**Detalles Técnicos:**" >> $INCIDENT_FILE
+          echo "- **Módulo**: ${{ env.KAOS_MODULE }}" >> $INCIDENT_FILE
+          echo "- **Run ID**: ${{ github.run_id }}" >> $INCIDENT_FILE
+          echo "### Pasos / Evidencias" >> $INCIDENT_FILE
+          echo "Logs de ejecución: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> $INCIDENT_FILE
+
           gh issue create \
             --title "[INCIDENT]: Fallo en workflow ${{ github.workflow }}" \
             --label "itop-incident,triage,automated" \
-            --body "### Organización
-          Ka0s
-          ### Solicitante
-          @${{ github.actor }}
-          ### Estado
-          New
-          ### Impacto
-          Service
-          ### Urgencia
-          Medium
-          ### Servicio / CI afectado
-          GitHub Actions / ${{ github.workflow }}
-          ### Descripción
-          El workflow **${{ github.workflow }}** ha fallado durante su ejecución.
-          **Detalles Técnicos:**
-          - **Módulo**: ${{ env.KAOS_MODULE }}
-          - **Run ID**: ${{ github.run_id }}
-          ### Pasos / Evidencias
-          Logs de ejecución: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          "
+            --body-file $INCIDENT_FILE
 
   # -----------------------------------------------------------------------------
   # JOB 4: END WORKFLOW
