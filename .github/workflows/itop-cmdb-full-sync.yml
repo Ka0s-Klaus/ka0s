@@ -56,6 +56,32 @@ jobs:
       - name: Install Dependencies
         run: pip install requests
 
+      - name: List Organizations (debug)
+        if: ${{ vars.DEBUG_ITOP_LIST == 'true' }}
+        env:
+          ITOP_URL: ${{ secrets.ITOP_URL }}
+          ITOP_API_USER: ${{ secrets.ITOP_API_USER }}
+          ITOP_API_PASSWORD: ${{ secrets.ITOP_API_PASSWORD }}
+          ITOP_SSL_VERIFY: ${{ vars.ITOP_SSL_VERIFY || 'false' }}
+        run: |
+          python - <<'PY'
+          import os, json, requests
+          url = os.environ['ITOP_URL'].rstrip('/') + '/webservices/rest.php'
+          user = os.environ['ITOP_API_USER']
+          pwd = os.environ['ITOP_API_PASSWORD']
+          verify = os.environ.get('ITOP_SSL_VERIFY','true').strip().lower() != 'false'
+          payload = {
+              "operation": "core/get",
+              "class": "Organization",
+              "key": "SELECT Organization",
+              "output_fields": "id,name",
+              "version": "1.3"
+          }
+          r = requests.post(url, auth=(user, pwd), data={"json_data": json.dumps(payload)}, verify=verify)
+          print("[DEBUG] Organizations payload response:")
+          print(r.text)
+          PY
+
       - name: Discover Services
         id: discover
         run: |
