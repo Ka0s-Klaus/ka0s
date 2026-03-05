@@ -30,9 +30,6 @@ def get_itop_class_definition(class_name):
 
 
 def call_itop(operation, data, comment=None):
-    """
-    Generic function to call iTop REST API
-    """
     payload = {
         'operation': operation,
         'class': data.get('class'),
@@ -50,10 +47,13 @@ def call_itop(operation, data, comment=None):
             payload['key'] = data['key']
         payload['fields'] = data.get('fields', {})
 
+    response = None
     try:
+        user = ITOP_USER or ''
+        pwd = ITOP_PASSWORD or ''
         response = requests.post(
             ITOP_URL + '/webservices/rest.php',
-            auth=(ITOP_USER, ITOP_PASSWORD),
+            auth=(user, pwd),
             data={'json_data': json.dumps(payload)},
             verify=ITOP_SSL_VERIFY
         )
@@ -61,15 +61,12 @@ def call_itop(operation, data, comment=None):
         return response.json()
     except Exception as e:
         log(f"Error calling iTop: {e}")
-        if 'response' in locals():
+        if response is not None:
             log(f"Response: {response.text}")
         sys.exit(1)
 
 
 def get_organization_id(org_name):
-    """
-    Resolves Organization Name to ID using OQL
-    """
     oql = f"SELECT Organization WHERE name = '{org_name}'"
     data = {
         'class': 'Organization',
@@ -79,7 +76,21 @@ def get_organization_id(org_name):
     objects = resp.get('objects')
     
     if not objects:
-        log(f"Organization '{org_name}' not found. Cannot proceed.")
+        try:
+            all_resp = call_itop('core/get', {'class': 'Organization', 'key': 'SELECT Organization', 'output_fields': 'id,name'})
+            names = []
+            objs = all_resp.get('objects') or {}
+            for _, v in objs.items():
+                fields = (v or {}).get('fields') or {}
+                n = fields.get('name')
+                if n:
+                    names.append(n)
+            if names:
+                log(f"Organization '{org_name}' not found. Available: {', '.join(names)}")
+            else:
+                log(f"Organization '{org_name}' not found and no organizations listed.")
+        except Exception:
+            log(f"Organization '{org_name}' not found. Listing failed.")
         sys.exit(1)
     
     # Return the first key (ID)
