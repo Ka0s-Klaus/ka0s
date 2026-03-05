@@ -1,5 +1,14 @@
 # Integración en el Ecosistema
 
+## Disparadores (Triggers)
+El workflow se ejecuta únicamente para Issues cuyos títulos comiencen por:
+*   `[INCIDENT]`: Sincroniza como `Incident` o `UserRequest` (según etiquetas).
+*   `[CHANGE]`: Sincroniza como `Change`.
+*   `[REQUEST]`: Sincroniza como `UserRequest`.
+*   `[PROBLEM]`: Sincroniza como `Problem`.
+
+**Nota**: Se ignoran automáticamente los issues generados por fallos del propio workflow ("Fallo en workflow...") para evitar bucles infinitos.
+
 ## Dependencias
 - Workflow orquestador: `.github/workflows/github-sync-itop.yml`.
 - Runtime: Python 3.10 + librería `requests`.
