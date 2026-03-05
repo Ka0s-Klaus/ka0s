@@ -16,7 +16,8 @@ env:
 
 jobs:
   core-execution:
-    if: ${{ ! startsWith(github.event.issue.title, '[INCIDENT]') }}
+    # Evitar bucles: No sincronizar incidencias creadas por el propio fallo de este workflow
+    if: ${{ !contains(github.event.issue.title, 'Fallo en workflow Ka0s GitHub → iTop Sync') }}
     runs-on: swarm-runners-scaleset
     permissions:
       contents: write
