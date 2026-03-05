@@ -16,8 +16,8 @@ env:
 
 jobs:
   core-execution:
-    # Evitar bucles: No sincronizar incidencias creadas por el propio fallo de este workflow
-    if: ${{ !contains(github.event.issue.title, 'Fallo en workflow Ka0s GitHub → iTop Sync') }}
+    # Ejecutar solo para tipos de ticket válidos y evitar bucles de fallo propio
+    if: ${{ (startsWith(github.event.issue.title, '[INCIDENT]') || startsWith(github.event.issue.title, '[CHANGE]') || startsWith(github.event.issue.title, '[REQUEST]') || startsWith(github.event.issue.title, '[PROBLEM]')) && !contains(github.event.issue.title, 'Fallo en workflow Ka0s GitHub → iTop Sync') }}
     runs-on: swarm-runners-scaleset
     permissions:
       contents: write
