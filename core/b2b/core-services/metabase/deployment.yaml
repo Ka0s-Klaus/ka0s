@@ -52,6 +52,14 @@ spec:
               key: DB_HOST
         - name: MB_SITE_URL
           value: "https://metabase.ka0s.io"
+        affinity:
+          nodeAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                - key: node-role.kubernetes.io/control-plane
+                  operator: DoesNotExist
         resources:
           limits:
             memory: "2Gi"
