@@ -98,7 +98,10 @@ def get_organization_id(org_name):
     
     # Return the first key (ID)
     for key, val in objects.items():
-        return key
+        # Keys can be like "Organization::1" -> extract numeric id
+        if isinstance(key, str) and '::' in key:
+            return key.split('::')[-1]
+        return str(key)
     return None
 
 
