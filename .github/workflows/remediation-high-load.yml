@@ -1,0 +1,91 @@
+name: Ka0s Remediation - High CPU/Load
+on:
+  workflow_dispatch:
+    inputs:
+      node_name:
+        description: 'Nombre del nodo afectado (ej: k8-manager)'
+        required: true
+        default: 'k8-manager'
+      issue_number:
+        description: 'ID de la Issue a actualizar (ej: 4365)'
+        required: true
+
+permissions:
+  contents: write
+  issues: write
+
+env:
+  KAOS_MODULE: "[Ka0S] Remediation High Load"
+
+jobs:
+  diagnose-and-report:
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate Log Filename
+        id: filename
+        run: |
+          # Formato: yyyymmdd_hhmmss_workflowid_IncidentID.log
+          TIMESTAMP=$(date +'%Y%m%d_%H%M%S')
+          RUN_ID="${{ github.run_id }}"
+          INCIDENT="${{ inputs.issue_number }}"
+          LOG_NAME="${TIMESTAMP}_${RUN_ID}_${INCIDENT}.log"
+          echo "log_name=$LOG_NAME" >> $GITHUB_OUTPUT
+
+      - name: Execute Diagnostic Script (SSH)
+        uses: ./.github/actions/ssh-exec
+        with:
+          host: ${{ secrets.KAOS_SSH_HOST_1 }} # Asumimos host_1 por defecto, en un escenario real se mapearía node_name -> IP
+          username: ${{ secrets.KAOS_SSH_USER }}
+          key: ${{ secrets.KAOS_SSH_KEY_PRIV }}
+          port: ${{ secrets.KAOS_SSH_PORT_1 }}
+          pass: ${{ secrets.KAOS_SSH_PASS }}
+          use-sudo: true
+          script-path: 'devops/remediation/check-high-load.sh'
+          script-args: '/tmp/ka0s-audit ${{ steps.filename.outputs.log_name }}'
+          remote-results-path: '/tmp/ka0s-audit'
+          local-results-path: 'audit/incidents/'
+
+      - name: Read Log Content
+        id: read_log
+        run: |
+          LOG_PATH="audit/incidents/${{ steps.filename.outputs.log_name }}"
+          # Leer las primeras 50 líneas para el comentario (evitar exceder límites)
+          CONTENT=$(head -n 50 "$LOG_PATH")
+          # Escapar saltos de línea para JSON/GitHub output
+          CONTENT="${CONTENT//'%'/'%25'}"
+          CONTENT="${CONTENT//$'\n'/'%0A'}"
+          CONTENT="${CONTENT//$'\r'/'%0D'}"
+          echo "content=$CONTENT" >> $GITHUB_OUTPUT
+
+      - name: Comment on Issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue comment ${{ inputs.issue_number }} --body "
+          ### 🩺 Diagnóstico Automático Ejecutado
+          **Workflow**: ${{ github.workflow }}
+          **Nodo**: ${{ inputs.node_name }}
+          **Log**: \`${{ steps.filename.outputs.log_name }}\`
+
+          <details>
+          <summary>Ver reporte (Top 50 líneas)</summary>
+
+          \`\`\`bash
+          ${{ steps.read_log.outputs.content }}
+          \`\`\`
+          </details>
+
+          > El log completo ha sido archivado en \`audit/incidents/\`.
+          "
+
+      - name: Commit Log Evidence
+        run: |
+          git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
+          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
+          git pull origin ${{ github.ref }}
+          git add audit/incidents/${{ steps.filename.outputs.log_name }}
+          git commit -m "[Ka0S] Evidence for Issue #${{ inputs.issue_number }}"
+          git push origin ${{ github.ref }}
