@@ -97,6 +97,7 @@ jobs:
           ITOP_API_USER: ${{ secrets.ITOP_API_USER }}
           ITOP_API_PASSWORD: ${{ secrets.ITOP_API_PASSWORD }}
           ITOP_ORIGIN: ${{ secrets.ITOP_ORIGIN || vars.ITOP_ORIGIN || 'Demo' }}
+          ITOP_SSL_VERIFY: ${{ vars.ITOP_SSL_VERIFY || 'false' }}
         run: |
           python .github/scripts/itop-cmdb-sync.py \
             --services "${{ steps.discover.outputs.services }}" \

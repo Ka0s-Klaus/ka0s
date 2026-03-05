@@ -11,6 +11,9 @@ ITOP_USER = os.environ.get('ITOP_API_USER')
 ITOP_PASSWORD = os.environ.get('ITOP_API_PASSWORD')
 ITOP_VERSION = "1.3"  # REST API Version
 ORG_NAME = os.environ.get('ITOP_ORIGIN', 'Demo')  # Default Organization
+SSL_VERIFY_ENV = os.environ.get('ITOP_SSL_VERIFY', '').strip().lower()
+# Default: verify SSL unless explicitly set to 'false'
+ITOP_SSL_VERIFY = False if SSL_VERIFY_ENV == 'false' else True
 
 # Audit Log Container
 AUDIT_LOGS = []
@@ -51,7 +54,8 @@ def call_itop(operation, data, comment=None):
         response = requests.post(
             ITOP_URL + '/webservices/rest.php',
             auth=(ITOP_USER, ITOP_PASSWORD),
-            data={'json_data': json.dumps(payload)}
+            data={'json_data': json.dumps(payload)},
+            verify=ITOP_SSL_VERIFY
         )
         response.raise_for_status()
         return response.json()
