@@ -16,7 +16,7 @@ env:
 
 jobs:
   core-execution:
-    if: ${{ ! (github.event_name == 'issues' && startsWith(github.event.issue.title, '[INCIDENT]:')) }}
+    if: ${{ ! startsWith(github.event.issue.title, '[INCIDENT]') }}
     runs-on: swarm-runners-scaleset
     permissions:
       contents: write
@@ -188,7 +188,7 @@ jobs:
 
   end-workflow:
     needs: [core-execution, handle-success, handle-failure]
-    if: always()
+    if: always() && needs.core-execution.result != 'skipped'
     runs-on: swarm-runners-scaleset
     permissions:
       actions: write
@@ -201,7 +201,6 @@ jobs:
       - name: Install GH CLI
         uses: ./.github/actions/install-gh-cli
       - name: Trigger Inspector
-        if: ${{ needs.core-execution.result != 'skipped' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
