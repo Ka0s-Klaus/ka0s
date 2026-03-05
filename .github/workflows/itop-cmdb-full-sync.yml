@@ -66,7 +66,8 @@ jobs:
         run: |
           python - <<'PY'
           import os, json, requests
-          url = os.environ['ITOP_URL'].rstrip('/') + '/webservices/rest.php'
+          base = os.environ['ITOP_URL'].rstrip('/')
+          url = f"{base}/webservices/rest.php?version=1.3"
           user = os.environ['ITOP_API_USER']
           pwd = os.environ['ITOP_API_PASSWORD']
           verify = os.environ.get('ITOP_SSL_VERIFY','true').strip().lower() != 'false'
@@ -74,8 +75,7 @@ jobs:
               "operation": "core/get",
               "class": "Organization",
               "key": "SELECT Organization",
-              "output_fields": "id,name",
-              "version": "1.3"
+              "output_fields": "id,name"
           }
           r = requests.post(url, auth=(user, pwd), data={"json_data": json.dumps(payload)}, verify=verify)
           print("[DEBUG] Organizations payload response:")
