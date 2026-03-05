@@ -4,14 +4,25 @@ set -e
 # ==============================================================================
 # Script: check-high-load.sh
 # Descripción: Diagnóstico Táctico de Carga Alta (CPU/Load/IO) en Nodos Linux.
-# Uso: ./check-high-load.sh
-# Salida: Reporte en consola con procesos top consumidores y recomendaciones.
+# Uso: ./check-high-load.sh [output_dir] [log_filename]
+# Salida: Reporte en consola y fichero de log.
 # ==============================================================================
+
+# Argumentos
+OUTPUT_DIR="${1:-/tmp/ka0s-audit}"
+LOG_FILENAME="${2:-high-load-$(date '+%Y%m%d_%H%M%S').log}"
+
+mkdir -p "$OUTPUT_DIR"
+LOG_FILE="$OUTPUT_DIR/$LOG_FILENAME"
+
+# Redirigir stdout y stderr al archivo de log y a consola
+exec > >(tee -a "$LOG_FILE") 2>&1
 
 echo "=== DIAGNÓSTICO DE CARGA ALTA ==="
 date
 echo "Hostname: $(hostname)"
 uptime
+echo "Log File: $LOG_FILE"
 
 echo ""
 echo "--- 1. Top 5 Procesos (CPU) ---"
@@ -51,3 +62,6 @@ if (( $(echo "$LOAD > $CORES" | bc -l) )); then
 else
     echo "✅ Load Average ($LOAD) dentro de límites aceptables (Cores: $CORES)."
 fi
+
+echo ""
+echo "Reporte guardado en: $LOG_FILE"
