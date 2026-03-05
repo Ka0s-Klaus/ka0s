@@ -16,13 +16,23 @@ permissions:
 
 env:
   KAOS_MODULE: "[Ka0S] Remediation High Load"
+  KAOS_CODE: ${{ github.run_id }}
+  KAOS_ACTOR: ${{ github.actor }}
 
 jobs:
-  diagnose-and-report:
+  # -----------------------------------------------------------------------------
+  # JOB 1: CORE EXECUTION (DIAGNOSE AND REPORT)
+  # -----------------------------------------------------------------------------
+  core-execution:
+    name: Core Execution
     runs-on: swarm-runners-scaleset
+    outputs:
+      log_name: ${{ steps.filename.outputs.log_name }}
     steps:
-      - name: Checkout
+      - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Generate Log Filename
         id: filename
@@ -37,7 +47,7 @@ jobs:
       - name: Execute Diagnostic Script (SSH)
         uses: ./.github/actions/ssh-exec
         with:
-          host: ${{ secrets.KAOS_SSH_HOST_1 }} # Asumimos host_1 por defecto, en un escenario real se mapearía node_name -> IP
+          host: ${{ secrets.KAOS_SSH_HOST_1 }} 
           username: ${{ secrets.KAOS_SSH_USER }}
           key: ${{ secrets.KAOS_SSH_KEY_PRIV }}
           port: ${{ secrets.KAOS_SSH_PORT_1 }}
@@ -52,13 +62,20 @@ jobs:
         id: read_log
         run: |
           LOG_PATH="audit/incidents/${{ steps.filename.outputs.log_name }}"
-          # Leer las primeras 50 líneas para el comentario (evitar exceder límites)
-          CONTENT=$(head -n 50 "$LOG_PATH")
-          # Escapar saltos de línea para JSON/GitHub output
-          CONTENT="${CONTENT//'%'/'%25'}"
-          CONTENT="${CONTENT//$'\n'/'%0A'}"
-          CONTENT="${CONTENT//$'\r'/'%0D'}"
-          echo "content=$CONTENT" >> $GITHUB_OUTPUT
+          # Leer las primeras 50 líneas para el comentario
+          if [ -f "$LOG_PATH" ]; then
+             CONTENT=$(head -n 50 "$LOG_PATH")
+             # Escapar saltos de línea para JSON/GitHub output
+             CONTENT="${CONTENT//'%'/'%25'}"
+             CONTENT="${CONTENT//$'\n'/'%0A'}"
+             CONTENT="${CONTENT//$'\r'/'%0D'}"
+             echo "content=$CONTENT" >> $GITHUB_OUTPUT
+          else
+             echo "content=Error: Log file not found" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
 
       - name: Comment on Issue
         env:
@@ -82,10 +99,99 @@ jobs:
           "
 
       - name: Commit Log Evidence
+        if: success()
         run: |
           git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
           git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
           git pull origin ${{ github.ref }}
           git add audit/incidents/${{ steps.filename.outputs.log_name }}
-          git commit -m "[Ka0S] Evidence for Issue #${{ inputs.issue_number }}"
-          git push origin ${{ github.ref }}
+          if ! git diff --staged --quiet; then
+            git commit -m "[Ka0S] Evidence for Issue #${{ inputs.issue_number }}"
+            git push origin ${{ github.ref }}
+          else
+             echo "No changes to commit."
+          fi
+
+  # -----------------------------------------------------------------------------
+  # JOB 2: HANDLE SUCCESS
+  # -----------------------------------------------------------------------------
+  handle-success:
+    name: Handle Success
+    needs: [core-execution]
+    if: success()
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Notify Success
+        run: echo "✅ Diagnóstico completado para Issue #${{ inputs.issue_number }}"
+
+  # -----------------------------------------------------------------------------
+  # JOB 3: HANDLE FAILURE
+  # -----------------------------------------------------------------------------
+  handle-failure:
+    name: Handle Failure
+    needs: [core-execution]
+    if: failure()
+    runs-on: swarm-runners-scaleset
+    permissions:
+      issues: write
+      contents: read
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+      - name: Create Incident Issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --title "[INCIDENT]: Fallo en workflow ${{ github.workflow }}" \
+            --label "itop-incident,triage,automated" \
+            --body "### Organización
+          Ka0s
+          ### Solicitante
+          @${{ github.actor }}
+          ### Estado
+          New
+          ### Impacto
+          Service
+          ### Urgencia
+          Medium
+          ### Servicio / CI afectado
+          GitHub Actions / ${{ github.workflow }}
+          ### Descripción
+          El workflow **${{ github.workflow }}** ha fallado durante su ejecución.
+          **Detalles Técnicos:**
+          - **Módulo**: ${{ env.KAOS_MODULE }}
+          - **Run ID**: ${{ github.run_id }}
+          ### Pasos / Evidencias
+          Logs de ejecución: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          "
+
+  # -----------------------------------------------------------------------------
+  # JOB 4: END WORKFLOW
+  # -----------------------------------------------------------------------------
+  end-workflow:
+    needs: [handle-success, handle-failure]
+    if: always()
+    runs-on: swarm-runners-scaleset
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+      - name: Trigger Inspector
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run inspector.yml \
+            --ref main \
+            -f workflow_name="${{ github.workflow }}" \
+            -f run_id="${{ github.run_id }}" \
+            -f status="${{ job.status }}" \
+            -f kaos-user-start="${{ github.triggering_actor }}"
