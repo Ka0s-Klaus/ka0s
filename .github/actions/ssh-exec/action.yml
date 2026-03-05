@@ -83,9 +83,7 @@ runs:
       shell: bash
       run: |
         if [[ "${{ inputs.use-sudo }}" == "true" ]]; then
-          SUDO_PREFIX="echo '${{ inputs.pass }}' | sudo -S"
-          COMMAND_CHAIN="$SUDO_PREFIX bash -c '${{ inputs.command }}'"
-          if [[ "${{ inputs.remote-results-path }}" != 
+          echo "${{ inputs.pass }}" | ssh -o StrictHostKeyChecking=no -i ${{ runner.temp }}/ssh_key -p ${{ inputs.port }} ${{ inputs.username }}@${{ inputs.host }} "sudo -S ${{ inputs.command }}"
         else
           ssh -o StrictHostKeyChecking=no -i ${{ runner.temp }}/ssh_key -p ${{ inputs.port }} ${{ inputs.username }}@${{ inputs.host }} "${{ inputs.command }}"
         fi
