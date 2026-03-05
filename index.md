@@ -53,5 +53,8 @@ Bienvenido al centro de documentación del proyecto Ka0s. A continuación encont
 *   [Módulo Ka0s Onboarding](core/docs/ka0s_onboarding/ka0s_onboarding.md)
 *   [Ka0s Cluster Restart Module](core/docs/kaos_cluster_restart/kaos_cluster_restart.md)
 
+## 📂 Otros / Sin Categoría
+*   [Ka0s Remediation: High CPU/Load Workflow](core/docs/ka0s_remediation_high_load/01_concept.md)
+
 ---
 *Para ver todos los archivos, navega a [core/docs/](core/docs/).*
