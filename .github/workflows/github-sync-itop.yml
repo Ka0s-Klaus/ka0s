@@ -16,7 +16,7 @@ env:
 
 jobs:
   core-execution:
-    if: ${{ ! (github.event_name == 'issues' && startsWith(github.event.issue.title, '[INCIDENT]:')) }}
+    if: ${{ ! startsWith(github.event.issue.title, '[INCIDENT]') }}
     runs-on: swarm-runners-scaleset
     permissions:
       contents: write
