@@ -73,9 +73,9 @@ runs:
           if [[ "${{ inputs.remote-results-path }}" != "" ]]; then
             COMMAND_CHAIN="$COMMAND_CHAIN && $SUDO_PREFIX chmod -R 777 ${{ inputs.remote-results-path }}"
           fi
-          ssh -o StrictHostKeyChecking=no -i ${{ runner.temp }}/ssh_key -p ${{ inputs.port }} ${{ inputs.username }}@${{ inputs.host }} "$COMMAND_CHAIN && rm $REMOTE_SCRIPT_PATH"
+          ssh -o StrictHostKeyChecking=no -i ${{ runner.temp }}/ssh_key -p ${{ inputs.port }} ${{ inputs.username }}@${{ inputs.host }} "$COMMAND_CHAIN && rm -f $REMOTE_SCRIPT_PATH"
         else
-          ssh -o StrictHostKeyChecking=no -i ${{ runner.temp }}/ssh_key -p ${{ inputs.port }} ${{ inputs.username }}@${{ inputs.host }} "$EXEC_COMMAND && rm $REMOTE_SCRIPT_PATH"
+          ssh -o StrictHostKeyChecking=no -i ${{ runner.temp }}/ssh_key -p ${{ inputs.port }} ${{ inputs.username }}@${{ inputs.host }} "$EXEC_COMMAND && rm -f $REMOTE_SCRIPT_PATH"
         fi
 
     - name: Execute remote command
