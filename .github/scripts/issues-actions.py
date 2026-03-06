@@ -7,6 +7,9 @@ import subprocess
 import sys
 
 
+COMMENT_PREFIX = "### Informe de acciones (tácticas/estratégicas) — Ka0s"
+
+
 def _run(cmd):
     res = subprocess.run(cmd, capture_output=True, text=True)
     if res.returncode != 0:
@@ -133,8 +136,8 @@ def _render_comment(issue):
         if "load average" in title_low:
             tactical.insert(
                 1,
-                "Identificar el causante del pico: procesos (`top`), pods (`kubectl top`), "
-                "y trabajos batch/cron recientes.",
+                "Identificar el causante del pico: procesos (`top`), pods "
+                "(`kubectl top`), y trabajos batch/cron recientes.",
             )
             strategic.insert(
                 0,
@@ -150,8 +153,8 @@ def _render_comment(issue):
             )
             strategic.insert(
                 0,
-                "Establecer política de higiene: auto-triage, límite de creación automática "
-                "y reportes periódicos (lead time/backlog).",
+                "Establecer política de higiene: auto-triage, límite de creación "
+                "automática y reportes periódicos (lead time/backlog).",
             )
         strategic.extend(
             [
@@ -169,7 +172,8 @@ def _render_comment(issue):
             [
                 "Se adjuntan evidencias suficientes para reproducir/analisar "
                 "(logs + métricas + timestamps).",
-                "El incidente queda estabilizado o se define workaround con rollback.",
+                "El incidente queda estabilizado o se define workaround "
+                "con rollback.",
                 "Existe seguimiento (Problem/RFC si procede) y actualización en CMDB "
                 "si hubo cambios.",
             ]
@@ -207,15 +211,18 @@ def _render_comment(issue):
     elif category == "problem":
         tactical.extend(
             [
-                "Confirmar alcance: qué servicio/namespace está afectado y desde cuándo.",
+                "Confirmar alcance: qué servicio/namespace está afectado "
+                "y desde cuándo.",
                 "Vincular incidentes relacionados y reunir timeline con evidencias.",
                 "Definir workaround seguro si aún impacta (mitigación controlada).",
             ]
         )
         strategic.extend(
             [
-                "Realizar RCA y fijar acciones preventivas medibles (SLO/alertas/runbook).",
-                "Planificar cambio estructural vía RFC (si requiere tocar producción).",
+                "Realizar RCA y fijar acciones preventivas medibles "
+                "(SLO/alertas/runbook).",
+                "Planificar cambio estructural vía RFC "
+                "(si requiere tocar producción).",
             ]
         )
         done.extend(
@@ -228,20 +235,23 @@ def _render_comment(issue):
     elif category == "request":
         tactical.extend(
             [
-                "Convertir la solicitud en un alcance mínimo (MVP) y criterios de aceptación.",
+                "Convertir la solicitud en un alcance mínimo (MVP) "
+                "y criterios de aceptación.",
                 "Identificar dependencias (acciones, scripts, docs) y riesgos.",
             ]
         )
         strategic.extend(
             [
                 "Definir roadmap incremental y validación automatizada (CI/lint/tests).",
-                "Alinear documentación y entrenamiento/hand-off si impacta operación.",
+                "Alinear documentación y entrenamiento/hand-off "
+                "si impacta operación.",
             ]
         )
         done.extend(
             [
                 "Criterios de aceptación aprobados y demostrables.",
-                "Evidencia de verificación (test/lint/dry-run) adjunta al PR.",
+                "Evidencia de verificación (test/lint/dry-run) "
+                "adjunta al PR.",
             ]
         )
 
@@ -322,11 +332,36 @@ def _render_comment(issue):
     return "\n".join(lines)
 
 
+def _last_comment_has_report(repo, number):
+    res = subprocess.run(
+        [
+            "gh",
+            "issue",
+            "view",
+            "-R",
+            repo,
+            str(number),
+            "--json",
+            "comments",
+            "--jq",
+            "(.comments[-1].body // \"\")",
+        ],
+        capture_output=True,
+        text=True,
+    )
+    if res.returncode != 0:
+        return False
+    body = (res.stdout or "").lstrip()
+    return body.startswith(COMMENT_PREFIX)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo", default="Ka0s-Klaus/ka0s")
     parser.add_argument("--limit", type=int, default=200)
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--skip-existing", action="store_true")
+    parser.add_argument("--only", action="append", type=int)
     args = parser.parse_args()
 
     ts = dt.datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -352,6 +387,10 @@ def main():
         ]
     )
 
+    if args.only:
+        wanted = set(args.only)
+        issues = [it for it in issues if it.get("number") in wanted]
+
     snapshot_path = os.path.join(out_dir, f"{ts}_open-issues.json")
     with open(snapshot_path, "w", encoding="utf-8") as f:
         json.dump(issues, f, ensure_ascii=False, indent=2)
@@ -367,16 +406,23 @@ def main():
     for issue in issues:
         number = issue["number"]
         title = issue.get("title") or ""
+        should_comment = True
+        if args.skip_existing and not args.dry_run:
+            if _last_comment_has_report(args.repo, number):
+                should_comment = False
+
+        report_lines.append(f"- #{number} {title} — {issue.get('url')}")
+
+        if not should_comment:
+            report_lines.append("  - Comentario: (omitido; ya existe informe como último comentario)")
+            continue
+
         comment = _render_comment(issue)
         safe_title = _safe_filename(title)[:80]
         comment_filename = f"{ts}_issue-{number}_{safe_title}_comment.md"
         comment_path = os.path.join(out_dir, comment_filename)
         with open(comment_path, "w", encoding="utf-8") as f:
             f.write(comment)
-
-        report_lines.append(
-            f"- #{number} {title} — {issue.get('url')}"
-        )
         report_lines.append(f"  - Comentario: `{comment_path}`")
 
         if not args.dry_run:
