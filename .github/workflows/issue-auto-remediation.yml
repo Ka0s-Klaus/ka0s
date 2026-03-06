@@ -1,0 +1,91 @@
+name: Ka0s Auto-Remediation Trigger
+
+on:
+  issues:
+    types: [labeled]
+
+env:
+  KAOS_MODULE: "[Ka0S] Auto-Remediation"
+  KAOS_CODE: ${{ github.run_id }}
+  KAOS_ACTOR: ${{ github.actor }}
+
+jobs:
+  route-remediation:
+    name: Route Remediation
+    runs-on: swarm-runners-scaleset
+    permissions:
+      actions: write
+      issues: write
+      contents: read
+    if: startsWith(github.event.label.name, 'auto-remediate:')
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+
+      - name: Identify Remediation Target
+        id: identify
+        run: |
+          LABEL_NAME="${{ github.event.label.name }}"
+          # Formato esperado: auto-remediate:<tipo>
+          REMEDIATION_TYPE=${LABEL_NAME#auto-remediate:}
+          
+          echo "Label detectado: $LABEL_NAME"
+          echo "Tipo de remediación: $REMEDIATION_TYPE"
+          
+          echo "remediation_type=$REMEDIATION_TYPE" >> $GITHUB_OUTPUT
+
+      - name: Trigger High Load Remediation
+        if: steps.identify.outputs.remediation_type == 'high-load'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Disparando workflow de remediación de carga alta..."
+          
+          # Extraer información del cuerpo de la issue si es posible (ej. nombre del nodo)
+          # Por ahora, asumimos un default o que el workflow hijo lo maneja.
+          # Para mejorar: parsear el body de la issue buscando "Node: xxx"
+          
+          NODE_NAME="k8-manager" # Default seguro
+          
+          gh workflow run remediation-high-load.yml \
+            --ref main \
+            -f node_name="$NODE_NAME" \
+            -f issue_number="${{ github.event.issue.number }}"
+
+      - name: Comment on Issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue comment ${{ github.event.issue.number }} \
+            --body "🤖 **Ka0s Auto-Healer** ha detectado la etiqueta \`${{ github.event.label.name }}\`.
+            
+            Iniciando protocolo de remediación... 
+            [Ver Ejecución](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+
+  handle-success:
+    name: Handle Success
+    needs: [route-remediation]
+    if: success()
+    runs-on: swarm-runners-scaleset
+    steps:
+      - run: echo "Routing completado."
+
+  handle-failure:
+    name: Handle Failure
+    needs: [route-remediation]
+    if: failure()
+    runs-on: swarm-runners-scaleset
+    permissions:
+      issues: write
+    steps:
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+      - name: Notify Failure
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue comment ${{ github.event.issue.number }} \
+            --body "❌ Error al intentar disparar la remediación automática. Revise los logs del workflow."
