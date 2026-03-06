@@ -5,28 +5,17 @@ metadata:
   namespace: kube-system
 spec:
   template:
-    metadata:
-      annotations:
-        kubectl.kubernetes.io/restartedAt: "2026-02-09T12:30:00Z"
     spec:
       containers:
       - name: metrics-server
         args:
-          - --cert-dir=/tmp
-          - --secure-port=4443
-          - --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
-          - --kubelet-use-node-status-port
-          - --metric-resolution=15s
-          - --kubelet-insecure-tls
-        livenessProbe:
-          httpGet:
-            path: /livez
-            port: 4443
-            scheme: HTTPS
-          initialDelaySeconds: 60
-        readinessProbe:
-          httpGet:
-            path: /readyz
-            port: 4443
-            scheme: HTTPS
-          initialDelaySeconds: 60
+        - --cert-dir=/tmp
+        - --secure-port=4443
+        - --kubelet-insecure-tls
+        - --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
+        - --kubelet-use-node-status-port
+        - --metric-resolution=15s
+        ports:
+        - containerPort: 4443
+          name: https
+          protocol: TCP
