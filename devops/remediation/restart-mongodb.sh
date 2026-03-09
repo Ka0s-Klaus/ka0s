@@ -17,6 +17,7 @@ export KUBECONFIG=/home/kaos/.kube/config
 sudo -E kubectl get pods -n mongo -o wide | tee -a "$LOG_FILE" || echo "Failed to get pods" | tee -a "$LOG_FILE"
 
 # 1.1 Check for Storage Issues (FailedMount)
+# Force update storage repair logic
 echo "Checking for storage issues..." | tee -a "$LOG_FILE"
 POD_NAME=$(sudo -E kubectl get pods -n mongo -l app=mongo -o jsonpath="{.items[0].metadata.name}")
 EVENTS=$(sudo -E kubectl get events -n mongo --field-selector involvedObject.name=$POD_NAME --sort-by='.lastTimestamp')
