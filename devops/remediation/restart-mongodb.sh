@@ -8,6 +8,7 @@
 set -e
 
 LOG_FILE="${1:-/tmp/ka0s-mongodb-restart.log}"
+mkdir -p "$(dirname "$LOG_FILE")"
 echo "Starting MongoDB Restart Protocol at $(date)" | tee -a "$LOG_FILE"
 
 # 1. Check current status
