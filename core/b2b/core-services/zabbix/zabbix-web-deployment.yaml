@@ -23,8 +23,27 @@ spec:
               set -eu
               mkdir -p /work
               cp -a /usr/share/zabbix/. /work/
-              find /work -type f \( -iname 'zabbix_logo*.png' -o -iname 'zabbix-logo*.png' \) -exec cp /branding/zabbix_logo.png {} \;
-              find /work -type f \( -iname 'zabbix_logo*.svg' -o -iname 'zabbix-logo*.svg' \) -exec cp /branding/zabbix_logo.svg {} \;
+              if [ -f /branding/zabbix_logo.png ]; then
+                mkdir -p /work/ui/assets/img /work/assets/img
+                cp /branding/zabbix_logo.png /work/ui/assets/img/zabbix_logo.png 2>/dev/null || true
+                cp /branding/zabbix_logo.png /work/ui/assets/img/zabbix-logo.png 2>/dev/null || true
+                cp /branding/zabbix_logo.png /work/assets/img/zabbix_logo.png 2>/dev/null || true
+                cp /branding/zabbix_logo.png /work/assets/img/zabbix-logo.png 2>/dev/null || true
+                find /work -type f \( -iname 'zabbix_logo*.png' -o -iname 'zabbix-logo*.png' \) -exec cp /branding/zabbix_logo.png {} \; 2>/dev/null || true
+              fi
+              if [ -f /branding/zabbix_logo.svg ]; then
+                mkdir -p /work/ui/assets/img /work/assets/img
+                cp /branding/zabbix_logo.svg /work/ui/assets/img/zabbix_logo.svg 2>/dev/null || true
+                cp /branding/zabbix_logo.svg /work/ui/assets/img/zabbix-logo.svg 2>/dev/null || true
+                cp /branding/zabbix_logo.svg /work/assets/img/zabbix_logo.svg 2>/dev/null || true
+                cp /branding/zabbix_logo.svg /work/assets/img/zabbix-logo.svg 2>/dev/null || true
+                find /work -type f \( -iname 'zabbix_logo*.svg' -o -iname 'zabbix-logo*.svg' \) -exec cp /branding/zabbix_logo.svg {} \; 2>/dev/null || true
+              fi
+              if [ -d /work/ui/assets/styles ]; then
+                for f in $(grep -RIl ".zabbix-logo-sidebar" /work/ui/assets/styles 2>/dev/null || true); do
+                  printf '\n.zabbix-logo-sidebar{background-image:url(../img/zabbix_logo.svg)!important;background-repeat:no-repeat!important;background-size:contain!important;}\n' >> "$f"
+                done
+              fi
           volumeMounts:
             - name: zabbix-web-root
               mountPath: /work
