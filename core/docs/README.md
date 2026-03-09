@@ -48,6 +48,7 @@ Si, parece increible pero hemos decidido en el equipo usar una terminología "es
 - [Módulo Ka0s Execution](./ka0s_execution/ka0s_execution.md)
 - [Módulo Ka0s GitHub → iTop Sync](./ka0s_github_sync_itop/ka0s_github_sync_itop.md)
 - [Módulo Ka0s HTML Lint](./ka0s_html/ka0s_html.md)
+- [Protocolo de Verificación de Incidencias (SOP)](./ka0s_incident_response/01_issue_verification.md)
 - [Módulo Ka0s Init](./ka0s_init/ka0s_init.md)
 - [Módulo Ka0s Inspector](./ka0s_inspector/ka0s_inspector.md)
 - [Módulo Ka0s Issue Templates](./ka0s_issue_templates/ka0s_issue_templates.md)
