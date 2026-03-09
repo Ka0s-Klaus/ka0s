@@ -49,6 +49,13 @@ spec:
                   *.css) printf '\n.zabbix-logo-sidebar{background-image:url(../img/zabbix_logo.png) !important;background-repeat:no-repeat !important;background-size:contain !important;background-position:left center !important;background-color:transparent !important;width:220px !important;height:56px !important;}\n.sidebar-compact .zabbix-logo-sidebar,.is-compact .zabbix-logo-sidebar,.sidebar-collapsed .zabbix-logo-sidebar,.zabbix-logo-sidebar-compact,.zabbix-logo-sidebar-mini{background-image:url(../img/zabbix_logo_compact.png) !important;background-repeat:no-repeat !important;background-size:contain !important;background-position:center center !important;background-color:transparent !important;width:56px !important;height:56px !important;}\n' >> "$f" ;;
                 esac
               done
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
           volumeMounts:
             - name: zabbix-web-root
               mountPath: /work
@@ -75,6 +82,13 @@ spec:
               value: "10051"
             - name: ZBX_SERVER_NAME
               value: "Ka0s NOC"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
           volumeMounts:
             - name: zabbix-web-root
               mountPath: /usr/share/zabbix
