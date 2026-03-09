@@ -39,11 +39,11 @@ spec:
                 cp /branding/zabbix_logo.svg /work/assets/img/zabbix-logo.svg 2>/dev/null || true
                 find /work -type f \( -iname 'zabbix_logo*.svg' -o -iname 'zabbix-logo*.svg' \) -exec cp /branding/zabbix_logo.svg {} \; 2>/dev/null || true
               fi
-              if [ -d /work/ui/assets/styles ]; then
-                for f in $(grep -RIl ".zabbix-logo-sidebar" /work/ui/assets/styles 2>/dev/null || true); do
-                  printf '\n.zabbix-logo-sidebar{background-image:url(../img/zabbix_logo.svg)!important;background-repeat:no-repeat!important;background-size:contain!important;}\n' >> "$f"
-                done
-              fi
+              grep -RIl "zabbix-logo-sidebar" /work 2>/dev/null | while IFS= read -r f; do
+                case "$f" in
+                  *.css) printf '\n.zabbix-logo-sidebar{background:url(../img/zabbix_logo.png) no-repeat left center !important;background-size:contain !important;}\n' >> "$f" ;;
+                esac
+              done
           volumeMounts:
             - name: zabbix-web-root
               mountPath: /work
