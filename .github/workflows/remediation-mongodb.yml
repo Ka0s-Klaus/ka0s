@@ -48,9 +48,9 @@ jobs:
           pass: ${{ secrets.KAOS_SSH_PASS }}
           use-sudo: true
           script-path: 'devops/remediation/restart-mongodb.sh'
-          script-args: '/tmp/${{ steps.filename.outputs.log_name }}'
-          remote-results-path: '/tmp/${{ steps.filename.outputs.log_name }}'
-          local-results-path: 'audit/incidents/${{ steps.filename.outputs.log_name }}'
+          script-args: '/tmp/${{ github.run_id }}/${{ steps.filename.outputs.log_name }}'
+          remote-results-path: '/tmp/${{ github.run_id }}'
+          local-results-path: 'audit/incidents/'
 
       - name: Install GH CLI
         uses: ./.github/actions/install-gh-cli
