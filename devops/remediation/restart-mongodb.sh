@@ -16,6 +16,73 @@ echo "Current MongoDB Status:" | tee -a "$LOG_FILE"
 export KUBECONFIG=/home/kaos/.kube/config
 sudo -E kubectl get pods -n mongo -o wide | tee -a "$LOG_FILE" || echo "Failed to get pods" | tee -a "$LOG_FILE"
 
+# 1.1 Check for Storage Issues (FailedMount)
+echo "Checking for storage issues..." | tee -a "$LOG_FILE"
+POD_NAME=$(sudo -E kubectl get pods -n mongo -l app=mongo -o jsonpath="{.items[0].metadata.name}")
+EVENTS=$(sudo -E kubectl get events -n mongo --field-selector involvedObject.name=$POD_NAME --sort-by='.lastTimestamp')
+
+if echo "$EVENTS" | grep -q "FailedMount"; then
+    echo "Detected FailedMount error. Attempting storage repair..." | tee -a "$LOG_FILE"
+    
+    # Extract the missing path from the event message (this is tricky with grep, assuming standard NFS error format)
+    # Message: "MountVolume.SetUp failed for volume ... mount.nfs: mounting 192.168.1.40:/mnt/k8s-storage/mongo-mongo-persistent-storage-mongo-0-pvc-94c06130-afd8-4fcf-9182-9ea5ecc3e2ea ... No such file or directory"
+    # We need the part after /mnt/k8s-storage/
+    
+    # Let's try to get the full export path first
+    FULL_PATH=$(echo "$EVENTS" | grep "mount.nfs: mounting" | grep "No such file or directory" | tail -n 1 | sed -n 's/.*:\/mnt\/k8s-storage\/\([^ ]*\).*/\1/p')
+    
+    if [ -z "$FULL_PATH" ]; then
+        echo "Could not extract NFS path from events. Manual intervention required." | tee -a "$LOG_FILE"
+    else
+        echo "Missing NFS Directory identified: $FULL_PATH" | tee -a "$LOG_FILE"
+        
+        # Create a repair pod manifest
+        cat <<EOF > /tmp/nfs-repair-pod.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nfs-repair
+  namespace: mongo
+spec:
+  restartPolicy: Never
+  containers:
+  - name: repair
+    image: busybox
+    command: ["/bin/sh", "-c"]
+    args:
+    - mkdir -p /mnt/nfs/$FULL_PATH && chmod 777 /mnt/nfs/$FULL_PATH && echo "Directory created"
+    volumeMounts:
+    - name: nfs-root
+      mountPath: /mnt/nfs
+  volumes:
+  - name: nfs-root
+    nfs:
+      server: 192.168.1.40
+      path: /mnt/k8s-storage
+EOF
+
+        echo "Applying NFS repair pod..." | tee -a "$LOG_FILE"
+        sudo -E kubectl apply -f /tmp/nfs-repair-pod.yaml
+        
+        # Wait for completion
+        echo "Waiting for repair to complete..." | tee -a "$LOG_FILE"
+        sudo -E kubectl wait --for=condition=Ready pod/nfs-repair -n mongo --timeout=30s || true
+        # Ideally wait for Succeeded phase, but wait condition=Ready is for running. 
+        # Busybox exits quickly, so let's just wait a bit or check logs.
+        sleep 5
+        
+        REPAIR_LOGS=$(sudo -E kubectl logs nfs-repair -n mongo)
+        echo "Repair Logs: $REPAIR_LOGS" | tee -a "$LOG_FILE"
+        
+        # Cleanup
+        sudo -E kubectl delete pod nfs-repair -n mongo --force --grace-period=0
+        
+        echo "Storage repair attempt completed." | tee -a "$LOG_FILE"
+    fi
+else
+    echo "No critical storage issues detected." | tee -a "$LOG_FILE"
+fi
+
 # 2. Restart Deployment
 echo "Restarting deployment/mongodb in namespace mongo..." | tee -a "$LOG_FILE"
 # Ensure KUBECONFIG is set properly or use explicit path if needed
