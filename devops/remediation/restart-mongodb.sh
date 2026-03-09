@@ -31,8 +31,14 @@ elif sudo -E kubectl get statefulset mongo -n mongo &>/dev/null; then
 elif sudo -E kubectl get deployment mongo -n mongo &>/dev/null; then
     RESOURCE_TYPE="deployment"
     RESOURCE_NAME="mongo"
+elif sudo -E kubectl get statefulset mongodb -n mongo &>/dev/null; then
+    RESOURCE_TYPE="statefulset"
+    RESOURCE_NAME="mongodb"
 else
     echo "Could not find mongodb deployment or statefulset" | tee -a "$LOG_FILE"
+    # List all resources in namespace to debug
+    echo "Listing all resources in namespace mongo:" | tee -a "$LOG_FILE"
+    sudo -E kubectl get all -n mongo | tee -a "$LOG_FILE"
     exit 1
 fi
 
