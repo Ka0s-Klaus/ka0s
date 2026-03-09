@@ -25,12 +25,18 @@ El análisis de los workflows del sistema revela los siguientes flujos de escrit
 | **`kaos.yml`** | `audit/kaos/` | Registra resúmenes de ejecución de los eventos principales del repositorio. |
 | **`execution.yml`** | `audit/execution/`, `audit/eresults/` | Guarda la salida y resultados de automatizaciones disparadas mediante Issues (enfoque GitOps). |
 | **`audit-cluster-status.yml`** | `audit/kube/` | Genera y almacena reportes de salud del clúster Kubernetes (`cluster-report-*.md`). |
+| **`cd-core-services.yml`** | `audit/deploy/` | Registra informes de despliegue (`deployment-report-*.md`) y validaciones post-deploy. |
+| **`remediation-*.yml`** | `audit/incidents/` | Logs de remediación automática (ej. reinicios de MongoDB). |
+| **`github-sync-itop.yml`** | `audit/sync/` | Trazabilidad de la sincronización de incidentes entre GitHub e iTop. |
 
 ## Estructura de Directorios
 
 La estructura interna de `audit/` refleja los diferentes módulos y tipos de evidencias recolectadas:
 
 - **inspector/**: Logs detallados de inspección.
+- **deploy/**: Evidencias de despliegues (CD) y validaciones de servicio.
+- **incidents/**: Logs de acciones de auto-remediación.
+- **sync/**: Registros de integración (GitHub <-> iTop).
 - **kaos/**: Eventos generales del sistema Ka0s.
 - **execution/** & **eresults/**: Resultados de ejecuciones GitOps.
 - **kube/**: Reportes de estado de Kubernetes.
