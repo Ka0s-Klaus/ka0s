@@ -21,11 +21,16 @@ Para mantener los workflows limpios (DRY - Don't Repeat Yourself), la lógica co
 
 ### 3. Scripts (`.github/scripts/`) - Las Herramientas
 Scripts auxiliares (Python, Bash) invocados por los workflows para tareas que exceden la complejidad de un comando de una línea en YAML.
-- Ejemplos: `generate-cluster-report.sh`, `update-docs-index.py`.
+- Ejemplos: `generate-cluster-report.sh`, `update-docs-index.py`, `github-sync-itop.py`.
 
-## 4. Estándares de Implementación
+### 4. Sincronización e Integración (Ka0s → iTop)
+El workflow `github-sync-itop.yml` gestiona la sincronización bidireccional de incidentes.
+- **Resiliencia**: Implementa lógica de reintento (`git fetch` + `rebase`) para manejar concurrencia alta cuando múltiples workflows intentan escribir logs de auditoría simultáneamente.
+- **Idempotencia**: Verifica el estado antes de crear tickets duplicados.
 
-### 4.1. Nomenclatura de Archivos de Salida
+## 5. Estándares de Implementación
+
+### 5.1. Nomenclatura de Archivos de Salida
 Para garantizar la trazabilidad y unicidad de los artefactos generados por los workflows (logs, reportes, estadísticas), se DEBE seguir estrictamente el siguiente formato de nomenclatura:
 
 `AAAAMMDD_HHMMSS_WorkflowID_nombre_del_servicio.extension`
