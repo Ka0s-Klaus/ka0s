@@ -1,0 +1,204 @@
+Starting MongoDB Restart Protocol at lun 09 mar 2026 12:31:35 UTC
+Current MongoDB Status:
+NAME      READY   STATUS    RESTARTS   AGE     IP              NODE         NOMINATED NODE   READINESS GATES
+mongo-0   1/1     Running   0          5m44s   172.16.209.27   k8-node-20   <none>           <none>
+EXECUTING OPTION A: Clean Reprovisioning due to missing NFS storage.
+Deleting PVC mongo-persistent-storage-mongo-0...
+Deleting Pod mongo-0 to trigger recreation...
+Waiting for StatefulSet to recreate resources...
+Waiting for rollout to complete...
+Rollout completed successfully.
+========================================================
+             DETAILED MONGODB SERVICE AUDIT             
+========================================================
+1. Resource Status:
+NAME          READY   STATUS    RESTARTS   AGE   IP              NODE         NOMINATED NODE   READINESS GATES
+pod/mongo-0   1/1     Running   0          22s   172.16.209.42   k8-node-20   <none>           <none>
+
+NAME            TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE     SELECTOR
+service/mongo   ClusterIP   10.102.57.180   <none>        27017/TCP   6d14h   app=mongo
+
+NAME                     READY   AGE     CONTAINERS   IMAGES
+statefulset.apps/mongo   1/1     6d14h   mongo        mongo:5.0
+
+2. PVC Status:
+NAME                               STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE   VOLUMEMODE
+mongo-persistent-storage-mongo-0   Bound    pvc-4946a18e-d5cd-4df7-884e-3fa97001ff1c   8Gi        RWO            nfs-client     <unset>                 22s   Filesystem
+Name:          mongo-persistent-storage-mongo-0
+Namespace:     mongo
+StorageClass:  nfs-client
+Status:        Bound
+Volume:        pvc-4946a18e-d5cd-4df7-884e-3fa97001ff1c
+Labels:        app=mongo
+Annotations:   pv.kubernetes.io/bind-completed: yes
+               pv.kubernetes.io/bound-by-controller: yes
+               volume.beta.kubernetes.io/storage-provisioner: k8s-sigs.io/nfs-subdir-external-provisioner
+               volume.kubernetes.io/storage-provisioner: k8s-sigs.io/nfs-subdir-external-provisioner
+Finalizers:    [kubernetes.io/pvc-protection]
+Capacity:      8Gi
+Access Modes:  RWO
+VolumeMode:    Filesystem
+Used By:       mongo-0
+Events:
+  Type    Reason                 Age   From                                                                                                                      Message
+  ----    ------                 ----  ----                                                                                                                      -------
+  Normal  ExternalProvisioning   23s   persistentvolume-controller                                                                                               Waiting for a volume to be created either by the external provisioner 'k8s-sigs.io/nfs-subdir-external-provisioner' or manually by the system administrator. If volume creation is delayed, please verify that the provisioner is running and correctly registered.
+  Normal  Provisioning           23s   k8s-sigs.io/nfs-subdir-external-provisioner_nfs-client-provisioner-7bc7b6d5dd-t9ntd_3a8b3fa4-f204-4d64-ab18-8de8b8cd9c6c  External provisioner is provisioning volume for claim "mongo/mongo-persistent-storage-mongo-0"
+  Normal  ProvisioningSucceeded  23s   k8s-sigs.io/nfs-subdir-external-provisioner_nfs-client-provisioner-7bc7b6d5dd-t9ntd_3a8b3fa4-f204-4d64-ab18-8de8b8cd9c6c  Successfully provisioned volume pvc-4946a18e-d5cd-4df7-884e-3fa97001ff1c
+
+3. Pod Description (mongo-0):
+Name:             mongo-0
+Namespace:        mongo
+Priority:         0
+Service Account:  default
+Node:             k8-node-20/192.168.1.20
+Start Time:       Mon, 09 Mar 2026 12:31:37 +0000
+Labels:           app=mongo
+                  apps.kubernetes.io/pod-index=0
+                  controller-revision-hash=mongo-784d55fbb4
+                  statefulset.kubernetes.io/pod-name=mongo-0
+Annotations:      cni.projectcalico.org/containerID: 72ec34ca545523eb42e17f20dfb54da21c7fa92fc716d41028c96d1df83f25a4
+                  cni.projectcalico.org/podIP: 172.16.209.42/32
+                  cni.projectcalico.org/podIPs: 172.16.209.42/32
+                  kubectl.kubernetes.io/restartedAt: 2026-03-09T12:16:15Z
+Status:           Running
+IP:               172.16.209.42
+IPs:
+  IP:           172.16.209.42
+Controlled By:  StatefulSet/mongo
+Containers:
+  mongo:
+    Container ID:   containerd://8b2b56aaa879b1d70cb81da31cf2e6c7085dfe61908b82016a97a921bb7a4b1b
+    Image:          mongo:5.0
+    Image ID:       docker.io/library/mongo@sha256:5e3e87afd24d75e722884d777c5713d254f7e88ba65381b5d6484f75a21b73e3
+    Port:           27017/TCP
+    Host Port:      0/TCP
+    State:          Running
+      Started:      Mon, 09 Mar 2026 12:31:40 +0000
+    Ready:          True
+    Restart Count:  0
+    Limits:
+      cpu:     1
+      memory:  2Gi
+    Requests:
+      cpu:      200m
+      memory:   512Mi
+    Liveness:   tcp-socket :27017 delay=10s timeout=1s period=20s #success=1 #failure=3
+    Readiness:  tcp-socket :27017 delay=5s timeout=1s period=10s #success=1 #failure=3
+    Startup:    tcp-socket :27017 delay=0s timeout=1s period=10s #success=1 #failure=30
+    Environment:
+      MONGO_INITDB_ROOT_USERNAME:  root
+      MONGO_INITDB_ROOT_PASSWORD:  <set to the key 'mongo-root-password' in secret 'mongo-secret'>  Optional: false
+    Mounts:
+      /data/db from mongo-persistent-storage (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-6x9d2 (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True 
+  Initialized                 True 
+  Ready                       True 
+  ContainersReady             True 
+  PodScheduled                True 
+Volumes:
+  mongo-persistent-storage:
+    Type:       PersistentVolumeClaim (a reference to a PersistentVolumeClaim in the same namespace)
+    ClaimName:  mongo-persistent-storage-mongo-0
+    ReadOnly:   false
+  kube-api-access-6x9d2:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   Burstable
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type     Reason            Age   From               Message
+  ----     ------            ----  ----               -------
+  Warning  FailedScheduling  22s   default-scheduler  0/4 nodes are available: pod has unbound immediate PersistentVolumeClaims. preemption: 0/4 nodes are available: 4 Preemption is not helpful for scheduling.
+  Normal   Scheduled         21s   default-scheduler  Successfully assigned mongo/mongo-0 to k8-node-20
+  Normal   Pulled            20s   kubelet            Container image "mongo:5.0" already present on machine
+  Normal   Created           20s   kubelet            Created container: mongo
+  Normal   Started           19s   kubelet            Started container mongo
+  Warning  Unhealthy         11s   kubelet            Startup probe failed: dial tcp 172.16.209.42:27017: connect: connection refused
+
+4. Recent Events:
+10m         Warning   Unhealthy               pod/mongo-0                                              Startup probe failed: dial tcp 172.16.209.45:27017: connect: connection refused
+6m8s        Normal    Provisioning            persistentvolumeclaim/mongo-persistent-storage-mongo-0   External provisioner is provisioning volume for claim "mongo/mongo-persistent-storage-mongo-0"
+6m8s        Normal    Killing                 pod/mongo-0                                              Stopping container mongo
+6m8s        Normal    ExternalProvisioning    persistentvolumeclaim/mongo-persistent-storage-mongo-0   Waiting for a volume to be created either by the external provisioner 'k8s-sigs.io/nfs-subdir-external-provisioner' or manually by the system administrator. If volume creation is delayed, please verify that the provisioner is running and correctly registered.
+6m8s        Normal    ProvisioningSucceeded   persistentvolumeclaim/mongo-persistent-storage-mongo-0   Successfully provisioned volume pvc-5a4aa66b-5d6c-43b5-94fa-fccd049184e9
+6m6s        Normal    Pulled                  pod/mongo-0                                              Container image "mongo:5.0" already present on machine
+6m6s        Normal    Created                 pod/mongo-0                                              Created container: mongo
+6m6s        Normal    Started                 pod/mongo-0                                              Started container mongo
+5m56s       Warning   Unhealthy               pod/mongo-0                                              Startup probe failed: dial tcp 172.16.209.27:27017: connect: connection refused
+23s         Normal    Killing                 pod/mongo-0                                              Stopping container mongo
+23s         Normal    SuccessfulCreate        statefulset/mongo                                        create Pod mongo-0 in StatefulSet mongo successful
+23s         Warning   FailedCreate            statefulset/mongo                                        create Pod mongo-0 in StatefulSet mongo failed error: pvc mongo-persistent-storage-mongo-0 is being deleted
+23s         Normal    SuccessfulCreate        statefulset/mongo                                        create Claim mongo-persistent-storage-mongo-0 Pod mongo-0 in StatefulSet mongo success
+23s         Normal    ProvisioningSucceeded   persistentvolumeclaim/mongo-persistent-storage-mongo-0   Successfully provisioned volume pvc-4946a18e-d5cd-4df7-884e-3fa97001ff1c
+23s         Normal    Provisioning            persistentvolumeclaim/mongo-persistent-storage-mongo-0   External provisioner is provisioning volume for claim "mongo/mongo-persistent-storage-mongo-0"
+23s         Normal    ExternalProvisioning    persistentvolumeclaim/mongo-persistent-storage-mongo-0   Waiting for a volume to be created either by the external provisioner 'k8s-sigs.io/nfs-subdir-external-provisioner' or manually by the system administrator. If volume creation is delayed, please verify that the provisioner is running and correctly registered.
+20s         Normal    Pulled                  pod/mongo-0                                              Container image "mongo:5.0" already present on machine
+20s         Normal    Created                 pod/mongo-0                                              Created container: mongo
+19s         Normal    Started                 pod/mongo-0                                              Started container mongo
+11s         Warning   Unhealthy               pod/mongo-0                                              Startup probe failed: dial tcp 172.16.209.42:27017: connect: connection refused
+
+5. Pod Logs (Tail 50):
+{"t":{"$date":"2026-03-09T12:31:46.393+00:00"},"s":"I",  "c":"FTDC",     "id":4784926, "ctx":"SignalHandler","msg":"Shutting down full-time data capture"}
+{"t":{"$date":"2026-03-09T12:31:46.393+00:00"},"s":"I",  "c":"FTDC",     "id":20626,   "ctx":"SignalHandler","msg":"Shutting down full-time diagnostic data capture"}
+{"t":{"$date":"2026-03-09T12:31:46.448+00:00"},"s":"I",  "c":"CONTROL",  "id":20565,   "ctx":"SignalHandler","msg":"Now exiting"}
+{"t":{"$date":"2026-03-09T12:31:46.449+00:00"},"s":"I",  "c":"CONTROL",  "id":23138,   "ctx":"SignalHandler","msg":"Shutting down","attr":{"exitCode":0}}
+
+MongoDB init process complete; ready for start up.
+
+{"t":{"$date":"2026-03-09T12:31:47.004+00:00"},"s":"I",  "c":"CONTROL",  "id":23285,   "ctx":"-","msg":"Automatically disabling TLS 1.0, to force-enable TLS 1.0 specify --sslDisabledProtocols 'none'"}
+{"t":{"$date":"2026-03-09T12:31:47.004+00:00"},"s":"I",  "c":"NETWORK",  "id":4915701, "ctx":"-","msg":"Initialized wire specification","attr":{"spec":{"incomingExternalClient":{"minWireVersion":0,"maxWireVersion":13},"incomingInternalClient":{"minWireVersion":0,"maxWireVersion":13},"outgoing":{"minWireVersion":0,"maxWireVersion":13},"isInternalClient":true}}}
+{"t":{"$date":"2026-03-09T12:31:47.007+00:00"},"s":"W",  "c":"ASIO",     "id":22601,   "ctx":"main","msg":"No TransportLayer configured during NetworkInterface startup"}
+{"t":{"$date":"2026-03-09T12:31:47.007+00:00"},"s":"I",  "c":"NETWORK",  "id":4648601, "ctx":"main","msg":"Implicit TCP FastOpen unavailable. If TCP FastOpen is required, set tcpFastOpenServer, tcpFastOpenClient, and tcpFastOpenQueueSize."}
+{"t":{"$date":"2026-03-09T12:31:47.009+00:00"},"s":"W",  "c":"ASIO",     "id":22601,   "ctx":"main","msg":"No TransportLayer configured during NetworkInterface startup"}
+{"t":{"$date":"2026-03-09T12:31:47.009+00:00"},"s":"I",  "c":"REPL",     "id":5123008, "ctx":"main","msg":"Successfully registered PrimaryOnlyService","attr":{"service":"TenantMigrationDonorService","ns":"config.tenantMigrationDonors"}}
+{"t":{"$date":"2026-03-09T12:31:47.009+00:00"},"s":"I",  "c":"REPL",     "id":5123008, "ctx":"main","msg":"Successfully registered PrimaryOnlyService","attr":{"service":"TenantMigrationRecipientService","ns":"config.tenantMigrationRecipients"}}
+{"t":{"$date":"2026-03-09T12:31:47.009+00:00"},"s":"I",  "c":"CONTROL",  "id":5945603, "ctx":"main","msg":"Multi threading initialized"}
+{"t":{"$date":"2026-03-09T12:31:47.010+00:00"},"s":"I",  "c":"CONTROL",  "id":4615611, "ctx":"initandlisten","msg":"MongoDB starting","attr":{"pid":1,"port":27017,"dbPath":"/data/db","architecture":"64-bit","host":"mongo-0"}}
+{"t":{"$date":"2026-03-09T12:31:47.010+00:00"},"s":"W",  "c":"CONTROL",  "id":20720,   "ctx":"initandlisten","msg":"Memory available to mongo process is less than total system memory","attr":{"availableMemSizeMB":2048,"systemMemSizeMB":31040}}
+{"t":{"$date":"2026-03-09T12:31:47.010+00:00"},"s":"I",  "c":"CONTROL",  "id":23403,   "ctx":"initandlisten","msg":"Build Info","attr":{"buildInfo":{"version":"5.0.32","gitVersion":"ba92303e18e7ed4701572aa15acd161c97796f2f","openSSLVersion":"OpenSSL 1.1.1f  31 Mar 2020","modules":[],"allocator":"tcmalloc","environment":{"distmod":"ubuntu2004","distarch":"x86_64","target_arch":"x86_64"}}}}
+{"t":{"$date":"2026-03-09T12:31:47.010+00:00"},"s":"I",  "c":"CONTROL",  "id":51765,   "ctx":"initandlisten","msg":"Operating System","attr":{"os":{"name":"Ubuntu","version":"20.04"}}}
+{"t":{"$date":"2026-03-09T12:31:47.010+00:00"},"s":"I",  "c":"CONTROL",  "id":21951,   "ctx":"initandlisten","msg":"Options set by command line","attr":{"options":{"net":{"bindIp":"*"},"security":{"authorization":"enabled"}}}}
+{"t":{"$date":"2026-03-09T12:31:47.013+00:00"},"s":"I",  "c":"STORAGE",  "id":22270,   "ctx":"initandlisten","msg":"Storage engine to use detected by data files","attr":{"dbpath":"/data/db","storageEngine":"wiredTiger"}}
+{"t":{"$date":"2026-03-09T12:31:47.014+00:00"},"s":"I",  "c":"STORAGE",  "id":22315,   "ctx":"initandlisten","msg":"Opening WiredTiger","attr":{"config":"create,cache_size=512M,session_max=33000,eviction=(threads_min=4,threads_max=4),config_base=false,statistics=(fast),log=(enabled=true,archive=true,path=journal,compressor=snappy),builtin_extension_config=(zstd=(compression_level=6)),file_manager=(close_idle_time=600,close_scan_interval=10,close_handle_minimum=2000),statistics_log=(wait=0),verbose=[recovery_progress,checkpoint_progress,compact_progress],"}}
+{"t":{"$date":"2026-03-09T12:31:47.837+00:00"},"s":"I",  "c":"STORAGE",  "id":22430,   "ctx":"initandlisten","msg":"WiredTiger message","attr":{"message":"[1773059507:837348][1:0x7b9d8b497c80], txn-recover: [WT_VERB_RECOVERY_PROGRESS] Recovering log 1 through 2"}}
+{"t":{"$date":"2026-03-09T12:31:48.845+00:00"},"s":"I",  "c":"STORAGE",  "id":22430,   "ctx":"initandlisten","msg":"WiredTiger message","attr":{"message":"[1773059508:845429][1:0x7b9d8b497c80], txn-recover: [WT_VERB_RECOVERY_PROGRESS] Recovering log 2 through 2"}}
+{"t":{"$date":"2026-03-09T12:31:49.881+00:00"},"s":"I",  "c":"STORAGE",  "id":22430,   "ctx":"initandlisten","msg":"WiredTiger message","attr":{"message":"[1773059509:881973][1:0x7b9d8b497c80], txn-recover: [WT_VERB_RECOVERY_ALL] Main recovery loop: starting at 1/31872 to 2/256"}}
+{"t":{"$date":"2026-03-09T12:31:49.969+00:00"},"s":"I",  "c":"STORAGE",  "id":22430,   "ctx":"initandlisten","msg":"WiredTiger message","attr":{"message":"[1773059509:969887][1:0x7b9d8b497c80], txn-recover: [WT_VERB_RECOVERY_PROGRESS] Recovering log 1 through 2"}}
+{"t":{"$date":"2026-03-09T12:31:50.139+00:00"},"s":"I",  "c":"STORAGE",  "id":22430,   "ctx":"initandlisten","msg":"WiredTiger message","attr":{"message":"[1773059510:139355][1:0x7b9d8b497c80], txn-recover: [WT_VERB_RECOVERY_PROGRESS] Recovering log 2 through 2"}}
+{"t":{"$date":"2026-03-09T12:31:50.184+00:00"},"s":"I",  "c":"STORAGE",  "id":22430,   "ctx":"initandlisten","msg":"WiredTiger message","attr":{"message":"[1773059510:184156][1:0x7b9d8b497c80], txn-recover: [WT_VERB_RECOVERY_PROGRESS] recovery log replay has successfully finished and ran for 2347 milliseconds"}}
+{"t":{"$date":"2026-03-09T12:31:50.184+00:00"},"s":"I",  "c":"STORAGE",  "id":22430,   "ctx":"initandlisten","msg":"WiredTiger message","attr":{"message":"[1773059510:184294][1:0x7b9d8b497c80], txn-recover: [WT_VERB_RECOVERY_ALL] Set global recovery timestamp: (0, 0)"}}
+{"t":{"$date":"2026-03-09T12:31:50.184+00:00"},"s":"I",  "c":"STORAGE",  "id":22430,   "ctx":"initandlisten","msg":"WiredTiger message","attr":{"message":"[1773059510:184326][1:0x7b9d8b497c80], txn-recover: [WT_VERB_RECOVERY_ALL] Set global oldest timestamp: (0, 0)"}}
+{"t":{"$date":"2026-03-09T12:31:50.184+00:00"},"s":"I",  "c":"STORAGE",  "id":22430,   "ctx":"initandlisten","msg":"WiredTiger message","attr":{"message":"[1773059510:184623][1:0x7b9d8b497c80], txn-recover: [WT_VERB_RECOVERY_PROGRESS] recovery rollback to stable has successfully finished and ran for 0 milliseconds"}}
+{"t":{"$date":"2026-03-09T12:31:50.187+00:00"},"s":"I",  "c":"STORAGE",  "id":22430,   "ctx":"initandlisten","msg":"WiredTiger message","attr":{"message":"[1773059510:187267][1:0x7b9d8b497c80], WT_SESSION.checkpoint: [WT_VERB_CHECKPOINT_PROGRESS] saving checkpoint snapshot min: 1, snapshot max: 1 snapshot count: 0, oldest timestamp: (0, 0) , meta checkpoint timestamp: (0, 0) base write gen: 7"}}
+{"t":{"$date":"2026-03-09T12:31:50.471+00:00"},"s":"I",  "c":"STORAGE",  "id":22430,   "ctx":"initandlisten","msg":"WiredTiger message","attr":{"message":"[1773059510:471546][1:0x7b9d8b497c80], txn-recover: [WT_VERB_RECOVERY_PROGRESS] recovery checkpoint has successfully finished and ran for 284 milliseconds"}}
+{"t":{"$date":"2026-03-09T12:31:50.471+00:00"},"s":"I",  "c":"STORAGE",  "id":22430,   "ctx":"initandlisten","msg":"WiredTiger message","attr":{"message":"[1773059510:471659][1:0x7b9d8b497c80], txn-recover: [WT_VERB_RECOVERY_PROGRESS] recovery was completed successfully and took 2634ms, including 2347ms for the log replay, 0ms for the rollback to stable, and 284ms for the checkpoint."}}
+{"t":{"$date":"2026-03-09T12:31:50.516+00:00"},"s":"I",  "c":"STORAGE",  "id":4795906, "ctx":"initandlisten","msg":"WiredTiger opened","attr":{"durationMillis":3502}}
+{"t":{"$date":"2026-03-09T12:31:50.516+00:00"},"s":"I",  "c":"RECOVERY", "id":23987,   "ctx":"initandlisten","msg":"WiredTiger recoveryTimestamp","attr":{"recoveryTimestamp":{"$timestamp":{"t":0,"i":0}}}}
+{"t":{"$date":"2026-03-09T12:31:50.584+00:00"},"s":"I",  "c":"STORAGE",  "id":22262,   "ctx":"initandlisten","msg":"Timestamp monitor starting"}
+{"t":{"$date":"2026-03-09T12:31:50.718+00:00"},"s":"W",  "c":"CONTROL",  "id":22184,   "ctx":"initandlisten","msg":"Soft rlimits for open file descriptors too low","attr":{"currentValue":1024,"recommendedMinimum":64000},"tags":["startupWarnings"]}
+{"t":{"$date":"2026-03-09T12:31:50.806+00:00"},"s":"I",  "c":"NETWORK",  "id":4915702, "ctx":"initandlisten","msg":"Updated wire specification","attr":{"oldSpec":{"incomingExternalClient":{"minWireVersion":0,"maxWireVersion":13},"incomingInternalClient":{"minWireVersion":0,"maxWireVersion":13},"outgoing":{"minWireVersion":0,"maxWireVersion":13},"isInternalClient":true},"newSpec":{"incomingExternalClient":{"minWireVersion":0,"maxWireVersion":13},"incomingInternalClient":{"minWireVersion":13,"maxWireVersion":13},"outgoing":{"minWireVersion":13,"maxWireVersion":13},"isInternalClient":true}}}
+{"t":{"$date":"2026-03-09T12:31:50.807+00:00"},"s":"I",  "c":"STORAGE",  "id":5071100, "ctx":"initandlisten","msg":"Clearing temp directory"}
+{"t":{"$date":"2026-03-09T12:31:50.808+00:00"},"s":"I",  "c":"CONTROL",  "id":20536,   "ctx":"initandlisten","msg":"Flow Control is enabled on this deployment"}
+{"t":{"$date":"2026-03-09T12:31:50.809+00:00"},"s":"I",  "c":"FTDC",     "id":20625,   "ctx":"initandlisten","msg":"Initializing full-time diagnostic data capture","attr":{"dataDirectory":"/data/db/diagnostic.data"}}
+{"t":{"$date":"2026-03-09T12:31:50.942+00:00"},"s":"I",  "c":"REPL",     "id":6015317, "ctx":"initandlisten","msg":"Setting new configuration state","attr":{"newState":"ConfigReplicationDisabled","oldState":"ConfigPreStart"}}
+{"t":{"$date":"2026-03-09T12:31:50.946+00:00"},"s":"I",  "c":"NETWORK",  "id":23015,   "ctx":"listener","msg":"Listening on","attr":{"address":"/tmp/mongodb-27017.sock"}}
+{"t":{"$date":"2026-03-09T12:31:50.946+00:00"},"s":"I",  "c":"NETWORK",  "id":23015,   "ctx":"listener","msg":"Listening on","attr":{"address":"0.0.0.0"}}
+{"t":{"$date":"2026-03-09T12:31:50.946+00:00"},"s":"I",  "c":"NETWORK",  "id":23016,   "ctx":"listener","msg":"Waiting for connections","attr":{"port":27017,"ssl":"off"}}
+{"t":{"$date":"2026-03-09T12:31:58.547+00:00"},"s":"I",  "c":"NETWORK",  "id":22943,   "ctx":"listener","msg":"Connection accepted","attr":{"remote":"192.168.1.20:49308","uuid":"d6dae267-59fb-4f7e-8007-469d9eb5606a","connectionId":1,"connectionCount":1}}
+{"t":{"$date":"2026-03-09T12:31:58.548+00:00"},"s":"I",  "c":"NETWORK",  "id":22944,   "ctx":"conn1","msg":"Connection ended","attr":{"remote":"192.168.1.20:49308","uuid":"d6dae267-59fb-4f7e-8007-469d9eb5606a","connectionId":1,"connectionCount":0}}
+{"t":{"$date":"2026-03-09T12:31:58.550+00:00"},"s":"I",  "c":"NETWORK",  "id":22943,   "ctx":"listener","msg":"Connection accepted","attr":{"remote":"192.168.1.20:49324","uuid":"3d00602c-02ca-4002-8b1e-2a6913d436eb","connectionId":2,"connectionCount":1}}
+{"t":{"$date":"2026-03-09T12:31:58.551+00:00"},"s":"I",  "c":"NETWORK",  "id":22944,   "ctx":"conn2","msg":"Connection ended","attr":{"remote":"192.168.1.20:49324","uuid":"3d00602c-02ca-4002-8b1e-2a6913d436eb","connectionId":2,"connectionCount":0}}
+
+6. Connectivity Verification:
+SUCCESS: MongoDB is reachable on port 27017.
+========================================================
+Audit Completed.
