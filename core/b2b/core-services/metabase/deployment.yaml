@@ -11,11 +11,21 @@ spec:
   selector:
     matchLabels:
       app: metabase
+      managed-by: ka0s-core-cd
   template:
     metadata:
       labels:
         app: metabase
+        managed-by: ka0s-core-cd
     spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            preference:
+              matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: DoesNotExist
       containers:
       - name: metabase
         image: metabase/metabase:v0.58.8
@@ -52,14 +62,6 @@ spec:
               key: DB_HOST
         - name: MB_SITE_URL
           value: "https://metabase.ka0s.io"
-        affinity:
-          nodeAffinity:
-            preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 100
-              preference:
-                matchExpressions:
-                - key: node-role.kubernetes.io/control-plane
-                  operator: DoesNotExist
         resources:
           limits:
             memory: "2Gi"
@@ -67,4 +69,26 @@ spec:
           requests:
             memory: "1Gi"
             cpu: "500m"
-        
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 10
+          periodSeconds: 20
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          periodSeconds: 10
+          failureThreshold: 120
+          timeoutSeconds: 5
