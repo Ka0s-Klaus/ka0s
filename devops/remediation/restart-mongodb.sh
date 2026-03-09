@@ -17,11 +17,11 @@ export KUBECONFIG=/home/kaos/.kube/config
 sudo -E kubectl get pods -n mongo -o wide | tee -a "$LOG_FILE" || echo "Failed to get pods" | tee -a "$LOG_FILE"
 
 # 2. Restart Deployment
-echo "Restarting deployment/mongodb in namespace mongo..." | tee -a "$LOG_FILE"
+echo "Restarting deployment/mongo in namespace mongo..." | tee -a "$LOG_FILE"
 # Ensure KUBECONFIG is set properly or use explicit path if needed
 echo "KUBECONFIG set to $KUBECONFIG" | tee -a "$LOG_FILE"
 # Try with sudo if permission denied
-if sudo -E kubectl rollout restart deployment/mongodb -n mongo; then
+if sudo -E kubectl rollout restart deployment/mongo -n mongo; then
     echo "Rollout restart triggered successfully." | tee -a "$LOG_FILE"
 else
     echo "Failed to trigger rollout restart." | tee -a "$LOG_FILE"
@@ -30,7 +30,7 @@ fi
 
 # 3. Wait for readiness
 echo "Waiting for rollout to complete..." | tee -a "$LOG_FILE"
-if sudo -E kubectl rollout status deployment/mongodb -n mongo --timeout=120s; then
+if sudo -E kubectl rollout status deployment/mongo -n mongo --timeout=120s; then
     echo "Rollout completed successfully." | tee -a "$LOG_FILE"
 else
     echo "Rollout timed out or failed." | tee -a "$LOG_FILE"
