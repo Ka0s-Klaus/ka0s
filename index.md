@@ -55,6 +55,7 @@ Bienvenido al centro de documentación del proyecto Ka0s. A continuación encont
 
 ## 📂 Otros / Sin Categoría
 *   [Módulo Ka0s ITIL Sync](core/docs/ka0s_itil_sync/ka0s_itil_sync.md)
+*   [Ka0s Remediation Module](core/docs/ka0s_remediation/ka0s_remediation.md)
 *   [Ka0s Remediation: High CPU/Load Workflow](core/docs/ka0s_remediation_high_load/01_concept.md)
 *   [Documentación del Módulo: Ka0s Self Service Portal](core/docs/ka0s_self_service_portal/ka0s_self_service_portal.md)
 
