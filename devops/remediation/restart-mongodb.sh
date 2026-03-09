@@ -16,6 +16,9 @@ kubectl get pods -n mongo -o wide | tee -a "$LOG_FILE" || echo "Failed to get po
 
 # 2. Restart Deployment
 echo "Restarting deployment/mongo in namespace mongo..." | tee -a "$LOG_FILE"
+# Ensure KUBECONFIG is set properly or use explicit path if needed
+export KUBECONFIG=/etc/kubernetes/admin.conf
+sudo chmod 644 /etc/kubernetes/admin.conf
 if kubectl rollout restart deployment/mongo -n mongo; then
     echo "Rollout restart triggered successfully." | tee -a "$LOG_FILE"
 else
