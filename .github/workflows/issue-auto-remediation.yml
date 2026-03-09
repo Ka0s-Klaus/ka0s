@@ -55,6 +55,16 @@ jobs:
             -f node_name="$NODE_NAME" \
             -f issue_number="${{ github.event.issue.number }}"
 
+      - name: Trigger MongoDB Remediation
+        if: steps.identify.outputs.remediation_type == 'mongodb-connection'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Disparando workflow de remediación de MongoDB..."
+          gh workflow run remediation-mongodb.yml \
+            --ref main \
+            -f issue_number="${{ github.event.issue.number }}"
+
       - name: Comment on Issue
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

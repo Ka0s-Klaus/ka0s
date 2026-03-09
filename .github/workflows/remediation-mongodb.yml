@@ -1,0 +1,136 @@
+name: Ka0s Remediation - MongoDB Connection
+on:
+  workflow_dispatch:
+    inputs:
+      node_name:
+        description: 'Nombre del nodo afectado (opcional)'
+        required: false
+        default: 'k8-manager'
+      issue_number:
+        description: 'ID de la Issue a actualizar'
+        required: true
+
+permissions:
+  contents: write
+  issues: write
+
+env:
+  KAOS_MODULE: "[Ka0S] Remediation MongoDB"
+  KAOS_CODE: ${{ github.run_id }}
+  KAOS_ACTOR: ${{ github.actor }}
+
+jobs:
+  remediate-mongodb:
+    name: Remediate MongoDB
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate Log Filename
+        id: filename
+        run: |
+          TIMESTAMP=$(date +'%Y%m%d_%H%M%S')
+          RUN_ID="${{ github.run_id }}"
+          INCIDENT="${{ inputs.issue_number }}"
+          LOG_NAME="mongodb_restart_${TIMESTAMP}_${RUN_ID}_${INCIDENT}.log"
+          echo "log_name=$LOG_NAME" >> $GITHUB_OUTPUT
+
+      - name: Execute Remediation Script (SSH)
+        uses: ./.github/actions/ssh-exec
+        with:
+          host: ${{ secrets.KAOS_SSH_HOST_1 }} 
+          username: ${{ secrets.KAOS_SSH_USER }}
+          key: ${{ secrets.KAOS_SSH_KEY_PRIV }}
+          port: ${{ secrets.KAOS_SSH_PORT_1 }}
+          pass: ${{ secrets.KAOS_SSH_PASS }}
+          use-sudo: true
+          script-path: 'devops/remediation/restart-mongodb.sh'
+          script-args: '/tmp/${{ steps.filename.outputs.log_name }}'
+          remote-results-path: '/tmp/${{ steps.filename.outputs.log_name }}'
+          local-results-path: 'audit/incidents/${{ steps.filename.outputs.log_name }}'
+
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+
+      - name: Comment on Issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          LOG_PATH="audit/incidents/${{ steps.filename.outputs.log_name }}"
+          COMMENT_FILE="remediation_comment.md"
+          
+          echo "### 🛠️ Protocolo de Auto-Remediación MongoDB Ejecutado" > $COMMENT_FILE
+          echo "**Workflow**: ${{ github.workflow }}" >> $COMMENT_FILE
+          echo "**Acción**: Reinicio del Deployment de MongoDB (Rollout Restart)" >> $COMMENT_FILE
+          echo "**Log**: \`${{ steps.filename.outputs.log_name }}\`" >> $COMMENT_FILE
+          echo "" >> $COMMENT_FILE
+          echo "<details>" >> $COMMENT_FILE
+          echo "<summary>Ver logs de remediación</summary>" >> $COMMENT_FILE
+          echo "" >> $COMMENT_FILE
+          echo "\`\`\`bash" >> $COMMENT_FILE
+          if [ -f "$LOG_PATH" ]; then
+             cat "$LOG_PATH" >> $COMMENT_FILE
+          else
+             echo "Error: Log file not retrieved." >> $COMMENT_FILE
+          fi
+          echo "\`\`\`" >> $COMMENT_FILE
+          echo "</details>" >> $COMMENT_FILE
+          
+          gh issue comment ${{ inputs.issue_number }} --body-file $COMMENT_FILE
+
+      - name: Commit Log Evidence
+        if: success()
+        run: |
+          git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
+          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
+          git pull origin ${{ github.ref }}
+          git add audit/incidents/${{ steps.filename.outputs.log_name }}
+          if ! git diff --staged --quiet; then
+            git commit -m "[Ka0S] Evidence for Issue #${{ inputs.issue_number }} - MongoDB Remediation"
+            git push origin ${{ github.ref }}
+          else
+             echo "No changes to commit."
+          fi
+
+  handle-failure:
+    name: Handle Failure
+    needs: [remediate-mongodb]
+    if: failure()
+    runs-on: swarm-runners-scaleset
+    permissions:
+      issues: write
+    steps:
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+      - name: Notify Failure
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue comment ${{ inputs.issue_number }} \
+            --body "❌ Error crítico al ejecutar la remediación de MongoDB. Se requiere intervención manual."
+
+  end-workflow:
+    needs: [remediate-mongodb, handle-failure]
+    if: always()
+    runs-on: swarm-runners-scaleset
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+      - name: Trigger Inspector
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run inspector.yml \
+            --ref main \
+            -f workflow_name="${{ github.workflow }}" \
+            -f run_id="${{ github.run_id }}" \
+            -f status="${{ job.status }}" \
+            -f kaos-user-start="${{ github.triggering_actor }}"
