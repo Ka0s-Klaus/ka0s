@@ -17,11 +17,28 @@ export KUBECONFIG=/home/kaos/.kube/config
 sudo -E kubectl get pods -n mongo -o wide | tee -a "$LOG_FILE" || echo "Failed to get pods" | tee -a "$LOG_FILE"
 
 # 2. Restart Deployment
-echo "Restarting deployment/mongo in namespace mongo..." | tee -a "$LOG_FILE"
+echo "Restarting deployment/mongodb in namespace mongo..." | tee -a "$LOG_FILE"
 # Ensure KUBECONFIG is set properly or use explicit path if needed
 echo "KUBECONFIG set to $KUBECONFIG" | tee -a "$LOG_FILE"
 # Try with sudo if permission denied
-if sudo -E kubectl rollout restart deployment/mongo -n mongo; then
+# Check if it is a deployment or a statefulset
+if sudo -E kubectl get deployment mongodb -n mongo &>/dev/null; then
+    RESOURCE_TYPE="deployment"
+    RESOURCE_NAME="mongodb"
+elif sudo -E kubectl get statefulset mongo -n mongo &>/dev/null; then
+    RESOURCE_TYPE="statefulset"
+    RESOURCE_NAME="mongo"
+elif sudo -E kubectl get deployment mongo -n mongo &>/dev/null; then
+    RESOURCE_TYPE="deployment"
+    RESOURCE_NAME="mongo"
+else
+    echo "Could not find mongodb deployment or statefulset" | tee -a "$LOG_FILE"
+    exit 1
+fi
+
+echo "Detected resource: $RESOURCE_TYPE/$RESOURCE_NAME" | tee -a "$LOG_FILE"
+
+if sudo -E kubectl rollout restart $RESOURCE_TYPE/$RESOURCE_NAME -n mongo; then
     echo "Rollout restart triggered successfully." | tee -a "$LOG_FILE"
 else
     echo "Failed to trigger rollout restart." | tee -a "$LOG_FILE"
@@ -30,7 +47,7 @@ fi
 
 # 3. Wait for readiness
 echo "Waiting for rollout to complete..." | tee -a "$LOG_FILE"
-if sudo -E kubectl rollout status deployment/mongo -n mongo --timeout=120s; then
+if sudo -E kubectl rollout status $RESOURCE_TYPE/$RESOURCE_NAME -n mongo --timeout=120s; then
     echo "Rollout completed successfully." | tee -a "$LOG_FILE"
 else
     echo "Rollout timed out or failed." | tee -a "$LOG_FILE"
