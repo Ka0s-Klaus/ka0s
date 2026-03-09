@@ -1,7 +1,5 @@
 # Todo acerca de Ka0s
 
-![Roadmap 2025](imgs/ka0s-roadmap.png)
-
 > - La metodología Kaizen es una filosofía de mejora continua que se compone de dos sinogramas de escritura japonesa que significan «bueno» y «cambio», y se refiere a un sistema en el que las pequeñas pero constantes mejoras acumulan grandes beneficios a largo plazo.
 
 ## Terminología
@@ -81,7 +79,10 @@ Si, parece increible pero hemos decidido en el equipo usar una terminología "es
 ## Releases
 
 >- [Ka0s - Klaus](./ka0s_release/kaos-klaus.md)
->- Ka0s - Proyecto David (24102025)
+>- [Ka0s - David (24102025) "Cooming Soon"]
+>- [Ka0s - Heidi (01032026) "Cooming Soon"]
+>- [Ka0s - Samael (22052026) "Cooming Soon"]
+
 
 ## Nuestra metodología
 
