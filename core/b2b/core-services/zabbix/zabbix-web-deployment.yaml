@@ -31,6 +31,11 @@ spec:
                 cp /branding/zabbix_logo.png /work/assets/img/zabbix-logo.png 2>/dev/null || true
                 find /work -type f \( -iname 'zabbix_logo*.png' -o -iname 'zabbix-logo*.png' \) -exec cp /branding/zabbix_logo.png {} \; 2>/dev/null || true
               fi
+              if [ -f /branding/zabbix_logo_compact.png ]; then
+                mkdir -p /work/ui/assets/img /work/assets/img
+                cp /branding/zabbix_logo_compact.png /work/ui/assets/img/zabbix_logo_compact.png 2>/dev/null || true
+                cp /branding/zabbix_logo_compact.png /work/assets/img/zabbix_logo_compact.png 2>/dev/null || true
+              fi
               if [ -f /branding/zabbix_logo.svg ]; then
                 mkdir -p /work/ui/assets/img /work/assets/img
                 cp /branding/zabbix_logo.svg /work/ui/assets/img/zabbix_logo.svg 2>/dev/null || true
@@ -41,7 +46,7 @@ spec:
               fi
               grep -RIl "zabbix-logo-sidebar" /work 2>/dev/null | while IFS= read -r f; do
                 case "$f" in
-                  *.css) printf '\n.zabbix-logo-sidebar{background:url(../img/zabbix_logo.png) no-repeat left center !important;background-size:contain !important;}\n' >> "$f" ;;
+                  *.css) printf '\n.zabbix-logo-sidebar{background-image:url(../img/zabbix_logo.png) !important;background-repeat:no-repeat !important;background-size:contain !important;background-position:left center !important;background-color:transparent !important;width:220px !important;height:56px !important;}\n.sidebar-compact .zabbix-logo-sidebar,.is-compact .zabbix-logo-sidebar,.sidebar-collapsed .zabbix-logo-sidebar,.zabbix-logo-sidebar-compact,.zabbix-logo-sidebar-mini{background-image:url(../img/zabbix_logo_compact.png) !important;background-repeat:no-repeat !important;background-size:contain !important;background-position:center center !important;background-color:transparent !important;width:56px !important;height:56px !important;}\n' >> "$f" ;;
                 esac
               done
           volumeMounts:
