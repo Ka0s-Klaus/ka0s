@@ -44,7 +44,7 @@ echo "Verifying MongoDB connection..." | tee -a "$LOG_FILE"
 # Assuming we can run a quick check inside the cluster or from manager node
 # If netcat is available: nc -z -v mongo.mongo.svc.cluster.local 27017
 # Or create a temporary pod to check connectivity
-if sudo kubectl run -it --rm --restart=Never check-mongo --image=busybox -- nc -z -v mongo.mongo.svc.cluster.local 27017; then
+if sudo -E kubectl run -it --rm --restart=Never check-mongo --image=busybox -- nc -z -v mongo.mongo.svc.cluster.local 27017; then
     echo "Connection verified: Port 27017 open." | tee -a "$LOG_FILE"
 else
     echo "Warning: Connection verification failed." | tee -a "$LOG_FILE"
