@@ -120,12 +120,13 @@ jobs:
             git commit -m "chore(ka0s): audit sync for issue #${{ github.event.issue.number }} run ${{ env.KAOS_CODE }} [skip ci]"
             pushed=false
             for i in 1 2 3 4 5; do
+              git fetch origin ${{ github.ref_name }}
+              git rebase origin/${{ github.ref_name }}
               if git push origin HEAD:${{ github.ref_name }}; then
                 pushed=true
                 break
               fi
               echo "Push fallido (intento $i). Reintentando tras rebase..."
-              git pull --rebase origin ${{ github.ref_name }}
               sleep $((i*2))
             done
             if [ "$pushed" != "true" ]; then
