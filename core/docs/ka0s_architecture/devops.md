@@ -23,6 +23,13 @@ Scripts que operan a nivel de Sistema Operativo (Ubuntu/Linux) en los nodos:
 #### c. iTop (`devops/core/itop/`)
 Scripts específicos para la integración con la CMDB iTop (ej. creación de usuarios API).
 
+### 2. Remediation (`devops/remediation/`)
+Scripts de **auto-recuperación** diseñados para ser ejecutados automáticamente por workflows de respuesta a incidentes.
+- **Enfoque**: Idempotentes y defensivos. Intentan restaurar el servicio sin intervención humana, pero fallan de forma segura si detectan problemas graves (ej. pérdida de datos).
+- **Ejemplos**:
+    - `restart-mongodb.sh`: Diagnostica y recupera el clúster de MongoDB. Capaz de reiniciar Pods o reprovisionar almacenamiento corrupto (PVCs).
+    - `check-high-load.sh`: Análisis de carga del nodo.
+
 ## Patrón de Ejecución
 
 Estos scripts están diseñados para ser ejecutados de dos formas:
