@@ -13,7 +13,7 @@ echo "Starting MongoDB Restart Protocol at $(date)" | tee -a "$LOG_FILE"
 # 1. Check current status
 echo "Current MongoDB Status:" | tee -a "$LOG_FILE"
 # Try to use kubeadm config if available, otherwise default
-export KUBECONFIG=/etc/kubernetes/admin.conf
+export KUBECONFIG=/home/kaos/.kube/config
 sudo -E kubectl get pods -n mongo -o wide | tee -a "$LOG_FILE" || echo "Failed to get pods" | tee -a "$LOG_FILE"
 
 # 2. Restart Deployment
