@@ -13,6 +13,24 @@ spec:
       labels:
         app: zabbix-web
     spec:
+      initContainers:
+        - name: init-zabbix-web-branding
+          image: zabbix/zabbix-web-nginx-pgsql:latest
+          command:
+            - sh
+            - -c
+            - |
+              set -eu
+              mkdir -p /work
+              cp -a /usr/share/zabbix/. /work/
+              find /work -type f \( -iname 'zabbix_logo*.png' -o -iname 'zabbix-logo*.png' \) -exec cp /branding/zabbix_logo.png {} \;
+              find /work -type f \( -iname 'zabbix_logo*.svg' -o -iname 'zabbix-logo*.svg' \) -exec cp /branding/zabbix_logo.svg {} \;
+          volumeMounts:
+            - name: zabbix-web-root
+              mountPath: /work
+            - name: zabbix-web-branding
+              mountPath: /branding
+              readOnly: true
       containers:
         - name: zabbix-web
           image: zabbix/zabbix-web-nginx-pgsql:latest
@@ -34,13 +52,11 @@ spec:
             - name: ZBX_SERVER_NAME
               value: "Ka0s NOC"
           volumeMounts:
-            - name: zabbix-web-branding
-              mountPath: /usr/share/zabbix/assets/img/zabbix_logo.png
-              subPath: zabbix_logo.png
-            - name: zabbix-web-branding
-              mountPath: /usr/share/zabbix/assets/img/zabbix_logo.svg
-              subPath: zabbix_logo.svg
+            - name: zabbix-web-root
+              mountPath: /usr/share/zabbix
       volumes:
+        - name: zabbix-web-root
+          emptyDir: {}
         - name: zabbix-web-branding
           configMap:
             name: zabbix-web-branding
