@@ -79,10 +79,13 @@ Si, parece increible pero hemos decidido en el equipo usar una terminología "es
 ## Releases
 
 >- [Ka0s - Klaus](./ka0s_release/kaos-klaus.md)
+![Ka0s-David](./imgs/logo-ka0s.png)
 >- [Ka0s - David (24102025) "Cooming Soon"]
+![Ka0s-David](./imgs/kaos-daavid-2.png)
 >- [Ka0s - Heidi (01032026) "Cooming Soon"]
+![Ka0s-Heidi](./imgs/kaos-heidi.png)
 >- [Ka0s - Samael (22052026) "Cooming Soon"]
-
+![Ka0s-Samael](./imgs/kaos-samael.png)  
 
 ## Nuestra metodología
 
