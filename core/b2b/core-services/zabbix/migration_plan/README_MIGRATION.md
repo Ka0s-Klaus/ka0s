@@ -1,11 +1,18 @@
-# Plan de Migración de Zabbix a k8-node-40 con NFS Storage (Safe Mode)
+# Plan de Migración de Zabbix a k8-node-40 (Modo Exclusivo)
 
-Este plan detalla los pasos para migrar Zabbix al nodo `k8-node-40` y cambiar su almacenamiento a NFS (`storage-system`) usando un **Nuevo PVC** para no tocar los datos antiguos.
+Este plan detalla los pasos para migrar Zabbix al nodo `k8-node-40` y cambiar su almacenamiento a NFS (`storage-system`), **garantizando que el nodo quede exclusivo para Zabbix**.
 
 ## 🎯 Objetivo
 1.  Mover Zabbix Server y Web al nodo `k8-node-40`.
-2.  Cambiar el almacenamiento de `hostPath` a `nfs-client` usando un nuevo PVC (`zabbix-server-nfs-pvc`).
-3.  Migrar los datos existentes al nuevo volumen NFS sin borrar los viejos.
+2.  Aislar el nodo (`cordon`) para evitar que otras cargas se programen en él.
+3.  Cambiar el almacenamiento de `hostPath` a `nfs-client` usando un nuevo PVC (`zabbix-server-nfs-pvc`).
+4.  Migrar los datos existentes al nuevo volumen NFS sin borrar los viejos.
+
+## 🔒 Aislamiento del Nodo
+
+Para cumplir el requisito de exclusividad:
+1.  El nodo se ha marcado como `SchedulingDisabled` (`cordon`).
+2.  Los Deployments de Zabbix tienen una **Tolerancia Especial** (`node.kubernetes.io/unschedulable`) que les permite correr *incluso* en nodos cordonados, siempre que el `nodeSelector` coincida explícitamente.
 
 ## 🚀 Procedimiento de Migración
 
@@ -38,7 +45,6 @@ El provisionador NFS habrá creado una carpeta vacía en el servidor NFS (en `k8
     PV_NAME=$(kubectl get pvc zabbix-server-nfs-pvc -n zabbix -o jsonpath='{.spec.volumeName}')
     
     # Buscar la ruta en el servidor NFS (k8-manager)
-    # Normalmente es /mnt/k8s-storage/<namespace>-<pvc_name>-<pv_name>
     ls -l /mnt/k8s-storage/ | grep $PV_NAME
     ```
 
@@ -53,12 +59,12 @@ El provisionador NFS habrá creado una carpeta vacía en el servidor NFS (en `k8
     chown -R 101:101 /mnt/k8s-storage/<carpeta_nueva_nfs>/
     ```
 
-### 3. Desplegar Aplicación en k8-node-40
+### 3. Desplegar Aplicación
 
-Ahora aplicamos el Deployment modificado que usa el nuevo PVC y el nuevo nodo.
+Aplicamos los manifiestos modificados con las tolerancias.
 
 ```bash
 kubectl apply -k .
 ```
 
-Zabbix arrancará en `k8-node-40` usando los datos del NFS. Los datos antiguos en `/mnt/data/zabbix-server` quedan intactos como backup.
+Zabbix será el **único** servicio capaz de programarse en `k8-node-40` gracias a la combinación de `cordon` + `tolerations`.
