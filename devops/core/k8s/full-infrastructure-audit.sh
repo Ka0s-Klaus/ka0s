@@ -3,9 +3,9 @@ set -e
 
 # Configuración
 export KUBECONFIG=${KUBECONFIG:-/etc/kubernetes/admin.conf}
-REPORT_DIR="audit/k8sreport"
-DATE_STR=$(date +%Y%m%d_%H%M%S)
 WORKFLOW_ID="${1:-manual}"
+REPORT_DIR="${2:-audit/k8sreport}"
+DATE_STR=$(date +%Y%m%d_%H%M%S)
 REPORT_FILE="${REPORT_DIR}/${DATE_STR}_${WORKFLOW_ID}_k8sinfra.md"
 
 mkdir -p "$REPORT_DIR"

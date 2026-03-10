@@ -3,7 +3,7 @@ set -e
 
 # Configuración
 WORKFLOW_ID="${1:-cron}"
-LOG_DIR="audit/k8servicelog"
+LOG_DIR="${2:-audit/k8servicelog}"
 DATE_STR=$(date +%Y%m%d_%H%M%S)
 
 mkdir -p "$LOG_DIR"

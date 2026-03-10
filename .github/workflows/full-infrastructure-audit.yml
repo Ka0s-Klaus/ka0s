@@ -21,9 +21,18 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Execute Full Audit
-        run: |
-          chmod +x devops/core/k8s/full-infrastructure-audit.sh
-          ./devops/core/k8s/full-infrastructure-audit.sh "${{ github.run_id }}"
+        uses: ./.github/actions/ssh-exec
+        with:
+          host: ${{ secrets.KAOS_SSH_HOST_1 }}
+          username: ${{ secrets.KAOS_SSH_USER }}
+          key: ${{ secrets.KAOS_SSH_KEY_PRIV }}
+          port: ${{ secrets.KAOS_SSH_PORT_1 }}
+          use-sudo: true
+          pass: ${{ secrets.KAOS_SSH_PASS }}
+          script-path: 'devops/core/k8s/full-infrastructure-audit.sh'
+          script-args: '"${{ github.run_id }}" "/tmp/k8sreport"'
+          remote-results-path: '/tmp/k8sreport'
+          local-results-path: 'audit/k8sreport'
 
       - name: Commit Audit Report
         run: |

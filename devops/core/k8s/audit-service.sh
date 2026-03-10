@@ -5,8 +5,8 @@ set -e
 SERVICE_NAME="${1:?Service name is required}"
 NAMESPACE="${2:-default}"
 WORKFLOW_ID="${3:-manual}"
+REPORT_DIR="${4:-audit/k8services}"
 
-REPORT_DIR="audit/k8services"
 DATE_STR=$(date +%Y%m%d_%H%M%S)
 REPORT_FILE="${REPORT_DIR}/${DATE_STR}_${WORKFLOW_ID}_${SERVICE_NAME}.md"
 
