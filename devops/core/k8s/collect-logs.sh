@@ -42,7 +42,7 @@ kubectl get svc --all-namespaces --no-headers | while read -r ns svc_name type c
                 echo "=== Date: $(date) ==="
                 echo "=== Selector: $SELECTOR ==="
                 echo ""
-                kubectl logs -n "$ns" -l "$SELECTOR" --since=1h --all-containers=true --prefix=true --max-log-requests=10 2>&1
+                kubectl logs -n "$ns" -l "$SELECTOR" --since=1h --all-containers=true --prefix=true --max-log-requests=10 2>&1 || echo "Warning: Failed to retrieve logs for $svc_name"
             } > "$LOG_FILE"
         else
             echo "No pods found for service $svc_name (Selector: $SELECTOR)"
