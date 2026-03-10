@@ -15,7 +15,8 @@ Contiene los "pensamientos" y contextos del sistema:
 Almacena la Infraestructura como Código (IaC) para los servicios desplegados en Kubernetes:
 - **Servicios Core**: Definiciones para ELK Stack, iTop, MongoDB, Ingress Nginx, Zabbix, etc.
 - **Manifiestos**: Archivos YAML de Kubernetes (`deployment`, `service`, `kustomization`) que materializan la arquitectura en el clúster.
-- **Optimización**: Se aplican límites de recursos (`resources: limits/requests`) en los Deployments para evitar problemas de estabilidad como `RequestEntityTooLarge` o desalojos por falta de memoria.
+- **Almacenamiento Persistente**: Uso preferente de la `StorageClass: nfs-client` para servicios de datos (Zabbix, Postgres, Mongo), garantizando persistencia fuera del ciclo de vida del nodo.
+- **Optimización**: Se aplican límites de recursos (`resources: limits/requests`) en los Deployments.
 
 ### 3. Config (`core/config/`) - El Sistema Nervioso
 Centraliza la configuración transversal:
