@@ -16,11 +16,10 @@ spec:
       # Modificado: Apunta explícitamente a k8-node-40
       nodeSelector:
         kubernetes.io/hostname: k8-node-40
-      # Añadido: Tolerancia para Taint 'dedicated=zabbix' si se decide usar
+      # Añadido: Tolerancia para permitir que se ejecute en un nodo "cordoned" (SchedulingDisabled)
       tolerations:
-      - key: "dedicated"
-        operator: "Equal"
-        value: "zabbix"
+      - key: "node.kubernetes.io/unschedulable"
+        operator: "Exists"
         effect: "NoSchedule"
       initContainers:
         - name: init-zabbix-web-branding

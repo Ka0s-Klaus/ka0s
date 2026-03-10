@@ -17,11 +17,10 @@ spec:
       # Modificado: Apunta explícitamente a k8-node-40
       nodeSelector:
         kubernetes.io/hostname: k8-node-40
-      # Añadido: Tolerancia para Taint 'dedicated=zabbix' si se decide usar
+      # Añadido: Tolerancia para permitir que se ejecute en un nodo "cordoned" (SchedulingDisabled)
       tolerations:
-      - key: "dedicated"
-        operator: "Equal"
-        value: "zabbix"
+      - key: "node.kubernetes.io/unschedulable"
+        operator: "Exists"
         effect: "NoSchedule"
       containers:
         - name: zabbix-server
@@ -49,7 +48,8 @@ spec:
               value: "0"
           volumeMounts:
             - name: zabbix-server-data
-              mountPath: /var/lib/zabbix
+              persistentVolumeClaim:
+                claimName: zabbix-server-nfs-pvc
             - name: external-scripts
               mountPath: /usr/lib/zabbix/externalscripts
       volumes:
