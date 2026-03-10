@@ -18,6 +18,13 @@ La configuración del despliegue de Metabase se encuentra en `core/b2b/core-serv
 *   `MB_DB_PASS`: (Desde Secret `metabase-db-secret`).
 *   `MB_SITE_URL`: `https://metabase.ka0s.io`.
 
+### Probes (Monitorización)
+Para evitar reinicios durante las migraciones iniciales de base de datos (que pueden ser pesadas), se ha configurado un **Startup Probe** extendido:
+
+*   **Startup Probe**: 20 minutos (`failureThreshold: 120` * `periodSeconds: 10`).
+*   **Liveness Probe**: Comprobación cada 20s.
+*   **Readiness Probe**: Comprobación cada 10s.
+
 ### Gestión de Secretos
 El despliegue de Metabase utiliza un secreto de Kubernetes para almacenar las credenciales de la base de datos: `metabase-db-secret` (Namespace: `metabase`).
 
