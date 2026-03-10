@@ -29,19 +29,18 @@ jobs:
           echo "Iniciando recolección de logs de servicios..."
           echo "Run ID: ${{ env.KAOS_CODE }}"
 
-      - name: Execute Log Collection
-        uses: ./.github/actions/ssh-exec
+      - name: Setup Kubectl Tunnel
+        uses: ./.github/actions/kubectl-tunnel
         with:
           host: ${{ secrets.KAOS_SSH_HOST_1 }}
           username: ${{ secrets.KAOS_SSH_USER }}
           key: ${{ secrets.KAOS_SSH_KEY_PRIV }}
           port: ${{ secrets.KAOS_SSH_PORT_1 }}
-          use-sudo: true
-          pass: ${{ secrets.KAOS_SSH_PASS }}
-          script-path: 'devops/core/k8s/collect-logs.sh'
-          script-args: '"${{ github.run_id }}" "/tmp/k8servicelog"'
-          remote-results-path: '/tmp/k8servicelog'
-          local-results-path: 'audit/k8servicelog'
+
+      - name: Execute Log Collection
+        run: |
+          chmod +x devops/core/k8s/collect-logs.sh
+          ./devops/core/k8s/collect-logs.sh "${{ github.run_id }}" "audit/k8servicelog"
 
       - name: Commit Logs
         if: success()

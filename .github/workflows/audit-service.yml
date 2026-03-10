@@ -37,19 +37,18 @@ jobs:
           echo "Iniciando auditoría de servicio: ${{ inputs.service_name }} en namespace ${{ inputs.namespace }}"
           echo "Run ID: ${{ env.KAOS_CODE }}"
 
-      - name: Execute Service Audit
-        uses: ./.github/actions/ssh-exec
+      - name: Setup Kubectl Tunnel
+        uses: ./.github/actions/kubectl-tunnel
         with:
           host: ${{ secrets.KAOS_SSH_HOST_1 }}
           username: ${{ secrets.KAOS_SSH_USER }}
           key: ${{ secrets.KAOS_SSH_KEY_PRIV }}
           port: ${{ secrets.KAOS_SSH_PORT_1 }}
-          use-sudo: true
-          pass: ${{ secrets.KAOS_SSH_PASS }}
-          script-path: 'devops/core/k8s/audit-service.sh'
-          script-args: '"${{ inputs.service_name }}" "${{ inputs.namespace }}" "${{ github.run_id }}" "/tmp/k8services"'
-          remote-results-path: '/tmp/k8services'
-          local-results-path: 'audit/k8services'
+
+      - name: Execute Service Audit
+        run: |
+          chmod +x devops/core/k8s/audit-service.sh
+          ./devops/core/k8s/audit-service.sh "${{ inputs.service_name }}" "${{ inputs.namespace }}" "${{ github.run_id }}" "audit/k8services"
 
       - name: Commit Audit Report
         if: success()
