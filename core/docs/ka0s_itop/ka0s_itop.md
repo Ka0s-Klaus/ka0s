@@ -11,3 +11,16 @@ Módulo para la orquestación bidireccional entre la gestión de servicios (ITSM
 *   [Guía Maestra Legacy](./legacy_readme.md)
 *   [Guía de API](./ITOP_API_GUIDE.md)
 *   [Configuración de PAT](./02_PAT_creation.md)
+
+## Arquitectura de Base de Datos
+
+iTop utiliza el servicio centralizado de **MySQL 8.0** desplegado en el namespace `mysql` (Nodo 30).
+
+- **Host**: `mysql.mysql.svc.cluster.local`
+- **Base de Datos**: `itop`
+- **Usuario**: `itop`
+- **Persistencia**: Gestionada centralmente por el servicio MySQL (NFS).
+
+> **Nota de Migración**: Anteriormente iTop usaba un contenedor MySQL dedicado (sidecar/deployment separado). Este fue desmantelado en favor de la consolidación de bases de datos.
+
+## Acceso y Credenciales
