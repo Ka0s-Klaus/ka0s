@@ -104,6 +104,9 @@ class ZabbixAPI:
             print(f"Full XML backup saved to {backup_file}")
 
 if __name__ == "__main__":
+    with open("debug_zabbix.log", "w") as f:
+        f.write("Starting script...\n")
+    
     if not os.path.exists(OUTPUT_DIR):
         os.makedirs(OUTPUT_DIR)
     
