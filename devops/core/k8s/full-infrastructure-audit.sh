@@ -2,7 +2,7 @@
 set -e
 
 # Configuración
-export KUBECONFIG=${KUBECONFIG:-/etc/kubernetes/admin.conf}
+# export KUBECONFIG=${KUBECONFIG:-/etc/kubernetes/admin.conf}
 WORKFLOW_ID="${1:-manual}"
 REPORT_DIR="${2:-audit/k8sreport}"
 DATE_STR=$(date +%Y%m%d_%H%M%S)

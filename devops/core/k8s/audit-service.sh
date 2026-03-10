@@ -2,6 +2,7 @@
 set -e
 
 # Configuración
+# export KUBECONFIG=${KUBECONFIG:-/etc/kubernetes/admin.conf}
 SERVICE_NAME="${1:?Service name is required}"
 NAMESPACE="${2:-default}"
 WORKFLOW_ID="${3:-manual}"

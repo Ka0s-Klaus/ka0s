@@ -2,6 +2,7 @@
 set -e
 
 # Configuración
+# export KUBECONFIG=${KUBECONFIG:-/etc/kubernetes/admin.conf}
 WORKFLOW_ID="${1:-cron}"
 LOG_DIR="${2:-audit/k8servicelog}"
 DATE_STR=$(date +%Y%m%d_%H%M%S)
