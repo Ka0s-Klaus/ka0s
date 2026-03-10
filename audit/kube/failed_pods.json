@@ -1,0 +1,382 @@
+[
+  {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+      "annotations": {
+        "cni.projectcalico.org/containerID": "61c04781b306570e5c81b98f24c60a9efc6a474ac17d97a74c6e01850feb898d",
+        "cni.projectcalico.org/podIP": "",
+        "cni.projectcalico.org/podIPs": ""
+      },
+      "creationTimestamp": "2026-03-10T07:49:24Z",
+      "labels": {
+        "run": "net-test"
+      },
+      "name": "net-test",
+      "namespace": "default",
+      "resourceVersion": "16929434",
+      "uid": "deb9f2cd-2826-45c6-9923-e9d25f4ac9ea"
+    },
+    "spec": {
+      "containers": [
+        {
+          "args": [
+            "ping",
+            "-c",
+            "3",
+            "192.168.1.30"
+          ],
+          "image": "busybox",
+          "imagePullPolicy": "Always",
+          "name": "net-test",
+          "resources": {},
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-fp6r8",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "dnsPolicy": "ClusterFirst",
+      "enableServiceLinks": true,
+      "nodeName": "k8-manager",
+      "preemptionPolicy": "PreemptLowerPriority",
+      "priority": 0,
+      "restartPolicy": "Never",
+      "schedulerName": "default-scheduler",
+      "securityContext": {},
+      "serviceAccount": "default",
+      "serviceAccountName": "default",
+      "terminationGracePeriodSeconds": 30,
+      "tolerations": [
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/not-ready",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        },
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/unreachable",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        }
+      ],
+      "volumes": [
+        {
+          "name": "kube-api-access-fp6r8",
+          "projected": {
+            "defaultMode": 420,
+            "sources": [
+              {
+                "serviceAccountToken": {
+                  "expirationSeconds": 3607,
+                  "path": "token"
+                }
+              },
+              {
+                "configMap": {
+                  "items": [
+                    {
+                      "key": "ca.crt",
+                      "path": "ca.crt"
+                    }
+                  ],
+                  "name": "kube-root-ca.crt"
+                }
+              },
+              {
+                "downwardAPI": {
+                  "items": [
+                    {
+                      "fieldRef": {
+                        "apiVersion": "v1",
+                        "fieldPath": "metadata.namespace"
+                      },
+                      "path": "namespace"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "status": {
+      "conditions": [
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-10T07:49:40Z",
+          "status": "False",
+          "type": "PodReadyToStartContainers"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-10T07:49:24Z",
+          "status": "True",
+          "type": "Initialized"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-10T07:49:38Z",
+          "reason": "PodFailed",
+          "status": "False",
+          "type": "Ready"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-10T07:49:38Z",
+          "reason": "PodFailed",
+          "status": "False",
+          "type": "ContainersReady"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-10T07:49:24Z",
+          "status": "True",
+          "type": "PodScheduled"
+        }
+      ],
+      "containerStatuses": [
+        {
+          "containerID": "containerd://c3396a22a08ce875e0faba3f603b7fd85d3433220ef27b2b020f1b3da43aab4c",
+          "image": "docker.io/library/busybox:latest",
+          "imageID": "docker.io/library/busybox@sha256:b3255e7dfbcd10cb367af0d409747d511aeb66dfac98cf30e97e87e4207dd76f",
+          "lastState": {},
+          "name": "net-test",
+          "ready": false,
+          "restartCount": 0,
+          "started": false,
+          "state": {
+            "terminated": {
+              "containerID": "containerd://c3396a22a08ce875e0faba3f603b7fd85d3433220ef27b2b020f1b3da43aab4c",
+              "exitCode": 1,
+              "finishedAt": "2026-03-10T07:49:38Z",
+              "reason": "Error",
+              "startedAt": "2026-03-10T07:49:26Z"
+            }
+          },
+          "volumeMounts": [
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-fp6r8",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            }
+          ]
+        }
+      ],
+      "hostIP": "192.168.1.10",
+      "hostIPs": [
+        {
+          "ip": "192.168.1.10"
+        }
+      ],
+      "phase": "Failed",
+      "podIP": "172.16.74.30",
+      "podIPs": [
+        {
+          "ip": "172.16.74.30"
+        }
+      ],
+      "qosClass": "BestEffort",
+      "startTime": "2026-03-10T07:49:24Z"
+    }
+  },
+  {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+      "creationTimestamp": "2026-03-10T12:48:08Z",
+      "generateName": "mysql-5b8fb689c-",
+      "labels": {
+        "app": "mysql",
+        "pod-template-hash": "5b8fb689c"
+      },
+      "name": "mysql-5b8fb689c-9dw4n",
+      "namespace": "mysql",
+      "ownerReferences": [
+        {
+          "apiVersion": "apps/v1",
+          "blockOwnerDeletion": true,
+          "controller": true,
+          "kind": "ReplicaSet",
+          "name": "mysql-5b8fb689c",
+          "uid": "652f195c-1fbd-4357-a5fa-5aaf40d1a0df"
+        }
+      ],
+      "resourceVersion": "16990590",
+      "uid": "e977ba57-44b0-489b-b73e-545c7a540a06"
+    },
+    "spec": {
+      "containers": [
+        {
+          "args": [
+            "--default-authentication-plugin=mysql_native_password",
+            "--innodb-buffer-pool-size=256M",
+            "--max-connections=100"
+          ],
+          "env": [
+            {
+              "name": "MYSQL_ROOT_PASSWORD",
+              "valueFrom": {
+                "secretKeyRef": {
+                  "key": "mysql-root-password",
+                  "name": "mysql-secret"
+                }
+              }
+            },
+            {
+              "name": "MYSQL_USER",
+              "valueFrom": {
+                "secretKeyRef": {
+                  "key": "mysql-user",
+                  "name": "mysql-secret"
+                }
+              }
+            },
+            {
+              "name": "MYSQL_PASSWORD",
+              "valueFrom": {
+                "secretKeyRef": {
+                  "key": "mysql-password",
+                  "name": "mysql-secret"
+                }
+              }
+            }
+          ],
+          "image": "mysql:8.0",
+          "imagePullPolicy": "IfNotPresent",
+          "name": "mysql",
+          "ports": [
+            {
+              "containerPort": 3306,
+              "name": "mysql",
+              "protocol": "TCP"
+            }
+          ],
+          "resources": {
+            "limits": {
+              "cpu": "1",
+              "memory": "1Gi"
+            },
+            "requests": {
+              "cpu": "250m",
+              "memory": "512Mi"
+            }
+          },
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/var/lib/mysql",
+              "name": "mysql-persistent-storage"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-wzcpn",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "dnsPolicy": "ClusterFirst",
+      "enableServiceLinks": true,
+      "nodeSelector": {
+        "kubernetes.io/hostname": "k8-node-30"
+      },
+      "preemptionPolicy": "PreemptLowerPriority",
+      "priority": 0,
+      "restartPolicy": "Always",
+      "schedulerName": "default-scheduler",
+      "securityContext": {},
+      "serviceAccount": "default",
+      "serviceAccountName": "default",
+      "terminationGracePeriodSeconds": 30,
+      "tolerations": [
+        {
+          "effect": "NoSchedule",
+          "key": "node.kubernetes.io/unschedulable",
+          "operator": "Exists"
+        },
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/not-ready",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        },
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/unreachable",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        }
+      ],
+      "volumes": [
+        {
+          "name": "mysql-persistent-storage",
+          "persistentVolumeClaim": {
+            "claimName": "mysql-pvc"
+          }
+        },
+        {
+          "name": "kube-api-access-wzcpn",
+          "projected": {
+            "defaultMode": 420,
+            "sources": [
+              {
+                "serviceAccountToken": {
+                  "expirationSeconds": 3607,
+                  "path": "token"
+                }
+              },
+              {
+                "configMap": {
+                  "items": [
+                    {
+                      "key": "ca.crt",
+                      "path": "ca.crt"
+                    }
+                  ],
+                  "name": "kube-root-ca.crt"
+                }
+              },
+              {
+                "downwardAPI": {
+                  "items": [
+                    {
+                      "fieldRef": {
+                        "apiVersion": "v1",
+                        "fieldPath": "metadata.namespace"
+                      },
+                      "path": "namespace"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "status": {
+      "conditions": [
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-10T12:48:08Z",
+          "message": "0/4 nodes are available: 1 node(s) had untolerated taint {restricted: true}, 3 node(s) didn't match Pod's node affinity/selector. preemption: 0/4 nodes are available: 4 Preemption is not helpful for scheduling.",
+          "reason": "Unschedulable",
+          "status": "False",
+          "type": "PodScheduled"
+        }
+      ],
+      "phase": "Pending",
+      "qosClass": "Burstable"
+    }
+  }
+]
