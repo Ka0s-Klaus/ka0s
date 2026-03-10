@@ -1,0 +1,109 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zabbix-web
+  namespace: zabbix
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zabbix-web
+  template:
+    metadata:
+      labels:
+        app: zabbix-web
+    spec:
+      # Modificado: Apunta explícitamente a k8-node-30
+      nodeSelector:
+        kubernetes.io/hostname: k8-node-30
+      # Añadido: Tolerancia para Taint 'dedicated=zabbix' si se decide usar
+      tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "zabbix"
+        effect: "NoSchedule"
+      initContainers:
+        - name: init-zabbix-web-branding
+          image: zabbix/zabbix-web-nginx-pgsql:latest
+          command:
+            - sh
+            - -c
+            - |
+              set -eu
+              mkdir -p /work
+              cp -a /usr/share/zabbix/. /work/
+              if [ -f /branding/zabbix_logo.png ]; then
+                mkdir -p /work/ui/assets/img /work/assets/img
+                cp /branding/zabbix_logo.png /work/ui/assets/img/zabbix_logo.png 2>/dev/null || true
+                cp /branding/zabbix_logo.png /work/ui/assets/img/zabbix-logo.png 2>/dev/null || true
+                cp /branding/zabbix_logo.png /work/assets/img/zabbix_logo.png 2>/dev/null || true
+                cp /branding/zabbix_logo.png /work/assets/img/zabbix-logo.png 2>/dev/null || true
+                find /work -type f \( -iname 'zabbix_logo*.png' -o -iname 'zabbix-logo*.png' \) -exec cp /branding/zabbix_logo.png {} \; 2>/dev/null || true
+              fi
+              if [ -f /branding/zabbix_logo_compact.png ]; then
+                mkdir -p /work/ui/assets/img /work/assets/img
+                cp /branding/zabbix_logo_compact.png /work/ui/assets/img/zabbix_logo_compact.png 2>/dev/null || true
+                cp /branding/zabbix_logo_compact.png /work/assets/img/zabbix_logo_compact.png 2>/dev/null || true
+              fi
+              if [ -f /branding/zabbix_logo.svg ]; then
+                mkdir -p /work/ui/assets/img /work/assets/img
+                cp /branding/zabbix_logo.svg /work/ui/assets/img/zabbix_logo.svg 2>/dev/null || true
+                cp /branding/zabbix_logo.svg /work/ui/assets/img/zabbix-logo.svg 2>/dev/null || true
+                cp /branding/zabbix_logo.svg /work/assets/img/zabbix_logo.svg 2>/dev/null || true
+                cp /branding/zabbix_logo.svg /work/assets/img/zabbix-logo.svg 2>/dev/null || true
+                find /work -type f \( -iname 'zabbix_logo*.svg' -o -iname 'zabbix-logo*.svg' \) -exec cp /branding/zabbix_logo.svg {} \; 2>/dev/null || true
+              fi
+              grep -RIl "zabbix-logo-sidebar" /work 2>/dev/null | while IFS= read -r f; do
+                case "$f" in
+                  *.css) printf '\n.zabbix-logo-sidebar{background-image:url(../img/zabbix_logo.png) !important;background-repeat:no-repeat !important;background-size:contain !important;background-position:left center !important;background-color:transparent !important;width:220px !important;height:56px !important;}\n.sidebar-compact .zabbix-logo-sidebar,.is-compact .zabbix-logo-sidebar,.sidebar-collapsed .zabbix-logo-sidebar,.zabbix-logo-sidebar-compact,.zabbix-logo-sidebar-mini{background-image:url(../img/zabbix_logo_compact.png) !important;background-repeat:no-repeat !important;background-size:contain !important;background-position:center center !important;background-color:transparent !important;width:56px !important;height:56px !important;}\n' >> "$f" ;;
+                esac
+              done
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          volumeMounts:
+            - name: zabbix-web-root
+              mountPath: /work
+            - name: zabbix-web-branding
+              mountPath: /branding
+              readOnly: true
+      containers:
+        - name: zabbix-web
+          image: zabbix/zabbix-web-nginx-pgsql:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DB_SERVER_HOST
+              value: postgresql
+            - name: POSTGRES_USER
+              value: "admin"
+            - name: POSTGRES_PASSWORD
+              value: "admin"
+            - name: POSTGRES_DB
+              value: "zabbix"
+            - name: ZBX_SERVER_HOST
+              value: zabbix-server
+            - name: ZBX_SERVER_PORT
+              value: "10051"
+            - name: ZBX_SERVER_NAME
+              value: "Ka0s NOC"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+          volumeMounts:
+            - name: zabbix-web-root
+              mountPath: /usr/share/zabbix
+      volumes:
+        - name: zabbix-web-root
+          emptyDir: {}
+        - name: zabbix-web-branding
+          configMap:
+            name: zabbix-web-branding
