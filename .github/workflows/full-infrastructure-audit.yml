@@ -1,0 +1,127 @@
+name: Ka0s Full Infrastructure Audit
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 0' # Weekly on Sunday at 00:00
+
+permissions:
+  contents: read
+
+env:
+  KAOS_MODULE: "[Ka0s] Full Infrastructure Audit"
+  KAOS_CODE: ${{ github.run_id }}
+
+jobs:
+  full-audit:
+    runs-on: swarm-runners-scaleset
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Execute Full Audit
+        run: |
+          chmod +x devops/core/k8s/full-infrastructure-audit.sh
+          ./devops/core/k8s/full-infrastructure-audit.sh "${{ github.run_id }}"
+
+      - name: Commit Audit Report
+        run: |
+          git config --global user.name "Ka0s Bot"
+          git config --global user.email "bot@ka0s.io"
+          git pull --rebase origin main || git pull origin main
+          git add audit/k8sreport/
+          
+          if ! git diff --staged --quiet; then
+            git commit -m "chore(audit): full infrastructure report ${{ github.run_id }}"
+            git push || (git pull --rebase origin main && git push)
+          else
+            echo "No changes to commit."
+          fi
+
+  handle-success:
+    name: Handle Success
+    needs: [full-audit]
+    if: success()
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Log Success
+        run: echo "Full infrastructure audit completed successfully."
+
+  handle-failure:
+    name: Handle Failure
+    needs: [full-audit]
+    if: failure()
+    runs-on: swarm-runners-scaleset
+    permissions:
+      issues: write
+      contents: read
+    steps:
+      - id: repo
+        name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+      - name: Create Incident Issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --title "[INCIDENT]: Fallo en workflow ${{ github.workflow }}" \
+            --label "itop-incident,triage,automated" \
+            --body "### Organización
+          Ka0s
+          
+          ### Solicitante
+          @${{ github.actor }}
+          
+          ### Estado
+          New
+          
+          ### Impacto
+          Service
+          
+          ### Urgencia
+          Medium
+          
+          ### Servicio / CI afectado
+          GitHub Actions / ${{ github.workflow }}
+          
+          ### Descripción
+          El workflow **${{ github.workflow }}** ha fallado durante su ejecución.
+          
+          **Detalles Técnicos:**
+          - **Módulo**: ${{ env.KAOS_MODULE }}
+          - **Run ID**: ${{ github.run_id }}
+          - **Commit**: ${{ github.sha }}
+          - **Branch/Ref**: ${{ github.ref_name }}
+          - **Actor**: ${{ github.actor }}
+          
+          ### Pasos / Evidencias
+          Logs de ejecución: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          "
+
+  end-workflow:
+    needs: [handle-success, handle-failure]
+    if: always()
+    runs-on: swarm-runners-scaleset
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+      - name: Trigger Inspector
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run inspector.yml \
+            -f workflow_name="${{ github.workflow }}" \
+            -f run_id="${{ github.run_id }}" \
+            -f status="${{ job.status }}"
