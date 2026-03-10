@@ -14,8 +14,14 @@ spec:
         app: zabbix-server
     spec:
       serviceAccountName: zabbix-service-account
+      # Modificado: Apunta explícitamente a k8-node-40
       nodeSelector:
-        node-role.kubernetes.io/control-plane: ""
+        kubernetes.io/hostname: k8-node-40
+      # Añadido: Tolerancia para permitir que se ejecute en un nodo "cordoned" (SchedulingDisabled)
+      tolerations:
+      - key: "node.kubernetes.io/unschedulable"
+        operator: "Exists"
+        effect: "NoSchedule"
       containers:
         - name: zabbix-server
           image: zabbix/zabbix-server-pgsql:latest
@@ -23,11 +29,11 @@ spec:
             - containerPort: 10051
           env:
             - name: DB_SERVER_HOST
-              value: postgresql
+              value: postgresql.postgresql.svc.cluster.local
             - name: POSTGRES_USER
-              value: "admin"
+              value: "zabbix"
             - name: POSTGRES_PASSWORD
-              value: "admin"
+              value: "zabbix_secure_password"
             - name: POSTGRES_DB
               value: "zabbix"
             - name: ZBX_CACHESIZE
@@ -48,7 +54,7 @@ spec:
       volumes:
         - name: zabbix-server-data
           persistentVolumeClaim:
-            claimName: zabbix-server-pvc
+            claimName: zabbix-server-nfs-pvc
         - name: external-scripts
           configMap:
             name: zabbix-external-scripts

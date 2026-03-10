@@ -13,6 +13,14 @@ spec:
       labels:
         app: zabbix-web
     spec:
+      # Modificado: Apunta explícitamente a k8-node-40
+      nodeSelector:
+        kubernetes.io/hostname: k8-node-40
+      # Añadido: Tolerancia para permitir que se ejecute en un nodo "cordoned" (SchedulingDisabled)
+      tolerations:
+      - key: "node.kubernetes.io/unschedulable"
+        operator: "Exists"
+        effect: "NoSchedule"
       initContainers:
         - name: init-zabbix-web-branding
           image: zabbix/zabbix-web-nginx-pgsql:latest
@@ -49,6 +57,13 @@ spec:
                   *.css) printf '\n.zabbix-logo-sidebar{background-image:url(../img/zabbix_logo.png) !important;background-repeat:no-repeat !important;background-size:contain !important;background-position:left center !important;background-color:transparent !important;width:220px !important;height:56px !important;}\n.sidebar-compact .zabbix-logo-sidebar,.is-compact .zabbix-logo-sidebar,.sidebar-collapsed .zabbix-logo-sidebar,.zabbix-logo-sidebar-compact,.zabbix-logo-sidebar-mini{background-image:url(../img/zabbix_logo_compact.png) !important;background-repeat:no-repeat !important;background-size:contain !important;background-position:center center !important;background-color:transparent !important;width:56px !important;height:56px !important;}\n' >> "$f" ;;
                 esac
               done
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
           volumeMounts:
             - name: zabbix-web-root
               mountPath: /work
@@ -62,11 +77,11 @@ spec:
             - containerPort: 8080
           env:
             - name: DB_SERVER_HOST
-              value: postgresql
+              value: postgresql.postgresql.svc.cluster.local
             - name: POSTGRES_USER
-              value: "admin"
+              value: "zabbix"
             - name: POSTGRES_PASSWORD
-              value: "admin"
+              value: "zabbix_secure_password"
             - name: POSTGRES_DB
               value: "zabbix"
             - name: ZBX_SERVER_HOST
@@ -75,6 +90,13 @@ spec:
               value: "10051"
             - name: ZBX_SERVER_NAME
               value: "Ka0s NOC"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
           volumeMounts:
             - name: zabbix-web-root
               mountPath: /usr/share/zabbix
