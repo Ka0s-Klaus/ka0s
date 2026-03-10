@@ -15,6 +15,12 @@ Este módulo documenta la implementación y uso de **CloudBeaver** como herramie
 3.  [Integración Técnica](03_integration.md)
     *   Detalles del despliegue (StatefulSet, Service, Ingress).
     *   Gestión de configuración y secretos.
+4.  [Resolución de Problemas](04_troubleshooting.md)
+    *   Problemas comunes de conexión.
+    *   Logs y diagnóstico.
+5.  [MySQL Centralizado](05_mysql_central.md)
+    *   Especificaciones del servicio MySQL en k8-node-40.
+    *   Configuración de recursos y límites.
 
 ## Componentes Clave
 
