@@ -43,16 +43,24 @@ class ZabbixDashboardManager:
             print(f"Error connecting to Zabbix API: {e}")
             sys.exit(1)
 
+    def log(self, msg):
+        try:
+            with open("/tmp/dashboard.log", "a") as f:
+                f.write(f"{msg}\n")
+        except:
+            pass
+        print(msg)
+
     def login(self):
-        print(f"Authenticating to {self.url}...")
+        self.log(f"Authenticating to {self.url}...")
         self.auth_token = self._post("user.login", {"username": self.user, "password": self.password})
-        print("Authentication successful.")
+        self.log("Authentication successful.")
 
     def resolve_item_id(self, host_name, item_key):
         # Helper to find itemid by host and key
         hosts = self._post("host.get", {"filter": {"host": [host_name]}, "output": ["hostid"]})
         if not hosts:
-            print(f"Warning: Host '{host_name}' not found.")
+            self.log(f"Warning: Host '{host_name}' not found.")
             return None
         
         items = self._post("item.get", {
@@ -62,10 +70,49 @@ class ZabbixDashboardManager:
         })
         
         if not items:
-            print(f"Warning: Item '{item_key}' not found on host '{host_name}'.")
+            self.log(f"Warning: Item '{item_key}' not found on host '{host_name}'.")
             return None
             
         return items[0]['itemid']
+
+    def resolve_widgets(self, widgets):
+        """Recursively resolve dynamic fields in widgets."""
+        resolved_widgets = []
+        for widget in widgets:
+            # Deep copy to avoid modifying original
+            new_widget = widget.copy()
+            
+            # Resolve fields
+            if 'fields' in new_widget:
+                new_fields = []
+                for field in new_widget['fields']:
+                    # Check if this field needs resolution
+                    if 'resolve_item' in field:
+                        resolver = field['resolve_item']
+                        host = resolver.get('host')
+                        key = resolver.get('key')
+                        
+                        self.log(f"Resolving item: {host} -> {key}")
+                        item_id = self.resolve_item_id(host, key)
+                        
+                        if item_id:
+                            # Replace with actual itemid field structure for Zabbix
+                            # Type 1 = Item ID, Name = "itemid" usually (depends on widget type)
+                            # But for graphs, it's usually type 1, name "itemid" or "itemid.0"
+                            # We assume standard graph widget structure here
+                            new_fields.append({
+                                "type": 1,
+                                "name": "itemid", # Default for single item widgets
+                                "value": str(item_id)
+                            })
+                        else:
+                            self.log(f"Skipping field due to resolution failure: {host}:{key}")
+                    else:
+                        new_fields.append(field)
+                new_widget['fields'] = new_fields
+                
+            resolved_widgets.append(new_widget)
+        return resolved_widgets
 
     def deploy_dashboard(self, dashboard_file):
         if not self.auth_token:
@@ -74,25 +121,16 @@ class ZabbixDashboardManager:
         with open(dashboard_file, 'r') as f:
             dash_def = json.load(f)
 
-        print(f"Deploying dashboard: {dash_def['name']}")
+        self.log(f"Deploying dashboard: {dash_def['name']}")
 
-        # Resolve dynamic fields if needed (Example logic)
-        # In a real scenario, we would parse widgets and replace "item_key" placeholders with real Item IDs
-        # For this PoC, we assume simple creation or update
-
-        # Check if dashboard exists
-        existing = self._post("dashboard.get", {
-            "search": {"name": dash_def['name']},
-            "output": ["dashboardid"]
-        })
-
-        widgets = dash_def.get('widgets', [])
+        # Resolve dynamic fields
+        widgets = self.resolve_widgets(dash_def.get('widgets', []))
         
         # Prepare params
         params = {
             "name": dash_def['name'],
-            "width": dash_def.get('width', 12),
-            "height": dash_def.get('height', 8),
+            # "width": dash_def.get('width', 12), # Removed in Zabbix 6.4/7.0
+            # "height": dash_def.get('height', 8), # Removed in Zabbix 6.4/7.0
             "pages": [
                 {
                     "widgets": widgets
@@ -100,16 +138,22 @@ class ZabbixDashboardManager:
             ]
         }
 
+        # Check if dashboard exists
+        existing = self._post("dashboard.get", {
+            "search": {"name": dash_def['name']},
+            "output": ["dashboardid"]
+        })
+
         if existing:
             dashboard_id = existing[0]['dashboardid']
-            print(f"Dashboard exists (ID: {dashboard_id}). Updating...")
+            self.log(f"Dashboard exists (ID: {dashboard_id}). Updating...")
             params["dashboardid"] = dashboard_id
             self._post("dashboard.update", params)
-            print("Dashboard updated successfully.")
+            self.log("Dashboard updated successfully.")
         else:
-            print("Creating new dashboard...")
+            self.log("Creating new dashboard...")
             result = self._post("dashboard.create", params)
-            print(f"Dashboard created (ID: {result['dashboardids'][0]}).")
+            self.log(f"Dashboard created (ID: {result['dashboardids'][0]}).")
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:

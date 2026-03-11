@@ -56,9 +56,18 @@ El script genera dos archivos en el directorio de inventario:
 2.  Comparar con el estado actual (Diff).
 3.  Aplicar cambios (Create/Update/Delete).
 
-## 3. Automatización de Dashboards (Roadmap)
+## 3. Automatización de Dashboards (`create_dashboard.py`)
 
-*(Script en desarrollo)* `create_dashboard.py` permitirá crear dashboards a partir de definiciones JSON.
+Este script permite crear o actualizar Dashboards en Zabbix a partir de definiciones JSON, resolviendo automáticamente nombres de hosts e items.
+
+### Uso
+```bash
+python3 core/monitoring/zabbix/scripts/create_dashboard.py core/monitoring/zabbix/dashboards/k8s_real_overview.json
+```
+
+### Características
+*   **Resolución Dinámica**: Permite usar nombres de host y keys (`zabbix-server`, `system.cpu.load`) en lugar de IDs numéricos.
+*   **Idempotencia**: Si el dashboard ya existe (por nombre), lo actualiza. Si no, lo crea.
 
 ### Ejemplo de Definición JSON
 ```json
@@ -68,8 +77,14 @@ El script genera dos archivos en el directorio de inventario:
     {
       "type": "graph",
       "name": "CPU Load",
-      "x": 0, "y": 0, "width": 12, "height": 5,
-      "fields": { ... }
+      "fields": [
+        {
+          "resolve_item": {
+            "host": "zabbix-server",
+            "key": "system.cpu.load[all,avg1]"
+          }
+        }
+      ]
     }
   ]
 }
