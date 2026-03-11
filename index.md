@@ -64,6 +64,7 @@ Bienvenido al centro de documentación del proyecto Ka0s. A continuación encont
 *   [Documentación del Módulo: Ka0s Self Service Portal](core/docs/ka0s_self_service_portal/ka0s_self_service_portal.md)
 *   [Concepto: Monitoring as Code (Zabbix IaC)](core/docs/ka0s_zabbix_iac/01_concept.md)
 *   [Guía de Uso: OpenClaw SRE](core/docs/openclaw/03_usage.md)
+*   [Adding Windows Nodes to Ka0s Cluster](core/docs/windows_nodes/01_guide.md)
 
 ---
 *Para ver todos los archivos, navega a [core/docs/](core/docs/).*
