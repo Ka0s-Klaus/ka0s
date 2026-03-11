@@ -7,6 +7,7 @@ Automatización para detectar y registrar Pods en estado anómalo en el clúster
 1.  [Concepto y Arquitectura](./01_concept.md)
 2.  [Guía de Uso y Validación](./02_usage_validation.md)
 3.  [Integración en el Ecosistema](./03_integration.md)
+4.  [Troubleshooting](./04_troubleshooting.md)
 
 ## Componentes Clave
 

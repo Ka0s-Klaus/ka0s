@@ -1,8 +1,8 @@
 # Guía de Uso y Validación
 
 ## Ejecución
-- Manual: desde la pestaña Actions, selecciona "Ka0s Audit Failed Pods" y pulsa "Run workflow".
-- Programada: corre automáticamente cada 30 minutos.
+- **Manual**: desde la pestaña Actions, selecciona "Ka0s Audit Failed Pods" y pulsa "Run workflow".
+- **Programada**: corre automáticamente cada 30 minutos.
 
 ## Resultados
 - Se genera/actualiza el archivo: `audit/kube/failed_pods.json`.
@@ -20,8 +20,10 @@
 - `remote-results-path`: `/tmp/results`.
 - `local-results-path`: `audit/kube/`.
 
-## Troubleshooting
-- Sin cambios en el reporte: no hubo nuevos Pods fallidos o el estado no varió.
-- Fallo en SSH: revisa `host/port/username/key/pass` y la variable `use-sudo`.
-- iTop inaccesible: comprueba `ITOP_URL`/credenciales y la latencia de red.
+## Robustez y Manejo de Errores
+El script de auditoría (`devops/core/k8s/audit-failed-pods.sh`) incluye mecanismos de seguridad:
+- **`set -o pipefail`**: Asegura que cualquier fallo en la cadena de comandos (ej. `kubectl | jq`) provoque la terminación inmediata del script con error.
+- **Verificación de Conectividad**: Antes de auditar, comprueba explícitamente la conexión al clúster (`kubectl get nodes`). Si falla, el script termina con un mensaje de error claro, evitando ejecuciones parciales o silenciosas.
 
+## Troubleshooting
+Para detalles sobre resolución de problemas, consulta la [Guía de Troubleshooting](./04_troubleshooting.md).
