@@ -3,39 +3,30 @@ set -e
 
 echo "=== Host Info ==="
 hostname
-ip a | grep inet
 uname -r
-if [ -f /etc/os-release ]; then
-    cat /etc/os-release
-fi
 
-echo "=== PCI Devices (NVIDIA) ==="
+echo "=== All PCI VGA/3D Devices ==="
 if command -v lspci &> /dev/null; then
-    lspci | grep -i nvidia || echo "No NVIDIA devices found via lspci"
+    lspci -nn | grep -E -i "VGA|3D|Display" || echo "No VGA/3D/Display devices found"
 else
     echo "lspci not found"
 fi
 
-echo "=== NVIDIA SMI ==="
-if command -v nvidia-smi &> /dev/null; then
-    nvidia-smi
+echo "=== Kernel Headers Check ==="
+if dpkg -l | grep "linux-headers-$(uname -r)"; then
+    echo "Headers for $(uname -r) are installed"
 else
-    echo "nvidia-smi not found"
+    echo "Headers for $(uname -r) are NOT installed. This is required for driver installation."
+    echo "Attempting to find available headers..."
+    apt-cache search linux-headers | grep $(uname -r) || echo "No headers found in cache"
 fi
 
-echo "=== NVIDIA Container Toolkit ==="
-if dpkg -l | grep nvidia-container-toolkit; then
-    echo "Toolkit installed"
+echo "=== Ubuntu Drivers Recommendation ==="
+if command -v ubuntu-drivers &> /dev/null; then
+    ubuntu-drivers devices || echo "ubuntu-drivers failed"
 else
-    echo "Toolkit not installed"
+    echo "ubuntu-drivers not found. Installing..."
+    export DEBIAN_FRONTEND=noninteractive
+    sudo apt-get update && sudo apt-get install -y ubuntu-drivers-common pciutils
+    ubuntu-drivers devices
 fi
-
-echo "=== Containerd Config ==="
-if [ -f /etc/containerd/config.toml ]; then
-    grep "nvidia" /etc/containerd/config.toml || echo "nvidia not explicitly found in containerd config"
-else
-    echo "/etc/containerd/config.toml not found"
-fi
-
-echo "=== Kernel Modules ==="
-lsmod | grep nvidia || echo "No nvidia kernel modules loaded"
