@@ -61,6 +61,7 @@ Bienvenido al centro de documentación del proyecto Ka0s. A continuación encont
 *   [Ka0s Remediation Module](core/docs/ka0s_remediation/ka0s_remediation.md)
 *   [Ka0s Remediation: High CPU/Load Workflow](core/docs/ka0s_remediation_high_load/01_concept.md)
 *   [Documentación del Módulo: Ka0s Self Service Portal](core/docs/ka0s_self_service_portal/ka0s_self_service_portal.md)
+*   [Concepto: Monitoring as Code (Zabbix IaC)](core/docs/ka0s_zabbix_iac/01_concept.md)
 *   [Guía de Uso: OpenClaw SRE](core/docs/openclaw/03_usage.md)
 
 ---

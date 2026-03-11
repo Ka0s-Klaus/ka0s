@@ -76,6 +76,7 @@ Si, parece increible pero hemos decidido en el equipo usar una terminología "es
 - [Módulo Ka0s Version Manager](./ka0s_version/ka0s_version.md)
 - [Watchdog - Node Health](./ka0s_watchdog_node_health/ka0s_watchdog_node_health.md)
 - [Módulo Ka0s YAML Lint](./ka0s_yaml/ka0s_yaml.md)
+- [Concepto: Monitoring as Code (Zabbix IaC)](./ka0s_zabbix_iac/01_concept.md)
 - [Ka0s Cluster Restart Module](./kaos_cluster_restart/kaos_cluster_restart.md)
 - [Guía de Uso: OpenClaw SRE](./openclaw/03_usage.md)
 
