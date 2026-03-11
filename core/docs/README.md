@@ -49,6 +49,7 @@ Si, parece increible pero hemos decidido en el equipo usar una terminología "es
 - [Módulo: Ka0s Docs Portal](./ka0s_docs_portal/ka0s_docs_portal.md)
 - [Módulo Ka0s Execution](./ka0s_execution/ka0s_execution.md)
 - [Módulo Ka0s GitHub → iTop Sync](./ka0s_github_sync_itop/ka0s_github_sync_itop.md)
+- [Ka0s GPU Enablement (Intel)](./ka0s_gpu_enablement/ka0s_gpu_enablement.md)
 - [Módulo Ka0s HTML Lint](./ka0s_html/ka0s_html.md)
 - [Protocolo de Verificación de Incidencias (SOP)](./ka0s_incident_response/01_issue_verification.md)
 - [Módulo Ka0s Init](./ka0s_init/ka0s_init.md)
