@@ -43,6 +43,8 @@ spec:
                 mkdir -p /work/ui/assets/img /work/assets/img
                 cp /branding/zabbix_logo_compact.png /work/ui/assets/img/zabbix_logo_compact.png 2>/dev/null || true
                 cp /branding/zabbix_logo_compact.png /work/assets/img/zabbix_logo_compact.png 2>/dev/null || true
+                # Replace favicon and mobile icons
+                find /work -type f \( -name "favicon.ico" -o -name "apple-touch-icon*.png" -o -name "ms-tile*.png" -o -name "touch-icon*.png" \) -exec cp /branding/zabbix_logo_compact.png {} \; 2>/dev/null || true
               fi
               if [ -f /branding/zabbix_logo.svg ]; then
                 mkdir -p /work/ui/assets/img /work/assets/img
