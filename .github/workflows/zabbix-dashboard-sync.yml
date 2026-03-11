@@ -1,0 +1,63 @@
+name: Zabbix Dashboard Sync
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'core/monitoring/zabbix/dashboards/**'
+  workflow_dispatch:
+
+env:
+  KAOS_MODULE: "zabbix-iac"
+  KAOS_CODE: "ops"
+
+jobs:
+  sync-dashboards:
+    runs-on: swarm-runners-scaleset
+    permissions:
+      contents: read
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Necesario para detectar cambios
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          pip install -r core/monitoring/zabbix/scripts/requirements.txt
+
+      - name: Get Changed Files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
+        with:
+          files: core/monitoring/zabbix/dashboards/*.json
+
+      - name: Sync Dashboards to Zabbix
+        if: steps.changed-files.outputs.any_changed == 'true'
+        env:
+          ZABBIX_URL: ${{ secrets.ZABBIX_URL }}
+          ZABBIX_USER: ${{ secrets.ZABBIX_USER }}
+          ZABBIX_PASS: ${{ secrets.ZABBIX_PASS }}
+        run: |
+          echo "Detectados cambios en los siguientes dashboards:"
+          echo "${{ steps.changed-files.outputs.all_changed_files }}"
+          
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            echo "Syncing $file ..."
+            python3 core/monitoring/zabbix/scripts/create_dashboard.py "$file"
+          done
+
+      - name: Handle Success
+        if: success()
+        run: echo "Zabbix Dashboards updated successfully."
+
+      - name: Handle Failure
+        if: failure()
+        run: echo "Failed to update Zabbix Dashboards."
