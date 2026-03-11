@@ -39,7 +39,19 @@ La arquitectura se basa en scripts Python que interactúan con la Zabbix API, or
     *   Script `zabbix_dashboard_manager.py` lee los JSON y usa `dashboard.create` o `dashboard.update`.
     *   **Widgets Dinámicos**: El script puede generar widgets basados en etiquetas. Ej: "Crea un gráfico apilado con todos los hosts que tengan tag `env:production`".
 
-### 4. Gestión de Mapas de Red
+### 4. Orquestación CI/CD (GitHub Actions)
+
+**Objetivo**: Aplicar cambios automáticamente cuando se hace merge a `main`.
+
+*   **Workflow**: `.github/workflows/zabbix-dashboard-sync.yml`
+*   **Trigger**: Push a `core/monitoring/zabbix/dashboards/**.json`.
+*   **Lógica**:
+    1.  Detecta archivos JSON modificados.
+    2.  Ejecuta `create_dashboard.py` para cada archivo cambiado.
+    3.  Usa secretos del repositorio (`ZABBIX_URL`, `ZABBIX_USER`, `ZABBIX_PASS`) para autenticar.
+*   **Runner**: `swarm-runners-scaleset` (Acceso directo a la red del clúster).
+
+### 5. Gestión de Mapas de Red
 **Objetivo**: Visualizar la topología de la infraestructura.
 
 *   **Generación Procedural**:

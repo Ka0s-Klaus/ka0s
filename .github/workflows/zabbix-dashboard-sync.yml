@@ -49,6 +49,13 @@ jobs:
           echo "Detectados cambios en los siguientes dashboards:"
           echo "${{ steps.changed-files.outputs.all_changed_files }}"
           
+          # Verificar si ZABBIX_URL está definido
+          if [ -z "$ZABBIX_URL" ]; then
+            echo "::error::ZABBIX_URL secret is missing or empty. Using fallback internal URL."
+            # Fallback para runners dentro del cluster
+            export ZABBIX_URL="http://zabbix-web.zabbix.svc.cluster.local/api_jsonrpc.php"
+          fi
+          
           for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
             echo "Syncing $file ..."
             python3 core/monitoring/zabbix/scripts/create_dashboard.py "$file"

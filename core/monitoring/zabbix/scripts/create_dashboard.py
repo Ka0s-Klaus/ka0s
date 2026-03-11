@@ -6,6 +6,11 @@ import sys
 
 # Configuración
 ZABBIX_URL = os.getenv('ZABBIX_URL', 'http://localhost:8080/api_jsonrpc.php')
+# Ensure URL is not empty string if env var exists but is empty
+if not ZABBIX_URL:
+    print("Error: ZABBIX_URL environment variable is set but empty.")
+    sys.exit(1)
+
 ZABBIX_USER = os.getenv('ZABBIX_USER', 'Admin')
 ZABBIX_PASS = os.getenv('ZABBIX_PASS', 'zabbix')
 
