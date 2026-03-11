@@ -1,0 +1,352 @@
+[
+  {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+      "annotations": {
+        "cni.projectcalico.org/containerID": "65b34421f01950df5b59f7c57bb703f2931707bb1fe8b3b550f69410913afb59",
+        "cni.projectcalico.org/podIP": "172.16.64.156/32",
+        "cni.projectcalico.org/podIPs": "172.16.64.156/32"
+      },
+      "creationTimestamp": "2026-03-11T08:25:59Z",
+      "generateName": "zabbix-web-74657997c6-",
+      "labels": {
+        "app": "zabbix-web",
+        "pod-template-hash": "74657997c6"
+      },
+      "name": "zabbix-web-74657997c6-jr4xt",
+      "namespace": "zabbix",
+      "ownerReferences": [
+        {
+          "apiVersion": "apps/v1",
+          "blockOwnerDeletion": true,
+          "controller": true,
+          "kind": "ReplicaSet",
+          "name": "zabbix-web-74657997c6",
+          "uid": "2e862f28-e186-487b-b94d-1a31ff3b75f1"
+        }
+      ],
+      "resourceVersion": "17220378",
+      "uid": "b6b8921d-4308-4e8d-91ec-8602a70a0cb6"
+    },
+    "spec": {
+      "containers": [
+        {
+          "env": [
+            {
+              "name": "DB_SERVER_HOST",
+              "value": "postgresql.postgresql.svc.cluster.local"
+            },
+            {
+              "name": "POSTGRES_USER",
+              "value": "zabbix"
+            },
+            {
+              "name": "POSTGRES_PASSWORD",
+              "value": "zabbix_secure_password"
+            },
+            {
+              "name": "POSTGRES_DB",
+              "value": "zabbix"
+            },
+            {
+              "name": "ZBX_SERVER_HOST",
+              "value": "zabbix-server"
+            },
+            {
+              "name": "ZBX_SERVER_PORT",
+              "value": "10051"
+            },
+            {
+              "name": "ZBX_SERVER_NAME",
+              "value": "Ka0s NOC"
+            }
+          ],
+          "image": "zabbix/zabbix-web-nginx-pgsql:latest",
+          "imagePullPolicy": "Always",
+          "name": "zabbix-web",
+          "ports": [
+            {
+              "containerPort": 8080,
+              "protocol": "TCP"
+            }
+          ],
+          "resources": {
+            "limits": {
+              "cpu": "1",
+              "memory": "1Gi"
+            },
+            "requests": {
+              "cpu": "250m",
+              "memory": "256Mi"
+            }
+          },
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/usr/share/zabbix",
+              "name": "zabbix-web-root"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-s45rp",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "dnsPolicy": "ClusterFirst",
+      "enableServiceLinks": true,
+      "initContainers": [
+        {
+          "command": [
+            "sh",
+            "-c",
+            "set -e\nmkdir -p /work\n# Copy original files to work directory, ignoring errors for special files/permissions\ncp -a /usr/share/zabbix/. /work/ 2>/dev/null || true\n\nif [ -f /branding/zabbix_logo.png ]; then\n  mkdir -p /work/ui/assets/img /work/assets/img\n  # Replace ALL png logos related to Zabbix\n  find /work -type f \\( -iname '*zabbix*.png' -o -iname '*logo*.png' \\) -exec cp /branding/zabbix_logo.png {} \\; 2>/dev/null || true\nfi\nif [ -f /branding/zabbix_logo_compact.png ]; then\n  mkdir -p /work/ui/assets/img /work/assets/img\n  cp /branding/zabbix_logo_compact.png /work/ui/assets/img/zabbix_logo_compact.png 2>/dev/null || true\n  cp /branding/zabbix_logo_compact.png /work/assets/img/zabbix_logo_compact.png 2>/dev/null || true\nfi\nif [ -f /branding/favicon.png ]; then\n  # Replace favicon and mobile icons\n  find /work -type f \\( -name \"favicon.ico\" -o -name \"apple-touch-icon*.png\" -o -name \"ms-tile*.png\" -o -name \"touch-icon*.png\" \\) -exec cp /branding/favicon.png {} \\; 2>/dev/null || true\nfi\nif [ -f /branding/zabbix_logo.svg ]; then\n  mkdir -p /work/ui/assets/img /work/assets/img\n   # Replace ALL svg logos related to Zabbix\n  find /work -type f \\( -iname '*zabbix*.svg' -o -iname '*logo*.svg' \\) -exec cp /branding/zabbix_logo.svg {} \\; 2>/dev/null || true\nfi\ngrep -RIl \"zabbix-logo-sidebar\" /work 2>/dev/null | while IFS= read -r f; do\n  case \"$f\" in\n    *.css) printf '\\n.zabbix-logo-sidebar{background-image:url(../img/zabbix_logo.png) !important;background-repeat:no-repeat !important;background-size:250px !important;background-position:left center !important;background-color:transparent !important;width:220px !important;height:56px !important;}\\n.sidebar-compact .zabbix-logo-sidebar,.is-compact .zabbix-logo-sidebar,.sidebar-collapsed .zabbix-logo-sidebar,.zabbix-logo-sidebar-compact,.zabbix-logo-sidebar-mini{background-image:url(../img/zabbix_logo_compact.png) !important;background-repeat:no-repeat !important;background-size:130px auto !important;background-position:center center !important;background-color:transparent !important;width:30px !important;height:56px !important;}\\n.signin-logo{background-image:url(../img/zabbix_logo.png) !important;background-repeat:no-repeat !important;background-size:contain !important;background-position:center center !important;width:100% !important;height:60px !important;margin-bottom:20px !important;}\\n' >> \"$f\" ;;\n  esac\ndone\n"
+          ],
+          "image": "zabbix/zabbix-web-nginx-pgsql:latest",
+          "imagePullPolicy": "Always",
+          "name": "init-zabbix-web-branding",
+          "resources": {
+            "limits": {
+              "cpu": "500m",
+              "memory": "512Mi"
+            },
+            "requests": {
+              "cpu": "100m",
+              "memory": "128Mi"
+            }
+          },
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/work",
+              "name": "zabbix-web-root"
+            },
+            {
+              "mountPath": "/branding",
+              "name": "zabbix-web-branding",
+              "readOnly": true
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-s45rp",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "nodeName": "k8-node-40",
+      "nodeSelector": {
+        "kubernetes.io/hostname": "k8-node-40"
+      },
+      "preemptionPolicy": "PreemptLowerPriority",
+      "priority": 0,
+      "restartPolicy": "Always",
+      "schedulerName": "default-scheduler",
+      "securityContext": {},
+      "serviceAccount": "default",
+      "serviceAccountName": "default",
+      "terminationGracePeriodSeconds": 30,
+      "tolerations": [
+        {
+          "effect": "NoSchedule",
+          "key": "node.kubernetes.io/unschedulable",
+          "operator": "Exists"
+        },
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/not-ready",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        },
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/unreachable",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        }
+      ],
+      "volumes": [
+        {
+          "emptyDir": {},
+          "name": "zabbix-web-root"
+        },
+        {
+          "configMap": {
+            "defaultMode": 420,
+            "name": "zabbix-web-branding"
+          },
+          "name": "zabbix-web-branding"
+        },
+        {
+          "name": "kube-api-access-s45rp",
+          "projected": {
+            "defaultMode": 420,
+            "sources": [
+              {
+                "serviceAccountToken": {
+                  "expirationSeconds": 3607,
+                  "path": "token"
+                }
+              },
+              {
+                "configMap": {
+                  "items": [
+                    {
+                      "key": "ca.crt",
+                      "path": "ca.crt"
+                    }
+                  ],
+                  "name": "kube-root-ca.crt"
+                }
+              },
+              {
+                "downwardAPI": {
+                  "items": [
+                    {
+                      "fieldRef": {
+                        "apiVersion": "v1",
+                        "fieldPath": "metadata.namespace"
+                      },
+                      "path": "namespace"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "status": {
+      "conditions": [
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-11T08:26:03Z",
+          "status": "True",
+          "type": "PodReadyToStartContainers"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-11T08:25:59Z",
+          "message": "containers with incomplete status: [init-zabbix-web-branding]",
+          "reason": "ContainersNotInitialized",
+          "status": "False",
+          "type": "Initialized"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-11T08:25:59Z",
+          "message": "containers with unready status: [zabbix-web]",
+          "reason": "ContainersNotReady",
+          "status": "False",
+          "type": "Ready"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-11T08:25:59Z",
+          "message": "containers with unready status: [zabbix-web]",
+          "reason": "ContainersNotReady",
+          "status": "False",
+          "type": "ContainersReady"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-11T08:25:59Z",
+          "status": "True",
+          "type": "PodScheduled"
+        }
+      ],
+      "containerStatuses": [
+        {
+          "image": "zabbix/zabbix-web-nginx-pgsql:latest",
+          "imageID": "",
+          "lastState": {},
+          "name": "zabbix-web",
+          "ready": false,
+          "restartCount": 0,
+          "started": false,
+          "state": {
+            "waiting": {
+              "reason": "PodInitializing"
+            }
+          },
+          "volumeMounts": [
+            {
+              "mountPath": "/usr/share/zabbix",
+              "name": "zabbix-web-root"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-s45rp",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            }
+          ]
+        }
+      ],
+      "hostIP": "192.168.1.40",
+      "hostIPs": [
+        {
+          "ip": "192.168.1.40"
+        }
+      ],
+      "initContainerStatuses": [
+        {
+          "containerID": "containerd://d82732db4db8e5a3ad8643e21a2694f683885308a8339a8218be244de1216216",
+          "image": "docker.io/zabbix/zabbix-web-nginx-pgsql:latest",
+          "imageID": "docker.io/zabbix/zabbix-web-nginx-pgsql@sha256:ccc4cf35b84e44b9c5589ef6986e0e0cdb7ab65fd68bb2f2063e0d9c59611cc0",
+          "lastState": {
+            "terminated": {
+              "containerID": "containerd://d82732db4db8e5a3ad8643e21a2694f683885308a8339a8218be244de1216216",
+              "exitCode": 1,
+              "finishedAt": "2026-03-11T08:34:21Z",
+              "reason": "Error",
+              "startedAt": "2026-03-11T08:34:01Z"
+            }
+          },
+          "name": "init-zabbix-web-branding",
+          "ready": false,
+          "restartCount": 6,
+          "started": false,
+          "state": {
+            "waiting": {
+              "message": "back-off 5m0s restarting failed container=init-zabbix-web-branding pod=zabbix-web-74657997c6-jr4xt_zabbix(b6b8921d-4308-4e8d-91ec-8602a70a0cb6)",
+              "reason": "CrashLoopBackOff"
+            }
+          },
+          "volumeMounts": [
+            {
+              "mountPath": "/work",
+              "name": "zabbix-web-root"
+            },
+            {
+              "mountPath": "/branding",
+              "name": "zabbix-web-branding",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-s45rp",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            }
+          ]
+        }
+      ],
+      "phase": "Pending",
+      "podIP": "172.16.64.156",
+      "podIPs": [
+        {
+          "ip": "172.16.64.156"
+        }
+      ],
+      "qosClass": "Burstable",
+      "startTime": "2026-03-11T08:25:59Z"
+    }
+  }
+]

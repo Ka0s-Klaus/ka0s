@@ -28,33 +28,33 @@ spec:
             - sh
             - -c
             - |
-              set -eu
+              set -e
               mkdir -p /work
-              cp -a /usr/share/zabbix/. /work/
+              # Copy original files to work directory, ignoring errors for special files/permissions
+              cp -a /usr/share/zabbix/. /work/ 2>/dev/null || true
+
               if [ -f /branding/zabbix_logo.png ]; then
                 mkdir -p /work/ui/assets/img /work/assets/img
-                cp /branding/zabbix_logo.png /work/ui/assets/img/zabbix_logo.png 2>/dev/null || true
-                cp /branding/zabbix_logo.png /work/ui/assets/img/zabbix-logo.png 2>/dev/null || true
-                cp /branding/zabbix_logo.png /work/assets/img/zabbix_logo.png 2>/dev/null || true
-                cp /branding/zabbix_logo.png /work/assets/img/zabbix-logo.png 2>/dev/null || true
-                find /work -type f \( -iname 'zabbix_logo*.png' -o -iname 'zabbix-logo*.png' \) -exec cp /branding/zabbix_logo.png {} \; 2>/dev/null || true
+                # Replace ALL png logos related to Zabbix
+                find /work -type f \( -iname '*zabbix*.png' -o -iname '*logo*.png' \) -exec cp /branding/zabbix_logo.png {} \; 2>/dev/null || true
               fi
               if [ -f /branding/zabbix_logo_compact.png ]; then
                 mkdir -p /work/ui/assets/img /work/assets/img
                 cp /branding/zabbix_logo_compact.png /work/ui/assets/img/zabbix_logo_compact.png 2>/dev/null || true
                 cp /branding/zabbix_logo_compact.png /work/assets/img/zabbix_logo_compact.png 2>/dev/null || true
               fi
+              if [ -f /branding/favicon.png ]; then
+                # Replace favicon and mobile icons
+                find /work -type f \( -name "favicon.ico" -o -name "apple-touch-icon*.png" -o -name "ms-tile*.png" -o -name "touch-icon*.png" \) -exec cp /branding/favicon.png {} \; 2>/dev/null || true
+              fi
               if [ -f /branding/zabbix_logo.svg ]; then
                 mkdir -p /work/ui/assets/img /work/assets/img
-                cp /branding/zabbix_logo.svg /work/ui/assets/img/zabbix_logo.svg 2>/dev/null || true
-                cp /branding/zabbix_logo.svg /work/ui/assets/img/zabbix-logo.svg 2>/dev/null || true
-                cp /branding/zabbix_logo.svg /work/assets/img/zabbix_logo.svg 2>/dev/null || true
-                cp /branding/zabbix_logo.svg /work/assets/img/zabbix-logo.svg 2>/dev/null || true
-                find /work -type f \( -iname 'zabbix_logo*.svg' -o -iname 'zabbix-logo*.svg' \) -exec cp /branding/zabbix_logo.svg {} \; 2>/dev/null || true
+                 # Replace ALL svg logos related to Zabbix
+                find /work -type f \( -iname '*zabbix*.svg' -o -iname '*logo*.svg' \) -exec cp /branding/zabbix_logo.svg {} \; 2>/dev/null || true
               fi
               grep -RIl "zabbix-logo-sidebar" /work 2>/dev/null | while IFS= read -r f; do
                 case "$f" in
-                  *.css) printf '\n.zabbix-logo-sidebar{background-image:url(../img/zabbix_logo.png) !important;background-repeat:no-repeat !important;background-size:250px !important;background-position:left center !important;background-color:transparent !important;width:220px !important;height:56px !important;}\n.sidebar-compact .zabbix-logo-sidebar,.is-compact .zabbix-logo-sidebar,.sidebar-collapsed .zabbix-logo-sidebar,.zabbix-logo-sidebar-compact,.zabbix-logo-sidebar-mini{background-image:url(../img/zabbix_logo_compact.png) !important;background-repeat:no-repeat !important;background-size:130px auto !important;background-position:center center !important;background-color:transparent !important;width:30px !important;height:56px !important;}\n' >> "$f" ;;
+                  *.css) printf '\n.zabbix-logo-sidebar{background-image:url(../img/zabbix_logo.png) !important;background-repeat:no-repeat !important;background-size:250px !important;background-position:left center !important;background-color:transparent !important;width:220px !important;height:56px !important;}\n.sidebar-compact .zabbix-logo-sidebar,.is-compact .zabbix-logo-sidebar,.sidebar-collapsed .zabbix-logo-sidebar,.zabbix-logo-sidebar-compact,.zabbix-logo-sidebar-mini{background-image:url(../img/zabbix_logo_compact.png) !important;background-repeat:no-repeat !important;background-size:130px auto !important;background-position:center center !important;background-color:transparent !important;width:30px !important;height:56px !important;}\n.signin-logo{background-image:url(../img/zabbix_logo.png) !important;background-repeat:no-repeat !important;background-size:contain !important;background-position:center center !important;width:100% !important;height:60px !important;margin-bottom:20px !important;}\n' >> "$f" ;;
                 esac
               done
           resources:

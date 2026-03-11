@@ -59,12 +59,16 @@ spec:
               fi && \
               echo "Applying custom branding..." && \
               mkdir -p /web-data/images && \
-              if [ -f /branding/zabbix_logo.png ]; then \
-                 cp /branding/zabbix_logo.png /web-data/images/custom_logo.png; \
-                 cp /branding/zabbix_logo_compact.png /web-data/images/custom_logo_compact.png; \
-                 find /web-data/images -name "itop-logo*.png" -exec cp /branding/zabbix_logo.png {} \; ; \
-                 find /web-data -name "*.css" -type f -exec sh -c 'printf "\n.ibo-navigation-menu--logo img, .ibo-header__logo img, #login-logo img { opacity: 0; }\n.ibo-navigation-menu--logo, .ibo-header__logo, #login-logo a { background-image: url(../images/custom_logo.png) !important; background-repeat: no-repeat !important; background-size: 250px !important; background-position: left center !important; width: 220px !important; height: 56px !important; display: block; }\n.ibo-is-collapsed .ibo-navigation-menu--logo, .ibo-navigation-menu--minified .ibo-navigation-menu--logo { background-image: url(../images/custom_logo_compact.png) !important; background-size: 30px auto !important; background-position: center center !important; width: 30px !important; }\n" >> "$1"' -- {} \; || true; \
+              if [ -f /branding/favicon.png ]; then
+                 find /web-data -type f \( -name "favicon.ico" -o -name "apple-touch-icon*.png" -o -name "ms-tile*.png" -o -name "touch-icon*.png" \) -exec cp /branding/favicon.png {} \; 2>/dev/null || true;
                fi && \
+               if [ -f /branding/zabbix_logo.png ]; then \
+                  cp /branding/zabbix_logo.png /web-data/images/custom_logo.png; \
+                  cp /branding/zabbix_logo_compact.png /web-data/images/custom_logo_compact.png; \
+                  # Replace ALL png logos related to iTop
+                  find /web-data/images -type f \( -iname '*itop*.png' -o -iname '*logo*.png' \) -exec cp /branding/zabbix_logo.png {} \; ; \
+                  find /web-data -name "*.css" -type f -exec sh -c 'printf "\n.ibo-navigation-menu--logo img, .ibo-header__logo img, #login-logo img { opacity: 0; }\n.ibo-navigation-menu--logo, .ibo-header__logo, #login-logo a { background-image: url(../images/custom_logo.png) !important; background-repeat: no-repeat !important; background-size: 250px !important; background-position: left center !important; width: 220px !important; height: 56px !important; display: block; }\n.ibo-is-collapsed .ibo-navigation-menu--logo, .ibo-navigation-menu--minified .ibo-navigation-menu--logo { background-image: url(../images/custom_logo_compact.png) !important; background-size: 30px auto !important; background-position: center center !important; width: 30px !important; }\n" >> "$1"' -- {} \; || true; \
+                fi && \
               chmod -R 775 /web-data/conf && \
               chmod 444 /web-data/conf/production/config-itop.php && \
               chown -R 33:33 /web-data
