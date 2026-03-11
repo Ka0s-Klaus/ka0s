@@ -10,10 +10,12 @@ Identificar todos los Pods que no se encuentran en estado `Running` o `Succeeded
 *   **Salida**: Archivo JSON en `audit/kube/failed_pods.json` (tras la ejecución del workflow).
 
 ## Lógica Técnica
-1.  Conecta al API Server usando `kubectl`.
-2.  Obtiene todos los pods de todos los namespaces (`-A`).
-3.  Filtra aquellos cuyo `status.phase` sea distinto de `Running` y `Succeeded`.
-4.  Genera un archivo JSON compatible con herramientas de análisis (jq, pandas, etc.).
+1.  **Verificación Previa**: Comprueba la conectividad al clúster (`kubectl get nodes`).
+2.  **Ejecución Robusta**: Usa `set -o pipefail` para detectar errores en pipelines.
+3.  Conecta al API Server usando `kubectl`.
+4.  Obtiene todos los pods de todos los namespaces (`-A`).
+5.  Filtra aquellos cuyo `status.phase` sea distinto de `Running` y `Succeeded`.
+6.  Genera un archivo JSON compatible con herramientas de análisis (jq, pandas, etc.).
 
 ## Ejecución vía GitHub Actions
 
