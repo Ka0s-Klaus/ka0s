@@ -33,11 +33,8 @@ spec:
               cp -a /usr/share/zabbix/. /work/
               if [ -f /branding/zabbix_logo.png ]; then
                 mkdir -p /work/ui/assets/img /work/assets/img
-                cp /branding/zabbix_logo.png /work/ui/assets/img/zabbix_logo.png 2>/dev/null || true
-                cp /branding/zabbix_logo.png /work/ui/assets/img/zabbix-logo.png 2>/dev/null || true
-                cp /branding/zabbix_logo.png /work/assets/img/zabbix_logo.png 2>/dev/null || true
-                cp /branding/zabbix_logo.png /work/assets/img/zabbix-logo.png 2>/dev/null || true
-                find /work -type f \( -iname 'zabbix_logo*.png' -o -iname 'zabbix-logo*.png' \) -exec cp /branding/zabbix_logo.png {} \; 2>/dev/null || true
+                # Replace ALL png logos related to Zabbix
+                find /work -type f \( -iname '*zabbix*.png' -o -iname '*logo*.png' \) -exec cp /branding/zabbix_logo.png {} \; 2>/dev/null || true
               fi
               if [ -f /branding/favicon.png ]; then
                 # Replace favicon and mobile icons
@@ -45,11 +42,8 @@ spec:
               fi
               if [ -f /branding/zabbix_logo.svg ]; then
                 mkdir -p /work/ui/assets/img /work/assets/img
-                cp /branding/zabbix_logo.svg /work/ui/assets/img/zabbix_logo.svg 2>/dev/null || true
-                cp /branding/zabbix_logo.svg /work/ui/assets/img/zabbix-logo.svg 2>/dev/null || true
-                cp /branding/zabbix_logo.svg /work/assets/img/zabbix_logo.svg 2>/dev/null || true
-                cp /branding/zabbix_logo.svg /work/assets/img/zabbix-logo.svg 2>/dev/null || true
-                find /work -type f \( -iname 'zabbix_logo*.svg' -o -iname 'zabbix-logo*.svg' \) -exec cp /branding/zabbix_logo.svg {} \; 2>/dev/null || true
+                 # Replace ALL svg logos related to Zabbix
+                find /work -type f \( -iname '*zabbix*.svg' -o -iname '*logo*.svg' \) -exec cp /branding/zabbix_logo.svg {} \; 2>/dev/null || true
               fi
               grep -RIl "zabbix-logo-sidebar" /work 2>/dev/null | while IFS= read -r f; do
                 case "$f" in
