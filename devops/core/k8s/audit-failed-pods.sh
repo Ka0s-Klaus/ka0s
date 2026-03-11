@@ -7,9 +7,16 @@
 # =================================================================================================
 
 set -e
+set -o pipefail
 
 # Configuración K8s
 export KUBECONFIG=${KUBECONFIG:-/etc/kubernetes/admin.conf}
+
+# Check connection first
+if ! kubectl get nodes > /dev/null 2>&1; then
+    echo "[ERROR] Cannot connect to Kubernetes cluster via kubectl. Check kubeconfig and API server status."
+    exit 1
+fi
 
 # Directorio de resultados
 RESULTS_DIR=${1:-/tmp/results}
