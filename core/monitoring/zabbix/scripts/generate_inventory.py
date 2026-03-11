@@ -25,10 +25,12 @@ class ZabbixInventory:
             "jsonrpc": "2.0",
             "method": method,
             "params": params,
-            "id": self.request_id,
-            "auth": self.auth_token
+            "id": self.request_id
         }
         headers = {'Content-Type': 'application/json'}
+        if self.auth_token:
+            headers['Authorization'] = f"Bearer {self.auth_token}"
+            # payload["auth"] = self.auth_token # REMOVED: sending in header only
         try:
             response = requests.post(self.url, data=json.dumps(payload), headers=headers, timeout=10)
             response.raise_for_status()
@@ -76,8 +78,9 @@ class ZabbixInventory:
         })
 
         # 4. Proxies
+        # Zabbix 7.0 uses 'name' instead of 'host'
         proxies = self._post("proxy.get", {
-            "output": ["proxyid", "host", "status"]
+            "output": ["proxyid", "name"]
         })
 
         self.save_reports(hosts, templates, groups, proxies)
