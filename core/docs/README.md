@@ -80,6 +80,7 @@ Si, parece increible pero hemos decidido en el equipo usar una terminología "es
 - [Concepto: Monitoring as Code (Zabbix IaC)](./ka0s_zabbix_iac/01_concept.md)
 - [Ka0s Cluster Restart Module](./kaos_cluster_restart/kaos_cluster_restart.md)
 - [Guía de Uso: OpenClaw SRE](./openclaw/03_usage.md)
+- [Adding Windows Nodes to Ka0s Cluster](./windows_nodes/01_guide.md)
 
 <!-- MODULES_END -->
 
