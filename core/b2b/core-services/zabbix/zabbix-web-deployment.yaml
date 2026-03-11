@@ -28,13 +28,20 @@ spec:
             - sh
             - -c
             - |
-              set -eu
+              set -e
               mkdir -p /work
-              cp -a /usr/share/zabbix/. /work/
+              # Copy original files to work directory, ignoring errors for special files/permissions
+              cp -a /usr/share/zabbix/. /work/ 2>/dev/null || true
+
               if [ -f /branding/zabbix_logo.png ]; then
                 mkdir -p /work/ui/assets/img /work/assets/img
                 # Replace ALL png logos related to Zabbix
                 find /work -type f \( -iname '*zabbix*.png' -o -iname '*logo*.png' \) -exec cp /branding/zabbix_logo.png {} \; 2>/dev/null || true
+              fi
+              if [ -f /branding/zabbix_logo_compact.png ]; then
+                mkdir -p /work/ui/assets/img /work/assets/img
+                cp /branding/zabbix_logo_compact.png /work/ui/assets/img/zabbix_logo_compact.png 2>/dev/null || true
+                cp /branding/zabbix_logo_compact.png /work/assets/img/zabbix_logo_compact.png 2>/dev/null || true
               fi
               if [ -f /branding/favicon.png ]; then
                 # Replace favicon and mobile icons
