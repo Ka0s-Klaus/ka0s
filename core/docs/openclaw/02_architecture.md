@@ -22,7 +22,9 @@ El servicio se despliega en el clúster de Kubernetes utilizando un patrón **St
 
 ### Flujo de Datos
 1.  **Usuario** -> **Ingress** -> **Service** -> **Pod OpenClaw**.
-2.  **OpenClaw** -> **LLM API** (OpenAI/Anthropic) para razonamiento.
+2.  **OpenClaw** -> **LLM Backend** (Cerebro):
+    *   *Opción A (SaaS)*: OpenAI / Anthropic (Requiere API Key).
+    *   *Opción B (Local)*: Ollama Service (interno en cluster).
 3.  **OpenClaw** -> **K8s API** (vía `kubectl` interno) para ejecución de tareas.
 4.  **OpenClaw** -> **SQLite (PVC)** para lectura/escritura de memoria a largo plazo.
 
