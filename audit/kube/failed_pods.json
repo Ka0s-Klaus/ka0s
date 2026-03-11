@@ -4,6 +4,224 @@
     "kind": "Pod",
     "metadata": {
       "annotations": {
+        "actions.github.com/patch-id": "180",
+        "actions.github.com/runner-group-name": "Default",
+        "actions.github.com/runner-scale-set-name": "swarm-runners-scaleset",
+        "actions.github.com/runner-spec-hash": "774f57d754",
+        "cni.projectcalico.org/containerID": "3196d06e3efd839d2fe7a5ded2dfefc701272fedb9b726f3abe7e6f69b1d1b73",
+        "cni.projectcalico.org/podIP": "172.16.209.7/32",
+        "cni.projectcalico.org/podIPs": "172.16.209.7/32"
+      },
+      "creationTimestamp": "2026-03-11T15:37:26Z",
+      "labels": {
+        "actions-ephemeral-runner": "True",
+        "actions.github.com/organization": "Ka0s-Klaus",
+        "actions.github.com/repository": "Ka0s",
+        "actions.github.com/scale-set-name": "swarm-runners-scaleset",
+        "actions.github.com/scale-set-namespace": "actions-runner-system",
+        "app.kubernetes.io/component": "runner",
+        "app.kubernetes.io/instance": "swarm-runners-scaleset",
+        "app.kubernetes.io/managed-by": "Helm",
+        "app.kubernetes.io/name": "swarm-runners-scaleset",
+        "app.kubernetes.io/part-of": "gha-runner-scale-set",
+        "app.kubernetes.io/version": "0.13.1",
+        "helm.sh/chart": "gha-rs-0.13.1",
+        "pod-template-hash": "6d8bbd8b47"
+      },
+      "name": "swarm-runners-scaleset-hkss5-runner-9hklj",
+      "namespace": "actions-runner-system",
+      "ownerReferences": [
+        {
+          "apiVersion": "actions.github.com/v1alpha1",
+          "blockOwnerDeletion": true,
+          "controller": true,
+          "kind": "EphemeralRunner",
+          "name": "swarm-runners-scaleset-hkss5-runner-9hklj",
+          "uid": "3bdd2c83-6e1f-418c-bfc1-cbdcea70f250"
+        }
+      ],
+      "resourceVersion": "17306762",
+      "uid": "a950739a-9094-4635-b793-9cd497db6277"
+    },
+    "spec": {
+      "containers": [
+        {
+          "command": [
+            "/home/runner/run.sh"
+          ],
+          "env": [
+            {
+              "name": "ACTIONS_RUNNER_INPUT_JITCONFIG",
+              "valueFrom": {
+                "secretKeyRef": {
+                  "key": "jitToken",
+                  "name": "swarm-runners-scaleset-hkss5-runner-9hklj"
+                }
+              }
+            },
+            {
+              "name": "GITHUB_ACTIONS_RUNNER_EXTRA_USER_AGENT",
+              "value": "actions-runner-controller/0.13.1"
+            }
+          ],
+          "image": "ghcr.io/actions/actions-runner:latest",
+          "imagePullPolicy": "Always",
+          "name": "runner",
+          "resources": {},
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-rmd9p",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "dnsPolicy": "ClusterFirst",
+      "enableServiceLinks": true,
+      "nodeName": "k8-node-20",
+      "preemptionPolicy": "PreemptLowerPriority",
+      "priority": 0,
+      "restartPolicy": "Never",
+      "schedulerName": "default-scheduler",
+      "securityContext": {},
+      "serviceAccount": "swarm-runners-scaleset-gha-rs-no-permission",
+      "serviceAccountName": "swarm-runners-scaleset-gha-rs-no-permission",
+      "terminationGracePeriodSeconds": 30,
+      "tolerations": [
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/not-ready",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        },
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/unreachable",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        }
+      ],
+      "volumes": [
+        {
+          "name": "kube-api-access-rmd9p",
+          "projected": {
+            "defaultMode": 420,
+            "sources": [
+              {
+                "serviceAccountToken": {
+                  "expirationSeconds": 3607,
+                  "path": "token"
+                }
+              },
+              {
+                "configMap": {
+                  "items": [
+                    {
+                      "key": "ca.crt",
+                      "path": "ca.crt"
+                    }
+                  ],
+                  "name": "kube-root-ca.crt"
+                }
+              },
+              {
+                "downwardAPI": {
+                  "items": [
+                    {
+                      "fieldRef": {
+                        "apiVersion": "v1",
+                        "fieldPath": "metadata.namespace"
+                      },
+                      "path": "namespace"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "status": {
+      "conditions": [
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-11T15:37:26Z",
+          "status": "False",
+          "type": "PodReadyToStartContainers"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-11T15:37:26Z",
+          "status": "True",
+          "type": "Initialized"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-11T15:37:26Z",
+          "message": "containers with unready status: [runner]",
+          "reason": "ContainersNotReady",
+          "status": "False",
+          "type": "Ready"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-11T15:37:26Z",
+          "message": "containers with unready status: [runner]",
+          "reason": "ContainersNotReady",
+          "status": "False",
+          "type": "ContainersReady"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-11T15:37:26Z",
+          "status": "True",
+          "type": "PodScheduled"
+        }
+      ],
+      "containerStatuses": [
+        {
+          "image": "ghcr.io/actions/actions-runner:latest",
+          "imageID": "",
+          "lastState": {},
+          "name": "runner",
+          "ready": false,
+          "restartCount": 0,
+          "started": false,
+          "state": {
+            "waiting": {
+              "reason": "ContainerCreating"
+            }
+          },
+          "volumeMounts": [
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-rmd9p",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            }
+          ]
+        }
+      ],
+      "hostIP": "192.168.1.20",
+      "hostIPs": [
+        {
+          "ip": "192.168.1.20"
+        }
+      ],
+      "phase": "Pending",
+      "qosClass": "BestEffort",
+      "startTime": "2026-03-11T15:37:26Z"
+    }
+  },
+  {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+      "annotations": {
         "cni.projectcalico.org/containerID": "65b34421f01950df5b59f7c57bb703f2931707bb1fe8b3b550f69410913afb59",
         "cni.projectcalico.org/podIP": "172.16.64.156/32",
         "cni.projectcalico.org/podIPs": "172.16.64.156/32"
@@ -26,7 +244,7 @@
           "uid": "2e862f28-e186-487b-b94d-1a31ff3b75f1"
         }
       ],
-      "resourceVersion": "17291527",
+      "resourceVersion": "17305873",
       "uid": "b6b8921d-4308-4e8d-91ec-8602a70a0cb6"
     },
     "spec": {
@@ -296,21 +514,21 @@
       ],
       "initContainerStatuses": [
         {
-          "containerID": "containerd://f6be2566d3ef6f1783d085c3783814857340fa9d35db7dcc2c3b173fed94de37",
+          "containerID": "containerd://54fc5c9b15e9dd2ebc1f515eed901015e443063b99cd124b2a697c2d2c232d45",
           "image": "docker.io/zabbix/zabbix-web-nginx-pgsql:latest",
           "imageID": "docker.io/zabbix/zabbix-web-nginx-pgsql@sha256:ccc4cf35b84e44b9c5589ef6986e0e0cdb7ab65fd68bb2f2063e0d9c59611cc0",
           "lastState": {
             "terminated": {
-              "containerID": "containerd://f6be2566d3ef6f1783d085c3783814857340fa9d35db7dcc2c3b173fed94de37",
+              "containerID": "containerd://54fc5c9b15e9dd2ebc1f515eed901015e443063b99cd124b2a697c2d2c232d45",
               "exitCode": 1,
-              "finishedAt": "2026-03-11T14:37:34Z",
+              "finishedAt": "2026-03-11T15:32:22Z",
               "reason": "Error",
-              "startedAt": "2026-03-11T14:37:09Z"
+              "startedAt": "2026-03-11T15:32:01Z"
             }
           },
           "name": "init-zabbix-web-branding",
           "ready": false,
-          "restartCount": 72,
+          "restartCount": 82,
           "started": false,
           "state": {
             "waiting": {
