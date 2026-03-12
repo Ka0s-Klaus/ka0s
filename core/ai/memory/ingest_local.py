@@ -20,9 +20,20 @@ OLLAMA_PORT = os.getenv("OLLAMA_PORT") or "11435"
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL") or "nomic-embed-text"
 
 # Paths relative to where the script is run (project root)
-RULES_PATH = ".trae/rules/**/*.md"
-SKILLS_PATH = ".trae/skills/**/*.md"
-DOCS_PATH = "core/docs/**/*.md"
+# Ingestion Strategy: Full Knowledge Base (Code + Docs + Config)
+PATTERNS = [
+    ".trae/rules/**/*.md",       # Reglas y Estándares
+    ".trae/skills/**/*.md",      # Habilidades del Agente
+    "core/**/*.md",              # Documentación Técnica
+    "core/**/*.yaml",            # Infraestructura (K8s, Helm)
+    "core/**/*.yml",             # Workflows y Config
+    "core/**/*.json",            # Schemas y Configuraciones
+    "core/**/*.sql",             # Definiciones de Base de Datos
+    "core/**/*.py",              # Lógica de Negocio y Scripts
+    "core/**/*.sh",              # Scripts de Operaciones
+    ".github/workflows/*.yaml",  # CI/CD Pipelines
+    ".github/ISSUE_TEMPLATE/*.yml" # Plantillas de Procesos
+]
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -145,22 +156,18 @@ def run_ingestion():
         conn.close()
         logger.info("Memory table truncated for fresh ingestion.")
 
-    rule_files = glob.glob(RULES_PATH, recursive=True)
-    logger.info(f"Found {len(rule_files)} rule files.")
-    for f in rule_files:
-        process_file(f)
-
-    skill_files = glob.glob(SKILLS_PATH, recursive=True)
-    logger.info(f"Found {len(skill_files)} skill files.")
-    for f in skill_files:
-        process_file(f)
-
-    doc_files = glob.glob(DOCS_PATH, recursive=True)
-    logger.info(f"Found {len(doc_files)} doc files.")
-    for f in doc_files:
-        process_file(f)
-        
-    logger.info("Ingestion complete.")
+    total_files = 0
+    for pattern in PATTERNS:
+        files = glob.glob(pattern, recursive=True)
+        logger.info(f"Found {len(files)} files for pattern: {pattern}")
+        for f in files:
+            # Skip hidden files or generated artifacts if necessary
+            if "node_modules" in f or "__pycache__" in f:
+                continue
+            process_file(f)
+            total_files += 1
+            
+    logger.info(f"Ingestion complete. Total files processed: {total_files}")
 
 if __name__ == "__main__":
     run_ingestion()
