@@ -1,0 +1,116 @@
+zabbix_export:
+  version: '7.4'
+  template_groups:
+    - uuid: abcdef12345647898abcdef012345678
+      name: Templates
+  templates:
+    - uuid: fedcba6543214abc9def0123456789aa
+      template: 'Template App Planka'
+      name: 'Template App Planka'
+      groups:
+        - name: Templates
+      items:
+        - uuid: 1122334455664abc9ddeeff001122334
+          name: 'Planka - HTTP Status'
+          type: CALCULATED
+          key: planka.http.status
+          delay: 60s
+          history: 90d
+          params: 'last(//web.test.rspcode[Planka Web,Home])'
+        - uuid: 8899aabbccdd4eab8f00112233445566
+          name: 'Planka - Response Time (ms)'
+          type: CALCULATED
+          key: planka.response.time
+          delay: 60s
+          history: 90d
+          value_type: FLOAT
+          units: ms
+          params: 'last(//web.test.time[Planka Web,Home])'
+      httptests:
+        - uuid: 0011223344554def8aabbccddeeff001
+          name: 'Planka Web'
+          delay: 60s
+          steps:
+            - name: Home
+              url: '{$PLANKA.URL}'
+              timeout: 10s
+              required: '{$PLANKA.TEXT}'
+              status_codes: '200'
+      macros:
+        - macro: '{$PLANKA.SLA.TIME}'
+          value: '2000'
+          description: ms
+        - macro: '{$PLANKA.TEXT}'
+          value: Planka
+        - macro: '{$PLANKA.URL}'
+          value: 'https://scrum.ka0s.io:8083/'
+      dashboards:
+        - uuid: 3128510f515b4e7086e1f56df687c137
+          name: 'Planka view'
+          pages:
+            - widgets:
+                - type: item
+                  name: 'Http Status'
+                  width: '36'
+                  height: '4'
+                  fields:
+                    - type: ITEM
+                      name: itemid.0
+                      value:
+                        host: 'Template App Planka'
+                        key: planka.http.status
+                - type: graph
+                  name: 'Http Status'
+                  'y': '4'
+                  width: '36'
+                  height: '5'
+                  fields:
+                    - type: GRAPH
+                      name: graphid.0
+                      value:
+                        host: 'Template App Planka'
+                        name: 'Planka - HTTP Status'
+                    - type: STRING
+                      name: reference
+                      value: DFQFE
+                - type: item
+                  name: Response
+                  x: '36'
+                  width: '36'
+                  height: '4'
+                  fields:
+                    - type: ITEM
+                      name: itemid.0
+                      value:
+                        host: 'Template App Planka'
+                        key: planka.response.time
+                - type: graph
+                  name: Response
+                  x: '36'
+                  'y': '4'
+                  width: '36'
+                  height: '5'
+                  fields:
+                    - type: GRAPH
+                      name: graphid.0
+                      value:
+                        host: 'Template App Planka'
+                        name: 'Planka - Response Time'
+                    - type: STRING
+                      name: reference
+                      value: VCXJH
+  graphs:
+    - uuid: 9988776655444abcbddeeffaabbccdde
+      name: 'Planka - HTTP Status'
+      graph_items:
+        - color: F63100
+          item:
+            host: 'Template App Planka'
+            key: planka.http.status
+    - uuid: aabbccddeeff4abc8def1234567890aa
+      name: 'Planka - Response Time'
+      graph_items:
+        - color: 1A7C9E
+          item:
+            host: 'Template App Planka'
+            key: planka.response.time

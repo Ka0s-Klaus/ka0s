@@ -1,0 +1,393 @@
+zabbix_export:
+  version: '7.4'
+  template_groups:
+    - uuid: 821b4432095840008000000000000300
+      name: Templates/Applications
+  templates:
+    - uuid: 521b4432095840008000000000000002
+      template: 'Template GitHub Repository Metrics'
+      name: 'Template GitHub Repository Metrics'
+      description: 'Monitor GitHub repository metrics via native HTTP Agent. Compliant with official Zabbix GitHub integration standards.'
+      groups:
+        - name: Templates/Applications
+      items:
+        - uuid: 521b443209584000800000000000000f
+          name: 'GitHub Actions Recent Runs'
+          type: DEPENDENT
+          key: github.actions_log
+          history: 7d
+          value_type: TEXT
+          preprocessing:
+            - type: JAVASCRIPT
+              parameters:
+                - |
+                  
+                  var data = JSON.parse(value);
+                  var output = "";
+                  if (data.workflow_runs) {
+                      data.workflow_runs.forEach(function(run) {
+                          output += "Workflow: " + run.name + " (#" + run.run_number + ") | Status: " + (run.conclusion || run.status) + " | Branch: " + run.head_branch + " | Author: " + run.actor.login + " | Event: " + run.event + "\n";
+                      });
+                  }
+                  return output;
+                                                  
+          master_item:
+            key: github.actions_raw
+          tags:
+            - tag: component
+              value: actions
+        - uuid: 521b443209584000800000000000000e
+          name: 'GitHub Actions Raw Data'
+          type: HTTP_AGENT
+          key: github.actions_raw
+          delay: '{$GITHUB.INTERVAL:"get_actions"}'
+          history: '0'
+          value_type: TEXT
+          description: 'Fetch recent GitHub Actions workflow runs'
+          timeout: '{$GITHUB.TIMEOUT}'
+          url: '{$GITHUB.API.URL}/repos/{$GITHUB.REPO.OWNER}/{$GITHUB.REPO.NAME}/actions/runs?per_page=5'
+          headers:
+            - name: Authorization
+              value: 'Bearer {$GITHUB.API.TOKEN}'
+            - name: Accept
+              value: application/vnd.github+json
+            - name: User-Agent
+              value: '{$GITHUB.USER_AGENT}'
+            - name: X-GitHub-Api-Version
+              value: '{$GITHUB.API_VERSION}'
+          tags:
+            - tag: component
+              value: github
+        - uuid: 521b4432095840008000000000000005
+          name: 'GitHub Forks'
+          type: DEPENDENT
+          key: github.forks
+          history: 7d
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.forks_count
+          master_item:
+            key: github.repo_info
+          tags:
+            - tag: component
+              value: popularity
+        - uuid: 521b4432095840008000000000000007
+          name: 'GitHub Open Issues'
+          type: DEPENDENT
+          key: github.open_issues
+          history: 7d
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.open_issues_count
+          master_item:
+            key: github.repo_info
+          tags:
+            - tag: component
+              value: workload
+          triggers:
+            - uuid: 521b443209584000800000000000000a
+              expression: 'last(/Template GitHub Repository Metrics/github.open_issues)>50'
+              name: 'High number of open issues on {$GITHUB.REPO.OWNER}/{$GITHUB.REPO.NAME} ({ITEM.LASTVALUE})'
+              priority: WARNING
+        - uuid: 521b4432095840008000000000000008
+          name: 'GitHub Open PRs'
+          type: DEPENDENT
+          key: github.open_prs
+          history: 7d
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.total_count
+          master_item:
+            key: github.pr_search
+          tags:
+            - tag: component
+              value: workload
+        - uuid: 521b443209584000800000000000000d
+          name: 'GitHub Pull Requests Search'
+          type: HTTP_AGENT
+          key: github.pr_search
+          delay: '{$GITHUB.INTERVAL:"get_issues"}'
+          history: '0'
+          value_type: TEXT
+          description: 'Fetch open Pull Requests count via Search API'
+          timeout: '{$GITHUB.TIMEOUT}'
+          url: '{$GITHUB.API.URL}/search/issues?q=repo:{$GITHUB.REPO.OWNER}/{$GITHUB.REPO.NAME}+type:pr+state:open'
+          headers:
+            - name: Authorization
+              value: 'Bearer {$GITHUB.API.TOKEN}'
+            - name: Accept
+              value: application/vnd.github+json
+            - name: User-Agent
+              value: '{$GITHUB.USER_AGENT}'
+            - name: X-GitHub-Api-Version
+              value: '{$GITHUB.API_VERSION}'
+          tags:
+            - tag: component
+              value: github
+        - uuid: 521b4432095840008000000000000003
+          name: 'GitHub Repository Info'
+          type: HTTP_AGENT
+          key: github.repo_info
+          delay: '{$GITHUB.INTERVAL:"get_repo"}'
+          history: '0'
+          value_type: TEXT
+          description: 'Fetch repository general info (Stars, Forks, Issues)'
+          timeout: '{$GITHUB.TIMEOUT}'
+          url: '{$GITHUB.API.URL}/repos/{$GITHUB.REPO.OWNER}/{$GITHUB.REPO.NAME}'
+          headers:
+            - name: Authorization
+              value: 'Bearer {$GITHUB.API.TOKEN}'
+            - name: Accept
+              value: application/vnd.github+json
+            - name: User-Agent
+              value: '{$GITHUB.USER_AGENT}'
+            - name: X-GitHub-Api-Version
+              value: '{$GITHUB.API_VERSION}'
+          tags:
+            - tag: component
+              value: github
+        - uuid: 521b4432095840008000000000000009
+          name: 'GitHub Repo Size (Bytes)'
+          type: DEPENDENT
+          key: github.size_bytes
+          history: 7d
+          units: B
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.size
+            - type: MULTIPLIER
+              parameters:
+                - '1024'
+          master_item:
+            key: github.repo_info
+          tags:
+            - tag: component
+              value: size
+        - uuid: 521b4432095840008000000000000004
+          name: 'GitHub Stars'
+          type: DEPENDENT
+          key: github.stars
+          history: 7d
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.stargazers_count
+          master_item:
+            key: github.repo_info
+          tags:
+            - tag: component
+              value: popularity
+        - uuid: 521b4432095840008000000000000006
+          name: 'GitHub Watchers'
+          type: DEPENDENT
+          key: github.watchers
+          history: 7d
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.subscribers_count
+          master_item:
+            key: github.repo_info
+          tags:
+            - tag: component
+              value: popularity
+      macros:
+        - macro: '{$GITHUB.API.TOKEN}'
+          description: 'GitHub Personal Access Token (PAT)'
+        - macro: '{$GITHUB.API.URL}'
+          value: 'https://api.github.com'
+          description: 'API URL'
+        - macro: '{$GITHUB.API_VERSION}'
+          value: '2022-11-28'
+          description: 'GitHub API Version'
+        - macro: '{$GITHUB.INTERVAL:"get_actions"}'
+          value: 15m
+          description: 'Interval for actions'
+        - macro: '{$GITHUB.INTERVAL:"get_issues"}'
+          value: 1h
+          description: 'Interval for issues and PRs'
+        - macro: '{$GITHUB.INTERVAL:"get_repo"}'
+          value: 15m
+          description: 'Interval for repository info'
+        - macro: '{$GITHUB.REPO.NAME}'
+          value: ka0s
+          description: 'Repository Name'
+        - macro: '{$GITHUB.REPO.OWNER}'
+          value: Ka0s-Klaus
+          description: 'Repository Owner'
+        - macro: '{$GITHUB.TIMEOUT}'
+          value: 15s
+          description: 'Request timeout'
+        - macro: '{$GITHUB.USER_AGENT}'
+          value: Zabbix/7.4
+          description: 'User Agent for requests'
+      dashboards:
+        - uuid: 521b4432095840008000000000000010
+          name: 'GitHub Repository Overview'
+          pages:
+            - widgets:
+                - type: item
+                  name: Stars
+                  width: '18'
+                  height: '6'
+                  fields:
+                    - type: INTEGER
+                      name: decimal_places
+                      value: '0'
+                    - type: ITEM
+                      name: itemid.0
+                      value:
+                        host: 'Template GitHub Repository Metrics'
+                        key: github.stars
+                    - type: INTEGER
+                      name: show.0
+                      value: '2'
+                - type: graph
+                  name: 'Popularity Trends'
+                  'y': '6'
+                  width: '36'
+                  height: '10'
+                  fields:
+                    - type: GRAPH
+                      name: graphid.0
+                      value:
+                        host: 'Template GitHub Repository Metrics'
+                        name: 'GitHub Popularity (Stars/Forks/Watchers)'
+                - type: graph
+                  name: 'Repository Size Growth'
+                  'y': '16'
+                  width: '36'
+                  height: '10'
+                  fields:
+                    - type: GRAPH
+                      name: graphid.0
+                      value:
+                        host: 'Template GitHub Repository Metrics'
+                        name: 'GitHub Repository Size Growth'
+                - type: item
+                  name: Forks
+                  x: '18'
+                  width: '18'
+                  height: '6'
+                  fields:
+                    - type: INTEGER
+                      name: decimal_places
+                      value: '0'
+                    - type: ITEM
+                      name: itemid.0
+                      value:
+                        host: 'Template GitHub Repository Metrics'
+                        key: github.forks
+                    - type: INTEGER
+                      name: show.0
+                      value: '2'
+                - type: item
+                  name: 'Open Issues'
+                  x: '36'
+                  width: '17'
+                  height: '6'
+                  fields:
+                    - type: INTEGER
+                      name: decimal_places
+                      value: '0'
+                    - type: ITEM
+                      name: itemid.0
+                      value:
+                        host: 'Template GitHub Repository Metrics'
+                        key: github.open_issues
+                    - type: INTEGER
+                      name: show.0
+                      value: '2'
+                - type: graph
+                  name: 'Workload Trends'
+                  x: '36'
+                  'y': '6'
+                  width: '36'
+                  height: '10'
+                  fields:
+                    - type: GRAPH
+                      name: graphid.0
+                      value:
+                        host: 'Template GitHub Repository Metrics'
+                        name: 'GitHub Workload (Issues/PRs)'
+                - type: plain_text
+                  name: 'Recent GitHub Actions'
+                  x: '36'
+                  'y': '16'
+                  width: '36'
+                  height: '10'
+                  fields:
+                    - type: ITEM
+                      name: itemids
+                      value:
+                        host: 'Template GitHub Repository Metrics'
+                        key: github.actions_log
+                    - type: INTEGER
+                      name: show_as_html
+                      value: '0'
+                    - type: INTEGER
+                      name: show_lines
+                      value: '10'
+                - type: item
+                  name: 'Open PRs'
+                  x: '53'
+                  width: '19'
+                  height: '6'
+                  fields:
+                    - type: INTEGER
+                      name: decimal_places
+                      value: '0'
+                    - type: ITEM
+                      name: itemid.0
+                      value:
+                        host: 'Template GitHub Repository Metrics'
+                        key: github.open_prs
+                    - type: INTEGER
+                      name: show.0
+                      value: '2'
+  graphs:
+    - uuid: 521b443209584000800000000000000b
+      name: 'GitHub Popularity (Stars/Forks/Watchers)'
+      graph_items:
+        - drawtype: FILLED_REGION
+          color: FFD700
+          item:
+            host: 'Template GitHub Repository Metrics'
+            key: github.stars
+        - sortorder: '1'
+          drawtype: BOLD_LINE
+          color: 0000FF
+          item:
+            host: 'Template GitHub Repository Metrics'
+            key: github.forks
+        - sortorder: '2'
+          color: 00FF00
+          item:
+            host: 'Template GitHub Repository Metrics'
+            key: github.watchers
+    - uuid: 521b4432095840008000000000000011
+      name: 'GitHub Repository Size Growth'
+      graph_items:
+        - drawtype: FILLED_REGION
+          color: '800080'
+          item:
+            host: 'Template GitHub Repository Metrics'
+            key: github.size_bytes
+    - uuid: 521b443209584000800000000000000c
+      name: 'GitHub Workload (Issues/PRs)'
+      graph_items:
+        - drawtype: BOLD_LINE
+          color: FF0000
+          item:
+            host: 'Template GitHub Repository Metrics'
+            key: github.open_issues
+        - sortorder: '1'
+          drawtype: BOLD_LINE
+          color: 00FFFF
+          item:
+            host: 'Template GitHub Repository Metrics'
+            key: github.open_prs

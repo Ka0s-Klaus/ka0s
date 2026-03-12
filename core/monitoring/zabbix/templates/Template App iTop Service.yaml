@@ -1,0 +1,183 @@
+zabbix_export:
+  version: '7.4'
+  template_groups:
+    - uuid: 821b4432095840008000000000000300
+      name: Templates/Applications
+  templates:
+    - uuid: 521b4432095840008000000000000201
+      template: 'Template App iTop Service'
+      name: 'Template App iTop Service'
+      description: 'Monitorización de disponibilidad y métricas de negocio de iTop.'
+      groups:
+        - name: Templates/Applications
+      items:
+        - uuid: 521b4432095840008000000000000211
+          name: 'iTop Open Incidents'
+          type: HTTP_AGENT
+          key: itop.open_incidents
+          history: 7d
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.objects
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '{}'
+            - type: JAVASCRIPT
+              parameters:
+                - 'return Object.keys(JSON.parse(value)).length;'
+          url: 'http://{$ITOP.HOST}:{$ITOP.PORT}/webservices/rest.php'
+          posts: 'version={$ITOP.API_VERSION}&auth_user={$ITOP.USER}&auth_pwd={$ITOP.PASSWORD}&json_data={"operation": "core/get", "class": "Incident", "key": "SELECT Incident WHERE status NOT IN (''closed'', ''resolved'')", "output_fields": "id"}'
+          headers:
+            - name: Content-Type
+              value: application/x-www-form-urlencoded
+          tags:
+            - tag: application
+              value: itop
+            - tag: component
+              value: business
+          triggers:
+            - uuid: 521b4432095840008000000000000212
+              expression: 'last(/Template App iTop Service/itop.open_incidents)>5'
+              name: 'High number of Open Incidents ({ITEM.LASTVALUE})'
+              priority: WARNING
+        - uuid: 521b4432095840008000000000000210
+          name: 'iTop Open User Requests'
+          type: HTTP_AGENT
+          key: itop.open_requests
+          history: 7d
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.objects
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '{}'
+            - type: JAVASCRIPT
+              parameters:
+                - 'return Object.keys(JSON.parse(value)).length;'
+          url: 'http://{$ITOP.HOST}:{$ITOP.PORT}/webservices/rest.php'
+          posts: 'version={$ITOP.API_VERSION}&auth_user={$ITOP.USER}&auth_pwd={$ITOP.PASSWORD}&json_data={"operation": "core/get", "class": "UserRequest", "key": "SELECT UserRequest WHERE status NOT IN (''closed'', ''resolved'')", "output_fields": "id"}'
+          headers:
+            - name: Content-Type
+              value: application/x-www-form-urlencoded
+          tags:
+            - tag: application
+              value: itop
+            - tag: component
+              value: business
+        - uuid: 521b4432095840008000000000000204
+          name: 'iTop Response Time'
+          type: SIMPLE
+          key: 'net.tcp.service.perf[http,"{$ITOP.HOST}","{$ITOP.PORT}"]'
+          history: 7d
+          value_type: FLOAT
+          units: s
+          tags:
+            - tag: application
+              value: itop
+            - tag: component
+              value: performance
+        - uuid: 521b4432095840008000000000000202
+          name: 'iTop Web Service Availability'
+          type: SIMPLE
+          key: 'net.tcp.service[http,"{$ITOP.HOST}","{$ITOP.PORT}"]'
+          history: 7d
+          valuemap:
+            name: 'Service state'
+          tags:
+            - tag: application
+              value: itop
+            - tag: component
+              value: network
+          triggers:
+            - uuid: 521b4432095840008000000000000203
+              expression: 'last(/Template App iTop Service/net.tcp.service[http,"{$ITOP.HOST}","{$ITOP.PORT}"])=0'
+              name: 'iTop Service is DOWN on {HOST.NAME}'
+              priority: HIGH
+              manual_close: 'YES'
+      macros:
+        - macro: '{$ITOP.API_VERSION}'
+          value: '1.3'
+          description: 'Versión de la API REST de iTop'
+        - macro: '{$ITOP.HOST}'
+          value: 127.0.0.1
+          description: 'IP o Hostname del servidor iTop'
+        - macro: '{$ITOP.PASSWORD}'
+          value: admin
+          description: 'Contraseña para conectar a la API de iTop'
+        - macro: '{$ITOP.PORT}'
+          value: '80'
+          description: 'Puerto del servidor web de iTop'
+        - macro: '{$ITOP.USER}'
+          value: admin
+          description: 'Usuario para conectar a la API de iTop'
+      dashboards:
+        - uuid: 521b4432095840008000000000000206
+          name: 'iTop Status Overview'
+          pages:
+            - widgets:
+                - type: item
+                  name: 'Service Status'
+                  width: '22'
+                  height: '4'
+                  fields:
+                    - type: ITEM
+                      name: itemid.0
+                      value:
+                        host: 'Template App iTop Service'
+                        key: 'net.tcp.service[http,"{$ITOP.HOST}","{$ITOP.PORT}"]'
+                    - type: INTEGER
+                      name: show.0
+                      value: '2'
+                - type: graph
+                  name: 'Response Time'
+                  'y': '4'
+                  width: '72'
+                  height: '6'
+                  fields:
+                    - type: ITEM
+                      name: itemid.0
+                      value:
+                        host: 'Template App iTop Service'
+                        key: 'net.tcp.service.perf[http,"{$ITOP.HOST}","{$ITOP.PORT}"]'
+                    - type: INTEGER
+                      name: source_type
+                      value: '1'
+                - type: item
+                  name: 'Open Requests'
+                  x: '22'
+                  width: '25'
+                  height: '4'
+                  fields:
+                    - type: ITEM
+                      name: itemid.0
+                      value:
+                        host: 'Template App iTop Service'
+                        key: itop.open_requests
+                    - type: INTEGER
+                      name: show.0
+                      value: '2'
+                - type: item
+                  name: 'Open Incidents'
+                  x: '47'
+                  width: '25'
+                  height: '4'
+                  fields:
+                    - type: INTEGER
+                      name: decimal_places
+                      value: '0'
+                    - type: ITEM
+                      name: itemid.0
+                      value:
+                        host: 'Template App iTop Service'
+                        key: itop.open_incidents
+                    - type: INTEGER
+                      name: show.0
+                      value: '2'
+      valuemaps:
+        - uuid: 521b4432095840008000000000000205
+          name: 'Service state'
+          mappings:
+            - value: '0'
+              newvalue: Down
+            - value: '1'
+              newvalue: Up

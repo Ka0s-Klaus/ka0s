@@ -1,0 +1,868 @@
+zabbix_export:
+  version: '7.4'
+  template_groups:
+    - uuid: a571c0d144b14fd4a87a9d9b2a69eb45
+      name: Kubernetes
+  templates:
+    - uuid: d8d1e3d144b14fd4a87a9d9b2a69eb46
+      template: 'Template Kubernetes Services Discovery'
+      name: 'Template Kubernetes Services Discovery'
+      description: 'Discover and monitor Kubernetes Services via External Scripts (k8s_discovery.sh)'
+      groups:
+        - name: Kubernetes
+      items:
+        - uuid: f3d1e3d144b14fd4a87a9d9b2a69eb56
+          name: 'Cluster: Allocatable CPU'
+          type: DEPENDENT
+          key: k8s.cluster.allocatable_cpu
+          history: 7d
+          value_type: FLOAT
+          trends: 30d
+          units: m
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.allocatable_cpu
+          master_item:
+            key: k8s_cluster_stats.sh
+          tags:
+            - tag: Application
+              value: 'Kubernetes Capacity'
+        - uuid: f4d1e3d144b14fd4a87a9d9b2a69eb56
+          name: 'Cluster: Allocatable Memory'
+          type: DEPENDENT
+          key: k8s.cluster.allocatable_mem
+          history: 7d
+          trends: 30d
+          units: B
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.allocatable_mem
+          master_item:
+            key: k8s_cluster_stats.sh
+          tags:
+            - tag: Application
+              value: 'Kubernetes Capacity'
+        - uuid: b4d1e3d144b14fd4a87a9d9b2a69eb58
+          name: 'Cluster: Average CPU Usage'
+          type: DEPENDENT
+          key: k8s.cluster.cpu_avg
+          history: 7d
+          value_type: FLOAT
+          trends: 30d
+          units: m
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.cpu_avg
+          master_item:
+            key: k8s_cluster_stats.sh
+          tags:
+            - tag: Application
+              value: 'Kubernetes Cluster'
+        - uuid: c5d1e3d144b14fd4a87a9d9b2a69eb59
+          name: 'Cluster: Average Memory Usage'
+          type: DEPENDENT
+          key: k8s.cluster.mem_avg
+          history: 7d
+          trends: 30d
+          units: B
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.mem_avg
+          master_item:
+            key: k8s_cluster_stats.sh
+          tags:
+            - tag: Application
+              value: 'Kubernetes Cluster'
+        - uuid: f2d1e3d144b14fd4a87a9d9b2a69eb56
+          name: 'Cluster: Total Nodes'
+          type: DEPENDENT
+          key: k8s.cluster.nodes
+          history: 7d
+          trends: 30d
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.nodes
+          master_item:
+            key: k8s_cluster_stats.sh
+          tags:
+            - tag: Application
+              value: 'Kubernetes Cluster'
+        - uuid: a3d1e3d144b14fd4a87a9d9b2a69eb57
+          name: 'Cluster: Total Pods'
+          type: DEPENDENT
+          key: k8s.cluster.pods
+          history: 7d
+          trends: 30d
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.pods
+          master_item:
+            key: k8s_cluster_stats.sh
+          tags:
+            - tag: Application
+              value: 'Kubernetes Cluster'
+        - uuid: f9d1e3d144b14fd4a87a9d9b2a69eb56
+          name: 'Cluster: Pods Failed'
+          type: DEPENDENT
+          key: k8s.cluster.pods_failed
+          history: 7d
+          trends: 30d
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.pods_failed
+          master_item:
+            key: k8s_cluster_stats.sh
+          tags:
+            - tag: Application
+              value: 'Kubernetes Health'
+        - uuid: f8d1e3d144b14fd4a87a9d9b2a69eb56
+          name: 'Cluster: Pods Pending'
+          type: DEPENDENT
+          key: k8s.cluster.pods_pending
+          history: 7d
+          trends: 30d
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.pods_pending
+          master_item:
+            key: k8s_cluster_stats.sh
+          tags:
+            - tag: Application
+              value: 'Kubernetes Health'
+        - uuid: a2d1e3d144b14fd4a87a9d9b2a69eb56
+          name: 'Cluster: Total Restarts'
+          type: DEPENDENT
+          key: k8s.cluster.pods_restarts
+          history: 7d
+          trends: 30d
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.pods_restarts
+          master_item:
+            key: k8s_cluster_stats.sh
+          tags:
+            - tag: Application
+              value: 'Kubernetes Health'
+        - uuid: f7d1e3d144b14fd4a87a9d9b2a69eb56
+          name: 'Cluster: Pods Running'
+          type: DEPENDENT
+          key: k8s.cluster.pods_running
+          history: 7d
+          trends: 30d
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.pods_running
+          master_item:
+            key: k8s_cluster_stats.sh
+          tags:
+            - tag: Application
+              value: 'Kubernetes Health'
+        - uuid: f5d1e3d144b14fd4a87a9d9b2a69eb56
+          name: 'Cluster: CPU Requests'
+          type: DEPENDENT
+          key: k8s.cluster.requests_cpu
+          history: 7d
+          value_type: FLOAT
+          trends: 30d
+          units: m
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.requests_cpu
+          master_item:
+            key: k8s_cluster_stats.sh
+          tags:
+            - tag: Application
+              value: 'Kubernetes Capacity'
+        - uuid: f6d1e3d144b14fd4a87a9d9b2a69eb56
+          name: 'Cluster: Memory Requests'
+          type: DEPENDENT
+          key: k8s.cluster.requests_mem
+          history: 7d
+          trends: 30d
+          units: B
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.requests_mem
+          master_item:
+            key: k8s_cluster_stats.sh
+          tags:
+            - tag: Application
+              value: 'Kubernetes Capacity'
+        - uuid: f7d1e3d144b14fd4a87a9d9b2a69eb66
+          name: 'Cluster: Services Total'
+          type: DEPENDENT
+          key: k8s.cluster.services_total
+          history: 7d
+          trends: 30d
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.services_total
+          master_item:
+            key: k8s_cluster_stats.sh
+          tags:
+            - tag: Application
+              value: 'Kubernetes Health'
+        - uuid: f8d1e3d144b14fd4a87a9d9b2a69eb67
+          name: 'Cluster: Services Unhealthy'
+          type: DEPENDENT
+          key: k8s.cluster.services_unhealthy
+          history: 7d
+          trends: 30d
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.services_unhealthy
+          master_item:
+            key: k8s_cluster_stats.sh
+          tags:
+            - tag: Application
+              value: 'Kubernetes Health'
+          triggers:
+            - uuid: a1d1e3d144b14fd4a87a9d9b2a69eb68
+              expression: 'last(/Template Kubernetes Services Discovery/k8s.cluster.services_unhealthy)>0'
+              name: 'There are unhealthy services in the cluster'
+              priority: AVERAGE
+              description: 'Services found with no active endpoints.'
+        - uuid: e1d1e3d144b14fd4a87a9d9b2a69eb55
+          name: 'Kubernetes Cluster Stats (JSON)'
+          type: EXTERNAL
+          key: k8s_cluster_stats.sh
+          history: 1h
+          value_type: TEXT
+          description: 'Returns JSON with Node count, Pod count, and Cluster Average CPU/Memory usage.'
+          tags:
+            - tag: Application
+              value: 'Kubernetes Cluster'
+      discovery_rules:
+        - uuid: a9d1e3d144b14fd4a87a9d9b2a69ec00
+          name: 'Kubernetes Deployments Discovery'
+          type: EXTERNAL
+          key: k8s_deployment_discovery.sh
+          delay: 5m
+          lifetime: 1h
+          item_prototypes:
+            - uuid: b1d1e3d144b14fd4a87a9d9b2a69ec02
+              name: 'Deployment Replicas Available: {#NAME} ({#NAMESPACE})'
+              type: EXTERNAL
+              key: 'k8s_deployment_metrics.sh["{#NAMESPACE}","{#NAME}","available_replicas"]'
+              history: 7d
+              trends: 30d
+              tags:
+                - tag: Application
+                  value: 'Kubernetes Deployment Health'
+            - uuid: b1d1e3d144b14fd4a87a9d9b2a69ec01
+              name: 'Deployment Replicas Desired: {#NAME} ({#NAMESPACE})'
+              type: EXTERNAL
+              key: 'k8s_deployment_metrics.sh["{#NAMESPACE}","{#NAME}","replicas"]'
+              history: 7d
+              trends: 30d
+              tags:
+                - tag: Application
+                  value: 'Kubernetes Deployment Health'
+            - uuid: b1d1e3d144b14fd4a87a9d9b2a69ec03
+              name: 'Deployment Replicas Unavailable: {#NAME} ({#NAMESPACE})'
+              type: EXTERNAL
+              key: 'k8s_deployment_metrics.sh["{#NAMESPACE}","{#NAME}","unavailable_replicas"]'
+              history: 7d
+              trends: 30d
+              tags:
+                - tag: Application
+                  value: 'Kubernetes Deployment Health'
+          trigger_prototypes:
+            - uuid: c1d1e3d144b14fd4a87a9d9b2a69ec04
+              expression: 'last(/Template Kubernetes Services Discovery/k8s_deployment_metrics.sh["{#NAMESPACE}","{#NAME}","available_replicas"])<last(/Template Kubernetes Services Discovery/k8s_deployment_metrics.sh["{#NAMESPACE}","{#NAME}","replicas"])'
+              name: 'Deployment {#NAME} has missing replicas'
+              priority: HIGH
+              description: 'Available replicas are less than desired replicas.'
+          graph_prototypes:
+            - uuid: d3d1e3d144b14fd4a87a9d9b2a69ec05
+              name: 'Deployment Replicas: {#NAME} ({#NAMESPACE})'
+              graph_items:
+                - color: 1A7C11
+                  item:
+                    host: 'Template Kubernetes Services Discovery'
+                    key: 'k8s_deployment_metrics.sh["{#NAMESPACE}","{#NAME}","available_replicas"]'
+                - color: F63100
+                  item:
+                    host: 'Template Kubernetes Services Discovery'
+                    key: 'k8s_deployment_metrics.sh["{#NAMESPACE}","{#NAME}","replicas"]'
+        - uuid: a9d1e3d144b14fd4a87a9d9b2a69eb47
+          name: 'Kubernetes Services Discovery'
+          type: EXTERNAL
+          key: k8s_discovery.sh
+          delay: 5m
+          filter:
+            evaltype: AND
+            conditions:
+              - macro: '{#SERVICE_NAMESPACE}'
+                value: '.*'
+          lifetime: 1h
+          item_prototypes:
+            - uuid: b1d1e3d144b14fd4a87a9d9b2a69eb48
+              name: 'Service Endpoints: {#SERVICE_NAME} ({#SERVICE_NAMESPACE})'
+              type: EXTERNAL
+              key: 'k8s_endpoints.sh["{#SERVICE_NAMESPACE}","{#SERVICE_NAME}"]'
+              history: 7d
+              trends: 30d
+              tags:
+                - tag: Application
+                  value: 'Kubernetes Service'
+                - tag: Namespace
+                  value: '{#SERVICE_NAMESPACE}'
+              trigger_prototypes:
+                - uuid: c2d1e3d144b14fd4a87a9d9b2a69eb49
+                  expression: 'last(/Template Kubernetes Services Discovery/k8s_endpoints.sh["{#SERVICE_NAMESPACE}","{#SERVICE_NAME}"])<1'
+                  name: 'Service {#SERVICE_NAME} in {#SERVICE_NAMESPACE} has no endpoints'
+                  priority: AVERAGE
+                  description: 'The service has no active endpoints (pods).'
+                  manual_close: 'YES'
+            - uuid: b1d1e3d144b14fd4a87a9d9b2a69eb92
+              name: 'Node Network Errors: {#NODE_NAME}'
+              type: EXTERNAL
+              key: 'k8s_node_metrics.sh["{#NODE_NAME}","network_errors"]'
+              history: 7d
+              trends: 30d
+              description: 'Total RX+TX Errors on Node Interfaces'
+              preprocessing:
+                - type: SIMPLE_CHANGE
+              tags:
+                - tag: Application
+                  value: 'Kubernetes Node Health'
+              trigger_prototypes:
+                - uuid: c1d1e3d144b14fd4a87a9d9b2a69eb93
+                  expression: 'last(/Template Kubernetes Services Discovery/k8s_node_metrics.sh["{#NODE_NAME}","network_errors"])>10'
+                  name: 'High Network Error Rate on Node {#NODE_NAME}'
+                  priority: WARNING
+                  description: 'More than 10 errors detected in the last interval.'
+          graph_prototypes:
+            - uuid: d3d1e3d144b14fd4a87a9d9b2a69eb50
+              name: 'Endpoints for {#SERVICE_NAME} ({#SERVICE_NAMESPACE})'
+              graph_items:
+                - color: 1A7C11
+                  item:
+                    host: 'Template Kubernetes Services Discovery'
+                    key: 'k8s_endpoints.sh["{#SERVICE_NAMESPACE}","{#SERVICE_NAME}"]'
+        - uuid: a9d1e3d144b14fd4a87a9d9b2a69ec10
+          name: 'Kubernetes Namespace Discovery'
+          type: EXTERNAL
+          key: k8s_namespace_discovery.sh
+          delay: 1h
+          lifetime: 1d
+          item_prototypes:
+            - uuid: b1d1e3d144b14fd4a87a9d9b2a69ec11
+              name: 'Namespace Restarts: {#NAMESPACE}'
+              type: EXTERNAL
+              key: 'k8s_namespace_metrics.sh["{#NAMESPACE}","restarts"]'
+              history: 7d
+              trends: 30d
+              tags:
+                - tag: Application
+                  value: 'Kubernetes Namespace'
+          graph_prototypes:
+            - uuid: d3d1e3d144b14fd4a87a9d9b2a69ec12
+              name: 'Namespace Restarts: {#NAMESPACE}'
+              graph_items:
+                - color: F63100
+                  item:
+                    host: 'Template Kubernetes Services Discovery'
+                    key: 'k8s_namespace_metrics.sh["{#NAMESPACE}","restarts"]'
+        - uuid: a9d1e3d144b14fd4a87a9d9b2a69eb99
+          name: 'Kubernetes Nodes Discovery'
+          type: EXTERNAL
+          key: k8s_node_discovery.sh
+          delay: 5m
+          lifetime: 1h
+          item_prototypes:
+            - uuid: b1d1e3d144b14fd4a87a9d9b2a69eb88
+              name: 'Node CPU Usage: {#NODE_NAME}'
+              type: EXTERNAL
+              key: 'k8s_node_metrics.sh["{#NODE_NAME}","cpu"]'
+              history: 7d
+              value_type: FLOAT
+              trends: 30d
+              units: m
+              description: 'Node CPU Usage in millicores'
+              tags:
+                - tag: Application
+                  value: 'Kubernetes Node Resources'
+            - uuid: b1d1e3d144b14fd4a87a9d9b2a69eb94
+              name: 'Node Disk Capacity: {#NODE_NAME}'
+              type: EXTERNAL
+              key: 'k8s_node_metrics.sh["{#NODE_NAME}","disk_capacity"]'
+              history: 7d
+              trends: 30d
+              units: B
+              tags:
+                - tag: Application
+                  value: 'Kubernetes Node Resources'
+            - uuid: b1d1e3d144b14fd4a87a9d9b2a69eb78
+              name: 'Node Disk Pressure: {#NODE_NAME}'
+              type: EXTERNAL
+              key: 'k8s_node_metrics.sh["{#NODE_NAME}","disk_pressure"]'
+              history: 7d
+              trends: 30d
+              description: '1 if DiskPressure, 0 otherwise'
+              tags:
+                - tag: Application
+                  value: 'Kubernetes Node Health'
+              trigger_prototypes:
+                - uuid: c1d1e3d144b14fd4a87a9d9b2a69eb79
+                  expression: 'last(/Template Kubernetes Services Discovery/k8s_node_metrics.sh["{#NODE_NAME}","disk_pressure"])=1'
+                  name: 'Node {#NODE_NAME} has Disk Pressure'
+                  priority: HIGH
+            - uuid: b1d1e3d144b14fd4a87a9d9b2a69eb93
+              name: 'Node Disk Usage: {#NODE_NAME}'
+              type: EXTERNAL
+              key: 'k8s_node_metrics.sh["{#NODE_NAME}","disk_usage"]'
+              history: 7d
+              trends: 30d
+              units: B
+              tags:
+                - tag: Application
+                  value: 'Kubernetes Node Resources'
+            - uuid: b1d1e3d144b14fd4a87a9d9b2a69eb77
+              name: 'Node Memory Usage: {#NODE_NAME}'
+              type: EXTERNAL
+              key: 'k8s_node_metrics.sh["{#NODE_NAME}","memory"]'
+              history: 7d
+              trends: 30d
+              units: B
+              description: 'Node Memory Usage in Bytes'
+              tags:
+                - tag: Application
+                  value: 'Kubernetes Node Resources'
+            - uuid: b1d1e3d144b14fd4a87a9d9b2a69eb89
+              name: 'Node Memory Pressure: {#NODE_NAME}'
+              type: EXTERNAL
+              key: 'k8s_node_metrics.sh["{#NODE_NAME}","memory_pressure"]'
+              history: 7d
+              trends: 30d
+              description: '1 if MemoryPressure, 0 otherwise'
+              tags:
+                - tag: Application
+                  value: 'Kubernetes Node Health'
+              trigger_prototypes:
+                - uuid: c1d1e3d144b14fd4a87a9d9b2a69eb90
+                  expression: 'last(/Template Kubernetes Services Discovery/k8s_node_metrics.sh["{#NODE_NAME}","memory_pressure"])=1'
+                  name: 'Node {#NODE_NAME} has Memory Pressure'
+                  priority: HIGH
+            - uuid: b1d1e3d144b14fd4a87a9d9b2a69eb91
+              name: 'Node Ready Status: {#NODE_NAME}'
+              type: EXTERNAL
+              key: 'k8s_node_metrics.sh["{#NODE_NAME}","ready"]'
+              history: 7d
+              trends: 30d
+              description: '1 if Ready, 0 otherwise'
+              tags:
+                - tag: Application
+                  value: 'Kubernetes Node Health'
+              trigger_prototypes:
+                - uuid: c1d1e3d144b14fd4a87a9d9b2a69eb92
+                  expression: 'last(/Template Kubernetes Services Discovery/k8s_node_metrics.sh["{#NODE_NAME}","ready"])=0'
+                  name: 'Node {#NODE_NAME} is Not Ready'
+                  priority: HIGH
+          graph_prototypes:
+            - uuid: d3d1e3d144b14fd4a87a9d9b2a69eb95
+              name: 'Node Disk Space: {#NODE_NAME}'
+              graph_items:
+                - color: 1A7C11
+                  item:
+                    host: 'Template Kubernetes Services Discovery'
+                    key: 'k8s_node_metrics.sh["{#NODE_NAME}","disk_usage"]'
+                - color: F63100
+                  item:
+                    host: 'Template Kubernetes Services Discovery'
+                    key: 'k8s_node_metrics.sh["{#NODE_NAME}","disk_capacity"]'
+            - uuid: d3d1e3d144b14fd4a87a9d9b2a69eb66
+              name: 'Node Resources: {#NODE_NAME}'
+              graph_items:
+                - color: 1A7C11
+                  item:
+                    host: 'Template Kubernetes Services Discovery'
+                    key: 'k8s_node_metrics.sh["{#NODE_NAME}","cpu"]'
+                - color: F63100
+                  yaxisside: RIGHT
+                  item:
+                    host: 'Template Kubernetes Services Discovery'
+                    key: 'k8s_node_metrics.sh["{#NODE_NAME}","memory"]'
+        - uuid: a9d1e3d144b14fd4a87a9d9b2a69eb51
+          name: 'Kubernetes Pods Discovery'
+          type: EXTERNAL
+          key: k8s_pod_discovery.sh
+          delay: 5m
+          lifetime: 1h
+          item_prototypes:
+            - uuid: b1d1e3d144b14fd4a87a9d9b2a69eb52
+              name: 'Pod CPU Usage: {#POD_NAME} ({#POD_NAMESPACE})'
+              type: EXTERNAL
+              key: 'k8s_pod_metrics.sh["{#POD_NAMESPACE}","{#POD_NAME}","cpu"]'
+              history: 7d
+              value_type: FLOAT
+              trends: 30d
+              units: m
+              description: 'CPU Usage in millicores'
+              tags:
+                - tag: Application
+                  value: 'Kubernetes Pod Resources'
+            - uuid: b1d1e3d144b14fd4a87a9d9b2a69eb55
+              name: 'Pod CPU Limit: {#POD_NAME} ({#POD_NAMESPACE})'
+              type: EXTERNAL
+              key: 'k8s_pod_metrics.sh["{#POD_NAMESPACE}","{#POD_NAME}","limits_cpu"]'
+              history: 7d
+              value_type: FLOAT
+              trends: 30d
+              units: m
+              description: 'CPU Limit in millicores'
+              tags:
+                - tag: Application
+                  value: 'Kubernetes Pod Resources'
+            - uuid: b1d1e3d144b14fd4a87a9d9b2a69eb56
+              name: 'Pod Memory Limit: {#POD_NAME} ({#POD_NAMESPACE})'
+              type: EXTERNAL
+              key: 'k8s_pod_metrics.sh["{#POD_NAMESPACE}","{#POD_NAME}","limits_memory"]'
+              history: 7d
+              trends: 30d
+              units: B
+              description: 'Memory Limit in Bytes'
+              tags:
+                - tag: Application
+                  value: 'Kubernetes Pod Resources'
+            - uuid: b1d1e3d144b14fd4a87a9d9b2a69eb53
+              name: 'Pod Memory Usage: {#POD_NAME} ({#POD_NAMESPACE})'
+              type: EXTERNAL
+              key: 'k8s_pod_metrics.sh["{#POD_NAMESPACE}","{#POD_NAME}","memory"]'
+              history: 7d
+              trends: 30d
+              units: B
+              description: 'Memory Usage in Bytes'
+              tags:
+                - tag: Application
+                  value: 'Kubernetes Pod Resources'
+            - uuid: b1d1e3d144b14fd4a87a9d9b2a69eb82
+              name: 'Pod OOMKilled: {#POD_NAME}'
+              type: EXTERNAL
+              key: 'k8s_pod_metrics.sh["{#POD_NAMESPACE}","{#POD_NAME}","oom_killed"]'
+              tags:
+                - tag: Application
+                  value: 'Kubernetes Pod Health'
+              trigger_prototypes:
+                - uuid: c1d1e3d144b14fd4a87a9d9b2a69eb83
+                  expression: 'last(/Template Kubernetes Services Discovery/k8s_pod_metrics.sh["{#POD_NAMESPACE}","{#POD_NAME}","oom_killed"])=1'
+                  name: 'Pod {#POD_NAME} was OOMKilled'
+                  priority: AVERAGE
+            - uuid: b1d1e3d144b14fd4a87a9d9b2a69eb80
+              name: 'Pod Restarts: {#POD_NAME}'
+              type: EXTERNAL
+              key: 'k8s_pod_metrics.sh["{#POD_NAMESPACE}","{#POD_NAME}","restarts"]'
+              tags:
+                - tag: Application
+                  value: 'Kubernetes Pod Health'
+              trigger_prototypes:
+                - uuid: c1d1e3d144b14fd4a87a9d9b2a69eb81
+                  expression: 'last(/Template Kubernetes Services Discovery/k8s_pod_metrics.sh["{#POD_NAMESPACE}","{#POD_NAME}","restarts"])>5'
+                  name: 'Pod {#POD_NAME} restarting frequently'
+                  priority: WARNING
+          graph_prototypes:
+            - uuid: d3d1e3d144b14fd4a87a9d9b2a69eb54
+              name: 'Resources: {#POD_NAME} ({#POD_NAMESPACE})'
+              graph_items:
+                - color: 1A7C11
+                  item:
+                    host: 'Template Kubernetes Services Discovery'
+                    key: 'k8s_pod_metrics.sh["{#POD_NAMESPACE}","{#POD_NAME}","cpu"]'
+                - color: 00FF00
+                  item:
+                    host: 'Template Kubernetes Services Discovery'
+                    key: 'k8s_pod_metrics.sh["{#POD_NAMESPACE}","{#POD_NAME}","limits_cpu"]'
+                - color: F63100
+                  yaxisside: RIGHT
+                  item:
+                    host: 'Template Kubernetes Services Discovery'
+                    key: 'k8s_pod_metrics.sh["{#POD_NAMESPACE}","{#POD_NAME}","memory"]'
+                - color: FF0000
+                  yaxisside: RIGHT
+                  item:
+                    host: 'Template Kubernetes Services Discovery'
+                    key: 'k8s_pod_metrics.sh["{#POD_NAMESPACE}","{#POD_NAME}","limits_memory"]'
+      dashboards:
+        - uuid: d6d1e3d144b14fd4a87a9d9b2a69eb60
+          name: 'Kubernetes Cluster Overview'
+          pages:
+            - name: Overview
+              widgets:
+                - type: item
+                  name: 'Total Nodes'
+                  width: '15'
+                  height: '3'
+                  fields:
+                    - type: ITEM
+                      name: itemid.0
+                      value:
+                        host: 'Template Kubernetes Services Discovery'
+                        key: k8s.cluster.nodes
+                    - type: INTEGER
+                      name: show.0
+                      value: '1'
+                    - type: INTEGER
+                      name: show.1
+                      value: '2'
+                - type: graph
+                  name: 'CPU Capacity Planning'
+                  'y': '3'
+                  width: '35'
+                  height: '6'
+                  fields:
+                    - type: ITEM
+                      name: itemid.0
+                      value:
+                        host: 'Template Kubernetes Services Discovery'
+                        key: k8s.cluster.allocatable_cpu
+                    - type: ITEM
+                      name: itemid.1
+                      value:
+                        host: 'Template Kubernetes Services Discovery'
+                        key: k8s.cluster.requests_cpu
+                    - type: ITEM
+                      name: itemid.2
+                      value:
+                        host: 'Template Kubernetes Services Discovery'
+                        key: k8s.cluster.cpu_avg
+                    - type: INTEGER
+                      name: source_type
+                      value: '1'
+                - type: graph
+                  name: 'Pod Status Breakdown'
+                  'y': '9'
+                  width: '35'
+                  height: '6'
+                  fields:
+                    - type: GRAPH
+                      name: graphid.0
+                      value:
+                        host: 'Template Kubernetes Services Discovery'
+                        name: 'Pod Status Breakdown'
+                    - type: STRING
+                      name: reference
+                      value: AAAAF
+                - type: graphprototype
+                  name: 'Deployment Replicas'
+                  'y': '15'
+                  width: '35'
+                  height: '6'
+                  fields:
+                    - type: GRAPH_PROTOTYPE
+                      name: graphid.0
+                      value:
+                        host: 'Template Kubernetes Services Discovery'
+                        name: 'Deployment Replicas: {#NAME} ({#NAMESPACE})'
+                    - type: STRING
+                      name: reference
+                      value: AAAAA
+                - type: graphprototype
+                  name: 'Namespace Restarts'
+                  'y': '21'
+                  width: '35'
+                  height: '6'
+                  fields:
+                    - type: GRAPH_PROTOTYPE
+                      name: graphid.0
+                      value:
+                        host: 'Template Kubernetes Services Discovery'
+                        name: 'Namespace Restarts: {#NAMESPACE}'
+                    - type: STRING
+                      name: reference
+                      value: AAAAB
+                - type: graphprototype
+                  name: 'Pod Resources vs Limits'
+                  'y': '27'
+                  width: '72'
+                  height: '12'
+                  fields:
+                    - type: INTEGER
+                      name: columns
+                      value: '3'
+                    - type: GRAPH_PROTOTYPE
+                      name: graphid.0
+                      value:
+                        host: 'Template Kubernetes Services Discovery'
+                        name: 'Resources: {#POD_NAME} ({#POD_NAMESPACE})'
+                    - type: STRING
+                      name: reference
+                      value: AAAAE
+                    - type: INTEGER
+                      name: rows
+                      value: '2'
+                - type: item
+                  name: 'Total Pods'
+                  x: '15'
+                  width: '15'
+                  height: '3'
+                  fields:
+                    - type: ITEM
+                      name: itemid.0
+                      value:
+                        host: 'Template Kubernetes Services Discovery'
+                        key: k8s.cluster.pods
+                    - type: INTEGER
+                      name: show.0
+                      value: '1'
+                    - type: INTEGER
+                      name: show.1
+                      value: '2'
+                - type: item
+                  name: 'Total Services'
+                  x: '30'
+                  width: '15'
+                  height: '3'
+                  fields:
+                    - type: ITEM
+                      name: itemid.0
+                      value:
+                        host: 'Template Kubernetes Services Discovery'
+                        key: k8s.cluster.services_total
+                    - type: INTEGER
+                      name: show.0
+                      value: '1'
+                    - type: INTEGER
+                      name: show.1
+                      value: '2'
+                - type: graph
+                  name: 'Memory Capacity Planning'
+                  x: '35'
+                  'y': '3'
+                  width: '37'
+                  height: '6'
+                  fields:
+                    - type: ITEM
+                      name: itemid.0
+                      value:
+                        host: 'Template Kubernetes Services Discovery'
+                        key: k8s.cluster.allocatable_mem
+                    - type: ITEM
+                      name: itemid.1
+                      value:
+                        host: 'Template Kubernetes Services Discovery'
+                        key: k8s.cluster.requests_mem
+                    - type: ITEM
+                      name: itemid.2
+                      value:
+                        host: 'Template Kubernetes Services Discovery'
+                        key: k8s.cluster.mem_avg
+                    - type: INTEGER
+                      name: source_type
+                      value: '1'
+                - type: problems
+                  name: 'Cluster Problems'
+                  x: '35'
+                  'y': '9'
+                  width: '37'
+                  height: '6'
+                  fields:
+                    - type: INTEGER
+                      name: tags.0.operator
+                      value: '0'
+                    - type: STRING
+                      name: tags.0.tag
+                      value: Application
+                    - type: STRING
+                      name: tags.0.value
+                      value: Kubernetes
+                - type: graphprototype
+                  name: 'Node Disk Space'
+                  x: '35'
+                  'y': '15'
+                  width: '37'
+                  height: '6'
+                  fields:
+                    - type: GRAPH_PROTOTYPE
+                      name: graphid.0
+                      value:
+                        host: 'Template Kubernetes Services Discovery'
+                        name: 'Node Disk Space: {#NODE_NAME}'
+                    - type: STRING
+                      name: reference
+                      value: AAAAD
+                - type: graphprototype
+                  name: 'Node Resources'
+                  x: '35'
+                  'y': '21'
+                  width: '37'
+                  height: '6'
+                  fields:
+                    - type: GRAPH_PROTOTYPE
+                      name: graphid.0
+                      value:
+                        host: 'Template Kubernetes Services Discovery'
+                        name: 'Node Resources: {#NODE_NAME}'
+                    - type: STRING
+                      name: reference
+                      value: AAAAC
+                - type: item
+                  name: 'Unhealthy Services'
+                  x: '45'
+                  width: '14'
+                  height: '3'
+                  fields:
+                    - type: ITEM
+                      name: itemid.0
+                      value:
+                        host: 'Template Kubernetes Services Discovery'
+                        key: k8s.cluster.services_unhealthy
+                    - type: INTEGER
+                      name: show.0
+                      value: '1'
+                    - type: INTEGER
+                      name: show.1
+                      value: '2'
+                - type: item
+                  name: 'Total Pod Restarts'
+                  x: '59'
+                  width: '13'
+                  height: '3'
+                  fields:
+                    - type: ITEM
+                      name: itemid.0
+                      value:
+                        host: 'Template Kubernetes Services Discovery'
+                        key: k8s.cluster.pods_restarts
+                    - type: INTEGER
+                      name: show.0
+                      value: '1'
+                    - type: INTEGER
+                      name: show.1
+                      value: '2'
+  graphs:
+    - uuid: a5d1e3d144b14fd4a87a9d9b2a69eb61
+      name: 'Pod Status Breakdown'
+      type: STACKED
+      graph_items:
+        - drawtype: FILLED_REGION
+          color: 00FF00
+          item:
+            host: 'Template Kubernetes Services Discovery'
+            key: k8s.cluster.pods_running
+        - sortorder: '1'
+          drawtype: FILLED_REGION
+          color: FFC107
+          item:
+            host: 'Template Kubernetes Services Discovery'
+            key: k8s.cluster.pods_pending
+        - sortorder: '2'
+          drawtype: FILLED_REGION
+          color: FF0000
+          item:
+            host: 'Template Kubernetes Services Discovery'
+            key: k8s.cluster.pods_failed

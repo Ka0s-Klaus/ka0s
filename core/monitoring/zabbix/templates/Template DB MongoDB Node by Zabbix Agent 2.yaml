@@ -1,0 +1,219 @@
+zabbix_export:
+  version: '7.4'
+  template_groups:
+    - uuid: 521b4432095840008000000000000100
+      name: Templates/Databases
+  templates:
+    - uuid: 521b4432095840008000000000000101
+      template: 'Template DB MongoDB Node by Zabbix Agent 2'
+      name: 'Template DB MongoDB Node by Zabbix Agent 2'
+      description: 'Monitor MongoDB metrics via Zabbix Agent 2 native plugin. Requires Zabbix Agent 2 with MongoDB plugin enabled.'
+      groups:
+        - name: Templates/Databases
+      items:
+        - uuid: 521b4432095840008000000000000106
+          name: 'MongoDB Connections Current'
+          type: DEPENDENT
+          key: mongodb.connections.current
+          history: 7d
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.connections.current
+          master_item:
+            key: 'mongodb.server.status["{$MONGODB.CONNSTRING}","{$MONGODB.USER}","{$MONGODB.PASSWORD}"]'
+          tags:
+            - tag: component
+              value: connections
+        - uuid: 521b4432095840008000000000000107
+          name: 'MongoDB Operations: Insert'
+          type: DEPENDENT
+          key: mongodb.opcounters.insert
+          history: 7d
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.opcounters.insert
+            - type: CHANGE_PER_SECOND
+          master_item:
+            key: 'mongodb.server.status["{$MONGODB.CONNSTRING}","{$MONGODB.USER}","{$MONGODB.PASSWORD}"]'
+          tags:
+            - tag: component
+              value: operations
+        - uuid: 521b4432095840008000000000000108
+          name: 'MongoDB Operations: Query'
+          type: DEPENDENT
+          key: mongodb.opcounters.query
+          history: 7d
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.opcounters.query
+            - type: CHANGE_PER_SECOND
+          master_item:
+            key: 'mongodb.server.status["{$MONGODB.CONNSTRING}","{$MONGODB.USER}","{$MONGODB.PASSWORD}"]'
+          tags:
+            - tag: component
+              value: operations
+        - uuid: 521b4432095840008000000000000109
+          name: 'MongoDB Operations: Update'
+          type: DEPENDENT
+          key: mongodb.opcounters.update
+          history: 7d
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.opcounters.update
+            - type: CHANGE_PER_SECOND
+          master_item:
+            key: 'mongodb.server.status["{$MONGODB.CONNSTRING}","{$MONGODB.USER}","{$MONGODB.PASSWORD}"]'
+          tags:
+            - tag: component
+              value: operations
+        - uuid: 521b4432095840008000000000000102
+          name: 'MongoDB Ping'
+          key: 'mongodb.ping["{$MONGODB.CONNSTRING}","{$MONGODB.USER}","{$MONGODB.PASSWORD}"]'
+          history: 7d
+          valuemap:
+            name: 'Service state'
+          tags:
+            - tag: component
+              value: health
+          triggers:
+            - uuid: 521b4432095840008000000000000130
+              expression: 'last(/Template DB MongoDB Node by Zabbix Agent 2/mongodb.ping["{$MONGODB.CONNSTRING}","{$MONGODB.USER}","{$MONGODB.PASSWORD}"])=0'
+              name: 'MongoDB service is down on {HOST.NAME}'
+              priority: HIGH
+        - uuid: 521b4432095840008000000000000103
+          name: 'MongoDB Server Status'
+          key: 'mongodb.server.status["{$MONGODB.CONNSTRING}","{$MONGODB.USER}","{$MONGODB.PASSWORD}"]'
+          history: '0'
+          value_type: TEXT
+          tags:
+            - tag: component
+              value: raw
+        - uuid: 521b4432095840008000000000000105
+          name: 'MongoDB Uptime'
+          type: DEPENDENT
+          key: mongodb.uptime
+          history: 7d
+          units: s
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.uptime
+          master_item:
+            key: 'mongodb.server.status["{$MONGODB.CONNSTRING}","{$MONGODB.USER}","{$MONGODB.PASSWORD}"]'
+          tags:
+            - tag: component
+              value: application
+        - uuid: 521b4432095840008000000000000104
+          name: 'MongoDB Version'
+          type: DEPENDENT
+          key: mongodb.version
+          history: 7d
+          value_type: TEXT
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.version
+          master_item:
+            key: 'mongodb.server.status["{$MONGODB.CONNSTRING}","{$MONGODB.USER}","{$MONGODB.PASSWORD}"]'
+          tags:
+            - tag: component
+              value: application
+      macros:
+        - macro: '{$MONGODB.CONNSTRING}'
+          value: 'tcp://localhost:27017'
+          description: 'Connection string'
+        - macro: '{$MONGODB.PASSWORD}'
+          type: SECRET_TEXT
+          description: Password
+        - macro: '{$MONGODB.USER}'
+          description: User
+      dashboards:
+        - uuid: 521b4432095840008000000000000120
+          name: 'MongoDB Overview'
+          pages:
+            - widgets:
+                - type: item
+                  name: Status
+                  width: '22'
+                  height: '6'
+                  fields:
+                    - type: ITEM
+                      name: itemid.0
+                      value:
+                        host: 'Template DB MongoDB Node by Zabbix Agent 2'
+                        key: 'mongodb.ping["{$MONGODB.CONNSTRING}","{$MONGODB.USER}","{$MONGODB.PASSWORD}"]'
+                    - type: INTEGER
+                      name: show.0
+                      value: '2'
+                - type: graph
+                  name: 'Operations per Second'
+                  'y': '6'
+                  width: '71'
+                  height: '10'
+                  fields:
+                    - type: GRAPH
+                      name: graphid.0
+                      value:
+                        host: 'Template DB MongoDB Node by Zabbix Agent 2'
+                        name: 'MongoDB Operations'
+                - type: item
+                  name: Connections
+                  x: '22'
+                  width: '23'
+                  height: '6'
+                  fields:
+                    - type: ITEM
+                      name: itemid.0
+                      value:
+                        host: 'Template DB MongoDB Node by Zabbix Agent 2'
+                        key: mongodb.connections.current
+                    - type: INTEGER
+                      name: show.0
+                      value: '2'
+                - type: item
+                  name: Version
+                  x: '45'
+                  width: '27'
+                  height: '6'
+                  fields:
+                    - type: ITEM
+                      name: itemid.0
+                      value:
+                        host: 'Template DB MongoDB Node by Zabbix Agent 2'
+                        key: mongodb.version
+                    - type: INTEGER
+                      name: show.0
+                      value: '2'
+      valuemaps:
+        - uuid: 521b4432095840008000000000000150
+          name: 'Service state'
+          mappings:
+            - value: '0'
+              newvalue: Down
+            - value: '1'
+              newvalue: Up
+  graphs:
+    - uuid: 521b4432095840008000000000000140
+      name: 'MongoDB Operations'
+      graph_items:
+        - drawtype: BOLD_LINE
+          color: 00FF00
+          item:
+            host: 'Template DB MongoDB Node by Zabbix Agent 2'
+            key: mongodb.opcounters.insert
+        - sortorder: '1'
+          drawtype: BOLD_LINE
+          color: 0000FF
+          item:
+            host: 'Template DB MongoDB Node by Zabbix Agent 2'
+            key: mongodb.opcounters.query
+        - sortorder: '2'
+          drawtype: BOLD_LINE
+          color: FFFF00
+          item:
+            host: 'Template DB MongoDB Node by Zabbix Agent 2'
+            key: mongodb.opcounters.update

@@ -47,16 +47,23 @@ El script genera dos archivos en el directorio de inventario:
 2.  `hosts_inventory_YYYYMMDD_HHMMSS.csv`: Listado detallado para Excel/Metabase.
     *   Columnas: `Host ID`, `Visible Name`, `Status`, `IP`, `Templates`, `Groups`, `Tags`.
 
-## 3. Importación de Configuración (Roadmap)
+## 3. Exportación de Templates (`export_templates.py`)
 
-*(Script en desarrollo)* `import_zabbix_config.py` permitirá tomar los archivos YAML/XML y aplicarlos al servidor.
+Este script descarga **individualmente** todos los templates del servidor Zabbix en formato YAML, permitiendo un versionado granular en Git.
 
-### Flujo de Importación
-1.  Leer archivo de configuración.
-2.  Comparar con el estado actual (Diff).
-3.  Aplicar cambios (Create/Update/Delete).
+### Uso
+```bash
+export ZABBIX_URL="http://zabbix-web:8080/api_jsonrpc.php"
+export OUTPUT_DIR="core/monitoring/zabbix/templates"
 
-## 3. Automatización de Dashboards (`create_dashboard.py`)
+python3 core/monitoring/zabbix/scripts/export_templates.py
+```
+
+### Salida
+Genera un archivo `.yaml` por cada Template en el directorio de salida.
+Ejemplo: `Linux_by_Zabbix_agent.yaml`.
+
+## 4. Automatización de Dashboards (`create_dashboard.py`)
 
 Este script permite crear o actualizar Dashboards en Zabbix a partir de definiciones JSON, resolviendo automáticamente nombres de hosts e items.
 
