@@ -64,6 +64,7 @@ Si, parece increible pero hemos decidido en el equipo usar una terminología "es
 - [Módulo Ka0s Metabase](./ka0s_metabase/00_main.md)
 - [Módulo Ka0s MongoDB Integration](./ka0s_mongo/00_main.md)
 - [Módulo Ka0s Onboarding](./ka0s_onboarding/00_main.md)
+- [PostgreSQL IA - Servicio de Memoria Vectorial](./ka0s_postgresql_ia/00_main.md)
 - [Ka0s Project Routing](./ka0s_project_routing/00_main.md)
 - [Módulo Ka0s Release (Klaus)](./ka0s_release/00_main.md)
 - [Ka0s Remediation Module](./ka0s_remediation/00_main.md)

@@ -59,6 +59,7 @@ Bienvenido al centro de documentación del proyecto Ka0s. A continuación encont
 *   [Ka0s GPU Enablement (Intel)](core/docs/ka0s_gpu_enablement/00_main.md)
 *   [Protocolo de Verificación de Incidencias (SOP)](core/docs/ka0s_incident_response/01_issue_verification.md)
 *   [Módulo Ka0s ITIL Sync](core/docs/ka0s_itil_sync/00_main.md)
+*   [PostgreSQL IA - Servicio de Memoria Vectorial](core/docs/ka0s_postgresql_ia/00_main.md)
 *   [Ka0s Remediation Module](core/docs/ka0s_remediation/00_main.md)
 *   [Ka0s Remediation: High CPU/Load Workflow](core/docs/ka0s_remediation_high_load/01_concept.md)
 *   [Documentación del Módulo: Ka0s Self Service Portal](core/docs/ka0s_self_service_portal/00_main.md)
