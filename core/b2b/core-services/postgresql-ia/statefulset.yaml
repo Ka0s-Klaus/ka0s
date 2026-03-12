@@ -44,6 +44,8 @@ spec:
           value: "trust"
         - name: PGDATA
           value: /var/lib/postgresql/data/pgdata
+        command: ["docker-entrypoint.sh"]
+        args: ["postgres", "-c", "listen_addresses=*", "-c", "hba_file=/etc/postgresql/pg_hba.conf"]
         resources:
           requests:
             memory: "256Mi"

@@ -95,23 +95,17 @@ jobs:
           if ! git diff --staged --quiet; then
             git commit -m "chore(audit): add ingestion report ${{ env.REPORT_NAME }} [skip ci]"
             
-            # Reintento robusto para evitar condiciones de carrera
             count=0
-            MAX_RETRIES=5
-            until [ $count -ge $MAX_RETRIES ]; do
-              if git push origin HEAD:${{ github.ref_name }}; then
-                echo "✅ Push exitoso"
-                exit 0
+            until git push origin HEAD:${{ github.ref_name }}; do
+              if [ $count -eq 5 ]; then
+                echo "Push fallido tras 5 intentos."
+                exit 1
               fi
-              
-              echo "⚠️ Push fallido (intento $((count+1))/$MAX_RETRIES). Reintentando pull --rebase..."
+              echo "Push fallido, reintentando..."
               git pull --rebase origin ${{ github.ref_name }}
               ((count++))
-              sleep 5 # Espera exponencial simple
+              sleep 2
             done
-            
-            echo "❌ Error crítico: No se pudo hacer push después de $MAX_RETRIES intentos."
-            exit 1
           else
             echo "No hay reporte generado para subir."
           fi
