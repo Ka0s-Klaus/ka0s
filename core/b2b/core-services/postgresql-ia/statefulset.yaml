@@ -21,20 +21,17 @@ spec:
       - name: postgresql
         image: ankane/pgvector:v0.5.1 # PG15 with vector support
         imagePullPolicy: IfNotPresent
-        ports:
-        - containerPort: 5432
-          name: postgres
         env:
-        - name: POSTGRES_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: postgres-ia-secret
-              key: POSTGRES_PASSWORD
         - name: POSTGRES_USER
           valueFrom:
             secretKeyRef:
               name: postgres-ia-secret
               key: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-ia-secret
+              key: POSTGRES_PASSWORD
         - name: POSTGRES_DB
           valueFrom:
             secretKeyRef:
@@ -45,7 +42,7 @@ spec:
         - name: PGDATA
           value: /var/lib/postgresql/data/pgdata
         command: ["docker-entrypoint.sh"]
-        args: ["postgres", "-c", "listen_addresses=*", "-c", "hba_file=/etc/postgresql/pg_hba.conf"]
+        args: ["postgres", "-c", "listen_addresses=*", "-c", "hba_file=/var/lib/postgresql/data/pgdata/pg_hba.conf"]
         resources:
           requests:
             memory: "256Mi"
