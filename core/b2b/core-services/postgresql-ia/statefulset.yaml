@@ -1,26 +1,25 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: postgresql
-  namespace: postgresql
+  name: postgresql-ia
+  namespace: postgresql-ia
   labels:
-    app: postgresql
+    app: postgresql-ia
 spec:
-  serviceName: "postgresql"
+  serviceName: "postgresql-ia"
   replicas: 1
   selector:
     matchLabels:
-      app: postgresql
+      app: postgresql-ia
   template:
     metadata:
       labels:
-        app: postgresql
-        role: primary
+        app: postgresql-ia
     spec:
       terminationGracePeriodSeconds: 10
       containers:
       - name: postgresql
-        image: postgres:16-alpine # Revert to original image to fix version mismatch
+        image: pgvector/pgvector:pg16
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 5432
@@ -29,17 +28,17 @@ spec:
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: postgres-secret
+              name: postgres-ia-secret
               key: POSTGRES_PASSWORD
         - name: POSTGRES_USER
           valueFrom:
             secretKeyRef:
-              name: postgres-secret
+              name: postgres-ia-secret
               key: POSTGRES_USER
         - name: POSTGRES_DB
           valueFrom:
             secretKeyRef:
-              name: postgres-secret
+              name: postgres-ia-secret
               key: POSTGRES_DB
         - name: PGDATA
           value: /var/lib/postgresql/data/pgdata
@@ -55,9 +54,9 @@ spec:
             command:
             - pg_isready
             - -U
-            - ka0s_admin
+            - ka0s_ai
             - -d
-            - ka0s_core
+            - ka0s_memory
           initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 5
@@ -66,20 +65,20 @@ spec:
             command:
             - pg_isready
             - -U
-            - ka0s_admin
+            - ka0s_ai
             - -d
-            - ka0s_core
+            - ka0s_memory
           initialDelaySeconds: 5
           periodSeconds: 10
           timeoutSeconds: 5
         volumeMounts:
-        - name: postgres-data
+        - name: postgres-ia-data
           mountPath: /var/lib/postgresql/data
       nodeSelector:
         kubernetes.io/hostname: k8-node-20
   volumeClaimTemplates:
   - metadata:
-      name: postgres-data
+      name: postgres-ia-data
     spec:
       accessModes: [ "ReadWriteOnce" ]
       storageClassName: "nfs-client"
