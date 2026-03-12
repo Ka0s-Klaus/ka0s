@@ -1,0 +1,58 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: kaos-memory-ingest
+  namespace: postgresql
+spec:
+  schedule: "0 3 * * *" # Runs daily at 3 AM
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: ingest
+            image: ka0s/memory-ingest:latest # Placeholder - needs build pipeline
+            imagePullPolicy: IfNotPresent
+            env:
+            - name: POSTGRES_HOST
+              value: "postgresql.postgresql.svc.cluster.local"
+            - name: POSTGRES_DB
+              value: "ka0s_db"
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_PASSWORD
+            - name: OLLAMA_HOST
+              value: "ollama.ollama.svc.cluster.local"
+            - name: EMBEDDING_MODEL
+              value: "nomic-embed-text"
+            volumeMounts:
+            - name: rules
+              mountPath: /ka0s/.trae/rules
+              readOnly: true
+            - name: skills
+              mountPath: /ka0s/.trae/skills
+              readOnly: true
+            - name: docs
+              mountPath: /ka0s/core/docs
+              readOnly: true
+          volumes:
+          # In a real cluster, these would be PVCs or ConfigMaps synced from Git
+          # For this exercise, we assume they are mounted via HostPath or similar for local dev
+          # OR we use an InitContainer to git clone the repo
+          - name: rules
+            hostPath:
+              path: /Users/santale/ka0s-klaus/ka0s/.trae/rules
+          - name: skills
+            hostPath:
+              path: /Users/santale/ka0s-klaus/ka0s/.trae/skills
+          - name: docs
+            hostPath:
+              path: /Users/santale/ka0s-klaus/ka0s/core/docs
+          restartPolicy: OnFailure
