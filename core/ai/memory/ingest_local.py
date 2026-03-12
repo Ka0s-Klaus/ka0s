@@ -32,7 +32,7 @@ MODULES = {
         "README.md"
     ],
     "skills": [
-        ".trae/skills/**/*.md",
+        ".trae/skills/**/SKILL.md",
         ".trae/rules/**/*.md"
     ],
     "infra": [
