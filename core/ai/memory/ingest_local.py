@@ -9,13 +9,13 @@ from typing import List
 # Configuration
 # Localhost because we will port-forward
 POSTGRES_HOST = "localhost"
-POSTGRES_PORT = "5432" 
+POSTGRES_PORT = "5433" 
 POSTGRES_DB = "ka0s_memory"
 POSTGRES_USER = "ka0s_ai"
 POSTGRES_PASSWORD = "change_me_in_production_vector_db_123!" # From secret.yaml
 
 OLLAMA_HOST = "localhost"
-OLLAMA_PORT = "11434"
+OLLAMA_PORT = "11435"
 EMBEDDING_MODEL = "nomic-embed-text" # Ensure this model is pulled in Ollama!
 
 # Paths relative to where the script is run (project root)
