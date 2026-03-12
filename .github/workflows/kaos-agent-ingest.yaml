@@ -61,6 +61,7 @@ jobs:
         env:
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_IA_PASSWORD }} # Asumiendo que existe este secreto
         run: |
+          mkdir -p audit/ingest
           echo "# Reporte de Ingesta Diaria - Agente Ka0s" > "audit/ingest/${{ env.REPORT_NAME }}"
           echo "" >> "audit/ingest/${{ env.REPORT_NAME }}"
           echo "**Fecha:** $(date)" >> "audit/ingest/${{ env.REPORT_NAME }}"

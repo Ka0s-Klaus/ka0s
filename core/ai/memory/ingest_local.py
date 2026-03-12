@@ -9,15 +9,15 @@ from typing import List
 # Configuration
 # Defaults for local development (port-forwarding)
 # Can be overridden by environment variables for CI/CD (K8s Service DNS)
-POSTGRES_HOST = os.getenv("POSTGRES_HOST", "localhost")
-POSTGRES_PORT = os.getenv("POSTGRES_PORT", "5433")
-POSTGRES_DB = os.getenv("POSTGRES_DB", "ka0s_memory")
-POSTGRES_USER = os.getenv("POSTGRES_USER", "ka0s_ai")
-POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "change_me_in_production_vector_db_123!")
+POSTGRES_HOST = os.getenv("POSTGRES_HOST") or "localhost"
+POSTGRES_PORT = os.getenv("POSTGRES_PORT") or "5433"
+POSTGRES_DB = os.getenv("POSTGRES_DB") or "ka0s_memory"
+POSTGRES_USER = os.getenv("POSTGRES_USER") or "ka0s_ai"
+POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD") or "change_me_in_production_vector_db_123!"
 
-OLLAMA_HOST = os.getenv("OLLAMA_HOST", "localhost")
-OLLAMA_PORT = os.getenv("OLLAMA_PORT", "11435")
-EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "nomic-embed-text")
+OLLAMA_HOST = os.getenv("OLLAMA_HOST") or "localhost"
+OLLAMA_PORT = os.getenv("OLLAMA_PORT") or "11435"
+EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL") or "nomic-embed-text"
 
 # Paths relative to where the script is run (project root)
 RULES_PATH = ".trae/rules/**/*.md"
