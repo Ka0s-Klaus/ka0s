@@ -64,10 +64,20 @@ spec:
                fi && \
                if [ -f /branding/zabbix_logo.png ]; then \
                   cp /branding/zabbix_logo.png /web-data/images/custom_logo.png; \
-                  cp /branding/zabbix_logo_compact.png /web-data/images/custom_logo_compact.png; \
+                  # Use the square favicon as the compact logo for better visibility in collapsed sidebar
+                  if [ -f /branding/FaviconKa0s.png ]; then
+                    cp /branding/FaviconKa0s.png /web-data/images/custom_logo_compact.png;
+                  else
+                    cp /branding/zabbix_logo_compact.png /web-data/images/custom_logo_compact.png;
+                  fi
                   # Replace ALL png logos related to iTop
                   find /web-data/images -type f \( -iname '*itop*.png' -o -iname '*logo*.png' \) -exec cp /branding/zabbix_logo.png {} \; ; \
-                  find /web-data -name "*.css" -type f -exec sh -c 'printf "\n.ibo-navigation-menu--logo img, .ibo-header__logo img, #login-logo img { opacity: 0; }\n.ibo-navigation-menu--logo, .ibo-header__logo, #login-logo a { background-image: url(../images/custom_logo.png) !important; background-repeat: no-repeat !important; background-size: 250px !important; background-position: left center !important; width: 220px !important; height: 56px !important; display: block; }\n.ibo-is-collapsed .ibo-navigation-menu--logo, .ibo-navigation-menu--minified .ibo-navigation-menu--logo { background-image: url(../images/custom_logo_compact.png) !important; background-size: 30px auto !important; background-position: center center !important; width: 30px !important; }\n" >> "$1"' -- {} \; || true; \
+                  find /web-data -name "*.css" -type f -exec sh -c 'printf "\n.ibo-navigation-menu--logo img, .ibo-header__logo img, #login-logo img { opacity: 0 !important; }\n.ibo-navigation-menu--logo, .ibo-header__logo, #login-logo a { background-image: url(/images/custom_logo.png) !important; background-repeat: no-repeat !important; background-size: 250px !important; background-position: left center !important; width: 220px !important; height: 56px !important; display: block !important; }\n.ibo-is-collapsed .ibo-navigation-menu--logo, .ibo-navigation-menu--minified .ibo-navigation-menu--logo, .ibo-navigation-menu--square-company-logo { background-image: url(/images/custom_logo_compact.png) !important; background-size: contain !important; background-position: center center !important; width: 30px !important; height: 30px !important; display: block !important; margin-top: 10px !important; }\n.ibo-navigation-menu--square-company-logo img { display: none !important; }\n" >> "$1"' -- {} \; || true; \
+                 # Inject custom text for login page and footer
+                  # Use find with grep first to locate files containing the string to avoid unnecessary sed executions
+                  grep -l "'UI:Login:Welcome' => 'Welcome to iTop!'," -r /web-data | xargs sed -i "s|'UI:Login:Welcome' => 'Welcome to iTop!',|'UI:Login:Welcome' => 'Welcome to Ka0s NOC!',|g" || true
+                  grep -l "'UI:Button:Login' => 'Enter iTop'," -r /web-data | xargs sed -i "s|'UI:Button:Login' => 'Enter iTop',|'UI:Button:Login' => 'Enter Ka0s NOC',|g" || true
+                  grep -l "'UI:Footer:PoweredBy' => 'iTop Powered by Combodo'," -r /web-data | xargs sed -i "s|'UI:Footer:PoweredBy' => 'iTop Powered by Combodo',|'UI:Footer:PoweredBy' => 'Ka0s NOC Powered by iTop',|g" || true
                 fi && \
               chmod -R 775 /web-data/conf && \
               chmod 444 /web-data/conf/production/config-itop.php && \
