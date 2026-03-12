@@ -27,6 +27,7 @@ El ecosistema Ka0s debe evolucionar de un conjunto de scripts y manifiestos a un
 - ✅ Gran cantidad de workflows y scripts funcionales.
 - ✅ Integración con herramientas clave (Zabbix, iTop, Metabase).
 - ✅ CI/CD Hardening implementado (`lint-scripts.yml`).
+- ✅ Validación K8s mejorada (`kubeconform` + `trivy`).
 - ⚠️ Complejidad creciente en `core/b2b/core-services`.
 
 **Mejoras Propuestas:**
@@ -37,7 +38,7 @@ El ecosistema Ka0s debe evolucionar de un conjunto de scripts y manifiestos a un
     *   [ ] **Limpieza de K8s**: Estandarizar todos los manifiestos en `core/b2b` usando Kustomize overlays (`base`, `overlays/prod`) para separar configuración de estructura.
 
 *   **Mediano Plazo:**
-    *   [ ] **Testing de Infraestructura**: Implementar `terratest` o `kubeval` en el pipeline de CI para validar manifiestos antes del merge.
+    *   [x] **Testing de Infraestructura**: Implementar `terratest` o `kubeval` en el pipeline de CI para validar manifiestos antes del merge. (Implementado: `ci-k8s-validate.yml` con Kubeconform)
     *   [ ] **Modularización**: Separar servicios monolíticos en microservicios si la lógica de `scripts` crece demasiado.
 
 *   **Solución Técnica:**
@@ -53,6 +54,7 @@ El ecosistema Ka0s debe evolucionar de un conjunto de scripts y manifiestos a un
 - ✅ Estructura clara de módulos (`develop/{provider}/modules`).
 - ✅ Fuente de verdad de las Reglas Ka0s.
 - ✅ Seguridad IaC activa (`iac-security.yml`).
+- ✅ Estimación de Costes activa (`finops-cost.yml`).
 - ⚠️ Documentación de módulos podría automatizarse.
 
 **Mejoras Propuestas:**
@@ -63,7 +65,7 @@ El ecosistema Ka0s debe evolucionar de un conjunto de scripts y manifiestos a un
 
 *   **Mediano Plazo:**
     *   [ ] **State Management**: Asegurar que el estado de Terraform (tfstate) esté en un backend remoto seguro (S3/Azure Blob) con bloqueo (DynamoDB).
-    *   [ ] **Cost Estimation**: Integrar `infracost` en PRs para ver el impacto económico de los cambios.
+    *   [x] **Cost Estimation**: Integrar `infracost` en PRs para ver el impacto económico de los cambios. (Implementado: `finops-cost.yml`)
 
 ---
 
@@ -93,6 +95,7 @@ El ecosistema Ka0s debe evolucionar de un conjunto de scripts y manifiestos a un
 **Estado Actual:**
 - ✅ Contenido rico en Markdown.
 - ✅ CI de Contenido implementado (`content-validation.yml`).
+- ✅ Estructura i18n preparada.
 - ⚠️ SEO básico.
 
 **Mejoras Propuestas:**
@@ -103,7 +106,7 @@ El ecosistema Ka0s debe evolucionar de un conjunto de scripts y manifiestos a un
 
 *   **Mediano Plazo:**
     *   [ ] **Búsqueda Avanzada**: Implementar Algolia o similar para búsqueda semántica en la documentación.
-    *   [ ] **Multilenguaje**: Preparar estructura para i18n si se planea expansión.
+    *   [x] **Multilenguaje**: Preparar estructura para i18n si se planea expansión. (Implementado: Estructura `_i18n` y config)
 
 ---
 
