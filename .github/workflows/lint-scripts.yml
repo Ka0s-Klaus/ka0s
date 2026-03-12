@@ -1,0 +1,30 @@
+name: Lint Scripts (Hardening)
+
+on:
+  push:
+    paths:
+      - 'core/scripts/**.py'
+      - '.github/scripts/**.py'
+  pull_request:
+    paths:
+      - 'core/scripts/**.py'
+      - '.github/scripts/**.py'
+  workflow_dispatch:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Python Tools
+        uses: ./.github/actions/setup-python-tools
+
+      - name: Run Pylint
+        run: |
+          pylint --disable=C0111,C0103,R0903,W0718 core/scripts/*.py .github/scripts/*.py || true
+          # Note: We allow failure for now, just reporting issues. Remove '|| true' to enforce strict blocking.
+
+      - name: Run Mypy (Type Checking)
+        run: |
+          mypy --ignore-missing-imports core/scripts/*.py .github/scripts/*.py || true
