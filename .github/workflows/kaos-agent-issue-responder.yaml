@@ -1,0 +1,121 @@
+name: "Ka0s Agent Issue Responder"
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: read
+  issues: write # Necesario para comentar en la issue
+
+env:
+  KAOS_MODULE: "[Ka0S] Agent Responder"
+  KAOS_CODE: ${{ github.run_id }}
+  KAOS_ACTOR: ${{ github.actor }}
+  POSTGRES_HOST: postgresql-ia.postgresql-ia.svc.cluster.local
+  POSTGRES_PORT: "5432"
+  POSTGRES_DB: "ka0s_memory"
+  POSTGRES_USER: "ka0s_ai"
+  OLLAMA_HOST: ollama.ollama.svc.cluster.local
+  OLLAMA_PORT: "11434"
+  EMBEDDING_MODEL: "nomic-embed-text"
+  GENERATION_MODEL: "llama3:latest"
+
+jobs:
+  agent-reply:
+    # Solo ejecutar si la issue tiene la etiqueta 'ka0s-agent' (añadida por el template)
+    if: contains(github.event.issue.labels.*.name, 'ka0s-agent')
+    name: Agent Reply
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Dependencies
+        run: pip install psycopg2-binary requests
+
+      - name: Add Thinking Comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '🤖 **Ka0s Agent:** Procesando tu pregunta... (Consultando base de conocimientos y generando respuesta)'
+            })
+
+      - name: Query Agent
+        id: query
+        env:
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_IA_PASSWORD }}
+          # Extraer el cuerpo de la issue como pregunta
+          QUESTION: ${{ github.event.issue.body }} 
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          echo "Procesando Issue #$ISSUE_NUMBER"
+          
+          # Limpiar el cuerpo de la issue para obtener solo la pregunta relevante
+          # (Eliminar headers de markdown del template si es necesario, 
+          #  por ahora pasamos todo el cuerpo ya que el LLM es bueno filtrando contexto)
+          
+          # Generar archivo temporal para la respuesta
+          RESPONSE_FILE="agent_response.md"
+          
+          # Ejecutar inferencia
+          # Nota: query.py imprime la respuesta a stdout
+          python core/ai/inference/query.py "$QUESTION" > "$RESPONSE_FILE"
+          
+          # Verificar si se generó respuesta
+          if [ ! -s "$RESPONSE_FILE" ]; then
+            echo "Error: Respuesta vacía del agente."
+            echo "Lo siento, hubo un error interno al procesar tu solicitud." > "$RESPONSE_FILE"
+          fi
+          
+          # Exportar ruta
+          echo "RESPONSE_FILE=$RESPONSE_FILE" >> $GITHUB_ENV
+
+      - name: Post Answer
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const response = fs.readFileSync(process.env.RESPONSE_FILE, 'utf8');
+            
+            const commentBody = `🤖 **Ka0s Agent:** Aquí tienes la respuesta basada en mi conocimiento actual:\n\n---\n\n${response}\n\n---\n\n*Si esta respuesta no es correcta, por favor verifica la documentación oficial o contacta con el equipo.*`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: commentBody
+            })
+
+      - name: Close Issue (Optional)
+        # Opcional: Cerrar la issue automáticamente si se considera resuelta
+        # Por ahora lo dejamos abierto para feedback del usuario
+        if: success()
+        run: echo "Respuesta enviada. Issue permanece abierta para feedback."
+
+  handle-failure:
+    if: failure()
+    needs: [agent-reply]
+    runs-on: swarm-runners-scaleset
+    permissions:
+      issues: write
+    steps:
+      - name: Report Error
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '❌ **Error:** Hubo un problema técnico al procesar tu solicitud. El equipo de Ka0s ha sido notificado.'
+            })

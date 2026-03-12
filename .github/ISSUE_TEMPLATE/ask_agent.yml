@@ -1,0 +1,39 @@
+name: Ask Ka0s Agent
+description: Haz una pregunta técnica o sobre procesos al Agente de IA de Ka0s.
+title: "[QUESTION]: "
+labels: ["ka0s-agent", "question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### ¡Hola! Soy el Agente Ka0s 🤖
+        Hazme cualquier pregunta sobre la arquitectura, procesos, despliegues o código del repositorio.
+        Responderé automáticamente en este hilo.
+  
+  - type: textarea
+    id: question
+    attributes:
+      label: Tu Pregunta
+      description: Describe tu duda con el mayor detalle posible para obtener una mejor respuesta.
+      placeholder: Ej: ¿Cómo despliego un nuevo microservicio en el entorno de staging?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: context
+    attributes:
+      label: Contexto (Opcional)
+      description: ¿Sobre qué área es tu pregunta?
+      options:
+        - General
+        - DevOps / CI-CD
+        - Desarrollo / Código
+        - Seguridad / Compliance
+        - Infraestructura
+      default: 0
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ⚠️ **Nota:** Las respuestas son generadas por IA basada en la documentación y código actual del repositorio. Verifica siempre la información crítica.
