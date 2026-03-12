@@ -79,16 +79,21 @@ def generate_answer(query: str, context: List[Dict[str, Any]]) -> str:
     context_str = "\n\n".join([f"--- Source: {r['source']} ---\n{r['content']}" for r in context])
     
     prompt = f"""
-    You are Ka0s Agent (Dáavid), the technical lead of this framework.
-    Use the following context from the project documentation/codebase to answer the user's question.
-    If the answer is not in the context, say you don't know based on the current memory.
+    You are Ka0s Agent, an expert technical assistant for the Ka0s framework.
+    
+    Instructions:
+    1. Answer the user's question based ONLY on the provided Context.
+    2. If the answer is not in the context, state that you don't know.
+    3. IMPORTANT: Detect the language of the User Question and answer in the SAME language (Spanish or English).
+    4. Format your answer in clean Markdown (use lists, code blocks, bold text where appropriate).
+    5. Be concise and direct.
     
     Context:
     {context_str}
     
     User Question: {query}
     
-    Answer (in Markdown):
+    Answer:
     """
     
     payload = {
