@@ -1,0 +1,860 @@
+audit-cluster	Standardize Report Names	﻿2026-03-12T15:51:52.0482422Z ##[group]Run TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+audit-cluster	Standardize Report Names	2026-03-12T15:51:52.0483073Z [36;1mTIMESTAMP=$(date +%Y%m%d_%H%M%S)[0m
+audit-cluster	Standardize Report Names	2026-03-12T15:51:52.0483598Z [36;1m# Renombrar reportes Markdown[0m
+audit-cluster	Standardize Report Names	2026-03-12T15:51:52.0484162Z [36;1mfor f in audit/kube/cluster-report-*.md; do[0m
+audit-cluster	Standardize Report Names	2026-03-12T15:51:52.0484737Z [36;1m  [ -e "$f" ] || continue[0m
+audit-cluster	Standardize Report Names	2026-03-12T15:51:52.0485350Z [36;1m  mv "$f" "audit/kube/${TIMESTAMP}_23010886407_cluster-report.md"[0m
+audit-cluster	Standardize Report Names	2026-03-12T15:51:52.0486329Z [36;1mdone[0m
+audit-cluster	Standardize Report Names	2026-03-12T15:51:52.0486707Z [36;1m# Renombrar reportes JSON[0m
+audit-cluster	Standardize Report Names	2026-03-12T15:51:52.0487259Z [36;1mfor f in audit/kube/cluster-report-*.json; do[0m
+audit-cluster	Standardize Report Names	2026-03-12T15:51:52.0487823Z [36;1m  [ -e "$f" ] || continue[0m
+audit-cluster	Standardize Report Names	2026-03-12T15:51:52.0488437Z [36;1m  mv "$f" "audit/kube/${TIMESTAMP}_23010886407_cluster-report.json"[0m
+audit-cluster	Standardize Report Names	2026-03-12T15:51:52.0489287Z [36;1mdone[0m
+audit-cluster	Standardize Report Names	2026-03-12T15:51:52.0489673Z [36;1m# Renombrar dashboards HTML[0m
+audit-cluster	Standardize Report Names	2026-03-12T15:51:52.0490247Z [36;1mfor f in audit/kube/cluster-dashboard-*.html; do[0m
+audit-cluster	Standardize Report Names	2026-03-12T15:51:52.0490866Z [36;1m  [ -e "$f" ] || continue[0m
+audit-cluster	Standardize Report Names	2026-03-12T15:51:52.0491501Z [36;1m  mv "$f" "audit/kube/${TIMESTAMP}_23010886407_cluster-dashboard.html"[0m
+audit-cluster	Standardize Report Names	2026-03-12T15:51:52.0492151Z [36;1mdone[0m
+audit-cluster	Standardize Report Names	2026-03-12T15:51:52.0509779Z shell: /usr/bin/bash -e {0}
+audit-cluster	Standardize Report Names	2026-03-12T15:51:52.0510222Z env:
+audit-cluster	Standardize Report Names	2026-03-12T15:51:52.0510607Z   KAOS_MODULE: [Ka0s] Audit Cluster Status
+audit-cluster	Standardize Report Names	2026-03-12T15:51:52.0511098Z   KAOS_CODE: 23010886407
+audit-cluster	Standardize Report Names	2026-03-12T15:51:52.0511506Z ##[endgroup]
+audit-cluster	Commit Audit Reports	﻿2026-03-12T15:51:52.2542423Z ##[group]Run git config --global user.name "Ka0s Bot"
+audit-cluster	Commit Audit Reports	2026-03-12T15:51:52.2543172Z [36;1mgit config --global user.name "Ka0s Bot"[0m
+audit-cluster	Commit Audit Reports	2026-03-12T15:51:52.2543788Z [36;1mgit config --global user.email "bot@ka0s.io"[0m
+audit-cluster	Commit Audit Reports	2026-03-12T15:51:52.2544461Z [36;1mgit pull --rebase origin main || git pull origin main[0m
+audit-cluster	Commit Audit Reports	2026-03-12T15:51:52.2545499Z [36;1mgit add audit/kube/23010886407_*.md audit/kube/23010886407_*.json audit/kube/23010886407_*.html || true[0m
+audit-cluster	Commit Audit Reports	2026-03-12T15:51:52.2546603Z [36;1m# También agregar los renombrados si el patrón anterior falla[0m
+audit-cluster	Commit Audit Reports	2026-03-12T15:51:52.2547671Z [36;1mgit add audit/kube/*_23010886407_*.md audit/kube/*_23010886407_*.json audit/kube/*_23010886407_*.html || true[0m
+audit-cluster	Commit Audit Reports	2026-03-12T15:51:52.2548541Z [36;1m[0m
+audit-cluster	Commit Audit Reports	2026-03-12T15:51:52.2549824Z [36;1mif ! git diff --staged --quiet; then[0m
+audit-cluster	Commit Audit Reports	2026-03-12T15:51:52.2550560Z [36;1m  git commit -m "[Audit] Cluster status report $(date +'%Y-%m-%d %H:%M')"[0m
+audit-cluster	Commit Audit Reports	2026-03-12T15:51:52.2551389Z [36;1m  git push || (git pull --rebase origin main && git push)[0m
+audit-cluster	Commit Audit Reports	2026-03-12T15:51:52.2562644Z [36;1melse[0m
+audit-cluster	Commit Audit Reports	2026-03-12T15:51:52.2563170Z [36;1m  echo "No new cluster status reports to commit."[0m
+audit-cluster	Commit Audit Reports	2026-03-12T15:51:52.2563731Z [36;1mfi[0m
+audit-cluster	Commit Audit Reports	2026-03-12T15:51:52.2580417Z shell: /usr/bin/bash -e {0}
+audit-cluster	Commit Audit Reports	2026-03-12T15:51:52.2580873Z env:
+audit-cluster	Commit Audit Reports	2026-03-12T15:51:52.2581256Z   KAOS_MODULE: [Ka0s] Audit Cluster Status
+audit-cluster	Commit Audit Reports	2026-03-12T15:51:52.2581753Z   KAOS_CODE: 23010886407
+audit-cluster	Commit Audit Reports	2026-03-12T15:51:52.2582155Z ##[endgroup]
+audit-cluster	Commit Audit Reports	2026-03-12T15:51:52.4561028Z error: cannot pull with rebase: You have unstaged changes.
+audit-cluster	Commit Audit Reports	2026-03-12T15:51:52.4564535Z error: Please commit or stash them.
+audit-cluster	Commit Audit Reports	2026-03-12T15:51:53.0777851Z From https://github.com/Ka0s-Klaus/ka0s
+audit-cluster	Commit Audit Reports	2026-03-12T15:51:53.0778285Z  * branch            main       -> FETCH_HEAD
+audit-cluster	Commit Audit Reports	2026-03-12T15:51:53.0892787Z Already up to date.
+audit-cluster	Commit Audit Reports	2026-03-12T15:51:53.0943327Z fatal: pathspec 'audit/kube/23010886407_*.md' did not match any files
+audit-cluster	Commit Audit Reports	2026-03-12T15:51:53.1255847Z [main 229c60f] [Audit] Cluster status report 2026-03-12 15:51
+audit-cluster	Commit Audit Reports	2026-03-12T15:51:53.1257456Z  3 files changed, 605 insertions(+)
+audit-cluster	Commit Audit Reports	2026-03-12T15:51:53.1258289Z  create mode 100755 audit/kube/20260312_155152_23010886407_cluster-dashboard.html
+audit-cluster	Commit Audit Reports	2026-03-12T15:51:53.1259229Z  create mode 100755 audit/kube/20260312_155152_23010886407_cluster-report.json
+audit-cluster	Commit Audit Reports	2026-03-12T15:51:53.1259847Z  create mode 100755 audit/kube/20260312_155152_23010886407_cluster-report.md
+audit-cluster	Commit Audit Reports	2026-03-12T15:51:54.0163266Z To https://github.com/Ka0s-Klaus/ka0s
+audit-cluster	Commit Audit Reports	2026-03-12T15:51:54.0165075Z    526d9a8..229c60f  main -> main
+handle-success	UNKNOWN STEP	﻿2026-03-12T15:52:07.4854544Z Current runner version: '2.332.0'
+handle-success	UNKNOWN STEP	2026-03-12T15:52:07.4862603Z Runner name: 'swarm-runners-scaleset-hkss5-runner-xckrm'
+handle-success	UNKNOWN STEP	2026-03-12T15:52:07.4863631Z Runner group name: 'Default'
+handle-success	UNKNOWN STEP	2026-03-12T15:52:07.4864660Z Machine name: 'swarm-runners-scaleset-hkss5-runner-xckrm'
+handle-success	UNKNOWN STEP	2026-03-12T15:52:07.4868164Z ##[group]GITHUB_TOKEN Permissions
+handle-success	UNKNOWN STEP	2026-03-12T15:52:07.4871323Z Contents: read
+handle-success	UNKNOWN STEP	2026-03-12T15:52:07.4872025Z Metadata: read
+handle-success	UNKNOWN STEP	2026-03-12T15:52:07.4872596Z ##[endgroup]
+handle-success	UNKNOWN STEP	2026-03-12T15:52:07.4874938Z Secret source: Actions
+handle-success	UNKNOWN STEP	2026-03-12T15:52:07.4875600Z Prepare workflow directory
+handle-success	UNKNOWN STEP	2026-03-12T15:52:07.5444178Z Prepare all required actions
+handle-success	UNKNOWN STEP	2026-03-12T15:52:07.5487850Z Getting action download info
+handle-success	UNKNOWN STEP	2026-03-12T15:52:08.1492737Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.1175721Z Complete job name: handle-success
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.2020119Z ##[group]Run actions/checkout@v4
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.2021088Z with:
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.2021507Z   fetch-depth: 0
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.2022015Z   repository: Ka0s-Klaus/ka0s
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.2022803Z   token: ***
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.2023217Z   ssh-strict: true
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.2023649Z   ssh-user: git
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.2024093Z   persist-credentials: true
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.2024594Z   clean: true
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.2025052Z   sparse-checkout-cone-mode: true
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.2025612Z   fetch-tags: false
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.2026061Z   show-progress: true
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.2026506Z   lfs: false
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.2026932Z   submodules: false
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.2027378Z   set-safe-directory: true
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.2028113Z env:
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.2028560Z   KAOS_MODULE: [Ka0s] Audit Cluster Status
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.2029595Z   KAOS_CODE: 23010886407
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.2030183Z ##[endgroup]
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.3308184Z Syncing repository: Ka0s-Klaus/ka0s
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.3311248Z ##[group]Getting Git version info
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.3311980Z Working directory is '/home/runner/_work/ka0s/ka0s'
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.3313155Z [command]/usr/bin/git version
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.3314263Z git version 2.53.0
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.3355478Z ##[endgroup]
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.3378187Z Temporarily overriding HOME='/home/runner/_work/_temp/9c152e0e-b4ec-457c-942e-b5b890edb25e' before making global git config changes
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.3386276Z Adding repository directory to the temporary git global config as a safe directory
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.3387721Z [command]/usr/bin/git config --global --add safe.directory /home/runner/_work/ka0s/ka0s
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.3445985Z Deleting the contents of '/home/runner/_work/ka0s/ka0s'
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.3451463Z ##[group]Initializing the repository
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.3455808Z [command]/usr/bin/git init /home/runner/_work/ka0s/ka0s
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.3515681Z hint: Using 'master' as the name for the initial branch. This default branch name
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.3518068Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.3519514Z hint: to use in all of your new repositories, which will suppress this warning,
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.3520497Z hint: call:
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.3520885Z hint:
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.3521410Z hint: 	git config --global init.defaultBranch <name>
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.3522032Z hint:
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.3522639Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.3523920Z hint: 'development'. The just-created branch can be renamed via this command:
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.3524752Z hint:
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.3525174Z hint: 	git branch -m <name>
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.3525684Z hint:
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.3526465Z hint: Disable this message with "git config set advice.defaultBranchName false"
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.3527518Z Initialized empty Git repository in /home/runner/_work/ka0s/ka0s/.git/
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.3531887Z [command]/usr/bin/git remote add origin https://github.com/Ka0s-Klaus/ka0s
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.3583713Z ##[endgroup]
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.3584566Z ##[group]Disabling automatic garbage collection
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.3587548Z [command]/usr/bin/git config --local gc.auto 0
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.3632075Z ##[endgroup]
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.3632873Z ##[group]Setting up auth
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.3641242Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.3684283Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.4024179Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.4065556Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.4399082Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.4446619Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.4796989Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.4861796Z ##[endgroup]
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.4862657Z ##[group]Fetching the repository
+handle-success	UNKNOWN STEP	2026-03-12T15:52:09.4870215Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9501739Z From https://github.com/Ka0s-Klaus/ka0s
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9503037Z  * [new branch]          F3450-modelo-operativo  -> origin/F3450-modelo-operativo
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9504026Z  * [new branch]          H3596-deploy-itop       -> origin/H3596-deploy-itop
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9507866Z  * [new branch]          H4170-flujo-detallado-zabbix---github -> origin/H4170-flujo-detallado-zabbix---github
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9508617Z  * [new branch]          H4191-request-cambios   -> origin/H4191-request-cambios
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9512234Z  * [new branch]          H4200-request-recomendaciones-de-auditoria -> origin/H4200-request-recomendaciones-de-auditoria
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9513192Z  * [new branch]          H4322-request-plan-de-pruebas-de-agentes -> origin/H4322-request-plan-de-pruebas-de-agentes
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9514053Z  * [new branch]          chore/incident-cancelation-guard -> origin/chore/incident-cancelation-guard
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9514719Z  * [new branch]          chore/itop-debug-list   -> origin/chore/itop-debug-list
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9515373Z  * [new branch]          chore/itop-debug-url-version -> origin/chore/itop-debug-url-version
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9516012Z  * [new branch]          chore/itop-debug-version -> origin/chore/itop-debug-version
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9516723Z  * [new branch]          chore/remove-itop-debug-list -> origin/chore/remove-itop-debug-list
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9517469Z  * [new branch]          fix/cmdb-full-sync-sparse-checkout -> origin/fix/cmdb-full-sync-sparse-checkout
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9518226Z  * [new branch]          fix/itop-list-orgs-on-missing -> origin/fix/itop-list-orgs-on-missing
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9519044Z  * [new branch]          fix/itop-org-id-numeric -> origin/fix/itop-org-id-numeric
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9519660Z  * [new branch]          fix/itop-ssl-verify     -> origin/fix/itop-ssl-verify
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9520530Z  * [new branch]          fix/itop-use-version-in-url -> origin/fix/itop-use-version-in-url
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9521083Z  * [new branch]          main                    -> origin/main
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9521558Z  * [new tag]             0.0.0                   -> 0.0.0
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9521955Z  * [new tag]             0.0.1                   -> 0.0.1
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9522346Z  * [new tag]             0.0.10                  -> 0.0.10
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9522766Z  * [new tag]             0.0.100                 -> 0.0.100
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9523314Z  * [new tag]             0.0.101                 -> 0.0.101
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9524089Z  * [new tag]             0.0.102                 -> 0.0.102
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9524477Z  * [new tag]             0.0.103                 -> 0.0.103
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9524855Z  * [new tag]             0.0.104                 -> 0.0.104
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9525237Z  * [new tag]             0.0.105                 -> 0.0.105
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9525621Z  * [new tag]             0.0.106                 -> 0.0.106
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9526019Z  * [new tag]             0.0.107                 -> 0.0.107
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9526483Z  * [new tag]             0.0.108                 -> 0.0.108
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9526921Z  * [new tag]             0.0.109                 -> 0.0.109
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9527457Z  * [new tag]             0.0.11                  -> 0.0.11
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9528116Z  * [new tag]             0.0.110                 -> 0.0.110
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9528542Z  * [new tag]             0.0.111                 -> 0.0.111
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9529191Z  * [new tag]             0.0.112                 -> 0.0.112
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9529593Z  * [new tag]             0.0.113                 -> 0.0.113
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9529989Z  * [new tag]             0.0.114                 -> 0.0.114
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9530381Z  * [new tag]             0.0.115                 -> 0.0.115
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9530774Z  * [new tag]             0.0.116                 -> 0.0.116
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9531308Z  * [new tag]             0.0.117                 -> 0.0.117
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9531703Z  * [new tag]             0.0.118                 -> 0.0.118
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9532097Z  * [new tag]             0.0.119                 -> 0.0.119
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9532488Z  * [new tag]             0.0.12                  -> 0.0.12
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9532881Z  * [new tag]             0.0.120                 -> 0.0.120
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9533298Z  * [new tag]             0.0.121                 -> 0.0.121
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9533700Z  * [new tag]             0.0.122                 -> 0.0.122
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9534103Z  * [new tag]             0.0.123                 -> 0.0.123
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9534490Z  * [new tag]             0.0.124                 -> 0.0.124
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9534884Z  * [new tag]             0.0.125                 -> 0.0.125
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9535272Z  * [new tag]             0.0.126                 -> 0.0.126
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9535662Z  * [new tag]             0.0.127                 -> 0.0.127
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9536050Z  * [new tag]             0.0.128                 -> 0.0.128
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9536441Z  * [new tag]             0.0.129                 -> 0.0.129
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9536958Z  * [new tag]             0.0.13                  -> 0.0.13
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9537337Z  * [new tag]             0.0.130                 -> 0.0.130
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9537730Z  * [new tag]             0.0.131                 -> 0.0.131
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9538112Z  * [new tag]             0.0.132                 -> 0.0.132
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9538496Z  * [new tag]             0.0.133                 -> 0.0.133
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9539160Z  * [new tag]             0.0.134                 -> 0.0.134
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9539828Z  * [new tag]             0.0.135                 -> 0.0.135
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9540222Z  * [new tag]             0.0.136                 -> 0.0.136
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9540612Z  * [new tag]             0.0.137                 -> 0.0.137
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9541010Z  * [new tag]             0.0.138                 -> 0.0.138
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9541413Z  * [new tag]             0.0.139                 -> 0.0.139
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9541828Z  * [new tag]             0.0.14                  -> 0.0.14
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9542250Z  * [new tag]             0.0.140                 -> 0.0.140
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9542719Z  * [new tag]             0.0.141                 -> 0.0.141
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9543256Z  * [new tag]             0.0.142                 -> 0.0.142
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9543649Z  * [new tag]             0.0.143                 -> 0.0.143
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9544295Z  * [new tag]             0.0.144                 -> 0.0.144
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9544694Z  * [new tag]             0.0.145                 -> 0.0.145
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9545093Z  * [new tag]             0.0.146                 -> 0.0.146
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9545490Z  * [new tag]             0.0.147                 -> 0.0.147
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9545882Z  * [new tag]             0.0.148                 -> 0.0.148
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9546277Z  * [new tag]             0.0.149                 -> 0.0.149
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9546671Z  * [new tag]             0.0.15                  -> 0.0.15
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9547067Z  * [new tag]             0.0.150                 -> 0.0.150
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9547462Z  * [new tag]             0.0.151                 -> 0.0.151
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9548048Z  * [new tag]             0.0.152                 -> 0.0.152
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9548463Z  * [new tag]             0.0.153                 -> 0.0.153
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9549375Z  * [new tag]             0.0.154                 -> 0.0.154
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9549932Z  * [new tag]             0.0.155                 -> 0.0.155
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9550333Z  * [new tag]             0.0.156                 -> 0.0.156
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9550743Z  * [new tag]             0.0.157                 -> 0.0.157
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9551148Z  * [new tag]             0.0.158                 -> 0.0.158
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9551551Z  * [new tag]             0.0.159                 -> 0.0.159
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9551959Z  * [new tag]             0.0.16                  -> 0.0.16
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9552357Z  * [new tag]             0.0.160                 -> 0.0.160
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9552759Z  * [new tag]             0.0.161                 -> 0.0.161
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9553160Z  * [new tag]             0.0.162                 -> 0.0.162
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9553572Z  * [new tag]             0.0.163                 -> 0.0.163
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9553977Z  * [new tag]             0.0.164                 -> 0.0.164
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9554388Z  * [new tag]             0.0.165                 -> 0.0.165
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9554791Z  * [new tag]             0.0.166                 -> 0.0.166
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9555192Z  * [new tag]             0.0.167                 -> 0.0.167
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9555599Z  * [new tag]             0.0.168                 -> 0.0.168
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9556001Z  * [new tag]             0.0.169                 -> 0.0.169
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9556413Z  * [new tag]             0.0.17                  -> 0.0.17
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9556815Z  * [new tag]             0.0.170                 -> 0.0.170
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9557223Z  * [new tag]             0.0.171                 -> 0.0.171
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9557626Z  * [new tag]             0.0.172                 -> 0.0.172
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9558033Z  * [new tag]             0.0.173                 -> 0.0.173
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9558441Z  * [new tag]             0.0.174                 -> 0.0.174
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9558954Z  * [new tag]             0.0.175                 -> 0.0.175
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9559380Z  * [new tag]             0.0.176                 -> 0.0.176
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9582626Z  * [new tag]             0.0.177                 -> 0.0.177
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9583112Z  * [new tag]             0.0.178                 -> 0.0.178
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9583529Z  * [new tag]             0.0.179                 -> 0.0.179
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9584050Z  * [new tag]             0.0.18                  -> 0.0.18
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9584443Z  * [new tag]             0.0.19                  -> 0.0.19
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9584833Z  * [new tag]             0.0.2                   -> 0.0.2
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9585221Z  * [new tag]             0.0.20                  -> 0.0.20
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9585607Z  * [new tag]             0.0.21                  -> 0.0.21
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9586037Z  * [new tag]             0.0.22                  -> 0.0.22
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9586432Z  * [new tag]             0.0.23                  -> 0.0.23
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9587544Z  * [new tag]             0.0.24                  -> 0.0.24
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9587942Z  * [new tag]             0.0.25                  -> 0.0.25
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9588472Z  * [new tag]             0.0.26                  -> 0.0.26
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9599982Z  * [new tag]             0.0.27                  -> 0.0.27
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9600623Z  * [new tag]             0.0.28                  -> 0.0.28
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9601024Z  * [new tag]             0.0.29                  -> 0.0.29
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9601543Z  * [new tag]             0.0.3                   -> 0.0.3
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9601923Z  * [new tag]             0.0.30                  -> 0.0.30
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9602306Z  * [new tag]             0.0.31                  -> 0.0.31
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9602968Z  * [new tag]             0.0.32                  -> 0.0.32
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9603373Z  * [new tag]             0.0.33                  -> 0.0.33
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9603757Z  * [new tag]             0.0.34                  -> 0.0.34
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9604149Z  * [new tag]             0.0.35                  -> 0.0.35
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9604529Z  * [new tag]             0.0.36                  -> 0.0.36
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9604902Z  * [new tag]             0.0.37                  -> 0.0.37
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9605282Z  * [new tag]             0.0.38                  -> 0.0.38
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9605661Z  * [new tag]             0.0.39                  -> 0.0.39
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9606036Z  * [new tag]             0.0.4                   -> 0.0.4
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9606417Z  * [new tag]             0.0.40                  -> 0.0.40
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9606937Z  * [new tag]             0.0.41                  -> 0.0.41
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9607481Z  * [new tag]             0.0.42                  -> 0.0.42
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9607875Z  * [new tag]             0.0.43                  -> 0.0.43
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9608267Z  * [new tag]             0.0.44                  -> 0.0.44
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9608663Z  * [new tag]             0.0.45                  -> 0.0.45
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9614243Z  * [new tag]             0.0.46                  -> 0.0.46
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9614668Z  * [new tag]             0.0.47                  -> 0.0.47
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9615061Z  * [new tag]             0.0.48                  -> 0.0.48
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9615453Z  * [new tag]             0.0.49                  -> 0.0.49
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9615841Z  * [new tag]             0.0.5                   -> 0.0.5
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9616234Z  * [new tag]             0.0.50                  -> 0.0.50
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9616620Z  * [new tag]             0.0.51                  -> 0.0.51
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9617011Z  * [new tag]             0.0.52                  -> 0.0.52
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9617403Z  * [new tag]             0.0.53                  -> 0.0.53
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9617808Z  * [new tag]             0.0.54                  -> 0.0.54
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9618205Z  * [new tag]             0.0.55                  -> 0.0.55
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9618604Z  * [new tag]             0.0.56                  -> 0.0.56
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9619139Z  * [new tag]             0.0.57                  -> 0.0.57
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9619530Z  * [new tag]             0.0.58                  -> 0.0.58
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9619921Z  * [new tag]             0.0.59                  -> 0.0.59
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9620315Z  * [new tag]             0.0.6                   -> 0.0.6
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9620711Z  * [new tag]             0.0.60                  -> 0.0.60
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9621102Z  * [new tag]             0.0.61                  -> 0.0.61
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9621489Z  * [new tag]             0.0.62                  -> 0.0.62
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9621883Z  * [new tag]             0.0.63                  -> 0.0.63
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9622278Z  * [new tag]             0.0.64                  -> 0.0.64
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9622670Z  * [new tag]             0.0.65                  -> 0.0.65
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9623058Z  * [new tag]             0.0.66                  -> 0.0.66
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9623738Z  * [new tag]             0.0.67                  -> 0.0.67
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9624134Z  * [new tag]             0.0.68                  -> 0.0.68
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9624525Z  * [new tag]             0.0.69                  -> 0.0.69
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9624914Z  * [new tag]             0.0.7                   -> 0.0.7
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9625306Z  * [new tag]             0.0.70                  -> 0.0.70
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9625698Z  * [new tag]             0.0.71                  -> 0.0.71
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9626090Z  * [new tag]             0.0.72                  -> 0.0.72
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9626477Z  * [new tag]             0.0.73                  -> 0.0.73
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9626863Z  * [new tag]             0.0.74                  -> 0.0.74
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9627457Z  * [new tag]             0.0.75                  -> 0.0.75
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9627865Z  * [new tag]             0.0.76                  -> 0.0.76
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9628274Z  * [new tag]             0.0.77                  -> 0.0.77
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9628664Z  * [new tag]             0.0.78                  -> 0.0.78
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9629283Z  * [new tag]             0.0.79                  -> 0.0.79
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9629666Z  * [new tag]             0.0.8                   -> 0.0.8
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9630050Z  * [new tag]             0.0.80                  -> 0.0.80
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9630431Z  * [new tag]             0.0.81                  -> 0.0.81
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9630808Z  * [new tag]             0.0.82                  -> 0.0.82
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9631187Z  * [new tag]             0.0.83                  -> 0.0.83
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9631566Z  * [new tag]             0.0.84                  -> 0.0.84
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9631941Z  * [new tag]             0.0.85                  -> 0.0.85
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9632333Z  * [new tag]             0.0.86                  -> 0.0.86
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9632714Z  * [new tag]             0.0.87                  -> 0.0.87
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9633109Z  * [new tag]             0.0.88                  -> 0.0.88
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9633487Z  * [new tag]             0.0.89                  -> 0.0.89
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9633872Z  * [new tag]             0.0.9                   -> 0.0.9
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9634253Z  * [new tag]             0.0.90                  -> 0.0.90
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9634631Z  * [new tag]             0.0.91                  -> 0.0.91
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9635012Z  * [new tag]             0.0.92                  -> 0.0.92
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9635390Z  * [new tag]             0.0.93                  -> 0.0.93
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9635772Z  * [new tag]             0.0.94                  -> 0.0.94
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9636183Z  * [new tag]             0.0.95                  -> 0.0.95
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9636568Z  * [new tag]             0.0.96                  -> 0.0.96
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9637084Z  * [new tag]             0.0.97                  -> 0.0.97
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9637478Z  * [new tag]             0.0.98                  -> 0.0.98
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9637876Z  * [new tag]             0.0.99                  -> 0.0.99
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9638270Z  * [new tag]             0.1.0                   -> 0.1.0
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9638658Z  * [new tag]             0.1.1                   -> 0.1.1
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9639286Z  * [new tag]             0.2.0                   -> 0.2.0
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9640088Z  * [new tag]             0.3.0                   -> 0.3.0
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9640746Z  * [new tag]             0.3.1                   -> 0.3.1
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9641257Z  * [new tag]             0.3.10                  -> 0.3.10
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9641638Z  * [new tag]             0.3.11                  -> 0.3.11
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9642018Z  * [new tag]             0.3.12                  -> 0.3.12
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9642520Z  * [new tag]             0.3.13                  -> 0.3.13
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9642891Z  * [new tag]             0.3.14                  -> 0.3.14
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9643509Z  * [new tag]             0.3.15                  -> 0.3.15
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9643882Z  * [new tag]             0.3.16                  -> 0.3.16
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9644254Z  * [new tag]             0.3.17                  -> 0.3.17
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9644626Z  * [new tag]             0.3.2                   -> 0.3.2
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9645000Z  * [new tag]             0.3.3                   -> 0.3.3
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9645368Z  * [new tag]             0.3.4                   -> 0.3.4
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9645736Z  * [new tag]             0.3.5                   -> 0.3.5
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9646212Z  * [new tag]             0.3.6                   -> 0.3.6
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9646589Z  * [new tag]             0.3.7                   -> 0.3.7
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9646958Z  * [new tag]             0.3.8                   -> 0.3.8
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9647502Z  * [new tag]             0.3.9                   -> 0.3.9
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9647894Z  * [new tag]             0.4.0                   -> 0.4.0
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9648268Z  * [new tag]             0.4.1                   -> 0.4.1
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9648641Z  * [new tag]             0.4.2                   -> 0.4.2
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9649550Z  * [new tag]             0.4.3                   -> 0.4.3
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9649922Z  * [new tag]             0.4.4                   -> 0.4.4
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9650293Z  * [new tag]             0.4.5                   -> 0.4.5
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9650661Z  * [new tag]             0.4.6                   -> 0.4.6
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9651030Z  * [new tag]             0.4.7                   -> 0.4.7
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9651397Z  * [new tag]             0.4.8                   -> 0.4.8
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9651767Z  * [new tag]             0.4.9                   -> 0.4.9
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9652139Z  * [new tag]             0.5.0                   -> 0.5.0
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9652512Z  * [new tag]             0.5.1                   -> 0.5.1
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9652883Z  * [new tag]             0.5.2                   -> 0.5.2
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9653260Z  * [new tag]             0.6.0                   -> 0.6.0
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9653630Z  * [new tag]             0.6.1                   -> 0.6.1
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9653995Z  * [new tag]             0.6.2                   -> 0.6.2
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9654365Z  * [new tag]             0.6.3                   -> 0.6.3
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9654728Z  * [new tag]             0.6.4                   -> 0.6.4
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9655100Z  * [new tag]             0.6.5                   -> 0.6.5
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9655471Z  * [new tag]             0.6.6                   -> 0.6.6
+handle-success	UNKNOWN STEP	2026-03-12T15:52:36.9943223Z [command]/usr/bin/git branch --list --remote origin/main
+handle-success	UNKNOWN STEP	2026-03-12T15:52:37.0026694Z   origin/main
+handle-success	UNKNOWN STEP	2026-03-12T15:52:37.0038575Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+handle-success	UNKNOWN STEP	2026-03-12T15:52:37.0071953Z 229c60f713619b3a4d24a443439475ba81fda48b
+handle-success	UNKNOWN STEP	2026-03-12T15:52:37.0086510Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules origin +526d9a8a4c8dabc0df4fe46accce74c07f461685:refs/remotes/origin/main
+handle-success	UNKNOWN STEP	2026-03-12T15:52:37.0282378Z From https://github.com/Ka0s-Klaus/ka0s
+handle-success	UNKNOWN STEP	2026-03-12T15:52:37.0319809Z  + 229c60f71...526d9a8a4 526d9a8a4c8dabc0df4fe46accce74c07f461685 -> origin/main  (forced update)
+handle-success	UNKNOWN STEP	2026-03-12T15:52:37.0321861Z ##[endgroup]
+handle-success	UNKNOWN STEP	2026-03-12T15:52:37.0322387Z ##[group]Determining the checkout info
+handle-success	UNKNOWN STEP	2026-03-12T15:52:37.0322880Z ##[endgroup]
+handle-success	UNKNOWN STEP	2026-03-12T15:52:37.0326960Z [command]/usr/bin/git sparse-checkout disable
+handle-success	UNKNOWN STEP	2026-03-12T15:52:37.0379790Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+handle-success	UNKNOWN STEP	2026-03-12T15:52:37.0419132Z ##[group]Checking out the ref
+handle-success	UNKNOWN STEP	2026-03-12T15:52:37.0423949Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+handle-success	UNKNOWN STEP	2026-03-12T15:52:38.0831250Z Updating files: 100% (2751/2751)
+handle-success	UNKNOWN STEP	2026-03-12T15:52:38.0831629Z Updating files: 100% (2751/2751), done.
+handle-success	UNKNOWN STEP	2026-03-12T15:52:38.0899089Z Switched to a new branch 'main'
+handle-success	UNKNOWN STEP	2026-03-12T15:52:38.0904634Z branch 'main' set up to track 'origin/main'.
+handle-success	UNKNOWN STEP	2026-03-12T15:52:38.1089936Z ##[endgroup]
+handle-success	UNKNOWN STEP	2026-03-12T15:52:38.1141858Z [command]/usr/bin/git log -1 --format=%H
+handle-success	UNKNOWN STEP	2026-03-12T15:52:38.1174234Z 526d9a8a4c8dabc0df4fe46accce74c07f461685
+handle-success	UNKNOWN STEP	2026-03-12T15:52:38.1410533Z ##[group]Run echo "Cluster status audit completed successfully for run 23010886407."
+handle-success	UNKNOWN STEP	2026-03-12T15:52:38.1411173Z [36;1mecho "Cluster status audit completed successfully for run 23010886407."[0m
+handle-success	UNKNOWN STEP	2026-03-12T15:52:38.1427738Z shell: /usr/bin/bash -e {0}
+handle-success	UNKNOWN STEP	2026-03-12T15:52:38.1428009Z env:
+handle-success	UNKNOWN STEP	2026-03-12T15:52:38.1428228Z   KAOS_MODULE: [Ka0s] Audit Cluster Status
+handle-success	UNKNOWN STEP	2026-03-12T15:52:38.1428632Z   KAOS_CODE: 23010886407
+handle-success	UNKNOWN STEP	2026-03-12T15:52:38.1429645Z   GH_TOKEN: ***
+handle-success	UNKNOWN STEP	2026-03-12T15:52:38.1429851Z ##[endgroup]
+handle-success	UNKNOWN STEP	2026-03-12T15:52:38.1495124Z Cluster status audit completed successfully for run 23010886407.
+handle-success	UNKNOWN STEP	2026-03-12T15:52:38.1706528Z Post job cleanup.
+handle-success	UNKNOWN STEP	2026-03-12T15:52:38.2776524Z [command]/usr/bin/git version
+handle-success	UNKNOWN STEP	2026-03-12T15:52:38.2825848Z git version 2.53.0
+handle-success	UNKNOWN STEP	2026-03-12T15:52:38.2875235Z Temporarily overriding HOME='/home/runner/_work/_temp/e0b8c506-6a3e-4208-8031-a62943541c30' before making global git config changes
+handle-success	UNKNOWN STEP	2026-03-12T15:52:38.2876169Z Adding repository directory to the temporary git global config as a safe directory
+handle-success	UNKNOWN STEP	2026-03-12T15:52:38.2882439Z [command]/usr/bin/git config --global --add safe.directory /home/runner/_work/ka0s/ka0s
+handle-success	UNKNOWN STEP	2026-03-12T15:52:38.2929312Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+handle-success	UNKNOWN STEP	2026-03-12T15:52:38.2982379Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+handle-success	UNKNOWN STEP	2026-03-12T15:52:38.3322656Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+handle-success	UNKNOWN STEP	2026-03-12T15:52:38.3352898Z http.https://github.com/.extraheader
+handle-success	UNKNOWN STEP	2026-03-12T15:52:38.3367099Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+handle-success	UNKNOWN STEP	2026-03-12T15:52:38.3407898Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+handle-success	UNKNOWN STEP	2026-03-12T15:52:38.3748433Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+handle-success	UNKNOWN STEP	2026-03-12T15:52:38.3789780Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+handle-success	UNKNOWN STEP	2026-03-12T15:52:38.4267168Z Cleaning up orphan processes
+handle-success	UNKNOWN STEP	2026-03-12T15:52:38.4310772Z ##[warning]Node.js 20 actions are deprecated. The following actions are running on Node.js 20 and may not work as expected: actions/checkout@v4. Actions will be forced to run with Node.js 24 by default starting June 2nd, 2026. Please check if updated versions of these actions are available that support Node.js 24. To opt into Node.js 24 now, set the FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true environment variable on the runner or in your workflow file. Once Node.js 24 becomes the default, you can temporarily opt out by setting ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+end-workflow	UNKNOWN STEP	﻿2026-03-12T15:52:51.5905347Z Current runner version: '2.332.0'
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:51.5913212Z Runner name: 'swarm-runners-scaleset-hkss5-runner-59tlm'
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:51.5914236Z Runner group name: 'Default'
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:51.5915281Z Machine name: 'swarm-runners-scaleset-hkss5-runner-59tlm'
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:51.5919323Z ##[group]GITHUB_TOKEN Permissions
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:51.5922024Z Actions: write
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:51.5922672Z Contents: read
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:51.5923222Z Metadata: read
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:51.5923960Z ##[endgroup]
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:51.5926201Z Secret source: Actions
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:51.5926977Z Prepare workflow directory
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:51.6477946Z Prepare all required actions
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:51.6519604Z Getting action download info
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:52.2696317Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.3430887Z Complete job name: end-workflow
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.4167089Z ##[group]Run actions/checkout@v4
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.4167971Z with:
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.4168419Z   fetch-depth: 0
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.4169174Z   repository: Ka0s-Klaus/ka0s
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.4170073Z   token: ***
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.4170479Z   ssh-strict: true
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.4170900Z   ssh-user: git
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.4171319Z   persist-credentials: true
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.4171896Z   clean: true
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.4172320Z   sparse-checkout-cone-mode: true
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.4172814Z   fetch-tags: false
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.4173227Z   show-progress: true
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.4173650Z   lfs: false
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.4174043Z   submodules: false
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.4174465Z   set-safe-directory: true
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.4175347Z env:
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.4175904Z   KAOS_MODULE: [Ka0s] Audit Cluster Status
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.4176434Z   KAOS_CODE: 23010886407
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.4176857Z ##[endgroup]
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.5566776Z Syncing repository: Ka0s-Klaus/ka0s
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.5571010Z ##[group]Getting Git version info
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.5571838Z Working directory is '/home/runner/_work/ka0s/ka0s'
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.5573023Z [command]/usr/bin/git version
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.5573547Z git version 2.53.0
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.5617175Z ##[endgroup]
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.5662039Z Temporarily overriding HOME='/home/runner/_work/_temp/1e6fc9e7-9f60-438f-b1ff-fe057a3003d3' before making global git config changes
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.5665868Z Adding repository directory to the temporary git global config as a safe directory
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.5672080Z [command]/usr/bin/git config --global --add safe.directory /home/runner/_work/ka0s/ka0s
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.5758438Z Deleting the contents of '/home/runner/_work/ka0s/ka0s'
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.5769759Z ##[group]Initializing the repository
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.5774731Z [command]/usr/bin/git init /home/runner/_work/ka0s/ka0s
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.5853608Z hint: Using 'master' as the name for the initial branch. This default branch name
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.5860452Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.5861917Z hint: to use in all of your new repositories, which will suppress this warning,
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.5862811Z hint: call:
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.5869879Z hint:
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.5870654Z hint: 	git config --global init.defaultBranch <name>
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.5871431Z hint:
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.5872110Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.5873111Z hint: 'development'. The just-created branch can be renamed via this command:
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.5873978Z hint:
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.5874510Z hint: 	git branch -m <name>
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.5877146Z hint:
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.5877804Z hint: Disable this message with "git config set advice.defaultBranchName false"
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.5880696Z Initialized empty Git repository in /home/runner/_work/ka0s/ka0s/.git/
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.5895850Z [command]/usr/bin/git remote add origin https://github.com/Ka0s-Klaus/ka0s
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.5967255Z ##[endgroup]
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.5969336Z ##[group]Disabling automatic garbage collection
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.5972942Z [command]/usr/bin/git config --local gc.auto 0
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.6080179Z ##[endgroup]
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.6080966Z ##[group]Setting up auth
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.6087304Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.6130509Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.6467853Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.6511101Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.6841401Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.6885688Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.7238309Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.7302638Z ##[endgroup]
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.7303529Z ##[group]Fetching the repository
+end-workflow	UNKNOWN STEP	2026-03-12T15:52:53.7313117Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6654105Z From https://github.com/Ka0s-Klaus/ka0s
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6654725Z  * [new branch]          F3450-modelo-operativo  -> origin/F3450-modelo-operativo
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6655329Z  * [new branch]          H3596-deploy-itop       -> origin/H3596-deploy-itop
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6656157Z  * [new branch]          H4170-flujo-detallado-zabbix---github -> origin/H4170-flujo-detallado-zabbix---github
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6657077Z  * [new branch]          H4191-request-cambios   -> origin/H4191-request-cambios
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6657907Z  * [new branch]          H4200-request-recomendaciones-de-auditoria -> origin/H4200-request-recomendaciones-de-auditoria
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6659220Z  * [new branch]          H4322-request-plan-de-pruebas-de-agentes -> origin/H4322-request-plan-de-pruebas-de-agentes
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6660133Z  * [new branch]          chore/incident-cancelation-guard -> origin/chore/incident-cancelation-guard
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6660847Z  * [new branch]          chore/itop-debug-list   -> origin/chore/itop-debug-list
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6661535Z  * [new branch]          chore/itop-debug-url-version -> origin/chore/itop-debug-url-version
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6662214Z  * [new branch]          chore/itop-debug-version -> origin/chore/itop-debug-version
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6662971Z  * [new branch]          chore/remove-itop-debug-list -> origin/chore/remove-itop-debug-list
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6663756Z  * [new branch]          fix/cmdb-full-sync-sparse-checkout -> origin/fix/cmdb-full-sync-sparse-checkout
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6664548Z  * [new branch]          fix/itop-list-orgs-on-missing -> origin/fix/itop-list-orgs-on-missing
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6665258Z  * [new branch]          fix/itop-org-id-numeric -> origin/fix/itop-org-id-numeric
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6665893Z  * [new branch]          fix/itop-ssl-verify     -> origin/fix/itop-ssl-verify
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6666522Z  * [new branch]          fix/itop-use-version-in-url -> origin/fix/itop-use-version-in-url
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6667106Z  * [new branch]          main                    -> origin/main
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6667641Z  * [new tag]             0.0.0                   -> 0.0.0
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6668051Z  * [new tag]             0.0.1                   -> 0.0.1
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6668467Z  * [new tag]             0.0.10                  -> 0.0.10
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6669017Z  * [new tag]             0.0.100                 -> 0.0.100
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6669518Z  * [new tag]             0.0.101                 -> 0.0.101
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6670517Z  * [new tag]             0.0.102                 -> 0.0.102
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6670920Z  * [new tag]             0.0.103                 -> 0.0.103
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6671322Z  * [new tag]             0.0.104                 -> 0.0.104
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6671723Z  * [new tag]             0.0.105                 -> 0.0.105
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6672149Z  * [new tag]             0.0.106                 -> 0.0.106
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6672557Z  * [new tag]             0.0.107                 -> 0.0.107
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6673056Z  * [new tag]             0.0.108                 -> 0.0.108
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6673515Z  * [new tag]             0.0.109                 -> 0.0.109
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6673917Z  * [new tag]             0.0.11                  -> 0.0.11
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6674569Z  * [new tag]             0.0.110                 -> 0.0.110
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6674993Z  * [new tag]             0.0.111                 -> 0.0.111
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6675408Z  * [new tag]             0.0.112                 -> 0.0.112
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6675809Z  * [new tag]             0.0.113                 -> 0.0.113
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6676216Z  * [new tag]             0.0.114                 -> 0.0.114
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6676619Z  * [new tag]             0.0.115                 -> 0.0.115
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6677017Z  * [new tag]             0.0.116                 -> 0.0.116
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6677422Z  * [new tag]             0.0.117                 -> 0.0.117
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6677817Z  * [new tag]             0.0.118                 -> 0.0.118
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6678223Z  * [new tag]             0.0.119                 -> 0.0.119
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6678627Z  * [new tag]             0.0.12                  -> 0.0.12
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6679120Z  * [new tag]             0.0.120                 -> 0.0.120
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6679552Z  * [new tag]             0.0.121                 -> 0.0.121
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6679960Z  * [new tag]             0.0.122                 -> 0.0.122
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6680372Z  * [new tag]             0.0.123                 -> 0.0.123
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6680778Z  * [new tag]             0.0.124                 -> 0.0.124
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6681186Z  * [new tag]             0.0.125                 -> 0.0.125
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6681586Z  * [new tag]             0.0.126                 -> 0.0.126
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6681992Z  * [new tag]             0.0.127                 -> 0.0.127
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6682396Z  * [new tag]             0.0.128                 -> 0.0.128
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6682802Z  * [new tag]             0.0.129                 -> 0.0.129
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6683206Z  * [new tag]             0.0.13                  -> 0.0.13
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6683611Z  * [new tag]             0.0.130                 -> 0.0.130
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6684026Z  * [new tag]             0.0.131                 -> 0.0.131
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6684430Z  * [new tag]             0.0.132                 -> 0.0.132
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6684844Z  * [new tag]             0.0.133                 -> 0.0.133
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6685243Z  * [new tag]             0.0.134                 -> 0.0.134
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6685653Z  * [new tag]             0.0.135                 -> 0.0.135
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6686059Z  * [new tag]             0.0.136                 -> 0.0.136
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6686459Z  * [new tag]             0.0.137                 -> 0.0.137
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6686875Z  * [new tag]             0.0.138                 -> 0.0.138
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6687291Z  * [new tag]             0.0.139                 -> 0.0.139
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6687713Z  * [new tag]             0.0.14                  -> 0.0.14
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6688268Z  * [new tag]             0.0.140                 -> 0.0.140
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6688948Z  * [new tag]             0.0.141                 -> 0.0.141
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6689514Z  * [new tag]             0.0.142                 -> 0.0.142
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6690082Z  * [new tag]             0.0.143                 -> 0.0.143
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6691068Z  * [new tag]             0.0.144                 -> 0.0.144
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6691488Z  * [new tag]             0.0.145                 -> 0.0.145
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6691906Z  * [new tag]             0.0.146                 -> 0.0.146
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6692323Z  * [new tag]             0.0.147                 -> 0.0.147
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6692738Z  * [new tag]             0.0.148                 -> 0.0.148
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6693158Z  * [new tag]             0.0.149                 -> 0.0.149
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6693697Z  * [new tag]             0.0.15                  -> 0.0.15
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6694093Z  * [new tag]             0.0.150                 -> 0.0.150
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6694500Z  * [new tag]             0.0.151                 -> 0.0.151
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6695253Z  * [new tag]             0.0.152                 -> 0.0.152
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6695694Z  * [new tag]             0.0.153                 -> 0.0.153
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6696137Z  * [new tag]             0.0.154                 -> 0.0.154
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6696547Z  * [new tag]             0.0.155                 -> 0.0.155
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6696967Z  * [new tag]             0.0.156                 -> 0.0.156
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6697376Z  * [new tag]             0.0.157                 -> 0.0.157
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6697792Z  * [new tag]             0.0.158                 -> 0.0.158
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6698205Z  * [new tag]             0.0.159                 -> 0.0.159
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6698621Z  * [new tag]             0.0.16                  -> 0.0.16
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6699409Z  * [new tag]             0.0.160                 -> 0.0.160
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6699831Z  * [new tag]             0.0.161                 -> 0.0.161
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6700249Z  * [new tag]             0.0.162                 -> 0.0.162
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6700673Z  * [new tag]             0.0.163                 -> 0.0.163
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6701091Z  * [new tag]             0.0.164                 -> 0.0.164
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6701510Z  * [new tag]             0.0.165                 -> 0.0.165
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6701930Z  * [new tag]             0.0.166                 -> 0.0.166
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6702346Z  * [new tag]             0.0.167                 -> 0.0.167
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6726989Z  * [new tag]             0.0.168                 -> 0.0.168
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6727863Z  * [new tag]             0.0.169                 -> 0.0.169
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6728310Z  * [new tag]             0.0.17                  -> 0.0.17
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6728732Z  * [new tag]             0.0.170                 -> 0.0.170
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6739817Z  * [new tag]             0.0.171                 -> 0.0.171
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6740378Z  * [new tag]             0.0.172                 -> 0.0.172
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6740822Z  * [new tag]             0.0.173                 -> 0.0.173
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6741230Z  * [new tag]             0.0.174                 -> 0.0.174
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6741643Z  * [new tag]             0.0.175                 -> 0.0.175
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6742034Z  * [new tag]             0.0.176                 -> 0.0.176
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6742430Z  * [new tag]             0.0.177                 -> 0.0.177
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6742820Z  * [new tag]             0.0.178                 -> 0.0.178
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6743214Z  * [new tag]             0.0.179                 -> 0.0.179
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6743610Z  * [new tag]             0.0.18                  -> 0.0.18
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6744003Z  * [new tag]             0.0.19                  -> 0.0.19
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6744397Z  * [new tag]             0.0.2                   -> 0.0.2
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6744783Z  * [new tag]             0.0.20                  -> 0.0.20
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6745169Z  * [new tag]             0.0.21                  -> 0.0.21
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6745563Z  * [new tag]             0.0.22                  -> 0.0.22
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6745953Z  * [new tag]             0.0.23                  -> 0.0.23
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6746669Z  * [new tag]             0.0.24                  -> 0.0.24
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6747061Z  * [new tag]             0.0.25                  -> 0.0.25
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6747451Z  * [new tag]             0.0.26                  -> 0.0.26
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6747838Z  * [new tag]             0.0.27                  -> 0.0.27
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6748228Z  * [new tag]             0.0.28                  -> 0.0.28
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6748610Z  * [new tag]             0.0.29                  -> 0.0.29
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6755202Z  * [new tag]             0.0.3                   -> 0.0.3
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6755625Z  * [new tag]             0.0.30                  -> 0.0.30
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6756021Z  * [new tag]             0.0.31                  -> 0.0.31
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6756672Z  * [new tag]             0.0.32                  -> 0.0.32
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6757087Z  * [new tag]             0.0.33                  -> 0.0.33
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6757489Z  * [new tag]             0.0.34                  -> 0.0.34
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6757874Z  * [new tag]             0.0.35                  -> 0.0.35
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6758262Z  * [new tag]             0.0.36                  -> 0.0.36
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6758647Z  * [new tag]             0.0.37                  -> 0.0.37
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6759290Z  * [new tag]             0.0.38                  -> 0.0.38
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6759701Z  * [new tag]             0.0.39                  -> 0.0.39
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6760223Z  * [new tag]             0.0.4                   -> 0.0.4
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6760613Z  * [new tag]             0.0.40                  -> 0.0.40
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6761003Z  * [new tag]             0.0.41                  -> 0.0.41
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6761391Z  * [new tag]             0.0.42                  -> 0.0.42
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6761780Z  * [new tag]             0.0.43                  -> 0.0.43
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6762167Z  * [new tag]             0.0.44                  -> 0.0.44
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6762553Z  * [new tag]             0.0.45                  -> 0.0.45
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6762933Z  * [new tag]             0.0.46                  -> 0.0.46
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6763317Z  * [new tag]             0.0.47                  -> 0.0.47
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6763693Z  * [new tag]             0.0.48                  -> 0.0.48
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6764182Z  * [new tag]             0.0.49                  -> 0.0.49
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6764567Z  * [new tag]             0.0.5                   -> 0.0.5
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6764945Z  * [new tag]             0.0.50                  -> 0.0.50
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6765328Z  * [new tag]             0.0.51                  -> 0.0.51
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6765699Z  * [new tag]             0.0.52                  -> 0.0.52
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6766080Z  * [new tag]             0.0.53                  -> 0.0.53
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6766472Z  * [new tag]             0.0.54                  -> 0.0.54
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6766851Z  * [new tag]             0.0.55                  -> 0.0.55
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6767248Z  * [new tag]             0.0.56                  -> 0.0.56
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6767630Z  * [new tag]             0.0.57                  -> 0.0.57
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6768014Z  * [new tag]             0.0.58                  -> 0.0.58
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6768393Z  * [new tag]             0.0.59                  -> 0.0.59
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6769293Z  * [new tag]             0.0.6                   -> 0.0.6
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6769835Z  * [new tag]             0.0.60                  -> 0.0.60
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6770225Z  * [new tag]             0.0.61                  -> 0.0.61
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6770620Z  * [new tag]             0.0.62                  -> 0.0.62
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6771163Z  * [new tag]             0.0.63                  -> 0.0.63
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6771700Z  * [new tag]             0.0.64                  -> 0.0.64
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6772217Z  * [new tag]             0.0.65                  -> 0.0.65
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6772839Z  * [new tag]             0.0.66                  -> 0.0.66
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6773225Z  * [new tag]             0.0.67                  -> 0.0.67
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6773606Z  * [new tag]             0.0.68                  -> 0.0.68
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6773987Z  * [new tag]             0.0.69                  -> 0.0.69
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6774365Z  * [new tag]             0.0.7                   -> 0.0.7
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6774751Z  * [new tag]             0.0.70                  -> 0.0.70
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6775129Z  * [new tag]             0.0.71                  -> 0.0.71
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6775513Z  * [new tag]             0.0.72                  -> 0.0.72
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6776192Z  * [new tag]             0.0.73                  -> 0.0.73
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6776827Z  * [new tag]             0.0.74                  -> 0.0.74
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6777390Z  * [new tag]             0.0.75                  -> 0.0.75
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6777787Z  * [new tag]             0.0.76                  -> 0.0.76
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6778181Z  * [new tag]             0.0.77                  -> 0.0.77
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6778562Z  * [new tag]             0.0.78                  -> 0.0.78
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6779240Z  * [new tag]             0.0.79                  -> 0.0.79
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6779647Z  * [new tag]             0.0.8                   -> 0.0.8
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6780162Z  * [new tag]             0.0.80                  -> 0.0.80
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6780553Z  * [new tag]             0.0.81                  -> 0.0.81
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6780942Z  * [new tag]             0.0.82                  -> 0.0.82
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6781338Z  * [new tag]             0.0.83                  -> 0.0.83
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6781851Z  * [new tag]             0.0.84                  -> 0.0.84
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6782518Z  * [new tag]             0.0.85                  -> 0.0.85
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6782934Z  * [new tag]             0.0.86                  -> 0.0.86
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6783340Z  * [new tag]             0.0.87                  -> 0.0.87
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6783861Z  * [new tag]             0.0.88                  -> 0.0.88
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6784241Z  * [new tag]             0.0.89                  -> 0.0.89
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6784630Z  * [new tag]             0.0.9                   -> 0.0.9
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6785009Z  * [new tag]             0.0.90                  -> 0.0.90
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6785392Z  * [new tag]             0.0.91                  -> 0.0.91
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6785778Z  * [new tag]             0.0.92                  -> 0.0.92
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6786160Z  * [new tag]             0.0.93                  -> 0.0.93
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6786543Z  * [new tag]             0.0.94                  -> 0.0.94
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6786957Z  * [new tag]             0.0.95                  -> 0.0.95
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6787350Z  * [new tag]             0.0.96                  -> 0.0.96
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6787738Z  * [new tag]             0.0.97                  -> 0.0.97
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6788132Z  * [new tag]             0.0.98                  -> 0.0.98
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6788514Z  * [new tag]             0.0.99                  -> 0.0.99
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6789119Z  * [new tag]             0.1.0                   -> 0.1.0
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6789910Z  * [new tag]             0.1.1                   -> 0.1.1
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6790422Z  * [new tag]             0.2.0                   -> 0.2.0
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6790800Z  * [new tag]             0.3.0                   -> 0.3.0
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6791184Z  * [new tag]             0.3.1                   -> 0.3.1
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6791566Z  * [new tag]             0.3.10                  -> 0.3.10
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6791951Z  * [new tag]             0.3.11                  -> 0.3.11
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6792337Z  * [new tag]             0.3.12                  -> 0.3.12
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6792725Z  * [new tag]             0.3.13                  -> 0.3.13
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6793111Z  * [new tag]             0.3.14                  -> 0.3.14
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6793757Z  * [new tag]             0.3.15                  -> 0.3.15
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6794142Z  * [new tag]             0.3.16                  -> 0.3.16
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6794523Z  * [new tag]             0.3.17                  -> 0.3.17
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6794911Z  * [new tag]             0.3.2                   -> 0.3.2
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6795295Z  * [new tag]             0.3.3                   -> 0.3.3
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6795680Z  * [new tag]             0.3.4                   -> 0.3.4
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6796062Z  * [new tag]             0.3.5                   -> 0.3.5
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6796440Z  * [new tag]             0.3.6                   -> 0.3.6
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6796825Z  * [new tag]             0.3.7                   -> 0.3.7
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6797209Z  * [new tag]             0.3.8                   -> 0.3.8
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6797777Z  * [new tag]             0.3.9                   -> 0.3.9
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6798179Z  * [new tag]             0.4.0                   -> 0.4.0
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6798566Z  * [new tag]             0.4.1                   -> 0.4.1
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6799358Z  * [new tag]             0.4.2                   -> 0.4.2
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6799747Z  * [new tag]             0.4.3                   -> 0.4.3
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6800130Z  * [new tag]             0.4.4                   -> 0.4.4
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6800507Z  * [new tag]             0.4.5                   -> 0.4.5
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6800893Z  * [new tag]             0.4.6                   -> 0.4.6
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6801275Z  * [new tag]             0.4.7                   -> 0.4.7
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6801653Z  * [new tag]             0.4.8                   -> 0.4.8
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6802039Z  * [new tag]             0.4.9                   -> 0.4.9
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6802424Z  * [new tag]             0.5.0                   -> 0.5.0
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6802807Z  * [new tag]             0.5.1                   -> 0.5.1
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6803193Z  * [new tag]             0.5.2                   -> 0.5.2
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6803572Z  * [new tag]             0.6.0                   -> 0.6.0
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6803950Z  * [new tag]             0.6.1                   -> 0.6.1
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6804328Z  * [new tag]             0.6.2                   -> 0.6.2
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6804708Z  * [new tag]             0.6.3                   -> 0.6.3
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6805086Z  * [new tag]             0.6.4                   -> 0.6.4
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6805470Z  * [new tag]             0.6.5                   -> 0.6.5
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.6805996Z  * [new tag]             0.6.6                   -> 0.6.6
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.7092101Z [command]/usr/bin/git branch --list --remote origin/main
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.7173683Z   origin/main
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.7184951Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.7218546Z 229c60f713619b3a4d24a443439475ba81fda48b
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.7231251Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules origin +526d9a8a4c8dabc0df4fe46accce74c07f461685:refs/remotes/origin/main
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.7427870Z From https://github.com/Ka0s-Klaus/ka0s
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.7428601Z  + 229c60f71...526d9a8a4 526d9a8a4c8dabc0df4fe46accce74c07f461685 -> origin/main  (forced update)
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.7467606Z ##[endgroup]
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.7468255Z ##[group]Determining the checkout info
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.7469213Z ##[endgroup]
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.7475517Z [command]/usr/bin/git sparse-checkout disable
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.7531702Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.7572679Z ##[group]Checking out the ref
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:17.7576489Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:18.7852038Z Updating files: 100% (2751/2751)
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:18.7852400Z Updating files: 100% (2751/2751), done.
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:18.7909648Z Switched to a new branch 'main'
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:18.7920160Z branch 'main' set up to track 'origin/main'.
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:18.8060073Z ##[endgroup]
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:18.8113441Z [command]/usr/bin/git log -1 --format=%H
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:18.8147776Z 526d9a8a4c8dabc0df4fe46accce74c07f461685
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:18.8436782Z Prepare all required actions
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:18.8487639Z ##[group]Run ./.github/actions/install-gh-cli
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:18.8487953Z env:
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:18.8488160Z   KAOS_MODULE: [Ka0s] Audit Cluster Status
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:18.8488447Z   KAOS_CODE: 23010886407
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:18.8488663Z ##[endgroup]
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:18.8593036Z ##[group]Run type -p curl >/dev/null || (sudo apt-get update && sudo apt-get install curl -y)
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:18.8593763Z [36;1mtype -p curl >/dev/null || (sudo apt-get update && sudo apt-get install curl -y)[0m
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:18.8594698Z [36;1mcurl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \[0m
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:18.8595569Z [36;1m&& sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \[0m
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:18.8674934Z [36;1m&& echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \[0m
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:18.8676530Z [36;1m&& sudo apt-get update \[0m
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:18.8676835Z [36;1m&& sudo apt-get install gh -y[0m
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:18.8696775Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:18.8697119Z env:
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:18.8697327Z   KAOS_MODULE: [Ka0s] Audit Cluster Status
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:18.8697604Z   KAOS_CODE: 23010886407
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:18.8697819Z ##[endgroup]
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:19.0658522Z 4+1 records in
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:19.0659592Z 4+1 records out
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:19.0659979Z 2270 bytes (2.3 kB, 2.2 KiB) copied, 0.168578 s, 13.5 kB/s
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:19.2337480Z Get:1 http://security.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:19.2365489Z Get:2 http://archive.ubuntu.com/ubuntu noble InRelease [256 kB]
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:19.2636741Z Get:3 https://cli.github.com/packages stable InRelease [3917 B]
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:19.3824270Z Get:4 https://cli.github.com/packages stable/main amd64 Packages [357 B]
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:19.3945666Z Get:5 http://archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:19.4066148Z Get:6 https://ppa.launchpadcontent.net/git-core/ppa/ubuntu noble InRelease [24.3 kB]
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:19.4321268Z Get:7 http://archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:19.4808342Z Get:8 http://security.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1261 kB]
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:19.5653762Z Get:9 http://archive.ubuntu.com/ubuntu noble/restricted amd64 Packages [117 kB]
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:19.6033797Z Get:10 http://archive.ubuntu.com/ubuntu noble/multiverse amd64 Packages [331 kB]
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:19.6150025Z Get:11 http://security.ubuntu.com/ubuntu noble-security/main amd64 Packages [1900 kB]
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:19.6310502Z Get:12 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages [1808 kB]
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:19.6516593Z Get:13 http://security.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [3315 kB]
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:19.6950911Z Get:14 http://security.ubuntu.com/ubuntu noble-security/multiverse amd64 Packages [34.8 kB]
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:19.7140113Z Get:15 http://archive.ubuntu.com/ubuntu noble/universe amd64 Packages [19.3 MB]
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:19.7865171Z Get:16 https://ppa.launchpadcontent.net/git-core/ppa/ubuntu noble/main amd64 Packages [2992 B]
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:19.9746731Z Get:17 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [2027 kB]
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:19.9891637Z Get:18 http://archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [3486 kB]
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:20.0163813Z Get:19 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [2286 kB]
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:20.0570711Z Get:20 http://archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Packages [38.1 kB]
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:20.0574375Z Get:21 http://archive.ubuntu.com/ubuntu noble-backports/main amd64 Packages [49.5 kB]
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:20.0582150Z Get:22 http://archive.ubuntu.com/ubuntu noble-backports/universe amd64 Packages [34.6 kB]
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:21.3243605Z Fetched 36.7 MB in 2s (17.0 MB/s)
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:22.3182365Z Reading package lists...
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:23.3617019Z Reading package lists...
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:23.6231500Z Building dependency tree...
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:23.6232513Z Reading state information...
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:23.9979006Z The following NEW packages will be installed:
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:24.0002676Z   gh
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:24.5616123Z 0 upgraded, 1 newly installed, 0 to remove and 7 not upgraded.
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:24.5616651Z Need to get 14.0 MB of archives.
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:24.5617134Z After this operation, 39.0 MB of additional disk space will be used.
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:24.5617855Z Get:1 https://cli.github.com/packages stable/main amd64 gh amd64 2.88.1 [14.0 MB]
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:24.9133258Z debconf: delaying package configuration, since apt-utils is not installed
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:24.9579759Z Fetched 14.0 MB in 1s (19.0 MB/s)
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:24.9875875Z Selecting previously unselected package gh.
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:24.9917030Z (Reading database ... 
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:24.9917356Z (Reading database ... 5%
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:24.9917599Z (Reading database ... 10%
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:24.9917842Z (Reading database ... 15%
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:24.9918075Z (Reading database ... 20%
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:24.9918313Z (Reading database ... 25%
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:24.9920226Z (Reading database ... 30%
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:24.9920502Z (Reading database ... 35%
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:24.9921038Z (Reading database ... 40%
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:24.9921755Z (Reading database ... 45%
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:24.9921995Z (Reading database ... 50%
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:24.9922653Z (Reading database ... 55%
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:24.9923484Z (Reading database ... 60%
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:24.9940831Z (Reading database ... 65%
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:24.9969918Z (Reading database ... 70%
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:24.9972710Z (Reading database ... 75%
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:24.9995797Z (Reading database ... 80%
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:25.0006560Z (Reading database ... 85%
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:25.0022331Z (Reading database ... 90%
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:25.0049813Z (Reading database ... 95%
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:25.0053890Z (Reading database ... 100%
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:25.0057492Z (Reading database ... 14387 files and directories currently installed.)
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:25.0062975Z Preparing to unpack .../archives/gh_2.88.1_amd64.deb ...
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:25.0092172Z Unpacking gh (2.88.1) ...
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:25.2413969Z Setting up gh (2.88.1) ...
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:25.3007847Z ##[group]Run gh workflow run inspector.yml \
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:25.3008311Z [36;1mgh workflow run inspector.yml \[0m
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:25.3009265Z [36;1m  -f workflow_name="Ka0s Audit Cluster Status" \[0m
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:25.3009702Z [36;1m  -f run_id="23010886407" \[0m
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:25.3010044Z [36;1m  -f status="success"[0m
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:25.3024061Z shell: /usr/bin/bash -e {0}
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:25.3024374Z env:
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:25.3024626Z   KAOS_MODULE: [Ka0s] Audit Cluster Status
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:25.3024973Z   KAOS_CODE: 23010886407
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:25.3025581Z   GH_TOKEN: ***
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:25.3025817Z ##[endgroup]
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:27.7407838Z https://github.com/Ka0s-Klaus/ka0s/actions/runs/23010977947
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:27.7584682Z Post job cleanup.
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:27.8697837Z [command]/usr/bin/git version
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:27.8743939Z git version 2.53.0
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:27.8796117Z Temporarily overriding HOME='/home/runner/_work/_temp/43f4c2b8-07f8-473e-aec3-e55793b01a5e' before making global git config changes
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:27.8796943Z Adding repository directory to the temporary git global config as a safe directory
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:27.8802845Z [command]/usr/bin/git config --global --add safe.directory /home/runner/_work/ka0s/ka0s
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:27.8860213Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:27.8905596Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:27.9277913Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:27.9308156Z http.https://github.com/.extraheader
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:27.9321114Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:27.9362823Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:27.9728174Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:27.9776026Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:28.0321054Z Cleaning up orphan processes
+end-workflow	UNKNOWN STEP	2026-03-12T15:53:28.0365311Z ##[warning]Node.js 20 actions are deprecated. The following actions are running on Node.js 20 and may not work as expected: actions/checkout@v4. Actions will be forced to run with Node.js 24 by default starting June 2nd, 2026. Please check if updated versions of these actions are available that support Node.js 24. To opt into Node.js 24 now, set the FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true environment variable on the runner or in your workflow file. Once Node.js 24 becomes the default, you can temporarily opt out by setting ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
