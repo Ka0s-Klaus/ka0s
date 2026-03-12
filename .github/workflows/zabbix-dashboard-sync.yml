@@ -1,27 +1,49 @@
-name: Zabbix Dashboard Sync
+name: "[Ka0s] Zabbix Dashboard Sync"
 
 on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Motivo de la ejecución manual'
+        required: false
+        default: 'Mantenimiento manual'
   push:
-    branches: [ "main" ]
+    branches:
+      - main
     paths:
       - 'core/monitoring/zabbix/dashboards/**'
-  workflow_dispatch:
+
+permissions:
+  contents: read
 
 env:
-  KAOS_MODULE: "zabbix-iac"
-  KAOS_CODE: "ops"
+  KAOS_MODULE: "[Ka0s] Zabbix Sync"
+  KAOS_CODE: ${{ github.run_id }}
+  KAOS_ACTOR: ${{ github.actor }}
 
 jobs:
-  sync-dashboards:
+  # -----------------------------------------------------------------------------
+  # JOB 1: CORE EXECUTION
+  # Lógica principal del workflow.
+  # -----------------------------------------------------------------------------
+  core-execution:
+    name: Core Execution
     runs-on: swarm-runners-scaleset
     permissions:
       contents: read
-    
+    outputs:
+      status: ${{ job.status }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Necesario para detectar cambios
+          fetch-depth: 0
+
+      - name: Setup Environment
+        run: |
+          echo "Iniciando módulo: ${{ env.KAOS_MODULE }}"
+          echo "Run ID: ${{ env.KAOS_CODE }}"
+          echo "Actor: ${{ env.KAOS_ACTOR }}"
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -51,7 +73,7 @@ jobs:
           
           # Verificar si ZABBIX_URL está definido
           if [ -z "$ZABBIX_URL" ]; then
-            echo "::error::ZABBIX_URL secret is missing or empty. Using fallback internal URL."
+            echo "::warning::ZABBIX_URL secret is missing or empty. Using fallback internal URL."
             # Fallback para runners dentro del cluster
             export ZABBIX_URL="http://zabbix-web.zabbix.svc.cluster.local/api_jsonrpc.php"
           fi
@@ -61,10 +83,105 @@ jobs:
             python3 core/monitoring/zabbix/scripts/create_dashboard.py "$file"
           done
 
-      - name: Handle Success
-        if: success()
-        run: echo "Zabbix Dashboards updated successfully."
+  # -----------------------------------------------------------------------------
+  # JOB 2: HANDLE SUCCESS
+  # -----------------------------------------------------------------------------
+  handle-success:
+    name: Handle Success
+    needs: [core-execution]
+    if: success()
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Notify Success
+        run: echo "✅ Workflow ${{ env.KAOS_MODULE }} completado correctamente."
 
-      - name: Handle Failure
-        if: failure()
-        run: echo "Failed to update Zabbix Dashboards."
+  # -----------------------------------------------------------------------------
+  # JOB 3: HANDLE FAILURE
+  # -----------------------------------------------------------------------------
+  handle-failure:
+    name: Handle Failure
+    needs: [core-execution]
+    if: failure()
+    runs-on: swarm-runners-scaleset
+    permissions:
+      issues: write
+      contents: read
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+        
+      - name: Create Incident Issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --title "[INCIDENT]: Fallo en workflow ${{ github.workflow }}" \
+            --label "itop-incident,triage,automated" \
+            --body "### Organización
+          Ka0s
+          
+          ### Solicitante
+          @${{ github.actor }}
+          
+          ### Estado
+          New
+          
+          ### Impacto
+          Service
+          
+          ### Urgencia
+          Medium
+          
+          ### Servicio / CI afectado
+          GitHub Actions / ${{ github.workflow }}
+          
+          ### Descripción
+          El workflow **${{ github.workflow }}** ha fallado durante su ejecución.
+          
+          **Detalles Técnicos:**
+          - **Módulo**: ${{ env.KAOS_MODULE }}
+          - **Run ID**: ${{ github.run_id }}
+          - **Commit**: ${{ github.sha }}
+          - **Branch/Ref**: ${{ github.ref_name }}
+          - **Actor**: ${{ github.actor }}
+          
+          ### Pasos / Evidencias
+          Logs de ejecución: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          "
+
+  # -----------------------------------------------------------------------------
+  # JOB 4: END WORKFLOW
+  # -----------------------------------------------------------------------------
+  end-workflow:
+    needs: [core-execution, handle-success, handle-failure]
+    if: always()
+    runs-on: swarm-runners-scaleset
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - id: repo
+        name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+        
+      - name: Trigger Inspector
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "🔍 Triggering Inspector for Audit..."
+          gh workflow run inspector.yml \
+            --ref main \
+            -f workflow_name="${{ github.workflow }}" \
+            -f run_id="${{ github.run_id }}" \
+            -f status="${{ needs.core-execution.result }}" \
+            -f kaos-user-start="${{ github.triggering_actor }}"
