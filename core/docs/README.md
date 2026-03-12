@@ -34,6 +34,7 @@ Si, parece increible pero hemos decidido en el equipo usar una terminología "es
 - [Ka0s Admin Agent - Diseño Técnico](./admin-agent/design.md)
 - [Ka0s Kubernetes Audits](./k8s-audits/00_main.md)
 - [Módulo Ka0s (Core Orchestrator)](./ka0s/00_main.md)
+- [Flujo de Ingesta Continua (Nightly Ingest)](./ka0s_agent_ingest/00_main.md)
 - [Arquitectura: Core (Núcleo del Sistema)](./ka0s_architecture/core.md)
 - [Módulo Ka0s Audit Failed Pods](./ka0s_audit_pods/00_main.md)
 - [Ka0s Kubernetes CI/CD Automation](./ka0s_ci_cd_k8s/00_main.md)
