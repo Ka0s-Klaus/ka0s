@@ -56,6 +56,7 @@ Bienvenido al centro de documentación del proyecto Ka0s. A continuación encont
 ## 📂 Otros / Sin Categoría
 *   [Ka0s Admin Agent - Diseño Técnico](core/docs/admin-agent/design.md)
 *   [Ka0s Kubernetes Audits](core/docs/k8s-audits/00_main.md)
+*   [Ka0s Agent AI](core/docs/ka0s_agent_ai/00_main.md)
 *   [Flujo de Ingesta Continua (Nightly Ingest)](core/docs/ka0s_agent_ingest/00_main.md)
 *   [Ka0s GPU Enablement (Intel)](core/docs/ka0s_gpu_enablement/00_main.md)
 *   [Protocolo de Verificación de Incidencias (SOP)](core/docs/ka0s_incident_response/01_issue_verification.md)
