@@ -21,7 +21,7 @@ EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL") or "nomic-embed-text"
 
 # Paths relative to where the script is run (project root)
 # Ingestion Strategy: Modular & Argument Driven
-# Usage: python ingest_local.py --module [docs|skills|infra|code|all]
+# Usage: python ingest_local.py --module [docs|skills|infra|code|audit|compliance|devops|github|all]
 
 import argparse
 
@@ -29,20 +29,43 @@ import argparse
 MODULES = {
     "docs": [
         "core/docs/**/*.md",
-        ".trae/rules/**/*.md"
+        "README.md"
     ],
     "skills": [
-        ".trae/skills/**/*.md"
+        ".trae/skills/**/*.md",
+        ".trae/rules/**/*.md"
     ],
     "infra": [
         "core/b2b/**/*.yaml",
         "core/b2b/**/*.json",
-        ".github/workflows/*.yaml"
+        "core/b2b/**/*.xml"
     ],
     "code": [
         "core/**/*.py",
         "core/**/*.sh",
         "core/**/*.sql"
+    ],
+    "audit": [
+        "audit/**/*.md",
+        "audit/**/*.json",
+        "audit/**/*.log"
+    ],
+    "compliance": [
+        "compliance/**/*.json",
+        "compliance/**/*.md"
+    ],
+    "devops": [
+        "devops/**/*.md",
+        "devops/**/*.sh",
+        "devops/**/*.py",
+        "devops/**/*.json"
+    ],
+    "github": [
+        ".github/**/*.yml",
+        ".github/**/*.yaml",
+        ".github/**/*.py",
+        ".github/**/*.sh",
+        ".github/**/*.md"
     ]
 }
 
@@ -62,7 +85,7 @@ if __name__ == "__main__":
         '--module', 
         type=str, 
         default='all', 
-        choices=['docs', 'skills', 'infra', 'code', 'all'],
+        choices=['docs', 'skills', 'infra', 'code', 'audit', 'compliance', 'devops', 'github', 'all'],
         help='Specific module to ingest to prevent timeouts'
     )
     args = parser.parse_args()
