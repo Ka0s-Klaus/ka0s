@@ -7,16 +7,17 @@ import time
 from typing import List
 
 # Configuration
-# Localhost because we will port-forward
-POSTGRES_HOST = "localhost"
-POSTGRES_PORT = "5433" 
-POSTGRES_DB = "ka0s_memory"
-POSTGRES_USER = "ka0s_ai"
-POSTGRES_PASSWORD = "change_me_in_production_vector_db_123!" # From secret.yaml
+# Defaults for local development (port-forwarding)
+# Can be overridden by environment variables for CI/CD (K8s Service DNS)
+POSTGRES_HOST = os.getenv("POSTGRES_HOST", "localhost")
+POSTGRES_PORT = os.getenv("POSTGRES_PORT", "5433")
+POSTGRES_DB = os.getenv("POSTGRES_DB", "ka0s_memory")
+POSTGRES_USER = os.getenv("POSTGRES_USER", "ka0s_ai")
+POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "change_me_in_production_vector_db_123!")
 
-OLLAMA_HOST = "localhost"
-OLLAMA_PORT = "11435"
-EMBEDDING_MODEL = "nomic-embed-text" # Ensure this model is pulled in Ollama!
+OLLAMA_HOST = os.getenv("OLLAMA_HOST", "localhost")
+OLLAMA_PORT = os.getenv("OLLAMA_PORT", "11435")
+EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "nomic-embed-text")
 
 # Paths relative to where the script is run (project root)
 RULES_PATH = ".trae/rules/**/*.md"
