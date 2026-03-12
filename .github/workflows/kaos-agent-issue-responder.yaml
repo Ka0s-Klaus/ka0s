@@ -23,8 +23,8 @@ env:
 
 jobs:
   agent-reply:
-    # Solo ejecutar si la issue tiene la etiqueta 'ka0s-agent' (añadida por el template)
-    if: contains(github.event.issue.labels.*.name, 'ka0s-agent')
+    # Permitir ambas variantes de la etiqueta (con 'o' y con '0')
+    if: contains(github.event.issue.labels.*.name, 'ka0s-agent') || contains(github.event.issue.labels.*.name, 'kaos-agent')
     name: Agent Reply
     runs-on: swarm-runners-scaleset
     steps:
