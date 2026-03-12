@@ -61,9 +61,10 @@ def search_context(query_embedding: List[float], limit: int = 5) -> List[Dict[st
         cur.execute("""
             SELECT source, content, 1 - (embedding <=> %s::vector) as similarity
             FROM kaos_memory
+            WHERE 1 - (embedding <=> %s::vector) > 0.35  -- Filter low relevance at DB level
             ORDER BY embedding <=> %s::vector
             LIMIT %s;
-        """, (json.dumps(query_embedding), json.dumps(query_embedding), limit))
+        """, (json.dumps(query_embedding), json.dumps(query_embedding), json.dumps(query_embedding), limit))
         
         results = [{"source": row[0], "content": row[1], "similarity": row[2]} for row in cur.fetchall()]
         cur.close()
@@ -74,38 +75,57 @@ def search_context(query_embedding: List[float], limit: int = 5) -> List[Dict[st
         return []
 
 def generate_answer(query: str, context: List[Dict[str, Any]]) -> str:
+    # 1. Check for similarity threshold (Safety Net)
+    # If the best context has low similarity, it's likely irrelevant.
+    # We use a loose threshold (0.4) because cosine similarity distributions vary.
+    if not context or context[0]['similarity'] < 0.4:
+        logger.warning(f"Low confidence context found. Top score: {context[0]['similarity'] if context else 0}")
+        return "Lo siento, no dispongo de suficiente información en mi base de conocimientos actual para responder a tu pregunta con precisión. 🙇‍♂️\n\nPrueba a reformularla o consulta la documentación oficial en `core/docs`."
+
     url = f"http://{OLLAMA_HOST}:{OLLAMA_PORT}/api/generate"
     
-    context_str = "\n\n".join([f"--- Source: {r['source']} ---\n{r['content']}" for r in context])
+    context_str = "\n\n".join([f"--- Source: {r['source']} (Score: {r['similarity']:.2f}) ---\n{r['content']}" for r in context])
     
     prompt = f"""
-    You are Ka0s Agent, an expert technical assistant for the Ka0s framework.
+    You are **Ka0s Agent**, the expert AI engineer for the Ka0s Framework.
     
-    Instructions:
-    1. Answer the user's question based ONLY on the provided Context.
-    2. If the answer is not in the context, state that you don't know.
-    3. IMPORTANT: Detect the language of the User Question and answer in the SAME language (Spanish or English).
-    4. Format your answer in clean Markdown (use lists, code blocks, bold text where appropriate).
-    5. Be concise and direct.
+    ### 🛡️ Core Directive: HONESTY & ACCURACY
+    You must answer the User Question based **ONLY** on the provided Context.
     
-    Context:
+    ### 🚫 Strict Prohibitions
+    - **DO NOT INVENT** information, commands, or file paths not present in the Context.
+    - **DO NOT HALLUCINATE** features or services.
+    - If the Context does not contain the answer, you **MUST** reply exactly:
+      "... disculpa pero no dispongo de suficiente información como para contestar tu pregunta. Siento no haberte sido de ayuda."
+    
+    ### 📝 Style Guidelines
+    - **Tone**: Professional, Technical, Helpful.
+    - **Format**: Use Markdown (bold for key terms, code blocks for commands).
+    - **Language**: Answer in the SAME language as the User Question (Español/English).
+    
+    ### 🧠 Context (Knowledge Base)
     {context_str}
     
-    User Question: {query}
+    ### 👤 User Question
+    {query}
     
-    Answer:
+    ### 🤖 Your Answer:
     """
     
     payload = {
         "model": GENERATION_MODEL,
         "prompt": prompt,
-        "stream": False
+        "stream": False,
+        "options": {
+            "temperature": 0.1,  # Low temp for factual answers
+            "top_k": 20          # Restricted vocabulary for precision
+        }
     }
     
     try:
-        response = requests.post(url, json=payload, timeout=600) # Increased timeout to 10 minutes
+        response = requests.post(url, json=payload, timeout=600)
         response.raise_for_status()
-        return response.json()["response"]
+        return response.json().get("response", "Error: Empty response from LLM")
     except Exception as e:
         logger.error(f"Generation failed: {e}")
         return f"Error generating answer: {e}"
