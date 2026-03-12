@@ -20,20 +20,23 @@ OLLAMA_PORT = os.getenv("OLLAMA_PORT") or "11435"
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL") or "nomic-embed-text"
 
 # Paths relative to where the script is run (project root)
-# Ingestion Strategy: Full Knowledge Base (Code + Docs + Config)
+# Ingestion Strategy: Prioritized Knowledge Base
 PATTERNS = [
-    ".trae/rules/**/*.md",       # Reglas y Estándares
-    ".trae/skills/**/*.md",      # Habilidades del Agente
-    "core/**/*.md",              # Documentación Técnica
-    "core/**/*.yaml",            # Infraestructura (K8s, Helm)
-    "core/**/*.yml",             # Workflows y Config
-    "core/**/*.json",            # Schemas y Configuraciones
-    "core/**/*.sql",             # Definiciones de Base de Datos
-    "core/**/*.py",              # Lógica de Negocio y Scripts
-    "core/**/*.sh",              # Scripts de Operaciones
-    ".github/workflows/*.yaml",  # CI/CD Pipelines
-    ".github/ISSUE_TEMPLATE/*.yml" # Plantillas de Procesos
+    # Prioridad 1: Instrucciones Explícitas (Skills y Reglas)
+    ".trae/rules/**/*.md",       
+    ".trae/skills/**/*.md",      
+    
+    # Prioridad 2: Documentación Oficial
+    "core/docs/**/*.md",         
+    
+    # Prioridad 3: Infraestructura Definida (YAMLs de K8s)
+    # Limitamos a core/b2b para evitar ruido de tests o templates masivos
+    "core/b2b/**/*.yaml",        
+    
+    # Prioridad 4: Configuración de CI/CD (Workflows)
+    ".github/workflows/*.yaml"
 ]
+# EXCLUDED: Code source (*.py, *.sh) and large JSONs temporarily to prevent timeouts
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
