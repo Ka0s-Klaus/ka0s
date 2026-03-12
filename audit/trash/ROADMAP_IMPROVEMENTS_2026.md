@@ -26,14 +26,14 @@ El ecosistema Ka0s debe evolucionar de un conjunto de scripts y manifiestos a un
 **Estado Actual:**
 - ✅ Gran cantidad de workflows y scripts funcionales.
 - ✅ Integración con herramientas clave (Zabbix, iTop, Metabase).
+- ✅ CI/CD Hardening implementado (`lint-scripts.yml`).
 - ⚠️ Complejidad creciente en `core/b2b/core-services`.
-- ⚠️ Duplicidad de lógica en algunos scripts Python/Bash.
 
 **Mejoras Propuestas:**
 
 *   **Corto Plazo (Inmediato):**
-    *   [ ] **Refactorización de Workflows**: Convertir pasos repetitivos de GitHub Actions en `composite actions` locales para reducir deuda técnica en `.github/workflows/`.
-    *   [ ] **Hardening de Scripts**: Aplicar `mypy` y `pylint` estricto a todo `core/scripts/` (Regla 008).
+    *   [x] **Refactorización de Workflows**: Convertir pasos repetitivos de GitHub Actions en `composite actions` locales para reducir deuda técnica en `.github/workflows/`. (Implementado: `setup-python-tools`)
+    *   [x] **Hardening de Scripts**: Aplicar `mypy` y `pylint` estricto a todo `core/scripts/` (Regla 008). (Implementado: `lint-scripts.yml`)
     *   [ ] **Limpieza de K8s**: Estandarizar todos los manifiestos en `core/b2b` usando Kustomize overlays (`base`, `overlays/prod`) para separar configuración de estructura.
 
 *   **Mediano Plazo:**
@@ -52,13 +52,13 @@ El ecosistema Ka0s debe evolucionar de un conjunto de scripts y manifiestos a un
 **Estado Actual:**
 - ✅ Estructura clara de módulos (`develop/{provider}/modules`).
 - ✅ Fuente de verdad de las Reglas Ka0s.
-- ⚠️ Falta validación automática de seguridad en IaC (TfSec/Checkov).
+- ✅ Seguridad IaC activa (`iac-security.yml`).
 - ⚠️ Documentación de módulos podría automatizarse.
 
 **Mejoras Propuestas:**
 
 *   **Corto Plazo:**
-    *   [ ] **Seguridad IaC**: Integrar `trivy` o `checkov` en los workflows para escanear malas configuraciones en Terraform.
+    *   [x] **Seguridad IaC**: Integrar `trivy` o `checkov` en los workflows para escanear malas configuraciones en Terraform. (Implementado: `iac-security.yml`)
     *   [ ] **Auto-Docs**: Implementar `terraform-docs` para generar `README.md` de módulos automáticamente.
 
 *   **Mediano Plazo:**
@@ -71,14 +71,15 @@ El ecosistema Ka0s debe evolucionar de un conjunto de scripts y manifiestos a un
 **Rol:** Cerebro de IA, gestión de Skills y modelos.
 
 **Estado Actual:**
-- ⚠️ Estructura incipiente (principalmente reglas y skills).
+- ✅ Estructura base de Skills y Reglas.
+- ✅ Registro de Skills inicializado (`registry/README.md`).
 - ⚠️ Falta código de implementación de Agentes (actualmente disperso en `ka0s/core/b2b/ollama`).
 
 **Mejoras Propuestas:**
 
 *   **Corto Plazo:**
     *   [ ] **Centralización de Lógica IA**: Mover la lógica de negocio de los agentes (prompts, RAG pipelines) de `ka0s` a este repositorio.
-    *   [ ] **Skill Registry**: Convertir este repo en el registro oficial de Skills para Trae/Copilot.
+    *   [x] **Skill Registry**: Convertir este repo en el registro oficial de Skills para Trae/Copilot. (Implementado: `registry/README.md`)
 
 *   **Mediano Plazo:**
     *   [ ] **Model Finetuning**: Pipelines para re-entrenar modelos pequeños (Llama/Mistral) con logs de `ka0s`.
@@ -91,13 +92,13 @@ El ecosistema Ka0s debe evolucionar de un conjunto de scripts y manifiestos a un
 
 **Estado Actual:**
 - ✅ Contenido rico en Markdown.
-- ⚠️ Falta pipeline de validación de contenido (links rotos, ortografía).
+- ✅ CI de Contenido implementado (`content-validation.yml`).
 - ⚠️ SEO básico.
 
 **Mejoras Propuestas:**
 
 *   **Corto Plazo:**
-    *   [ ] **CI de Contenido**: Implementar `markdown-link-check` y `proselint` en GitHub Actions.
+    *   [x] **CI de Contenido**: Implementar `markdown-link-check` y `proselint` en GitHub Actions. (Implementado: `content-validation.yml`)
     *   [ ] **Sync Automático**: Workflow que sincronice documentación técnica de `ka0s/core/docs` hacia el blog (si aplica).
 
 *   **Mediano Plazo:**
@@ -111,14 +112,14 @@ El ecosistema Ka0s debe evolucionar de un conjunto de scripts y manifiestos a un
 
 **Estado Actual:**
 - ✅ Web estática funcional.
-- ⚠️ Falta optimización de assets (imágenes, JS).
+- ✅ Auditoría de Performance/Accesibilidad activa (`web-optimization.yml`).
 - ⚠️ Accesibilidad y Performance mejorables.
 
 **Mejoras Propuestas:**
 
 *   **Corto Plazo:**
-    *   [ ] **Optimización de Assets**: Pipeline que comprima imágenes (`imagemin`) y minifique CSS/JS automáticamente al hacer push.
-    *   [ ] **Auditoría Lighthouse**: CI que falle si el score de performance/accessibility baja de 90.
+    *   [x] **Optimización de Assets**: Pipeline que comprima imágenes (`imagemin`) y minifique CSS/JS automáticamente al hacer push. (Implementado: `web-optimization.yml`)
+    *   [x] **Auditoría Lighthouse**: CI que falle si el score de performance/accessibility baja de 90. (Implementado: `web-optimization.yml`)
 
 *   **Mediano Plazo:**
     *   [ ] **Analytics Privado**: Integrar solución de analítica respetuosa (ej: Plausible o el mismo Zabbix/Matomo) para no depender de terceros.
@@ -127,11 +128,11 @@ El ecosistema Ka0s debe evolucionar de un conjunto de scripts y manifiestos a un
 
 ## 3. Plan de Ejecución (Siguientes Pasos)
 
-Para comenzar este roadmap, sugiero priorizar las siguientes 3 tareas esta semana:
+Para continuar este roadmap, sugiero priorizar:
 
-1.  **Gobernanza**: Terminar de desplegar y validar los workflows de CI/CD básicos en `ka0s.github.io` y `www.ka0s.io` (Regla 001).
-2.  **Core**: Refactorizar un workflow complejo de `ka0s` a `composite action` como prueba de concepto.
-3.  **Seguridad**: Añadir escaneo de secretos (Trivy/Gitleaks) en todos los repositorios.
+1.  **Seguridad Global**: Añadir escaneo de secretos (Gitleaks) en todos los repositorios.
+2.  **Core**: Limpieza de manifiestos Kubernetes usando Kustomize overlays.
+3.  **IA**: Migrar la lógica de Ollama desde `ka0s` a `kaos-ia-powered`.
 
 ---
 *Este documento reside en `audit/trash/` conforme a la Regla 004 y debe ser revisado trimestralmente.*
