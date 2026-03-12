@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ollama-ingress
+  namespace: ollama
+  annotations:
+    kubernetes.io/ingress.class: "nginx" # Or traefik, depending on your cluster
+    nginx.ingress.kubernetes.io/proxy-body-size: "0" # Allow large model uploads if needed
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600" # Increase timeout for long inference
+spec:
+  rules:
+  - host: ollama.kaos.local # Replace with your domain
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: ollama
+            port:
+              number: 11434
