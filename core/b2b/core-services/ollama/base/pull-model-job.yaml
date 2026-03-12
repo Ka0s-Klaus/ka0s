@@ -1,0 +1,25 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pull-llama3-2
+  namespace: ollama
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+spec:
+  template:
+    spec:
+      containers:
+      - name: pull-model
+        image: curlimages/curl:latest
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          echo "Waiting for Ollama service..."
+          until curl -s http://ollama:11434/api/tags > /dev/null; do
+            echo "Waiting..."
+            sleep 5
+          done
+          echo "Pulling llama3.2..."
+          curl -X POST http://ollama:11434/api/pull -d '{"name": "llama3.2"}'
+      restartPolicy: OnFailure
