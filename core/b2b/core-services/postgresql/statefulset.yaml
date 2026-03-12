@@ -55,6 +55,8 @@ spec:
             - pg_isready
             - -U
             - ka0s_admin
+            - -d
+            - ka0s_core
           initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 5
@@ -64,12 +66,16 @@ spec:
             - pg_isready
             - -U
             - ka0s_admin
+            - -d
+            - ka0s_core
           initialDelaySeconds: 5
           periodSeconds: 10
           timeoutSeconds: 5
         volumeMounts:
         - name: postgres-data
           mountPath: /var/lib/postgresql/data
+      nodeSelector:
+        kubernetes.io/hostname: k8-node-20
   volumeClaimTemplates:
   - metadata:
       name: postgres-data
