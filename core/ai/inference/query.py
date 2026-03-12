@@ -98,7 +98,7 @@ def generate_answer(query: str, context: List[Dict[str, Any]]) -> str:
     }
     
     try:
-        response = requests.post(url, json=payload, timeout=120) # Longer timeout for generation
+        response = requests.post(url, json=payload, timeout=300) # Increased timeout to 5 minutes
         response.raise_for_status()
         return response.json()["response"]
     except Exception as e:
