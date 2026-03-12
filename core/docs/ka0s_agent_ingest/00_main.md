@@ -1,48 +1,49 @@
-# Flujo de Ingesta Continua (Nightly Ingest)
+# Ka0s Agent Ingest - Estrategia Modular
 
-Este documento describe el proceso automatizado para mantener actualizada la memoria del Agente Ka0s.
+Este módulo es responsable de ingerir y vectorizar el conocimiento del repositorio Ka0s para alimentar la memoria del Agente IA.
 
-## Objetivo
-Garantizar que el Agente de IA tenga siempre acceso a la última versión de:
-1.  **Reglas** (`.trae/rules`): Normativas y estándares del proyecto.
-2.  **Habilidades** (`.trae/skills`): Capacidades técnicas disponibles.
-3.  **Documentación** (`core/docs`): Conocimiento arquitectónico y operativo.
+## Estrategia de Ingesta Modular
 
-## Arquitectura del Flujo
+Para evitar timeouts y sobrecargas en la base de datos vectorial, hemos dividido el proceso de ingesta en 4 módulos independientes. Esto permite actualizar solo la parte del conocimiento que ha cambiado.
 
-### Trigger
-- **Programado**: Todos los días a las 03:00 UTC (Cron: `0 3 * * *`).
-- **Manual**: Vía `workflow_dispatch` para actualizaciones bajo demanda.
+### Módulos Disponibles
 
-### Ejecución
-El workflow se ejecuta en runners dentro del cluster (`swarm-runners-scaleset`) para tener acceso directo a los servicios internos:
-- **PostgreSQL IA**: `postgresql-ia.postgresql-ia.svc.cluster.local` (Puerto 5432).
-- **Ollama**: `ollama.ollama.svc.cluster.local` (Puerto 11434).
+| Módulo | Contenido | Rutas | Workflow | Trigger |
+| :--- | :--- | :--- | :--- | :--- |
+| **skills** | Capacidades y Reglas del Agente | `.trae/skills/`, `.trae/rules/` | `kaos-agent-ingest-skills.yaml` | Push a `.trae/**` |
+| **docs** | Documentación Oficial | `core/docs/` | `kaos-agent-ingest-docs.yaml` | Push a `core/docs/**` |
+| **infra** | Definiciones de Kubernetes | `core/b2b/`, `.github/workflows/` | `kaos-agent-ingest-infra.yaml` | Push a `core/b2b/**` |
+| **code** | Código Fuente (Python, Shell) | `core/**/*.py`, `core/**/*.sh` | *(Manual Only)* | Manual |
 
-### Proceso
-1.  **Checkout**: Obtiene la última versión de la rama `main`.
-2.  **Setup**: Prepara entorno Python e instala dependencias (`psycopg2-binary`, `requests`).
-3.  **Ingesta**: Ejecuta el script `core/ai/memory/ingest_local.py` (configurado vía variables de entorno).
-    - Trunca la tabla de memoria para evitar duplicados.
-    - Lee todos los archivos markdown relevantes.
-    - Genera embeddings usando Ollama (`nomic-embed-text`).
-    - Almacena vectores y contenido en PostgreSQL.
-4.  **Reporte**: Genera un archivo markdown en `audit/ingest/` con el log de la ejecución.
-5.  **Commit**: Sube el reporte al repositorio para auditoría histórica.
+## Uso Manual
 
-## Formato del Reporte
-Los reportes se guardan en `audit/ingest/` con el siguiente formato de nombre:
-`YYYYMMDD_HHMMSS_<WorkflowID>_ka0s-agent-ingest.md`
+Puedes ejecutar la ingesta localmente o en un entorno de desarrollo usando el script `ingest_local.py` con el argumento `--module`:
 
-Contenido:
-- Fecha y hora.
-- ID de ejecución y Actor.
-- Log completo de la consola del script de ingesta.
-- Estado final (✅ Éxito / ❌ Fallo).
+```bash
+# Ingerir solo Skills (Rápido ~30s)
+python core/ai/memory/ingest_local.py --module skills
 
-## Mantenimiento
-Si el workflow falla:
-1.  Se crea automáticamente un Issue en GitHub con la etiqueta `itop-incident`.
-2.  Revisar los logs del workflow en la pestaña "Actions".
-3.  Verificar conectividad entre el runner y los servicios (Postgres/Ollama).
-4.  Verificar que el modelo `nomic-embed-text` esté disponible en Ollama.
+# Ingerir Documentación (~2m)
+python core/ai/memory/ingest_local.py --module docs
+
+# Ingerir Infraestructura (~5m)
+python core/ai/memory/ingest_local.py --module infra
+
+# Ingerir Todo (Cuidado: Puede tardar >10m)
+python core/ai/memory/ingest_local.py --module all
+```
+
+## Arquitectura
+
+El script utiliza `argparse` para seleccionar el conjunto de patrones `glob` a procesar.
+
+```python
+MODULES = {
+    "docs": ["core/docs/**/*.md"],
+    "skills": [".trae/skills/**/*.md"],
+    "infra": ["core/b2b/**/*.yaml"],
+    ...
+}
+```
+
+Esto garantiza que el agente siempre tenga la información más crítica (Skills y Reglas) actualizada al instante, mientras que la documentación masiva o el código pueden actualizarse en segundo plano.

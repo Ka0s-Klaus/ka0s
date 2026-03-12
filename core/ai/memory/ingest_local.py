@@ -20,23 +20,60 @@ OLLAMA_PORT = os.getenv("OLLAMA_PORT") or "11435"
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL") or "nomic-embed-text"
 
 # Paths relative to where the script is run (project root)
-# Ingestion Strategy: Prioritized Knowledge Base
-PATTERNS = [
-    # Prioridad 1: Instrucciones Explícitas (Skills y Reglas)
-    ".trae/rules/**/*.md",       
-    ".trae/skills/**/*.md",      
+# Ingestion Strategy: Modular & Argument Driven
+# Usage: python ingest_local.py --module [docs|skills|infra|code|all]
+
+import argparse
+
+# Define patterns per module
+MODULES = {
+    "docs": [
+        "core/docs/**/*.md",
+        ".trae/rules/**/*.md"
+    ],
+    "skills": [
+        ".trae/skills/**/*.md"
+    ],
+    "infra": [
+        "core/b2b/**/*.yaml",
+        "core/b2b/**/*.json",
+        ".github/workflows/*.yaml"
+    ],
+    "code": [
+        "core/**/*.py",
+        "core/**/*.sh",
+        "core/**/*.sql"
+    ]
+}
+
+
+def get_patterns(module_name):
+    if module_name == "all":
+        all_patterns = []
+        for p in MODULES.values():
+            all_patterns.extend(p)
+        return all_patterns
+    return MODULES.get(module_name, [])
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Ka0s Knowledge Ingestion')
+    parser.add_argument(
+        '--module', 
+        type=str, 
+        default='all', 
+        choices=['docs', 'skills', 'infra', 'code', 'all'],
+        help='Specific module to ingest to prevent timeouts'
+    )
+    args = parser.parse_args()
+
+    PATTERNS = get_patterns(args.module)
+    print(f"🚀 Starting ingestion for module: {args.module}")
+    print(f"📂 Patterns: {PATTERNS}")
     
-    # Prioridad 2: Documentación Oficial
-    "core/docs/**/*.md",         
-    
-    # Prioridad 3: Infraestructura Definida (YAMLs de K8s)
-    # Limitamos a core/b2b para evitar ruido de tests o templates masivos
-    "core/b2b/**/*.yaml",        
-    
-    # Prioridad 4: Configuración de CI/CD (Workflows)
-    ".github/workflows/*.yaml"
-]
-# EXCLUDED: Code source (*.py, *.sh) and large JSONs temporarily to prevent timeouts
+else:
+    # Default for imports or testing
+    PATTERNS = []
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)

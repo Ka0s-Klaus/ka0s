@@ -1,0 +1,33 @@
+name: Ka0s Agent Ingest (Docs)
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'core/docs/**'
+
+jobs:
+  ingest-docs:
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install Dependencies
+        run: |
+          pip install psycopg2-binary langchain-community langchain-huggingface nomic sentence-transformers
+
+      - name: Run Ingestion (Docs Only)
+        env:
+          DB_HOST: "postgres-ia.core-services.svc.cluster.local"
+          DB_PORT: "5432"
+          DB_NAME: "kaos_memory"
+          DB_USER: "postgres"
+          DB_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+        run: |
+          python core/ai/memory/ingest_local.py --module docs
