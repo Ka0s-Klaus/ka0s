@@ -43,11 +43,13 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
+            const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: '🤖 **Ka0s Agent:** Procesando tu pregunta... (Consultando base de conocimientos y generando respuesta)'
+              body: `🤖 **Ka0s Agent:** Procesando tu pregunta...\n\n🔗 [Ver Log de Ejecución](${runUrl}) (Job ID: ${context.runId})\n\n*(Estoy consultando la base de conocimientos y generando respuesta...)*`
             })
 
       - name: Query Agent
@@ -86,8 +88,9 @@ jobs:
           script: |
             const fs = require('fs');
             const response = fs.readFileSync(process.env.RESPONSE_FILE, 'utf8');
+            const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
             
-            const commentBody = `🤖 **Ka0s Agent:** Aquí tienes la respuesta basada en mi conocimiento actual:\n\n---\n\n${response}\n\n---\n\n*Si esta respuesta no es correcta, por favor verifica la documentación oficial o contacta con el equipo.*`;
+            const commentBody = `🤖 **Ka0s Agent:** Aquí tienes la respuesta basada en mi conocimiento actual:\n\n---\n\n${response}\n\n---\n\n🔗 [Detalles de la Ejecución](${runUrl})\n*Si esta respuesta no es correcta, por favor verifica la documentación oficial o contacta con el equipo.*`;
             
             github.rest.issues.createComment({
               issue_number: context.issue.number,
@@ -113,9 +116,11 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
+            const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: '❌ **Error:** Hubo un problema técnico al procesar tu solicitud. El equipo de Ka0s ha sido notificado.'
+              body: `❌ **Error:** Hubo un problema técnico al procesar tu solicitud.\n\n🔗 [Ver Log de Error](${runUrl})\n\nEl equipo de Ka0s ha sido notificado.`
             })
