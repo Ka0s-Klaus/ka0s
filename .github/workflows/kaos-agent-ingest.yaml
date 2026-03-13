@@ -38,10 +38,11 @@ env:
   KAOS_CODE: ${{ github.run_id }}
   KAOS_ACTOR: ${{ github.actor }}
   # Global DB Config
-  DB_HOST: "postgres-ia.core-services.svc.cluster.local"
+  # Corrected DNS: service_name.namespace.svc.cluster.local
+  DB_HOST: "postgresql-ia.postgresql-ia.svc.cluster.local"
   DB_PORT: "5432"
-  DB_NAME: "kaos_memory"
-  DB_USER: "postgres"
+  DB_NAME: "kaos_memory" # As per secret verification
+  DB_USER: "postgres"    # As per secret verification
   # Secrets must be passed in jobs, but defined here for reference
   
 jobs:
