@@ -62,17 +62,17 @@ spec:
               if [ -f /branding/favicon.png ]; then
                  find /web-data -type f \( -name "favicon.ico" -o -name "apple-touch-icon*.png" -o -name "ms-tile*.png" -o -name "touch-icon*.png" \) -exec cp /branding/favicon.png {} \; 2>/dev/null || true;
                fi && \
-               if [ -f /branding/zabbix_logo.png ]; then \
-                  cp /branding/zabbix_logo.png /web-data/images/custom_logo.png; \
-                  # Force copy zabbix_logo_compact.png as custom_logo_compact.png
-                  if [ -f /branding/zabbix_logo_compact.png ]; then
-                    cp /branding/zabbix_logo_compact.png /web-data/images/custom_logo_compact.png;
-                  fi
-                  # Also replace the actual file itop-logo-square.png if it exists, to be double sure
-                  find /web-data/images -name "itop-logo-square.png" -exec cp /branding/zabbix_logo_compact.png {} \; || true;
-                  # Replace ALL png logos related to iTop
-                  find /web-data/images -type f \( -iname '*itop*.png' -o -iname '*logo*.png' \) -exec cp /branding/zabbix_logo.png {} \; ; \
-                  find /web-data -name "*.css" -type f -exec sh -c 'printf "\n.ibo-navigation-menu--logo img, .ibo-header__logo img, #login-logo img { opacity: 0; }\n.ibo-navigation-menu--logo, .ibo-header__logo, #login-logo a { background-image: url(../images/custom_logo.png) !important; background-repeat: no-repeat !important; background-size: 250px !important; background-position: left center !important; width: 220px !important; height: 56px !important; display: block; }\n.ibo-is-collapsed .ibo-navigation-menu--logo, .ibo-navigation-menu--minified .ibo-navigation-menu--logo { background-image: url(../images/custom_logo_compact.png) !important; background-size: contain !important; background-position: center center !important; width: 30px !important; height: 30px !important; display: block; margin-top: 10px; }\n" >> "$1"' -- {} \; || true; \
+               if [ -f /branding/custom_logo.png ]; then \
+                 cp /branding/custom_logo.png /web-data/images/custom_logo.png; \
+                 # Force copy custom_logo_compact.png
+                 if [ -f /branding/custom_logo_compact.png ]; then
+                   cp /branding/custom_logo_compact.png /web-data/images/custom_logo_compact.png;
+                 fi
+                 # Also replace the actual file itop-logo-square.png if it exists, to be double sure
+                 find /web-data/images -name "itop-logo-square.png" -exec cp /branding/custom_logo_compact.png {} \; || true;
+                 # Replace ALL png logos related to iTop
+                 find /web-data/images -type f \( -iname '*itop*.png' -o -iname '*logo*.png' \) -exec cp /branding/custom_logo.png {} \; ; \
+                 find /web-data -name "*.css" -type f -exec sh -c 'printf "\n.ibo-navigation-menu--logo img, .ibo-header__logo img, #login-logo img { opacity: 0; }\n.ibo-navigation-menu--logo, .ibo-header__logo, #login-logo a { background-image: url(../images/custom_logo.png) !important; background-repeat: no-repeat !important; background-size: 250px !important; background-position: left center !important; width: 220px !important; height: 56px !important; display: block; }\n.ibo-is-collapsed .ibo-navigation-menu--logo, .ibo-navigation-menu--minified .ibo-navigation-menu--logo { background-image: url(../images/custom_logo_compact.png) !important; background-size: contain !important; background-position: center center !important; width: 30px !important; height: 30px !important; display: block; margin-top: 10px; }\n" >> "$1"' -- {} \; || true; \
                  # Inject custom text for login page and footer
                   # Use find with grep first to locate files containing the string to avoid unnecessary sed executions
                   grep -l "'UI:Login:Welcome' => 'Welcome to iTop!'," -r /web-data | xargs sed -i "s|'UI:Login:Welcome' => 'Welcome to iTop!',|'UI:Login:Welcome' => 'Welcome to Ka0s!',|g" || true
