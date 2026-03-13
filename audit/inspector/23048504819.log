@@ -1,0 +1,796 @@
+deploy	Set up job	﻿2026-03-13T11:20:45.0474718Z Current runner version: '2.332.0'
+deploy	Set up job	2026-03-13T11:20:45.0515521Z Runner name: 'swarm-runners-scaleset-hkss5-runner-fk2qn'
+deploy	Set up job	2026-03-13T11:20:45.0517198Z Runner group name: 'Default'
+deploy	Set up job	2026-03-13T11:20:45.0523846Z Machine name: 'swarm-runners-scaleset-hkss5-runner-fk2qn'
+deploy	Set up job	2026-03-13T11:20:45.0576626Z ##[group]GITHUB_TOKEN Permissions
+deploy	Set up job	2026-03-13T11:20:45.0580608Z Contents: read
+deploy	Set up job	2026-03-13T11:20:45.0581568Z Metadata: read
+deploy	Set up job	2026-03-13T11:20:45.0582498Z ##[endgroup]
+deploy	Set up job	2026-03-13T11:20:45.0585352Z Secret source: Actions
+deploy	Set up job	2026-03-13T11:20:45.0586535Z Prepare workflow directory
+deploy	Set up job	2026-03-13T11:20:46.3034717Z Prepare all required actions
+deploy	Set up job	2026-03-13T11:20:46.3235307Z Getting action download info
+deploy	Set up job	2026-03-13T11:20:46.9996507Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+deploy	Set up job	2026-03-13T11:21:10.1667905Z Complete job name: deploy
+deploy	Checkout repository	﻿2026-03-13T11:21:12.6873181Z ##[group]Run actions/checkout@v4
+deploy	Checkout repository	2026-03-13T11:21:12.6874038Z with:
+deploy	Checkout repository	2026-03-13T11:21:12.6874317Z   repository: Ka0s-Klaus/ka0s
+deploy	Checkout repository	2026-03-13T11:21:12.6874976Z   token: ***
+deploy	Checkout repository	2026-03-13T11:21:12.6875228Z   ssh-strict: true
+deploy	Checkout repository	2026-03-13T11:21:12.6875484Z   ssh-user: git
+deploy	Checkout repository	2026-03-13T11:21:12.6875739Z   persist-credentials: true
+deploy	Checkout repository	2026-03-13T11:21:12.6899057Z   clean: true
+deploy	Checkout repository	2026-03-13T11:21:12.6899391Z   sparse-checkout-cone-mode: true
+deploy	Checkout repository	2026-03-13T11:21:12.6899707Z   fetch-depth: 1
+deploy	Checkout repository	2026-03-13T11:21:12.6899952Z   fetch-tags: false
+deploy	Checkout repository	2026-03-13T11:21:12.6900212Z   show-progress: true
+deploy	Checkout repository	2026-03-13T11:21:12.6900470Z   lfs: false
+deploy	Checkout repository	2026-03-13T11:21:12.6900704Z   submodules: false
+deploy	Checkout repository	2026-03-13T11:21:12.6900980Z   set-safe-directory: true
+deploy	Checkout repository	2026-03-13T11:21:12.6902029Z env:
+deploy	Checkout repository	2026-03-13T11:21:12.6902298Z   KAOS_MODULE: [Ka0S] Deploy Docs Portal
+deploy	Checkout repository	2026-03-13T11:21:12.6902625Z   KAOS_CODE: 23048504819
+deploy	Checkout repository	2026-03-13T11:21:12.6902889Z ##[endgroup]
+deploy	Checkout repository	2026-03-13T11:21:15.8755040Z Syncing repository: Ka0s-Klaus/ka0s
+deploy	Checkout repository	2026-03-13T11:21:15.8756768Z ##[group]Getting Git version info
+deploy	Checkout repository	2026-03-13T11:21:15.8757278Z Working directory is '/home/runner/_work/ka0s/ka0s'
+deploy	Checkout repository	2026-03-13T11:21:15.8757897Z [command]/usr/bin/git version
+deploy	Checkout repository	2026-03-13T11:21:15.8758308Z git version 2.53.0
+deploy	Checkout repository	2026-03-13T11:21:15.8759657Z ##[endgroup]
+deploy	Checkout repository	2026-03-13T11:21:15.8770153Z Temporarily overriding HOME='/home/runner/_work/_temp/f4b1cfb4-6a4e-474f-85f9-d6ef7e792a19' before making global git config changes
+deploy	Checkout repository	2026-03-13T11:21:15.8777488Z Adding repository directory to the temporary git global config as a safe directory
+deploy	Checkout repository	2026-03-13T11:21:15.8778207Z [command]/usr/bin/git config --global --add safe.directory /home/runner/_work/ka0s/ka0s
+deploy	Checkout repository	2026-03-13T11:21:15.9684195Z Deleting the contents of '/home/runner/_work/ka0s/ka0s'
+deploy	Checkout repository	2026-03-13T11:21:15.9720935Z ##[group]Initializing the repository
+deploy	Checkout repository	2026-03-13T11:21:16.1464993Z [command]/usr/bin/git init /home/runner/_work/ka0s/ka0s
+deploy	Checkout repository	2026-03-13T11:21:16.7195707Z hint: Using 'master' as the name for the initial branch. This default branch name
+deploy	Checkout repository	2026-03-13T11:21:16.7200633Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+deploy	Checkout repository	2026-03-13T11:21:16.7201315Z hint: to use in all of your new repositories, which will suppress this warning,
+deploy	Checkout repository	2026-03-13T11:21:16.7201841Z hint: call:
+deploy	Checkout repository	2026-03-13T11:21:16.7202067Z hint:
+deploy	Checkout repository	2026-03-13T11:21:16.7202396Z hint: 	git config --global init.defaultBranch <name>
+deploy	Checkout repository	2026-03-13T11:21:16.7202763Z hint:
+deploy	Checkout repository	2026-03-13T11:21:16.7203108Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+deploy	Checkout repository	2026-03-13T11:21:16.7203726Z hint: 'development'. The just-created branch can be renamed via this command:
+deploy	Checkout repository	2026-03-13T11:21:16.7204185Z hint:
+deploy	Checkout repository	2026-03-13T11:21:16.7204432Z hint: 	git branch -m <name>
+deploy	Checkout repository	2026-03-13T11:21:16.7204703Z hint:
+deploy	Checkout repository	2026-03-13T11:21:16.7205088Z hint: Disable this message with "git config set advice.defaultBranchName false"
+deploy	Checkout repository	2026-03-13T11:21:16.7205703Z Initialized empty Git repository in /home/runner/_work/ka0s/ka0s/.git/
+deploy	Checkout repository	2026-03-13T11:21:16.7463707Z [command]/usr/bin/git remote add origin https://github.com/Ka0s-Klaus/ka0s
+deploy	Checkout repository	2026-03-13T11:21:17.1480866Z ##[endgroup]
+deploy	Checkout repository	2026-03-13T11:21:17.1565985Z ##[group]Disabling automatic garbage collection
+deploy	Checkout repository	2026-03-13T11:21:17.2375523Z [command]/usr/bin/git config --local gc.auto 0
+deploy	Checkout repository	2026-03-13T11:21:17.4848487Z ##[endgroup]
+deploy	Checkout repository	2026-03-13T11:21:17.4862962Z ##[group]Setting up auth
+deploy	Checkout repository	2026-03-13T11:21:17.4936839Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+deploy	Checkout repository	2026-03-13T11:21:17.5400926Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+deploy	Checkout repository	2026-03-13T11:21:17.6754834Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+deploy	Checkout repository	2026-03-13T11:21:17.6810575Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+deploy	Checkout repository	2026-03-13T11:21:18.4582590Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+deploy	Checkout repository	2026-03-13T11:21:18.4583763Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+deploy	Checkout repository	2026-03-13T11:21:18.4585045Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+deploy	Checkout repository	2026-03-13T11:21:18.6785146Z ##[endgroup]
+deploy	Checkout repository	2026-03-13T11:21:18.6807894Z ##[group]Fetching the repository
+deploy	Checkout repository	2026-03-13T11:21:18.7049266Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +ea20b83123623d1722e2070575feb5442d02d731:refs/remotes/origin/main
+deploy	Checkout repository	2026-03-13T11:22:29.3483036Z From https://github.com/Ka0s-Klaus/ka0s
+deploy	Checkout repository	2026-03-13T11:22:29.3806945Z  * [new ref]         ea20b83123623d1722e2070575feb5442d02d731 -> origin/main
+deploy	Checkout repository	2026-03-13T11:22:29.4440094Z ##[endgroup]
+deploy	Checkout repository	2026-03-13T11:22:29.4440839Z ##[group]Determining the checkout info
+deploy	Checkout repository	2026-03-13T11:22:29.4466440Z ##[endgroup]
+deploy	Checkout repository	2026-03-13T11:22:29.4495978Z [command]/usr/bin/git sparse-checkout disable
+deploy	Checkout repository	2026-03-13T11:22:30.2262282Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+deploy	Checkout repository	2026-03-13T11:22:30.5852224Z ##[group]Checking out the ref
+deploy	Checkout repository	2026-03-13T11:22:30.5853175Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+deploy	Checkout repository	2026-03-13T11:22:32.6200965Z Updating files:  20% (755/3703)
+deploy	Checkout repository	2026-03-13T11:22:32.6439601Z Updating files:  21% (778/3703)
+deploy	Checkout repository	2026-03-13T11:22:32.6853470Z Updating files:  21% (785/3703)
+deploy	Checkout repository	2026-03-13T11:22:32.7062411Z Updating files:  22% (815/3703)
+deploy	Checkout repository	2026-03-13T11:22:32.7235121Z Updating files:  23% (852/3703)
+deploy	Checkout repository	2026-03-13T11:22:32.7561406Z Updating files:  24% (889/3703)
+deploy	Checkout repository	2026-03-13T11:22:32.8220820Z Updating files:  25% (926/3703)
+deploy	Checkout repository	2026-03-13T11:22:32.8571830Z Updating files:  26% (963/3703)
+deploy	Checkout repository	2026-03-13T11:22:32.8576055Z Updating files:  27% (1000/3703)
+deploy	Checkout repository	2026-03-13T11:22:32.8689709Z Updating files:  28% (1037/3703)
+deploy	Checkout repository	2026-03-13T11:22:32.8875591Z Updating files:  29% (1074/3703)
+deploy	Checkout repository	2026-03-13T11:22:32.8876429Z Updating files:  30% (1111/3703)
+deploy	Checkout repository	2026-03-13T11:22:34.1086073Z Updating files:  31% (1148/3703)
+deploy	Checkout repository	2026-03-13T11:22:34.1444819Z Updating files:  31% (1177/3703)
+deploy	Checkout repository	2026-03-13T11:22:34.2999625Z Updating files:  32% (1185/3703)
+deploy	Checkout repository	2026-03-13T11:22:34.4077618Z Updating files:  33% (1222/3703)
+deploy	Checkout repository	2026-03-13T11:22:34.4294551Z Updating files:  34% (1260/3703)
+deploy	Checkout repository	2026-03-13T11:22:34.4505494Z Updating files:  35% (1297/3703)
+deploy	Checkout repository	2026-03-13T11:22:34.4683720Z Updating files:  36% (1334/3703)
+deploy	Checkout repository	2026-03-13T11:22:35.6230308Z Updating files:  37% (1371/3703)
+deploy	Checkout repository	2026-03-13T11:22:35.6316776Z Updating files:  37% (1386/3703)
+deploy	Checkout repository	2026-03-13T11:22:35.6462635Z Updating files:  38% (1408/3703)
+deploy	Checkout repository	2026-03-13T11:22:35.6721382Z Updating files:  38% (1423/3703)
+deploy	Checkout repository	2026-03-13T11:22:35.7122515Z Updating files:  39% (1445/3703)
+deploy	Checkout repository	2026-03-13T11:22:36.5237466Z Updating files:  40% (1482/3703)
+deploy	Checkout repository	2026-03-13T11:22:36.5300834Z Updating files:  41% (1519/3703)
+deploy	Checkout repository	2026-03-13T11:22:36.5347387Z Updating files:  42% (1556/3703)
+deploy	Checkout repository	2026-03-13T11:22:36.5401235Z Updating files:  43% (1593/3703)
+deploy	Checkout repository	2026-03-13T11:22:36.5453279Z Updating files:  44% (1630/3703)
+deploy	Checkout repository	2026-03-13T11:22:36.5491278Z Updating files:  45% (1667/3703)
+deploy	Checkout repository	2026-03-13T11:22:36.5539505Z Updating files:  46% (1704/3703)
+deploy	Checkout repository	2026-03-13T11:22:36.5612064Z Updating files:  47% (1741/3703)
+deploy	Checkout repository	2026-03-13T11:22:36.5735296Z Updating files:  48% (1778/3703)
+deploy	Checkout repository	2026-03-13T11:22:36.5891733Z Updating files:  49% (1815/3703)
+deploy	Checkout repository	2026-03-13T11:22:36.6070880Z Updating files:  50% (1852/3703)
+deploy	Checkout repository	2026-03-13T11:22:36.6221514Z Updating files:  51% (1889/3703)
+deploy	Checkout repository	2026-03-13T11:22:36.6381681Z Updating files:  52% (1926/3703)
+deploy	Checkout repository	2026-03-13T11:22:36.6426618Z Updating files:  53% (1963/3703)
+deploy	Checkout repository	2026-03-13T11:22:36.6580998Z Updating files:  53% (1969/3703)
+deploy	Checkout repository	2026-03-13T11:22:36.6758006Z Updating files:  54% (2000/3703)
+deploy	Checkout repository	2026-03-13T11:22:36.7029752Z Updating files:  55% (2037/3703)
+deploy	Checkout repository	2026-03-13T11:22:36.7175586Z Updating files:  56% (2074/3703)
+deploy	Checkout repository	2026-03-13T11:22:36.7483982Z Updating files:  57% (2111/3703)
+deploy	Checkout repository	2026-03-13T11:22:36.8044977Z Updating files:  58% (2148/3703)
+deploy	Checkout repository	2026-03-13T11:22:36.8440869Z Updating files:  59% (2185/3703)
+deploy	Checkout repository	2026-03-13T11:22:36.8865271Z Updating files:  60% (2222/3703)
+deploy	Checkout repository	2026-03-13T11:22:36.9265147Z Updating files:  61% (2259/3703)
+deploy	Checkout repository	2026-03-13T11:22:37.0193583Z Updating files:  62% (2296/3703)
+deploy	Checkout repository	2026-03-13T11:22:37.0548906Z Updating files:  63% (2333/3703)
+deploy	Checkout repository	2026-03-13T11:22:37.0645485Z Updating files:  64% (2370/3703)
+deploy	Checkout repository	2026-03-13T11:22:37.1913850Z Updating files:  65% (2407/3703)
+deploy	Checkout repository	2026-03-13T11:22:37.2432036Z Updating files:  66% (2444/3703)
+deploy	Checkout repository	2026-03-13T11:22:37.3079630Z Updating files:  67% (2482/3703)
+deploy	Checkout repository	2026-03-13T11:22:37.6942299Z Updating files:  68% (2519/3703)
+deploy	Checkout repository	2026-03-13T11:22:38.6921779Z Updating files:  68% (2537/3703)
+deploy	Checkout repository	2026-03-13T11:22:39.0051409Z Updating files:  68% (2538/3703)
+deploy	Checkout repository	2026-03-13T11:22:39.3694344Z Updating files:  69% (2556/3703)
+deploy	Checkout repository	2026-03-13T11:22:39.4064232Z Updating files:  70% (2593/3703)
+deploy	Checkout repository	2026-03-13T11:22:39.4468459Z Updating files:  71% (2630/3703)
+deploy	Checkout repository	2026-03-13T11:22:39.4866772Z Updating files:  72% (2667/3703)
+deploy	Checkout repository	2026-03-13T11:22:39.5292057Z Updating files:  73% (2704/3703)
+deploy	Checkout repository	2026-03-13T11:22:39.5974200Z Updating files:  74% (2741/3703)
+deploy	Checkout repository	2026-03-13T11:22:39.5978423Z Updating files:  75% (2778/3703)
+deploy	Checkout repository	2026-03-13T11:22:39.6605920Z Updating files:  76% (2815/3703)
+deploy	Checkout repository	2026-03-13T11:22:39.7158491Z Updating files:  77% (2852/3703)
+deploy	Checkout repository	2026-03-13T11:22:40.6603149Z Updating files:  77% (2856/3703)
+deploy	Checkout repository	2026-03-13T11:22:40.6603947Z Updating files:  77% (2888/3703)
+deploy	Checkout repository	2026-03-13T11:22:41.0457858Z Updating files:  78% (2889/3703)
+deploy	Checkout repository	2026-03-13T11:22:41.0458258Z Updating files:  79% (2926/3703)
+deploy	Checkout repository	2026-03-13T11:22:41.0458557Z Updating files:  80% (2963/3703)
+deploy	Checkout repository	2026-03-13T11:22:41.0626755Z Updating files:  81% (3000/3703)
+deploy	Checkout repository	2026-03-13T11:22:41.1600343Z Updating files:  82% (3037/3703)
+deploy	Checkout repository	2026-03-13T11:22:41.1721641Z Updating files:  83% (3074/3703)
+deploy	Checkout repository	2026-03-13T11:22:41.2091405Z Updating files:  84% (3111/3703)
+deploy	Checkout repository	2026-03-13T11:22:41.2092611Z Updating files:  85% (3148/3703)
+deploy	Checkout repository	2026-03-13T11:22:41.2093731Z Updating files:  86% (3185/3703)
+deploy	Checkout repository	2026-03-13T11:22:41.2170755Z Updating files:  87% (3222/3703)
+deploy	Checkout repository	2026-03-13T11:22:41.2341348Z Updating files:  88% (3259/3703)
+deploy	Checkout repository	2026-03-13T11:22:41.2597315Z Updating files:  89% (3296/3703)
+deploy	Checkout repository	2026-03-13T11:22:41.2978990Z Updating files:  90% (3333/3703)
+deploy	Checkout repository	2026-03-13T11:22:41.3161710Z Updating files:  91% (3370/3703)
+deploy	Checkout repository	2026-03-13T11:22:41.3430639Z Updating files:  92% (3407/3703)
+deploy	Checkout repository	2026-03-13T11:22:41.3629655Z Updating files:  93% (3444/3703)
+deploy	Checkout repository	2026-03-13T11:22:41.4021506Z Updating files:  94% (3481/3703)
+deploy	Checkout repository	2026-03-13T11:22:41.4360618Z Updating files:  95% (3518/3703)
+deploy	Checkout repository	2026-03-13T11:22:41.5793584Z Updating files:  96% (3555/3703)
+deploy	Checkout repository	2026-03-13T11:22:41.6318270Z Updating files:  97% (3592/3703)
+deploy	Checkout repository	2026-03-13T11:22:41.6653016Z Updating files:  98% (3629/3703)
+deploy	Checkout repository	2026-03-13T11:22:41.7143247Z Updating files:  98% (3633/3703)
+deploy	Checkout repository	2026-03-13T11:22:45.0917002Z Updating files:  99% (3666/3703)
+deploy	Checkout repository	2026-03-13T11:22:45.0926575Z Updating files: 100% (3703/3703)
+deploy	Checkout repository	2026-03-13T11:22:45.0927498Z Updating files: 100% (3703/3703), done.
+deploy	Checkout repository	2026-03-13T11:22:46.0230931Z Switched to a new branch 'main'
+deploy	Checkout repository	2026-03-13T11:22:46.0236268Z branch 'main' set up to track 'origin/main'.
+deploy	Checkout repository	2026-03-13T11:22:46.0738705Z ##[endgroup]
+deploy	Checkout repository	2026-03-13T11:22:46.1691535Z [command]/usr/bin/git log -1 --format=%H
+deploy	Checkout repository	2026-03-13T11:22:46.2145333Z ea20b83123623d1722e2070575feb5442d02d731
+deploy	Restart Docs Portal Pods	﻿2026-03-13T11:22:47.7693770Z Prepare all required actions
+deploy	Restart Docs Portal Pods	2026-03-13T11:22:49.3745159Z ##[group]Run ./.github/actions/ssh-exec
+deploy	Restart Docs Portal Pods	2026-03-13T11:22:49.3745516Z with:
+deploy	Restart Docs Portal Pods	2026-03-13T11:22:49.3746357Z   host: ***
+deploy	Restart Docs Portal Pods	2026-03-13T11:22:49.3746627Z   username: ***
+deploy	Restart Docs Portal Pods	2026-03-13T11:22:49.3913520Z   key: ***
+deploy	Restart Docs Portal Pods	2026-03-13T11:22:49.3914077Z   port: ***
+deploy	Restart Docs Portal Pods	2026-03-13T11:22:49.3914470Z   command: kubectl rollout restart deployment/docs-portal -n docs-portal
+deploy	Restart Docs Portal Pods	2026-03-13T11:22:49.3914918Z   use-sudo: false
+deploy	Restart Docs Portal Pods	2026-03-13T11:22:49.3915179Z   remote-tmp-dir: /tmp
+deploy	Restart Docs Portal Pods	2026-03-13T11:22:49.3915443Z env:
+deploy	Restart Docs Portal Pods	2026-03-13T11:22:49.3915685Z   KAOS_MODULE: [Ka0S] Deploy Docs Portal
+deploy	Restart Docs Portal Pods	2026-03-13T11:22:49.3916008Z   KAOS_CODE: 23048504819
+deploy	Restart Docs Portal Pods	2026-03-13T11:22:49.3916265Z ##[endgroup]
+deploy	Restart Docs Portal Pods	2026-03-13T11:22:49.9978012Z ##[group]Run echo "***
+deploy	Restart Docs Portal Pods	2026-03-13T11:22:49.9978877Z [36;1mecho "***[0m
+deploy	Restart Docs Portal Pods	2026-03-13T11:22:49.9979385Z [36;1m***[0m
+deploy	Restart Docs Portal Pods	2026-03-13T11:22:49.9979854Z [36;1m***[0m
+deploy	Restart Docs Portal Pods	2026-03-13T11:22:49.9980315Z [36;1m***[0m
+deploy	Restart Docs Portal Pods	2026-03-13T11:22:49.9980773Z [36;1m***[0m
+deploy	Restart Docs Portal Pods	2026-03-13T11:22:49.9981191Z [36;1m***[0m
+deploy	Restart Docs Portal Pods	2026-03-13T11:22:49.9981629Z [36;1m***" > /home/runner/_work/_temp/ssh_key[0m
+deploy	Restart Docs Portal Pods	2026-03-13T11:22:49.9982032Z [36;1mchmod 600 /home/runner/_work/_temp/ssh_key[0m
+deploy	Restart Docs Portal Pods	2026-03-13T11:22:50.0174210Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+deploy	Restart Docs Portal Pods	2026-03-13T11:22:50.0174669Z env:
+deploy	Restart Docs Portal Pods	2026-03-13T11:22:50.0174930Z   KAOS_MODULE: [Ka0S] Deploy Docs Portal
+deploy	Restart Docs Portal Pods	2026-03-13T11:22:50.0175259Z   KAOS_CODE: 23048504819
+deploy	Restart Docs Portal Pods	2026-03-13T11:22:50.0175514Z ##[endgroup]
+deploy	Restart Docs Portal Pods	2026-03-13T11:22:50.5046150Z ##[group]Run if [[ "false" == "true" ]]; then
+deploy	Restart Docs Portal Pods	2026-03-13T11:22:50.5046568Z [36;1mif [[ "false" == "true" ]]; then[0m
+deploy	Restart Docs Portal Pods	2026-03-13T11:22:50.5047562Z [36;1m  echo "" | ssh -o StrictHostKeyChecking=no -i /home/runner/_work/_temp/ssh_key -p *** ***@*** "sudo -S kubectl rollout restart deployment/docs-portal -n docs-portal"[0m
+deploy	Restart Docs Portal Pods	2026-03-13T11:22:50.5048343Z [36;1melse[0m
+deploy	Restart Docs Portal Pods	2026-03-13T11:22:50.5211612Z [36;1m  ssh -o StrictHostKeyChecking=no -i /home/runner/_work/_temp/ssh_key -p *** ***@*** "kubectl rollout restart deployment/docs-portal -n docs-portal"[0m
+deploy	Restart Docs Portal Pods	2026-03-13T11:22:50.5212557Z [36;1mfi[0m
+deploy	Restart Docs Portal Pods	2026-03-13T11:22:50.5350429Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+deploy	Restart Docs Portal Pods	2026-03-13T11:22:50.5350944Z env:
+deploy	Restart Docs Portal Pods	2026-03-13T11:22:50.5351212Z   KAOS_MODULE: [Ka0S] Deploy Docs Portal
+deploy	Restart Docs Portal Pods	2026-03-13T11:22:50.5351544Z   KAOS_CODE: 23048504819
+deploy	Restart Docs Portal Pods	2026-03-13T11:22:50.5351805Z ##[endgroup]
+deploy	Restart Docs Portal Pods	2026-03-13T11:22:50.8083176Z Warning: Permanently added '[***]:***' (ED25519) to the list of known hosts.
+deploy	Restart Docs Portal Pods	2026-03-13T11:22:51.4449755Z deployment.apps/docs-portal restarted
+deploy	Post Checkout repository	﻿2026-03-13T11:22:52.0722952Z Post job cleanup.
+deploy	Post Checkout repository	2026-03-13T11:22:53.1429582Z [command]/usr/bin/git version
+deploy	Post Checkout repository	2026-03-13T11:22:53.1879837Z git version 2.53.0
+deploy	Post Checkout repository	2026-03-13T11:22:53.2660240Z Temporarily overriding HOME='/home/runner/_work/_temp/c91a36c8-ee74-4b03-bd4b-11dc0102400f' before making global git config changes
+deploy	Post Checkout repository	2026-03-13T11:22:53.2770069Z Adding repository directory to the temporary git global config as a safe directory
+deploy	Post Checkout repository	2026-03-13T11:22:53.2776494Z [command]/usr/bin/git config --global --add safe.directory /home/runner/_work/ka0s/ka0s
+deploy	Post Checkout repository	2026-03-13T11:22:53.9290588Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+deploy	Post Checkout repository	2026-03-13T11:22:53.9850878Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+deploy	Post Checkout repository	2026-03-13T11:22:54.3742373Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+deploy	Post Checkout repository	2026-03-13T11:22:54.4024522Z http.https://github.com/.extraheader
+deploy	Post Checkout repository	2026-03-13T11:22:54.4033156Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+deploy	Post Checkout repository	2026-03-13T11:22:54.7840784Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+deploy	Post Checkout repository	2026-03-13T11:22:55.0472057Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+deploy	Post Checkout repository	2026-03-13T11:22:55.0667521Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+deploy	Complete job	﻿2026-03-13T11:22:55.3210921Z Cleaning up orphan processes
+deploy	Complete job	2026-03-13T11:22:55.3685825Z ##[warning]Node.js 20 actions are deprecated. The following actions are running on Node.js 20 and may not work as expected: actions/checkout@v4. Actions will be forced to run with Node.js 24 by default starting June 2nd, 2026. Please check if updated versions of these actions are available that support Node.js 24. To opt into Node.js 24 now, set the FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true environment variable on the runner or in your workflow file. Once Node.js 24 becomes the default, you can temporarily opt out by setting ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+handle-success	Set up job	﻿2026-03-13T11:27:26.3568766Z Current runner version: '2.332.0'
+handle-success	Set up job	2026-03-13T11:27:26.3584763Z Runner name: 'swarm-runners-scaleset-hkss5-runner-5s6sv'
+handle-success	Set up job	2026-03-13T11:27:26.3587129Z Runner group name: 'Default'
+handle-success	Set up job	2026-03-13T11:27:26.3603882Z Machine name: 'swarm-runners-scaleset-hkss5-runner-5s6sv'
+handle-success	Set up job	2026-03-13T11:27:26.3640760Z ##[group]GITHUB_TOKEN Permissions
+handle-success	Set up job	2026-03-13T11:27:26.3645265Z Contents: read
+handle-success	Set up job	2026-03-13T11:27:26.3646641Z Metadata: read
+handle-success	Set up job	2026-03-13T11:27:26.3648177Z ##[endgroup]
+handle-success	Set up job	2026-03-13T11:27:26.3652709Z Secret source: Actions
+handle-success	Set up job	2026-03-13T11:27:26.3654447Z Prepare workflow directory
+handle-success	Set up job	2026-03-13T11:27:26.7125434Z Prepare all required actions
+handle-success	Set up job	2026-03-13T11:27:26.7954655Z Complete job name: handle-success
+handle-success	Notify Success	﻿2026-03-13T11:27:27.5237578Z ##[group]Run echo "✅ [Ka0S] Deploy Docs Portal completado correctamente."
+handle-success	Notify Success	2026-03-13T11:27:27.5251173Z [36;1mecho "✅ [Ka0S] Deploy Docs Portal completado correctamente."[0m
+handle-success	Notify Success	2026-03-13T11:27:27.5627077Z shell: /usr/bin/bash -e {0}
+handle-success	Notify Success	2026-03-13T11:27:27.5698763Z env:
+handle-success	Notify Success	2026-03-13T11:27:27.5700324Z   KAOS_MODULE: [Ka0S] Deploy Docs Portal
+handle-success	Notify Success	2026-03-13T11:27:27.5701684Z   KAOS_CODE: 23048504819
+handle-success	Notify Success	2026-03-13T11:27:27.5702645Z ##[endgroup]
+handle-success	Notify Success	2026-03-13T11:27:28.4948948Z ✅ [Ka0S] Deploy Docs Portal completado correctamente.
+handle-success	Complete job	﻿2026-03-13T11:27:28.6218282Z Cleaning up orphan processes
+end-workflow	Set up job	﻿2026-03-13T11:29:47.5133748Z Current runner version: '2.332.0'
+end-workflow	Set up job	2026-03-13T11:29:48.1130266Z Runner name: 'swarm-runners-scaleset-hkss5-runner-fp6rp'
+end-workflow	Set up job	2026-03-13T11:29:48.1131326Z Runner group name: 'Default'
+end-workflow	Set up job	2026-03-13T11:29:48.1607354Z Machine name: 'swarm-runners-scaleset-hkss5-runner-fp6rp'
+end-workflow	Set up job	2026-03-13T11:29:48.1775755Z ##[group]GITHUB_TOKEN Permissions
+end-workflow	Set up job	2026-03-13T11:29:48.2085971Z Actions: write
+end-workflow	Set up job	2026-03-13T11:29:48.2086748Z Contents: read
+end-workflow	Set up job	2026-03-13T11:29:48.2087226Z Metadata: read
+end-workflow	Set up job	2026-03-13T11:29:48.2087697Z ##[endgroup]
+end-workflow	Set up job	2026-03-13T11:29:48.2381290Z Secret source: Actions
+end-workflow	Set up job	2026-03-13T11:29:48.2382593Z Prepare workflow directory
+end-workflow	Set up job	2026-03-13T11:29:49.3538187Z Prepare all required actions
+end-workflow	Set up job	2026-03-13T11:29:49.3664075Z Getting action download info
+end-workflow	Set up job	2026-03-13T11:29:50.6984926Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+end-workflow	Set up job	2026-03-13T11:29:58.0267145Z Complete job name: end-workflow
+end-workflow	Checkout repository	﻿2026-03-13T11:29:59.9707591Z ##[group]Run actions/checkout@v4
+end-workflow	Checkout repository	2026-03-13T11:29:59.9813603Z with:
+end-workflow	Checkout repository	2026-03-13T11:29:59.9814584Z   fetch-depth: 0
+end-workflow	Checkout repository	2026-03-13T11:29:59.9815351Z   repository: Ka0s-Klaus/ka0s
+end-workflow	Checkout repository	2026-03-13T11:29:59.9816609Z   token: ***
+end-workflow	Checkout repository	2026-03-13T11:29:59.9817305Z   ssh-strict: true
+end-workflow	Checkout repository	2026-03-13T11:29:59.9818000Z   ssh-user: git
+end-workflow	Checkout repository	2026-03-13T11:29:59.9818741Z   persist-credentials: true
+end-workflow	Checkout repository	2026-03-13T11:29:59.9819759Z   clean: true
+end-workflow	Checkout repository	2026-03-13T11:29:59.9820513Z   sparse-checkout-cone-mode: true
+end-workflow	Checkout repository	2026-03-13T11:29:59.9821462Z   fetch-tags: false
+end-workflow	Checkout repository	2026-03-13T11:29:59.9822214Z   show-progress: true
+end-workflow	Checkout repository	2026-03-13T11:29:59.9822970Z   lfs: false
+end-workflow	Checkout repository	2026-03-13T11:29:59.9823646Z   submodules: false
+end-workflow	Checkout repository	2026-03-13T11:29:59.9824406Z   set-safe-directory: true
+end-workflow	Checkout repository	2026-03-13T11:29:59.9825844Z env:
+end-workflow	Checkout repository	2026-03-13T11:29:59.9826623Z   KAOS_MODULE: [Ka0S] Deploy Docs Portal
+end-workflow	Checkout repository	2026-03-13T11:29:59.9827605Z   KAOS_CODE: 23048504819
+end-workflow	Checkout repository	2026-03-13T11:29:59.9828374Z ##[endgroup]
+end-workflow	Checkout repository	2026-03-13T11:30:03.2695446Z Syncing repository: Ka0s-Klaus/ka0s
+end-workflow	Checkout repository	2026-03-13T11:30:03.2697549Z ##[group]Getting Git version info
+end-workflow	Checkout repository	2026-03-13T11:30:03.2698121Z Working directory is '/home/runner/_work/ka0s/ka0s'
+end-workflow	Checkout repository	2026-03-13T11:30:03.2699139Z [command]/usr/bin/git version
+end-workflow	Checkout repository	2026-03-13T11:30:03.2699467Z git version 2.53.0
+end-workflow	Checkout repository	2026-03-13T11:30:03.2799420Z ##[endgroup]
+end-workflow	Checkout repository	2026-03-13T11:30:03.2805307Z Temporarily overriding HOME='/home/runner/_work/_temp/199dd3ab-642f-496d-9973-da37602a48c2' before making global git config changes
+end-workflow	Checkout repository	2026-03-13T11:30:03.2806291Z Adding repository directory to the temporary git global config as a safe directory
+end-workflow	Checkout repository	2026-03-13T11:30:03.2807030Z [command]/usr/bin/git config --global --add safe.directory /home/runner/_work/ka0s/ka0s
+end-workflow	Checkout repository	2026-03-13T11:30:03.3688137Z Deleting the contents of '/home/runner/_work/ka0s/ka0s'
+end-workflow	Checkout repository	2026-03-13T11:30:03.3689056Z ##[group]Initializing the repository
+end-workflow	Checkout repository	2026-03-13T11:30:03.3689512Z [command]/usr/bin/git init /home/runner/_work/ka0s/ka0s
+end-workflow	Checkout repository	2026-03-13T11:30:03.7387806Z hint: Using 'master' as the name for the initial branch. This default branch name
+end-workflow	Checkout repository	2026-03-13T11:30:03.7810097Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+end-workflow	Checkout repository	2026-03-13T11:30:03.7811031Z hint: to use in all of your new repositories, which will suppress this warning,
+end-workflow	Checkout repository	2026-03-13T11:30:03.7811496Z hint: call:
+end-workflow	Checkout repository	2026-03-13T11:30:03.7811721Z hint:
+end-workflow	Checkout repository	2026-03-13T11:30:03.7812078Z hint: 	git config --global init.defaultBranch <name>
+end-workflow	Checkout repository	2026-03-13T11:30:03.7812452Z hint:
+end-workflow	Checkout repository	2026-03-13T11:30:03.7812839Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+end-workflow	Checkout repository	2026-03-13T11:30:03.7813484Z hint: 'development'. The just-created branch can be renamed via this command:
+end-workflow	Checkout repository	2026-03-13T11:30:03.7813954Z hint:
+end-workflow	Checkout repository	2026-03-13T11:30:03.7814235Z hint: 	git branch -m <name>
+end-workflow	Checkout repository	2026-03-13T11:30:03.7814522Z hint:
+end-workflow	Checkout repository	2026-03-13T11:30:03.7814950Z hint: Disable this message with "git config set advice.defaultBranchName false"
+end-workflow	Checkout repository	2026-03-13T11:30:03.7815588Z Initialized empty Git repository in /home/runner/_work/ka0s/ka0s/.git/
+end-workflow	Checkout repository	2026-03-13T11:30:03.7816894Z [command]/usr/bin/git remote add origin https://github.com/Ka0s-Klaus/ka0s
+end-workflow	Checkout repository	2026-03-13T11:30:04.0701026Z ##[endgroup]
+end-workflow	Checkout repository	2026-03-13T11:30:04.0702120Z ##[group]Disabling automatic garbage collection
+end-workflow	Checkout repository	2026-03-13T11:30:04.0703682Z [command]/usr/bin/git config --local gc.auto 0
+end-workflow	Checkout repository	2026-03-13T11:30:04.0965818Z ##[endgroup]
+end-workflow	Checkout repository	2026-03-13T11:30:04.0980837Z ##[group]Setting up auth
+end-workflow	Checkout repository	2026-03-13T11:30:04.0981696Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+end-workflow	Checkout repository	2026-03-13T11:30:04.1510569Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+end-workflow	Checkout repository	2026-03-13T11:30:04.5290305Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+end-workflow	Checkout repository	2026-03-13T11:30:04.5688044Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+end-workflow	Checkout repository	2026-03-13T11:30:04.9164371Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+end-workflow	Checkout repository	2026-03-13T11:30:04.9165572Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+end-workflow	Checkout repository	2026-03-13T11:30:05.2702054Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+end-workflow	Checkout repository	2026-03-13T11:30:05.7784074Z ##[endgroup]
+end-workflow	Checkout repository	2026-03-13T11:30:05.7785966Z ##[group]Fetching the repository
+end-workflow	Checkout repository	2026-03-13T11:30:05.7857235Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+end-workflow	Checkout repository	2026-03-13T11:35:45.3614240Z From https://github.com/Ka0s-Klaus/ka0s
+end-workflow	Checkout repository	2026-03-13T11:35:45.3746120Z  * [new branch]          F3450-modelo-operativo  -> origin/F3450-modelo-operativo
+end-workflow	Checkout repository	2026-03-13T11:35:45.3840323Z  * [new branch]          H3596-deploy-itop       -> origin/H3596-deploy-itop
+end-workflow	Checkout repository	2026-03-13T11:35:45.3841729Z  * [new branch]          H4170-flujo-detallado-zabbix---github -> origin/H4170-flujo-detallado-zabbix---github
+end-workflow	Checkout repository	2026-03-13T11:35:45.3842873Z  * [new branch]          H4191-request-cambios   -> origin/H4191-request-cambios
+end-workflow	Checkout repository	2026-03-13T11:35:45.3844590Z  * [new branch]          H4200-request-recomendaciones-de-auditoria -> origin/H4200-request-recomendaciones-de-auditoria
+end-workflow	Checkout repository	2026-03-13T11:35:45.3845753Z  * [new branch]          H4322-request-plan-de-pruebas-de-agentes -> origin/H4322-request-plan-de-pruebas-de-agentes
+end-workflow	Checkout repository	2026-03-13T11:35:45.3846774Z  * [new branch]          chore/incident-cancelation-guard -> origin/chore/incident-cancelation-guard
+end-workflow	Checkout repository	2026-03-13T11:35:45.4110538Z  * [new branch]          chore/itop-debug-list   -> origin/chore/itop-debug-list
+end-workflow	Checkout repository	2026-03-13T11:35:45.4112352Z  * [new branch]          chore/itop-debug-url-version -> origin/chore/itop-debug-url-version
+end-workflow	Checkout repository	2026-03-13T11:35:45.4125185Z  * [new branch]          chore/itop-debug-version -> origin/chore/itop-debug-version
+end-workflow	Checkout repository	2026-03-13T11:35:45.4153484Z  * [new branch]          chore/remove-itop-debug-list -> origin/chore/remove-itop-debug-list
+end-workflow	Checkout repository	2026-03-13T11:35:45.4183884Z  * [new branch]          feature/itop-branding   -> origin/feature/itop-branding
+end-workflow	Checkout repository	2026-03-13T11:35:45.4184706Z  * [new branch]          fix/cmdb-full-sync-sparse-checkout -> origin/fix/cmdb-full-sync-sparse-checkout
+end-workflow	Checkout repository	2026-03-13T11:35:45.4185465Z  * [new branch]          fix/itop-list-orgs-on-missing -> origin/fix/itop-list-orgs-on-missing
+end-workflow	Checkout repository	2026-03-13T11:35:45.4186114Z  * [new branch]          fix/itop-org-id-numeric -> origin/fix/itop-org-id-numeric
+end-workflow	Checkout repository	2026-03-13T11:35:45.4186662Z  * [new branch]          fix/itop-ssl-verify     -> origin/fix/itop-ssl-verify
+end-workflow	Checkout repository	2026-03-13T11:35:45.4187237Z  * [new branch]          fix/itop-use-version-in-url -> origin/fix/itop-use-version-in-url
+end-workflow	Checkout repository	2026-03-13T11:35:45.4325258Z  * [new branch]          fix/zabbix-logo-branding -> origin/fix/zabbix-logo-branding
+end-workflow	Checkout repository	2026-03-13T11:35:45.4325848Z  * [new branch]          main                    -> origin/main
+end-workflow	Checkout repository	2026-03-13T11:35:45.4326242Z  * [new tag]             0.0.0                   -> 0.0.0
+end-workflow	Checkout repository	2026-03-13T11:35:45.4326616Z  * [new tag]             0.0.1                   -> 0.0.1
+end-workflow	Checkout repository	2026-03-13T11:35:45.4327366Z  * [new tag]             0.0.10                  -> 0.0.10
+end-workflow	Checkout repository	2026-03-13T11:35:45.4327713Z  * [new tag]             0.0.100                 -> 0.0.100
+end-workflow	Checkout repository	2026-03-13T11:35:45.4328065Z  * [new tag]             0.0.101                 -> 0.0.101
+end-workflow	Checkout repository	2026-03-13T11:35:45.4328413Z  * [new tag]             0.0.102                 -> 0.0.102
+end-workflow	Checkout repository	2026-03-13T11:35:45.4329048Z  * [new tag]             0.0.103                 -> 0.0.103
+end-workflow	Checkout repository	2026-03-13T11:35:45.4329451Z  * [new tag]             0.0.104                 -> 0.0.104
+end-workflow	Checkout repository	2026-03-13T11:35:45.4329798Z  * [new tag]             0.0.105                 -> 0.0.105
+end-workflow	Checkout repository	2026-03-13T11:35:45.4330219Z  * [new tag]             0.0.106                 -> 0.0.106
+end-workflow	Checkout repository	2026-03-13T11:35:45.4330614Z  * [new tag]             0.0.107                 -> 0.0.107
+end-workflow	Checkout repository	2026-03-13T11:35:45.4330964Z  * [new tag]             0.0.108                 -> 0.0.108
+end-workflow	Checkout repository	2026-03-13T11:35:45.4331309Z  * [new tag]             0.0.109                 -> 0.0.109
+end-workflow	Checkout repository	2026-03-13T11:35:45.4402927Z  * [new tag]             0.0.11                  -> 0.0.11
+end-workflow	Checkout repository	2026-03-13T11:35:45.4403426Z  * [new tag]             0.0.110                 -> 0.0.110
+end-workflow	Checkout repository	2026-03-13T11:35:45.4403783Z  * [new tag]             0.0.111                 -> 0.0.111
+end-workflow	Checkout repository	2026-03-13T11:35:45.4404138Z  * [new tag]             0.0.112                 -> 0.0.112
+end-workflow	Checkout repository	2026-03-13T11:35:45.4404545Z  * [new tag]             0.0.113                 -> 0.0.113
+end-workflow	Checkout repository	2026-03-13T11:35:45.4404887Z  * [new tag]             0.0.114                 -> 0.0.114
+end-workflow	Checkout repository	2026-03-13T11:35:45.4405234Z  * [new tag]             0.0.115                 -> 0.0.115
+end-workflow	Checkout repository	2026-03-13T11:35:45.4405579Z  * [new tag]             0.0.116                 -> 0.0.116
+end-workflow	Checkout repository	2026-03-13T11:35:45.4405924Z  * [new tag]             0.0.117                 -> 0.0.117
+end-workflow	Checkout repository	2026-03-13T11:35:45.4406264Z  * [new tag]             0.0.118                 -> 0.0.118
+end-workflow	Checkout repository	2026-03-13T11:35:45.4406615Z  * [new tag]             0.0.119                 -> 0.0.119
+end-workflow	Checkout repository	2026-03-13T11:35:45.4406973Z  * [new tag]             0.0.12                  -> 0.0.12
+end-workflow	Checkout repository	2026-03-13T11:35:45.4407325Z  * [new tag]             0.0.120                 -> 0.0.120
+end-workflow	Checkout repository	2026-03-13T11:35:45.4407673Z  * [new tag]             0.0.121                 -> 0.0.121
+end-workflow	Checkout repository	2026-03-13T11:35:45.4408013Z  * [new tag]             0.0.122                 -> 0.0.122
+end-workflow	Checkout repository	2026-03-13T11:35:45.4408379Z  * [new tag]             0.0.123                 -> 0.0.123
+end-workflow	Checkout repository	2026-03-13T11:35:45.4408724Z  * [new tag]             0.0.124                 -> 0.0.124
+end-workflow	Checkout repository	2026-03-13T11:35:45.4840213Z  * [new tag]             0.0.125                 -> 0.0.125
+end-workflow	Checkout repository	2026-03-13T11:35:45.4840660Z  * [new tag]             0.0.126                 -> 0.0.126
+end-workflow	Checkout repository	2026-03-13T11:35:45.4841011Z  * [new tag]             0.0.127                 -> 0.0.127
+end-workflow	Checkout repository	2026-03-13T11:35:45.4841360Z  * [new tag]             0.0.128                 -> 0.0.128
+end-workflow	Checkout repository	2026-03-13T11:35:45.4841704Z  * [new tag]             0.0.129                 -> 0.0.129
+end-workflow	Checkout repository	2026-03-13T11:35:45.4842052Z  * [new tag]             0.0.13                  -> 0.0.13
+end-workflow	Checkout repository	2026-03-13T11:35:45.4842427Z  * [new tag]             0.0.130                 -> 0.0.130
+end-workflow	Checkout repository	2026-03-13T11:35:45.4842791Z  * [new tag]             0.0.131                 -> 0.0.131
+end-workflow	Checkout repository	2026-03-13T11:35:45.4843142Z  * [new tag]             0.0.132                 -> 0.0.132
+end-workflow	Checkout repository	2026-03-13T11:35:45.4843489Z  * [new tag]             0.0.133                 -> 0.0.133
+end-workflow	Checkout repository	2026-03-13T11:35:45.4843842Z  * [new tag]             0.0.134                 -> 0.0.134
+end-workflow	Checkout repository	2026-03-13T11:35:45.4844183Z  * [new tag]             0.0.135                 -> 0.0.135
+end-workflow	Checkout repository	2026-03-13T11:35:45.5039841Z  * [new tag]             0.0.136                 -> 0.0.136
+end-workflow	Checkout repository	2026-03-13T11:35:45.5040316Z  * [new tag]             0.0.137                 -> 0.0.137
+end-workflow	Checkout repository	2026-03-13T11:35:45.5040683Z  * [new tag]             0.0.138                 -> 0.0.138
+end-workflow	Checkout repository	2026-03-13T11:35:45.5041036Z  * [new tag]             0.0.139                 -> 0.0.139
+end-workflow	Checkout repository	2026-03-13T11:35:45.5041384Z  * [new tag]             0.0.14                  -> 0.0.14
+end-workflow	Checkout repository	2026-03-13T11:35:45.5041786Z  * [new tag]             0.0.140                 -> 0.0.140
+end-workflow	Checkout repository	2026-03-13T11:35:45.5042541Z  * [new tag]             0.0.141                 -> 0.0.141
+end-workflow	Checkout repository	2026-03-13T11:35:45.5042890Z  * [new tag]             0.0.142                 -> 0.0.142
+end-workflow	Checkout repository	2026-03-13T11:35:45.5043233Z  * [new tag]             0.0.143                 -> 0.0.143
+end-workflow	Checkout repository	2026-03-13T11:35:45.5043579Z  * [new tag]             0.0.144                 -> 0.0.144
+end-workflow	Checkout repository	2026-03-13T11:35:45.5043922Z  * [new tag]             0.0.145                 -> 0.0.145
+end-workflow	Checkout repository	2026-03-13T11:35:45.5044265Z  * [new tag]             0.0.146                 -> 0.0.146
+end-workflow	Checkout repository	2026-03-13T11:35:45.5044609Z  * [new tag]             0.0.147                 -> 0.0.147
+end-workflow	Checkout repository	2026-03-13T11:35:45.5044946Z  * [new tag]             0.0.148                 -> 0.0.148
+end-workflow	Checkout repository	2026-03-13T11:35:45.5045290Z  * [new tag]             0.0.149                 -> 0.0.149
+end-workflow	Checkout repository	2026-03-13T11:35:45.5045639Z  * [new tag]             0.0.15                  -> 0.0.15
+end-workflow	Checkout repository	2026-03-13T11:35:45.5045987Z  * [new tag]             0.0.150                 -> 0.0.150
+end-workflow	Checkout repository	2026-03-13T11:35:45.5046558Z  * [new tag]             0.0.151                 -> 0.0.151
+end-workflow	Checkout repository	2026-03-13T11:35:45.5046919Z  * [new tag]             0.0.152                 -> 0.0.152
+end-workflow	Checkout repository	2026-03-13T11:35:45.5047261Z  * [new tag]             0.0.153                 -> 0.0.153
+end-workflow	Checkout repository	2026-03-13T11:35:45.5047599Z  * [new tag]             0.0.154                 -> 0.0.154
+end-workflow	Checkout repository	2026-03-13T11:35:45.5047946Z  * [new tag]             0.0.155                 -> 0.0.155
+end-workflow	Checkout repository	2026-03-13T11:35:45.5048289Z  * [new tag]             0.0.156                 -> 0.0.156
+end-workflow	Checkout repository	2026-03-13T11:35:45.5048633Z  * [new tag]             0.0.157                 -> 0.0.157
+end-workflow	Checkout repository	2026-03-13T11:35:45.5106057Z  * [new tag]             0.0.158                 -> 0.0.158
+end-workflow	Checkout repository	2026-03-13T11:35:45.5115978Z  * [new tag]             0.0.159                 -> 0.0.159
+end-workflow	Checkout repository	2026-03-13T11:35:45.5116598Z  * [new tag]             0.0.16                  -> 0.0.16
+end-workflow	Checkout repository	2026-03-13T11:35:45.5124868Z  * [new tag]             0.0.160                 -> 0.0.160
+end-workflow	Checkout repository	2026-03-13T11:35:45.5125309Z  * [new tag]             0.0.161                 -> 0.0.161
+end-workflow	Checkout repository	2026-03-13T11:35:45.5125674Z  * [new tag]             0.0.162                 -> 0.0.162
+end-workflow	Checkout repository	2026-03-13T11:35:45.5126023Z  * [new tag]             0.0.163                 -> 0.0.163
+end-workflow	Checkout repository	2026-03-13T11:35:45.5126372Z  * [new tag]             0.0.164                 -> 0.0.164
+end-workflow	Checkout repository	2026-03-13T11:35:45.5126720Z  * [new tag]             0.0.165                 -> 0.0.165
+end-workflow	Checkout repository	2026-03-13T11:35:45.5127074Z  * [new tag]             0.0.166                 -> 0.0.166
+end-workflow	Checkout repository	2026-03-13T11:35:45.5127427Z  * [new tag]             0.0.167                 -> 0.0.167
+end-workflow	Checkout repository	2026-03-13T11:35:45.5127812Z  * [new tag]             0.0.168                 -> 0.0.168
+end-workflow	Checkout repository	2026-03-13T11:35:45.5128169Z  * [new tag]             0.0.169                 -> 0.0.169
+end-workflow	Checkout repository	2026-03-13T11:35:45.5128519Z  * [new tag]             0.0.17                  -> 0.0.17
+end-workflow	Checkout repository	2026-03-13T11:35:45.5159539Z  * [new tag]             0.0.170                 -> 0.0.170
+end-workflow	Checkout repository	2026-03-13T11:35:45.5160019Z  * [new tag]             0.0.171                 -> 0.0.171
+end-workflow	Checkout repository	2026-03-13T11:35:45.5160430Z  * [new tag]             0.0.172                 -> 0.0.172
+end-workflow	Checkout repository	2026-03-13T11:35:45.5160811Z  * [new tag]             0.0.173                 -> 0.0.173
+end-workflow	Checkout repository	2026-03-13T11:35:45.5161192Z  * [new tag]             0.0.174                 -> 0.0.174
+end-workflow	Checkout repository	2026-03-13T11:35:45.5161555Z  * [new tag]             0.0.175                 -> 0.0.175
+end-workflow	Checkout repository	2026-03-13T11:35:45.5161918Z  * [new tag]             0.0.176                 -> 0.0.176
+end-workflow	Checkout repository	2026-03-13T11:35:45.5162302Z  * [new tag]             0.0.177                 -> 0.0.177
+end-workflow	Checkout repository	2026-03-13T11:35:45.5162666Z  * [new tag]             0.0.178                 -> 0.0.178
+end-workflow	Checkout repository	2026-03-13T11:35:45.5163055Z  * [new tag]             0.0.179                 -> 0.0.179
+end-workflow	Checkout repository	2026-03-13T11:35:45.5576301Z  * [new tag]             0.0.18                  -> 0.0.18
+end-workflow	Checkout repository	2026-03-13T11:35:45.5576833Z  * [new tag]             0.0.19                  -> 0.0.19
+end-workflow	Checkout repository	2026-03-13T11:35:45.5577188Z  * [new tag]             0.0.2                   -> 0.0.2
+end-workflow	Checkout repository	2026-03-13T11:35:45.5577571Z  * [new tag]             0.0.20                  -> 0.0.20
+end-workflow	Checkout repository	2026-03-13T11:35:45.5599749Z  * [new tag]             0.0.21                  -> 0.0.21
+end-workflow	Checkout repository	2026-03-13T11:35:45.5600215Z  * [new tag]             0.0.22                  -> 0.0.22
+end-workflow	Checkout repository	2026-03-13T11:35:45.5600586Z  * [new tag]             0.0.23                  -> 0.0.23
+end-workflow	Checkout repository	2026-03-13T11:35:45.5600938Z  * [new tag]             0.0.24                  -> 0.0.24
+end-workflow	Checkout repository	2026-03-13T11:35:45.5601285Z  * [new tag]             0.0.25                  -> 0.0.25
+end-workflow	Checkout repository	2026-03-13T11:35:45.5601637Z  * [new tag]             0.0.26                  -> 0.0.26
+end-workflow	Checkout repository	2026-03-13T11:35:45.5601989Z  * [new tag]             0.0.27                  -> 0.0.27
+end-workflow	Checkout repository	2026-03-13T11:35:45.5729632Z  * [new tag]             0.0.28                  -> 0.0.28
+end-workflow	Checkout repository	2026-03-13T11:35:45.5730333Z  * [new tag]             0.0.29                  -> 0.0.29
+end-workflow	Checkout repository	2026-03-13T11:35:45.5730702Z  * [new tag]             0.0.3                   -> 0.0.3
+end-workflow	Checkout repository	2026-03-13T11:35:45.5731049Z  * [new tag]             0.0.30                  -> 0.0.30
+end-workflow	Checkout repository	2026-03-13T11:35:45.5731932Z  * [new tag]             0.0.31                  -> 0.0.31
+end-workflow	Checkout repository	2026-03-13T11:35:45.5732299Z  * [new tag]             0.0.32                  -> 0.0.32
+end-workflow	Checkout repository	2026-03-13T11:35:45.5732643Z  * [new tag]             0.0.33                  -> 0.0.33
+end-workflow	Checkout repository	2026-03-13T11:35:45.5732990Z  * [new tag]             0.0.34                  -> 0.0.34
+end-workflow	Checkout repository	2026-03-13T11:35:45.5733345Z  * [new tag]             0.0.35                  -> 0.0.35
+end-workflow	Checkout repository	2026-03-13T11:35:45.5733691Z  * [new tag]             0.0.36                  -> 0.0.36
+end-workflow	Checkout repository	2026-03-13T11:35:45.5734037Z  * [new tag]             0.0.37                  -> 0.0.37
+end-workflow	Checkout repository	2026-03-13T11:35:45.5734376Z  * [new tag]             0.0.38                  -> 0.0.38
+end-workflow	Checkout repository	2026-03-13T11:35:45.5734725Z  * [new tag]             0.0.39                  -> 0.0.39
+end-workflow	Checkout repository	2026-03-13T11:35:45.5735068Z  * [new tag]             0.0.4                   -> 0.0.4
+end-workflow	Checkout repository	2026-03-13T11:35:45.5735414Z  * [new tag]             0.0.40                  -> 0.0.40
+end-workflow	Checkout repository	2026-03-13T11:35:45.5735752Z  * [new tag]             0.0.41                  -> 0.0.41
+end-workflow	Checkout repository	2026-03-13T11:35:45.5736123Z  * [new tag]             0.0.42                  -> 0.0.42
+end-workflow	Checkout repository	2026-03-13T11:35:45.5736480Z  * [new tag]             0.0.43                  -> 0.0.43
+end-workflow	Checkout repository	2026-03-13T11:35:45.5736821Z  * [new tag]             0.0.44                  -> 0.0.44
+end-workflow	Checkout repository	2026-03-13T11:35:45.5737171Z  * [new tag]             0.0.45                  -> 0.0.45
+end-workflow	Checkout repository	2026-03-13T11:35:45.5737521Z  * [new tag]             0.0.46                  -> 0.0.46
+end-workflow	Checkout repository	2026-03-13T11:35:45.5737876Z  * [new tag]             0.0.47                  -> 0.0.47
+end-workflow	Checkout repository	2026-03-13T11:35:45.5738232Z  * [new tag]             0.0.48                  -> 0.0.48
+end-workflow	Checkout repository	2026-03-13T11:35:45.5738581Z  * [new tag]             0.0.49                  -> 0.0.49
+end-workflow	Checkout repository	2026-03-13T11:35:45.5983794Z  * [new tag]             0.0.5                   -> 0.0.5
+end-workflow	Checkout repository	2026-03-13T11:35:45.5984394Z  * [new tag]             0.0.50                  -> 0.0.50
+end-workflow	Checkout repository	2026-03-13T11:35:45.5984860Z  * [new tag]             0.0.51                  -> 0.0.51
+end-workflow	Checkout repository	2026-03-13T11:35:45.5985249Z  * [new tag]             0.0.52                  -> 0.0.52
+end-workflow	Checkout repository	2026-03-13T11:35:45.5986554Z  * [new tag]             0.0.53                  -> 0.0.53
+end-workflow	Checkout repository	2026-03-13T11:35:45.5986905Z  * [new tag]             0.0.54                  -> 0.0.54
+end-workflow	Checkout repository	2026-03-13T11:35:45.5988185Z  * [new tag]             0.0.55                  -> 0.0.55
+end-workflow	Checkout repository	2026-03-13T11:35:45.5988536Z  * [new tag]             0.0.56                  -> 0.0.56
+end-workflow	Checkout repository	2026-03-13T11:35:45.5989123Z  * [new tag]             0.0.57                  -> 0.0.57
+end-workflow	Checkout repository	2026-03-13T11:35:45.5990374Z  * [new tag]             0.0.58                  -> 0.0.58
+end-workflow	Checkout repository	2026-03-13T11:35:45.5990738Z  * [new tag]             0.0.59                  -> 0.0.59
+end-workflow	Checkout repository	2026-03-13T11:35:45.5991212Z  * [new tag]             0.0.6                   -> 0.0.6
+end-workflow	Checkout repository	2026-03-13T11:35:45.5991558Z  * [new tag]             0.0.60                  -> 0.0.60
+end-workflow	Checkout repository	2026-03-13T11:35:45.5992844Z  * [new tag]             0.0.61                  -> 0.0.61
+end-workflow	Checkout repository	2026-03-13T11:35:45.5993193Z  * [new tag]             0.0.62                  -> 0.0.62
+end-workflow	Checkout repository	2026-03-13T11:35:45.5998382Z  * [new tag]             0.0.63                  -> 0.0.63
+end-workflow	Checkout repository	2026-03-13T11:35:45.6070947Z  * [new tag]             0.0.64                  -> 0.0.64
+end-workflow	Checkout repository	2026-03-13T11:35:45.6071361Z  * [new tag]             0.0.65                  -> 0.0.65
+end-workflow	Checkout repository	2026-03-13T11:35:45.6071744Z  * [new tag]             0.0.66                  -> 0.0.66
+end-workflow	Checkout repository	2026-03-13T11:35:45.6072096Z  * [new tag]             0.0.67                  -> 0.0.67
+end-workflow	Checkout repository	2026-03-13T11:35:45.6072451Z  * [new tag]             0.0.68                  -> 0.0.68
+end-workflow	Checkout repository	2026-03-13T11:35:45.6072801Z  * [new tag]             0.0.69                  -> 0.0.69
+end-workflow	Checkout repository	2026-03-13T11:35:45.6073156Z  * [new tag]             0.0.7                   -> 0.0.7
+end-workflow	Checkout repository	2026-03-13T11:35:45.6073520Z  * [new tag]             0.0.70                  -> 0.0.70
+end-workflow	Checkout repository	2026-03-13T11:35:45.6073890Z  * [new tag]             0.0.71                  -> 0.0.71
+end-workflow	Checkout repository	2026-03-13T11:35:45.6074248Z  * [new tag]             0.0.72                  -> 0.0.72
+end-workflow	Checkout repository	2026-03-13T11:35:45.6074949Z  * [new tag]             0.0.73                  -> 0.0.73
+end-workflow	Checkout repository	2026-03-13T11:35:45.6075312Z  * [new tag]             0.0.74                  -> 0.0.74
+end-workflow	Checkout repository	2026-03-13T11:35:45.6075652Z  * [new tag]             0.0.75                  -> 0.0.75
+end-workflow	Checkout repository	2026-03-13T11:35:45.6076005Z  * [new tag]             0.0.76                  -> 0.0.76
+end-workflow	Checkout repository	2026-03-13T11:35:45.6076357Z  * [new tag]             0.0.77                  -> 0.0.77
+end-workflow	Checkout repository	2026-03-13T11:35:45.6076853Z  * [new tag]             0.0.78                  -> 0.0.78
+end-workflow	Checkout repository	2026-03-13T11:35:45.6077207Z  * [new tag]             0.0.79                  -> 0.0.79
+end-workflow	Checkout repository	2026-03-13T11:35:45.6077550Z  * [new tag]             0.0.8                   -> 0.0.8
+end-workflow	Checkout repository	2026-03-13T11:35:45.6077896Z  * [new tag]             0.0.80                  -> 0.0.80
+end-workflow	Checkout repository	2026-03-13T11:35:45.6078244Z  * [new tag]             0.0.81                  -> 0.0.81
+end-workflow	Checkout repository	2026-03-13T11:35:45.6078590Z  * [new tag]             0.0.82                  -> 0.0.82
+end-workflow	Checkout repository	2026-03-13T11:35:45.6089346Z  * [new tag]             0.0.83                  -> 0.0.83
+end-workflow	Checkout repository	2026-03-13T11:35:45.6089776Z  * [new tag]             0.0.84                  -> 0.0.84
+end-workflow	Checkout repository	2026-03-13T11:35:45.6090146Z  * [new tag]             0.0.85                  -> 0.0.85
+end-workflow	Checkout repository	2026-03-13T11:35:45.6090491Z  * [new tag]             0.0.86                  -> 0.0.86
+end-workflow	Checkout repository	2026-03-13T11:35:45.6090829Z  * [new tag]             0.0.87                  -> 0.0.87
+end-workflow	Checkout repository	2026-03-13T11:35:45.6091179Z  * [new tag]             0.0.88                  -> 0.0.88
+end-workflow	Checkout repository	2026-03-13T11:35:45.6091520Z  * [new tag]             0.0.89                  -> 0.0.89
+end-workflow	Checkout repository	2026-03-13T11:35:45.6091869Z  * [new tag]             0.0.9                   -> 0.0.9
+end-workflow	Checkout repository	2026-03-13T11:35:45.6092216Z  * [new tag]             0.0.90                  -> 0.0.90
+end-workflow	Checkout repository	2026-03-13T11:35:45.6092568Z  * [new tag]             0.0.91                  -> 0.0.91
+end-workflow	Checkout repository	2026-03-13T11:35:45.6092919Z  * [new tag]             0.0.92                  -> 0.0.92
+end-workflow	Checkout repository	2026-03-13T11:35:45.6093269Z  * [new tag]             0.0.93                  -> 0.0.93
+end-workflow	Checkout repository	2026-03-13T11:35:45.6093618Z  * [new tag]             0.0.94                  -> 0.0.94
+end-workflow	Checkout repository	2026-03-13T11:35:45.6093962Z  * [new tag]             0.0.95                  -> 0.0.95
+end-workflow	Checkout repository	2026-03-13T11:35:45.6094322Z  * [new tag]             0.0.96                  -> 0.0.96
+end-workflow	Checkout repository	2026-03-13T11:35:45.6094669Z  * [new tag]             0.0.97                  -> 0.0.97
+end-workflow	Checkout repository	2026-03-13T11:35:45.6095029Z  * [new tag]             0.0.98                  -> 0.0.98
+end-workflow	Checkout repository	2026-03-13T11:35:45.6095390Z  * [new tag]             0.0.99                  -> 0.0.99
+end-workflow	Checkout repository	2026-03-13T11:35:45.6095745Z  * [new tag]             0.1.0                   -> 0.1.0
+end-workflow	Checkout repository	2026-03-13T11:35:45.6096097Z  * [new tag]             0.1.1                   -> 0.1.1
+end-workflow	Checkout repository	2026-03-13T11:35:45.6096444Z  * [new tag]             0.2.0                   -> 0.2.0
+end-workflow	Checkout repository	2026-03-13T11:35:45.6096804Z  * [new tag]             0.3.0                   -> 0.3.0
+end-workflow	Checkout repository	2026-03-13T11:35:45.6097158Z  * [new tag]             0.3.1                   -> 0.3.1
+end-workflow	Checkout repository	2026-03-13T11:35:45.6097515Z  * [new tag]             0.3.10                  -> 0.3.10
+end-workflow	Checkout repository	2026-03-13T11:35:45.6097896Z  * [new tag]             0.3.11                  -> 0.3.11
+end-workflow	Checkout repository	2026-03-13T11:35:45.6098623Z  * [new tag]             0.3.12                  -> 0.3.12
+end-workflow	Checkout repository	2026-03-13T11:35:45.6109284Z  * [new tag]             0.3.13                  -> 0.3.13
+end-workflow	Checkout repository	2026-03-13T11:35:45.6109664Z  * [new tag]             0.3.14                  -> 0.3.14
+end-workflow	Checkout repository	2026-03-13T11:35:45.6110015Z  * [new tag]             0.3.15                  -> 0.3.15
+end-workflow	Checkout repository	2026-03-13T11:35:45.6110356Z  * [new tag]             0.3.16                  -> 0.3.16
+end-workflow	Checkout repository	2026-03-13T11:35:45.6110701Z  * [new tag]             0.3.17                  -> 0.3.17
+end-workflow	Checkout repository	2026-03-13T11:35:45.6111051Z  * [new tag]             0.3.2                   -> 0.3.2
+end-workflow	Checkout repository	2026-03-13T11:35:45.6111389Z  * [new tag]             0.3.3                   -> 0.3.3
+end-workflow	Checkout repository	2026-03-13T11:35:45.6111730Z  * [new tag]             0.3.4                   -> 0.3.4
+end-workflow	Checkout repository	2026-03-13T11:35:45.6112068Z  * [new tag]             0.3.5                   -> 0.3.5
+end-workflow	Checkout repository	2026-03-13T11:35:45.6112405Z  * [new tag]             0.3.6                   -> 0.3.6
+end-workflow	Checkout repository	2026-03-13T11:35:45.6113081Z  * [new tag]             0.3.7                   -> 0.3.7
+end-workflow	Checkout repository	2026-03-13T11:35:45.6113431Z  * [new tag]             0.3.8                   -> 0.3.8
+end-workflow	Checkout repository	2026-03-13T11:35:45.6113769Z  * [new tag]             0.3.9                   -> 0.3.9
+end-workflow	Checkout repository	2026-03-13T11:35:45.6114118Z  * [new tag]             0.4.0                   -> 0.4.0
+end-workflow	Checkout repository	2026-03-13T11:35:45.6114455Z  * [new tag]             0.4.1                   -> 0.4.1
+end-workflow	Checkout repository	2026-03-13T11:35:45.6114794Z  * [new tag]             0.4.2                   -> 0.4.2
+end-workflow	Checkout repository	2026-03-13T11:35:45.6115134Z  * [new tag]             0.4.3                   -> 0.4.3
+end-workflow	Checkout repository	2026-03-13T11:35:45.6115511Z  * [new tag]             0.4.4                   -> 0.4.4
+end-workflow	Checkout repository	2026-03-13T11:35:45.6115848Z  * [new tag]             0.4.5                   -> 0.4.5
+end-workflow	Checkout repository	2026-03-13T11:35:45.6116193Z  * [new tag]             0.4.6                   -> 0.4.6
+end-workflow	Checkout repository	2026-03-13T11:35:45.6116535Z  * [new tag]             0.4.7                   -> 0.4.7
+end-workflow	Checkout repository	2026-03-13T11:35:45.6116872Z  * [new tag]             0.4.8                   -> 0.4.8
+end-workflow	Checkout repository	2026-03-13T11:35:45.6117218Z  * [new tag]             0.4.9                   -> 0.4.9
+end-workflow	Checkout repository	2026-03-13T11:35:45.6117560Z  * [new tag]             0.5.0                   -> 0.5.0
+end-workflow	Checkout repository	2026-03-13T11:35:45.6117901Z  * [new tag]             0.5.1                   -> 0.5.1
+end-workflow	Checkout repository	2026-03-13T11:35:45.6118238Z  * [new tag]             0.5.2                   -> 0.5.2
+end-workflow	Checkout repository	2026-03-13T11:35:45.6118586Z  * [new tag]             0.6.0                   -> 0.6.0
+end-workflow	Checkout repository	2026-03-13T11:35:45.6169960Z  * [new tag]             0.6.1                   -> 0.6.1
+end-workflow	Checkout repository	2026-03-13T11:35:45.6170974Z  * [new tag]             0.6.2                   -> 0.6.2
+end-workflow	Checkout repository	2026-03-13T11:35:45.6171523Z  * [new tag]             0.6.3                   -> 0.6.3
+end-workflow	Checkout repository	2026-03-13T11:35:45.6171889Z  * [new tag]             0.6.4                   -> 0.6.4
+end-workflow	Checkout repository	2026-03-13T11:35:45.6172364Z  * [new tag]             0.6.5                   -> 0.6.5
+end-workflow	Checkout repository	2026-03-13T11:35:45.6172716Z  * [new tag]             0.6.6                   -> 0.6.6
+end-workflow	Checkout repository	2026-03-13T11:35:45.6174003Z [command]/usr/bin/git branch --list --remote origin/main
+end-workflow	Checkout repository	2026-03-13T11:35:45.6174367Z   origin/main
+end-workflow	Checkout repository	2026-03-13T11:35:45.6175041Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+end-workflow	Checkout repository	2026-03-13T11:35:45.6175414Z 89611024184f2ef6d1f7ba138d4a0cd4db486ee8
+end-workflow	Checkout repository	2026-03-13T11:35:45.6176525Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules origin +ea20b83123623d1722e2070575feb5442d02d731:refs/remotes/origin/main
+end-workflow	Checkout repository	2026-03-13T11:35:45.7286056Z From https://github.com/Ka0s-Klaus/ka0s
+end-workflow	Checkout repository	2026-03-13T11:35:45.7289477Z  + 896110241...ea20b8312 ea20b83123623d1722e2070575feb5442d02d731 -> origin/main  (forced update)
+end-workflow	Checkout repository	2026-03-13T11:35:46.0404643Z ##[endgroup]
+end-workflow	Checkout repository	2026-03-13T11:35:46.0473546Z ##[group]Determining the checkout info
+end-workflow	Checkout repository	2026-03-13T11:35:46.0479848Z ##[endgroup]
+end-workflow	Checkout repository	2026-03-13T11:35:46.0536069Z [command]/usr/bin/git sparse-checkout disable
+end-workflow	Checkout repository	2026-03-13T11:35:46.5774147Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+end-workflow	Checkout repository	2026-03-13T11:35:46.6369984Z ##[group]Checking out the ref
+end-workflow	Checkout repository	2026-03-13T11:35:46.6390740Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+end-workflow	Checkout repository	2026-03-13T11:35:47.7210185Z Updating files:  19% (725/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:47.8591752Z Updating files:  20% (741/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:48.0192688Z Updating files:  21% (778/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:48.1150936Z Updating files:  22% (815/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:48.2627925Z Updating files:  23% (852/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:48.3449568Z Updating files:  24% (889/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:48.3731932Z Updating files:  25% (926/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:48.4311035Z Updating files:  26% (963/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:48.4692380Z Updating files:  27% (1000/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:48.5179934Z Updating files:  28% (1037/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:48.6572584Z Updating files:  29% (1074/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:48.8241461Z Updating files:  30% (1111/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:48.9462000Z Updating files:  30% (1116/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:49.1231840Z Updating files:  31% (1148/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:49.1786968Z Updating files:  32% (1185/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:49.2438144Z Updating files:  33% (1222/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:49.2576492Z Updating files:  34% (1260/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:49.3063403Z Updating files:  35% (1297/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:49.3272443Z Updating files:  36% (1334/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:49.3486514Z Updating files:  37% (1371/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:49.4435192Z Updating files:  38% (1408/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:49.4562642Z Updating files:  39% (1445/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:49.4696841Z Updating files:  40% (1482/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:49.4752955Z Updating files:  41% (1519/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:49.4766612Z Updating files:  42% (1556/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:49.4805440Z Updating files:  43% (1593/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:49.4842275Z Updating files:  44% (1630/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:49.4876193Z Updating files:  45% (1667/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:49.4910987Z Updating files:  46% (1704/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:49.4945510Z Updating files:  47% (1741/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:49.4981722Z Updating files:  48% (1778/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:49.5181204Z Updating files:  49% (1815/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:49.5238004Z Updating files:  50% (1852/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:49.5289690Z Updating files:  51% (1889/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:49.5393549Z Updating files:  52% (1926/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:49.6618132Z Updating files:  53% (1963/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:49.6729811Z Updating files:  54% (2000/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:49.6879671Z Updating files:  55% (2037/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:49.6923203Z Updating files:  56% (2074/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:49.7011170Z Updating files:  56% (2075/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:49.7070735Z Updating files:  57% (2111/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:49.7159900Z Updating files:  58% (2148/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:49.7219545Z Updating files:  59% (2185/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:49.9080810Z Updating files:  60% (2222/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:49.9225498Z Updating files:  61% (2259/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:49.9328708Z Updating files:  62% (2296/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:49.9432825Z Updating files:  63% (2333/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:49.9548215Z Updating files:  64% (2370/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:49.9644148Z Updating files:  65% (2407/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:49.9689910Z Updating files:  66% (2444/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:49.9776530Z Updating files:  67% (2482/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:50.4905299Z Updating files:  68% (2519/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:50.6975967Z Updating files:  69% (2556/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:50.7467680Z Updating files:  69% (2568/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:50.7721122Z Updating files:  70% (2593/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:50.8150953Z Updating files:  71% (2630/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:50.8389980Z Updating files:  72% (2667/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:50.9531681Z Updating files:  73% (2704/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:50.9792665Z Updating files:  74% (2741/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:50.9963680Z Updating files:  75% (2778/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:51.0204326Z Updating files:  76% (2815/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:51.6900279Z Updating files:  77% (2852/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:52.0700069Z Updating files:  77% (2869/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:52.2861362Z Updating files:  78% (2889/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:52.3472884Z Updating files:  79% (2926/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:52.3608024Z Updating files:  80% (2963/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:52.3793702Z Updating files:  81% (3000/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:52.7652162Z Updating files:  82% (3037/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:53.2901063Z Updating files:  82% (3051/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:53.3051615Z Updating files:  83% (3074/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:53.3089475Z Updating files:  84% (3111/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:53.3261616Z Updating files:  85% (3148/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:53.4012382Z Updating files:  86% (3185/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:53.4563413Z Updating files:  87% (3222/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:53.5090691Z Updating files:  88% (3259/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:53.6419822Z Updating files:  89% (3296/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:53.6973577Z Updating files:  90% (3333/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:53.7421265Z Updating files:  90% (3349/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:53.8987245Z Updating files:  91% (3370/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:53.9541952Z Updating files:  92% (3407/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:54.0425937Z Updating files:  93% (3444/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:54.1155828Z Updating files:  94% (3481/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:54.2770537Z Updating files:  95% (3518/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:54.7406009Z Updating files:  96% (3555/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:54.7474548Z Updating files:  96% (3564/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:55.0224384Z Updating files:  97% (3592/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:55.0281220Z Updating files:  98% (3629/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:56.2334860Z Updating files:  99% (3666/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:56.2335575Z Updating files: 100% (3703/3703)
+end-workflow	Checkout repository	2026-03-13T11:35:56.2336540Z Updating files: 100% (3703/3703), done.
+end-workflow	Checkout repository	2026-03-13T11:35:56.4079965Z Switched to a new branch 'main'
+end-workflow	Checkout repository	2026-03-13T11:35:56.4231661Z branch 'main' set up to track 'origin/main'.
+end-workflow	Checkout repository	2026-03-13T11:35:56.4764568Z ##[endgroup]
+end-workflow	Checkout repository	2026-03-13T11:35:56.5184888Z [command]/usr/bin/git log -1 --format=%H
+end-workflow	Checkout repository	2026-03-13T11:35:56.5485463Z ea20b83123623d1722e2070575feb5442d02d731
+end-workflow	Install GH CLI	﻿2026-03-13T11:35:56.9252650Z Prepare all required actions
+end-workflow	Install GH CLI	2026-03-13T11:35:56.9851327Z ##[group]Run ./.github/actions/install-gh-cli
+end-workflow	Install GH CLI	2026-03-13T11:35:56.9851727Z env:
+end-workflow	Install GH CLI	2026-03-13T11:35:56.9851970Z   KAOS_MODULE: [Ka0S] Deploy Docs Portal
+end-workflow	Install GH CLI	2026-03-13T11:35:56.9852302Z   KAOS_CODE: 23048504819
+end-workflow	Install GH CLI	2026-03-13T11:35:56.9852533Z ##[endgroup]
+end-workflow	Install GH CLI	2026-03-13T11:35:57.1027325Z ##[group]Run type -p curl >/dev/null || (sudo apt-get update && sudo apt-get install curl -y)
+end-workflow	Install GH CLI	2026-03-13T11:35:57.1028131Z [36;1mtype -p curl >/dev/null || (sudo apt-get update && sudo apt-get install curl -y)[0m
+end-workflow	Install GH CLI	2026-03-13T11:35:57.1069749Z [36;1mcurl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \[0m
+end-workflow	Install GH CLI	2026-03-13T11:35:57.1070925Z [36;1m&& sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \[0m
+end-workflow	Install GH CLI	2026-03-13T11:35:57.1072168Z [36;1m&& echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \[0m
+end-workflow	Install GH CLI	2026-03-13T11:35:57.1073366Z [36;1m&& sudo apt-get update \[0m
+end-workflow	Install GH CLI	2026-03-13T11:35:57.1073687Z [36;1m&& sudo apt-get install gh -y[0m
+end-workflow	Install GH CLI	2026-03-13T11:35:57.1193334Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+end-workflow	Install GH CLI	2026-03-13T11:35:57.1193726Z env:
+end-workflow	Install GH CLI	2026-03-13T11:35:57.1193948Z   KAOS_MODULE: [Ka0S] Deploy Docs Portal
+end-workflow	Install GH CLI	2026-03-13T11:35:57.1194225Z   KAOS_CODE: 23048504819
+end-workflow	Install GH CLI	2026-03-13T11:35:57.1194453Z ##[endgroup]
+end-workflow	Install GH CLI	2026-03-13T11:35:57.8981110Z 4+1 records in
+end-workflow	Install GH CLI	2026-03-13T11:35:57.8985473Z 4+1 records out
+end-workflow	Install GH CLI	2026-03-13T11:35:57.8986536Z 2270 bytes (2.3 kB, 2.2 KiB) copied, 0.000170189 s, 13.3 MB/s
+end-workflow	Install GH CLI	2026-03-13T11:35:59.6653208Z Get:1 http://archive.ubuntu.com/ubuntu noble InRelease [256 kB]
+end-workflow	Install GH CLI	2026-03-13T11:35:59.6730490Z Get:2 http://security.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+end-workflow	Install GH CLI	2026-03-13T11:35:59.8418414Z Get:3 https://cli.github.com/packages stable InRelease [3917 B]
+end-workflow	Install GH CLI	2026-03-13T11:35:59.8858356Z Get:4 http://archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+end-workflow	Install GH CLI	2026-03-13T11:35:59.9742321Z Get:5 http://archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+end-workflow	Install GH CLI	2026-03-13T11:36:00.0025057Z Get:6 https://ppa.launchpadcontent.net/git-core/ppa/ubuntu noble InRelease [24.3 kB]
+end-workflow	Install GH CLI	2026-03-13T11:36:00.3912466Z Get:7 http://security.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1261 kB]
+end-workflow	Install GH CLI	2026-03-13T11:36:00.7563011Z Get:8 http://security.ubuntu.com/ubuntu noble-security/multiverse amd64 Packages [34.8 kB]
+end-workflow	Install GH CLI	2026-03-13T11:36:00.8556344Z Get:9 http://security.ubuntu.com/ubuntu noble-security/main amd64 Packages [1906 kB]
+end-workflow	Install GH CLI	2026-03-13T11:36:00.9057543Z Get:10 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages [1808 kB]
+end-workflow	Install GH CLI	2026-03-13T11:36:01.1683861Z Get:11 http://security.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [3315 kB]
+end-workflow	Install GH CLI	2026-03-13T11:36:01.3890225Z Get:12 http://archive.ubuntu.com/ubuntu noble/restricted amd64 Packages [117 kB]
+end-workflow	Install GH CLI	2026-03-13T11:36:01.4654719Z Get:13 http://archive.ubuntu.com/ubuntu noble/multiverse amd64 Packages [331 kB]
+end-workflow	Install GH CLI	2026-03-13T11:36:01.6200130Z Get:14 http://archive.ubuntu.com/ubuntu noble/universe amd64 Packages [19.3 MB]
+end-workflow	Install GH CLI	2026-03-13T11:36:02.0411666Z Get:15 https://cli.github.com/packages stable/main amd64 Packages [357 B]
+end-workflow	Install GH CLI	2026-03-13T11:36:02.9366740Z Get:16 https://ppa.launchpadcontent.net/git-core/ppa/ubuntu noble/main amd64 Packages [2992 B]
+end-workflow	Install GH CLI	2026-03-13T11:36:05.4096643Z Get:17 http://archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [3486 kB]
+end-workflow	Install GH CLI	2026-03-13T11:36:06.0630287Z Get:18 http://archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Packages [38.1 kB]
+end-workflow	Install GH CLI	2026-03-13T11:36:06.2060252Z Get:19 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [2027 kB]
+end-workflow	Install GH CLI	2026-03-13T11:36:06.4930089Z Get:20 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [2287 kB]
+end-workflow	Install GH CLI	2026-03-13T11:36:06.8225365Z Get:21 http://archive.ubuntu.com/ubuntu noble-backports/universe amd64 Packages [37.7 kB]
+end-workflow	Install GH CLI	2026-03-13T11:36:06.8611661Z Get:22 http://archive.ubuntu.com/ubuntu noble-backports/main amd64 Packages [49.5 kB]
+end-workflow	Install GH CLI	2026-03-13T11:36:06.9360323Z Get:23 http://archive.ubuntu.com/ubuntu noble-backports/multiverse amd64 Packages [695 B]
+end-workflow	Install GH CLI	2026-03-13T11:36:12.1334112Z Fetched 36.7 MB in 12s (3087 kB/s)
+end-workflow	Install GH CLI	2026-03-13T11:36:15.2781106Z Reading package lists...
+end-workflow	Install GH CLI	2026-03-13T11:36:19.6819947Z Reading package lists...
+end-workflow	Install GH CLI	2026-03-13T11:36:20.0520425Z Building dependency tree...
+end-workflow	Install GH CLI	2026-03-13T11:36:20.0520790Z Reading state information...
+end-workflow	Install GH CLI	2026-03-13T11:36:31.6230116Z The following NEW packages will be installed:
+end-workflow	Install GH CLI	2026-03-13T11:36:31.6286108Z   gh
+end-workflow	Install GH CLI	2026-03-13T11:36:31.8080676Z 0 upgraded, 1 newly installed, 0 to remove and 18 not upgraded.
+end-workflow	Install GH CLI	2026-03-13T11:36:31.8087354Z Need to get 14.0 MB of archives.
+end-workflow	Install GH CLI	2026-03-13T11:36:31.8144767Z After this operation, 39.0 MB of additional disk space will be used.
+end-workflow	Install GH CLI	2026-03-13T11:36:31.8146288Z Get:1 https://cli.github.com/packages stable/main amd64 gh amd64 2.88.1 [14.0 MB]
+end-workflow	Install GH CLI	2026-03-13T11:36:36.4510471Z debconf: delaying package configuration, since apt-utils is not installed
+end-workflow	Install GH CLI	2026-03-13T11:36:37.3319366Z Fetched 14.0 MB in 1s (9630 kB/s)
+end-workflow	Install GH CLI	2026-03-13T11:36:41.7367699Z Selecting previously unselected package gh.
+end-workflow	Install GH CLI	2026-03-13T11:36:41.7420911Z (Reading database ... 
+end-workflow	Install GH CLI	2026-03-13T11:36:41.7421288Z (Reading database ... 5%
+end-workflow	Install GH CLI	2026-03-13T11:36:41.7421567Z (Reading database ... 10%
+end-workflow	Install GH CLI	2026-03-13T11:36:41.7421830Z (Reading database ... 15%
+end-workflow	Install GH CLI	2026-03-13T11:36:41.7422095Z (Reading database ... 20%
+end-workflow	Install GH CLI	2026-03-13T11:36:41.7422518Z (Reading database ... 25%
+end-workflow	Install GH CLI	2026-03-13T11:36:41.7422797Z (Reading database ... 30%
+end-workflow	Install GH CLI	2026-03-13T11:36:41.7423168Z (Reading database ... 35%
+end-workflow	Install GH CLI	2026-03-13T11:36:41.7423434Z (Reading database ... 40%
+end-workflow	Install GH CLI	2026-03-13T11:36:41.7423705Z (Reading database ... 45%
+end-workflow	Install GH CLI	2026-03-13T11:36:41.7423960Z (Reading database ... 50%
+end-workflow	Install GH CLI	2026-03-13T11:36:41.7424283Z (Reading database ... 55%
+end-workflow	Install GH CLI	2026-03-13T11:36:41.7424554Z (Reading database ... 60%
+end-workflow	Install GH CLI	2026-03-13T11:36:41.7437687Z (Reading database ... 65%
+end-workflow	Install GH CLI	2026-03-13T11:36:41.7454877Z (Reading database ... 70%
+end-workflow	Install GH CLI	2026-03-13T11:36:41.7461479Z (Reading database ... 75%
+end-workflow	Install GH CLI	2026-03-13T11:36:41.7478377Z (Reading database ... 80%
+end-workflow	Install GH CLI	2026-03-13T11:36:41.7484327Z (Reading database ... 85%
+end-workflow	Install GH CLI	2026-03-13T11:36:41.7496724Z (Reading database ... 90%
+end-workflow	Install GH CLI	2026-03-13T11:36:41.7517837Z (Reading database ... 95%
+end-workflow	Install GH CLI	2026-03-13T11:36:41.7518624Z (Reading database ... 100%
+end-workflow	Install GH CLI	2026-03-13T11:36:41.7519283Z (Reading database ... 14387 files and directories currently installed.)
+end-workflow	Install GH CLI	2026-03-13T11:36:41.7525296Z Preparing to unpack .../archives/gh_2.88.1_amd64.deb ...
+end-workflow	Install GH CLI	2026-03-13T11:36:42.3184641Z Unpacking gh (2.88.1) ...
+end-workflow	Install GH CLI	2026-03-13T11:36:57.6633756Z Setting up gh (2.88.1) ...
+end-workflow	Trigger Inspector	﻿2026-03-13T11:37:05.4201612Z ##[group]Run gh workflow run inspector.yml \
+end-workflow	Trigger Inspector	2026-03-13T11:37:05.4202119Z [36;1mgh workflow run inspector.yml \[0m
+end-workflow	Trigger Inspector	2026-03-13T11:37:05.4202515Z [36;1m  -f workflow_name="Deploy Docs Portal" \[0m
+end-workflow	Trigger Inspector	2026-03-13T11:37:05.4202890Z [36;1m  -f run_id="23048504819" \[0m
+end-workflow	Trigger Inspector	2026-03-13T11:37:05.4203202Z [36;1m  -f status="success"[0m
+end-workflow	Trigger Inspector	2026-03-13T11:37:05.4217661Z shell: /usr/bin/bash -e {0}
+end-workflow	Trigger Inspector	2026-03-13T11:37:05.4217953Z env:
+end-workflow	Trigger Inspector	2026-03-13T11:37:05.4218177Z   KAOS_MODULE: [Ka0S] Deploy Docs Portal
+end-workflow	Trigger Inspector	2026-03-13T11:37:05.4218469Z   KAOS_CODE: 23048504819
+end-workflow	Trigger Inspector	2026-03-13T11:37:05.4219208Z   GH_TOKEN: ***
+end-workflow	Trigger Inspector	2026-03-13T11:37:05.4219440Z ##[endgroup]
+end-workflow	Trigger Inspector	2026-03-13T11:37:07.4442268Z https://github.com/Ka0s-Klaus/ka0s/actions/runs/23049076591
+end-workflow	Post Checkout repository	﻿2026-03-13T11:37:07.4586969Z Post job cleanup.
+end-workflow	Post Checkout repository	2026-03-13T11:37:07.6110712Z [command]/usr/bin/git version
+end-workflow	Post Checkout repository	2026-03-13T11:37:07.6166274Z git version 2.53.0
+end-workflow	Post Checkout repository	2026-03-13T11:37:07.6257564Z Temporarily overriding HOME='/home/runner/_work/_temp/a255d8c1-df1b-4cb2-b44a-8abb35e25701' before making global git config changes
+end-workflow	Post Checkout repository	2026-03-13T11:37:07.6259230Z Adding repository directory to the temporary git global config as a safe directory
+end-workflow	Post Checkout repository	2026-03-13T11:37:07.6265604Z [command]/usr/bin/git config --global --add safe.directory /home/runner/_work/ka0s/ka0s
+end-workflow	Post Checkout repository	2026-03-13T11:37:07.7841665Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+end-workflow	Post Checkout repository	2026-03-13T11:37:07.7915428Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+end-workflow	Post Checkout repository	2026-03-13T11:37:08.1012078Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+end-workflow	Post Checkout repository	2026-03-13T11:37:08.1127136Z http.https://github.com/.extraheader
+end-workflow	Post Checkout repository	2026-03-13T11:37:08.1191915Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+end-workflow	Post Checkout repository	2026-03-13T11:37:08.3768648Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+end-workflow	Post Checkout repository	2026-03-13T11:37:08.4726320Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+end-workflow	Post Checkout repository	2026-03-13T11:37:08.4827152Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+end-workflow	Complete job	﻿2026-03-13T11:37:09.0855031Z Cleaning up orphan processes
+end-workflow	Complete job	2026-03-13T11:37:09.1016564Z ##[warning]Node.js 20 actions are deprecated. The following actions are running on Node.js 20 and may not work as expected: actions/checkout@v4. Actions will be forced to run with Node.js 24 by default starting June 2nd, 2026. Please check if updated versions of these actions are available that support Node.js 24. To opt into Node.js 24 now, set the FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true environment variable on the runner or in your workflow file. Once Node.js 24 becomes the default, you can temporarily opt out by setting ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
