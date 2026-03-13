@@ -8,6 +8,7 @@ import hashlib
 import argparse
 import time
 from typing import List
+import json  # Added json for caching
 
 # Configuration
 # Support both DB_ and POSTGRES_ prefixes, prioritizing DB_ as used in workflows
@@ -24,6 +25,131 @@ EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL") or "nomic-embed-text"
 # Paths relative to where the script is run (project root)
 # Ingestion Strategy: Modular & Argument Driven
 # Usage: python ingest_local.py --module [docs|skills|infra|code|audit|compliance|devops|github|all]
+
+def process_file_to_cache(file_path: str, cache_file: str):
+    """
+    Process file, generate embeddings, and append to a JSONL cache file.
+    Does NOT connect to DB.
+    """
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+            
+        chunks = [content[i:i+2000] for i in range(0, len(content), 2000)]
+        
+        with open(cache_file, 'a', encoding='utf-8') as cf:
+            for i, chunk in enumerate(chunks):
+                if not chunk.strip():
+                    continue
+                
+                chunk_source = f"{file_path}#chunk{i}"
+                chunk_hash = calculate_hash(chunk)
+                
+                # Check against DB only for hash to skip processing if possible? 
+                # Ideally, we want to avoid DB here. But to be incremental, we need to know what's in DB.
+                # Optimization: We can download all hashes from DB once at start of script.
+                if chunk_hash in EXISTING_HASHES:
+                    logger.debug(f"Skipping unchanged chunk: {chunk_source}")
+                    continue
+
+                embedding = generate_embedding(chunk)
+                if not embedding:
+                    continue
+                
+                record = {
+                    "source": chunk_source,
+                    "content": chunk,
+                    "content_hash": chunk_hash,
+                    "embedding": embedding
+                }
+                cf.write(json.dumps(record) + "\n")
+                
+        logger.info(f"Processed file to cache: {file_path}")
+        
+    except Exception as e:
+        logger.error(f"Error processing file {file_path}: {e}")
+
+def load_existing_hashes():
+    """
+    Load all content_hashes from DB into a global set for fast lookup.
+    """
+    global EXISTING_HASHES
+    EXISTING_HASHES = set()
+    
+    conn = get_db_connection()
+    if not conn:
+        logger.warning("Could not connect to DB to load existing hashes. Full ingestion will run.")
+        return
+
+    try:
+        cur = conn.cursor()
+        # Check if table exists first
+        cur.execute("SELECT to_regclass('public.kaos_memory');")
+        if not cur.fetchone()[0]:
+             logger.info("Table kaos_memory does not exist yet. Empty hash set.")
+             return
+
+        logger.info("Loading existing hashes from DB...")
+        cur.execute("SELECT content_hash FROM kaos_memory")
+        rows = cur.fetchall()
+        for r in rows:
+            EXISTING_HASHES.add(r[0])
+        logger.info(f"Loaded {len(EXISTING_HASHES)} existing hashes.")
+        cur.close()
+        conn.close()
+    except Exception as e:
+        logger.error(f"Error loading hashes: {e}")
+
+def ingest_from_cache(cache_file: str):
+    """
+    Read JSONL cache file and bulk insert into DB.
+    """
+    if not os.path.exists(cache_file):
+        logger.info("No cache file found (no new content).")
+        return
+
+    logger.info(f"Starting bulk ingestion from {cache_file}...")
+    
+    conn = get_db_connection()
+    if not conn:
+        logger.critical("Failed to connect to DB for bulk ingestion.")
+        return
+        
+    cur = conn.cursor()
+    count = 0
+    try:
+        with open(cache_file, 'r', encoding='utf-8') as f:
+            for line in f:
+                record = json.loads(line)
+                
+                # Deduplication: Delete old version if source exists (since we have new content for it)
+                # Note: We rely on hash check in process_file_to_cache to avoid re-ingesting identical content.
+                # If we are here, it means content is new or changed (hash mismatch).
+                cur.execute("DELETE FROM kaos_memory WHERE source = %s", (record['source'],))
+                
+                cur.execute(
+                    "INSERT INTO kaos_memory (source, content, content_hash, embedding) VALUES (%s, %s, %s, %s)",
+                    (record['source'], record['content'], record['content_hash'], record['embedding'])
+                )
+                count += 1
+                if count % 100 == 0:
+                    conn.commit()
+                    logger.info(f"Committed {count} records...")
+        
+        conn.commit()
+        logger.info(f"Bulk ingestion complete. Total records inserted: {count}")
+    except Exception as e:
+        logger.error(f"Error during bulk ingestion: {e}")
+        conn.rollback()
+    finally:
+        cur.close()
+        conn.close()
+        # Clean up cache file
+        if os.path.exists(cache_file):
+            os.remove(cache_file)
+
+# Global set for hashes
+EXISTING_HASHES = set()
 
 # Define patterns per module
 MODULES = {
@@ -257,6 +383,10 @@ def calculate_hash(content: str) -> str:
     return hashlib.md5(content.encode('utf-8')).hexdigest()
 
 def process_file(file_path: str):
+    """
+    Deprecated: Direct ingestion. Use process_file_to_cache instead.
+    Kept for reference or single-file debugging.
+    """
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
             content = f.read()
@@ -321,15 +451,18 @@ def run_ingestion():
         
     if total_found == 0:
         logger.warning("⚠️ No files found in pre-scan. Check paths or git checkout.")
-    else:
-        logger.info(f"✅ Pre-scan complete. Total candidates: {total_found}")
+        return # Nothing to do
+
+    logger.info(f"✅ Pre-scan complete. Total candidates: {total_found}")
 
     ensure_model()
     init_db()
+    load_existing_hashes() # Pre-load hashes from DB
     
-    # REMOVED: TRUNCATE TABLE kaos_memory; 
-    # We now use incremental updates based on hash
-    
+    cache_file = "ingest_cache.jsonl"
+    if os.path.exists(cache_file):
+        os.remove(cache_file)
+        
     total_files = 0
     for pattern in PATTERNS:
         files = glob.glob(pattern, recursive=True)
@@ -338,9 +471,11 @@ def run_ingestion():
             # Skip hidden files or generated artifacts if necessary
             if "node_modules" in f or "__pycache__" in f:
                 continue
-            process_file(f)
+            process_file_to_cache(f, cache_file) # Changed to use cache
             total_files += 1
             
+    logger.info(f"Processing complete. Ingesting to DB...")
+    ingest_from_cache(cache_file) # Bulk insert
     logger.info(f"Ingestion complete. Total files processed: {total_files}")
 
 if __name__ == "__main__":
