@@ -43,6 +43,24 @@ INFO    -  Documentation built in 0.42 seconds
 INFO    -  [12:00:00] Serving on http://0.0.0.0:8000/
 ```
 
+## Características Avanzadas
+
+### Soporte para Diagramas (Mermaid)
+
+El portal soporta nativamente la renderización de diagramas **Mermaid**.
+
+**Ejemplo de uso en Markdown:**
+
+    ```mermaid
+    graph TD
+        A[Cliente] --> B(Load Balancer)
+        B --> C{Router}
+        C -->|/api| D[API Service]
+        C -->|/docs| E[Docs Portal]
+    ```
+
+Esto se renderizará automáticamente como un gráfico interactivo.
+
 ## Actualización de Contenido
 
 El despliegue actual utiliza un modelo de "Pull al inicio". Para actualizar el contenido reflejado en el portal:

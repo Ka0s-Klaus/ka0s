@@ -14,6 +14,7 @@ El portal sigue estrictamente la filosofía **Docs as Code**:
 
 - **Motor**: [MkDocs](https://www.mkdocs.org/)
 - **Tema**: [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/)
+- **Diagramas**: Mermaid.js (Nativo)
 - **Infraestructura**: Kubernetes (Namespace `docs-portal`)
 - **Despliegue**: GitOps (Pull & Serve)
 
