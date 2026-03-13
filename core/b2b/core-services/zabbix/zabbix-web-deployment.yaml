@@ -35,6 +35,9 @@ spec:
 
               if [ -f /branding/zabbix_logo.png ]; then
                 mkdir -p /work/ui/assets/img /work/assets/img
+                # Explicitly copy the logo to the location expected by the injected CSS
+                cp /branding/zabbix_logo.png /work/ui/assets/img/zabbix_logo.png 2>/dev/null || true
+                cp /branding/zabbix_logo.png /work/assets/img/zabbix_logo.png 2>/dev/null || true
                 # Replace ALL png logos related to Zabbix
                 find /work -type f \( -iname '*zabbix*.png' -o -iname '*logo*.png' \) -exec cp /branding/zabbix_logo.png {} \; 2>/dev/null || true
               fi
