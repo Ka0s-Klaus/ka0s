@@ -32,8 +32,8 @@ MODULES = {
         "README.md"
     ],
     "skills": [
-        ".trae/skills/**/SKILL.md",
-        ".trae/rules/**/*.md"
+        "compliance/trae/skills/**/SKILL.md",
+        "compliance/trae/rules/**/*.md"
     ],
     "infra": [
         "core/b2b/**/*.yaml",
