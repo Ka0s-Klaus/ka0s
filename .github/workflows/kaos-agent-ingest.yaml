@@ -28,13 +28,39 @@ on:
       - 'core/b2b/**'
       - '.github/workflows/**'
 
+permissions:
+  contents: read
+  issues: write # Required for handle-failure
+  actions: write # Required for end-workflow trigger
+
+env:
+  KAOS_MODULE: "Agent Ingest"
+  KAOS_CODE: ${{ github.run_id }}
+  KAOS_ACTOR: ${{ github.actor }}
+  # Global DB Config
+  DB_HOST: "postgres-ia.core-services.svc.cluster.local"
+  DB_PORT: "5432"
+  DB_NAME: "kaos_memory"
+  DB_USER: "postgres"
+  # Secrets must be passed in jobs, but defined here for reference
+  
 jobs:
-  ingest:
+  # -----------------------------------------------------------------------------
+  # JOB 1: CORE EXECUTION
+  # -----------------------------------------------------------------------------
+  core-execution:
+    name: Ingest Execution
     runs-on: swarm-runners-scaleset
     timeout-minutes: 360
+    permissions:
+      contents: read
+    outputs:
+      status: ${{ job.status }}
     steps:
-      - name: Checkout
+      - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -50,10 +76,6 @@ jobs:
         id: determine-module
         if: github.event_name == 'push'
         run: |
-          # Si se disparó por push, determinamos qué módulo ejecutar basándonos en los paths cambiados
-          # Nota: GitHub Actions 'paths' filter ya filtró el evento, pero aquí refinamos el argumento
-          # Para simplificar, si es push, detectamos el cambio principal o hacemos un partial ingest seguro.
-          
           # Prioridad: Skills > Docs > Infra
           if git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | grep -q "^.trae/"; then
             echo "module=skills" >> $GITHUB_OUTPUT
@@ -62,7 +84,6 @@ jobs:
           elif git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | grep -q "^core/b2b/"; then
             echo "module=infra" >> $GITHUB_OUTPUT
           else
-            # Fallback seguro para otros cambios en paths vigilados
             echo "module=infra" >> $GITHUB_OUTPUT
           fi
 
@@ -79,10 +100,6 @@ jobs:
 
       - name: Run Ingestion
         env:
-          DB_HOST: "postgres-ia.core-services.svc.cluster.local"
-          DB_PORT: "5432"
-          DB_NAME: "kaos_memory"
-          DB_USER: "postgres"
           DB_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         run: |
           echo "🚀 Starting Ingestion for Module: $TARGET_MODULE"
@@ -99,3 +116,104 @@ jobs:
             # Ejecución puntual
             python core/ai/memory/ingest_local.py --module $TARGET_MODULE
           fi
+
+  # -----------------------------------------------------------------------------
+  # JOB 2: HANDLE SUCCESS
+  # -----------------------------------------------------------------------------
+  handle-success:
+    name: Handle Success
+    needs: [core-execution]
+    if: success()
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Notify Success
+        run: echo "✅ Ingestion for ${{ env.KAOS_MODULE }} completed successfully."
+
+  # -----------------------------------------------------------------------------
+  # JOB 3: HANDLE FAILURE
+  # -----------------------------------------------------------------------------
+  handle-failure:
+    name: Handle Failure
+    needs: [core-execution]
+    if: failure()
+    runs-on: swarm-runners-scaleset
+    permissions:
+      issues: write
+      contents: read
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+        
+      - name: Create Incident Issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --title "[INCIDENT]: Fallo en workflow ${{ github.workflow }}" \
+            --label "itop-incident,triage,automated" \
+            --body "### Organización
+          Ka0s
+          
+          ### Solicitante
+          @${{ github.actor }}
+          
+          ### Estado
+          New
+          
+          ### Impacto
+          Service
+          
+          ### Urgencia
+          Medium
+          
+          ### Servicio / CI afectado
+          GitHub Actions / ${{ github.workflow }}
+          
+          ### Descripción
+          El workflow **${{ github.workflow }}** ha fallado durante su ejecución.
+          
+          **Detalles Técnicos:**
+          - **Módulo**: ${{ env.KAOS_MODULE }}
+          - **Run ID**: ${{ github.run_id }}
+          - **Commit**: ${{ github.sha }}
+          - **Branch/Ref**: ${{ github.ref_name }}
+          - **Actor**: ${{ github.actor }}
+          
+          ### Pasos / Evidencias
+          Logs de ejecución: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          "
+
+  # -----------------------------------------------------------------------------
+  # JOB 4: END WORKFLOW
+  # -----------------------------------------------------------------------------
+  end-workflow:
+    needs: [handle-success, handle-failure]
+    if: always()
+    runs-on: swarm-runners-scaleset
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - id: repo
+        name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+        
+      - name: Trigger Inspector
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "🔍 Triggering Inspector for Audit..."
+          gh workflow run inspector.yml \
+            --ref main \
+            -f workflow_name="${{ github.workflow }}" \
+            -f run_id="${{ github.run_id }}" \
+            -f status="${{ needs.core-execution.result }}" \
+            -f kaos-user-start="${{ github.triggering_actor }}"

@@ -1,4 +1,5 @@
 import os
+import sys  # Added sys for exit codes
 import glob
 import psycopg2
 import requests
@@ -7,13 +8,12 @@ import time
 from typing import List
 
 # Configuration
-# Defaults for local development (port-forwarding)
-# Can be overridden by environment variables for CI/CD (K8s Service DNS)
-POSTGRES_HOST = os.getenv("POSTGRES_HOST") or "localhost"
-POSTGRES_PORT = os.getenv("POSTGRES_PORT") or "5433"
-POSTGRES_DB = os.getenv("POSTGRES_DB") or "ka0s_memory"
-POSTGRES_USER = os.getenv("POSTGRES_USER") or "ka0s_ai"
-POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD") or "change_me_in_production_vector_db_123!"
+# Support both DB_ and POSTGRES_ prefixes, prioritizing DB_ as used in workflows
+POSTGRES_HOST = os.getenv("DB_HOST") or os.getenv("POSTGRES_HOST") or "localhost"
+POSTGRES_PORT = os.getenv("DB_PORT") or os.getenv("POSTGRES_PORT") or "5433"
+POSTGRES_DB = os.getenv("DB_NAME") or os.getenv("POSTGRES_DB") or "ka0s_memory"
+POSTGRES_USER = os.getenv("DB_USER") or os.getenv("POSTGRES_USER") or "ka0s_ai"
+POSTGRES_PASSWORD = os.getenv("DB_PASSWORD") or os.getenv("POSTGRES_PASSWORD") or "change_me_in_production_vector_db_123!"
 
 OLLAMA_HOST = os.getenv("OLLAMA_HOST") or "localhost"
 OLLAMA_PORT = os.getenv("OLLAMA_PORT") or "11435"
@@ -112,13 +112,12 @@ def get_db_connection():
         )
         return conn
     except Exception as e:
-        logger.error(f"Failed to connect to DB: {e}")
-        return None
+        logger.critical(f"Failed to connect to DB at {POSTGRES_HOST}:{POSTGRES_PORT}: {e}")
+        sys.exit(1)  # Fail fast
 
 def init_db():
     conn = get_db_connection()
-    if not conn:
-        return
+    # No need to check if conn is None, get_db_connection exits on failure
     
     cur = conn.cursor()
     try:
@@ -139,8 +138,9 @@ def init_db():
         conn.commit()
         logger.info("Database initialized successfully.")
     except Exception as e:
-        logger.error(f"DB Initialization error: {e}")
+        logger.critical(f"DB Initialization error: {e}")
         conn.rollback()
+        sys.exit(1)
     finally:
         cur.close()
         conn.close()
@@ -150,13 +150,14 @@ def ensure_model():
     payload = {"name": EMBEDDING_MODEL}
     try:
         logger.info(f"Ensuring model {EMBEDDING_MODEL} exists...")
-        response = requests.post(url, json=payload, stream=True)
+        response = requests.post(url, json=payload, stream=True, timeout=300)
         for line in response.iter_lines():
             if line:
                 logger.debug(line)
         logger.info(f"Model {EMBEDDING_MODEL} ready.")
     except Exception as e:
         logger.error(f"Failed to pull model: {e}")
+        # Non-critical if model already exists, but warning
 
 def generate_embedding(text: str) -> List[float]:
     url = f"http://{OLLAMA_HOST}:{OLLAMA_PORT}/api/embeddings"
