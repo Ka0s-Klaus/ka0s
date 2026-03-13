@@ -131,7 +131,7 @@ def get_db_connection(db_name=None):
 
 def ensure_database_exists():
     """
-    Checks if target DB exists. If not, connects to 'postgres' and creates it.
+    Checks if target DB exists. If not, connects to 'template1' and creates it.
     """
     conn = get_db_connection()
     if conn:
@@ -140,21 +140,41 @@ def ensure_database_exists():
 
     logger.warning(f"Database {POSTGRES_DB} does not exist. Attempting to create it...")
     
-    # Connect to default 'postgres' DB to issue CREATE DATABASE
+    # Try connecting to maintenance DBs in order: template1 -> postgres -> user_db
+    maintenance_dbs = ["template1", "postgres", POSTGRES_USER]
+    
+    sys_conn = None
+    for db in maintenance_dbs:
+        try:
+            logger.info(f"Attempting to connect to maintenance DB: {db}")
+            sys_conn = psycopg2.connect(
+                host=POSTGRES_HOST,
+                port=POSTGRES_PORT,
+                database=db,
+                user=POSTGRES_USER,
+                password=POSTGRES_PASSWORD
+            )
+            break
+        except Exception as e:
+            logger.warning(f"Could not connect to maintenance DB {db}: {e}")
+            
+    if not sys_conn:
+        logger.critical("Failed to connect to ANY maintenance database. Cannot create target DB.")
+        sys.exit(1)
+
     try:
-        sys_conn = psycopg2.connect(
-            host=POSTGRES_HOST,
-            port=POSTGRES_PORT,
-            database="postgres",
-            user=POSTGRES_USER,
-            password=POSTGRES_PASSWORD
-        )
         sys_conn.autocommit = True
         cur = sys_conn.cursor()
-        cur.execute(f"CREATE DATABASE {POSTGRES_DB};")
+        # Check if DB exists to avoid race conditions
+        cur.execute(f"SELECT 1 FROM pg_database WHERE datname = '{POSTGRES_DB}'")
+        if not cur.fetchone():
+            cur.execute(f"CREATE DATABASE {POSTGRES_DB};")
+            logger.info(f"Database {POSTGRES_DB} created successfully.")
+        else:
+            logger.info(f"Database {POSTGRES_DB} already exists (race condition handled).")
+            
         cur.close()
         sys_conn.close()
-        logger.info(f"Database {POSTGRES_DB} created successfully.")
     except Exception as e:
         logger.critical(f"Failed to auto-create database {POSTGRES_DB}: {e}")
         sys.exit(1)
