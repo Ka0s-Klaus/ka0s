@@ -1,3 +1,6 @@
+---
+section: Multimedia
+---
 # Guía de Uso: Multimedia y Videos
 
 Este documento explica cómo integrar contenido multimedia, específicamente videos (formato `.mov` o `.mp4`), en la documentación de Ka0s.

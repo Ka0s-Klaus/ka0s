@@ -1,3 +1,6 @@
+---
+section: Multimedia
+---
 # Showcase de Nuevas Funcionalidades
 
 Esta página demuestra las capacidades "vitaminadas" que hemos añadido a tu portal de documentación.
