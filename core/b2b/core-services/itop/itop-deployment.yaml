@@ -74,12 +74,15 @@ spec:
                  find /web-data/images -type f \( -iname '*itop*.png' -o -iname '*logo*.png' \) -exec cp /branding/custom_logo.png {} \; ; \
                  find /web-data -name "*.css" -type f -exec sh -c 'printf "\n.ibo-navigation-menu--logo img, .ibo-header__logo img, #login-logo img { opacity: 0; }\n.ibo-navigation-menu--logo, .ibo-header__logo, #login-logo a { background-image: url(../images/custom_logo.png) !important; background-repeat: no-repeat !important; background-size: 250px !important; background-position: left center !important; width: 220px !important; height: 56px !important; display: block; }\n.ibo-is-collapsed .ibo-navigation-menu--logo, .ibo-navigation-menu--minified .ibo-navigation-menu--logo { background-image: url(../images/custom_logo_compact.png) !important; background-size: contain !important; background-position: center center !important; width: 30px !important; height: 30px !important; display: block; margin-top: 10px; }\n" >> "$1"' -- {} \; || true; \
                  # Inject custom text for login page and footer - FORCE REPLACEMENT (v2)
-                 echo "Clearing iTop compilation cache..."
-                 rm -rf /web-data/env-production/*
+                 # Reverting cache clearing as it breaks iTop runtime - letting iTop handle its own cache via GUI or setup
+                 # rm -rf /web-data/env-production/*  <-- THIS WAS BREAKING IT
                  echo "Forcing text replacement in dictionaries..."
+                 # Using less aggressive sed to avoid syntax errors if multiple matches on same line or special chars
                  find /web-data/dictionaries -name "*.php" -exec sed -i "s|'UI:Login:Welcome' => .*|'UI:Login:Welcome' => 'Welcome to Ka0s!',|g" {} +
                  find /web-data/dictionaries -name "*.php" -exec sed -i "s|'UI:Button:Login' => .*|'UI:Button:Login' => 'Enter to Ka0s ',|g" {} +
                  find /web-data/dictionaries -name "*.php" -exec sed -i "s|'UI:Footer:PoweredBy' => .*|'UI:Footer:PoweredBy' => 'Ka0s Powered by iTop',|g" {} +
+                 # Ensure permissions are correct after modification
+                 chown -R 33:33 /web-data/dictionaries
                fi && \
               chmod -R 775 /web-data/conf && \
               chmod 444 /web-data/conf/production/config-itop.php && \
