@@ -15,9 +15,9 @@ Workflow de GitHub Actions para integración automatizada con MongoDB que:
 
 ```yaml
 on:
-  schedule:
-    - cron: '0 * * * *'  # Ejecución cada hora
-  workflow_dispatch:     # Activación manual
+  schedule:
+    - cron: '0 * * * *'  # Ejecución cada hora
+  workflow_dispatch:     # Activación manual
 ```
 
 ### Flujo Principal (job-core)
@@ -51,14 +51,14 @@ on:
 ## Diagrama de Flujo
 
 ```mermaid
-graph TD
-A[Inicio Cron] --> B[Configuración Entorno]
-B --> C[Ejecución Script MongoDB]
-C -->|Éxito| D[Notificación Exitosa]
-C -->|Error| E[Creación Issue]
-D --> F[Commit Resultados]
-E --> F
-F --> G[Fin Proceso]
+graph TD
+A[Inicio Cron] --> B[Configuración Entorno]
+B --> C[Ejecución Script MongoDB]
+C -->|Éxito| D[Notificación Exitosa]
+C -->|Error| E[Creación Issue]
+D --> F[Commit Resultados]
+E --> F
+F --> G[Fin Proceso]
 ```
 
 ## Políticas de Seguridad

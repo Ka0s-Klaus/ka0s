@@ -48,20 +48,20 @@ on:
 ### Variables Clave
 
 ```yaml
-KAOS_PATH_RESUME: "audit/workflows/"  # Directorio de reportes
-GH_REPO: "Ka0s-Klaus/ka0s"           # Repositorio objetivo
-KAOS_MODULE: "[Ka0S] Workflow Statistics"
+KAOS_PATH_RESUME: "audit/workflows/"  # Directorio de reportes
+GH_REPO: "Ka0s-Klaus/ka0s"           # Repositorio objetivo
+KAOS_MODULE: "[Ka0S] Workflow Statistics"
 ```
 
 ## Diagrama de Proceso
 
 ```mermaid
-graph TD
-A[Programación Diaria] --> B[Inventario Workflows]
-B --> C[Recolección Ejecuciones]
-C --> D[Generación Reportes]
-D --> E[Persistencia en Repo]
-E --> F[Notificación de Éxito]
+graph TD
+A[Programación Diaria] --> B[Inventario Workflows]
+B --> C[Recolección Ejecuciones]
+C --> D[Generación Reportes]
+D --> E[Persistencia en Repo]
+E --> F[Notificación de Éxito]
 ```
 
 ## Políticas de Seguridad
