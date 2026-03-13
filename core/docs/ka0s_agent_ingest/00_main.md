@@ -24,7 +24,7 @@ Para evitar timeouts y sobrecargas en la base de datos vectorial, hemos dividido
 El repositorio utiliza un único workflow consolidado `kaos-agent-ingest.yaml` que:
 1.  **Detecta Cambios**: Identifica qué módulo ha cambiado (skills, docs, infra, etc.) basándose en el commit.
 2.  **Optimiza Recursos**: Utiliza caché de `pip` y evita instalar dependencias pesadas de ML (PyTorch, Transformers) ya que utiliza Ollama vía API HTTP.
-3.  **Resiliencia**: Implementa un mecanismo de fallback para usar `ubuntu-latest` (GitHub Hosted) si los runners self-hosted (`swarm-runners-scaleset`) están saturados o no disponibles.
+3.  **Estándar**: Utiliza `swarm-runners-scaleset` para la ejecución, alineándose con la arquitectura de runners de Ka0s.
 4.  **Validación**: Realiza un "Pre-scan" de archivos antes de iniciar la ingesta para facilitar la depuración de rutas.
 
 ## Uso Manual
