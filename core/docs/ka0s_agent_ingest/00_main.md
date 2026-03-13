@@ -10,10 +10,22 @@ Para evitar timeouts y sobrecargas en la base de datos vectorial, hemos dividido
 
 | Módulo | Contenido | Rutas | Workflow | Trigger |
 | :--- | :--- | :--- | :--- | :--- |
-| **skills** | Capacidades y Reglas del Agente | `.trae/skills/`, `.trae/rules/` | `kaos-agent-ingest-skills.yaml` | Push a `.trae/**` |
-| **docs** | Documentación Oficial | `core/docs/` | `kaos-agent-ingest-docs.yaml` | Push a `core/docs/**` |
-| **infra** | Definiciones de Kubernetes | `core/b2b/`, `.github/workflows/` | `kaos-agent-ingest-infra.yaml` | Push a `core/b2b/**` |
-| **code** | Código Fuente (Python, Shell) | `core/**/*.py`, `core/**/*.sh` | *(Manual Only)* | Manual |
+| **skills** | Capacidades y Reglas del Agente | `compliance/trae/skills/`, `compliance/trae/rules/` | `kaos-agent-ingest.yaml` | Push a `compliance/trae/**` |
+| **docs** | Documentación Oficial | `core/docs/`, `README.md` | `kaos-agent-ingest.yaml` | Push a `core/docs/**` |
+| **infra** | Definiciones de Kubernetes | `core/b2b/`, `.github/workflows/` | `kaos-agent-ingest.yaml` | Push a `core/b2b/**` |
+| **audit** | Registros de Auditoría | `audit/**/*.json`, `audit/**/*.log` | `kaos-agent-ingest.yaml` | Schedule |
+| **compliance** | Reglas de Cumplimiento | `compliance/**/*.md`, `compliance/**/*.json` | `kaos-agent-ingest.yaml` | Push a `compliance/**` |
+| **devops** | Scripts de Operaciones | `devops/**/*.sh`, `devops/**/*.py` | `kaos-agent-ingest.yaml` | Push a `devops/**` |
+| **github** | Automatizaciones | `.github/**/*.yml`, `.github/**/*.yaml` | `kaos-agent-ingest.yaml` | Push a `.github/**` |
+| **code** | Código Fuente (Python, Shell) | `core/**/*.py`, `core/**/*.sh` | `kaos-agent-ingest.yaml` | Manual |
+
+## Pipeline de Ingesta Unificado
+
+El repositorio utiliza un único workflow consolidado `kaos-agent-ingest.yaml` que:
+1.  **Detecta Cambios**: Identifica qué módulo ha cambiado (skills, docs, infra, etc.) basándose en el commit.
+2.  **Optimiza Recursos**: Utiliza caché de `pip` y evita instalar dependencias pesadas de ML (PyTorch, Transformers) ya que utiliza Ollama vía API HTTP.
+3.  **Resiliencia**: Implementa un mecanismo de fallback para usar `ubuntu-latest` (GitHub Hosted) si los runners self-hosted (`swarm-runners-scaleset`) están saturados o no disponibles.
+4.  **Validación**: Realiza un "Pre-scan" de archivos antes de iniciar la ingesta para facilitar la depuración de rutas.
 
 ## Uso Manual
 
@@ -39,9 +51,9 @@ El script utiliza `argparse` para seleccionar el conjunto de patrones `glob` a p
 
 ```python
 MODULES = {
-    "docs": ["core/docs/**/*.md"],
-    "skills": [".trae/skills/**/*.md"],
-    "infra": ["core/b2b/**/*.yaml"],
+    "docs": ["core/docs/**/*.md", "README.md"],
+    "skills": ["compliance/trae/skills/**/SKILL.md", "compliance/trae/rules/**/*.md"],
+    "infra": ["core/b2b/**/*.yaml", "core/b2b/**/*.json", "core/b2b/**/*.xml"],
     ...
 }
 ```

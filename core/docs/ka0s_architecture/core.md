@@ -10,6 +10,7 @@ El directorio `core/` es el **corazón funcional** de Ka0s. A diferencia de `.gi
 Contiene los "pensamientos" y contextos del sistema:
 - **Prompts**: Archivos (`.txt`, `.md`) que definen la personalidad y conocimientos de los agentes de IA (ej. `chat_prompt.txt`, `prompt_devops.md`).
 - **Herramientas**: Definiciones JSON de las capacidades que la IA puede invocar.
+- **Memoria Vectorial**: Scripts de ingesta (`ingest_local.py`) optimizados para cargar conocimiento en `kaos_memory` (PostgreSQL + pgvector). El sistema utiliza un pipeline resiliente capaz de ejecutar en runners locales o en la nube (`ubuntu-latest`) según disponibilidad.
 
 ### 2. B2B / Infraestructura (`core/b2b/`) - El Cuerpo
 Almacena la Infraestructura como Código (IaC) para los servicios desplegados en Kubernetes:
