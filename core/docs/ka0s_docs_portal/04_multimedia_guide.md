@@ -25,8 +25,8 @@ Copia y pega este bloque en tu documento, cambiando la ruta del archivo `src`:
 
 ```html
 <video width="100%" controls>
-  <source src="../assets/videos/ejemplo.mov" type="video/quicktime">
-  <source src="../assets/videos/ejemplo.mp4" type="video/mp4">
+  <source src="../../assets/videos/ejemplo.mov" type="video/quicktime">
+  <source src="../../assets/videos/ejemplo.mp4" type="video/mp4">
   Tu navegador no soporta la etiqueta de video.
 </video>
 ```
@@ -36,7 +36,7 @@ Copia y pega este bloque en tu documento, cambiando la ruta del archivo `src`:
 A continuación se muestra un reproductor de video (sin archivo cargado actualmente):
 
 <video width="100%" controls style="max-width: 600px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-  <source src="../assets/videos/1-Ka0s-primer-contacto.mov" type="video/quicktime">
+  <source src="../../assets/videos/1-Ka0s-primer-contacto.mov" type="video/quicktime">
   Tu navegador no soporta la reproducción de videos.
 </video>
 
@@ -66,6 +66,6 @@ Puedes personalizar la etiqueta `<video>` con atributos HTML estándar:
 
 ```html
 <video width="100%" autoplay loop muted playsinline>
-  <source src="../assets/videos/ui-demo.mp4" type="video/mp4">
+  <source src="../../assets/videos/ui-demo.mp4" type="video/mp4">
 </video>
 ```
