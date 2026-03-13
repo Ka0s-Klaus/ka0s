@@ -292,6 +292,29 @@ def process_file(file_path: str):
 
 
 def run_ingestion():
+    # 1. Discover files first (Debugging purpose)
+    # This block allows us to verify file discovery even if DB connection fails later
+    total_found = 0
+    all_files = []
+    
+    logger.info(f"🔍 Pre-scan for module patterns: {PATTERNS}")
+    
+    for pattern in PATTERNS:
+        files = glob.glob(pattern, recursive=True)
+        count = len(files)
+        logger.info(f"📂 Found {count} files for pattern: {pattern}")
+        if count > 0:
+            # Print first 3 files as sample
+            sample = files[:3]
+            logger.info(f"   Sample: {sample}")
+        total_found += count
+        all_files.extend(files)
+        
+    if total_found == 0:
+        logger.warning("⚠️ No files found in pre-scan. Check paths or git checkout.")
+    else:
+        logger.info(f"✅ Pre-scan complete. Total candidates: {total_found}")
+
     ensure_model()
     init_db()
     
