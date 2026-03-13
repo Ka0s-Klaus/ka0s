@@ -45,7 +45,21 @@ INFO    -  [12:00:00] Serving on http://0.0.0.0:8000/
 
 ## Características Avanzadas
 
-### Soporte para Diagramas (Mermaid)
+### 1. Etiquetado de Secciones (Metadata)
+
+Para organizar automáticamente el contenido en el menú lateral, utilizamos **Front Matter** (bloque YAML al inicio del archivo).
+
+**Ejemplo:**
+```yaml
+---
+section: Multimedia
+---
+# Título del Documento
+```
+
+Esto indica que el documento pertenece a la sección "Multimedia".
+
+### 2. Soporte para Diagramas (Mermaid)
 
 El portal soporta nativamente la renderización de diagramas **Mermaid**.
 
@@ -60,6 +74,10 @@ El portal soporta nativamente la renderización de diagramas **Mermaid**.
     ```
 
 Esto se renderizará automáticamente como un gráfico interactivo.
+
+### 3. Multimedia y Videos
+
+Para incluir videos `.mov` o `.mp4`, consulta la [Guía Multimedia](./04_multimedia_guide.md).
 
 ## Actualización de Contenido
 
