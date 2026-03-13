@@ -5,6 +5,8 @@ import psycopg2
 import requests
 import logging
 import hashlib
+import argparse
+import time
 from typing import List
 
 # Configuration
@@ -22,8 +24,6 @@ EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL") or "nomic-embed-text"
 # Paths relative to where the script is run (project root)
 # Ingestion Strategy: Modular & Argument Driven
 # Usage: python ingest_local.py --module [docs|skills|infra|code|audit|compliance|devops|github|all]
-
-import argparse
 
 # Define patterns per module
 MODULES = {
@@ -101,7 +101,6 @@ else:
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-import hashlib
 
 def get_db_connection(db_name=None):
     """
@@ -228,6 +227,8 @@ def ensure_model():
         # Non-critical if model already exists, but warning
 
 
+import time
+
 def generate_embedding(text: str) -> List[float]:
     url = f"http://{OLLAMA_HOST}:{OLLAMA_PORT}/api/embeddings"
     payload = {
@@ -235,13 +236,21 @@ def generate_embedding(text: str) -> List[float]:
         "prompt": text
     }
     
-    try:
-        response = requests.post(url, json=payload, timeout=30)
-        response.raise_for_status()
-        return response.json()["embedding"]
-    except Exception as e:
-        logger.error(f"Embedding generation failed: {e}")
-        return []
+    retries = 3
+    for attempt in range(retries):
+        try:
+            response = requests.post(url, json=payload, timeout=60) # Increased timeout
+            response.raise_for_status()
+            return response.json()["embedding"]
+        except Exception as e:
+            if attempt < retries - 1:
+                wait_time = 2 ** attempt # Exponential backoff
+                logger.warning(f"Embedding generation failed (Attempt {attempt+1}/{retries}): {e}. Retrying in {wait_time}s...")
+                time.sleep(wait_time)
+            else:
+                logger.error(f"Embedding generation failed after {retries} attempts: {e}")
+                return []
+
 
 
 def calculate_hash(content: str) -> str:
