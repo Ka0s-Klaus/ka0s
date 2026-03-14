@@ -33,7 +33,7 @@ Si, parece increible pero hemos decidido en el equipo usar una terminología "es
 
 - [Ka0s Admin Agent - Diseño Técnico](./admin-agent/design.md)
 - [Ka0s Kubernetes Audits](./k8s-audits/00_main.md)
-- [Detallaremos el uso de las variables y sus contenidos](./ka0s/secrets.md)
+- [Módulo Ka0s (Core Orchestrator)](./ka0s/00_main.md)
 - [Ka0s Agent AI](./ka0s_agent_ai/00_main.md)
 - [Ka0s Agent Ingest - Estrategia Modular](./ka0s_agent_ingest/00_main.md)
 - [Arquitectura: Core (Núcleo del Sistema)](./ka0s_architecture/core.md)
@@ -83,6 +83,7 @@ Si, parece increible pero hemos decidido en el equipo usar una terminología "es
 - [Concepto: Monitoring as Code (Zabbix IaC)](./ka0s_zabbix_iac/01_concept.md)
 - [Ka0s Cluster Restart Module](./kaos_cluster_restart/00_main.md)
 - [OpenClaw: Agente SRE Personalizado](./openclaw/01_concept.md)
+- [Registro de Sesión](./templates/session_log_template.md)
 - [Windows Node Join Script (Template)](./windows_nodes/03_technical.md)
 
 <!-- MODULES_END -->
