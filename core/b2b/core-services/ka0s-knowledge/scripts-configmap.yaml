@@ -28,6 +28,36 @@ data:
         return json.dumps(obj, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
 
 
+    def parse_csv_set(value: str | None) -> set[str]:
+        if not value:
+            return set()
+        parts = [p.strip() for p in value.split(",")]
+        return {p for p in parts if p}
+
+
+    def filter_dict_fields(obj: Any, allow: set[str], deny: set[str]) -> Any:
+        if not isinstance(obj, dict):
+            return obj
+        if allow:
+            filtered = {k: obj.get(k) for k in allow if k in obj}
+        else:
+            filtered = dict(obj)
+        for k in list(filtered.keys()):
+            if k in deny:
+                filtered.pop(k, None)
+        return filtered
+
+
+    def stable_record_id_from_pk(values: list[Any]) -> str:
+        parts = []
+        for v in values:
+            if v is None:
+                parts.append("null")
+            else:
+                parts.append(str(v))
+        return "|".join(parts)
+
+
     def sha256_text(text: str) -> str:
         return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
@@ -47,6 +77,17 @@ data:
         while i < n:
             yield text[i : i + max_chars]
             i += step
+
+
+    def read_json(path: str) -> Any:
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+
+
+    def write_json(path: str, obj: Any) -> None:
+        ensure_dir(os.path.dirname(path))
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(obj, f, ensure_ascii=False, sort_keys=True)
 
 
   ollama_embed.py: |
@@ -97,21 +138,53 @@ data:
             f.write(json.dumps(obj, ensure_ascii=False) + "\n")
 
 
+  state.py: |
+    import os
+    from typing import Any, Dict
+
+    from common import read_json, write_json
+
+
+    def state_path(spool_dir: str, source: str) -> str:
+        return os.path.join(spool_dir, source, "_state", "state.json")
+
+
+    def load_state(spool_dir: str, source: str) -> Dict[str, Any]:
+        path = state_path(spool_dir, source)
+        if not os.path.exists(path):
+            return {}
+        data = read_json(path)
+        return data if isinstance(data, dict) else {}
+
+
+    def save_state(spool_dir: str, source: str, data: Dict[str, Any]) -> None:
+        write_json(state_path(spool_dir, source), data)
+
+
   produce_mongo.py: |
     import os
     from typing import Any, Dict
 
+    from bson import ObjectId
     from pymongo import MongoClient
 
     from common import chunk_text, run_id_now, sha256_text, stable_json, utc_ts
     from ollama_embed import embed
     from spool_write import append_jsonl, open_run_dir, write_manifest
+    from state import load_state, save_state
 
 
     def _doc_to_text(doc: Dict[str, Any]) -> str:
         doc = dict(doc)
         doc.pop("_id", None)
         return stable_json(doc)
+
+
+    def _parse_object_id(value: str) -> ObjectId | None:
+        try:
+            return ObjectId(value)
+        except Exception:
+            return None
 
 
     def main() -> None:
@@ -121,6 +194,7 @@ data:
         mongo_uri = os.environ["MONGO_URI"]
         mongo_db = os.environ.get("MONGO_DB", "audit")
         collections = os.environ.get("MONGO_COLLECTIONS", "*")
+        mode = os.environ.get("MODE", "incremental")
         max_chars = int(os.environ.get("CHUNK_MAX_CHARS", "2000"))
         overlap = int(os.environ.get("CHUNK_OVERLAP_CHARS", "200"))
 
@@ -143,10 +217,25 @@ data:
         else:
             target_collections = [c.strip() for c in collections.split(",") if c.strip()]
 
+        state = load_state(spool_dir, source)
+        state_collections = state.setdefault("collections", {})
         total_chunks = 0
         for col_name in target_collections:
             col = db[col_name]
-            for doc in col.find({}, no_cursor_timeout=True):
+
+            query: Dict[str, Any] = {}
+            if mode == "incremental":
+                last_id = state_collections.get(col_name)
+                if isinstance(last_id, str):
+                    last_oid = _parse_object_id(last_id)
+                    if last_oid is not None:
+                        query = {"_id": {"$gt": last_oid}}
+                    else:
+                        query = {}
+
+            cursor = col.find(query, no_cursor_timeout=True).sort("_id", 1)
+            max_seen_oid: ObjectId | None = None
+            for doc in cursor:
                 record_id = str(doc.get("_id"))
                 text = _doc_to_text(doc)
                 i = 0
@@ -169,6 +258,14 @@ data:
                     i += 1
                     total_chunks += 1
 
+                oid = doc.get("_id")
+                if isinstance(oid, ObjectId):
+                    max_seen_oid = oid
+
+            if mode == "incremental" and max_seen_oid is not None:
+                state_collections[col_name] = str(max_seen_oid)
+                save_state(spool_dir, source, state)
+
         manifest["state"] = "ready_for_load"
         manifest["chunks"] = total_chunks
         write_manifest(base, manifest)
@@ -188,6 +285,7 @@ data:
     from common import chunk_text, run_id_now, sha256_text, stable_json, utc_ts
     from ollama_embed import embed
     from spool_write import append_jsonl, open_run_dir, write_manifest
+    from state import load_state, save_state
 
 
     def _row_to_text(row: Dict[str, Any]) -> str:
@@ -213,6 +311,8 @@ data:
         run_id = run_id_now()
         schema = os.environ.get("PG_SCHEMA", "public")
         tables = os.environ.get("PG_TABLES", "*")
+        mode = os.environ.get("MODE", "incremental")
+        watermark_field = os.environ.get("PG_WATERMARK_FIELD", "updated_at")
         max_chars = int(os.environ.get("CHUNK_MAX_CHARS", "2000"))
         overlap = int(os.environ.get("CHUNK_OVERLAP_CHARS", "200"))
 
@@ -235,18 +335,47 @@ data:
             user=os.environ["POSTGRES_SRC_USER"],
             password=os.environ["POSTGRES_SRC_PASSWORD"],
         )
-        cur = conn.cursor(name="kaos_stream")
-        cur.itersize = int(os.environ.get("PG_FETCH_SIZE", "1000"))
+        meta_cur = conn.cursor()
 
         if tables == "*":
-            target_tables = _list_tables(cur, schema)
+            target_tables = _list_tables(meta_cur, schema)
         else:
             target_tables = [t.strip() for t in tables.split(",") if t.strip()]
 
+        state = load_state(spool_dir, source)
+        state_tables = state.setdefault("tables", {})
         total_chunks = 0
         for table in target_tables:
-            cur.execute(f"SELECT row_to_json(t) FROM {schema}.{table} t")
-            for (row_json,) in cur:
+            meta_cur.execute(
+                """
+                SELECT 1
+                FROM information_schema.columns
+                WHERE table_schema = %s AND table_name = %s AND column_name = %s
+                LIMIT 1
+                """,
+                (schema, table, watermark_field),
+            )
+            has_wm = meta_cur.fetchone() is not None
+
+            where = ""
+            params: tuple[Any, ...] = tuple()
+            if mode == "incremental":
+                last_wm = state_tables.get(f"{schema}.{table}")
+                if has_wm and isinstance(last_wm, str) and last_wm:
+                    where = f" WHERE {watermark_field} > %s"
+                    params = (last_wm,)
+
+            if has_wm:
+                order = f" ORDER BY t.{watermark_field} ASC"
+                sql = f"SELECT row_to_json(t), t.{watermark_field} FROM {schema}.{table} t{where}{order}"
+            else:
+                sql = f"SELECT row_to_json(t), NULL FROM {schema}.{table} t"
+
+            cur = conn.cursor(name=f"kaos_stream_{schema}_{table}")
+            cur.itersize = int(os.environ.get("PG_FETCH_SIZE", "1000"))
+            cur.execute(sql, params)
+            max_seen = None
+            for row_json, wm in cur:
                 row = row_json if isinstance(row_json, dict) else json.loads(row_json)
                 record_id = sha256_text(_row_to_text(row))
                 text = _row_to_text(row)
@@ -269,6 +398,14 @@ data:
                     i += 1
                     total_chunks += 1
 
+                max_seen = wm
+
+            cur.close()
+
+            if mode == "incremental" and has_wm and max_seen is not None:
+                state_tables[f"{schema}.{table}"] = str(max_seen)
+                save_state(spool_dir, source, state)
+
         manifest["state"] = "ready_for_load"
         manifest["chunks"] = total_chunks
         write_manifest(base, manifest)
@@ -287,6 +424,7 @@ data:
     from common import chunk_text, run_id_now, sha256_text, stable_json, utc_ts
     from ollama_embed import embed
     from spool_write import append_jsonl, open_run_dir, write_manifest
+    from state import load_state, save_state
 
 
     def _row_to_text(row: Dict[str, Any]) -> str:
@@ -303,6 +441,8 @@ data:
         spool_dir = os.environ.get("SPOOL_DIR", "/spool")
         run_id = run_id_now()
         tables = os.environ.get("MYSQL_TABLES", "*")
+        mode = os.environ.get("MODE", "incremental")
+        watermark_field = os.environ.get("MYSQL_WATERMARK_FIELD", "updated_at")
         max_chars = int(os.environ.get("CHUNK_MAX_CHARS", "2000"))
         overlap = int(os.environ.get("CHUNK_OVERLAP_CHARS", "200"))
 
@@ -332,9 +472,26 @@ data:
         else:
             target_tables = [t.strip() for t in tables.split(",") if t.strip()]
 
+        state = load_state(spool_dir, source)
+        state_tables = state.setdefault("tables", {})
         total_chunks = 0
         for table in target_tables:
-            cur.execute(f"SELECT * FROM {table}")
+            cur.execute(f"SHOW COLUMNS FROM {table} LIKE %s", (watermark_field,))
+            has_wm = cur.fetchone() is not None
+
+            where = ""
+            params = ()
+            if mode == "incremental":
+                last_wm = state_tables.get(table)
+                if has_wm and isinstance(last_wm, str) and last_wm:
+                    where = f" WHERE {watermark_field} > %s"
+                    params = (last_wm,)
+
+            if has_wm:
+                cur.execute(f"SELECT * FROM {table}{where} ORDER BY {watermark_field} ASC", params)
+            else:
+                cur.execute(f"SELECT * FROM {table}")
+            max_seen = None
             for row in cur:
                 text = _row_to_text(row)
                 record_id = sha256_text(text)
@@ -356,6 +513,13 @@ data:
                     )
                     i += 1
                     total_chunks += 1
+
+                if watermark_field in row:
+                    max_seen = row[watermark_field]
+
+            if mode == "incremental" and has_wm and max_seen is not None:
+                state_tables[table] = str(max_seen)
+                save_state(spool_dir, source, state)
 
         manifest["state"] = "ready_for_load"
         manifest["chunks"] = total_chunks

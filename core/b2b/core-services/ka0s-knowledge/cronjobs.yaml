@@ -24,6 +24,8 @@ spec:
               env:
                 - name: SOURCE
                   value: mongo
+                - name: MODE
+                  value: incremental
                 - name: SPOOL_DIR
                   value: /spool
                 - name: OLLAMA_EMBED_URL
@@ -36,6 +38,10 @@ spec:
                   value: audit
                 - name: MONGO_COLLECTIONS
                   value: "*"
+                - name: CHUNK_MAX_CHARS
+                  value: "2000"
+                - name: CHUNK_OVERLAP_CHARS
+                  value: "200"
               envFrom:
                 - secretRef:
                     name: knowledge-sources
@@ -80,6 +86,8 @@ spec:
               env:
                 - name: SOURCE
                   value: postgresql-monitoring
+                - name: MODE
+                  value: incremental
                 - name: SPOOL_DIR
                   value: /spool
                 - name: OLLAMA_EMBED_URL
@@ -92,6 +100,14 @@ spec:
                   value: public
                 - name: PG_TABLES
                   value: "*"
+                - name: PG_WATERMARK_FIELD
+                  value: updated_at
+                - name: PG_FETCH_SIZE
+                  value: "1000"
+                - name: CHUNK_MAX_CHARS
+                  value: "2000"
+                - name: CHUNK_OVERLAP_CHARS
+                  value: "200"
               envFrom:
                 - secretRef:
                     name: knowledge-sources
@@ -136,6 +152,8 @@ spec:
               env:
                 - name: SOURCE
                   value: mysql-itil
+                - name: MODE
+                  value: incremental
                 - name: SPOOL_DIR
                   value: /spool
                 - name: OLLAMA_EMBED_URL
@@ -146,6 +164,12 @@ spec:
                   value: "768"
                 - name: MYSQL_TABLES
                   value: "*"
+                - name: MYSQL_WATERMARK_FIELD
+                  value: updated_at
+                - name: CHUNK_MAX_CHARS
+                  value: "2000"
+                - name: CHUNK_OVERLAP_CHARS
+                  value: "200"
               envFrom:
                 - secretRef:
                     name: knowledge-sources
@@ -207,4 +231,3 @@ spec:
             - name: scripts
               configMap:
                 name: knowledge-pipeline-scripts
-
