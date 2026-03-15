@@ -168,15 +168,16 @@ data:
     from bson import ObjectId
     from pymongo import MongoClient
 
-    from common import chunk_text, run_id_now, sha256_text, stable_json, utc_ts
+    from common import chunk_text, filter_dict_fields, parse_csv_set, run_id_now, sha256_text, stable_json, utc_ts
     from ollama_embed import embed
     from spool_write import append_jsonl, open_run_dir, write_manifest
     from state import load_state, save_state
 
 
-    def _doc_to_text(doc: Dict[str, Any]) -> str:
+    def _doc_to_text(doc: Dict[str, Any], allow: set[str], deny: set[str]) -> str:
         doc = dict(doc)
         doc.pop("_id", None)
+        doc = filter_dict_fields(doc, allow=allow, deny=deny)
         return stable_json(doc)
 
 
@@ -195,6 +196,8 @@ data:
         mongo_db = os.environ.get("MONGO_DB", "audit")
         collections = os.environ.get("MONGO_COLLECTIONS", "*")
         mode = os.environ.get("MODE", "incremental")
+        allow_fields = parse_csv_set(os.environ.get("MONGO_ALLOW_FIELDS"))
+        deny_fields = parse_csv_set(os.environ.get("MONGO_DENY_FIELDS"))
         max_chars = int(os.environ.get("CHUNK_MAX_CHARS", "2000"))
         overlap = int(os.environ.get("CHUNK_OVERLAP_CHARS", "200"))
 
@@ -237,7 +240,7 @@ data:
             max_seen_oid: ObjectId | None = None
             for doc in cursor:
                 record_id = str(doc.get("_id"))
-                text = _doc_to_text(doc)
+                text = _doc_to_text(doc, allow_fields, deny_fields)
                 i = 0
                 for chunk in chunk_text(text, max_chars=max_chars, overlap=overlap):
                     content_hash = sha256_text(chunk)
@@ -282,7 +285,16 @@ data:
 
     import psycopg2
 
-    from common import chunk_text, run_id_now, sha256_text, stable_json, utc_ts
+    from common import (
+        chunk_text,
+        filter_dict_fields,
+        parse_csv_set,
+        run_id_now,
+        sha256_text,
+        stable_json,
+        stable_record_id_from_pk,
+        utc_ts,
+    )
     from ollama_embed import embed
     from spool_write import append_jsonl, open_run_dir, write_manifest
     from state import load_state, save_state
@@ -305,6 +317,25 @@ data:
         return [r[0] for r in cur.fetchall()]
 
 
+    def _pk_columns(cur, schema: str, table: str) -> List[str]:
+        cur.execute(
+            """
+            SELECT kcu.column_name
+            FROM information_schema.table_constraints tc
+            JOIN information_schema.key_column_usage kcu
+              ON tc.constraint_name = kcu.constraint_name
+             AND tc.table_schema = kcu.table_schema
+             AND tc.table_name = kcu.table_name
+            WHERE tc.constraint_type = 'PRIMARY KEY'
+              AND tc.table_schema = %s
+              AND tc.table_name = %s
+            ORDER BY kcu.ordinal_position
+            """,
+            (schema, table),
+        )
+        return [r[0] for r in cur.fetchall()]
+
+
     def main() -> None:
         source = os.environ.get("SOURCE", "postgresql-monitoring")
         spool_dir = os.environ.get("SPOOL_DIR", "/spool")
@@ -313,6 +344,8 @@ data:
         tables = os.environ.get("PG_TABLES", "*")
         mode = os.environ.get("MODE", "incremental")
         watermark_field = os.environ.get("PG_WATERMARK_FIELD", "updated_at")
+        allow_fields = parse_csv_set(os.environ.get("PG_ALLOW_FIELDS"))
+        deny_fields = parse_csv_set(os.environ.get("PG_DENY_FIELDS"))
         max_chars = int(os.environ.get("CHUNK_MAX_CHARS", "2000"))
         overlap = int(os.environ.get("CHUNK_OVERLAP_CHARS", "200"))
 
@@ -322,7 +355,7 @@ data:
         manifest = {
             "run_id": run_id,
             "source": source,
-            "mode": os.environ.get("MODE", "full"),
+            "mode": mode,
             "state": "running",
             "created_at": utc_ts(),
         }
@@ -346,6 +379,7 @@ data:
         state_tables = state.setdefault("tables", {})
         total_chunks = 0
         for table in target_tables:
+            pk_cols = _pk_columns(meta_cur, schema, table)
             meta_cur.execute(
                 """
                 SELECT 1
@@ -377,7 +411,13 @@ data:
             max_seen = None
             for row_json, wm in cur:
                 row = row_json if isinstance(row_json, dict) else json.loads(row_json)
-                record_id = sha256_text(_row_to_text(row))
+                if pk_cols:
+                    pk_values = [row.get(c) for c in pk_cols]
+                    record_id = stable_record_id_from_pk(pk_values)
+                else:
+                    record_id = sha256_text(_row_to_text(row))
+
+                row = filter_dict_fields(row, allow=allow_fields, deny=deny_fields)
                 text = _row_to_text(row)
                 i = 0
                 for chunk in chunk_text(text, max_chars=max_chars, overlap=overlap):
@@ -421,7 +461,16 @@ data:
 
     import mysql.connector
 
-    from common import chunk_text, run_id_now, sha256_text, stable_json, utc_ts
+    from common import (
+        chunk_text,
+        filter_dict_fields,
+        parse_csv_set,
+        run_id_now,
+        sha256_text,
+        stable_json,
+        stable_record_id_from_pk,
+        utc_ts,
+    )
     from ollama_embed import embed
     from spool_write import append_jsonl, open_run_dir, write_manifest
     from state import load_state, save_state
@@ -431,9 +480,23 @@ data:
         return stable_json(row)
 
 
-    def _list_tables(cur) -> List[str]:
-        cur.execute("SHOW TABLES")
-        return [r[0] for r in cur.fetchall()]
+    def _list_tables(meta_cur) -> List[str]:
+        meta_cur.execute("SHOW TABLES")
+        return [r[0] for r in meta_cur.fetchall()]
+
+
+    def _pk_columns(meta_cur, table: str) -> List[str]:
+        safe = "".join(ch for ch in table if ch.isalnum() or ch == "_")
+        if safe != table or not safe:
+            return []
+        meta_cur.execute(f"SHOW KEYS FROM `{safe}` WHERE Key_name = 'PRIMARY'")
+        rows = meta_cur.fetchall()
+        cols: List[str] = []
+        for r in rows:
+            col = r[4]
+            if isinstance(col, str) and col:
+                cols.append(col)
+        return cols
 
 
     def main() -> None:
@@ -443,6 +506,8 @@ data:
         tables = os.environ.get("MYSQL_TABLES", "*")
         mode = os.environ.get("MODE", "incremental")
         watermark_field = os.environ.get("MYSQL_WATERMARK_FIELD", "updated_at")
+        allow_fields = parse_csv_set(os.environ.get("MYSQL_ALLOW_FIELDS"))
+        deny_fields = parse_csv_set(os.environ.get("MYSQL_DENY_FIELDS"))
         max_chars = int(os.environ.get("CHUNK_MAX_CHARS", "2000"))
         overlap = int(os.environ.get("CHUNK_OVERLAP_CHARS", "200"))
 
@@ -452,7 +517,7 @@ data:
         manifest = {
             "run_id": run_id,
             "source": source,
-            "mode": os.environ.get("MODE", "full"),
+            "mode": mode,
             "state": "running",
             "created_at": utc_ts(),
         }
@@ -466,9 +531,10 @@ data:
             database=os.environ["MYSQL_DB"],
         )
         cur = conn.cursor(dictionary=True)
+        meta_cur = conn.cursor()
 
         if tables == "*":
-            target_tables = _list_tables(cur)
+            target_tables = _list_tables(meta_cur)
         else:
             target_tables = [t.strip() for t in tables.split(",") if t.strip()]
 
@@ -476,6 +542,7 @@ data:
         state_tables = state.setdefault("tables", {})
         total_chunks = 0
         for table in target_tables:
+            pk_cols = _pk_columns(meta_cur, table)
             cur.execute(f"SHOW COLUMNS FROM {table} LIKE %s", (watermark_field,))
             has_wm = cur.fetchone() is not None
 
@@ -493,8 +560,14 @@ data:
                 cur.execute(f"SELECT * FROM {table}")
             max_seen = None
             for row in cur:
+                if pk_cols:
+                    pk_values = [row.get(c) for c in pk_cols]
+                    record_id = stable_record_id_from_pk(pk_values)
+                else:
+                    record_id = sha256_text(_row_to_text(row))
+
+                row = filter_dict_fields(row, allow=allow_fields, deny=deny_fields)
                 text = _row_to_text(row)
-                record_id = sha256_text(text)
                 i = 0
                 for chunk in chunk_text(text, max_chars=max_chars, overlap=overlap):
                     emb = embed(chunk)
