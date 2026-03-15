@@ -1,0 +1,20 @@
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: ka0s-online-high
+value: 100000
+globalDefault: false
+preemptionPolicy: PreemptLowerPriority
+description: Online query workloads (agent) must have priority.
+
+---
+
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: ka0s-offline-low
+value: 1000
+globalDefault: false
+preemptionPolicy: Never
+description: Offline ingestion workloads must yield to online workloads.
+

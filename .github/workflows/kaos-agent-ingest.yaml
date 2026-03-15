@@ -1,5 +1,9 @@
 name: Ka0s Agent Ingest (Unified)
 
+concurrency:
+  group: kaos-agent-ingest
+  cancel-in-progress: false
+
 on:
   workflow_dispatch:
     inputs:
@@ -45,7 +49,7 @@ env:
   DB_USER: "ka0s_ai" # Corrected user from secret
   
   # Global AI Config (Ollama)
-  OLLAMA_HOST: "ollama.ollama.svc.cluster.local"
+  OLLAMA_HOST: "ollama-embed.ollama-embed.svc.cluster.local"
   OLLAMA_PORT: "11434"
   # Secrets must be passed in jobs, but defined here for reference
   

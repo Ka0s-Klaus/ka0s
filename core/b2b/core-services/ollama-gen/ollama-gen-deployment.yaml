@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ollama-gen
+  namespace: ollama-gen
+  labels:
+    app: ollama-gen
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ollama-gen
+  template:
+    metadata:
+      labels:
+        app: ollama-gen
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: k8-manager
+      containers:
+        - name: ollama
+          image: ollama/ollama:latest
+          ports:
+            - containerPort: 11434
+          env:
+            - name: OLLAMA_KEEP_ALIVE
+              value: "24h"
+            - name: OLLAMA_HOST
+              value: "0.0.0.0"
+            - name: OLLAMA_ORIGINS
+              value: "*"
+          resources:
+            limits:
+              gpu.intel.com/i915: 1
+          volumeMounts:
+            - name: models
+              mountPath: /root/.ollama
+      volumes:
+        - name: models
+          persistentVolumeClaim:
+            claimName: ollama-gen-pvc
+

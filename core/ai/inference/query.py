@@ -15,6 +15,8 @@ POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD") or "change_me_in_production_v
 
 OLLAMA_HOST = os.getenv("OLLAMA_HOST") or "localhost"
 OLLAMA_PORT = os.getenv("OLLAMA_PORT") or "11435"
+OLLAMA_EMBED_HOST = os.getenv("OLLAMA_EMBED_HOST") or OLLAMA_HOST
+OLLAMA_EMBED_PORT = os.getenv("OLLAMA_EMBED_PORT") or OLLAMA_PORT
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL") or "nomic-embed-text"
 GENERATION_MODEL = os.getenv("GENERATION_MODEL") or "deepseek-r1:8b" # Or llama3:latest
 
@@ -36,7 +38,7 @@ def get_db_connection():
         return None
 
 def generate_embedding(text: str) -> List[float]:
-    url = f"http://{OLLAMA_HOST}:{OLLAMA_PORT}/api/embeddings"
+    url = f"http://{OLLAMA_EMBED_HOST}:{OLLAMA_EMBED_PORT}/api/embeddings"
     payload = {
         "model": EMBEDDING_MODEL,
         "prompt": text

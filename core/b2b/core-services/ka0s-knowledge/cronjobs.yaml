@@ -1,0 +1,210 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: knowledge-producer-mongo
+  namespace: ka0s-knowledge
+spec:
+  schedule: "0 2 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          priorityClassName: ka0s-offline-low
+          restartPolicy: Never
+          containers:
+            - name: producer
+              image: python:3.11-slim
+              command: ["/bin/sh", "-lc"]
+              args:
+                - |
+                  pip install --no-cache-dir requests pymongo && python /scripts/produce_mongo.py
+              env:
+                - name: SOURCE
+                  value: mongo
+                - name: SPOOL_DIR
+                  value: /spool
+                - name: OLLAMA_EMBED_URL
+                  value: http://ollama-embed.ollama-embed.svc.cluster.local:11434
+                - name: EMBEDDING_MODEL
+                  value: nomic-embed-text
+                - name: EMBEDDING_DIM
+                  value: "768"
+                - name: MONGO_DB
+                  value: audit
+                - name: MONGO_COLLECTIONS
+                  value: "*"
+              envFrom:
+                - secretRef:
+                    name: knowledge-sources
+              volumeMounts:
+                - name: spool
+                  mountPath: /spool
+                - name: scripts
+                  mountPath: /scripts
+          volumes:
+            - name: spool
+              persistentVolumeClaim:
+                claimName: knowledge-spool
+            - name: scripts
+              configMap:
+                name: knowledge-pipeline-scripts
+
+---
+
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: knowledge-producer-postgresql
+  namespace: ka0s-knowledge
+spec:
+  schedule: "30 2 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          priorityClassName: ka0s-offline-low
+          restartPolicy: Never
+          containers:
+            - name: producer
+              image: python:3.11-slim
+              command: ["/bin/sh", "-lc"]
+              args:
+                - |
+                  pip install --no-cache-dir requests psycopg2-binary && python /scripts/produce_postgresql.py
+              env:
+                - name: SOURCE
+                  value: postgresql-monitoring
+                - name: SPOOL_DIR
+                  value: /spool
+                - name: OLLAMA_EMBED_URL
+                  value: http://ollama-embed.ollama-embed.svc.cluster.local:11434
+                - name: EMBEDDING_MODEL
+                  value: nomic-embed-text
+                - name: EMBEDDING_DIM
+                  value: "768"
+                - name: PG_SCHEMA
+                  value: public
+                - name: PG_TABLES
+                  value: "*"
+              envFrom:
+                - secretRef:
+                    name: knowledge-sources
+              volumeMounts:
+                - name: spool
+                  mountPath: /spool
+                - name: scripts
+                  mountPath: /scripts
+          volumes:
+            - name: spool
+              persistentVolumeClaim:
+                claimName: knowledge-spool
+            - name: scripts
+              configMap:
+                name: knowledge-pipeline-scripts
+
+---
+
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: knowledge-producer-mysql
+  namespace: ka0s-knowledge
+spec:
+  schedule: "0 3 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          priorityClassName: ka0s-offline-low
+          restartPolicy: Never
+          containers:
+            - name: producer
+              image: python:3.11-slim
+              command: ["/bin/sh", "-lc"]
+              args:
+                - |
+                  pip install --no-cache-dir requests mysql-connector-python && python /scripts/produce_mysql.py
+              env:
+                - name: SOURCE
+                  value: mysql-itil
+                - name: SPOOL_DIR
+                  value: /spool
+                - name: OLLAMA_EMBED_URL
+                  value: http://ollama-embed.ollama-embed.svc.cluster.local:11434
+                - name: EMBEDDING_MODEL
+                  value: nomic-embed-text
+                - name: EMBEDDING_DIM
+                  value: "768"
+                - name: MYSQL_TABLES
+                  value: "*"
+              envFrom:
+                - secretRef:
+                    name: knowledge-sources
+              volumeMounts:
+                - name: spool
+                  mountPath: /spool
+                - name: scripts
+                  mountPath: /scripts
+          volumes:
+            - name: spool
+              persistentVolumeClaim:
+                claimName: knowledge-spool
+            - name: scripts
+              configMap:
+                name: knowledge-pipeline-scripts
+
+---
+
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: knowledge-loader
+  namespace: ka0s-knowledge
+spec:
+  schedule: "*/15 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          priorityClassName: ka0s-offline-low
+          restartPolicy: Never
+          containers:
+            - name: loader
+              image: python:3.11-slim
+              command: ["/bin/sh", "-lc"]
+              args:
+                - |
+                  pip install --no-cache-dir psycopg2-binary && python /scripts/load_spool.py
+              env:
+                - name: SPOOL_DIR
+                  value: /spool
+                - name: EMBEDDING_DIM
+                  value: "768"
+              envFrom:
+                - secretRef:
+                    name: knowledge-sources
+              volumeMounts:
+                - name: spool
+                  mountPath: /spool
+                - name: scripts
+                  mountPath: /scripts
+          volumes:
+            - name: spool
+              persistentVolumeClaim:
+                claimName: knowledge-spool
+            - name: scripts
+              configMap:
+                name: knowledge-pipeline-scripts
+

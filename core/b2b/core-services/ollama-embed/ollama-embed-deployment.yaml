@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ollama-embed
+  namespace: ollama-embed
+  labels:
+    app: ollama-embed
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ollama-embed
+  template:
+    metadata:
+      labels:
+        app: ollama-embed
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: k8-node-20
+      containers:
+        - name: ollama
+          image: ollama/ollama:latest
+          ports:
+            - containerPort: 11434
+          env:
+            - name: OLLAMA_KEEP_ALIVE
+              value: "24h"
+            - name: OLLAMA_HOST
+              value: "0.0.0.0"
+            - name: OLLAMA_ORIGINS
+              value: "*"
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: "2"
+              memory: 4Gi
+          volumeMounts:
+            - name: models
+              mountPath: /root/.ollama
+      volumes:
+        - name: models
+          persistentVolumeClaim:
+            claimName: ollama-embed-pvc
+
