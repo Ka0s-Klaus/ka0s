@@ -42,6 +42,9 @@ jobs:
           git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
           git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
           
+          echo "Verifying report generation..."
+          ls -la audit/reports/lead-time/
+          
           git add audit/reports/lead-time/
           
           # Only commit if there are changes
@@ -49,7 +52,10 @@ jobs:
             echo "No changes to commit"
           else
             git commit -m "[Ka0S] Daily Lead Time Report $(date +'%Y-%m-%d')"
-            git push
+            
+            # Robust push with rebase
+            git pull --rebase origin "${{ github.ref_name }}" || true
+            git push origin HEAD:"${{ github.ref_name }}"
           fi
 
   handle-success:
