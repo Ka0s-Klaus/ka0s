@@ -46,7 +46,7 @@ class ZabbixDashboardManager:
             
             return result.get('result')
         except Exception as e:
-            print(f"Error connecting to Zabbix API: {e}")
+            print(f"Error connecting to Zabbix API: {e}\nParams: {json.dumps(params, indent=2)}")
             sys.exit(1)
 
     def log(self, msg):
@@ -107,9 +107,9 @@ class ZabbixDashboardManager:
                             target_name = resolver.get('target_field', 'itemid')
                             
                             new_fields.append({
-                                "type": 1, # Type 1 is for Item ID
+                                "type": 4, # Type 4 is for Item ID in Zabbix 6.4+
                                 "name": target_name, 
-                                "value": str(item_id)
+                                "value": int(item_id)
                             })
                         else:
                             self.log(f"Skipping field due to resolution failure: {host}:{key}")
