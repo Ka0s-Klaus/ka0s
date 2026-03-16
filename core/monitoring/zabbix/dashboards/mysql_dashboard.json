@@ -1,0 +1,115 @@
+{
+  "name": "[Ka0s] MySQL Overview",
+  "width": 12,
+  "height": 8,
+  "widgets": [
+    {
+      "type": "graph",
+      "name": "MySQL Queries",
+      "x": 0,
+      "y": 0,
+      "width": 12,
+      "height": 5,
+      "view_mode": 0,
+      "fields": [
+        {
+          "type": 0,
+          "name": "source_type",
+          "value": 1
+        },
+        {
+          "resolve_item": {
+            "host": "mysql",
+            "key": "mysql.status[Questions]",
+            "target_field": "itemid.0"
+          }
+        },
+        {
+          "type": 0,
+          "name": "color.0",
+          "value": "00FF00"
+        },
+        {
+          "resolve_item": {
+            "host": "mysql",
+            "key": "mysql.status[Slow_queries]",
+            "target_field": "itemid.1"
+          }
+        },
+        {
+          "type": 0,
+          "name": "color.1",
+          "value": "FF0000"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "name": "MySQL Threads",
+      "x": 0,
+      "y": 5,
+      "width": 6,
+      "height": 5,
+      "view_mode": 0,
+      "fields": [
+        {
+          "type": 0,
+          "name": "source_type",
+          "value": 1
+        },
+        {
+          "resolve_item": {
+            "host": "mysql",
+            "key": "mysql.status[Threads_connected]",
+            "target_field": "itemid.0"
+          }
+        },
+        {
+          "type": 0,
+          "name": "color.0",
+          "value": "0000FF"
+        },
+        {
+          "resolve_item": {
+            "host": "mysql",
+            "key": "mysql.status[Threads_running]",
+            "target_field": "itemid.1"
+          }
+        },
+        {
+          "type": 0,
+          "name": "color.1",
+          "value": "FF00FF"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "name": "InnoDB Buffer Pool Free Pages",
+      "x": 6,
+      "y": 5,
+      "width": 6,
+      "height": 5,
+      "view_mode": 0,
+      "fields": [
+        {
+          "type": 0,
+          "name": "source_type",
+          "value": 1
+        },
+        {
+          "resolve_item": {
+            "host": "mysql",
+            "key": "mysql.innodb_buffer_pool_pages[free]",
+            "target_field": "itemid.0"
+          }
+        },
+        {
+          "type": 0,
+          "name": "color.0",
+          "value": "FFAA00"
+        }
+      ]
+    }
+  ]
+}

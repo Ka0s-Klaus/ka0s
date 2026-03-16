@@ -102,12 +102,12 @@ class ZabbixDashboardManager:
                         
                         if item_id:
                             # Replace with actual itemid field structure for Zabbix
-                            # Type 1 = Item ID, Name = "itemid" usually (depends on widget type)
-                            # But for graphs, it's usually type 1, name "itemid" or "itemid.0"
-                            # We assume standard graph widget structure here
+                            # Default to "itemid" if target_field not specified
+                            target_name = resolver.get('target_field', 'itemid')
+                            
                             new_fields.append({
-                                "type": 1,
-                                "name": "itemid", # Default for single item widgets
+                                "type": 1, # Type 1 is for Item ID
+                                "name": target_name, 
                                 "value": str(item_id)
                             })
                         else:
