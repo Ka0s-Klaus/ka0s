@@ -11,7 +11,15 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 # iTop API Configuration
-ITOP_URL = os.getenv("ITOP_URL", "http://localhost/webservices/rest.php")
+# Ensure URL ends with /webservices/rest.php
+BASE_URL = os.getenv(
+    "ITOP_URL", "http://localhost/webservices/rest.php"
+).rstrip('/')
+if not BASE_URL.endswith(".php"):
+    ITOP_URL = f"{BASE_URL}/webservices/rest.php"
+else:
+    ITOP_URL = BASE_URL
+
 ITOP_USER = os.getenv("ITOP_USER", "admin")
 ITOP_PASSWORD = os.getenv("ITOP_PASSWORD", "admin")
 ITOP_API_VERSION = "1.3"
@@ -21,6 +29,8 @@ def itop_request(operation: str, data: Dict[str, Any]) -> Dict[str, Any]:
     """Sends a request to the iTop REST API."""
     payload = {
         "version": ITOP_API_VERSION,
+        "auth_user": ITOP_USER,
+        "auth_pwd": ITOP_PASSWORD,
         "json_data": json.dumps({
             "operation": operation,
             **data
@@ -31,7 +41,6 @@ def itop_request(operation: str, data: Dict[str, Any]) -> Dict[str, Any]:
         response = requests.post(
             ITOP_URL, 
             data=payload, 
-            auth=(ITOP_USER, ITOP_PASSWORD), 
             verify=False
         )
         response.raise_for_status()
@@ -165,6 +174,10 @@ def main():
     )
     parser.add_argument("path", help="Path to JSON file or directory")
     args = parser.parse_args()
+
+    # Mask password in logs
+    masked_url = ITOP_URL.replace(ITOP_PASSWORD, "******") if ITOP_PASSWORD else ITOP_URL
+    print(f"Using iTop API URL: {masked_url}")
 
     if os.path.isfile(args.path):
         process_file(args.path)
