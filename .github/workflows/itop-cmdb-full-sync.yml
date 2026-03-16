@@ -75,6 +75,8 @@ jobs:
              if [ ! -z "$SVCS" ]; then
                 # Append to list (replace newlines with comma)
                 CLEAN_SVCS=$(echo "$SVCS" | tr '\n' ',' | sed 's/,$//')
+                # Add namespace prefix to service name for uniqueness (e.g., ns-service)
+                # Or just list services. Assuming simple list for now as per original logic.
                 SERVICES_LIST="${SERVICES_LIST}${CLEAN_SVCS},"
              fi
           done
@@ -84,6 +86,7 @@ jobs:
           
           if [ -z "$SERVICES_LIST" ]; then
              echo "⚠️ No services found matching criteria."
+             # Do not set output to empty string if it causes failure downstream, handle it gracefully
              echo "services=" >> $GITHUB_OUTPUT
           else
              echo "✅ Found Services: $SERVICES_LIST"
@@ -100,6 +103,7 @@ jobs:
           ITOP_ORIGIN: ${{ secrets.ITOP_ORIGIN || vars.ITOP_ORIGIN || 'Demo' }}
           ITOP_SSL_VERIFY: ${{ vars.ITOP_SSL_VERIFY || 'false' }}
         run: |
+          echo "Syncing services: ${{ steps.discover.outputs.services }}"
           python .github/scripts/itop-cmdb-sync.py \
             --services "${{ steps.discover.outputs.services }}" \
             --status "production"
