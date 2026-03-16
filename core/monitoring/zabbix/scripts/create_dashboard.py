@@ -17,8 +17,9 @@ ZABBIX_PASS = os.getenv('ZABBIX_PASS', 'zabbix')
 class ZabbixDashboardManager:
     def __init__(self, url, user, password):
         self.url = url
-        self.user = user
-        self.password = password
+        # Handle empty strings from empty secrets by falling back to defaults
+        self.user = user if user else 'Admin'
+        self.password = password if password else 'zabbix'
         self.auth_token = None
         self.request_id = 1
 
