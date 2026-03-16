@@ -33,6 +33,18 @@ def main():
         tomorrow = today + timedelta(days=1)
         
         print(f"Querying MongoDB 'inspector.col_json' for date: {today.date()}...")
+        print(f"Connecting to MongoDB...")
+        client = pymongo.MongoClient(MONGO_URI)
+        db = client["inspector"]
+        col = db["col_json"]
+        
+        # Test connection
+        client.admin.command('ping')
+        print("✅ MongoDB connection successful.")
+        
+        # Calculate time range for the report (Today)
+        today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        tomorrow = today + timedelta(days=1)
         
         # Query documents imported today
         # Note: Ideally we query by 'data.createdAt', but 'import_date' is safer index-wise for now
@@ -42,6 +54,9 @@ def main():
         
         cursor = col.find(query)
         stats = []
+        
+        count = col.count_documents(query)
+        print(f"Found {count} documents matching query.")
         
         for doc in cursor:
             data = doc.get('data', {})
