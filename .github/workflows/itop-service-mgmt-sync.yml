@@ -59,9 +59,9 @@ jobs:
 
       - name: Run iTop Sync
         env:
-          ITOP_URL: ${{ secrets.ITOP_URL }}
-          ITOP_USER: ${{ secrets.ITOP_USER }}
-          ITOP_PASSWORD: ${{ secrets.ITOP_PASSWORD }}
+          ITOP_URL: ${{ secrets.ITOP_URL || vars.ITOP_URL }}
+          ITOP_USER: ${{ secrets.ITOP_API_USER }}
+          ITOP_PASSWORD: ${{ secrets.ITOP_API_PASSWORD }}
         run: |
           echo "Sincronizando definiciones de Service Management con iTop..."
           python3 core/automation/itop-sync/itop_sync.py compliance/itil/service-management
