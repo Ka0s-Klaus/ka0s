@@ -88,9 +88,9 @@ jobs:
 
       - name: Commit Validation Report
         run: |
-          git config --global user.name "Ka0s CI Bot"
-          git config --global user.email "ci@ka0s.io"
-          
+          git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
+          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
+          git pull --rebase
           # Use shell variable for robustness
           echo "Committing report: $REPORT_FILE"
           
