@@ -132,14 +132,16 @@ def sync_object(obj_def: Dict[str, Any]):
         data = {
             "class": class_name,
             "key": existing_id,
-            "fields": fields
+            "fields": fields,
+            "comment": "Updated via Ka0s Automation"
         }
         result = itop_request("core/update", data)
     else:
         print("  Object not found. Creating...")
         data = {
             "class": class_name,
-            "fields": fields
+            "fields": fields,
+            "comment": "Created via Ka0s Automation"
         }
         result = itop_request("core/create", data)
 
