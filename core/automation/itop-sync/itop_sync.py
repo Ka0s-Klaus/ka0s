@@ -32,7 +32,15 @@ def itop_request(operation: str, data: Dict[str, Any]) -> Dict[str, Any]:
     try:
         response = requests.post(ITOP_URL, data=payload, verify=False)
         response.raise_for_status()
-        result = response.json()
+        
+        # Debugging: Print raw response content if JSON decode fails
+        try:
+            result = response.json()
+        except json.JSONDecodeError:
+            print(f"Failed to decode JSON. Status: {response.status_code}")
+            # Print first 500 chars
+            print(f"Raw Response: {response.text[:500]}...")
+            return None
 
         if result.get("code") != 0:
             print(f"Error in iTop request: {result.get('message')}")
@@ -43,9 +51,6 @@ def itop_request(operation: str, data: Dict[str, Any]) -> Dict[str, Any]:
         return result
     except requests.exceptions.RequestException as e:
         print(f"HTTP Request failed: {e}")
-        return None
-    except json.JSONDecodeError:
-        print("Failed to decode JSON response")
         return None
 
 
