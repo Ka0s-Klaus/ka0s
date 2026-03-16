@@ -16,7 +16,7 @@ POSTGRES_HOST = os.getenv("DB_HOST") or os.getenv("POSTGRES_HOST") or "localhost
 POSTGRES_PORT = os.getenv("DB_PORT") or os.getenv("POSTGRES_PORT") or "5433"
 POSTGRES_DB = os.getenv("DB_NAME") or os.getenv("POSTGRES_DB") or "ka0s_memory"
 POSTGRES_USER = os.getenv("DB_USER") or os.getenv("POSTGRES_USER") or "ka0s_ai"
-POSTGRES_PASSWORD = os.getenv("DB_PASSWORD") or os.getenv("POSTGRES_PASSWORD") or "change_me_in_production_vector_db_123!"
+POSTGRES_PASSWORD = os.getenv("DB_PASSWORD") or os.getenv("POSTGRES_PASSWORD")
 
 OLLAMA_HOST = os.getenv("OLLAMA_HOST") or "localhost"
 OLLAMA_PORT = os.getenv("OLLAMA_PORT") or "11435"
@@ -236,6 +236,9 @@ def get_db_connection(db_name=None):
     """
     target_db = db_name or POSTGRES_DB
     try:
+        if not POSTGRES_PASSWORD:
+            logger.critical("DB_PASSWORD/POSTGRES_PASSWORD no está configurado")
+            sys.exit(1)
         conn = psycopg2.connect(
             host=POSTGRES_HOST,
             port=POSTGRES_PORT,

@@ -350,9 +350,11 @@ data:
   produce_postgresql.py: |
     import json
     import os
+    import re
     from typing import Any, Dict, List
 
     import psycopg2
+    from psycopg2 import sql
 
     from common import (
         chunk_text,
@@ -485,15 +487,26 @@ data:
                     where = f" WHERE {watermark_field} > %s"
                     params = (last_wm,)
 
+            cursor_name = re.sub(r"[^a-zA-Z0-9_]+", "_", f"kaos_stream_{schema}_{table}")
             if has_wm:
-                order = f" ORDER BY t.{watermark_field} ASC"
-                sql = f"SELECT row_to_json(t), t.{watermark_field} FROM {schema}.{table} t{where}{order}"
+                q = sql.SQL("SELECT row_to_json(t), t.{wm} FROM {schema}.{table} t").format(
+                    wm=sql.Identifier(watermark_field),
+                    schema=sql.Identifier(schema),
+                    table=sql.Identifier(table),
+                )
+                if where:
+                    q = q + sql.SQL(" WHERE {wm} > %s").format(wm=sql.Identifier(watermark_field))
+                q = q + sql.SQL(" ORDER BY t.{wm} ASC").format(wm=sql.Identifier(watermark_field))
+                query_sql = q
             else:
-                sql = f"SELECT row_to_json(t), NULL FROM {schema}.{table} t"
+                query_sql = sql.SQL("SELECT row_to_json(t), NULL FROM {schema}.{table} t").format(
+                    schema=sql.Identifier(schema),
+                    table=sql.Identifier(table),
+                )
 
-            cur = conn.cursor(name=f"kaos_stream_{schema}_{table}")
+            cur = conn.cursor(name=cursor_name)
             cur.itersize = int(os.environ.get("PG_FETCH_SIZE", "1000"))
-            cur.execute(sql, params)
+            cur.execute(query_sql, params)
             max_seen = None
             table_rows = 0
             for row_json, wm in cur:
@@ -569,6 +582,7 @@ data:
     from typing import Any, Dict, List
 
     import mysql.connector
+    import re
 
     from common import (
         chunk_text,
@@ -608,6 +622,10 @@ data:
             if isinstance(col, str) and col:
                 cols.append(col)
         return cols
+
+
+    def _safe_ident(value: str) -> str:
+        return value if re.fullmatch(r"[A-Za-z0-9_]+", value or "") else ""
 
 
     def main() -> None:
@@ -664,8 +682,15 @@ data:
         total_chunks = 0
         total_rows = 0
         for table in target_tables:
+            safe_table = _safe_ident(table)
+            if not safe_table:
+                continue
+            safe_watermark = _safe_ident(watermark_field)
             pk_cols = _pk_columns(meta_cur, table)
-            cur.execute(f"SHOW COLUMNS FROM {table} LIKE %s", (watermark_field,))
+            if safe_watermark:
+                cur.execute(f"SHOW COLUMNS FROM `{safe_table}` LIKE %s", (safe_watermark,))
+            else:
+                cur.execute(f"SHOW COLUMNS FROM `{safe_table}`")
             has_wm = cur.fetchone() is not None
 
             if not has_wm and mode == "incremental" and no_wm_done.get(table) is True:
@@ -673,16 +698,19 @@ data:
 
             where = ""
             params = ()
-            if mode == "incremental":
+            if mode == "incremental" and safe_watermark:
                 last_wm = state_tables.get(table)
                 if has_wm and isinstance(last_wm, str) and last_wm:
-                    where = f" WHERE {watermark_field} > %s"
+                    where = f" WHERE `{safe_watermark}` > %s"
                     params = (last_wm,)
 
-            if has_wm:
-                cur.execute(f"SELECT * FROM {table}{where} ORDER BY {watermark_field} ASC", params)
+            if has_wm and safe_watermark:
+                cur.execute(
+                    f"SELECT * FROM `{safe_table}`{where} ORDER BY `{safe_watermark}` ASC",
+                    params,
+                )
             else:
-                cur.execute(f"SELECT * FROM {table}")
+                cur.execute(f"SELECT * FROM `{safe_table}`")
             max_seen = None
             table_rows = 0
             for row in cur:
@@ -725,8 +753,8 @@ data:
                 if max_chunks_total > 0 and total_chunks >= max_chunks_total:
                     break
 
-                if watermark_field in row:
-                    max_seen = row[watermark_field]
+                if safe_watermark and safe_watermark in row:
+                    max_seen = row[safe_watermark]
 
             if mode == "incremental" and has_wm and max_seen is not None:
                 state_tables[table] = str(max_seen)
