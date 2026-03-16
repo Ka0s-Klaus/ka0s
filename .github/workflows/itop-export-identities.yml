@@ -1,0 +1,162 @@
+name: "[Ka0s] iTop Identities Export"
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Motivo de la exportación manual'
+        required: false
+        default: 'Backup de usuarios y equipos'
+
+permissions:
+  contents: write
+
+env:
+  KAOS_MODULE: "[Ka0s] iTop Identities Export"
+  KAOS_CODE: ${{ github.run_id }}
+  KAOS_ACTOR: ${{ github.actor }}
+
+jobs:
+  core-execution:
+    name: Export Identities
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          pip install -r core/automation/itop-sync/requirements.txt
+
+      - name: Run iTop Identities Export
+        env:
+          ITOP_URL: ${{ secrets.ITOP_URL || vars.ITOP_URL }}
+          ITOP_USER: ${{ secrets.ITOP_API_USER }}
+          ITOP_PASSWORD: ${{ secrets.ITOP_API_PASSWORD }}
+        run: |
+          echo "Exportando identidades (Personas, Equipos, Usuarios) desde iTop..."
+          python3 core/automation/itop-sync/itop_export_identities.py
+
+      - name: Commit & Push Changes
+        if: success()
+        run: |
+          git config --global user.name "${{ secrets.KAOS_BOT_NAME || 'Ka0s Bot' }}"
+          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL || 'bot@ka0s.io' }}"
+          
+          git add compliance/itil/identities/*.json
+          
+          if ! git diff --staged --quiet; then
+            git commit -m "chore(itil): update identities definitions from iTop [skip ci]"
+            count=0
+            until git push origin HEAD:${{ github.ref_name }} || [ $count -eq 5 ]; do
+              echo "Push fallido, reintentando..."
+              git pull --rebase origin ${{ github.ref_name }}
+              ((count++))
+              sleep 2
+            done
+          else
+            echo "No hay cambios en la configuración."
+          fi
+
+  handle-success:
+    name: Handle Success
+    needs: [core-execution]
+    if: success()
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Notify Success
+        run: echo "✅ Workflow ${{ env.KAOS_MODULE }} completado correctamente."
+
+  handle-failure:
+    name: Handle Failure
+    needs: [core-execution]
+    if: failure()
+    runs-on: swarm-runners-scaleset
+    permissions:
+      issues: write
+      contents: read
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+      
+      - name: Create Incident Issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --title "[INCIDENT]: Fallo en workflow ${{ github.workflow }}" \
+            --label "itop-incident,triage,automated" \
+            --body "### Organización
+          Ka0s
+          
+          ### Solicitante
+          @${{ github.actor }}
+          
+          ### Estado
+          New
+          
+          ### Impacto
+          Service
+          
+          ### Urgencia
+          Medium
+          
+          ### Servicio / CI afectado
+          GitHub Actions / ${{ github.workflow }}
+          
+          ### Descripción
+          El workflow **${{ github.workflow }}** ha fallado durante la exportación de Identidades.
+          
+          **Detalles Técnicos:**
+          - **Módulo**: ${{ env.KAOS_MODULE }}
+          - **Run ID**: ${{ github.run_id }}
+          - **Commit**: ${{ github.sha }}
+          - **Branch/Ref**: ${{ github.ref_name }}
+          - **Actor**: ${{ github.actor }}
+          
+          ### Pasos / Evidencias
+          Logs de ejecución: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          "
+
+  end-workflow:
+    needs: [handle-success, handle-failure]
+    if: always()
+    runs-on: swarm-runners-scaleset
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - id: repo
+        name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+        
+      - name: Trigger Inspector
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "🔍 Triggering Inspector for Audit..."
+          gh workflow run inspector.yml \
+            --ref main \
+            -f workflow_name="${{ github.workflow }}" \
+            -f run_id="${{ github.run_id }}" \
+            -f status="${{ job.status }}" \
+            -f kaos-user-start="${{ github.triggering_actor }}"
