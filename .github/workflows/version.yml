@@ -1,235 +1,158 @@
 name: Ka0S Version
 on:
   pull_request:
-    types: [opened]
+    types: [closed]
     branches:
       - 'main'
+
 permissions:
   contents: write
   issues: write
   actions: write
+
 env:
   KAOS_MODULE: "[Ka0S] VERSION"
-  GH_TOKEN: ${{ github.token }}
-  PATH_RESUME: "core/config/"
-  KAOS_REPO: "/actions-runner/_work/kaos/kaos"
-  KAOS_STEP_MODULE: ""
-  KAOS_CODE: ${{ github.run_id }}
-  GH_VERSION: ""
-  
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  KAOS_BOT_NAME: ${{ secrets.KAOS_BOT_NAME }}
+  KAOS_BOT_EMAIL: ${{ secrets.KAOS_BOT_EMAIL }}
+
 jobs:
-  job-core:
-    if: github.event.pull_request.state == 'open'
+  version-bump:
+    if: github.event.pull_request.merged == true
     runs-on: swarm-runners-scaleset
-    env:
-      GH_TOKEN: ${{ github.token }}
     outputs:
-      KAOS_BRANCH: ${{ steps.commit_details.outputs.RNBRANCH }}
-      KAOS_NUMBER: ${{ steps.commit_details.outputs.RNNUMBER }}
-      KAOS_VERSION: ${{ steps.version.outputs.VERSION }}
-      KAOS_FILES: ${{ steps.changed_files.outputs.CHANGED_FILES }}
-      AUTHOR_NAME: ${{ steps.commit_details.outputs.AUTHOR_NAME }}
-      AUTHOR_EMAIL: ${{ steps.commit_details.outputs.AUTHOR_EMAIL }}
-      COMMIT_MESSAGE: ${{ steps.commit_details.outputs.COMMIT_MESSAGE }}
+      NEW_VERSION: ${{ steps.calculate.outputs.NEW_VERSION }}
       
     steps:
-    - id: repo
-      name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-    
-    # con esta parte suplimos que la imagen no disponga de la cli de GH    
-    - name: Install GH CLI
-      uses: ./.github/actions/install-gh-cli
-
-    - id: commit_details
-      name: Get commit details
-      run: |
-        RNNUMBER=$(echo "${{ github.event.pull_request.title }}" | grep -o '[0-9]*')
-        gh issue comment $RNNUMBER --body "Se inicia Version ${{ env.KAOS_CODE }}"
-        echo "GH_VERSION=$(gh api repos/:owner/:repo/git/matching-refs/tags --jq '.[-1].ref' | sed 's|refs/tags/||')" >> $GITHUB_ENV
-        echo "AUTHOR_NAME=$(git log -1 --pretty=format:'%an')" >> $GITHUB_OUTPUT
-        echo "AUTHOR_EMAIL=$(git log -1 --pretty=format:'%ae')" >> $GITHUB_OUTPUT
-        echo "COMMIT_MESSAGE=${{ github.event.pull_request.title }}" >> $GITHUB_OUTPUT
-        RNBRANCH=$(echo "${{ github.event.pull_request.title }}" | grep -o '^[A-Za-z]*')
-        RNNUMBER=$(echo "${{ github.event.pull_request.title }}" | grep -o '[0-9]*')
-        echo "Extracted RN Branch: $RNBRANCH"
-        echo "Extracted RN Number: $RNNUMBER"
-        echo "RNBRANCH=$RNBRANCH" >> $GITHUB_OUTPUT
-        echo "RNNUMBER=$RNNUMBER" >> $GITHUB_OUTPUT 
-
-    - id: version
-      name: Get version
-      run: |
-        if [ ! -f ${{ env.GH_VERSION }} ]; then echo "${{ env.GH_VERSION }}" > version.txt; fi
-        VERSION=${{ env.GH_VERSION }}
-        IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
-        if [[ "${{ steps.commit_details.outputs.RNBRANCH }}" =~ (H) ]]; then
-          PATCH=$((PATCH + 1))
-        elif [[ "${{ steps.commit_details.outputs.RNBRANCH }}" =~ (F) ]]; then
-          MINOR=$((MINOR + 1))
-          PATCH=0
-        elif [[ "${{ steps.commit_details.outputs.RNBRANCH }}" =~ (RN) ]]; then
-          MAJOR=$((MAJOR + 1))
-          MINOR=0
-          PATCH=0
-        fi
-        
-        NEW_VERSION="$MAJOR.$MINOR.$PATCH"
-        echo "VERSION=$NEW_VERSION" >> $GITHUB_OUTPUT
-        echo "GH_VERSION=$NEW_VERSION" >> $GITHUB_ENV
-
-    - id: changed_files
-      name: Get changed files
-      run: |
-        CHANGED_FILES=$(git diff --name-only HEAD~1 | tr '\n' ' ')
-        echo "CHANGED_FILES=$CHANGED_FILES" >> $GITHUB_OUTPUT
-
-    - id: changelog
-      name: Update changelog
-      env:
-        VERSION: ${{ steps.version.outputs.VERSION }}
-        CHANGE_FILES: ${{ steps.changed_files.outputs.CHANGED_FILES }}
-        NAME: ${{ steps.commit_details.outputs.AUTHOR_NAME }}
-        EMAIL: ${{ steps.commit_details.outputs.AUTHOR_EMAIL }}
-        MESSAGE: ${{ steps.commit_details.outputs.COMMIT_MESSAGE }}
-      run: |
-        echo "## Version ${{ env.VERSION }}" >> CHANGELOG.md
-        echo "- **Branch**: ${{ github.ref }}" >> CHANGELOG.md
-        echo "- **Commit**: $(git log -1 --pretty=format:'%s' ${{ github.event.pull_request.head.sha }})" >> CHANGELOG.md
-        echo "- **Author**: ${{ env.NAME }}" >> CHANGELOG.md
-        echo "- **Date**: $(date -u)" >> CHANGELOG.md
-        echo "- **Message**: ${{ env.MESSAGE }}" >> CHANGELOG.md
-        echo "- **Files Changed**:" >> CHANGELOG.md
-        for file in ${{ env.CHANGE_FILES }}; do echo "  - $file" >> CHANGELOG.md; done
-        echo "---------------------------------" >> CHANGELOG.md
-
-    - id: push-log-tag-index
-      name: Push log, tag and index
-      env:
-        USER_NAME: ${{ secrets.KAOS_BOT_NAME }}
-        USER_EMAIL: ${{ secrets.KAOS_BOT_EMAIL }}
-        GH_TOKEN: ${{ github.token }}
-      run: |
-        git config --global user.name '${{ env.USER_NAME }}'
-        git config --global user.email '${{ env.USER_EMAIL}}'
-        git tag -a "${{ steps.version.outputs.VERSION }}" -m "${{ env.KAOS_MODULE }} NEW Ka0S version ${{ steps.version.outputs.VERSION }}"
-        git push origin "${{ steps.version.outputs.VERSION }}"
-        if [ ! -f INDEX_VERSION.md ]; then echo "# Version Index" > INDEX_VERSION.md; fi
-        echo "- **Version**: ${{ steps.version.outputs.VERSION }} - **Description**: ${{ steps.commit_details.outputs.COMMIT_MESSAGE }}" >> INDEX_VERSION.md
-        git add INDEX_VERSION.md CHANGELOG.md
-        git commit -m "${{ env.KAOS_MODULE }}  Upload: CHANGELOG.md, INDEX_VERSION.md with version ${{ steps.version.outputs.VERSION }}"
-        git push origin HEAD:${{ github.head_ref }}
-
-    - id: failure-delete-tag
-      name: Delete tag on failure
-      if: ${{ failure() }}
-      run: |
-        # Antes de nada borramos el tag asignado en el paso anterior
-        git push origin --delete "${{ steps.version.outputs.VERSION }}"
-        KAOS_ISSUE_BODY="Sentimos comunicarle que no se cumplen los requerimientos, por favor revise los checks"
-        # gh workflow run issue.yaml --ref main -f kaos-issue-id="${{ github.event.pull_request.number }}" -f kaos-issue-body="$KAOS_ISSUE_BODY" -f kaos-issue-actions=comment
-  handle-success:
-    runs-on: swarm-runners-scaleset
-    needs: [job-core]
-    if: ${{ success() }}
-    steps:
-      - id: repo
-        name: Checkout code
-        if: ${{ always() }}
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          
-      # con esta parte suplimos que la imagen no disponga de la cli de GH    
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Install GH CLI
         uses: ./.github/actions/install-gh-cli
 
-      - id: handle-success-execution
-        name: handle-success-execution
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Determine Version Increment
+        id: calculate
         run: |
-          echo "Process completed successfully ${{ env.KAOS_CODE }}"
-          gh issue comment ${{ needs.job-core.outputs.KAOS_NUMBER }} --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado está en el fichero ${{ env.KAOS_CODE }}.log"
-  handle-failure:
-    name: Handle Failure
-    runs-on: swarm-runners-scaleset
-    needs: [job-core]
-    if: failure()
-    permissions:
-      issues: write
-      contents: read
-    steps:
-      - id: repo
-        name: Checkout code
-        uses: actions/checkout@v4
+          # Obtener rama origen y versión actual
+          SOURCE_BRANCH="${{ github.event.pull_request.head.ref }}"
+          CURRENT_VERSION=$(cat version.txt 2>/dev/null || echo "0.0.0")
+          
+          echo "Current Version: $CURRENT_VERSION"
+          echo "Source Branch: $SOURCE_BRANCH"
+          
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
+          
+          # Lógica de incremento basada en prefijos estándar (Best Practices)
+          if [[ "$SOURCE_BRANCH" == release/* ]] || [[ "$SOURCE_BRANCH" == major/* ]]; then
+            MAJOR=$((MAJOR + 1))
+            MINOR=0
+            PATCH=0
+            TYPE="Major"
+          elif [[ "$SOURCE_BRANCH" == feat/* ]] || [[ "$SOURCE_BRANCH" == feature/* ]]; then
+            MINOR=$((MINOR + 1))
+            PATCH=0
+            TYPE="Minor"
+          elif [[ "$SOURCE_BRANCH" == fix/* ]] || [[ "$SOURCE_BRANCH" == hotfix/* ]] || [[ "$SOURCE_BRANCH" == bugfix/* ]]; then
+            PATCH=$((PATCH + 1))
+            TYPE="Patch"
+          else
+            # Default fallback (Patch) o mantener lógica legacy H/F si se desea
+            # Por seguridad y best practices, asumimos patch para otros cambios
+            PATCH=$((PATCH + 1))
+            TYPE="Patch (Default)"
+          fi
+          
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          echo "New Version: $NEW_VERSION ($TYPE)"
+          
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "VERSION_TYPE=$TYPE" >> $GITHUB_ENV
+
+      - name: Update Version Files
+        id: update_files
+        env:
+          NEW_VERSION: ${{ steps.calculate.outputs.NEW_VERSION }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          # Actualizar version.txt
+          echo "$NEW_VERSION" > version.txt
+          
+          # Actualizar CHANGELOG.md
+          DATE=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          ENTRY="## Version $NEW_VERSION
+          - **Date**: $DATE
+          - **Type**: ${{ env.VERSION_TYPE }}
+          - **PR**: #$PR_NUMBER $PR_TITLE
+          - **Author**: @$PR_AUTHOR
+          ---------------------------------"
+          
+          # Prepend (o append inteligente, aquí hacemos append simple al final como estaba, 
+          # pero idealmente sería prepend. El script original hacía append.)
+          # Vamos a mantener el append para no romper el formato existente masivo.
+          echo "$ENTRY" >> CHANGELOG.md
+          
+          # Actualizar INDEX_VERSION.md
+          if [ ! -f INDEX_VERSION.md ]; then echo "# Version Index" > INDEX_VERSION.md; fi
+          echo "- **Version**: $NEW_VERSION - **Description**: $PR_TITLE" >> INDEX_VERSION.md
+          
+          echo "Files updated."
+
+      - name: Commit and Push
+        env:
+          NEW_VERSION: ${{ steps.calculate.outputs.NEW_VERSION }}
+        run: |
+          git config --global user.name "${{ env.KAOS_BOT_NAME }}"
+          git config --global user.email "${{ env.KAOS_BOT_EMAIL }}"
+          
+          git add version.txt CHANGELOG.md INDEX_VERSION.md
+          git commit -m "${{ env.KAOS_MODULE }} Bump version to $NEW_VERSION"
+          
+          # Crear Tag
+          git tag -a "$NEW_VERSION" -m "Version $NEW_VERSION"
+          
+          # Push Atomic
+          git push origin main
+          git push origin "$NEW_VERSION"
+
+      - name: Create Release (Optional)
+        uses: softprops/action-gh-release@v1
         with:
-          fetch-depth: 0
-      - name: Install GH CLI
-        uses: ./.github/actions/install-gh-cli
-      - name: Create Incident Issue
+          tag_name: ${{ steps.calculate.outputs.NEW_VERSION }}
+          name: Version ${{ steps.calculate.outputs.NEW_VERSION }}
+          body: |
+            ## Changes
+            ${{ github.event.pull_request.title }}
+            
+            **Author**: @${{ github.event.pull_request.user.login }}
+            **PR**: #${{ github.event.pull_request.number }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  handle-success:
+    needs: [version-bump]
+    if: success()
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Notify Success
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEW_VERSION: ${{ needs.version-bump.outputs.NEW_VERSION }}
+        run: |
+          gh issue comment ${{ github.event.pull_request.number }} --body "🚀 **Versión $NEW_VERSION publicada correctamente.**"
+
+  handle-failure:
+    needs: [version-bump]
+    if: failure()
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Notify Failure
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh issue create \
-            --title "[INCIDENT]: Fallo en workflow ${{ github.workflow }}" \
-            --label "itop-incident,triage,automated" \
-            --body "### Organización
-          Ka0s
-          
-          ### Solicitante
-          @${{ github.actor }}
-          
-          ### Estado
-          New
-          
-          ### Impacto
-          Service
-          
-          ### Urgencia
-          Medium
-          
-          ### Servicio / CI afectado
-          GitHub Actions / ${{ github.workflow }}
-          
-          ### Descripción
-          El workflow **${{ github.workflow }}** ha fallado durante su ejecución.
-          
-          **Detalles Técnicos:**
-          - **Módulo**: ${{ env.KAOS_MODULE }}
-          - **Run ID**: ${{ github.run_id }}
-          - **Commit**: ${{ github.sha }}
-          - **Branch/Ref**: ${{ github.ref_name }}
-          - **Actor**: ${{ github.actor }}
-          
-          ### Pasos / Evidencias
-          Logs de ejecución: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          "
-      - name: Comment on PR
-        if: github.event_name == 'pull_request'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh issue comment ${{ github.event.pull_request.number }} --body "❌ El proceso de versionado ha fallado. Revisa el incidente creado."
-
-  end-workflow:
-    needs: [handle-success, handle-failure]
-    if: always()
-    runs-on: swarm-runners-scaleset
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Install GH CLI
-        uses: ./.github/actions/install-gh-cli
-      - name: Trigger Inspector
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh workflow run inspector.yml \
-            -f workflow_name="${{ github.workflow }}" \
-            -f run_id="${{ github.run_id }}" \
-            -f status="${{ job.status }}"
+          gh issue comment ${{ github.event.pull_request.number }} --body "❌ **Fallo en el versionado automático.** Por favor revisa los logs."
+          # Aquí se podría integrar la creación de incidente estándar de Ka0s
