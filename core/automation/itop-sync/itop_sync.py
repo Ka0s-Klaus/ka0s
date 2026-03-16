@@ -21,8 +21,6 @@ def itop_request(operation: str, data: Dict[str, Any]) -> Dict[str, Any]:
     """Sends a request to the iTop REST API."""
     payload = {
         "version": ITOP_API_VERSION,
-        "auth_user": ITOP_USER,
-        "auth_pwd": ITOP_PASSWORD,
         "json_data": json.dumps({
             "operation": operation,
             **data
@@ -30,7 +28,12 @@ def itop_request(operation: str, data: Dict[str, Any]) -> Dict[str, Any]:
     }
 
     try:
-        response = requests.post(ITOP_URL, data=payload, verify=False)
+        response = requests.post(
+            ITOP_URL, 
+            data=payload, 
+            auth=(ITOP_USER, ITOP_PASSWORD), 
+            verify=False
+        )
         response.raise_for_status()
         
         # Debugging: Print raw response content if JSON decode fails
