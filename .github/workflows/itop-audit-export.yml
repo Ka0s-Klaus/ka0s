@@ -41,14 +41,26 @@ jobs:
           git config --global user.name "GitHub Actions Bot"
           git config --global user.email "actions@github.com"
           
-          git add audit/itop/*.json
+          echo "Verifying exported files in audit/itop/..."
+          ls -la audit/itop/ || echo "Directory audit/itop/ not found"
+
+          # Add only if files exist
+          if compgen -G "audit/itop/*.json" > /dev/null; then
+             git add audit/itop/*.json
+          else
+             echo "No JSON files found to commit."
+             exit 0
+          fi
           
-          # Verificar si hay cambios antes de hacer commit
+          # Check for changes
           if git diff --staged --quiet; then
-            echo "No hay nuevos ficheros de auditoría para guardar."
+            echo "No changes detected in exported files."
           else
             git commit -m "Audit: iTop export $(date +%Y-%m-%d)"
-            git push
+            
+            # Robust push with rebase
+            git pull --rebase origin "${{ github.ref_name }}" || true
+            git push origin HEAD:"${{ github.ref_name }}"
           fi
 
   handle-success:
