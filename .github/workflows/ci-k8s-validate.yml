@@ -1,5 +1,6 @@
 name: "Ka0s CI Kubernetes Validation (Kubeval & Trivy) -> Main"
 on:
+  workflow_dispatch:
   push:
     branches:
       - '**'
@@ -89,10 +90,24 @@ jobs:
         run: |
           git config --global user.name "Ka0s CI Bot"
           git config --global user.email "ci@ka0s.io"
-          git add ${{ env.REPORT_FILE }}
+          
+          # Use shell variable for robustness
+          echo "Committing report: $REPORT_FILE"
+          
+          if [ -f "$REPORT_FILE" ]; then
+            git add "$REPORT_FILE"
+          else
+            echo "Error: Report file not found at $REPORT_FILE"
+            exit 1
+          fi
+
           if ! git diff --staged --quiet; then
             git commit -m "chore(ci): add validation report [skip ci]"
-            git push origin HEAD:${{ github.ref_name }}
+            # Fetch and rebase to handle race conditions
+            git pull --rebase origin "${{ github.ref_name }}" || true
+            git push origin HEAD:"${{ github.ref_name }}"
+          else
+            echo "No changes to commit."
           fi
 
   handle-success:
