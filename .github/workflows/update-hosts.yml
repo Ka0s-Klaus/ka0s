@@ -26,7 +26,8 @@ jobs:
           port: ${{ secrets.KAOS_SSH_PORT_1 }}
       - name: Run Update Script
         run: |
-          ./devops/core/k8s/update-hosts.sh
+          chmod +x devops/core/host/system-update.sh
+          ./devops/core/host/system-update.sh /tmp/results "${{ secrets.KAOS_SUDO_PASS }}" "${{ secrets.KAOS_WORKER_SSH_PASS }}"
 
   handle-success:
     name: Handle Success
