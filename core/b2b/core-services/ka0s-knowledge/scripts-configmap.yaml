@@ -58,6 +58,19 @@ data:
         return "|".join(parts)
 
 
+    def filter_names(items: list[str], include_csv: str, exclude_csv: str) -> list[str]:
+        include = parse_csv_set(include_csv)
+        exclude = parse_csv_set(exclude_csv)
+        out: list[str] = []
+        for it in items:
+            if include and it not in include:
+                continue
+            if it in exclude:
+                continue
+            out.append(it)
+        return out
+
+
     def sha256_text(text: str) -> str:
         return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
@@ -77,6 +90,28 @@ data:
         while i < n:
             yield text[i : i + max_chars]
             i += step
+
+
+    def bool_env(name: str, default: bool) -> bool:
+        v = os.environ.get(name)
+        if v is None:
+            return default
+        v = v.strip().lower()
+        if v in {"1", "true", "yes", "y", "on"}:
+            return True
+        if v in {"0", "false", "no", "n", "off"}:
+            return False
+        return default
+
+
+    def int_env(name: str, default: int) -> int:
+        v = os.environ.get(name)
+        if v is None:
+            return default
+        try:
+            return int(v)
+        except Exception:
+            return default
 
 
     def read_json(path: str) -> Any:
@@ -168,7 +203,17 @@ data:
     from bson import ObjectId
     from pymongo import MongoClient
 
-    from common import chunk_text, filter_dict_fields, parse_csv_set, run_id_now, sha256_text, stable_json, utc_ts
+    from common import (
+        int_env,
+        chunk_text,
+        filter_dict_fields,
+        filter_names,
+        parse_csv_set,
+        run_id_now,
+        sha256_text,
+        stable_json,
+        utc_ts,
+    )
     from ollama_embed import embed
     from spool_write import append_jsonl, open_run_dir, write_manifest
     from state import load_state, save_state
@@ -195,19 +240,27 @@ data:
         mongo_uri = os.environ["MONGO_URI"]
         mongo_db = os.environ.get("MONGO_DB", "audit")
         collections = os.environ.get("MONGO_COLLECTIONS", "*")
-        mode = os.environ.get("MODE", "incremental")
+        collections_exclude = os.environ.get("MONGO_COLLECTIONS_EXCLUDE", "")
+        mode = os.environ.get("MODE", "auto")
         allow_fields = parse_csv_set(os.environ.get("MONGO_ALLOW_FIELDS"))
         deny_fields = parse_csv_set(os.environ.get("MONGO_DENY_FIELDS"))
         max_chars = int(os.environ.get("CHUNK_MAX_CHARS", "2000"))
         overlap = int(os.environ.get("CHUNK_OVERLAP_CHARS", "200"))
+        max_docs = int_env("MAX_DOCS_PER_RUN", 0)
+        max_chunks = int_env("MAX_CHUNKS_PER_RUN", 0)
 
         base = open_run_dir(source, spool_dir, run_id)
         vectors_path = os.path.join(base, "vectors.jsonl")
 
+        state = load_state(spool_dir, source)
+        if mode == "auto":
+            has_state = bool(state.get("collections"))
+            mode = "incremental" if has_state else "full"
+
         manifest = {
             "run_id": run_id,
             "source": source,
-            "mode": os.environ.get("MODE", "full"),
+            "mode": mode,
             "state": "running",
             "created_at": utc_ts(),
         }
@@ -215,14 +268,16 @@ data:
 
         client = MongoClient(mongo_uri)
         db = client[mongo_db]
+        all_collections = db.list_collection_names()
+        all_collections = [c for c in all_collections if not c.startswith("system.")]
         if collections == "*":
-            target_collections = db.list_collection_names()
+            target_collections = filter_names(all_collections, include_csv="", exclude_csv=collections_exclude)
         else:
-            target_collections = [c.strip() for c in collections.split(",") if c.strip()]
+            target_collections = filter_names(all_collections, include_csv=collections, exclude_csv=collections_exclude)
 
-        state = load_state(spool_dir, source)
         state_collections = state.setdefault("collections", {})
         total_chunks = 0
+        total_docs = 0
         for col_name in target_collections:
             col = db[col_name]
 
@@ -239,10 +294,14 @@ data:
             cursor = col.find(query, no_cursor_timeout=True).sort("_id", 1)
             max_seen_oid: ObjectId | None = None
             for doc in cursor:
+                if max_docs > 0 and total_docs >= max_docs:
+                    break
                 record_id = str(doc.get("_id"))
                 text = _doc_to_text(doc, allow_fields, deny_fields)
                 i = 0
                 for chunk in chunk_text(text, max_chars=max_chars, overlap=overlap):
+                    if max_chunks > 0 and total_chunks >= max_chunks:
+                        break
                     content_hash = sha256_text(chunk)
                     emb = embed(chunk)
                     append_jsonl(
@@ -261,6 +320,10 @@ data:
                     i += 1
                     total_chunks += 1
 
+                total_docs += 1
+                if max_chunks > 0 and total_chunks >= max_chunks:
+                    break
+
                 oid = doc.get("_id")
                 if isinstance(oid, ObjectId):
                     max_seen_oid = oid
@@ -269,8 +332,14 @@ data:
                 state_collections[col_name] = str(max_seen_oid)
                 save_state(spool_dir, source, state)
 
+            if max_docs > 0 and total_docs >= max_docs:
+                break
+            if max_chunks > 0 and total_chunks >= max_chunks:
+                break
+
         manifest["state"] = "ready_for_load"
         manifest["chunks"] = total_chunks
+        manifest["docs"] = total_docs
         write_manifest(base, manifest)
 
 
@@ -288,6 +357,8 @@ data:
     from common import (
         chunk_text,
         filter_dict_fields,
+        filter_names,
+        int_env,
         parse_csv_set,
         run_id_now,
         sha256_text,
@@ -342,15 +413,24 @@ data:
         run_id = run_id_now()
         schema = os.environ.get("PG_SCHEMA", "public")
         tables = os.environ.get("PG_TABLES", "*")
-        mode = os.environ.get("MODE", "incremental")
+        tables_exclude = os.environ.get("PG_TABLES_EXCLUDE", "")
+        mode = os.environ.get("MODE", "auto")
         watermark_field = os.environ.get("PG_WATERMARK_FIELD", "updated_at")
         allow_fields = parse_csv_set(os.environ.get("PG_ALLOW_FIELDS"))
         deny_fields = parse_csv_set(os.environ.get("PG_DENY_FIELDS"))
         max_chars = int(os.environ.get("CHUNK_MAX_CHARS", "2000"))
         overlap = int(os.environ.get("CHUNK_OVERLAP_CHARS", "200"))
+        max_rows_per_table = int_env("MAX_ROWS_PER_TABLE", 0)
+        max_rows_total = int_env("MAX_ROWS_PER_RUN", 0)
+        max_chunks_total = int_env("MAX_CHUNKS_PER_RUN", 0)
 
         base = open_run_dir(source, spool_dir, run_id)
         vectors_path = os.path.join(base, "vectors.jsonl")
+
+        state = load_state(spool_dir, source)
+        if mode == "auto":
+            has_state = bool(state.get("tables")) or bool(state.get("no_watermark_tables"))
+            mode = "incremental" if has_state else "full"
 
         manifest = {
             "run_id": run_id,
@@ -370,14 +450,16 @@ data:
         )
         meta_cur = conn.cursor()
 
+        available_tables = _list_tables(meta_cur, schema)
         if tables == "*":
-            target_tables = _list_tables(meta_cur, schema)
+            target_tables = filter_names(available_tables, include_csv="", exclude_csv=tables_exclude)
         else:
-            target_tables = [t.strip() for t in tables.split(",") if t.strip()]
+            target_tables = filter_names(available_tables, include_csv=tables, exclude_csv=tables_exclude)
 
-        state = load_state(spool_dir, source)
         state_tables = state.setdefault("tables", {})
+        no_wm_done = state.setdefault("no_watermark_tables", {})
         total_chunks = 0
+        total_rows = 0
         for table in target_tables:
             pk_cols = _pk_columns(meta_cur, schema, table)
             meta_cur.execute(
@@ -390,6 +472,10 @@ data:
                 (schema, table, watermark_field),
             )
             has_wm = meta_cur.fetchone() is not None
+
+            table_key = f"{schema}.{table}"
+            if not has_wm and mode == "incremental" and no_wm_done.get(table_key) is True:
+                continue
 
             where = ""
             params: tuple[Any, ...] = tuple()
@@ -409,7 +495,12 @@ data:
             cur.itersize = int(os.environ.get("PG_FETCH_SIZE", "1000"))
             cur.execute(sql, params)
             max_seen = None
+            table_rows = 0
             for row_json, wm in cur:
+                if max_rows_total > 0 and total_rows >= max_rows_total:
+                    break
+                if max_rows_per_table > 0 and table_rows >= max_rows_per_table:
+                    break
                 row = row_json if isinstance(row_json, dict) else json.loads(row_json)
                 if pk_cols:
                     pk_values = [row.get(c) for c in pk_cols]
@@ -421,6 +512,8 @@ data:
                 text = _row_to_text(row)
                 i = 0
                 for chunk in chunk_text(text, max_chars=max_chars, overlap=overlap):
+                    if max_chunks_total > 0 and total_chunks >= max_chunks_total:
+                        break
                     emb = embed(chunk)
                     append_jsonl(
                         vectors_path,
@@ -438,6 +531,12 @@ data:
                     i += 1
                     total_chunks += 1
 
+                total_rows += 1
+                table_rows += 1
+
+                if max_chunks_total > 0 and total_chunks >= max_chunks_total:
+                    break
+
                 max_seen = wm
 
             cur.close()
@@ -446,8 +545,18 @@ data:
                 state_tables[f"{schema}.{table}"] = str(max_seen)
                 save_state(spool_dir, source, state)
 
+            if not has_wm:
+                no_wm_done[table_key] = True
+                save_state(spool_dir, source, state)
+
+            if max_rows_total > 0 and total_rows >= max_rows_total:
+                break
+            if max_chunks_total > 0 and total_chunks >= max_chunks_total:
+                break
+
         manifest["state"] = "ready_for_load"
         manifest["chunks"] = total_chunks
+        manifest["rows"] = total_rows
         write_manifest(base, manifest)
 
 
@@ -464,6 +573,8 @@ data:
     from common import (
         chunk_text,
         filter_dict_fields,
+        filter_names,
+        int_env,
         parse_csv_set,
         run_id_now,
         sha256_text,
@@ -504,15 +615,24 @@ data:
         spool_dir = os.environ.get("SPOOL_DIR", "/spool")
         run_id = run_id_now()
         tables = os.environ.get("MYSQL_TABLES", "*")
-        mode = os.environ.get("MODE", "incremental")
+        tables_exclude = os.environ.get("MYSQL_TABLES_EXCLUDE", "")
+        mode = os.environ.get("MODE", "auto")
         watermark_field = os.environ.get("MYSQL_WATERMARK_FIELD", "updated_at")
         allow_fields = parse_csv_set(os.environ.get("MYSQL_ALLOW_FIELDS"))
         deny_fields = parse_csv_set(os.environ.get("MYSQL_DENY_FIELDS"))
         max_chars = int(os.environ.get("CHUNK_MAX_CHARS", "2000"))
         overlap = int(os.environ.get("CHUNK_OVERLAP_CHARS", "200"))
+        max_rows_per_table = int_env("MAX_ROWS_PER_TABLE", 0)
+        max_rows_total = int_env("MAX_ROWS_PER_RUN", 0)
+        max_chunks_total = int_env("MAX_CHUNKS_PER_RUN", 0)
 
         base = open_run_dir(source, spool_dir, run_id)
         vectors_path = os.path.join(base, "vectors.jsonl")
+
+        state = load_state(spool_dir, source)
+        if mode == "auto":
+            has_state = bool(state.get("tables")) or bool(state.get("no_watermark_tables"))
+            mode = "incremental" if has_state else "full"
 
         manifest = {
             "run_id": run_id,
@@ -533,18 +653,23 @@ data:
         cur = conn.cursor(dictionary=True)
         meta_cur = conn.cursor()
 
+        available_tables = _list_tables(meta_cur)
         if tables == "*":
-            target_tables = _list_tables(meta_cur)
+            target_tables = filter_names(available_tables, include_csv="", exclude_csv=tables_exclude)
         else:
-            target_tables = [t.strip() for t in tables.split(",") if t.strip()]
+            target_tables = filter_names(available_tables, include_csv=tables, exclude_csv=tables_exclude)
 
-        state = load_state(spool_dir, source)
         state_tables = state.setdefault("tables", {})
+        no_wm_done = state.setdefault("no_watermark_tables", {})
         total_chunks = 0
+        total_rows = 0
         for table in target_tables:
             pk_cols = _pk_columns(meta_cur, table)
             cur.execute(f"SHOW COLUMNS FROM {table} LIKE %s", (watermark_field,))
             has_wm = cur.fetchone() is not None
+
+            if not has_wm and mode == "incremental" and no_wm_done.get(table) is True:
+                continue
 
             where = ""
             params = ()
@@ -559,7 +684,12 @@ data:
             else:
                 cur.execute(f"SELECT * FROM {table}")
             max_seen = None
+            table_rows = 0
             for row in cur:
+                if max_rows_total > 0 and total_rows >= max_rows_total:
+                    break
+                if max_rows_per_table > 0 and table_rows >= max_rows_per_table:
+                    break
                 if pk_cols:
                     pk_values = [row.get(c) for c in pk_cols]
                     record_id = stable_record_id_from_pk(pk_values)
@@ -570,6 +700,8 @@ data:
                 text = _row_to_text(row)
                 i = 0
                 for chunk in chunk_text(text, max_chars=max_chars, overlap=overlap):
+                    if max_chunks_total > 0 and total_chunks >= max_chunks_total:
+                        break
                     emb = embed(chunk)
                     append_jsonl(
                         vectors_path,
@@ -587,6 +719,12 @@ data:
                     i += 1
                     total_chunks += 1
 
+                total_rows += 1
+                table_rows += 1
+
+                if max_chunks_total > 0 and total_chunks >= max_chunks_total:
+                    break
+
                 if watermark_field in row:
                     max_seen = row[watermark_field]
 
@@ -594,8 +732,18 @@ data:
                 state_tables[table] = str(max_seen)
                 save_state(spool_dir, source, state)
 
+            if not has_wm:
+                no_wm_done[table] = True
+                save_state(spool_dir, source, state)
+
+            if max_rows_total > 0 and total_rows >= max_rows_total:
+                break
+            if max_chunks_total > 0 and total_chunks >= max_chunks_total:
+                break
+
         manifest["state"] = "ready_for_load"
         manifest["chunks"] = total_chunks
+        manifest["rows"] = total_rows
         write_manifest(base, manifest)
 
 

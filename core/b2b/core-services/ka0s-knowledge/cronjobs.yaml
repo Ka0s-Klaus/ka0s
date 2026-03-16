@@ -25,7 +25,7 @@ spec:
                 - name: SOURCE
                   value: mongo
                 - name: MODE
-                  value: incremental
+                  value: auto
                 - name: SPOOL_DIR
                   value: /spool
                 - name: OLLAMA_EMBED_URL
@@ -38,6 +38,8 @@ spec:
                   value: audit
                 - name: MONGO_COLLECTIONS
                   value: "*"
+                - name: MONGO_COLLECTIONS_EXCLUDE
+                  value: ""
                 - name: MONGO_ALLOW_FIELDS
                   value: ""
                 - name: MONGO_DENY_FIELDS
@@ -46,6 +48,10 @@ spec:
                   value: "2000"
                 - name: CHUNK_OVERLAP_CHARS
                   value: "200"
+                - name: MAX_DOCS_PER_RUN
+                  value: "0"
+                - name: MAX_CHUNKS_PER_RUN
+                  value: "0"
               envFrom:
                 - secretRef:
                     name: knowledge-sources
@@ -91,7 +97,7 @@ spec:
                 - name: SOURCE
                   value: postgresql-monitoring
                 - name: MODE
-                  value: incremental
+                  value: auto
                 - name: SPOOL_DIR
                   value: /spool
                 - name: OLLAMA_EMBED_URL
@@ -104,6 +110,8 @@ spec:
                   value: public
                 - name: PG_TABLES
                   value: "*"
+                - name: PG_TABLES_EXCLUDE
+                  value: ""
                 - name: PG_WATERMARK_FIELD
                   value: updated_at
                 - name: PG_ALLOW_FIELDS
@@ -116,6 +124,12 @@ spec:
                   value: "2000"
                 - name: CHUNK_OVERLAP_CHARS
                   value: "200"
+                - name: MAX_ROWS_PER_TABLE
+                  value: "0"
+                - name: MAX_ROWS_PER_RUN
+                  value: "0"
+                - name: MAX_CHUNKS_PER_RUN
+                  value: "0"
               envFrom:
                 - secretRef:
                     name: knowledge-sources
@@ -161,7 +175,7 @@ spec:
                 - name: SOURCE
                   value: mysql-itil
                 - name: MODE
-                  value: incremental
+                  value: auto
                 - name: SPOOL_DIR
                   value: /spool
                 - name: OLLAMA_EMBED_URL
@@ -172,6 +186,8 @@ spec:
                   value: "768"
                 - name: MYSQL_TABLES
                   value: "*"
+                - name: MYSQL_TABLES_EXCLUDE
+                  value: ""
                 - name: MYSQL_WATERMARK_FIELD
                   value: updated_at
                 - name: MYSQL_ALLOW_FIELDS
@@ -182,6 +198,12 @@ spec:
                   value: "2000"
                 - name: CHUNK_OVERLAP_CHARS
                   value: "200"
+                - name: MAX_ROWS_PER_TABLE
+                  value: "0"
+                - name: MAX_ROWS_PER_RUN
+                  value: "0"
+                - name: MAX_CHUNKS_PER_RUN
+                  value: "0"
               envFrom:
                 - secretRef:
                     name: knowledge-sources

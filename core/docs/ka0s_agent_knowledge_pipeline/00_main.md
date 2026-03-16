@@ -19,4 +19,4 @@ Este módulo define una arquitectura **limpia** y **estratégica** para alimenta
 - [01_concept.md](01_concept.md)
 - [02_usage_validation.md](02_usage_validation.md)
 - [03_technical.md](03_technical.md)
-
+- [04_targets.md](04_targets.md)
