@@ -8,6 +8,7 @@ Módulo para la orquestación bidireccional entre la gestión de servicios (ITSM
 3.  [**Integración en el Ecosistema**](./03_integration.md)
 
 ## Referencias Técnicas
+*   [**Nuevo Core SDK (v2)**](../ka0s_itop_core/00_main.md) - Arquitectura y Librería Unificada.
 *   [Guía Maestra Legacy](./legacy_readme.md)
 *   [Guía de API](./ITOP_API_GUIDE.md)
 *   [Configuración de PAT](./02_PAT_creation.md)
