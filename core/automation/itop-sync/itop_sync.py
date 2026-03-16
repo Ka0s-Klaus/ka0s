@@ -3,7 +3,11 @@ import json
 import argparse
 import requests
 import sys
+import urllib3
 from typing import Dict, Any
+
+# Suppress InsecureRequestWarning
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 # iTop API Configuration
@@ -26,7 +30,7 @@ def itop_request(operation: str, data: Dict[str, Any]) -> Dict[str, Any]:
     }
 
     try:
-        response = requests.post(ITOP_URL, data=payload)
+        response = requests.post(ITOP_URL, data=payload, verify=False)
         response.raise_for_status()
         result = response.json()
 
