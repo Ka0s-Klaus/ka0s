@@ -109,23 +109,35 @@ def sync_object(obj_def: Dict[str, Any]):
     fields = obj_def.get("fields", {})
     # key_fields are used to identify the object for updates
     key_fields = obj_def.get("key_fields", {})
+    # explicit OQL key
+    oql_key = obj_def.get("key")
 
     if not class_name or not fields:
         print("Invalid object definition: missing class or fields")
         return
 
-    # If no explicit key_fields, try to infer from 'name' if present
-    if not key_fields and "name" in fields:
+    # If no explicit key_fields or OQL key, try to infer from 'name' if present
+    if not key_fields and not oql_key and "name" in fields:
         key_fields = {"name": fields["name"]}
 
-    if not key_fields:
-        msg = f"Cannot sync {class_name}: no key_fields provided"
+    if not key_fields and not oql_key:
+        msg = f"Cannot sync {class_name}: no key_fields or key provided"
         print(msg)
         return
 
-    print(f"Syncing {class_name} identified by {key_fields}...")
-
-    existing_id = find_object(class_name, key_fields)
+    print(f"Syncing {class_name}...")
+    
+    existing_id = None
+    if oql_key:
+        # Check existence using OQL
+        data = {"class": class_name, "key": oql_key, "output_fields": "id"}
+        result = itop_request("core/get", data)
+        if result and result.get("objects"):
+            for k in result["objects"]:
+                existing_id = result["objects"][k]["key"]
+                break
+    else:
+        existing_id = find_object(class_name, key_fields)
 
     if existing_id:
         print(f"  Found existing object ID: {existing_id}. Updating...")
