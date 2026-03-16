@@ -1,0 +1,61 @@
+name: "[Ka0s] iTop Service Management Export"
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Motivo de la exportación manual'
+        required: false
+        default: 'Backup manual de configuración'
+
+permissions:
+  contents: write
+
+env:
+  KAOS_MODULE: "[Ka0s] iTop Service Mgmt Export"
+  KAOS_CODE: ${{ github.run_id }}
+  KAOS_ACTOR: ${{ github.actor }}
+
+jobs:
+  core-execution:
+    name: Export Service Management
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          pip install -r core/automation/itop-sync/requirements.txt
+
+      - name: Run iTop Export
+        env:
+          ITOP_URL: ${{ secrets.ITOP_URL || vars.ITOP_URL }}
+          ITOP_USER: ${{ secrets.ITOP_API_USER }}
+          ITOP_PASSWORD: ${{ secrets.ITOP_API_PASSWORD }}
+        run: |
+          echo "Exportando definiciones de Service Management desde iTop..."
+          python3 core/automation/itop-sync/itop_export.py
+
+      - name: Commit & Push Changes
+        run: |
+          git config --global user.name "${{ secrets.KAOS_BOT_NAME || 'Ka0s Bot' }}"
+          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL || 'bot@ka0s.io' }}"
+          
+          git add compliance/itil/service-management/*.json
+          
+          if ! git diff --staged --quiet; then
+            git commit -m "chore(itil): update service management definitions from iTop [skip ci]"
+            git push origin HEAD:${{ github.ref_name }}
+          else
+            echo "No hay cambios en la configuración."
+          fi
