@@ -57,7 +57,7 @@ spec:
                    sed -i "s|'app_root_url' => .*|'app_root_url' => 'https://itsm.ka0s.io/',|" /web-data/conf/production/config-itop.php;
                  fi
               fi && \
-              echo "Applying custom branding..." && \
+              echo "Applying custom branding (ALWAYS RUN)..." && \
               mkdir -p /web-data/images && \
               if [ -f /branding/favicon.png ]; then
                  find /web-data -type f \( -name "favicon.ico" -o -name "apple-touch-icon*.png" -o -name "ms-tile*.png" -o -name "touch-icon*.png" \) -exec cp /branding/favicon.png {} \; 2>/dev/null || true;
@@ -75,18 +75,15 @@ spec:
                  # CSS Injection for Ka0s Branding (Targeting iTop 3.2.2+ classes)
                  # .ibo-navigation-menu__full-company-logo: Expanded Sidebar Logo (Hidden when collapsed)
                  # .ibo-navigation-menu__square-company-logo: Collapsed Sidebar Logo (logochico, K*)
-                 find /web-data -name "*.css" -type f -exec sh -c 'printf "\n/* Ka0s Branding */\n.ibo-navigation-menu__full-company-logo, .ibo-navigation-menu__square-company-logo { background-repeat: no-repeat !important; background-position: center !important; opacity: 1 !important; }\n.ibo-navigation-menu__full-company-logo { background-image: url(../images/custom_logo.png) !important; background-size: 200px !important; }\n.ibo-navigation-menu__square-company-logo { background-image: url(../images/custom_logo_compact.png) !important; background-size: 30px !important; }\n/* Hide default img elements if present */\n.ibo-navigation-menu__full-company-logo img, .ibo-navigation-menu__square-company-logo img { opacity: 0 !important; visibility: hidden !important; }\n/* Fallback for older/login classes */\n#login-logo a { background-image: url(../images/custom_logo.png) !important; background-size: 250px !important; width: 220px !important; height: 56px !important; display: block; }\n#login-logo img { opacity: 0 !important; }\n" >> "$1"' -- {} \; || true; \
-                 # Inject custom text for login page and footer - FORCE REPLACEMENT (v3 - Safe & Effective)
-                 echo "Forcing text replacement in dictionaries (Safe Mode)..."
-                 # Ensure we only modify dictionaries if they exist
-                 if [ -d "/web-data/dictionaries" ]; then
-                    find /web-data/dictionaries -name "*.php" -exec sed -i "s|'UI:Login:Welcome' => .*|'UI:Login:Welcome' => 'Welcome to Ka0s!',|g" {} + || true
-                    find /web-data/dictionaries -name "*.php" -exec sed -i "s|'UI:Button:Login' => .*|'UI:Button:Login' => 'Enter to Ka0s ',|g" {} + || true
-                    find /web-data/dictionaries -name "*.php" -exec sed -i "s|'UI:Footer:PoweredBy' => .*|'UI:Footer:PoweredBy' => 'Ka0s Powered by iTop',|g" {} + || true
-                    # Fix ownership to avoid permission issues
-                    chown -R 33:33 /web-data/dictionaries
-                 else
-                    echo "Warning: Dictionaries directory not found, skipping text replacement."
+                 # We append to all CSS files to ensure it's loaded, regardless of caching
+                 find /web-data -name "*.css" -type f -exec sh -c 'printf "\n/* Ka0s Branding v2 */\n.ibo-navigation-menu__full-company-logo, .ibo-navigation-menu__square-company-logo { background-repeat: no-repeat !important; background-position: center !important; opacity: 1 !important; }\n.ibo-navigation-menu__full-company-logo { background-image: url(../images/custom_logo.png) !important; background-size: 200px !important; }\n.ibo-navigation-menu__square-company-logo { background-image: url(../images/custom_logo_compact.png) !important; background-size: 30px !important; }\n/* Hide default img elements if present */\n.ibo-navigation-menu__full-company-logo img, .ibo-navigation-menu__square-company-logo img { opacity: 0 !important; visibility: hidden !important; }\n/* Fallback for older/login classes */\n#login-logo a { background-image: url(../images/custom_logo.png) !important; background-size: 250px !important; width: 220px !important; height: 56px !important; display: block; }\n#login-logo img { opacity: 0 !important; }\n" >> "$1"' -- {} \; || true; \
+                 # Inject custom text for login page and footer - FORCE REPLACEMENT
+                 echo "Forcing text replacement in compiled env-production (Bypassing Cache)..."
+                 # Instead of modifying dictionaries (which requires recompilation), modify the compiled files directly
+                 if [ -d "/web-data/env-production" ]; then
+                    find /web-data/env-production -name "*.php" -exec sed -i "s|'Welcome to iTop!'|'Welcome to Ka0s!'|g" {} + || true
+                    find /web-data/env-production -name "*.php" -exec sed -i "s|'Enter iTop'|'Enter to Ka0s'|g" {} + || true
+                    find /web-data/env-production -name "*.php" -exec sed -i "s|'iTop Powered by Combodo'|'Ka0s Powered by iTop'|g" {} + || true
                  fi
                fi && \
               chmod -R 775 /web-data/conf && \
