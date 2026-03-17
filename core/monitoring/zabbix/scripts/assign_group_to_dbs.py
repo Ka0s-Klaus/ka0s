@@ -74,20 +74,23 @@ class ZabbixGroupAssigner:
         matched_hosts = []
         
         for h in all_hosts:
-            if 'groups' not in h:
-                continue
+            # Removed 'groups' check as host.get without selectGroups might not return it if empty?
+            # Actually with selectGroups='extend', it returns [] if no groups.
+            # But let's be safe and just print what we see for debugging
+            # print(f"Checking host: {h['name']} ({h['host']})")
+            
             for p in patterns:
                 # Use host OR name to match
-                if p in h['host'] or p in h['name']:
-                    # Double check if not already in list to avoid duplicates
-                    if h not in matched_hosts:
-                        matched_hosts.append(h)
+                if p.lower() in h['host'].lower() or p.lower() in h['name'].lower():
+                    matched_hosts.append(h)
                     break
         return matched_hosts
 
     def assign_group(self, host, group_id):
         # Check if already in group
-        current_group_ids = [g['groupid'] for g in host['groups']]
+        current_groups = host.get('groups', [])
+        current_group_ids = [g['groupid'] for g in current_groups]
+        
         if group_id in current_group_ids:
             print(f"Host {host['host']} is already in group {TARGET_GROUP}.")
             return
