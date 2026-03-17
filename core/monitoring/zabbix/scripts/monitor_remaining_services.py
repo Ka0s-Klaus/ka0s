@@ -47,13 +47,6 @@ SERVICES = [
         "port": "10254",
         "group": "Ka0s Infrastructure",
         "template": "Nginx by HTTP"
-    },
-    {
-        "host": "NFS Provisioner",
-        "dns": "nfs-client-provisioner.storage-system.svc.cluster.local",
-        "port": "80", 
-        "group": "Ka0s Infrastructure",
-        "template": "HTTP Service"
     }
 ]
 
