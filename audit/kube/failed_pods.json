@@ -1,0 +1,391 @@
+[
+  {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+      "creationTimestamp": "2026-03-17T13:24:51Z",
+      "generateName": "llama-server-6566dfdf7c-",
+      "labels": {
+        "app": "llama-server",
+        "managed-by": "ka0s-core-cd",
+        "pod-template-hash": "6566dfdf7c"
+      },
+      "name": "llama-server-6566dfdf7c-kz9mg",
+      "namespace": "llama-server",
+      "ownerReferences": [
+        {
+          "apiVersion": "apps/v1",
+          "blockOwnerDeletion": true,
+          "controller": true,
+          "kind": "ReplicaSet",
+          "name": "llama-server-6566dfdf7c",
+          "uid": "d4d9ade4-91a2-493f-8bb2-b55db97e6a17"
+        }
+      ],
+      "resourceVersion": "18989678",
+      "uid": "73f07880-06f9-4cc8-8183-154c8a20ee78"
+    },
+    "spec": {
+      "containers": [
+        {
+          "args": [
+            "--host",
+            "0.0.0.0",
+            "--port",
+            "8080",
+            "--model",
+            "/models/ka0s-local.gguf",
+            "--alias",
+            "ka0s-local"
+          ],
+          "image": "ghcr.io/ggml-org/llama.cpp:server",
+          "imagePullPolicy": "Always",
+          "name": "llama-server",
+          "ports": [
+            {
+              "containerPort": 8080,
+              "protocol": "TCP"
+            }
+          ],
+          "resources": {
+            "limits": {
+              "cpu": "8",
+              "memory": "16Gi"
+            },
+            "requests": {
+              "cpu": "1",
+              "memory": "2Gi"
+            }
+          },
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/models",
+              "name": "models"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-ln4zg",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "dnsPolicy": "ClusterFirst",
+      "enableServiceLinks": true,
+      "preemptionPolicy": "PreemptLowerPriority",
+      "priority": 0,
+      "restartPolicy": "Always",
+      "schedulerName": "default-scheduler",
+      "securityContext": {},
+      "serviceAccount": "default",
+      "serviceAccountName": "default",
+      "terminationGracePeriodSeconds": 30,
+      "tolerations": [
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/not-ready",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        },
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/unreachable",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        }
+      ],
+      "volumes": [
+        {
+          "name": "models",
+          "persistentVolumeClaim": {
+            "claimName": "llama-models-pvc"
+          }
+        },
+        {
+          "name": "kube-api-access-ln4zg",
+          "projected": {
+            "defaultMode": 420,
+            "sources": [
+              {
+                "serviceAccountToken": {
+                  "expirationSeconds": 3607,
+                  "path": "token"
+                }
+              },
+              {
+                "configMap": {
+                  "items": [
+                    {
+                      "key": "ca.crt",
+                      "path": "ca.crt"
+                    }
+                  ],
+                  "name": "kube-root-ca.crt"
+                }
+              },
+              {
+                "downwardAPI": {
+                  "items": [
+                    {
+                      "fieldRef": {
+                        "apiVersion": "v1",
+                        "fieldPath": "metadata.namespace"
+                      },
+                      "path": "namespace"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "status": {
+      "conditions": [
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-17T13:24:51Z",
+          "message": "0/4 nodes are available: pod has unbound immediate PersistentVolumeClaims. preemption: 0/4 nodes are available: 4 Preemption is not helpful for scheduling.",
+          "reason": "Unschedulable",
+          "status": "False",
+          "type": "PodScheduled"
+        }
+      ],
+      "phase": "Pending",
+      "qosClass": "Burstable"
+    }
+  },
+  {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+      "creationTimestamp": "2026-03-17T13:25:54Z",
+      "generateName": "openclaw-",
+      "labels": {
+        "app": "openclaw",
+        "apps.kubernetes.io/pod-index": "0",
+        "controller-revision-hash": "openclaw-66fd4ccd48",
+        "managed-by": "ka0s-core-cd",
+        "statefulset.kubernetes.io/pod-name": "openclaw-0"
+      },
+      "name": "openclaw-0",
+      "namespace": "openclaw",
+      "ownerReferences": [
+        {
+          "apiVersion": "apps/v1",
+          "blockOwnerDeletion": true,
+          "controller": true,
+          "kind": "StatefulSet",
+          "name": "openclaw",
+          "uid": "d62d6d75-b6e1-42aa-a12f-8771d469a9b3"
+        }
+      ],
+      "resourceVersion": "18989947",
+      "uid": "162cb3b8-4b61-4375-b24c-623da47f0529"
+    },
+    "spec": {
+      "containers": [
+        {
+          "command": [
+            "openclaw",
+            "gateway",
+            "start",
+            "--foreground"
+          ],
+          "env": [
+            {
+              "name": "OPENCLAW_CONFIG_PATH",
+              "value": "/home/node/.openclaw/openclaw.json"
+            }
+          ],
+          "image": "ghcr.io/openclaw/openclaw:latest",
+          "imagePullPolicy": "Always",
+          "livenessProbe": {
+            "failureThreshold": 3,
+            "initialDelaySeconds": 30,
+            "periodSeconds": 20,
+            "successThreshold": 1,
+            "tcpSocket": {
+              "port": 18789
+            },
+            "timeoutSeconds": 2
+          },
+          "name": "openclaw",
+          "ports": [
+            {
+              "containerPort": 18789,
+              "name": "http",
+              "protocol": "TCP"
+            },
+            {
+              "containerPort": 18791,
+              "name": "bridge",
+              "protocol": "TCP"
+            }
+          ],
+          "readinessProbe": {
+            "failureThreshold": 6,
+            "initialDelaySeconds": 10,
+            "periodSeconds": 10,
+            "successThreshold": 1,
+            "tcpSocket": {
+              "port": 18789
+            },
+            "timeoutSeconds": 2
+          },
+          "resources": {
+            "limits": {
+              "cpu": "2",
+              "memory": "2Gi"
+            },
+            "requests": {
+              "cpu": "250m",
+              "memory": "512Mi"
+            }
+          },
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/home/node/.openclaw",
+              "name": "openclaw-data"
+            },
+            {
+              "mountPath": "/home/node/.openclaw/openclaw.json",
+              "name": "openclaw-config",
+              "readOnly": true,
+              "subPath": "openclaw.json"
+            },
+            {
+              "mountPath": "/home/node/.openclaw/workspace/SOUL.md",
+              "name": "openclaw-config",
+              "readOnly": true,
+              "subPath": "SOUL.md"
+            },
+            {
+              "mountPath": "/home/node/.openclaw/workspace/USER.md",
+              "name": "openclaw-config",
+              "readOnly": true,
+              "subPath": "USER.md"
+            },
+            {
+              "mountPath": "/home/node/.openclaw/workspace/TOOLS.md",
+              "name": "openclaw-config",
+              "readOnly": true,
+              "subPath": "TOOLS.md"
+            },
+            {
+              "mountPath": "/home/node/.openclaw/workspace/AGENTS.md",
+              "name": "openclaw-config",
+              "readOnly": true,
+              "subPath": "AGENTS.md"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-9vgv7",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "dnsPolicy": "ClusterFirst",
+      "enableServiceLinks": true,
+      "hostname": "openclaw-0",
+      "preemptionPolicy": "PreemptLowerPriority",
+      "priority": 0,
+      "restartPolicy": "Always",
+      "schedulerName": "default-scheduler",
+      "securityContext": {
+        "fsGroup": 1000
+      },
+      "serviceAccount": "default",
+      "serviceAccountName": "default",
+      "subdomain": "openclaw",
+      "terminationGracePeriodSeconds": 30,
+      "tolerations": [
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/not-ready",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        },
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/unreachable",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        }
+      ],
+      "volumes": [
+        {
+          "name": "openclaw-data",
+          "persistentVolumeClaim": {
+            "claimName": "openclaw-pvc"
+          }
+        },
+        {
+          "configMap": {
+            "defaultMode": 420,
+            "name": "openclaw-config"
+          },
+          "name": "openclaw-config"
+        },
+        {
+          "name": "kube-api-access-9vgv7",
+          "projected": {
+            "defaultMode": 420,
+            "sources": [
+              {
+                "serviceAccountToken": {
+                  "expirationSeconds": 3607,
+                  "path": "token"
+                }
+              },
+              {
+                "configMap": {
+                  "items": [
+                    {
+                      "key": "ca.crt",
+                      "path": "ca.crt"
+                    }
+                  ],
+                  "name": "kube-root-ca.crt"
+                }
+              },
+              {
+                "downwardAPI": {
+                  "items": [
+                    {
+                      "fieldRef": {
+                        "apiVersion": "v1",
+                        "fieldPath": "metadata.namespace"
+                      },
+                      "path": "namespace"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "status": {
+      "conditions": [
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-17T13:25:54Z",
+          "message": "0/4 nodes are available: pod has unbound immediate PersistentVolumeClaims. preemption: 0/4 nodes are available: 4 Preemption is not helpful for scheduling.",
+          "reason": "Unschedulable",
+          "status": "False",
+          "type": "PodScheduled"
+        }
+      ],
+      "phase": "Pending",
+      "qosClass": "Burstable"
+    }
+  }
+]
