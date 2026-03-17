@@ -153,11 +153,20 @@ def find_service_name(issue_body: str) -> Optional[str]:
 
 def check_pods(service_name: str) -> Optional[List[Dict]]:
     """Verifica pods por label app o nombre."""
-    cmd = f"kubectl get pods -A -l app={service_name} -o json"
+    
+    # Manejar caso de namespace en el nombre (ej. default/net-test)
+    namespace = "-A"
+    clean_name = service_name
+    if "/" in service_name:
+        parts = service_name.split("/", 1)
+        namespace = f"-n {parts[0]}"
+        clean_name = parts[1]
+
+    cmd = f"kubectl get pods {namespace} -l app={clean_name} -o json"
     output = run_command(cmd)
 
     if not output or output == "":
-        cmd = f"kubectl get pods -A -l app.kubernetes.io/name={service_name} -o json"
+        cmd = f"kubectl get pods {namespace} -l app.kubernetes.io/name={clean_name} -o json"
         output = run_command(cmd)
 
     if not output:
@@ -174,22 +183,30 @@ def verify_k8s_service(service_name: str) -> Tuple[bool, str]:
     """Verifica si hay pods corriendo para el servicio dado."""
     items = check_pods(service_name)
 
+    # Manejar caso de namespace en el nombre (ej. default/net-test)
+    namespace = "-A"
+    clean_name = service_name
+    if "/" in service_name:
+        parts = service_name.split("/", 1)
+        namespace = f"-n {parts[0]}"
+        clean_name = parts[1]
+
     if not items:
         # Intentar búsqueda por nombre de deployment
-        cmd = "kubectl get deployments -A -o json"
+        cmd = f"kubectl get deployments {namespace} -o json"
         all_deps = run_command(cmd)
         if all_deps:
             try:
                 deps = json.loads(all_deps)
                 for d in deps.get('items', []):
-                    if d['metadata']['name'] == service_name:
+                    if d['metadata']['name'] == clean_name:
                         ns = d['metadata']['namespace']
                         ready = d['status'].get('readyReplicas', 0)
                         desired = d['spec'].get('replicas', 1)
                         if ready >= desired and desired > 0:
-                            return True, f"Deployment {service_name} ({ns}) saludable ({ready}/{desired})."
+                            return True, f"Deployment {clean_name} ({ns}) saludable ({ready}/{desired})."
                         else:
-                            return False, f"Deployment {service_name} ({ns}) NO saludable ({ready}/{desired})."
+                            return False, f"Deployment {clean_name} ({ns}) NO saludable ({ready}/{desired})."
             except json.JSONDecodeError:
                 pass
         return False, f"No se encontraron recursos K8s para: {service_name}"
