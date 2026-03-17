@@ -1,0 +1,24 @@
+=== Logs for Service: postgresql (Namespace: postgresql) ===
+=== Date: Tue Mar 17 09:55:04 UTC 2026 ===
+=== Selector: app=postgresql,managed-by=ka0s-core-cd,role=primary ===
+
+[pod/postgresql-0/postgresql] 										greatest(coalesce((segment_parts_count - last_wal_mod) + ((current_wal_div - last_wal_div - 1) * segment_parts_count) + current_wal_mod - 1, 0), 0) AS count_files,
+[pod/postgresql-0/postgresql] 										greatest(coalesce(((segment_parts_count - last_wal_mod) + ((current_wal_div - last_wal_div - 1) * segment_parts_count) + current_wal_mod - 1) * segment_size, 0), 0) AS size_files
+[pod/postgresql-0/postgresql] 									FROM values
+[pod/postgresql-0/postgresql] 								) T;
+[pod/postgresql-0/postgresql] 2026-03-17 09:45:16.925 UTC [5135] LOG:  could not send data to client: Broken pipe
+[pod/postgresql-0/postgresql] 2026-03-17 09:45:16.925 UTC [5135] FATAL:  connection to client lost
+[pod/postgresql-0/postgresql] 2026-03-17 09:49:16.043 UTC [26] LOG:  checkpoint complete: wrote 3138 buffers (19.2%); 0 WAL file(s) added, 0 removed, 8 recycled; write=263.666 s, sync=5.166 s, total=279.406 s; sync files=142, longest=2.072 s, average=0.037 s; distance=135083 kB, estimate=137434 kB; lsn=D/E3BF02A8, redo lsn=D/DC6F5870
+[pod/postgresql-0/postgresql] 2026-03-17 09:49:37.005 UTC [26] LOG:  checkpoint starting: time
+[pod/postgresql-0/postgresql] 2026-03-17 09:54:11.362 UTC [26] LOG:  checkpoint complete: wrote 6129 buffers (37.4%); 0 WAL file(s) added, 0 removed, 8 recycled; write=264.828 s, sync=2.669 s, total=275.261 s; sync files=200, longest=0.951 s, average=0.014 s; distance=129971 kB, estimate=136688 kB; lsn=D/E9EBFA28, redo lsn=D/E45E2628
+[pod/postgresql-0/postgresql] 2026-03-17 09:54:36.252 UTC [26] LOG:  checkpoint starting: time
+[pod/postgresql-0/zabbix-agent] 2026/03/17 09:16:49.407134 [PostgreSQL] Failed to create connection: failed to connect to `host=localhost user=zbx_monitor database=postgres`: server error (FATAL: database "postgres" does not exist (SQLSTATE 3D000)).
+[pod/postgresql-0/zabbix-agent] 2026/03/17 09:16:50.414193 [PostgreSQL] Failed to create connection: failed to connect to `host=localhost user=zbx_monitor database=postgres`: server error (FATAL: database "postgres" does not exist (SQLSTATE 3D000)).
+[pod/postgresql-0/zabbix-agent] 2026/03/17 09:16:52.409190 [PostgreSQL] Failed to create connection: failed to connect to `host=localhost user=zbx_monitor database=postgres`: server error (FATAL: database "postgres" does not exist (SQLSTATE 3D000)).
+[pod/postgresql-0/zabbix-agent] 2026/03/17 09:36:17.004367 [102] cannot receive data from [172.16.64.148:10051]: Cannot read message: 'read tcp 172.16.209.59:59443->172.16.64.148:10051: i/o timeout'
+[pod/postgresql-0/zabbix-agent] 2026/03/17 09:36:17.004416 [102] connection closed
+[pod/postgresql-0/zabbix-agent] 2026/03/17 09:36:17.004428 [102] active check configuration update from host [postgresql-0] started to fail
+[pod/postgresql-0/zabbix-agent] 2026/03/17 09:37:17.004581 [102] active check configuration update from [172.16.64.148:10051] is working again
+[pod/postgresql-0/zabbix-agent] 2026/03/17 09:45:04.404219 [PostgreSQL] failed to handle metric: query execution timeout 3s exceeded: Cannot fetch data: context deadline exceeded.
+[pod/postgresql-0/zabbix-agent] 2026/03/17 09:45:08.404170 [PostgreSQL] failed to handle metric: query execution timeout 3s exceeded: Cannot fetch data: context deadline exceeded.
+[pod/postgresql-0/zabbix-agent] 2026/03/17 09:45:16.419854 [PostgreSQL] failed to handle metric: query execution timeout 3s exceeded: Cannot fetch data: context deadline exceeded.
