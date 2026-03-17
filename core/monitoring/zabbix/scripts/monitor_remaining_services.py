@@ -42,7 +42,7 @@ SERVICES = [
         "host": "Ollama",
         "dns": "10.103.245.188",
         "group": "Ka0s Services",
-        "template": "ICMP Ping",
+        "template": "TCP Service",
         "port": "11434"
     },
     {
