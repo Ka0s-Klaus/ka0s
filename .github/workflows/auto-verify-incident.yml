@@ -74,8 +74,6 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" == "workflow_dispatch" ] || [ "${{ github.event_name }}" == "schedule" ]; then
             echo "Modo Batch: Escaneando todas las issues..."
-            # scan_all input solo existe en dispatch, para schedule asumimos true implícito (o ajustamos script)
-            # El script verify-incident.py usa flag --scan-all sin argumentos.
             python3 .github/scripts/verify-incident.py --scan-all
           else
             echo "Modo Single: Verificando Issue #${{ github.event.issue.number }}..."
@@ -84,9 +82,26 @@ jobs:
               --issue-number "$ISSUE_NUMBER"
           fi
 
-      - name: Commit & Push Results (Optional)
+      - name: Commit & Push Results
         if: success()
-        run: echo "No artifacts to commit for verification process."
+        run: |
+          git config --global user.name "ka0s-bot"
+          git config --global user.email "bot@ka0s.io"
+          
+          # Verificar si hay logs generados
+          if [ -d "audit/autoremediation" ]; then
+            git add audit/autoremediation/
+            
+            if ! git diff --staged --quiet; then
+              git commit -m "chore(audit): update autoremediation logs [skip ci]"
+              git push
+              echo "✅ Logs de auditoría subidos correctamente."
+            else
+              echo "No hay cambios en logs de auditoría."
+            fi
+          else
+             echo "No se encontró directorio de logs."
+          fi
 
   # -----------------------------------------------------------------------------
   # JOB 2: HANDLE SUCCESS

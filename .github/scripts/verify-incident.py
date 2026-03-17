@@ -11,7 +11,34 @@ import sys
 import json
 import subprocess
 import argparse
+import datetime
 from typing import Optional, List, Dict, Tuple
+
+AUDIT_DIR = "audit/autoremediation"
+os.makedirs(AUDIT_DIR, exist_ok=True)
+
+def log_audit(action: str, issue_number: int, service: str, result: str, details: str):
+    """Escribe un log de auditoría en JSON."""
+    timestamp = datetime.datetime.now().isoformat()
+    log_entry = {
+        "timestamp": timestamp,
+        "action": action,
+        "issue_number": issue_number,
+        "service": service,
+        "result": result,
+        "details": details
+    }
+    
+    # Nombre de archivo basado en fecha para rotación diaria simple
+    date_str = datetime.datetime.now().strftime("%Y-%m-%d")
+    log_file = os.path.join(AUDIT_DIR, f"audit-{date_str}.json")
+    
+    try:
+        with open(log_file, "a") as f:
+            f.write(json.dumps(log_entry) + "\n")
+        print(f"Log de auditoría escrito en {log_file}")
+    except Exception as e:
+        print(f"Error escribiendo log de auditoría: {e}")
 
 
 def run_command(command: str) -> Optional[str]:
@@ -32,12 +59,13 @@ def run_command(command: str) -> Optional[str]:
 
 def get_open_incidents() -> List[Dict]:
     """Obtiene issues abiertas con etiqueta itop-incident."""
+    # Ampliamos límite por si hay muchas
     cmd = (
         "gh issue list "
         "--label itop-incident "
         "--state open "
         "--json number,title,body "
-        "--limit 100"
+        "--limit 500"
     )
     output = run_command(cmd)
     if not output:
@@ -57,12 +85,12 @@ def close_issue(number: int, service: str, message: str):
         f"**Detalles Técnicos:**\n```\n{message}\n```\n\n"
         f"🤖 *Acción automática por Ka0s Auto-Remediation.*"
     )
-    # Simple sanitization for bash call
     comment_safe = comment.replace('"', '\\"')
     
     cmd = f'gh issue close {number} --comment "{comment_safe}"'
     run_command(cmd)
     print(f"Issue #{number} cerrada.")
+    log_audit("close_issue", number, service, "success", message)
 
 
 def comment_issue(number: int, service: str, message: str):
@@ -77,6 +105,7 @@ def comment_issue(number: int, service: str, message: str):
     cmd = f'gh issue comment {number} --body "{comment_safe}"'
     run_command(cmd)
     print(f"Comentario añadido a Issue #{number}.")
+    log_audit("comment_issue", number, service, "failed", message)
 
 
 def find_service_name(issue_body: str) -> Optional[str]:
@@ -161,15 +190,7 @@ def verify_k8s_service(service_name: str) -> Tuple[bool, str]:
 
 
 def process_single_incident(issue_body: str, issue_number: Optional[int] = None, perform_action: bool = False):
-    """
-    Procesa una única incidencia.
-    
-    Args:
-        issue_body: Contenido de la issue.
-        issue_number: ID de la issue.
-        perform_action: Si es True, ejecuta cierre/comentario (gh cli).
-                        Si es False, solo imprime JSON para stdout.
-    """
+    """Procesa una única incidencia."""
     service_name = find_service_name(issue_body)
     
     if not service_name:
@@ -178,12 +199,12 @@ def process_single_incident(issue_body: str, issue_number: Optional[int] = None,
             print(json.dumps(result))
         else:
             print(f"Issue #{issue_number}: No service detected.")
+            log_audit("skip", issue_number or 0, "unknown", "no_service_name", "No se pudo extraer nombre servicio")
         return
 
     is_up, message = verify_k8s_service(service_name)
     
     if perform_action and issue_number:
-        # Modo Batch o Single directo
         if is_up:
             close_issue(issue_number, service_name, message)
         else:
@@ -212,19 +233,15 @@ def main():
         
         for issue in issues:
             print(f"--- Procesando Issue #{issue['number']} ---")
-            # En modo batch, queremos ejecutar la acción
             process_single_incident(issue['body'], issue['number'], perform_action=True)
             
     else:
-        # Modo Single
-        # Prioridad: Argumento > Variable de Entorno
         issue_body = args.issue_body or os.environ.get('ISSUE_BODY')
         
         if not issue_body:
             print(json.dumps({"status": "error", "message": "No issue body provided"}))
             sys.exit(1)
             
-        # Si nos pasan issue_number explícitamente, asumimos que queremos ejecutar acción directa
         perform_action = args.issue_number is not None
         process_single_incident(issue_body, args.issue_number, perform_action=perform_action)
 
