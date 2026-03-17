@@ -54,6 +54,11 @@ Muchos templates oficiales (como bases de datos) requieren que el Host tenga con
 
 El script permite pasar argumentos clave-valor al final del comando. El script formateará automáticamente la clave envolviéndola en la sintaxis de macro de Zabbix `{$CLAVE}` y creará la operación en la regla de auto-registro para que el Host nazca con las credenciales listas.
 
+### Lecciones Aprendidas (Troubleshooting)
+1.  **Credenciales Reales**: Nunca usar contraseñas por defecto. El script debe invocarse leyendo los valores reales de los secretos (`k8s secrets`) o variables de entorno del pipeline.
+2.  **Resolución de Nombres**: Para conexiones locales (sidecar), usar siempre `127.0.0.1` en lugar de `localhost` en las macros de conexión (ej. `{$MYSQL.DSN}`). Esto evita que el cliente intente conectarse por sockets Unix (que no comparten contenedores) o por IPv6 (`::1`) si no está habilitado.
+3.  **Inmutabilidad**: Si se actualiza una regla de auto-registro, **Zabbix NO actualiza los hosts existentes**. Para que los cambios surtan efecto en hosts ya creados con macros incorrectas, es necesario eliminar el host y dejar que se auto-registre de nuevo, o usar un script de actualización de macros (`update_host_macros.py`).
+
 ### Flujo Operativo (Ejemplo MongoDB)
 1. Desplegamos el pod `mongo-0` con el sidecar de Zabbix Agent 2, inyectando `ZBX_METADATA=mongo`.
 2. El agente arranca y envía un latido activo al servidor Zabbix.
