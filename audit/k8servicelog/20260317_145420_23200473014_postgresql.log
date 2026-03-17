@@ -1,0 +1,24 @@
+=== Logs for Service: postgresql (Namespace: postgresql) ===
+=== Date: Tue Mar 17 14:54:28 UTC 2026 ===
+=== Selector: app=postgresql,managed-by=ka0s-core-cd,role=primary ===
+
+[pod/postgresql-0/postgresql] 				 AND datname = $1;
+[pod/postgresql-0/postgresql] 2026-03-17 14:49:42.279 UTC [3522] LOG:  could not send data to client: Broken pipe
+[pod/postgresql-0/postgresql] 2026-03-17 14:49:42.279 UTC [3522] FATAL:  connection to client lost
+[pod/postgresql-0/postgresql] 2026-03-17 14:49:43.222 UTC [3832] ERROR:  canceling statement due to user request
+[pod/postgresql-0/postgresql] 2026-03-17 14:49:43.222 UTC [3832] STATEMENT:  SELECT pg_database_size(datname::text)
+[pod/postgresql-0/postgresql] 			FROM pg_catalog.pg_database
+[pod/postgresql-0/postgresql] 	   		WHERE datistemplate = false
+[pod/postgresql-0/postgresql] 				 AND datname = $1;
+[pod/postgresql-0/postgresql] 2026-03-17 14:49:43.222 UTC [3832] LOG:  could not send data to client: Broken pipe
+[pod/postgresql-0/postgresql] 2026-03-17 14:49:43.222 UTC [3832] FATAL:  connection to client lost
+[pod/postgresql-0/zabbix-agent] 2026/03/17 14:44:41.396422 [PostgreSQL] failed to handle metric: query execution timeout 3s exceeded: Cannot fetch data: context deadline exceeded.
+[pod/postgresql-0/zabbix-agent] 2026/03/17 14:44:42.404237 [PostgreSQL] failed to handle metric: query execution timeout 3s exceeded: Cannot fetch data: context deadline exceeded.
+[pod/postgresql-0/zabbix-agent] 2026/03/17 14:44:43.400363 [PostgreSQL] failed to handle metric: query execution timeout 3s exceeded: Cannot fetch data: context deadline exceeded.
+[pod/postgresql-0/zabbix-agent] 2026/03/17 14:45:36.402059 [PostgreSQL] failed to handle metric: query execution timeout 3s exceeded: Cannot fetch data: context deadline exceeded.
+[pod/postgresql-0/zabbix-agent] 2026/03/17 14:48:30.425590 detected 59 time difference between queue checks, rescheduling tasks
+[pod/postgresql-0/zabbix-agent] 2026/03/17 14:48:30.426361 [101] cannot connect to [zabbix-server.zabbix.svc.cluster.local:10051]: dial tcp: lookup zabbix-server.zabbix.svc.cluster.local: i/o timeout
+[pod/postgresql-0/zabbix-agent] 2026/03/17 14:48:30.426370 [101] active check configuration update from host [postgresql-0] started to fail
+[pod/postgresql-0/zabbix-agent] 2026/03/17 14:49:30.108390 [101] active check configuration update from [zabbix-server.zabbix.svc.cluster.local:10051] is working again
+[pod/postgresql-0/zabbix-agent] 2026/03/17 14:49:42.107193 [PostgreSQL] failed to handle metric: query execution timeout 3s exceeded: Cannot fetch data: context deadline exceeded.
+[pod/postgresql-0/zabbix-agent] 2026/03/17 14:49:43.204732 [PostgreSQL] failed to handle metric: query execution timeout 3s exceeded: Cannot fetch data: context deadline exceeded.
