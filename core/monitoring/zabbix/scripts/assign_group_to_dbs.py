@@ -63,7 +63,10 @@ class ZabbixGroupAssigner:
         return self._post("hostgroup.create", {"name": name})['groupids'][0]
 
     def get_hosts_by_pattern(self, patterns):
-        all_hosts = self._post("host.get", {"output": ["hostid", "host", "name"], "selectGroups": ["groupid"]})
+        all_hosts = self._post("host.get", {
+            "output": ["hostid", "host", "name"],
+            "selectGroups": "extend"
+        })
         matched_hosts = []
         
         for h in all_hosts:
