@@ -139,6 +139,7 @@ def find_service_name(issue_body: str) -> Optional[str]:
     patterns = [
         r"\*\*Servicio / CI afectado\*\*\s*\n\s*(?:GitHub Actions / )?([a-zA-Z0-9\-_ \(\)&]+)",
         r"### Servicio / CI afectado\s*\n\s*(?:GitHub Actions / )?([a-zA-Z0-9\-_ \(\)&]+)",
+        r"### Servicio / CI \(nombre visible en iTop\)\s*\n\s*([a-zA-Z0-9\-_ \(\)&/]+)",
         r"(?:Service|Servicio|Deployment|App):\s*([a-zA-Z0-9\-_ \(\)&]+)",
         r"Workflow ([a-zA-Z0-9\-_ \(\)&>]+) failed"
     ]
