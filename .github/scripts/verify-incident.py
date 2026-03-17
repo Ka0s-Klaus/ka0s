@@ -57,12 +57,7 @@ def close_issue(number: int, service: str, message: str):
         f"**Detalles Técnicos:**\n```\n{message}\n```\n\n"
         f"🤖 *Acción automática por Ka0s Auto-Remediation.*"
     )
-    # Escapar comillas para bash
-    # Mejor usar input file temporal para evitar problemas de quoting
-    # Pero gh soporta --comment-body desde archivo? No directamente en close.
-    # Usaremos gh issue close --comment "..."
-    
-    # Simple sanitization
+    # Simple sanitization for bash call
     comment_safe = comment.replace('"', '\\"')
     
     cmd = f'gh issue close {number} --comment "{comment_safe}"'
@@ -165,27 +160,36 @@ def verify_k8s_service(service_name: str) -> Tuple[bool, str]:
         return False, f"Ningún pod Running. Estado: {', '.join(not_running)}"
 
 
-def process_single_incident(issue_body: str, issue_number: Optional[int] = None, dry_run: bool = False):
-    """Procesa una única incidencia."""
+def process_single_incident(issue_body: str, issue_number: Optional[int] = None, perform_action: bool = False):
+    """
+    Procesa una única incidencia.
+    
+    Args:
+        issue_body: Contenido de la issue.
+        issue_number: ID de la issue.
+        perform_action: Si es True, ejecuta cierre/comentario (gh cli).
+                        Si es False, solo imprime JSON para stdout.
+    """
     service_name = find_service_name(issue_body)
     
     if not service_name:
         result = {"status": "unknown", "message": "No se detectó servicio."}
-        if not dry_run:
+        if not perform_action:
             print(json.dumps(result))
+        else:
+            print(f"Issue #{issue_number}: No service detected.")
         return
 
     is_up, message = verify_k8s_service(service_name)
     
-    if dry_run and issue_number:
-        # Modo acción: Cerrar o Comentar
+    if perform_action and issue_number:
+        # Modo Batch o Single directo
         if is_up:
             close_issue(issue_number, service_name, message)
         else:
             comment_issue(issue_number, service_name, message)
     else:
-        # Modo reporte (usado por el workflow en modo 'issue event' antiguo,
-        # o si no se pasa issue_number)
+        # Modo Workflow Standard (salida para steps)
         print(json.dumps({
             "status": "up" if is_up else "down",
             "service": service_name,
@@ -208,18 +212,21 @@ def main():
         
         for issue in issues:
             print(f"--- Procesando Issue #{issue['number']} ---")
-            process_single_incident(issue['body'], issue['number'], dry_run=True)
+            # En modo batch, queremos ejecutar la acción
+            process_single_incident(issue['body'], issue['number'], perform_action=True)
             
     else:
+        # Modo Single
         # Prioridad: Argumento > Variable de Entorno
         issue_body = args.issue_body or os.environ.get('ISSUE_BODY')
         
         if not issue_body:
-            # Si no hay body, no podemos hacer nada en modo single
             print(json.dumps({"status": "error", "message": "No issue body provided"}))
             sys.exit(1)
             
-        process_single_incident(issue_body, args.issue_number, dry_run=False)
+        # Si nos pasan issue_number explícitamente, asumimos que queremos ejecutar acción directa
+        perform_action = args.issue_number is not None
+        process_single_incident(issue_body, args.issue_number, perform_action=perform_action)
 
 
 if __name__ == "__main__":
