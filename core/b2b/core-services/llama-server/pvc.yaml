@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: llama-models-pvc
+  namespace: llama-server
+  labels:
+    app: llama-server
+    managed-by: ka0s-core-cd
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi

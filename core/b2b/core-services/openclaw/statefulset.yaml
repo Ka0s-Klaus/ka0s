@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: openclaw
+  namespace: openclaw
+  labels:
+    app: openclaw
+    managed-by: ka0s-core-cd
+spec:
+  serviceName: openclaw
+  replicas: 1
+  selector:
+    matchLabels:
+      app: openclaw
+  template:
+    metadata:
+      labels:
+        app: openclaw
+        managed-by: ka0s-core-cd
+    spec:
+      securityContext:
+        fsGroup: 1000
+      containers:
+        - name: openclaw
+          image: ghcr.io/openclaw/openclaw:latest
+          imagePullPolicy: Always
+          command: ["openclaw", "gateway", "start", "--foreground"]
+          env:
+            - name: OPENCLAW_CONFIG_PATH
+              value: /home/node/.openclaw/openclaw.json
+          ports:
+            - name: http
+              containerPort: 18789
+            - name: bridge
+              containerPort: 18791
+          readinessProbe:
+            tcpSocket:
+              port: 18789
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 6
+          livenessProbe:
+            tcpSocket:
+              port: 18789
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            timeoutSeconds: 2
+            failureThreshold: 3
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "2Gi"
+              cpu: "2000m"
+          volumeMounts:
+            - name: openclaw-data
+              mountPath: /home/node/.openclaw
+            - name: openclaw-config
+              mountPath: /home/node/.openclaw/openclaw.json
+              subPath: openclaw.json
+              readOnly: true
+            - name: openclaw-config
+              mountPath: /home/node/.openclaw/workspace/SOUL.md
+              subPath: SOUL.md
+              readOnly: true
+            - name: openclaw-config
+              mountPath: /home/node/.openclaw/workspace/USER.md
+              subPath: USER.md
+              readOnly: true
+            - name: openclaw-config
+              mountPath: /home/node/.openclaw/workspace/TOOLS.md
+              subPath: TOOLS.md
+              readOnly: true
+            - name: openclaw-config
+              mountPath: /home/node/.openclaw/workspace/AGENTS.md
+              subPath: AGENTS.md
+              readOnly: true
+      volumes:
+        - name: openclaw-data
+          persistentVolumeClaim:
+            claimName: openclaw-pvc
+        - name: openclaw-config
+          configMap:
+            name: openclaw-config

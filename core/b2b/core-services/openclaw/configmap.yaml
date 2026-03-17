@@ -1,0 +1,67 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openclaw-config
+  namespace: openclaw
+  labels:
+    app: openclaw
+    managed-by: ka0s-core-cd
+data:
+  openclaw.json: |
+    {
+      agents: {
+        defaults: {
+          workspace: "/home/node/.openclaw/workspace"
+        }
+      },
+      models: {
+        mode: "merge",
+        providers: {
+          vllm: {
+            baseUrl: "http://llama-server.llama-server.svc.cluster.local:8080/v1",
+            api: "openai-completions",
+            apiKey: "local",
+            models: [
+              {
+                id: "ka0s-local",
+                name: "Ka0s Local LLM",
+                input: ["text"],
+                cost: { "input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0 }
+              }
+            ]
+          }
+        }
+      },
+      agent: {
+        model: {
+          primary: "vllm/ka0s-local"
+        },
+        memorySearch: {
+          provider: "local",
+          fallback: "none"
+        }
+      }
+    }
+  SOUL.md: |
+    # Ka0s OpenClaw
+
+    Eres el asistente operativo del ecosistema Ka0s. Prioriza seguridad, trazabilidad y GitOps.
+
+    - No expongas secretos ni credenciales.
+    - No ejecutes acciones destructivas sin confirmación explícita.
+    - Registra decisiones y evidencias en el workspace.
+  USER.md: |
+    # Usuario
+
+    - Contexto: Operación y evolución del ecosistema Ka0s.
+    - Preferencias: GitOps, auditoría, documentación viva.
+  TOOLS.md: |
+    # Tools Notes
+
+    - Modelo local: llama.cpp server en cluster (`llama-server.llama-server.svc.cluster.local:8080`).
+    - Este gateway está diseñado para operar sin dependencias de proveedores LLM externos.
+  AGENTS.md: |
+    # AGENTS
+
+    - Agente por defecto: `main`
+    - Objetivo: SRE/Platform assistant para Ka0s con modelo local.
