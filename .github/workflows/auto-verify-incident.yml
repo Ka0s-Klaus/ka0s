@@ -53,9 +53,6 @@ jobs:
       - name: Verify Incident(s)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Inputs para dispatch
-          SCAN_ALL: ${{ inputs.scan_all }}
-          # Inputs para issue event
           ISSUE_BODY: ${{ github.event.issue.body }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
@@ -64,9 +61,7 @@ jobs:
             python3 .github/scripts/verify-incident.py --scan-all
           else
             echo "Modo Single: Verificando Issue #${{ github.event.issue.number }}..."
-            # Ahora verify-incident.py soporta --issue-number para actuar directamente
-            # Pasamos --issue-number para que el script cierre/comente directamente
-            # en lugar de parsear JSON en bash (más limpio y consistente con el modo batch)
+            # verify-incident.py soporta --issue-number para actuar directamente
             python3 .github/scripts/verify-incident.py \
               --issue-body "$ISSUE_BODY" \
               --issue-number "$ISSUE_NUMBER"
