@@ -32,6 +32,15 @@ CATEGORY_MAPPING = {
         'ka0s_cluster_update', 'kaos_cluster_restart', 'ka0s_docker',
         'ka0s_mongo', 'ka0s_delete_ns', 'ka0s_cmdb_ingest',
         'ka0s_onboarding', 'ka0s_docs_portal', 'ka0s_db_admin'
+    ],
+    'IA y Agentes': [
+        'openclaw',
+        'admin-agent',
+        'ka0s_agent_ai',
+        'ka0s_agent_ingest',
+        'ka0s_agent_knowledge_pipeline',
+        'ka0s_postgresql_ia',
+        'ka0s_gpu_enablement'
     ]
 }
 
@@ -163,6 +172,7 @@ def update_root_index(modules):
         'Observabilidad y Reportes',
         'Seguridad y Compliance',
         'Operaciones y Mantenimiento',
+        'IA y Agentes',
         'Otros / Sin Categoría'
     ]
 
@@ -191,6 +201,8 @@ def update_root_index(modules):
                 emoji = "🛡️"
             elif "Operaciones" in cat:
                 emoji = "⚙️"
+            elif "IA" in cat:
+                emoji = "🧠"
 
             content += f"## {emoji} {cat}\n"
             for m in categorized[cat]:
@@ -227,6 +239,7 @@ def update_mkdocs_config(modules):
         'Observabilidad y Reportes',
         'Seguridad y Compliance',
         'Operaciones y Mantenimiento',
+        'IA y Agentes',
         'Otros / Sin Categoría'
     ]
 

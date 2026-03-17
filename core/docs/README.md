@@ -84,7 +84,7 @@ Si, parece increible pero hemos decidido en el equipo usar una terminología "es
 - [Módulo Ka0s YAML Lint](./ka0s_yaml/00_main.md)
 - [Concepto: Monitoring as Code (Zabbix IaC)](./ka0s_zabbix_iac/01_concept.md)
 - [Ka0s Cluster Restart Module](./kaos_cluster_restart/00_main.md)
-- [OpenClaw: Agente SRE Personalizado](./openclaw/01_concept.md)
+- [OpenClaw (Modelos Locales) - Ka0s Brain](./openclaw/00_main.md)
 - [Registro de Sesión](./templates/session_log_template.md)
 - [Windows Node Join Script (Template)](./windows_nodes/03_technical.md)
 

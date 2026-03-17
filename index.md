@@ -53,22 +53,24 @@ Bienvenido al centro de documentación del proyecto Ka0s. A continuación encont
 *   [Módulo Ka0s Onboarding](core/docs/ka0s_onboarding/00_main.md)
 *   [Ka0s Cluster Restart Module](core/docs/kaos_cluster_restart/00_main.md)
 
-## 📂 Otros / Sin Categoría
+## 🧠 IA y Agentes
 *   [Ka0s Admin Agent - Diseño Técnico](core/docs/admin-agent/design.md)
-*   [Ka0s Kubernetes Audits](core/docs/k8s-audits/00_main.md)
 *   [Ka0s Agent AI](core/docs/ka0s_agent_ai/00_main.md)
 *   [Ka0s Agent Ingest - Estrategia Modular](core/docs/ka0s_agent_ingest/00_main.md)
 *   [Ka0s Agent Knowledge Pipeline (DB Embeddings)](core/docs/ka0s_agent_knowledge_pipeline/00_main.md)
 *   [Ka0s GPU Enablement (Intel)](core/docs/ka0s_gpu_enablement/00_main.md)
+*   [PostgreSQL IA - Servicio de Memoria Vectorial](core/docs/ka0s_postgresql_ia/00_main.md)
+*   [OpenClaw (Modelos Locales) - Ka0s Brain](core/docs/openclaw/00_main.md)
+
+## 📂 Otros / Sin Categoría
+*   [Ka0s Kubernetes Audits](core/docs/k8s-audits/00_main.md)
 *   [Protocolo de Verificación de Incidencias (SOP)](core/docs/ka0s_incident_response/01_issue_verification.md)
 *   [Módulo Ka0s ITIL Sync](core/docs/ka0s_itil_sync/00_main.md)
 *   [Ka0s iTop Core Module](core/docs/ka0s_itop_core/00_main.md)
-*   [PostgreSQL IA - Servicio de Memoria Vectorial](core/docs/ka0s_postgresql_ia/00_main.md)
 *   [Ka0s Remediation Module](core/docs/ka0s_remediation/00_main.md)
 *   [Ka0s Remediation: High CPU/Load Workflow](core/docs/ka0s_remediation_high_load/01_concept.md)
 *   [Documentación del Módulo: Ka0s Self Service Portal](core/docs/ka0s_self_service_portal/00_main.md)
 *   [Concepto: Monitoring as Code (Zabbix IaC)](core/docs/ka0s_zabbix_iac/01_concept.md)
-*   [OpenClaw: Agente SRE Personalizado](core/docs/openclaw/01_concept.md)
 *   [Registro de Sesión](core/docs/templates/session_log_template.md)
 *   [Windows Node Join Script (Template)](core/docs/windows_nodes/03_technical.md)
 

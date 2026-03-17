@@ -2,23 +2,47 @@
 
 ## Command Line Interface (ka0s-agent)
 
-For quick interactions without opening a web browser, we provide a CLI wrapper script located at `core/b2b/openclaw/cli/ka0s-agent.sh`.
+Para preparar el despliegue (prerequisitos fuera de Git) y lanzar despliegues con el flujo de CD, usa el script:
+
+`core/b2b/core-services/runners/openclaw-bootstrap.sh`
 
 ### Setup
-Make the script executable:
 ```bash
-chmod +x core/b2b/openclaw/cli/ka0s-agent.sh
+chmod +x core/b2b/core-services/runners/openclaw-bootstrap.sh
 ```
 
 ### Usage
-Simply pass your prompt as an argument:
+#### 1) Crear/actualizar el secret de Basic Auth (Ingress)
 
 ```bash
-./core/b2b/openclaw/cli/ka0s-agent.sh "Diagnose the status of the 'monitoring' namespace"
+./core/b2b/core-services/runners/openclaw-bootstrap.sh create-basic-auth-secret
+```
+
+Esto crea/actualiza `openclaw-basic-auth` en el namespace `openclaw`.
+
+#### 2) Subir el modelo GGUF al PVC del runtime local
+
+```bash
+./core/b2b/core-services/runners/openclaw-bootstrap.sh upload-gguf ./ka0s-local.gguf
+```
+
+Esto copia el fichero a `/models/ka0s-local.gguf` dentro del PVC `llama-models-pvc` (namespace `llama-server`).
+
+#### 3) Lanzar el despliegue vía GitHub Actions (workflow_dispatch)
+
+```bash
+./core/b2b/core-services/runners/openclaw-bootstrap.sh trigger-deploy llama-server --ref feat/openclaw-local-brain
+./core/b2b/core-services/runners/openclaw-bootstrap.sh trigger-deploy openclaw --ref feat/openclaw-local-brain
+```
+
+#### 4) Esperar el último run del workflow
+
+```bash
+./core/b2b/core-services/runners/openclaw-bootstrap.sh watch-latest --ref feat/openclaw-local-brain
 ```
 
 ### How it works
-The script uses `kubectl exec` to run the native `openclaw agent` command directly inside the running pod. This ensures:
-1.  **Security**: Uses Kubernetes RBAC authentication (no extra API keys needed).
-2.  **Context**: Runs within the cluster network, allowing direct access to internal services.
-3.  **Persistence**: The agent's memory is updated with this interaction.
+El script separa dos planos:
+
+1. **Prerrequisitos fuera de Git**: secret del Ingress y carga del GGUF al PVC.
+2. **GitOps/CD**: dispara el workflow `cd-core-services.yml` con `force_service=` y espera su resultado.
