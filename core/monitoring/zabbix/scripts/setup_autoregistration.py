@@ -125,6 +125,13 @@ class ZabbixAutoRegistration:
             result = self._post("action.create", action_params)
             print(f"Action created successfully (ID: {result['actionids'][0]}).")
 
+# Mapeo de prefijos según el template
+MACRO_PREFIX_MAP = {
+    "MongoDB node by Zabbix agent 2": "MONGODB",
+    "MySQL by Zabbix agent 2": "MYSQL",
+    "PostgreSQL by Zabbix agent 2": "PG"
+}
+
 if __name__ == "__main__":
     if len(sys.argv) < 4:
         print("Usage: python3 setup_autoregistration.py <metadata_string> <host_group> <template_name> [macro1=value1 macro2=value2...]")
@@ -139,9 +146,18 @@ if __name__ == "__main__":
     
     macros = []
     if len(sys.argv) > 4:
+        # Auto-detectar prefijo de macro basado en el template
+        prefix = MACRO_PREFIX_MAP.get(template, "")
+        
         for arg in sys.argv[4:]:
             if '=' in arg:
-                macro, value = arg.split('=', 1)
-                macros.append({"macro": f"{{${macro}}}", "value": value})
+                key, value = arg.split('=', 1)
+                # Si el usuario ya incluyó el prefijo, lo dejamos. Si no, lo añadimos.
+                if prefix and not key.startswith(prefix + "."):
+                    macro_name = f"{{${prefix}.{key}}}"
+                else:
+                    macro_name = f"{{${key}}}"
+                    
+                macros.append({"macro": macro_name, "value": value})
                 
     manager.setup_action(metadata, group, template, macros)
