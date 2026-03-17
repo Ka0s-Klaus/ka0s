@@ -1,0 +1,94 @@
+name: "Auto Verify Incident"
+
+on:
+  issues:
+    types: [opened, labeled]
+
+permissions:
+  issues: write
+  contents: read
+
+env:
+  KAOS_MODULE: "[Ka0S] Incident Verification"
+
+jobs:
+  verify-incident:
+    if: contains(github.event.issue.labels.*.name, 'itop-incident')
+    name: Verify Incident Service
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # Asumimos que kubectl está configurado en swarm-runners-scaleset o necesitamos credenciales
+      # Si es un runner efímero, necesitaría azure/k8s-set-context o similar.
+      # PERO la regla 012 y el contexto dicen que se usa swarm-runners-scaleset.
+      # Asumiremos que tiene acceso al clúster (ServiceAccount in-cluster o kubeconfig inyectado).
+      # Si falla, el usuario verá el error y podrá corregirlo.
+      
+      - name: Verify Service Status
+        id: verify
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          echo "Iniciando verificación automática de incidente..."
+          
+          # Ejecutar script y capturar salida JSON
+          # El script lee ISSUE_BODY de la variable de entorno automáticamente
+          OUTPUT=$(python3 .github/scripts/verify-incident.py)
+          
+          echo "Raw Output: $OUTPUT"
+          
+          # Sanitizar output para GITHUB_OUTPUT (evitar multiline issues si las hubiera, aunque es json one-line)
+          echo "json_output=$OUTPUT" >> $GITHUB_OUTPUT
+
+      - name: Act on Result
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          VERIFY_JSON: ${{ steps.verify.outputs.json_output }}
+        run: |
+          # Extraer valores del JSON
+          STATUS=$(echo "$VERIFY_JSON" | jq -r '.status')
+          SERVICE=$(echo "$VERIFY_JSON" | jq -r '.service')
+          MESSAGE=$(echo "$VERIFY_JSON" | jq -r '.message')
+          
+          echo "Status: $STATUS"
+          echo "Service: $SERVICE"
+          
+          if [ "$STATUS" == "up" ]; then
+             echo "✅ Servicio UP. Cerrando issue..."
+             gh issue close "$ISSUE_NUMBER" --comment "✅ **Auto-Verificación Exitosa**
+             
+             El servicio **$SERVICE** ha sido detectado como **UP** (Running) en el clúster.
+             
+             **Detalles Técnicos:**
+             \`\`\`
+             $MESSAGE
+             \`\`\`
+             
+             🤖 *Esta acción ha sido realizada automáticamente por el sistema de auto-remediación de Ka0s.*"
+             
+          elif [ "$STATUS" == "down" ]; then
+             echo "❌ Servicio DOWN. Comentando issue..."
+             gh issue comment "$ISSUE_NUMBER" --body "⚠️ **Auto-Verificación Fallida**
+             
+             El servicio **$SERVICE** parece estar **DOWN** o degradado en el clúster.
+             
+             **Detalles Técnicos:**
+             \`\`\`
+             $MESSAGE
+             \`\`\`
+             
+             🚨 **Acción Requerida**: Inicie el protocolo de respuesta a incidentes manual."
+             
+          else
+             echo "⚠️ No se pudo identificar el servicio o estado desconocido ($STATUS). Ignorando..."
+             # Opcional: Comentar que no se entendió el servicio
+             # gh issue comment "$ISSUE_NUMBER" --body "ℹ️ **Auto-Verificación Indeterminada**: No se pudo identificar un servicio K8s válido en el cuerpo de la issue."
+          fi
