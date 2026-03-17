@@ -10,9 +10,10 @@ import sys
 import json
 import subprocess
 import argparse
+from typing import Optional
 
 
-def run_command(command):
+def run_command(command: str) -> Optional[str]:
     """Ejecuta un comando de shell y devuelve la salida."""
     try:
         result = subprocess.run(
