@@ -15,7 +15,11 @@ DB_HOSTS_PATTERNS = [
     "mongo-0",
     "postgresql-0",
     "postgresql-ia-0",
-    "mysql-" # Pattern match
+    "mysql-",
+    "PostgreSQL Metrics",
+    "PostgreSQL Vectorial",
+    "MongoDB Audit",
+    "MySQL Itil"
 ]
 
 class ZabbixGroupAssigner:
@@ -73,8 +77,11 @@ class ZabbixGroupAssigner:
             if 'groups' not in h:
                 continue
             for p in patterns:
+                # Use host OR name to match
                 if p in h['host'] or p in h['name']:
-                    matched_hosts.append(h)
+                    # Double check if not already in list to avoid duplicates
+                    if h not in matched_hosts:
+                        matched_hosts.append(h)
                     break
         return matched_hosts
 
