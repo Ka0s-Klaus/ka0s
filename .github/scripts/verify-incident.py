@@ -58,22 +58,45 @@ def run_command(command: str) -> Optional[str]:
 
 
 def get_open_incidents() -> List[Dict]:
-    """Obtiene issues abiertas con etiqueta itop-incident."""
-    # Ampliamos límite por si hay muchas
-    cmd = (
+    """Obtiene issues abiertas con etiqueta itop-incident o itop-problem."""
+    # Como 'gh issue list' no soporta OR lógico directamente para múltiples labels en una sola llamada,
+    # Hacemos dos llamadas y combinamos los resultados.
+    
+    cmd_incident = (
         "gh issue list "
         "--label itop-incident "
         "--state open "
         "--json number,title,body "
         "--limit 500"
     )
-    output = run_command(cmd)
-    if not output:
-        return []
-    try:
-        return json.loads(output)
-    except json.JSONDecodeError:
-        return []
+    
+    cmd_problem = (
+        "gh issue list "
+        "--label itop-problem "
+        "--state open "
+        "--json number,title,body "
+        "--limit 500"
+    )
+    
+    issues = []
+    
+    out_incident = run_command(cmd_incident)
+    if out_incident:
+        try:
+            issues.extend(json.loads(out_incident))
+        except json.JSONDecodeError:
+            pass
+            
+    out_problem = run_command(cmd_problem)
+    if out_problem:
+        try:
+            issues.extend(json.loads(out_problem))
+        except json.JSONDecodeError:
+            pass
+            
+    # Eliminar duplicados si una issue tiene ambas etiquetas (usando el 'number' como clave única)
+    unique_issues = {issue['number']: issue for issue in issues}
+    return list(unique_issues.values())
 
 
 def close_issue(number: int, service: str, message: str):

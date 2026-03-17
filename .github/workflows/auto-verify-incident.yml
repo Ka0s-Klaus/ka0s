@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       scan_all:
-        description: 'Escanear todas las issues abiertas con label itop-incident'
+        description: 'Escanear todas las issues abiertas con label itop-incident o itop-problem'
         required: true
         type: boolean
         default: true
@@ -30,9 +30,9 @@ jobs:
   # -----------------------------------------------------------------------------
   core-execution:
     name: Core Execution
-    # Ejecutar si es issue event con label itop-incident OR si es dispatch/schedule
+    # Ejecutar si es issue event con label itop-incident/itop-problem OR si es dispatch/schedule
     if: >
-      (github.event_name == 'issues' && contains(github.event.issue.labels.*.name, 'itop-incident')) ||
+      (github.event_name == 'issues' && (contains(github.event.issue.labels.*.name, 'itop-incident') || contains(github.event.issue.labels.*.name, 'itop-problem'))) ||
       (github.event_name == 'workflow_dispatch') ||
       (github.event_name == 'schedule')
     runs-on: swarm-runners-scaleset
