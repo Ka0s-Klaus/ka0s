@@ -14,31 +14,45 @@ SERVICES = [
         "host": "CloudBeaver",
         "dns": "cloudbeaver.cloudbeaver.svc.cluster.local",
         "group": "Ka0s Services",
-        "template": "HTTP Service"
+        "template": "Apache by HTTP"
     },
     {
         "host": "Docs Portal",
         "dns": "docs-portal.docs-portal.svc.cluster.local",
         "group": "Ka0s Services",
-        "template": "HTTP Service"
+        "template": "Nginx by HTTP"
     },
     {
         "host": "iTop",
         "dns": "itop.itop.svc.cluster.local",
         "group": "Ka0s Services",
-        "template": "HTTP Service"
+        "template": "Apache by HTTP"
     },
     {
         "host": "Metabase",
         "dns": "metabase.metabase.svc.cluster.local",
         "group": "Ka0s Services",
-        "template": "HTTP Service"
+        "template": "Apache by HTTP"
     },
     {
         "host": "Ollama",
         "dns": "ollama.ollama.svc.cluster.local",
         "port": "11434",
         "group": "AI Services",
+        "template": "Apache by HTTP"
+    },
+    {
+        "host": "Ingress Nginx",
+        "dns": "ingress-nginx-controller-metrics.ingress-nginx.svc.cluster.local",
+        "port": "10254",
+        "group": "Ka0s Infrastructure",
+        "template": "Nginx by HTTP"
+    },
+    {
+        "host": "NFS Provisioner",
+        "dns": "nfs-client-provisioner.storage-system.svc.cluster.local",
+        "port": "80", 
+        "group": "Ka0s Infrastructure",
         "template": "HTTP Service"
     }
 ]
