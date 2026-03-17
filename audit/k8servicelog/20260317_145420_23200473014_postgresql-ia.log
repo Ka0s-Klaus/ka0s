@@ -1,0 +1,24 @@
+=== Logs for Service: postgresql-ia (Namespace: postgresql-ia) ===
+=== Date: Tue Mar 17 14:54:28 UTC 2026 ===
+=== Selector: app=postgresql-ia,managed-by=ka0s-core-cd ===
+
+[pod/postgresql-ia-0/postgresql] 2026-03-17 14:47:06.364 UTC [2383] FATAL:  connection to client lost
+[pod/postgresql-ia-0/postgresql] 2026-03-17 14:49:48.565 UTC [2565] LOG:  could not send data to client: Broken pipe
+[pod/postgresql-ia-0/postgresql] 2026-03-17 14:49:48.565 UTC [2565] FATAL:  connection to client lost
+[pod/postgresql-ia-0/postgresql] 2026-03-17 14:52:56.446 UTC [2551] ERROR:  canceling statement due to user request
+[pod/postgresql-ia-0/postgresql] 2026-03-17 14:52:56.446 UTC [2551] STATEMENT:  SELECT pg_database_size(datname::text)
+[pod/postgresql-ia-0/postgresql] 			FROM pg_catalog.pg_database
+[pod/postgresql-ia-0/postgresql] 	   		WHERE datistemplate = false
+[pod/postgresql-ia-0/postgresql] 				 AND datname = $1;
+[pod/postgresql-ia-0/postgresql] 2026-03-17 14:52:56.447 UTC [2551] LOG:  could not send data to client: Broken pipe
+[pod/postgresql-ia-0/postgresql] 2026-03-17 14:52:56.447 UTC [2551] FATAL:  connection to client lost
+[pod/postgresql-ia-0/zabbix-agent] 2026/03/17 14:19:34.003456 [102] sending of heartbeat message for [postgresql-ia-0] started to fail
+[pod/postgresql-ia-0/zabbix-agent] 2026/03/17 14:19:34.003472 [101] cannot connect to [zabbix-server.zabbix.svc.cluster.local:10051]: dial tcp :0->10.96.9.144:10051: i/o timeout
+[pod/postgresql-ia-0/zabbix-agent] 2026/03/17 14:19:34.003497 [101] sending of heartbeat message for [postgresql-ia-0] started to fail
+[pod/postgresql-ia-0/zabbix-agent] 2026/03/17 14:20:31.042304 [102] active check configuration update from [172.16.64.148:10051] is working again
+[pod/postgresql-ia-0/zabbix-agent] 2026/03/17 14:20:31.046509 [101] active check configuration update from [zabbix-server.zabbix.svc.cluster.local:10051] is working again
+[pod/postgresql-ia-0/zabbix-agent] 2026/03/17 14:20:34.144407 [101] sending of heartbeat message to [zabbix-server.zabbix.svc.cluster.local:10051] is working again
+[pod/postgresql-ia-0/zabbix-agent] 2026/03/17 14:20:34.144633 [102] sending of heartbeat message to [172.16.64.148:10051] is working again
+[pod/postgresql-ia-0/zabbix-agent] 2026/03/17 14:20:35.525877 [PostgreSQL] failed to handle metric: query execution timeout 3s exceeded: Cannot fetch data: context deadline exceeded.
+[pod/postgresql-ia-0/zabbix-agent] 2026/03/17 14:48:30.437484 detected 60 time difference between queue checks, rescheduling tasks
+[pod/postgresql-ia-0/zabbix-agent] 2026/03/17 14:52:56.402326 [PostgreSQL] failed to handle metric: query execution timeout 3s exceeded: Cannot fetch data: context deadline exceeded.
