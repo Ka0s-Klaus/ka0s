@@ -14,7 +14,8 @@ SERVICES = [
         "host": "CloudBeaver",
         "dns": "cloudbeaver.cloudbeaver.svc.cluster.local",
         "group": "Ka0s Services",
-        "template": "HTTP Service"
+        "template": "HTTP Service",
+        "port": "80"
     },
     {
         "host": "Docs Portal",
