@@ -71,7 +71,7 @@ class ZabbixAutoRegistration:
         print(f"Error: Template '{template_name}' not found!")
         return None
 
-    def setup_action(self, metadata_value, group_name, template_name):
+    def setup_action(self, metadata_value, group_name, template_name, macros=None):
         if not self.auth_token:
             self.login()
 
@@ -89,6 +89,13 @@ class ZabbixAutoRegistration:
             "output": ["actionid"]
         })
 
+        # Define operations
+        operations = [
+            {"operationtype": 2},  # Add host
+            {"operationtype": 4, "opgroup": [{"groupid": group_id}]},  # Add to host group
+            {"operationtype": 6, "optemplate": [{"templateid": template_id}]}  # Link to template
+        ]
+
         # Define the action parameters
         action_params = {
             "name": action_name,
@@ -104,11 +111,7 @@ class ZabbixAutoRegistration:
                     }
                 ]
             },
-            "operations": [
-                {"operationtype": 2}, # Add host
-                {"operationtype": 4, "opgroup": [{"groupid": group_id}]}, # Add to host group
-                {"operationtype": 6, "optemplate": [{"templateid": template_id}]} # Link to template
-            ]
+            "operations": operations
         }
 
         if existing_actions:
@@ -124,7 +127,7 @@ class ZabbixAutoRegistration:
 
 if __name__ == "__main__":
     if len(sys.argv) < 4:
-        print("Usage: python3 setup_autoregistration.py <metadata_string> <host_group> <template_name>")
+        print("Usage: python3 setup_autoregistration.py <metadata_string> <host_group> <template_name> [macro1=value1 macro2=value2...]")
         print("Example: python3 setup_autoregistration.py mongo Databases \"MongoDB node by Zabbix agent 2\"")
         sys.exit(1)
         
@@ -133,4 +136,12 @@ if __name__ == "__main__":
     template = sys.argv[3]
     
     manager = ZabbixAutoRegistration(ZABBIX_URL, ZABBIX_USER, ZABBIX_PASS)
-    manager.setup_action(metadata, group, template)
+    
+    macros = []
+    if len(sys.argv) > 4:
+        for arg in sys.argv[4:]:
+            if '=' in arg:
+                macro, value = arg.split('=', 1)
+                macros.append({"macro": f"{{${macro}}}", "value": value})
+                
+    manager.setup_action(metadata, group, template, macros)
