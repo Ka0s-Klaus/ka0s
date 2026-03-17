@@ -70,6 +70,8 @@ class ZabbixGroupAssigner:
         matched_hosts = []
         
         for h in all_hosts:
+            if 'groups' not in h:
+                continue
             for p in patterns:
                 if p in h['host'] or p in h['name']:
                     matched_hosts.append(h)
