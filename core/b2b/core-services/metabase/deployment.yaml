@@ -26,6 +26,33 @@ spec:
               matchExpressions:
               - key: node-role.kubernetes.io/control-plane
                 operator: DoesNotExist
+      initContainers:
+      - name: wait-for-db
+        image: postgres:16-alpine
+        command:
+        - sh
+        - -c
+        - |
+          until pg_isready -h ${MB_DB_HOST} -p ${MB_DB_PORT} -U ${MB_DB_USER}; do
+            echo "Waiting for database to be ready..."
+            sleep 2
+          done
+        env:
+        - name: MB_DB_PORT
+          valueFrom:
+            secretKeyRef:
+              name: metabase-db-secret
+              key: DB_PORT
+        - name: MB_DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: metabase-db-secret
+              key: DB_USER
+        - name: MB_DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: metabase-db-secret
+              key: DB_HOST
       containers:
       - name: metabase
         image: metabase/metabase:v0.58.8
