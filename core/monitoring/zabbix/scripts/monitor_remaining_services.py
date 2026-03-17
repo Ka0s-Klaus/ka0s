@@ -21,26 +21,29 @@ SERVICES = [
         "host": "Docs Portal",
         "dns": "docs-portal.docs-portal.svc.cluster.local",
         "group": "Ka0s Services",
-        "template": "Nginx by HTTP"
+        "template": "Website by Browser",
+        "port": "80"
     },
     {
         "host": "iTop",
         "dns": "itop.itop.svc.cluster.local",
         "group": "Ka0s Services",
-        "template": "Apache by HTTP"
+        "template": "Website by Browser",
+        "port": "80"
     },
     {
         "host": "Metabase",
         "dns": "metabase.metabase.svc.cluster.local",
         "group": "Ka0s Services",
-        "template": "Apache by HTTP"
+        "template": "Website by Browser",
+        "port": "80"
     },
     {
         "host": "Ollama",
         "dns": "ollama.ollama.svc.cluster.local",
-        "port": "11434",
-        "group": "AI Services",
-        "template": "Apache by HTTP"
+        "group": "Ka0s Services",
+        "template": "Website by Browser",
+        "port": "11434"
     },
     {
         "host": "Ingress Nginx",
