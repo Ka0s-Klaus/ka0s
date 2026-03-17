@@ -7,6 +7,10 @@ spec:
   ports:
   - port: 3306
     targetPort: 3306
+    name: mysql
+  - port: 10050
+    targetPort: 10050
+    name: zabbix-agent
   selector:
     app: mysql
   clusterIP: None # Headless service para estabilidad DNS interna si fuera StatefulSet, pero útil igual

@@ -75,6 +75,39 @@ spec:
         volumeMounts:
         - name: postgres-ia-data
           mountPath: /var/lib/postgresql/data
+      - name: zabbix-agent
+        image: zabbix/zabbix-agent2:ubuntu-7.0-latest
+        ports:
+        - containerPort: 10050
+          name: zabbix-agent
+        env:
+        - name: ZBX_HOSTNAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: ZBX_SERVER_HOST
+          value: "zabbix-server.zabbix.svc.cluster.local,172.16.64.148"
+        - name: ZBX_METADATA
+          value: "postgresql"
+        - name: ZBX_PLUGINS_POSTGRESQL_SESSIONS_DEFAULT_URI
+          value: "tcp://localhost:5432"
+        - name: ZBX_PLUGINS_POSTGRESQL_SESSIONS_DEFAULT_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-ia-secret
+              key: POSTGRES_USER
+        - name: ZBX_PLUGINS_POSTGRESQL_SESSIONS_DEFAULT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-ia-secret
+              key: POSTGRES_PASSWORD
+        resources:
+          requests:
+            cpu: 10m
+            memory: 64Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
       nodeSelector:
         kubernetes.io/hostname: k8-node-20
   volumeClaimTemplates:

@@ -60,6 +60,36 @@ spec:
           limits:
             memory: "1Gi"
             cpu: "1000m"
+      - name: zabbix-agent
+        image: zabbix/zabbix-agent2:ubuntu-7.0-latest
+        ports:
+        - containerPort: 10050
+          name: zabbix-agent
+        env:
+        - name: ZBX_HOSTNAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: ZBX_SERVER_HOST
+          value: "zabbix-server.zabbix.svc.cluster.local,172.16.64.148"
+        - name: ZBX_METADATA
+          value: "mysql"
+        - name: ZBX_PLUGINS_MYSQL_SESSIONS_DEFAULT_URI
+          value: "tcp://localhost:3306"
+        - name: ZBX_PLUGINS_MYSQL_SESSIONS_DEFAULT_USER
+          value: "root"
+        - name: ZBX_PLUGINS_MYSQL_SESSIONS_DEFAULT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: mysql-root-password
+        resources:
+          requests:
+            cpu: 10m
+            memory: 64Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
       volumes:
       - name: mysql-persistent-storage
         persistentVolumeClaim:
