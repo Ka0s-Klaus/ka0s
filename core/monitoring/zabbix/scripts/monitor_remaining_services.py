@@ -14,35 +14,35 @@ SERVICES = [
         "host": "CloudBeaver",
         "dns": "cloudbeaver.cloudbeaver.svc.cluster.local",
         "group": "Ka0s Services",
-        "template": "Website by Browser", 
+        "template": "ICMP Ping",
         "port": "80"
     },
     {
         "host": "Docs Portal",
         "dns": "docs-portal.docs-portal.svc.cluster.local",
         "group": "Ka0s Services",
-        "template": "Website by Browser",
+        "template": "ICMP Ping",
         "port": "80"
     },
     {
         "host": "iTop",
         "dns": "itop.itop.svc.cluster.local",
         "group": "Ka0s Services",
-        "template": "Website by Browser",
+        "template": "ICMP Ping",
         "port": "80"
     },
     {
         "host": "Metabase",
         "dns": "metabase.metabase.svc.cluster.local",
         "group": "Ka0s Services",
-        "template": "Website by Browser",
+        "template": "ICMP Ping",
         "port": "80"
     },
     {
         "host": "Ollama",
         "dns": "ollama.ollama.svc.cluster.local",
         "group": "Ka0s Services",
-        "template": "Website by Browser",
+        "template": "ICMP Ping",
         "port": "11434"
     },
     {
