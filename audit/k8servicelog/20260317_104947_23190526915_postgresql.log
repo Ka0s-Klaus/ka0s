@@ -1,0 +1,15 @@
+=== Logs for Service: postgresql (Namespace: postgresql) ===
+=== Date: Tue Mar 17 10:49:54 UTC 2026 ===
+=== Selector: app=postgresql,managed-by=ka0s-core-cd,role=primary ===
+
+[pod/postgresql-0/postgresql] 				NOT db.datistemplate
+[pod/postgresql-0/postgresql] 		)
+[pod/postgresql-0/postgresql] 		SELECT
+[pod/postgresql-0/postgresql] 			json_object_agg(datname, row_to_json(T))
+[pod/postgresql-0/postgresql] 		FROM
+[pod/postgresql-0/postgresql] 			T
+[pod/postgresql-0/postgresql] 2026-03-17 10:48:40.572 UTC [5149] LOG:  could not send data to client: Connection reset by peer
+[pod/postgresql-0/postgresql] 2026-03-17 10:48:40.656 UTC [5149] FATAL:  connection to client lost
+[pod/postgresql-0/postgresql] 2026-03-17 10:49:06.579 UTC [26] LOG:  checkpoint complete: wrote 4582 buffers (28.0%); 0 WAL file(s) added, 1 removed, 1 recycled; write=269.219 s, sync=0.353 s, total=269.913 s; sync files=141, longest=0.101 s, average=0.003 s; distance=28224 kB, estimate=65647 kB; lsn=D/FFB23A70, redo lsn=D/FE1E6030
+[pod/postgresql-0/postgresql] 2026-03-17 10:49:36.617 UTC [26] LOG:  checkpoint starting: time
+[pod/postgresql-0/zabbix-agent] 2026/03/17 10:48:40.422554 [PostgreSQL] failed to handle metric: query execution timeout 3s exceeded: Cannot fetch data: context deadline exceeded.
