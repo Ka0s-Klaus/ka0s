@@ -12,35 +12,35 @@ ZABBIX_PASS = os.getenv('ZABBIX_PASS', 'zabbix')
 SERVICES = [
     {
         "host": "CloudBeaver",
-        "dns": "cloudbeaver.cloudbeaver.svc.cluster.local",
+        "dns": "10.105.40.153",
         "group": "Ka0s Services",
         "template": "ICMP Ping",
         "port": "80"
     },
     {
         "host": "Docs Portal",
-        "dns": "docs-portal.docs-portal.svc.cluster.local",
+        "dns": "10.104.15.70",
         "group": "Ka0s Services",
         "template": "ICMP Ping",
         "port": "80"
     },
     {
         "host": "iTop",
-        "dns": "itop.itop.svc.cluster.local",
+        "dns": "10.103.185.4",
         "group": "Ka0s Services",
         "template": "ICMP Ping",
         "port": "80"
     },
     {
         "host": "Metabase",
-        "dns": "metabase.metabase.svc.cluster.local",
+        "dns": "10.104.238.93",
         "group": "Ka0s Services",
         "template": "ICMP Ping",
         "port": "80"
     },
     {
         "host": "Ollama",
-        "dns": "ollama.ollama.svc.cluster.local",
+        "dns": "10.103.245.188",
         "group": "Ka0s Services",
         "template": "ICMP Ping",
         "port": "11434"
