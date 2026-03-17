@@ -33,15 +33,26 @@ El script `setup_autoregistration.py` crea programáticamente la regla que inter
 
 ### Uso
 ```bash
-# Sintaxis
+# Sintaxis básica
 python3 setup_autoregistration.py <metadata_string> <host_group> <template_name>
 
-# Ejemplo: Registrar automáticamente nodos de MongoDB
+# Sintaxis avanzada (Inyección de Macros)
+python3 setup_autoregistration.py <metadata_string> <host_group> <template_name> [MACRO1=VALOR1] [MACRO2=VALOR2]...
+
+# Ejemplo: Registrar automáticamente nodos de MongoDB con credenciales
 python3 core/monitoring/zabbix/scripts/setup_autoregistration.py \
     "mongo" \
     "Databases" \
-    "MongoDB node by Zabbix agent 2"
+    "MongoDB node by Zabbix agent 2" \
+    MONGODB.CONNSTRING="tcp://localhost:27017" \
+    MONGODB.USER="root" \
+    MONGODB.PASSWORD="mipasswordsecreto"
 ```
+
+### Inyección de Macros (Evitar errores de "Unauthorized")
+Muchos templates oficiales (como bases de datos) requieren que el Host tenga configuradas **User Macros** (ej. `{$MONGODB.USER}`) para poder autenticarse contra el servicio. Si el auto-registro crea el host sin estas macros, el template enviará peticiones vacías y los ítems quedarán en estado *Unsupported*. 
+
+El script permite pasar argumentos clave-valor al final del comando. El script formateará automáticamente la clave envolviéndola en la sintaxis de macro de Zabbix `{$CLAVE}` y creará la operación en la regla de auto-registro para que el Host nazca con las credenciales listas.
 
 ### Flujo Operativo (Ejemplo MongoDB)
 1. Desplegamos el pod `mongo-0` con el sidecar de Zabbix Agent 2, inyectando `ZBX_METADATA=mongo`.
