@@ -55,16 +55,8 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install GH CLI (Safety Check)
-        run: |
-          if ! command -v gh &> /dev/null; then
-             echo "gh cli not found, installing..."
-             # Asumimos que en este entorno si falla no podemos instalarlo fácilmente sin sudo/root
-             # pero reportamos estado.
-             echo "::warning::GH CLI not found in runner."
-          else
-             echo "gh cli found: $(gh --version)"
-          fi
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
 
       - name: Main Logic - Verify Incident(s)
         env:
