@@ -14,28 +14,28 @@ SERVICES = [
         "host": "CloudBeaver",
         "dns": "10.105.40.153",
         "group": "Ka0s Services",
-        "template": "ICMP Ping",
+        "template": "TCP Service",
         "port": "80"
     },
     {
         "host": "Docs Portal",
         "dns": "10.104.15.70",
         "group": "Ka0s Services",
-        "template": "ICMP Ping",
+        "template": "TCP Service",
         "port": "80"
     },
     {
         "host": "iTop",
         "dns": "10.103.185.4",
         "group": "Ka0s Services",
-        "template": "ICMP Ping",
+        "template": "TCP Service",
         "port": "80"
     },
     {
         "host": "Metabase",
         "dns": "10.104.238.93",
         "group": "Ka0s Services",
-        "template": "ICMP Ping",
+        "template": "TCP Service",
         "port": "80"
     },
     {
