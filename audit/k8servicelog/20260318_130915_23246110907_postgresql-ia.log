@@ -1,0 +1,24 @@
+=== Logs for Service: postgresql-ia (Namespace: postgresql-ia) ===
+=== Date: Wed Mar 18 13:09:29 UTC 2026 ===
+=== Selector: app=postgresql-ia,managed-by=ka0s-core-cd ===
+
+[pod/postgresql-ia-0/postgresql] 			FROM pg_catalog.pg_database
+[pod/postgresql-ia-0/postgresql] 	   		WHERE datistemplate = false
+[pod/postgresql-ia-0/postgresql] 				 AND datname = $1;
+[pod/postgresql-ia-0/postgresql] 2026-03-18 13:07:58.521 UTC [14013] ERROR:  canceling statement due to user request
+[pod/postgresql-ia-0/postgresql] 2026-03-18 13:07:58.521 UTC [14013] STATEMENT:  SELECT pg_database_size(datname::text)
+[pod/postgresql-ia-0/postgresql] 			FROM pg_catalog.pg_database
+[pod/postgresql-ia-0/postgresql] 	   		WHERE datistemplate = false
+[pod/postgresql-ia-0/postgresql] 				 AND datname = $1;
+[pod/postgresql-ia-0/postgresql] 2026-03-18 13:07:58.522 UTC [14013] LOG:  could not send data to client: Broken pipe
+[pod/postgresql-ia-0/postgresql] 2026-03-18 13:07:58.522 UTC [14013] FATAL:  connection to client lost
+[pod/postgresql-ia-0/zabbix-agent] 2026/03/18 12:57:56.515043 [PostgreSQL] failed to handle metric: query execution timeout 3s exceeded: Cannot fetch data: context deadline exceeded.
+[pod/postgresql-ia-0/zabbix-agent] 2026/03/18 12:57:57.503019 [PostgreSQL] failed to handle metric: query execution timeout 3s exceeded: Cannot fetch data: context deadline exceeded.
+[pod/postgresql-ia-0/zabbix-agent] 2026/03/18 12:57:58.500996 [PostgreSQL] failed to handle metric: query execution timeout 3s exceeded: Cannot fetch data: context deadline exceeded.
+[pod/postgresql-ia-0/zabbix-agent] 2026/03/18 12:58:53.103236 [PostgreSQL] failed to handle metric: query execution timeout 3s exceeded: Cannot fetch data: context deadline exceeded.
+[pod/postgresql-ia-0/zabbix-agent] 2026/03/18 13:02:56.049359 [PostgreSQL] failed to handle metric: query execution timeout 3s exceeded: Cannot fetch data: context deadline exceeded.
+[pod/postgresql-ia-0/zabbix-agent] 2026/03/18 13:02:57.509439 [PostgreSQL] failed to handle metric: query execution timeout 3s exceeded: Cannot fetch data: context deadline exceeded.
+[pod/postgresql-ia-0/zabbix-agent] 2026/03/18 13:02:58.511376 [PostgreSQL] failed to handle metric: query execution timeout 3s exceeded: Cannot fetch data: context deadline exceeded.
+[pod/postgresql-ia-0/zabbix-agent] 2026/03/18 13:07:56.509636 [PostgreSQL] failed to handle metric: query execution timeout 3s exceeded: Cannot fetch data: context deadline exceeded.
+[pod/postgresql-ia-0/zabbix-agent] 2026/03/18 13:07:57.505868 [PostgreSQL] failed to handle metric: query execution timeout 3s exceeded: Cannot fetch data: context deadline exceeded.
+[pod/postgresql-ia-0/zabbix-agent] 2026/03/18 13:07:58.504490 [PostgreSQL] failed to handle metric: query execution timeout 3s exceeded: Cannot fetch data: context deadline exceeded.
