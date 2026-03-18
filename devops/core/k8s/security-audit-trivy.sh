@@ -12,6 +12,11 @@ echo "" >> "$OUTPUT_FILE"
 # Check if trivy is installed
 if ! command -v trivy &> /dev/null; then
     echo "Trivy not found. Installing..."
+    # Ensure curl is present
+    if ! command -v curl &> /dev/null; then
+        echo "Installing curl..."
+        sudo apt-get update && sudo apt-get install -y curl
+    fi
     curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin
 fi
 
