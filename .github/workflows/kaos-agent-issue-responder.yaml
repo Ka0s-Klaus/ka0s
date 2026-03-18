@@ -60,10 +60,13 @@ jobs:
         env:
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_IA_PASSWORD }}
           # Extraer el cuerpo de la issue como pregunta
-          QUESTION: ${{ github.event.issue.body }} 
+          QUESTION_TITLE: ${{ github.event.issue.title }}
+          QUESTION_BODY: ${{ github.event.issue.body }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
           echo "Procesando Issue #$ISSUE_NUMBER"
+
+          QUESTION="$(printf "%s\n\n%s" "$QUESTION_TITLE" "$QUESTION_BODY")"
           
           # Limpiar el cuerpo de la issue para obtener solo la pregunta relevante
           # (Eliminar headers de markdown del template si es necesario, 

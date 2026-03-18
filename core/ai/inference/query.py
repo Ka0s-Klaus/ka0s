@@ -4,6 +4,8 @@ import psycopg2
 import requests
 import logging
 import json
+import re
+from pathlib import Path
 from typing import List, Dict, Any
 
 # Configuration
@@ -130,6 +132,69 @@ def generate_answer(query: str, context: List[Dict[str, Any]]) -> str:
         logger.error(f"Generation failed: {e}")
         return f"Error generating answer: {e}"
 
+
+def find_repo_files(query: str, repo_root: str, max_hits: int = 40) -> List[str]:
+    tokens = [t for t in re.split(r"\W+", query.lower()) if len(t) >= 4]
+    if not tokens:
+        return []
+    root = Path(repo_root)
+
+    core_services = root / "core" / "b2b" / "core-services"
+    if core_services.exists():
+        for t in tokens:
+            svc_dir = core_services / t
+            if svc_dir.exists() and svc_dir.is_dir():
+                files = [str(p.relative_to(root)).replace("\\", "/") for p in svc_dir.rglob("*") if p.is_file()]
+                files.sort()
+                return files[:max_hits]
+
+    ignore_parts = {
+        ".git",
+        ".venv",
+        "node_modules",
+        "__pycache__",
+        ".pytest_cache",
+        "dist",
+        "build",
+    }
+    stopwords = {
+        "puedes",
+        "podrias",
+        "podrías",
+        "mostrar",
+        "mostrarme",
+        "ficheros",
+        "archivo",
+        "archivos",
+        "despliegue",
+        "deployment",
+        "service",
+        "services",
+        "yaml",
+        "yml",
+    }
+    tokens = [t for t in tokens if t not in stopwords]
+    if not tokens:
+        return []
+
+    candidates: List[tuple[int, str]] = []
+    for p in root.rglob("*"):
+        if not p.is_file():
+            continue
+        rel = p.relative_to(root)
+        parts = set(rel.parts)
+        if parts & ignore_parts:
+            continue
+        rel_str = str(rel).lower().replace("\\", "/")
+        hits = sum(1 for tok in tokens if tok in rel_str)
+        if hits:
+            candidates.append((hits, rel_str))
+            if len(candidates) >= 500:
+                break
+
+    candidates.sort(key=lambda x: (-x[0], x[1]))
+    return [p for _, p in candidates[:max_hits]]
+
 def main():
     parser = argparse.ArgumentParser(description="Ka0s Agent Inference CLI")
     parser.add_argument("query", type=str, help="The question to ask the agent")
@@ -141,12 +206,24 @@ def main():
     # 1. Embed Query
     query_embedding = generate_embedding(query)
     if not query_embedding:
+        repo_root = os.getenv("GITHUB_WORKSPACE") or os.getcwd()
+        matches = find_repo_files(query, repo_root=repo_root)
+        if matches:
+            print("Ficheros relevantes encontrados en el repositorio:\n" + "\n".join([f"- {m}" for m in matches]))
+            return
         print("Error: Could not embed query.")
         return
 
     # 2. Retrieve Context
     context = search_context(query_embedding)
     logger.info(f"Retrieved {len(context)} relevant context chunks.")
+
+    if not context or context[0]["similarity"] < 0.4:
+        repo_root = os.getenv("GITHUB_WORKSPACE") or os.getcwd()
+        matches = find_repo_files(query, repo_root=repo_root)
+        if matches:
+            print("Ficheros relevantes encontrados en el repositorio:\n" + "\n".join([f"- {m}" for m in matches]))
+            return
     
     # 3. Generate Answer
     answer = generate_answer(query, context)

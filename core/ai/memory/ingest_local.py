@@ -43,7 +43,8 @@ def process_file_to_cache(file_path: str, cache_file: str):
                     continue
                 
                 chunk_source = f"{file_path}#chunk{i}"
-                chunk_hash = calculate_hash(chunk)
+                chunk_payload = f"source: {chunk_source}\n{chunk}"
+                chunk_hash = calculate_hash(chunk_payload)
                 
                 # Check against DB only for hash to skip processing if possible? 
                 # Ideally, we want to avoid DB here. But to be incremental, we need to know what's in DB.
@@ -52,13 +53,13 @@ def process_file_to_cache(file_path: str, cache_file: str):
                     logger.debug(f"Skipping unchanged chunk: {chunk_source}")
                     continue
 
-                embedding = generate_embedding(chunk)
+                embedding = generate_embedding(chunk_payload)
                 if not embedding:
                     continue
                 
                 record = {
                     "source": chunk_source,
-                    "content": chunk,
+                    "content": chunk_payload,
                     "content_hash": chunk_hash,
                     "embedding": embedding
                 }
