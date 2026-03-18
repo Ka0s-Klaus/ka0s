@@ -195,6 +195,28 @@ def find_repo_files(query: str, repo_root: str, max_hits: int = 40) -> List[str]
     candidates.sort(key=lambda x: (-x[0], x[1]))
     return [p for _, p in candidates[:max_hits]]
 
+
+def should_return_file_list(query: str) -> bool:
+    q = query.lower()
+    keywords = [
+        "fichero",
+        "ficheros",
+        "archivo",
+        "archivos",
+        "ruta",
+        "rutas",
+        "path",
+        "paths",
+        "manifiesto",
+        "manifiestos",
+        "kustomization",
+        "deployment",
+        "despliegue",
+        "yaml",
+        "yml",
+    ]
+    return any(k in q for k in keywords)
+
 def main():
     parser = argparse.ArgumentParser(description="Ka0s Agent Inference CLI")
     parser.add_argument("query", type=str, help="The question to ask the agent")
@@ -202,11 +224,17 @@ def main():
     
     query = args.query
     logger.info(f"Processing query: {query}")
+
+    repo_root = os.getenv("GITHUB_WORKSPACE") or os.getcwd()
+    if should_return_file_list(query):
+        matches = find_repo_files(query, repo_root=repo_root)
+        if matches:
+            print("Ficheros relevantes encontrados en el repositorio:\n" + "\n".join([f"- {m}" for m in matches]))
+            return
     
     # 1. Embed Query
     query_embedding = generate_embedding(query)
     if not query_embedding:
-        repo_root = os.getenv("GITHUB_WORKSPACE") or os.getcwd()
         matches = find_repo_files(query, repo_root=repo_root)
         if matches:
             print("Ficheros relevantes encontrados en el repositorio:\n" + "\n".join([f"- {m}" for m in matches]))
