@@ -59,45 +59,39 @@ jobs:
           python -m pip install --upgrade pip
           pip install kubernetes pyzabbix requests pyyaml
 
-      - id: audit
-        name: Execute Zabbix Discovery Script via SSH
-        uses: ./.github/actions/ssh-exec
+      - name: Setup Kubectl Tunnel
+        uses: ./.github/actions/kubectl-tunnel
         with:
-          host: ${{ secrets.KAOS_SSH_HOST_1 }}
-          username: ${{ secrets.KAOS_SSH_USER }}
-          key: ${{ secrets.KAOS_SSH_KEY_PRIV }}
-          port: ${{ secrets.KAOS_SSH_PORT_1 }}
-          pass: ${{ secrets.KAOS_SSH_PASS }}
-          use-sudo: false
-          script-path: 'core/monitoring/zabbix/scripts/monitor_k8s_services.py'
-          script-args: ''
-          env-vars: |
-            ZABBIX_URL=${{ secrets.ZABBIX_URL }}
-            ZABBIX_USER=${{ secrets.ZABBIX_USER }}
-            ZABBIX_PASS=${{ secrets.ZABBIX_PASS }}
-            KUBECONFIG=~/.kube/config
+          ssh-host: ${{ secrets.KAOS_SSH_HOST_1 }}
+          ssh-user: ${{ secrets.KAOS_SSH_USER }}
+          ssh-key: ${{ secrets.KAOS_SSH_KEY_PRIV }}
+          ssh-port: ${{ secrets.KAOS_SSH_PORT_1 }}
+
+      - name: Generate Namespaces Data
+        run: |
+          echo "Generando descubrimiento de Namespaces desde Kubernetes..."
+          export KUBECONFIG=~/.kube/config
+          mkdir -p core/monitoring/zabbix/data
+          
+          # Extraer namespaces a un JSON simple
+          kubectl get namespaces -o json > core/monitoring/zabbix/data/namespaces_raw.json
+          
+          # Procesar JSON para formato compatible con LLD de Zabbix
+          jq '{ "data": [ .items[] | { "{#NAMESPACE}": .metadata.name, "{#STATUS}": .status.phase, "{#AGE}": .metadata.creationTimestamp } ] }' core/monitoring/zabbix/data/namespaces_raw.json > core/monitoring/zabbix/data/k8s_namespaces_lld.json
+          
+          echo "Descubrimiento de namespaces generado en core/monitoring/zabbix/data/k8s_namespaces_lld.json"
+          cat core/monitoring/zabbix/data/k8s_namespaces_lld.json
 
       # [OPCIONAL] Commit de resultados/evidencias
       - name: Commit & Push Results
         if: success()
         run: |
-          git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
-          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
-          
-          # En este caso no esperamos cambios en el repo, pero mantenemos la lógica por si acaso
-          if ! git diff --staged --quiet; then
-            git commit -m "chore(ka0s): update artifacts ${{ env.KAOS_MODULE }} run ${{ env.KAOS_CODE }} [skip ci]"
-            # Reintento básico de push
-            count=0
-            until git push origin HEAD:${{ github.ref_name }} || [ $count -eq 5 ]; do
-              echo "Push fallido, reintentando..."
-              git pull --rebase origin ${{ github.ref_name }}
-              ((count++))
-              sleep 2
-            done
-          else
-            echo "No hay cambios para subir."
-          fi
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin main
+          git add core/monitoring/zabbix/data/k8s_namespaces_lld.json
+          git commit -m "chore(zabbix): auto-update k8s namespaces discovery data" || echo "No changes to commit"
+          git push origin HEAD
 
   # -----------------------------------------------------------------------------
   # JOB 2: HANDLE SUCCESS (Opcional)
