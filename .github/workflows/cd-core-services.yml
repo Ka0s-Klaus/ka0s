@@ -340,7 +340,7 @@ jobs:
           fi
 
   handle-success:
-    runs-on: swarm-runners-scaleset
+    runs-on: ubuntu-latest
     needs: [deploy-services]
     if: ${{ success() }}
     steps: 
@@ -350,7 +350,7 @@ jobs:
     name: Handle Failure
     needs: [deploy-services]
     if: failure()
-    runs-on: swarm-runners-scaleset
+    runs-on: ubuntu-latest
     permissions:
       issues: write
       contents: read
@@ -404,7 +404,7 @@ jobs:
   end-workflow:
     needs: [handle-success, handle-failure]
     if: always()
-    runs-on: swarm-runners-scaleset
+    runs-on: ubuntu-latest
     permissions:
       actions: write
       contents: read
