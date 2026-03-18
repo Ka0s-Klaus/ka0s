@@ -435,17 +435,19 @@ class ZabbixK8sMonitor:
             
             ip = cluster_ip if cluster_ip and cluster_ip != "None" else "127.0.0.1"
             
-            host_id = self.create_host(
-                host_name=f"k8s-svc-{namespace}-{svc_name}",
-                visible_name=f"K8s Service: {namespace}/{svc_name}",
-                hostgroup_id=hostgroup_id,
-                ip=ip
+            host_info = self.create_host(
+                {
+                    "name": svc_name,
+                    "namespace": namespace,
+                    "cluster_ip": ip
+                }
             )
             
-            if host_id:
+            if host_info and host_info.get("host_id"):
+                host_id = host_info["host_id"]
                 dashboard_name = f"Service Overview: {svc_name}"
                 print(f"Creating dashboard '{dashboard_name}'...")
-                self.create_dashboard(host_id, dashboard_name, svc_name)
+                self.create_dashboard(host_info)
         
         print("Sync completed.")
 
