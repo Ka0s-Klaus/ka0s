@@ -78,13 +78,32 @@ jobs:
           # Verificar si ZABBIX_URL está definido
           if [ -z "$ZABBIX_URL" ]; then
             echo "::warning::ZABBIX_URL secret is missing or empty. Using fallback internal URL."
+            # Mapeamos al túnel SSH que acabamos de crear (127.0.0.1:8080 asumiendo que exponemos Zabbix, 
+            # pero el túnel actual solo expone el API de K8s en el 6443)
+            # Para conectar con Zabbix internamente a través de K8s, usamos el port-forward o ingress.
+            # En Ka0s, el ingress de Zabbix suele estar disponible públicamente o vía VPN.
+            # Si corre dentro de K8s (swarm-runner-scaleset), la DNS interna debería funcionar.
             export ZABBIX_URL="http://zabbix-web.zabbix.svc.cluster.local/api_jsonrpc.php"
           fi
           
           # Export KUBECONFIG to point to the tunneled cluster configuration
           export KUBECONFIG=~/.kube/config
           
+          # Hacemos port-forward local de Zabbix para que el script Python pueda acceder
+          echo "Estableciendo port-forward hacia Zabbix..."
+          kubectl port-forward svc/zabbix-web -n zabbix 8080:80 &
+          PF_PID=$!
+          
+          # Esperar a que el port-forward esté listo
+          sleep 5
+          
+          # Sobreescribir URL para usar el port-forward local
+          export ZABBIX_URL="http://127.0.0.1:8080/api_jsonrpc.php"
+          
           python3 core/monitoring/zabbix/scripts/monitor_k8s_services.py
+          
+          # Limpiar port-forward
+          kill $PF_PID
 
       # [OPCIONAL] Commit de resultados/evidencias
       - name: Commit & Push Results
