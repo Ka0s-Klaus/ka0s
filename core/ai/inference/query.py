@@ -278,11 +278,6 @@ def should_return_file_list(query: str) -> bool:
         "paths",
         "manifiesto",
         "manifiestos",
-        "kustomization",
-        "deployment",
-        "despliegue",
-        "yaml",
-        "yml",
     ]
     return any(k in q for k in keywords)
 
