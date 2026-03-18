@@ -15,7 +15,7 @@ Se ha recuperado el script `deploy.sh` que utiliza los charts OCI oficiales.
 
 ```bash
 # Versión del Chart: 0.13.1 (Latest)
-# Imagen del Runner: ka0score/actions-runner:1.0.3
+# Imagen del Runner: ghcr.io/actions/actions-runner:latest (Oficial)
 # Grupo de Runners: Default (sin especificar runnerGroup)
 
 helm upgrade --install actions-runner-controller \
@@ -42,7 +42,7 @@ template:
   spec:
     containers:
       - name: runner
-        image: ka0score/actions-runner:1.0.3
+        image: ghcr.io/actions/actions-runner:latest
         command: ["/home/runner/run.sh"]
 ```
 
