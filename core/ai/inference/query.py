@@ -302,32 +302,45 @@ def answer_from_trae_policies(query: str, repo_root: str) -> str:
 
     def normalize_bullet(text: str) -> str:
         s = text.strip()
-        while s.startswith("-") or s.startswith("*"):
-            s = s[1:].strip()
+        while s.startswith("- ") or s.startswith("* "):
+            s = s[2:].strip()
         return s
 
     wants_checklist = any(k in q for k in ["checklist", "pasos", "antes de", "antes", "cambio", "infraestructura"])
-    wants_structure = any(k in q for k in ["estructura", "core/b2b", "desplegar", "kustomization", "overlays", "base/"])
+    wants_structure = bool(
+        re.search(r"\bestructura\b", q)
+        or any(k in q for k in ["core/b2b", "desplegar", "kustomization", "overlays", "base/"])
+    )
 
     parts: List[str] = []
 
     if wants_structure and skill_k8s:
-        parts.append("## Skill: kubernetes-expert (extracto)")
-        for ln in pick_lines(skill_k8s, ["GitOps Puro", "Kustomize First", "Inmutabilidad"]):
-            parts.append(f"- {normalize_bullet(ln)}  ")
-        parts.append(f"\nFuente: `compliance/trae/skills/kubernetes-expert/SKILL.md`\n")
-        parts.append("### Estructura en `core/b2b/`")
+        principles = pick_lines(skill_k8s, ["GitOps Puro", "Kustomize First", "Inmutabilidad"])
+        parts.append("## Recomendación (kubernetes-expert)")
+        if principles:
+            for ln in principles:
+                t = normalize_bullet(ln)
+                if "GitOps Puro" in t:
+                    parts.append(f"- Trabaja con GitOps: define estado deseado en `core/b2b/` y deja que sincronice GitOps. (*{t}*)")
+                elif "Kustomize First" in t:
+                    parts.append(f"- Usa Kustomize como estándar para entornos. (*{t}*)")
+                elif "Inmutabilidad" in t:
+                    parts.append(f"- Evita cambios manuales en pods (no `kubectl exec` para configurar). (*{t}*)")
+
+        parts.append("\nFuente: `compliance/trae/skills/kubernetes-expert/SKILL.md`\n")
+
+        parts.append("### Estructura recomendada en `core/b2b/`")
         structure_lines = []
         for ln in skill_k8s.splitlines():
             if ln.strip().startswith("- Cada servicio") or ln.strip().startswith("- Estructura obligatoria") or ln.strip().startswith("- `base/") or ln.strip().startswith("- `overlays/") or ln.strip().startswith("- `kustomization.yaml"):
                 structure_lines.append(normalize_bullet(ln))
         for ln in structure_lines:
-            parts.append(f"- {ln}  ")
+            parts.append(f"- {ln}")
         if structure_lines:
-            parts.append(f"\nFuente: `compliance/trae/skills/kubernetes-expert/SKILL.md`\n")
+            parts.append("\nFuente: `compliance/trae/skills/kubernetes-expert/SKILL.md`\n")
 
     if wants_checklist and (rule_006 or rule_007 or reglas_index):
-        parts.append("## Checklist mínimo (Regla 006 + Regla 007)")
+        parts.append("## Checklist mínimo recomendado (Regla 006 + Regla 007)")
         checklist: List[str] = []
 
         def add_item(text: str, regla: str, file_rel: str) -> None:
@@ -336,36 +349,70 @@ def answer_from_trae_policies(query: str, repo_root: str) -> str:
                 return
             checklist.append(f"{t} (Fuente: {regla} - `{file_rel}`)")
 
-        if reglas_index:
-            idx_lines = pick_lines(reglas_index, ["Regla 006", "Regla 007"])
-            if idx_lines:
-                add_item("Referencia del índice maestro a Regla 006 y Regla 007.", "Índice", "compliance/trae/rules/reglas.md")
-
         if rule_006:
             lines = rule_006.splitlines()
             for ln in lines:
                 s = ln.strip()
                 if s.startswith("Antes de iniciar cualquier tarea"):
-                    add_item(s, "Regla 006", "compliance/trae/rules/rules_library/rule_006_skill_first.md")
+                    add_item(
+                        "Antes de tocar Kubernetes, comprueba si existe un Skill experto aplicable y síguelo.",
+                        "Regla 006",
+                        "compliance/trae/rules/rules_library/rule_006_skill_first.md",
+                    )
                 if s.startswith("- **Si existe**:"):
-                    add_item(s, "Regla 006", "compliance/trae/rules/rules_library/rule_006_skill_first.md")
+                    add_item(
+                        "Si existe, invócalo y sigue sus directrices.",
+                        "Regla 006",
+                        "compliance/trae/rules/rules_library/rule_006_skill_first.md",
+                    )
                 if s.startswith("- **Gestión de Cambios**"):
-                    add_item(s, "Regla 006", "compliance/trae/rules/rules_library/rule_006_skill_first.md")
+                    add_item(
+                        "Alinea el cambio con ITIL: registra Gestión de Cambios (ticket/registro en iTop).",
+                        "Regla 006",
+                        "compliance/trae/rules/rules_library/rule_006_skill_first.md",
+                    )
                 if s.startswith("- **Gestión de Configuración**"):
-                    add_item(s, "Regla 006", "compliance/trae/rules/rules_library/rule_006_skill_first.md")
+                    add_item(
+                        "Actualiza Gestión de Configuración: CMDB al día.",
+                        "Regla 006",
+                        "compliance/trae/rules/rules_library/rule_006_skill_first.md",
+                    )
 
         if rule_007:
             lines = rule_007.splitlines()
             for ln in lines:
                 s = ln.strip()
                 if s.startswith("Todo servicio debe seguir el patrón"):
-                    add_item(s, "Regla 007", "compliance/trae/rules/rules_library/rule_007_kubernetes.md")
+                    add_item(
+                        "Estructura el servicio con Kustomize Base/Overlay (o autocontenido con `kustomization.yaml`).",
+                        "Regla 007",
+                        "compliance/trae/rules/rules_library/rule_007_kubernetes.md",
+                    )
                 if s.startswith("- Obligatorio:") or s.startswith("- Prohibido:"):
-                    add_item(s, "Regla 007", "compliance/trae/rules/rules_library/rule_007_kubernetes.md")
+                    if s.startswith("- Prohibido:"):
+                        add_item(
+                            "Evita YAML sueltos sin contexto (usa kustomization/estructura).",
+                            "Regla 007",
+                            "compliance/trae/rules/rules_library/rule_007_kubernetes.md",
+                        )
+                    if s.startswith("- Obligatorio:"):
+                        add_item(
+                            "Asegura `resources`, `livenessProbe`, `readinessProbe` en Deployments.",
+                            "Regla 007",
+                            "compliance/trae/rules/rules_library/rule_007_kubernetes.md",
+                        )
                 if s.startswith("- No usar `latest`"):
-                    add_item(s, "Regla 007", "compliance/trae/rules/rules_library/rule_007_kubernetes.md")
+                    add_item(
+                        "No uses imágenes `latest`; usa tags específicas o SHA.",
+                        "Regla 007",
+                        "compliance/trae/rules/rules_library/rule_007_kubernetes.md",
+                    )
                 if s.startswith("- No ejecutar contenedores"):
-                    add_item(s, "Regla 007", "compliance/trae/rules/rules_library/rule_007_kubernetes.md")
+                    add_item(
+                        "No ejecutes contenedores como `root` (usa `securityContext`).",
+                        "Regla 007",
+                        "compliance/trae/rules/rules_library/rule_007_kubernetes.md",
+                    )
 
         seen = set()
         compact: List[str] = []
