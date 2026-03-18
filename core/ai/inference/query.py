@@ -324,53 +324,42 @@ def answer_from_trae_policies(query: str, repo_root: str) -> str:
         parts.append("## Estado de uso de recursos (Kubernetes)")
         parts.append("- Para ver uso de CPU/memoria de nodos: `kubectl top nodes`")
         parts.append("- Para ver uso de CPU/memoria de pods (todos los namespaces): `kubectl top pods -A`")
+        parts.append("- Para ver pods más consumidores: `kubectl top pods -A --sort-by=cpu` y `kubectl top pods -A --sort-by=memory`")
         parts.append("- Si `kubectl top` no devuelve datos, normalmente falta Metrics Server (API `metrics.k8s.io`).")
-        parts.append("- Para validar la API de métricas: `kubectl get --raw /apis/metrics.k8s.io/v1beta1/nodes`")
+        parts.append("- Para validar métricas: `kubectl get --raw /apis/metrics.k8s.io/v1beta1/nodes`")
+        parts.append("- Para diagnosticar Metrics Server: `kubectl get apiservice v1beta1.metrics.k8s.io` y `kubectl -n kube-system get deploy metrics-server`")
         parts.append("\nFuente (contexto del skill): `compliance/trae/skills/kubernetes-expert/SKILL.md`\n")
 
-        needles = [
-            "kubectl top",
-            "metrics-server",
-            "metrics.k8s.io",
-            "kube-state-metrics",
-            "prometheus",
-            "zabbix",
-        ]
-        scan_dirs = [
-            root / ".github" / "workflows",
-            root / "core" / "b2b",
-            root / "core" / "monitoring",
-            root / "core" / "docs",
-        ]
-        allowed_ext = {".md", ".yaml", ".yml", ".sh"}
-        hits: List[str] = []
-        scanned = 0
-        for d in scan_dirs:
-            if not d.exists() or not d.is_dir():
-                continue
-            for p in d.rglob("*"):
-                if not p.is_file():
-                    continue
-                if p.suffix.lower() not in allowed_ext:
-                    continue
-                scanned += 1
-                if scanned > 600:
-                    break
-                content = read_text_file(p, max_chars=12000).lower()
-                if any(n in content for n in needles):
-                    hits.append(str(p.relative_to(root)).replace("\\", "/"))
-                    if len(hits) >= 12:
-                        break
-            if scanned > 600 or len(hits) >= 12:
-                break
+        parts.append("### Flujos/ficheros existentes relacionados")
 
-        if hits:
-            parts.append("### Flujos/ficheros existentes relacionados")
-            for h in hits:
-                parts.append(f"- `{h}`")
-        else:
-            parts.append("### Flujos/ficheros existentes relacionados")
-            parts.append("- No se detectó un workflow/script evidente en el repo (búsqueda por keywords).")
+        workflows_dir = root / ".github" / "workflows"
+        workflow_hits: List[str] = []
+        if workflows_dir.exists() and workflows_dir.is_dir():
+            for p in workflows_dir.glob("*.yml"):
+                content = read_text_file(p, max_chars=20000).lower()
+                if any(k in content for k in ["zabbix", "metrics-server", "metrics.k8s.io", "metrics", "prometheus", "kubectl top"]):
+                    workflow_hits.append(str(p.relative_to(root)).replace("\\", "/"))
+
+        templates_dir = root / "core" / "monitoring" / "zabbix" / "templates"
+        k8s_template_hits: List[str] = []
+        if templates_dir.exists() and templates_dir.is_dir():
+            for p in templates_dir.glob("*kubernetes*.*"):
+                if p.suffix.lower() not in {".yaml", ".yml"}:
+                    continue
+                k8s_template_hits.append(str(p.relative_to(root)).replace("\\", "/"))
+
+        if workflow_hits:
+            parts.append("- Workflows:")
+            for h in sorted(workflow_hits)[:8]:
+                parts.append(f"  - `{h}`")
+
+        if k8s_template_hits:
+            parts.append("- Zabbix (templates Kubernetes):")
+            for h in sorted(k8s_template_hits)[:10]:
+                parts.append(f"  - `{h}`")
+
+        if not workflow_hits and not k8s_template_hits:
+            parts.append("- No se detectó un workflow/template evidente en el repo para este caso.")
         parts.append("")
 
     if wants_structure and skill_k8s:
@@ -381,10 +370,13 @@ def answer_from_trae_policies(query: str, repo_root: str) -> str:
                 t = normalize_bullet(ln)
                 if "GitOps Puro" in t:
                     parts.append(f"- Trabaja con GitOps: define estado deseado en `core/b2b/` y deja que sincronice GitOps. (*{t}*)")
+                    parts.append("")
                 elif "Kustomize First" in t:
                     parts.append(f"- Usa Kustomize como estándar para entornos. (*{t}*)")
+                    parts.append("")
                 elif "Inmutabilidad" in t:
                     parts.append(f"- Evita cambios manuales en pods (no `kubectl exec` para configurar). (*{t}*)")
+                    parts.append("")
 
         parts.append("\nFuente: `compliance/trae/skills/kubernetes-expert/SKILL.md`\n")
 
@@ -403,11 +395,12 @@ def answer_from_trae_policies(query: str, repo_root: str) -> str:
             parts.append("Directorio sugerido:")
             parts.append("```text\ncore/b2b/core-services/nginx/\n  base/\n    deployment.yaml\n    service.yaml\n    ingress.yaml\n    kustomization.yaml\n  overlays/\n    staging/\n      kustomization.yaml\n    prod/\n      kustomization.yaml\n  kustomization.yaml\n```")
             parts.append("Manifiestos mínimos (ejemplo):")
-            parts.append("```yaml\n# core/b2b/core-services/nginx/base/deployment.yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: nginx\nspec:\n  replicas: 1\n  selector:\n    matchLabels:\n      app: nginx\n  template:\n    metadata:\n      labels:\n        app: nginx\n    spec:\n      containers:\n        - name: nginx\n          image: nginxinc/nginx-unprivileged:1.27-alpine\n          ports:\n            - containerPort: 8080\n          resources:\n            requests:\n              cpu: 50m\n              memory: 64Mi\n            limits:\n              cpu: 200m\n              memory: 256Mi\n          livenessProbe:\n            httpGet:\n              path: /\n              port: 8080\n            initialDelaySeconds: 10\n            periodSeconds: 10\n          readinessProbe:\n            httpGet:\n              path: /\n              port: 8080\n            initialDelaySeconds: 5\n            periodSeconds: 5\n```")
+            parts.append("```yaml\n# core/b2b/core-services/nginx/base/deployment.yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: nginx\nspec:\n  replicas: 1\n  selector:\n    matchLabels:\n      app: nginx\n  template:\n    metadata:\n      labels:\n        app: nginx\n    spec:\n      containers:\n        - name: nginx\n          image: nginxinc/nginx-unprivileged:1.27-alpine\n          ports:\n            - containerPort: 8080\n          securityContext:\n            allowPrivilegeEscalation: false\n            readOnlyRootFilesystem: true\n            runAsNonRoot: true\n            runAsUser: 101\n            runAsGroup: 101\n            capabilities:\n              drop: [\"ALL\"]\n          resources:\n            requests:\n              cpu: 50m\n              memory: 64Mi\n            limits:\n              cpu: 200m\n              memory: 256Mi\n          livenessProbe:\n            httpGet:\n              path: /\n              port: 8080\n            initialDelaySeconds: 10\n            periodSeconds: 10\n          readinessProbe:\n            httpGet:\n              path: /\n              port: 8080\n            initialDelaySeconds: 5\n            periodSeconds: 5\n```")
             parts.append("```yaml\n# core/b2b/core-services/nginx/base/service.yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: nginx\nspec:\n  selector:\n    app: nginx\n  ports:\n    - name: http\n      port: 80\n      targetPort: 8080\n```")
             parts.append("```yaml\n# core/b2b/core-services/nginx/base/ingress.yaml\napiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: nginx\nspec:\n  rules:\n    - host: nginx.example.com\n      http:\n        paths:\n          - path: /\n            pathType: Prefix\n            backend:\n              service:\n                name: nginx\n                port:\n                  number: 80\n```")
             parts.append("```yaml\n# core/b2b/core-services/nginx/base/kustomization.yaml\napiVersion: kustomize.config.k8s.io/v1beta1\nkind: Kustomization\nresources:\n  - deployment.yaml\n  - service.yaml\n  - ingress.yaml\n```")
             parts.append("```yaml\n# core/b2b/core-services/nginx/overlays/prod/kustomization.yaml\napiVersion: kustomize.config.k8s.io/v1beta1\nkind: Kustomization\nresources:\n  - ../../base\npatches:\n  - target:\n      kind: Deployment\n      name: nginx\n    patch: |-\n      - op: replace\n        path: /spec/replicas\n        value: 2\n```")
+            parts.append("```yaml\n# core/b2b/core-services/nginx/kustomization.yaml\n# Nota: normalmente ArgoCD apunta a un overlay (p.ej. `overlays/prod`).\napiVersion: kustomize.config.k8s.io/v1beta1\nkind: Kustomization\nresources:\n  - overlays/prod\n```")
             parts.append("Notas: evita `:latest` y los cambios manuales (`kubectl apply/exec`), y usa Kustomize/GitOps como indica el skill.")
 
     if wants_checklist and (rule_006 or rule_007 or reglas_index):
