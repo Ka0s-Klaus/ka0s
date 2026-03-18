@@ -220,17 +220,23 @@ class ZabbixK8sMonitor:
         return self.ensure_base_template()
 
     def create_host(self, service):
-        metadata = service['metadata']
-        spec = service['spec']
-
-        ns = metadata['namespace']
-        name = metadata['name']
+        # Soportar tanto formato crudo de k8s como diccionario simple
+        if 'metadata' in service:
+            metadata = service['metadata']
+            spec = service['spec']
+            ns = metadata['namespace']
+            name = metadata['name']
+            ports = spec.get('ports', [])
+        else:
+            metadata = {}
+            ns = service.get('namespace')
+            name = service.get('name')
+            ports = [{"port": 80}]  # Default port
 
         if ns in IGNORED_NAMESPACES:
             return None
 
         # Determine ports
-        ports = spec.get('ports', [])
         if not ports:
             return None
 
@@ -269,9 +275,9 @@ class ZabbixK8sMonitor:
             "interfaces": [{
                 "type": 1,
                 "main": 1,
-                "useip": 0,
-                "ip": "",
-                "dns": dns_name,
+                "useip": 1,
+                "ip": service.get('cluster_ip', '127.0.0.1') if 'cluster_ip' in service else service.get('spec', {}).get('clusterIP', '127.0.0.1'),
+                "dns": "",
                 "port": str(target_port)
             }],
             "macros": [
@@ -331,14 +337,18 @@ class ZabbixK8sMonitor:
         return None
 
     def create_dashboard(self, host_info):
-        host_name = host_info['host_name']
-        host_id = host_info['host_id']
-        template_name = host_info['template_name']
+        """Creates a dashboard for the given host"""
+        host_name = host_info.get('host_name', f"k8s-{host_info.get('namespace')}-{host_info.get('name')}")
+        host_id = host_info.get('host_id')
+        template_name = host_info.get('template_name', '')
 
         if not host_id:
             return
 
-        dashboard_name = f"Service: {host_name}"
+        name = host_info.get('name', host_name.split('-')[-1])
+        ns = host_info.get('namespace', host_name.split('-')[0])
+        
+        dashboard_name = f"Service: {ns}/{name}"
 
         # Define Widgets based on template
         widgets = []
