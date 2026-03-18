@@ -91,11 +91,12 @@ jobs:
           
           # Hacemos port-forward local de Zabbix para que el script Python pueda acceder
           echo "Estableciendo port-forward hacia Zabbix..."
-          kubectl port-forward svc/zabbix-web -n zabbix 8080:80 &
+          kubectl port-forward svc/zabbix-web -n zabbix 8080:80 > /dev/null 2>&1 &
           PF_PID=$!
           
-          # Esperar a que el port-forward esté listo
-          sleep 5
+          # Esperar a que el port-forward esté listo y Zabbix responda (puede tardar un poco en responder la API PHP)
+          echo "Esperando a que Zabbix esté listo..."
+          sleep 10
           
           # Sobreescribir URL para usar el port-forward local
           export ZABBIX_URL="http://127.0.0.1:8080/api_jsonrpc.php"
