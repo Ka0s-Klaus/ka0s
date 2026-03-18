@@ -300,6 +300,12 @@ def answer_from_trae_policies(query: str, repo_root: str) -> str:
             out.append(ln)
         return out
 
+    def normalize_bullet(text: str) -> str:
+        s = text.strip()
+        while s.startswith("-") or s.startswith("*"):
+            s = s[1:].strip()
+        return s
+
     wants_checklist = any(k in q for k in ["checklist", "pasos", "antes de", "antes", "cambio", "infraestructura"])
     wants_structure = any(k in q for k in ["estructura", "core/b2b", "desplegar", "kustomization", "overlays", "base/"])
 
@@ -308,35 +314,68 @@ def answer_from_trae_policies(query: str, repo_root: str) -> str:
     if wants_structure and skill_k8s:
         parts.append("## Skill: kubernetes-expert (extracto)")
         for ln in pick_lines(skill_k8s, ["GitOps Puro", "Kustomize First", "Inmutabilidad"]):
-            parts.append(f"- {ln}  ")
+            parts.append(f"- {normalize_bullet(ln)}  ")
         parts.append(f"\nFuente: `compliance/trae/skills/kubernetes-expert/SKILL.md`\n")
         parts.append("### Estructura en `core/b2b/`")
         structure_lines = []
         for ln in skill_k8s.splitlines():
             if ln.strip().startswith("- Cada servicio") or ln.strip().startswith("- Estructura obligatoria") or ln.strip().startswith("- `base/") or ln.strip().startswith("- `overlays/") or ln.strip().startswith("- `kustomization.yaml"):
-                structure_lines.append(ln.strip())
+                structure_lines.append(normalize_bullet(ln))
         for ln in structure_lines:
             parts.append(f"- {ln}  ")
         if structure_lines:
             parts.append(f"\nFuente: `compliance/trae/skills/kubernetes-expert/SKILL.md`\n")
 
     if wants_checklist and (rule_006 or rule_007 or reglas_index):
-        parts.append("## Reglas: checklist mínimo (extracto)")
+        parts.append("## Checklist mínimo (Regla 006 + Regla 007)")
         checklist: List[str] = []
 
+        def add_item(text: str, regla: str, file_rel: str) -> None:
+            t = normalize_bullet(text)
+            if not t:
+                return
+            checklist.append(f"{t} (Fuente: {regla} - `{file_rel}`)")
+
         if reglas_index:
-            for ln in pick_lines(reglas_index, ["Regla 006", "Regla 007"]):
-                checklist.append(f"{ln} (Fuente: `compliance/trae/rules/reglas.md`)")
+            idx_lines = pick_lines(reglas_index, ["Regla 006", "Regla 007"])
+            if idx_lines:
+                add_item("Referencia del índice maestro a Regla 006 y Regla 007.", "Índice", "compliance/trae/rules/reglas.md")
 
         if rule_006:
-            for ln in pick_lines(rule_006, ["Antes de iniciar", "Invócalo", "ITIL Compliance", "Gestión de Cambios", "Gestión de Configuración", "CMDB"]):
-                checklist.append(f"{ln} (Fuente: `compliance/trae/rules/rules_library/rule_006_skill_first.md`)")
+            lines = rule_006.splitlines()
+            for ln in lines:
+                s = ln.strip()
+                if s.startswith("Antes de iniciar cualquier tarea"):
+                    add_item(s, "Regla 006", "compliance/trae/rules/rules_library/rule_006_skill_first.md")
+                if s.startswith("- **Si existe**:"):
+                    add_item(s, "Regla 006", "compliance/trae/rules/rules_library/rule_006_skill_first.md")
+                if s.startswith("- **Gestión de Cambios**"):
+                    add_item(s, "Regla 006", "compliance/trae/rules/rules_library/rule_006_skill_first.md")
+                if s.startswith("- **Gestión de Configuración**"):
+                    add_item(s, "Regla 006", "compliance/trae/rules/rules_library/rule_006_skill_first.md")
 
         if rule_007:
-            for ln in pick_lines(rule_007, ["Estructura", "Obligatorio", "Prohibido", "Naming", "Seguridad", "No usar", "latest", "root"]):
-                checklist.append(f"{ln} (Fuente: `compliance/trae/rules/rules_library/rule_007_kubernetes.md`)")
+            lines = rule_007.splitlines()
+            for ln in lines:
+                s = ln.strip()
+                if s.startswith("Todo servicio debe seguir el patrón"):
+                    add_item(s, "Regla 007", "compliance/trae/rules/rules_library/rule_007_kubernetes.md")
+                if s.startswith("- Obligatorio:") or s.startswith("- Prohibido:"):
+                    add_item(s, "Regla 007", "compliance/trae/rules/rules_library/rule_007_kubernetes.md")
+                if s.startswith("- No usar `latest`"):
+                    add_item(s, "Regla 007", "compliance/trae/rules/rules_library/rule_007_kubernetes.md")
+                if s.startswith("- No ejecutar contenedores"):
+                    add_item(s, "Regla 007", "compliance/trae/rules/rules_library/rule_007_kubernetes.md")
 
-        for item in checklist[:8]:
+        seen = set()
+        compact: List[str] = []
+        for item in checklist:
+            if item in seen:
+                continue
+            seen.add(item)
+            compact.append(item)
+
+        for item in compact[:8]:
             parts.append(f"- {item}")
 
     if not parts:
