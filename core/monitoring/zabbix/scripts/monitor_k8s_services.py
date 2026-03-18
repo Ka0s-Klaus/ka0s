@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 import json
-import subprocess
 import os
 import sys
 import requests
+from kubernetes import client, config
 
 # Configuración Zabbix
 ZABBIX_URL = os.getenv('ZABBIX_URL', 'http://localhost:8080/api_jsonrpc.php')
@@ -72,15 +72,25 @@ class ZabbixK8sMonitor:
 
     def get_k8s_services(self):
         try:
-            cmd = [
-                "kubectl", "get", "services",
-                "--all-namespaces", "-o", "json"
-            ]
-            result = subprocess.run(
-                cmd, capture_output=True, text=True, check=True
-            )
-            return json.loads(result.stdout)
-        except subprocess.CalledProcessError as e:
+            # Try in-cluster config first, then fallback to kubeconfig
+            try:
+                config.load_incluster_config()
+            except config.ConfigException:
+                try:
+                    config.load_kube_config()
+                except config.ConfigException:
+                    print("Error: Could not load K8s config")
+                    sys.exit(1)
+
+            v1 = client.CoreV1Api()
+            ret = v1.list_service_for_all_namespaces(watch=False)
+            
+            # Use ApiClient to sanitize for serialization (to dict/json)
+            # This returns camelCase keys matching K8s API
+            api_client = client.ApiClient()
+            return api_client.sanitize_for_serialization(ret)
+
+        except Exception as e:
             print(f"Error getting k8s services: {e}")
             sys.exit(1)
 

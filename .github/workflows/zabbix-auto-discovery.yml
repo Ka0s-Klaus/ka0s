@@ -55,7 +55,17 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install requests
+          pip install requests kubernetes
+
+      - name: Setup Kubectl Tunnel
+        uses: ./.github/actions/kubectl-tunnel
+        with:
+          host: ${{ secrets.KAOS_SSH_HOST_1 }}
+          username: ${{ secrets.KAOS_SSH_USER }}
+          key: ${{ secrets.KAOS_SSH_KEY_PRIV }}
+          port: ${{ secrets.KAOS_SSH_PORT_1 }}
+          k8s-api-port: '6443'
+          kubectl-version: 'v1.30.0'
 
       - name: Main Logic (Zabbix Discovery)
         env:
@@ -64,12 +74,6 @@ jobs:
           ZABBIX_PASS: ${{ secrets.ZABBIX_PASS }}
         run: |
           echo "Ejecutando lógica principal de descubrimiento..."
-          
-          # Ensure kubectl is available (usually is on self-hosted runners connected to k8s)
-          if ! command -v kubectl &> /dev/null; then
-              echo "kubectl not found"
-              exit 1
-          fi
           
           # Set default URL if secret is not set (internal service DNS)
           export ZABBIX_URL=${ZABBIX_URL:-"http://zabbix-web.zabbix.svc.cluster.local/api_jsonrpc.php"}
