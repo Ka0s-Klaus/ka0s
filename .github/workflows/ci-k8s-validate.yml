@@ -30,6 +30,12 @@ jobs:
 
       - name: Install Tools (Trivy & Kubeconform)
         run: |
+          # Ensure pre-requisites are present (minimal runner support)
+          if ! command -v curl &> /dev/null || ! command -v tar &> /dev/null; then
+             echo "Installing curl and tar..."
+             sudo apt-get update && sudo apt-get install -y curl tar
+          fi
+
           # Install Trivy
           if ! command -v trivy &> /dev/null; then
             echo "Installing Trivy..."
