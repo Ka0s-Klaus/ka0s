@@ -343,8 +343,8 @@ def answer_from_trae_policies(query: str, repo_root: str) -> str:
         templates_dir = root / "core" / "monitoring" / "zabbix" / "templates"
         k8s_template_hits: List[str] = []
         if templates_dir.exists() and templates_dir.is_dir():
-            for p in templates_dir.glob("*kubernetes*.*"):
-                if p.suffix.lower() not in {".yaml", ".yml"}:
+            for p in templates_dir.glob("*.y*ml"):
+                if "kubernetes" not in p.name.lower():
                     continue
                 k8s_template_hits.append(str(p.relative_to(root)).replace("\\", "/"))
 
