@@ -22,6 +22,65 @@ env:
   GENERATION_MODEL: "qwen2:1.5b" # Modelo ligero pero más inteligente para respuestas coherentes
 
 jobs:
+  agent-reply-degraded:
+    if: contains(github.event.issue.labels.*.name, 'ka0s-agent') || contains(github.event.issue.labels.*.name, 'kaos-agent')
+    name: Agent Reply (Degraded)
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.event.issue.number }}-degraded
+      cancel-in-progress: true
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Dependencies
+        run: pip install psycopg2-binary requests
+
+      - name: Query Agent (Degraded)
+        id: query
+        env:
+          POSTGRES_HOST: "127.0.0.1"
+          POSTGRES_PORT: "5432"
+          POSTGRES_DB: "ka0s_memory"
+          POSTGRES_USER: "ka0s_ai"
+          POSTGRES_PASSWORD: "disabled"
+          OLLAMA_HOST: "127.0.0.1"
+          OLLAMA_PORT: "11435"
+          QUESTION_TITLE: ${{ github.event.issue.title }}
+          QUESTION_BODY: ${{ github.event.issue.body }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          echo "Procesando Issue #$ISSUE_NUMBER (DEGRADED)"
+          QUESTION="$(printf "%s\n\n%s" "$QUESTION_TITLE" "$QUESTION_BODY")"
+          RESPONSE_FILE="agent_response_degraded.md"
+          python core/ai/inference/query.py "$QUESTION" > "$RESPONSE_FILE"
+          if [ ! -s "$RESPONSE_FILE" ]; then
+            echo "No se pudo generar respuesta (degraded)." > "$RESPONSE_FILE"
+          fi
+          echo "RESPONSE_FILE=$RESPONSE_FILE" >> $GITHUB_ENV
+
+      - name: Post Answer (Degraded)
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const response = fs.readFileSync(process.env.RESPONSE_FILE, 'utf8');
+            const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            const commentBody = `🟡 **Ka0s Agent (modo degradado):** el runner self-hosted del agente puede estar sin capacidad. Esta es una respuesta provisional basada en repo/rules (sin acceder a la KB/LLM del cluster).\n\n---\n\n${response}\n\n---\n\n🔗 [Detalles de la Ejecución](${runUrl})`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: commentBody
+            })
+
   agent-reply:
     # Permitir ambas variantes de la etiqueta (con 'o' y con '0')
     if: contains(github.event.issue.labels.*.name, 'ka0s-agent') || contains(github.event.issue.labels.*.name, 'kaos-agent')
