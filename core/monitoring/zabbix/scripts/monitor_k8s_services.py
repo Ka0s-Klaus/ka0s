@@ -370,6 +370,48 @@ class ZabbixK8sMonitor:
             self._post("dashboard.create", params)
             print(f"Dashboard '{dashboard_name}' created.")
 
+    def sync_from_json(self, json_path="core/monitoring/zabbix/data/k8s_services_lld.json"):
+        """Syncs Kubernetes services to Zabbix using a JSON file."""
+        print(f"Loading services from {json_path}...")
+        try:
+            with open(json_path, 'r') as f:
+                data = json.load(f)
+                services_data = data.get("data", [])
+        except FileNotFoundError:
+            print(f"Error: {json_path} not found. Check workflow.")
+            return
+        
+        hostgroup_id = self.get_or_create_hostgroup("Kubernetes Services")
+        if not hostgroup_id:
+            print("Failed to get or create hostgroup.")
+            return
+
+        for svc in services_data:
+            svc_name = svc.get("{#SERVICE}")
+            namespace = svc.get("{#NAMESPACE}")
+            cluster_ip = svc.get("{#CLUSTERIP}")
+            
+            if not svc_name or not namespace:
+                continue
+                
+            print(f"Processing service {svc_name} in namespace {namespace}...")
+            
+            ip = cluster_ip if cluster_ip and cluster_ip != "None" else "127.0.0.1"
+            
+            host_id = self.create_host(
+                host_name=f"k8s-svc-{namespace}-{svc_name}",
+                visible_name=f"K8s Service: {namespace}/{svc_name}",
+                hostgroup_id=hostgroup_id,
+                ip=ip
+            )
+            
+            if host_id:
+                dashboard_name = f"Service Overview: {svc_name}"
+                print(f"Creating dashboard '{dashboard_name}'...")
+                self.create_dashboard(host_id, dashboard_name, svc_name)
+        
+        print("Sync completed.")
+
 
 if __name__ == "__main__":
     if not all([ZABBIX_URL, ZABBIX_USER, ZABBIX_PASS]):
@@ -378,11 +420,9 @@ if __name__ == "__main__":
 
     monitor = ZabbixK8sMonitor(ZABBIX_URL, ZABBIX_USER, ZABBIX_PASS)
     monitor.login()
-
-    services = monitor.get_k8s_services()
-    print(f"Found {len(services['items'])} services in cluster.")
-
-    for svc in services['items']:
-        host_info = monitor.create_host(svc)
-        if host_info and host_info['host_id']:
-            monitor.create_dashboard(host_info)
+    
+    json_file = "core/monitoring/zabbix/data/k8s_services_lld.json"
+    if len(sys.argv) > 1:
+        json_file = sys.argv[1]
+        
+    monitor.sync_from_json(json_file)

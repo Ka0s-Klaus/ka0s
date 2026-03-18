@@ -67,9 +67,9 @@ jobs:
           key: ${{ secrets.KAOS_SSH_KEY_PRIV }}
           port: ${{ secrets.KAOS_SSH_PORT_1 }}
 
-      - name: Generate Namespaces Data
+      - name: Generate Services Data
         run: |
-          echo "Generando descubrimiento de Namespaces desde Kubernetes..."
+          echo "Generando descubrimiento de Services desde Kubernetes..."
           export KUBECONFIG=~/.kube/config
           mkdir -p core/monitoring/zabbix/data
           
@@ -79,8 +79,27 @@ jobs:
           # Procesar JSON para formato compatible con LLD de Zabbix
           jq '{ "data": [ .items[] | { "{#NAMESPACE}": .metadata.name, "{#STATUS}": .status.phase, "{#AGE}": .metadata.creationTimestamp } ] }' core/monitoring/zabbix/data/namespaces_raw.json > core/monitoring/zabbix/data/k8s_namespaces_lld.json
           
+          # Extraer services a un JSON simple
+          kubectl get services -A -o json > core/monitoring/zabbix/data/services_raw.json
+          
+          # Procesar JSON para formato compatible con LLD de Zabbix
+          jq '{ "data": [ .items[] | { "{#SERVICE}": .metadata.name, "{#NAMESPACE}": .metadata.namespace, "{#TYPE}": .spec.type, "{#CLUSTERIP}": .spec.clusterIP } ] }' core/monitoring/zabbix/data/services_raw.json > core/monitoring/zabbix/data/k8s_services_lld.json
+          
           echo "Descubrimiento de namespaces generado en core/monitoring/zabbix/data/k8s_namespaces_lld.json"
-          cat core/monitoring/zabbix/data/k8s_namespaces_lld.json
+          echo "Descubrimiento de servicios generado en core/monitoring/zabbix/data/k8s_services_lld.json"
+
+      - name: Sync Services to Zabbix Hosts & Dashboards
+        env:
+          ZABBIX_URL: ${{ secrets.ZABBIX_URL }}
+          ZABBIX_USER: ${{ secrets.ZABBIX_USER }}
+          ZABBIX_PASS: ${{ secrets.ZABBIX_PASS }}
+        run: |
+          # Asegurar que la URL termina en /api_jsonrpc.php
+          if [[ ! "$ZABBIX_URL" == *"/api_jsonrpc.php" ]]; then
+             export ZABBIX_URL="${ZABBIX_URL%/}/api_jsonrpc.php"
+          fi
+          
+          python3 core/monitoring/zabbix/scripts/monitor_k8s_services.py core/monitoring/zabbix/data/k8s_services_lld.json
 
       # [OPCIONAL] Commit de resultados/evidencias
       - name: Commit & Push Results
@@ -89,8 +108,8 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git pull --rebase origin main
-          git add core/monitoring/zabbix/data/k8s_namespaces_lld.json
-          git commit -m "chore(zabbix): auto-update k8s namespaces discovery data" || echo "No changes to commit"
+          git add core/monitoring/zabbix/data/k8s_namespaces_lld.json core/monitoring/zabbix/data/k8s_services_lld.json
+          git commit -m "chore(zabbix): auto-update k8s namespaces and services discovery data" || echo "No changes to commit"
           git push origin HEAD
 
   # -----------------------------------------------------------------------------
