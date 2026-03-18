@@ -229,6 +229,21 @@ def is_flow_question(query: str) -> bool:
     ])
 
 
+def is_itil_question(query: str) -> bool:
+    q = query.lower()
+    return any(k in q for k in [
+        "itil",
+        "cab",
+        "rfc",
+        "ticket",
+        "cmdb",
+        "itop",
+        "cambio",
+        "producción",
+        "produccion",
+    ])
+
+
 def find_repo_files(query: str, repo_root: str, max_hits: int = 40, prefer_prefixes: Optional[List[str]] = None) -> List[str]:
     tokens = [t for t in re.split(r"\W+", query.lower()) if len(t) >= 4]
     if not tokens:
@@ -695,8 +710,58 @@ def answer_flow_discovery(query: str, repo_root: str) -> str:
     return "\n".join(parts).strip() + "\n"
 
 
+def answer_itil_gate(query: str, repo_root: str) -> str:
+    if not is_itil_question(query):
+        return ""
+
+    root = Path(repo_root)
+    workflows_dir = root / ".github" / "workflows"
+    workflow_scored: List[tuple[int, str]] = []
+    if workflows_dir.exists() and workflows_dir.is_dir():
+        for p in sorted(workflows_dir.glob("*.yml")):
+            name = p.name.lower()
+            content = read_text_file(p, max_chars=24000).lower()
+            score = 0
+            if any(k in name for k in ["itil", "itop", "cmdb"]):
+                score += 10
+            if "cd-" in name or name.startswith("cd") or "deploy" in name:
+                score += 6
+            if "prod" in name or "production" in name:
+                score += 3
+            if "rfc" in name:
+                score += 4
+
+            for k, w in [("itil", 4), ("itop", 4), ("cmdb", 4), ("rfc", 3)]:
+                if k in content:
+                    score += w
+
+            if score >= 8:
+                workflow_scored.append((score, str(p.relative_to(root)).replace("\\", "/")))
+
+    if not workflow_scored:
+        return ""
+
+    workflow_scored.sort(key=lambda x: (-x[0], x[1]))
+    workflow_hits = [p for _, p in workflow_scored]
+
+    parts: List[str] = []
+    parts.append("## Gate ITIL + CMDB (sin alucinaciones)")
+    parts.append("- Política: sin ticket/RFC aprobado no hay despliegue a producción; y cualquier cambio debe actualizar CMDB.")
+    parts.append("- Implementación recomendada: añade un step de validación al inicio del workflow de despliegue y haz que falle si no hay RFC.")
+    parts.append("")
+    parts.append("### Workflows relacionados detectados")
+    for h in workflow_hits[:10]:
+        parts.append(f"- `{h}`")
+    parts.append("")
+    parts.append("### Plan de verificación")
+    parts.append("- Identificar el workflow que despliega a producción (p.ej. `cd-*` o el que aplique en tu repo).")
+    parts.append("- Definir el formato del RFC/ticket (ej. `RFC-1234`) y dónde se aporta (issue/PR/input del workflow).")
+    parts.append("- Validar el RFC contra iTop/CMDB con el mecanismo existente (si lo hay) o añadir integración segura.")
+    return "\n".join(parts).strip() + "\n"
+
+
 def route_deterministic_answer(query: str, repo_root: str) -> str:
-    for fn in [answer_from_trae_policies, answer_flow_discovery]:
+    for fn in [answer_from_trae_policies, answer_itil_gate, answer_flow_discovery]:
         out = fn(query, repo_root)
         if out:
             return out
