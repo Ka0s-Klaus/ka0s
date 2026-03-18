@@ -74,6 +74,7 @@ Si, parece increible pero hemos decidido en el equipo usar una terminología "es
 - [Ka0s Remediation Module](./ka0s_remediation/00_main.md)
 - [Ka0s Remediation: High CPU/Load Workflow](./ka0s_remediation_high_load/01_concept.md)
 - [Reporte Diario de Lead Time](./ka0s_reports/00_main.md)
+- [Ka0s Runners (ARC)](./ka0s_runners/00_main.md)
 - [Módulo Ka0s Security Audit](./ka0s_security/00_main.md)
 - [Documentación del Módulo: Ka0s Self Service Portal](./ka0s_self_service_portal/00_main.md)
 - [Módulo Ka0s SSH Connect](./ka0s_ssh_connect/00_main.md)

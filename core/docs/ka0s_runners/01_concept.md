@@ -22,7 +22,7 @@ graph TD
 ### Flujo de Trabajo
 
 1.  **Trigger**: Un evento en GitHub (push, PR, workflow_dispatch) encola un trabajo.
-2.  **Detección**: El `gha-runner-scale-set-controller` detecta el trabajo pendiente asignado al grupo `swarm-runners`.
+2.  **Detección**: El `gha-runner-scale-set-controller` detecta el trabajo pendiente asignado al Scale Set `swarm-runners-scaleset`.
 3.  **Escalado**: El controlador crea un recurso `EphemeralRunner`.
 4.  **Ejecución**: Se levanta un Pod que se registra contra GitHub, ejecuta el trabajo y luego termina.
 5.  **Limpieza**: El controlador elimina el Pod y el recurso `EphemeralRunner`.
