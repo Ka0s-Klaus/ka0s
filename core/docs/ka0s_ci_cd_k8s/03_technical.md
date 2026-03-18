@@ -30,6 +30,9 @@ El servicio `core/b2b/core-services/runners` es especial: es el que provee el ru
     3.  Usa el nombre del directorio como fallback.
 *   **Verificación**: Invoca el script `.github/scripts/k8s-verify-deployment.sh`.
 
+### Nota: Server-Side Apply
+El CD aplica manifiestos con `kubectl apply --server-side -k` para soportar recursos grandes (por ejemplo, CRDs con esquemas extensos) sin topar con el límite de tamaño de la anotación `kubectl.kubernetes.io/last-applied-configuration`.
+
 ## Script de Verificación (`k8s-verify-deployment.sh`)
 
 Este script es el corazón de la validación de calidad (QA) automática.

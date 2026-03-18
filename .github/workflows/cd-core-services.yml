@@ -199,9 +199,10 @@ jobs:
               # Delete old validation jobs to force re-run
               kubectl delete job -n "$NAMESPACE" -l "app=$SERVICE_NAME" --ignore-not-found
               
-              # Aplicar manifiestos con Kustomize
+              # Aplicar manifiestos con Kustomize (Server-Side Apply)
+              # Necesario para recursos grandes como CRDs (evita el límite de tamaño de last-applied-configuration)
               echo "   Applying manifests..."
-              kubectl apply -k "$SERVICE/"
+              kubectl apply --server-side -k "$SERVICE/"
               
               # Special handling for docs-portal: Force restart to pull new content
               if [ "$SERVICE_NAME" == "docs-portal" ]; then
