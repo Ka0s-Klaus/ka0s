@@ -265,6 +265,86 @@ def build_repo_context(query: str, repo_root: str, max_files: int = 4, max_chars
     return context
 
 
+def answer_from_trae_policies(query: str, repo_root: str) -> str:
+    q = query.lower()
+    root = Path(repo_root)
+
+    skill_k8s_path = root / "compliance" / "trae" / "skills" / "kubernetes-expert" / "SKILL.md"
+    rule_006_path = root / "compliance" / "trae" / "rules" / "rules_library" / "rule_006_skill_first.md"
+    rule_007_path = root / "compliance" / "trae" / "rules" / "rules_library" / "rule_007_kubernetes.md"
+    reglas_index_path = root / "compliance" / "trae" / "rules" / "reglas.md"
+
+    skill_k8s = read_text_file(skill_k8s_path, max_chars=20000) if skill_k8s_path.exists() else ""
+    rule_006 = read_text_file(rule_006_path, max_chars=20000) if rule_006_path.exists() else ""
+    rule_007 = read_text_file(rule_007_path, max_chars=20000) if rule_007_path.exists() else ""
+    reglas_index = read_text_file(reglas_index_path, max_chars=20000) if reglas_index_path.exists() else ""
+
+    if not any([skill_k8s, rule_006, rule_007, reglas_index]):
+        return ""
+
+    def pick_lines(text: str, contains: List[str]) -> List[str]:
+        lines = [ln.rstrip() for ln in text.splitlines()]
+        picked = []
+        for ln in lines:
+            s = ln.strip()
+            if not s:
+                continue
+            if any(c in s for c in contains):
+                picked.append(s)
+        seen = set()
+        out = []
+        for ln in picked:
+            if ln in seen:
+                continue
+            seen.add(ln)
+            out.append(ln)
+        return out
+
+    wants_checklist = any(k in q for k in ["checklist", "pasos", "antes de", "antes", "cambio", "infraestructura"])
+    wants_structure = any(k in q for k in ["estructura", "core/b2b", "desplegar", "kustomization", "overlays", "base/"])
+
+    parts: List[str] = []
+
+    if wants_structure and skill_k8s:
+        parts.append("## Skill: kubernetes-expert (extracto)")
+        for ln in pick_lines(skill_k8s, ["GitOps Puro", "Kustomize First", "Inmutabilidad"]):
+            parts.append(f"- {ln}  ")
+        parts.append(f"\nFuente: `compliance/trae/skills/kubernetes-expert/SKILL.md`\n")
+        parts.append("### Estructura en `core/b2b/`")
+        structure_lines = []
+        for ln in skill_k8s.splitlines():
+            if ln.strip().startswith("- Cada servicio") or ln.strip().startswith("- Estructura obligatoria") or ln.strip().startswith("- `base/") or ln.strip().startswith("- `overlays/") or ln.strip().startswith("- `kustomization.yaml"):
+                structure_lines.append(ln.strip())
+        for ln in structure_lines:
+            parts.append(f"- {ln}  ")
+        if structure_lines:
+            parts.append(f"\nFuente: `compliance/trae/skills/kubernetes-expert/SKILL.md`\n")
+
+    if wants_checklist and (rule_006 or rule_007 or reglas_index):
+        parts.append("## Reglas: checklist mínimo (extracto)")
+        checklist: List[str] = []
+
+        if reglas_index:
+            for ln in pick_lines(reglas_index, ["Regla 006", "Regla 007"]):
+                checklist.append(f"{ln} (Fuente: `compliance/trae/rules/reglas.md`)")
+
+        if rule_006:
+            for ln in pick_lines(rule_006, ["Antes de iniciar", "Invócalo", "ITIL Compliance", "Gestión de Cambios", "Gestión de Configuración", "CMDB"]):
+                checklist.append(f"{ln} (Fuente: `compliance/trae/rules/rules_library/rule_006_skill_first.md`)")
+
+        if rule_007:
+            for ln in pick_lines(rule_007, ["Estructura", "Obligatorio", "Prohibido", "Naming", "Seguridad", "No usar", "latest", "root"]):
+                checklist.append(f"{ln} (Fuente: `compliance/trae/rules/rules_library/rule_007_kubernetes.md`)")
+
+        for item in checklist[:8]:
+            parts.append(f"- {item}")
+
+    if not parts:
+        return ""
+
+    return "\n".join(parts).strip() + "\n"
+
+
 def should_return_file_list(query: str) -> bool:
     q = query.lower()
     return bool(
@@ -301,6 +381,10 @@ def main():
     logger.info(f"Processing query: {query}")
 
     repo_root = os.getenv("GITHUB_WORKSPACE") or os.getcwd()
+    policies_answer = answer_from_trae_policies(query, repo_root)
+    if policies_answer:
+        print(policies_answer)
+        return
     trae_context = load_trae_context(repo_root)
     if should_return_file_list(query) and not is_query_about_rules_or_skills(query):
         matches = find_repo_files(query, repo_root=repo_root)
