@@ -73,8 +73,6 @@ jobs:
           ZABBIX_URL: ${{ secrets.ZABBIX_URL }}
           ZABBIX_USER: ${{ secrets.ZABBIX_USER }}
           ZABBIX_PASS: ${{ secrets.ZABBIX_PASS }}
-          ZABBIX_PASSWORD: ${{ secrets.ZABBIX_PASSWORD }} # En el workflow original se usa ZABBIX_PASS, pero puede que el secret se llame ZABBIX_PASSWORD internamente
-          # Vamos a pasar ambas y que el script intente resolver
         run: |
           echo "Ejecutando lógica principal de descubrimiento..."
           
@@ -84,8 +82,14 @@ jobs:
             export ZABBIX_URL="http://zabbix-web.zabbix.svc.cluster.local/api_jsonrpc.php"
           fi
           
-          if [ -z "$ZABBIX_PASS" ] && [ -n "$ZABBIX_PASSWORD" ]; then
-            export ZABBIX_PASS="$ZABBIX_PASSWORD"
+          if [ -z "$ZABBIX_USER" ]; then
+             echo "::warning::ZABBIX_USER is empty. Using default 'Admin'"
+             export ZABBIX_USER="Admin"
+          fi
+          
+          if [ -z "$ZABBIX_PASS" ]; then
+             echo "::warning::ZABBIX_PASS is empty. Using default 'zabbix'"
+             export ZABBIX_PASS="zabbix"
           fi
           
           # Probar conectividad al API
