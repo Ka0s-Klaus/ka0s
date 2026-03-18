@@ -9,21 +9,42 @@
 | `values-controller.yaml` | `values.yaml` para el chart `gha-runner-scale-set-controller`. |
 | `values-runner-set.yaml` | `values.yaml` para el chart `gha-runner-scale-set`. Aquí se define `maxRunners`. |
 
-## Configuración de Helm en Kustomize
+### Instalación (Manual / Script)
 
-Utilizamos la característica `helmCharts` de Kustomize para renderizar los templates de Helm en tiempo de despliegue sin necesidad de tener los charts descargados en el repo.
+Se ha recuperado el script `deploy.sh` que utiliza los charts OCI oficiales.
 
-```yaml
-helmCharts:
-  - name: gha-runner-scale-set
-    repo: https://actions-runner-controller.github.io/actions-runner-controller-charts
-    releaseName: swarm-runners-scaleset
-    version: 0.8.0
-    namespace: actions-runner-system
-    valuesFile: values-runner-set.yaml
+```bash
+# Versión del Chart: 0.13.1 (Latest)
+# Imagen del Runner: ka0score/actions-runner:1.0.3
+# Grupo de Runners: Default (sin especificar runnerGroup)
+
+helm upgrade --install actions-runner-controller \
+  oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set-controller \
+  --namespace actions-runner-system \
+  --skip-crds
+
+helm upgrade --install swarm-runners-scaleset \
+  oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set \
+  --namespace actions-runner-system \
+  -f values-runner-set.yaml
 ```
 
-> **Nota**: Se utiliza la URL HTTPS del repositorio de charts para evitar dependencias de autenticación OCI (Docker/GHCR) en entornos locales.
+### Configuración de Values
+
+`values-runner-set.yaml`:
+```yaml
+runnerScaleSet:
+  # runnerGroup: swarm-runners-scaleset (Comentado para usar Default)
+  minRunners: 1
+  maxRunners: 50
+
+template:
+  spec:
+    containers:
+      - name: runner
+        image: ka0score/actions-runner:1.0.3
+        command: ["/home/runner/run.sh"]
+```
 
 ## Inyección de Secretos en CD
 
