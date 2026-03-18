@@ -75,8 +75,11 @@ jobs:
         run: |
           echo "Ejecutando lógica principal de descubrimiento..."
           
-          # Set default URL if secret is not set (internal service DNS)
-          export ZABBIX_URL=${ZABBIX_URL:-"http://zabbix-web.zabbix.svc.cluster.local/api_jsonrpc.php"}
+          # Verificar si ZABBIX_URL está definido
+          if [ -z "$ZABBIX_URL" ]; then
+            echo "::warning::ZABBIX_URL secret is missing or empty. Using fallback internal URL."
+            export ZABBIX_URL="http://zabbix-web.zabbix.svc.cluster.local/api_jsonrpc.php"
+          fi
           
           # Export KUBECONFIG to point to the tunneled cluster configuration
           export KUBECONFIG=~/.kube/config
