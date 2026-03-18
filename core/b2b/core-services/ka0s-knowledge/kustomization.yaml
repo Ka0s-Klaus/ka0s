@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: ka0s-knowledge
+
+resources:
+  - namespace.yaml
+  - mongo-vectorize-cronjob.yaml
+
+configMapGenerator:
+  - name: mongo-vectorize-scripts
+    files:
+      - mongo_ingest.py=scripts/mongo_ingest.py
+      - requirements.txt=scripts/requirements.txt
+
+generatorOptions:
+  disableNameSuffixHash: true
