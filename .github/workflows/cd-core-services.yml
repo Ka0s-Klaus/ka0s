@@ -202,7 +202,7 @@ jobs:
               # Aplicar manifiestos con Kustomize (Server-Side Apply)
               # Necesario para recursos grandes como CRDs (evita el límite de tamaño de last-applied-configuration)
               echo "   Applying manifests..."
-              kubectl apply --server-side -k "$SERVICE/"
+              kubectl apply --server-side --force-conflicts -k "$SERVICE/"
               
               # Special handling for docs-portal: Force restart to pull new content
               if [ "$SERVICE_NAME" == "docs-portal" ]; then
