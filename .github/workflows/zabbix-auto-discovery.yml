@@ -1,0 +1,39 @@
+name: Zabbix Service Auto-Discovery
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'  # Run every 15 minutes
+  workflow_dispatch:
+
+jobs:
+  zabbix-discovery:
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install requests
+
+      - name: Run Discovery Script
+        env:
+          ZABBIX_URL: ${{ secrets.ZABBIX_URL }}
+          ZABBIX_USER: ${{ secrets.ZABBIX_USER }}
+          ZABBIX_PASS: ${{ secrets.ZABBIX_PASS }}
+        run: |
+          # Ensure kubectl is available (usually is on self-hosted runners connected to k8s)
+          if ! command -v kubectl &> /dev/null; then
+              echo "kubectl not found"
+              exit 1
+          fi
+          
+          # Set default URL if secret is not set (internal service DNS)
+          export ZABBIX_URL=${ZABBIX_URL:-"http://zabbix-web.zabbix.svc.cluster.local/api_jsonrpc.php"}
+          
+          python3 core/monitoring/zabbix/scripts/monitor_k8s_services.py
