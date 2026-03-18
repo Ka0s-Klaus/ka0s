@@ -107,6 +107,43 @@ class ZabbixK8sMonitor:
         res = self._post("hostgroup.create", {"name": name})
         return res['groupids'][0] if res else None
 
+    def get_hostgroup(self, group_name):
+        """Busca el ID de un HostGroup por nombre"""
+        response = self._post(
+            "hostgroup.get",
+            {
+                "output": "extend",
+                "filter": {
+                    "name": [group_name]
+                }
+            }
+        )
+        if response and len(response) > 0:
+            return response[0]["groupid"]
+        return None
+
+    def get_or_create_hostgroup(self, group_name):
+        """Obtiene o crea un HostGroup"""
+        group_id = self.get_hostgroup(group_name)
+        if group_id:
+            print(f"Found HostGroup '{group_name}' with ID: {group_id}")
+            return group_id
+            
+        print(f"Creating HostGroup '{group_name}'...")
+        response = self._post(
+            "hostgroup.create",
+            {
+                "name": group_name
+            }
+        )
+        if response and "groupids" in response:
+            group_id = response["groupids"][0]
+            print(f"Created HostGroup '{group_name}' with ID: {group_id}")
+            return group_id
+            
+        print(f"Failed to create HostGroup '{group_name}'")
+        return None
+
     def ensure_base_template(self):
         template_name = "K8s Basic Service"
 
