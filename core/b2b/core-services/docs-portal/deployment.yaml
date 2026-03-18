@@ -15,6 +15,13 @@ spec:
       labels:
         app: docs-portal
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: k8-node-30
+      tolerations:
+        - key: restricted
+          operator: Equal
+          value: "true"
+          effect: NoSchedule
       imagePullSecrets:
         - name: ghcr-secret
       volumes:

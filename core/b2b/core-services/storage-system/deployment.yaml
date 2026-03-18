@@ -17,6 +17,13 @@ spec:
       labels:
         app: nfs-client-provisioner
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: k8-node-30
+      tolerations:
+        - key: restricted
+          operator: Equal
+          value: "true"
+          effect: NoSchedule
       serviceAccountName: nfs-client-provisioner
       containers:
         - name: nfs-client-provisioner
