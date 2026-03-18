@@ -185,6 +185,16 @@ jobs:
                     --dry-run=client -o yaml | kubectl apply -n "$NAMESPACE" -f -
                  kubectl label secret git-credentials -n "$NAMESPACE" app="$SERVICE_NAME" managed-by="ka0s-core-cd" --overwrite
               fi
+
+              # Special handling for runners: Inject GitHub App credentials
+              if [ "$SERVICE_NAME" == "runners" ]; then
+                 echo "🔑 Injecting GitHub App credentials for runners..."
+                 kubectl create secret generic controller-manager \
+                    --from-literal=github_app_id="1972621" \
+                    --from-literal=github_app_installation_id="103064135" \
+                    --from-literal=github_app_private_key="${{ secrets.PRIVATE_KEY_PEM }}" \
+                    --dry-run=client -o yaml | kubectl apply -n "$NAMESPACE" -f -
+              fi
               
               # Delete old validation jobs to force re-run
               kubectl delete job -n "$NAMESPACE" -l "app=$SERVICE_NAME" --ignore-not-found

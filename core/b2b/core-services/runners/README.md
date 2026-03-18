@@ -1,16 +1,34 @@
-# GitHub Actions Self-Hosted Runners
+# GitHub Actions Runners (ARC) Deployment
 
-**Rol**: Infraestructura de Ejecución de CI/CD.
+Este directorio contiene la configuración declarativa (GitOps/Kustomize) para desplegar el **Actions Runner Controller (ARC)** y el **Runner Scale Set** en el clúster Kubernetes.
 
-Este directorio contiene scripts para el despliegue y mantenimiento de los Runners de GitHub Actions que se ejecutan dentro de nuestra propia infraestructura, permitiendo acceso directo al cluster para despliegues.
+## Estructura
 
-## 📂 Scripts
+- `kustomization.yaml`: Orquestador principal de Kustomize. Define los recursos y los Helm Charts a instalar.
+- `namespace.yaml`: Definición del namespace `actions-runner-system`.
+- `values-controller.yaml`: Configuración específica para el chart del controlador (ARC).
+- `values-runner-set.yaml`: Configuración específica para el chart del runner set (incluyendo límites de escalado).
 
-*   **deploy.sh**: Script para registrar y lanzar un nuevo runner.
-*   **cleanup.sh**: Script para eliminar runners inactivos o des-registrarlos.
+## Gestión de Secretos
 
-## 🚀 Flujo de Trabajo
-Los runners permiten que los workflows de `.github/workflows/` (como `cd-core-services.yml`) tengan permisos y acceso de red para ejecutar `kubectl` contra el cluster local.
+El secreto `controller-manager` (necesario para la autenticación con GitHub App) se inyecta automáticamente durante el pipeline de CD.
+Utiliza el secreto de repositorio `PRIVATE_KEY_PEM` configurado en GitHub.
 
-## ⚠️ Seguridad
-Estos runners tienen acceso privilegiado al cluster. Asegurar que solo workflows confiables se ejecuten en ellos.
+**NO** es necesario realizar acciones manuales de bootstrap de secretos.
+
+## Despliegue (CD)
+
+El despliegue está automatizado a través del workflow `.github/workflows/cd-core-services.yml`.
+Cualquier cambio en los archivos YAML de este directorio (`core/b2b/core-services/runners/`) disparará un despliegue automático al hacer push a `main`.
+
+El pipeline detectará el servicio `runners` e inyectará las credenciales necesarias antes de aplicar los manifiestos.
+
+## Configuración de Escalado
+
+Para modificar el número de runners, edita `values-runner-set.yaml`:
+
+```yaml
+runnerScaleSet:
+  minRunners: 1
+  maxRunners: 15  # Ajustar según necesidad
+```
