@@ -81,6 +81,10 @@ jobs:
             export ZABBIX_URL="http://zabbix-web.zabbix.svc.cluster.local/api_jsonrpc.php"
           fi
           
+          # Probar conectividad al API
+          echo "Probando conexión a Zabbix en $ZABBIX_URL..."
+          curl -s -X POST -H "Content-Type: application/json" -d '{"jsonrpc": "2.0", "method": "apiinfo.version", "params": [], "id": 1}' $ZABBIX_URL || echo "::warning::Fallo en CURL a Zabbix"
+          
           # Export KUBECONFIG to point to the tunneled cluster configuration
           export KUBECONFIG=~/.kube/config
           
