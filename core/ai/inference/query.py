@@ -196,6 +196,75 @@ def find_repo_files(query: str, repo_root: str, max_hits: int = 40) -> List[str]
     return [p for _, p in candidates[:max_hits]]
 
 
+def read_text_file(path: Path, max_chars: int) -> str:
+    try:
+        with path.open("r", encoding="utf-8", errors="ignore") as f:
+            return f.read(max_chars)
+    except Exception:
+        return ""
+
+
+def load_trae_context(repo_root: str, max_chars: int = 12000) -> List[Dict[str, Any]]:
+    root = Path(repo_root)
+    rel_paths = [
+        "compliance/trae/rules/reglas.md",
+        "compliance/trae/rules/rules_library/rule_006_skill_first.md",
+        "compliance/trae/rules/rules_library/rule_007_kubernetes.md",
+        "compliance/trae/rules/rules_library/rule_011_ubicacion.md",
+        "compliance/trae/rules/rules_library/rule_013_honestidad_ia.md",
+        "compliance/trae/skills/kubernetes-expert/SKILL.md",
+    ]
+    parts: List[str] = []
+    budget = max_chars
+    for rel in rel_paths:
+        p = root / rel
+        if not p.exists() or not p.is_file():
+            continue
+        chunk = read_text_file(p, max_chars=min(4000, budget))
+        if not chunk.strip():
+            continue
+        parts.append(f"### {rel}\n{chunk}")
+        budget -= len(chunk)
+        if budget <= 0:
+            break
+    if not parts:
+        return []
+    return [
+        {
+            "source": "compliance/trae (rules+skills)",
+            "content": "\n\n".join(parts),
+            "similarity": 1.0,
+        }
+    ]
+
+
+def build_repo_context(query: str, repo_root: str, max_files: int = 4, max_chars_per_file: int = 4000) -> List[Dict[str, Any]]:
+    allowed_ext = {".md", ".yaml", ".yml", ".py", ".sh", ".sql", ".json"}
+    root = Path(repo_root)
+    file_paths = find_repo_files(query, repo_root=repo_root, max_hits=60)
+    picked: List[Path] = []
+    for rel in file_paths:
+        p = root / rel
+        if not p.exists() or not p.is_file():
+            continue
+        if p.suffix.lower() not in allowed_ext:
+            continue
+        picked.append(p)
+        if len(picked) >= max_files:
+            break
+    context: List[Dict[str, Any]] = []
+    for p in picked:
+        content = read_text_file(p, max_chars=max_chars_per_file)
+        if not content.strip():
+            continue
+        context.append({
+            "source": str(p.relative_to(root)).replace("\\", "/"),
+            "content": content,
+            "similarity": 1.0,
+        })
+    return context
+
+
 def should_return_file_list(query: str) -> bool:
     q = query.lower()
     keywords = [
@@ -217,6 +286,26 @@ def should_return_file_list(query: str) -> bool:
     ]
     return any(k in q for k in keywords)
 
+
+def is_query_about_rules_or_skills(query: str) -> bool:
+    q = query.lower()
+    keywords = [
+        "trae",
+        "regla",
+        "reglas",
+        "skill",
+        "skills",
+        "kubernetes",
+        "kustomize",
+        "gitops",
+        "itil",
+        "auditoria",
+        "auditoría",
+        "ubicacion",
+        "ubicación",
+    ]
+    return any(k in q for k in keywords)
+
 def main():
     parser = argparse.ArgumentParser(description="Ka0s Agent Inference CLI")
     parser.add_argument("query", type=str, help="The question to ask the agent")
@@ -226,6 +315,7 @@ def main():
     logger.info(f"Processing query: {query}")
 
     repo_root = os.getenv("GITHUB_WORKSPACE") or os.getcwd()
+    trae_context = load_trae_context(repo_root)
     if should_return_file_list(query):
         matches = find_repo_files(query, repo_root=repo_root)
         if matches:
@@ -235,9 +325,10 @@ def main():
     # 1. Embed Query
     query_embedding = generate_embedding(query)
     if not query_embedding:
-        matches = find_repo_files(query, repo_root=repo_root)
-        if matches:
-            print("Ficheros relevantes encontrados en el repositorio:\n" + "\n".join([f"- {m}" for m in matches]))
+        repo_context = build_repo_context(query, repo_root=repo_root)
+        if repo_context or (trae_context and is_query_about_rules_or_skills(query)):
+            answer = generate_answer(query, repo_context + trae_context)
+            print(answer)
             return
         print("Error: Could not embed query.")
         return
@@ -247,14 +338,18 @@ def main():
     logger.info(f"Retrieved {len(context)} relevant context chunks.")
 
     if not context or context[0]["similarity"] < 0.4:
-        repo_root = os.getenv("GITHUB_WORKSPACE") or os.getcwd()
-        matches = find_repo_files(query, repo_root=repo_root)
-        if matches:
-            print("Ficheros relevantes encontrados en el repositorio:\n" + "\n".join([f"- {m}" for m in matches]))
+        repo_context = build_repo_context(query, repo_root=repo_root)
+        if repo_context:
+            answer = generate_answer(query, repo_context + trae_context)
+            print(answer)
+            return
+        if trae_context and is_query_about_rules_or_skills(query):
+            answer = generate_answer(query, trae_context)
+            print(answer)
             return
     
     # 3. Generate Answer
-    answer = generate_answer(query, context)
+    answer = generate_answer(query, context + trae_context)
     
     # Output solely the answer for the caller to capture
     print(answer)
