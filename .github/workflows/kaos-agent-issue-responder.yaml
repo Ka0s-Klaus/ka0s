@@ -2,7 +2,7 @@ name: "Ka0s Agent Issue Responder"
 
 on:
   issues:
-    types: [opened]
+    types: [opened, edited, labeled, reopened]
 
 permissions:
   contents: read
@@ -27,6 +27,9 @@ jobs:
     if: contains(github.event.issue.labels.*.name, 'ka0s-agent') || contains(github.event.issue.labels.*.name, 'kaos-agent')
     name: Agent Reply
     runs-on: swarm-runners-scaleset
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.event.issue.number }}
+      cancel-in-progress: true
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
