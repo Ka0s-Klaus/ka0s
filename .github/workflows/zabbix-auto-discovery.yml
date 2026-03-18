@@ -81,92 +81,14 @@ jobs:
             export ZABBIX_URL="http://zabbix-web.zabbix.svc.cluster.local/api_jsonrpc.php"
           fi
           
-          # Probar conectividad al API
-          echo "Probando conexión a Zabbix en $ZABBIX_URL..."
-          curl -s -X POST -H "Content-Type: application/json" -d '{"jsonrpc": "2.0", "method": "apiinfo.version", "params": [], "id": 1}' $ZABBIX_URL || echo "::warning::Fallo en CURL a Zabbix"
+          # Asegurar que la URL termina en /api_jsonrpc.php
+          if [[ ! "$ZABBIX_URL" == *"/api_jsonrpc.php" ]]; then
+             export ZABBIX_URL="${ZABBIX_URL%/}/api_jsonrpc.php"
+             echo "Ajustada ZABBIX_URL a: $ZABBIX_URL"
+          fi
           
           # Export KUBECONFIG to point to the tunneled cluster configuration
           export KUBECONFIG=~/.kube/config
-          
-          # Usar python requests directamente en lugar del script para debuggear
-          python3 -c "
-          import os
-          import requests
-          import sys
-          import json
-          
-          original_url = os.environ.get('ZABBIX_URL')
-          user = os.environ.get('ZABBIX_USER')
-          password = os.environ.get('ZABBIX_PASS')
-          
-          # Intentar con la URL original y si falla, probar con alternativas
-          urls_to_test = [
-              original_url,
-              original_url.replace('api_jsonrpc.php', 'zabbix/api_jsonrpc.php') if 'api_jsonrpc.php' in original_url else f'{original_url.rstrip(\"/\")}/zabbix/api_jsonrpc.php',
-              f'{original_url.replace(\"api_jsonrpc.php\", \"\").rstrip(\"/\")}/api_jsonrpc.php'
-          ]
-          
-          # Quitar duplicados manteniendo orden
-          urls_to_test = list(dict.fromkeys(urls_to_test))
-          
-          success = False
-          
-          for url in urls_to_test:
-              print(f'\\n--- Testing URL: {url} ---')
-              
-              headers = {
-                  'Content-Type': 'application/json',
-                  'Accept': 'application/json'
-              }
-              data = {
-                  'jsonrpc': '2.0',
-                  'method': 'user.login',
-                  'params': {
-                      'user': user,
-                      'password': password
-                  },
-                  'id': 1
-              }
-              
-              try:
-                  response = requests.post(url, json=data, headers=headers, allow_redirects=False, timeout=10)
-                  print(f'Status Code: {response.status_code}')
-                  
-                  if response.status_code in (301, 302, 307, 308):
-                      print(f'Redirected to: {response.headers.get(\"Location\")}')
-                      continue
-                      
-                  # Si es HTML, ignorar y probar siguiente
-                  if 'text/html' in response.headers.get('Content-Type', ''):
-                      print('Received HTML response instead of JSON. This is likely the wrong endpoint path.')
-                      continue
-                      
-                  result = response.json()
-                  
-                  if 'error' in result:
-                      err = result['error']
-                      print(f'API Error: {err}')
-                      # Si hay error de API (ej. credenciales inválidas) pero responde JSON, 
-                      # entonces el endpoint es correcto pero las credenciales no.
-                      # Guardamos el endpoint correcto
-                      os.environ['ZABBIX_URL'] = url
-                      sys.exit(1)
-                      
-                  print('Authentication successful! Found correct endpoint.')
-                  # Exportar para el script siguiente
-                  with open(os.environ['GITHUB_ENV'], 'a') as f:
-                      f.write(f'ZABBIX_URL={url}\\n')
-                  success = True
-                  break
-                  
-              except Exception as e:
-                  print(f'Exception testing {url}: {e}')
-                  continue
-                  
-          if not success:
-              print('\\nFailed to connect to Zabbix API with any of the tested URLs.')
-              sys.exit(1)
-          "
           
           python3 core/monitoring/zabbix/scripts/monitor_k8s_services.py
 

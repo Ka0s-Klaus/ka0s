@@ -52,7 +52,8 @@ class ZabbixK8sMonitor:
                 # Ignore duplicate host error, treat as success but return flag
                 if 'already exists' in result['error']['data']:
                     return {'hostids': ['existing'], 'error': 'already_exists'}
-                raise Exception(f"API Error: {result['error']}")
+                print(f"API Error: {result['error']}")
+                return None
 
             return result.get('result')
         except Exception as e:
@@ -61,10 +62,14 @@ class ZabbixK8sMonitor:
 
     def login(self):
         print(f"Authenticating to {self.url}...")
-        self.auth_token = self._post(
-            "user.login",
-            {"username": self.user, "password": self.password}
-        )
+        # Try with 'username' (Zabbix >= 7.0)
+        params = {"username": self.user, "password": self.password}
+        self.auth_token = self._post("user.login", params)
+        if not self.auth_token:
+            print("Failed login with 'username', trying 'user'")
+            params_old = {"user": self.user, "password": self.password}
+            self.auth_token = self._post("user.login", params_old)
+
         if self.auth_token:
             print("Authentication successful.")
         else:
@@ -367,6 +372,10 @@ class ZabbixK8sMonitor:
 
 
 if __name__ == "__main__":
+    if not all([ZABBIX_URL, ZABBIX_USER, ZABBIX_PASS]):
+        print("Error: Faltan variables de entorno para Zabbix")
+        sys.exit(1)
+
     monitor = ZabbixK8sMonitor(ZABBIX_URL, ZABBIX_USER, ZABBIX_PASS)
     monitor.login()
 
