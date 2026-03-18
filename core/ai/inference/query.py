@@ -6,7 +6,7 @@ import logging
 import json
 import re
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional, Callable
 
 # Configuration
 POSTGRES_HOST = os.getenv("POSTGRES_HOST") or "localhost"
@@ -76,13 +76,88 @@ def search_context(query_embedding: List[float], limit: int = 5) -> List[Dict[st
         logger.error(f"Search failed: {e}")
         return []
 
-def generate_answer(query: str, context: List[Dict[str, Any]]) -> str:
-    # 1. Check for similarity threshold (Safety Net)
-    # If the best context has low similarity, it's likely irrelevant.
-    # We use a loose threshold (0.4) because cosine similarity distributions vary.
-    if not context or context[0]['similarity'] < 0.4:
-        logger.warning(f"Low confidence context found. Top score: {context[0]['similarity'] if context else 0}")
-        return "Lo siento, no dispongo de suficiente información en mi base de conocimientos actual para responder a tu pregunta con precisión. 🙇‍♂️\n\nPrueba a reformularla o consulta la documentación oficial en `core/docs`."
+def build_verification_plan(query: str, repo_root: str) -> str:
+    q = query.lower()
+    bullets: List[str] = []
+    focus_paths: List[str] = []
+
+    if any(k in q for k in ["kubernetes", "k8s", "cluster", "namespace", "pod", "deployment", "ingress", "svc", "service"]):
+        bullets.extend([
+            "`kubectl get nodes -o wide`",
+            "`kubectl get pods -A`",
+            "`kubectl get events -A --sort-by=.lastTimestamp | tail -n 50`",
+            "`kubectl describe pod <pod> -n <ns>`",
+            "`kubectl logs <pod> -n <ns> --tail=200`",
+        ])
+        focus_paths.extend([
+            "core/b2b/",
+            "core/b2b/core-services/",
+            ".github/workflows/",
+            "core/docs/",
+        ])
+
+    if any(k in q for k in ["workflow", "github actions", "actions", "pipeline", "ci", "cd", "job", "runner"]):
+        bullets.extend([
+            "Revisar workflows en `.github/workflows/`",
+            "Buscar el nombre del job/step en el repo",
+        ])
+        focus_paths.append(".github/workflows/")
+
+    if "zabbix" in q or "monitor" in q or "monitoring" in q:
+        bullets.extend([
+            "Revisar templates en `core/monitoring/zabbix/templates/`",
+            "Revisar sync/discovery en workflows `zabbix-*.yml`",
+        ])
+        focus_paths.append("core/monitoring/zabbix/")
+
+    if "itop" in q or "cmdb" in q:
+        focus_paths.extend([
+            "core/b2b/core-services/itop/",
+            "core/docs/",
+        ])
+
+    if not bullets:
+        bullets.extend([
+            "Buscar keywords en el repo (por nombre de fichero y contenido)",
+            "Revisar documentación en `core/docs/`",
+            "Revisar workflows en `.github/workflows/` si aplica",
+        ])
+    if not focus_paths:
+        focus_paths = ["core/docs/", ".github/workflows/", "core/"]
+
+    unique_bullets: List[str] = []
+    seen = set()
+    for b in bullets:
+        if b in seen:
+            continue
+        seen.add(b)
+        unique_bullets.append(b)
+
+    unique_paths: List[str] = []
+    seen_p = set()
+    for p in focus_paths:
+        if p in seen_p:
+            continue
+        seen_p.add(p)
+        unique_paths.append(p)
+
+    out: List[str] = []
+    out.append("## Evidencia insuficiente")
+    out.append("- No hay contexto suficiente en la base de conocimiento o en el repo para contestar con certeza.")
+    out.append("")
+    out.append("## Plan de verificación")
+    for b in unique_bullets[:10]:
+        out.append(f"- {b}")
+    out.append("")
+    out.append("## Rutas a revisar")
+    for p in unique_paths[:8]:
+        out.append(f"- `{p}`")
+    return "\n".join(out).strip() + "\n"
+
+
+def generate_answer(query: str, context: List[Dict[str, Any]], repo_root: str) -> str:
+    if not context:
+        return build_verification_plan(query, repo_root)
 
     url = f"http://{OLLAMA_HOST}:{OLLAMA_PORT}/api/generate"
     
@@ -97,8 +172,7 @@ def generate_answer(query: str, context: List[Dict[str, Any]]) -> str:
     ### 🚫 Strict Prohibitions
     - **DO NOT INVENT** information, commands, or file paths not present in the Context.
     - **DO NOT HALLUCINATE** features or services.
-    - If the Context does not contain the answer, you **MUST** reply exactly:
-      "... disculpa pero no dispongo de suficiente información como para contestar tu pregunta. Siento no haberte sido de ayuda."
+    - If the Context does not contain the answer, say clearly that you lack evidence and provide a short verification plan.
     
     ### 📝 Style Guidelines
     - **Tone**: Professional, Technical, Helpful.
@@ -130,10 +204,32 @@ def generate_answer(query: str, context: List[Dict[str, Any]]) -> str:
         return response.json().get("response", "Error: Empty response from LLM")
     except Exception as e:
         logger.error(f"Generation failed: {e}")
-        return f"Error generating answer: {e}"
+        plan = build_verification_plan(query, repo_root)
+        sources = [c.get("source") for c in context if c.get("source")]
+        sources = [s for s in sources if isinstance(s, str)]
+        if not sources:
+            return plan
+        out = [plan.rstrip(), "", "## Contexto localizado", *[f"- `{s}`" for s in sources[:8]]]
+        return "\n".join(out).strip() + "\n"
 
 
-def find_repo_files(query: str, repo_root: str, max_hits: int = 40) -> List[str]:
+def is_flow_question(query: str) -> bool:
+    q = query.lower()
+    return any(k in q for k in [
+        "flujo",
+        "workflow",
+        "workflows",
+        "pipeline",
+        "ci/cd",
+        "github actions",
+        "action",
+        "actions",
+        "job",
+        "runner",
+    ])
+
+
+def find_repo_files(query: str, repo_root: str, max_hits: int = 40, prefer_prefixes: Optional[List[str]] = None) -> List[str]:
     tokens = [t for t in re.split(r"\W+", query.lower()) if len(t) >= 4]
     if not tokens:
         return []
@@ -192,7 +288,15 @@ def find_repo_files(query: str, repo_root: str, max_hits: int = 40) -> List[str]
             if len(candidates) >= 500:
                 break
 
-    candidates.sort(key=lambda x: (-x[0], x[1]))
+    prefer_prefixes = prefer_prefixes or []
+
+    def prefer_rank(path: str) -> int:
+        for idx, pref in enumerate(prefer_prefixes):
+            if path.startswith(pref):
+                return idx
+        return len(prefer_prefixes) + 1
+
+    candidates.sort(key=lambda x: (-x[0], prefer_rank(x[1]), x[1]))
     return [p for _, p in candidates[:max_hits]]
 
 
@@ -241,7 +345,15 @@ def load_trae_context(repo_root: str, max_chars: int = 12000) -> List[Dict[str, 
 def build_repo_context(query: str, repo_root: str, max_files: int = 4, max_chars_per_file: int = 4000) -> List[Dict[str, Any]]:
     allowed_ext = {".md", ".yaml", ".yml", ".py", ".sh", ".sql", ".json"}
     root = Path(repo_root)
-    file_paths = find_repo_files(query, repo_root=repo_root, max_hits=60)
+    prefer_prefixes: Optional[List[str]] = None
+    if is_flow_question(query):
+        prefer_prefixes = [
+            ".github/workflows/",
+            "core/monitoring/",
+            "core/docs/",
+            "core/b2b/",
+        ]
+    file_paths = find_repo_files(query, repo_root=repo_root, max_hits=60, prefer_prefixes=prefer_prefixes)
     picked: List[Path] = []
     for rel in file_paths:
         p = root / rel
@@ -395,12 +507,18 @@ def answer_from_trae_policies(query: str, repo_root: str) -> str:
             parts.append("Directorio sugerido:")
             parts.append("```text\ncore/b2b/core-services/nginx/\n  base/\n    deployment.yaml\n    service.yaml\n    ingress.yaml\n    kustomization.yaml\n  overlays/\n    staging/\n      kustomization.yaml\n    prod/\n      kustomization.yaml\n  kustomization.yaml\n```")
             parts.append("Manifiestos mínimos (ejemplo):")
-            parts.append("```yaml\n# core/b2b/core-services/nginx/base/deployment.yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: nginx\nspec:\n  replicas: 1\n  selector:\n    matchLabels:\n      app: nginx\n  template:\n    metadata:\n      labels:\n        app: nginx\n    spec:\n      containers:\n        - name: nginx\n          image: nginxinc/nginx-unprivileged:1.27-alpine\n          ports:\n            - containerPort: 8080\n          securityContext:\n            allowPrivilegeEscalation: false\n            readOnlyRootFilesystem: true\n            runAsNonRoot: true\n            runAsUser: 101\n            runAsGroup: 101\n            capabilities:\n              drop: [\"ALL\"]\n          resources:\n            requests:\n              cpu: 50m\n              memory: 64Mi\n            limits:\n              cpu: 200m\n              memory: 256Mi\n          livenessProbe:\n            httpGet:\n              path: /\n              port: 8080\n            initialDelaySeconds: 10\n            periodSeconds: 10\n          readinessProbe:\n            httpGet:\n              path: /\n              port: 8080\n            initialDelaySeconds: 5\n            periodSeconds: 5\n```")
-            parts.append("```yaml\n# core/b2b/core-services/nginx/base/service.yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: nginx\nspec:\n  selector:\n    app: nginx\n  ports:\n    - name: http\n      port: 80\n      targetPort: 8080\n```")
-            parts.append("```yaml\n# core/b2b/core-services/nginx/base/ingress.yaml\napiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: nginx\nspec:\n  rules:\n    - host: nginx.example.com\n      http:\n        paths:\n          - path: /\n            pathType: Prefix\n            backend:\n              service:\n                name: nginx\n                port:\n                  number: 80\n```")
-            parts.append("```yaml\n# core/b2b/core-services/nginx/base/kustomization.yaml\napiVersion: kustomize.config.k8s.io/v1beta1\nkind: Kustomization\nresources:\n  - deployment.yaml\n  - service.yaml\n  - ingress.yaml\n```")
-            parts.append("```yaml\n# core/b2b/core-services/nginx/overlays/prod/kustomization.yaml\napiVersion: kustomize.config.k8s.io/v1beta1\nkind: Kustomization\nresources:\n  - ../../base\npatches:\n  - target:\n      kind: Deployment\n      name: nginx\n    patch: |-\n      - op: replace\n        path: /spec/replicas\n        value: 2\n```")
-            parts.append("```yaml\n# core/b2b/core-services/nginx/kustomization.yaml\n# Nota: normalmente ArgoCD apunta a un overlay (p.ej. `overlays/prod`).\napiVersion: kustomize.config.k8s.io/v1beta1\nkind: Kustomization\nresources:\n  - overlays/prod\n```")
+            parts.append("Archivo: `core/b2b/core-services/nginx/base/deployment.yaml`")
+            parts.append("```yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: nginx\nspec:\n  replicas: 1\n  selector:\n    matchLabels:\n      app: nginx\n  template:\n    metadata:\n      labels:\n        app: nginx\n    spec:\n      containers:\n        - name: nginx\n          image: nginxinc/nginx-unprivileged:1.27-alpine\n          ports:\n            - containerPort: 8080\n          securityContext:\n            allowPrivilegeEscalation: false\n            readOnlyRootFilesystem: true\n            runAsNonRoot: true\n            runAsUser: 101\n            runAsGroup: 101\n            capabilities:\n              drop: [\"ALL\"]\n          resources:\n            requests:\n              cpu: 50m\n              memory: 64Mi\n            limits:\n              cpu: 200m\n              memory: 256Mi\n          livenessProbe:\n            httpGet:\n              path: /\n              port: 8080\n            initialDelaySeconds: 10\n            periodSeconds: 10\n          readinessProbe:\n            httpGet:\n              path: /\n              port: 8080\n            initialDelaySeconds: 5\n            periodSeconds: 5\n```")
+            parts.append("Archivo: `core/b2b/core-services/nginx/base/service.yaml`")
+            parts.append("```yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: nginx\nspec:\n  selector:\n    app: nginx\n  ports:\n    - name: http\n      port: 80\n      targetPort: 8080\n```")
+            parts.append("Archivo: `core/b2b/core-services/nginx/base/ingress.yaml`")
+            parts.append("```yaml\napiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: nginx\nspec:\n  rules:\n    - host: nginx.example.com\n      http:\n        paths:\n          - path: /\n            pathType: Prefix\n            backend:\n              service:\n                name: nginx\n                port:\n                  number: 80\n```")
+            parts.append("Archivo: `core/b2b/core-services/nginx/base/kustomization.yaml`")
+            parts.append("```yaml\napiVersion: kustomize.config.k8s.io/v1beta1\nkind: Kustomization\nresources:\n  - deployment.yaml\n  - service.yaml\n  - ingress.yaml\n```")
+            parts.append("Archivo: `core/b2b/core-services/nginx/overlays/prod/kustomization.yaml`")
+            parts.append("```yaml\napiVersion: kustomize.config.k8s.io/v1beta1\nkind: Kustomization\nresources:\n  - ../../base\npatches:\n  - target:\n      kind: Deployment\n      name: nginx\n    patch: |-\n      - op: replace\n        path: /spec/replicas\n        value: 2\n```")
+            parts.append("Archivo: `core/b2b/core-services/nginx/kustomization.yaml`")
+            parts.append("```yaml\napiVersion: kustomize.config.k8s.io/v1beta1\nkind: Kustomization\nresources:\n  - overlays/prod\n```")
             parts.append("Notas: evita `:latest` y los cambios manuales (`kubectl apply/exec`), y usa Kustomize/GitOps como indica el skill.")
 
     if wants_checklist and (rule_006 or rule_007 or reglas_index):
@@ -522,6 +640,68 @@ def is_query_about_rules_or_skills(query: str) -> bool:
     ]
     return any(k in q for k in keywords)
 
+
+def answer_flow_discovery(query: str, repo_root: str) -> str:
+    if not is_flow_question(query):
+        return ""
+    root = Path(repo_root)
+    tokens = [t for t in re.split(r"\W+", query.lower()) if len(t) >= 4]
+    tokens = [t for t in tokens if t not in {"existe", "existan", "flujo", "workflow", "workflows", "github", "actions", "pipeline"}]
+
+    relevant_scored: List[tuple[int, str]] = []
+    workflows_dir = root / ".github" / "workflows"
+    if workflows_dir.exists() and workflows_dir.is_dir():
+        for p in sorted(workflows_dir.glob("*.yml")):
+            name = p.name.lower()
+            content = read_text_file(p, max_chars=24000).lower()
+            if not tokens:
+                relevant_scored.append((0, str(p.relative_to(root)).replace("\\", "/")))
+                continue
+            score = sum(1 for t in tokens if (t in name or t in content))
+            if score:
+                relevant_scored.append((score, str(p.relative_to(root)).replace("\\", "/")))
+
+    if any(k in query.lower() for k in ["zabbix", "kubernetes", "k8s", "cluster"]):
+        templates_dir = root / "core" / "monitoring" / "zabbix" / "templates"
+        if templates_dir.exists() and templates_dir.is_dir():
+            for p in sorted(templates_dir.glob("*.y*ml")):
+                if "kubernetes" not in p.name.lower():
+                    continue
+                relevant_scored.append((3, str(p.relative_to(root)).replace("\\", "/")))
+
+    docs_dir = root / "core" / "docs"
+    if docs_dir.exists() and docs_dir.is_dir() and tokens:
+        for p in docs_dir.rglob("*"):
+            if not p.is_file():
+                continue
+            rel = str(p.relative_to(root)).replace("\\", "/").lower()
+            if any(t in rel for t in tokens):
+                relevant_scored.append((1, str(p.relative_to(root)).replace("\\", "/")))
+
+    relevant_scored.sort(key=lambda x: (-x[0], x[1]))
+    seen = set()
+    relevant: List[str] = []
+    for _, path in relevant_scored:
+        if path in seen:
+            continue
+        seen.add(path)
+        relevant.append(path)
+    if not relevant:
+        return ""
+    parts: List[str] = []
+    parts.append("## Flujos y docs relevantes")
+    for h in relevant[:12]:
+        parts.append(f"- `{h}`")
+    return "\n".join(parts).strip() + "\n"
+
+
+def route_deterministic_answer(query: str, repo_root: str) -> str:
+    for fn in [answer_from_trae_policies, answer_flow_discovery]:
+        out = fn(query, repo_root)
+        if out:
+            return out
+    return ""
+
 def main():
     parser = argparse.ArgumentParser(description="Ka0s Agent Inference CLI")
     parser.add_argument("query", type=str, help="The question to ask the agent")
@@ -531,13 +711,16 @@ def main():
     logger.info(f"Processing query: {query}")
 
     repo_root = os.getenv("GITHUB_WORKSPACE") or os.getcwd()
-    policies_answer = answer_from_trae_policies(query, repo_root)
-    if policies_answer:
-        print(policies_answer)
+    deterministic_answer = route_deterministic_answer(query, repo_root)
+    if deterministic_answer:
+        print(deterministic_answer)
         return
     trae_context = load_trae_context(repo_root)
     if should_return_file_list(query) and not is_query_about_rules_or_skills(query):
-        matches = find_repo_files(query, repo_root=repo_root)
+        prefer = None
+        if is_flow_question(query):
+            prefer = [".github/workflows/", "core/monitoring/", "core/docs/", "core/b2b/"]
+        matches = find_repo_files(query, repo_root=repo_root, prefer_prefixes=prefer)
         if matches:
             print("Ficheros relevantes encontrados en el repositorio:\n" + "\n".join([f"- {m}" for m in matches]))
             return
@@ -547,10 +730,10 @@ def main():
     if not query_embedding:
         repo_context = build_repo_context(query, repo_root=repo_root)
         if repo_context or (trae_context and is_query_about_rules_or_skills(query)):
-            answer = generate_answer(query, repo_context + trae_context)
+            answer = generate_answer(query, repo_context + trae_context, repo_root=repo_root)
             print(answer)
             return
-        print("Error: Could not embed query.")
+        print(build_verification_plan(query, repo_root=repo_root))
         return
 
     # 2. Retrieve Context
@@ -560,16 +743,18 @@ def main():
     if not context or context[0]["similarity"] < 0.4:
         repo_context = build_repo_context(query, repo_root=repo_root)
         if repo_context:
-            answer = generate_answer(query, repo_context + trae_context)
+            answer = generate_answer(query, repo_context + trae_context, repo_root=repo_root)
             print(answer)
             return
         if trae_context and is_query_about_rules_or_skills(query):
-            answer = generate_answer(query, trae_context)
+            answer = generate_answer(query, trae_context, repo_root=repo_root)
             print(answer)
             return
+        print(build_verification_plan(query, repo_root=repo_root))
+        return
     
     # 3. Generate Answer
-    answer = generate_answer(query, context + trae_context)
+    answer = generate_answer(query, context + trae_context, repo_root=repo_root)
     
     # Output solely the answer for the caller to capture
     print(answer)
