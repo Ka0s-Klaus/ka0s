@@ -16,7 +16,7 @@ CONTROLLER_RELEASE_NAME="actions-runner-controller"
 RUNNER_SCALESET_RELEASE_NAME="swarm-runners-scaleset"
 
 # GitHub repository URL
-GITHUB_REPO="Ka0s-Klaus/Ka0s"
+GITHUB_REPO="Ka0s-Klaus/ka0s"
 
 # Runner group name
 RUNNER_GROUP="swarm-runners"

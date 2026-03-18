@@ -25,11 +25,12 @@ env:
 jobs:
   deploy-services:
     name: Deploy Changed Services
-    runs-on: swarm-runners-scaleset
+    runs-on: ubuntu-latest
     permissions:
       contents: write
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      PRIVATE_KEY_PEM: ${{ secrets.PRIVATE_KEY_PEM }}
     outputs:
       services: ${{ steps.deploy_step.outputs.services }}
     steps:
@@ -45,6 +46,11 @@ jobs:
           username: ${{ secrets.KAOS_SSH_USER }}
           key: ${{ secrets.KAOS_SSH_KEY_PRIV }}
           port: ${{ secrets.KAOS_SSH_PORT_1 }}
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.14.4
 
       - name: Detect and Deploy
         id: deploy_step
@@ -189,19 +195,44 @@ jobs:
               # Special handling for runners: Inject GitHub App credentials
               if [ "$SERVICE_NAME" == "runners" ]; then
                  echo "🔑 Injecting GitHub App credentials for runners..."
+                 KEY_FILE="github-app-private-key.pem"
+                 printf "%s" "$PRIVATE_KEY_PEM" > "$KEY_FILE"
                  kubectl create secret generic controller-manager \
                     --from-literal=github_app_id="1972621" \
                     --from-literal=github_app_installation_id="103064135" \
-                    --from-literal=github_app_private_key="${{ secrets.PRIVATE_KEY_PEM }}" \
+                    --from-file=github_app_private_key="$KEY_FILE" \
                     --dry-run=client -o yaml | kubectl apply -n "$NAMESPACE" -f -
+                 rm -f "$KEY_FILE"
               fi
               
               # Delete old validation jobs to force re-run
               kubectl delete job -n "$NAMESPACE" -l "app=$SERVICE_NAME" --ignore-not-found
               
-              # Aplicar manifiestos con Kustomize
               echo "   Applying manifests..."
-              kubectl apply -k "$SERVICE/"
+              if [ "$SERVICE_NAME" == "runners" ]; then
+                 echo "   Deploying runners via Helm..."
+                 rm -rf gha-runner-scale-set-controller gha-runner-scale-set-controller-*.tgz
+                 helm pull oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set-controller --version 0.10.1 --untar
+                 kubectl apply --server-side -f gha-runner-scale-set-controller/crds/
+                 kubectl wait --for=condition=established --timeout=120s crd/autoscalinglisteners.actions.github.com
+                 kubectl wait --for=condition=established --timeout=120s crd/autoscalingrunnersets.actions.github.com
+                 kubectl wait --for=condition=established --timeout=120s crd/ephemeralrunners.actions.github.com
+                 kubectl wait --for=condition=established --timeout=120s crd/ephemeralrunnersets.actions.github.com
+                 helm upgrade --install actions-runner-controller \
+                   --namespace "$NAMESPACE" \
+                   --create-namespace \
+                   --version 0.10.1 \
+                   --values core/b2b/core-services/runners/values-controller.yaml \
+                   oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set-controller
+                 helm upgrade --install swarm-runners-scaleset \
+                   --namespace "$NAMESPACE" \
+                   --version 0.10.1 \
+                   --values core/b2b/core-services/runners/values-runner-set.yaml \
+                   oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set
+                 rm -rf gha-runner-scale-set-controller gha-runner-scale-set-controller-*.tgz
+              else
+                 kubectl apply -k "$SERVICE/"
+              fi
               
               # Special handling for docs-portal: Force restart to pull new content
               if [ "$SERVICE_NAME" == "docs-portal" ]; then
