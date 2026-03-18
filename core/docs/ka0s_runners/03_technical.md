@@ -39,7 +39,7 @@ cat .tmp/arc/gha-runner-scale-set-controller/crds/*.yaml > core/b2b/core-service
 runnerScaleSet:
   # runnerGroup: swarm-runners-scaleset (Comentado para usar Default)
   minRunners: 1
-  maxRunners: 50
+  maxRunners: 25
 
 template:
   spec:
