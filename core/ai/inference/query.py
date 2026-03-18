@@ -267,19 +267,10 @@ def build_repo_context(query: str, repo_root: str, max_files: int = 4, max_chars
 
 def should_return_file_list(query: str) -> bool:
     q = query.lower()
-    keywords = [
-        "fichero",
-        "ficheros",
-        "archivo",
-        "archivos",
-        "ruta",
-        "rutas",
-        "path",
-        "paths",
-        "manifiesto",
-        "manifiestos",
-    ]
-    return any(k in q for k in keywords)
+    return bool(
+        re.search(r"\b(ficheros?|archivos?|rutas?|paths?)\b", q)
+        or re.search(r"\bmanifiestos?\b", q)
+    )
 
 
 def is_query_about_rules_or_skills(query: str) -> bool:
@@ -311,7 +302,7 @@ def main():
 
     repo_root = os.getenv("GITHUB_WORKSPACE") or os.getcwd()
     trae_context = load_trae_context(repo_root)
-    if should_return_file_list(query):
+    if should_return_file_list(query) and not is_query_about_rules_or_skills(query):
         matches = find_repo_files(query, repo_root=repo_root)
         if matches:
             print("Ficheros relevantes encontrados en el repositorio:\n" + "\n".join([f"- {m}" for m in matches]))
