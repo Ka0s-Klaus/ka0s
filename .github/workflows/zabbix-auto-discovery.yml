@@ -1,17 +1,53 @@
-name: Zabbix Service Auto-Discovery
+name: "[Ka0s] Zabbix Service Auto-Discovery"
 
 on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Motivo de la ejecución manual'
+        required: false
+        default: 'Mantenimiento manual'
   schedule:
     - cron: '*/15 * * * *'  # Run every 15 minutes
-  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'core/monitoring/zabbix/**'
+
+permissions:
+  contents: read
+
+env:
+  KAOS_MODULE: "[Ka0S] Zabbix Auto-Discovery"
+  KAOS_CODE: ${{ github.run_id }}
+  KAOS_ACTOR: ${{ github.actor }}
 
 jobs:
-  zabbix-discovery:
+  # -----------------------------------------------------------------------------
+  # JOB 1: CORE EXECUTION
+  # Lógica principal del workflow.
+  # -----------------------------------------------------------------------------
+  core-execution:
+    name: Core Execution
     runs-on: swarm-runners-scaleset
+    permissions:
+      contents: write
+    outputs:
+      status: ${{ job.status }}
     steps:
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
+      - name: Setup Environment
+        run: |
+          echo "Iniciando módulo: ${{ env.KAOS_MODULE }}"
+          echo "Run ID: ${{ env.KAOS_CODE }}"
+          echo "Actor: ${{ env.KAOS_ACTOR }}"
+
+      # [BLOQUE PERSONALIZABLE] Lógica del workflow
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
@@ -21,12 +57,14 @@ jobs:
         run: |
           pip install requests
 
-      - name: Run Discovery Script
+      - name: Main Logic (Zabbix Discovery)
         env:
           ZABBIX_URL: ${{ secrets.ZABBIX_URL }}
           ZABBIX_USER: ${{ secrets.ZABBIX_USER }}
           ZABBIX_PASS: ${{ secrets.ZABBIX_PASS }}
         run: |
+          echo "Ejecutando lógica principal de descubrimiento..."
+          
           # Ensure kubectl is available (usually is on self-hosted runners connected to k8s)
           if ! command -v kubectl &> /dev/null; then
               echo "kubectl not found"
@@ -37,3 +75,131 @@ jobs:
           export ZABBIX_URL=${ZABBIX_URL:-"http://zabbix-web.zabbix.svc.cluster.local/api_jsonrpc.php"}
           
           python3 core/monitoring/zabbix/scripts/monitor_k8s_services.py
+
+      # [OPCIONAL] Commit de resultados/evidencias
+      - name: Commit & Push Results
+        if: success()
+        run: |
+          git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
+          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
+          
+          # En este caso no esperamos cambios en el repo, pero mantenemos la lógica por si acaso
+          if ! git diff --staged --quiet; then
+            git commit -m "chore(ka0s): update artifacts ${{ env.KAOS_MODULE }} run ${{ env.KAOS_CODE }} [skip ci]"
+            # Reintento básico de push
+            count=0
+            until git push origin HEAD:${{ github.ref_name }} || [ $count -eq 5 ]; do
+              echo "Push fallido, reintentando..."
+              git pull --rebase origin ${{ github.ref_name }}
+              ((count++))
+              sleep 2
+            done
+          else
+            echo "No hay cambios para subir."
+          fi
+
+  # -----------------------------------------------------------------------------
+  # JOB 2: HANDLE SUCCESS (Opcional)
+  # Notificaciones o limpieza en caso de éxito.
+  # -----------------------------------------------------------------------------
+  handle-success:
+    name: Handle Success
+    needs: [core-execution]
+    if: success()
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Notify Success
+        run: echo "✅ Workflow ${{ env.KAOS_MODULE }} completado correctamente."
+
+  # -----------------------------------------------------------------------------
+  # JOB 3: HANDLE FAILURE (Obligatorio)
+  # Notificaciones en caso de error del workflow.
+  # -----------------------------------------------------------------------------
+  handle-failure:
+    name: Handle Failure
+    needs: [core-execution]
+    if: failure()
+    runs-on: swarm-runners-scaleset
+    permissions:
+      issues: write
+      contents: read
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+      - name: Create Incident Issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --title "[INCIDENT]: Fallo en workflow ${{ github.workflow }}" \
+            --label "itop-incident,triage,automated" \
+            --body "### Organización
+          Ka0s
+          
+          ### Solicitante
+          @${{ github.actor }}
+          
+          ### Estado
+          New
+          
+          ### Impacto
+          Service
+          
+          ### Urgencia
+          Medium
+          
+          ### Servicio / CI afectado
+          GitHub Actions / ${{ github.workflow }}
+          
+          ### Descripción
+          El workflow **${{ github.workflow }}** ha fallado durante su ejecución.
+          
+          **Detalles Técnicos:**
+          - **Módulo**: ${{ env.KAOS_MODULE }}
+          - **Run ID**: ${{ github.run_id }}
+          - **Commit**: ${{ github.sha }}
+          - **Branch/Ref**: ${{ github.ref_name }}
+          - **Actor**: ${{ github.actor }}
+          
+          ### Pasos / Evidencias
+          Logs de ejecución: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          "
+
+  # -----------------------------------------------------------------------------
+  # JOB 4: END WORKFLOW (Opcional/Estándar)
+  # Acciones finales: Notificaciones a Issues, Trigger de Inspector, Limpieza global.
+  # -----------------------------------------------------------------------------
+  end-workflow:
+    needs: [handle-success, handle-failure]
+    if: always()
+    runs-on: swarm-runners-scaleset
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - id: repo
+        name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+        
+      - name: Trigger Inspector
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "🔍 Triggering Inspector for Audit..."
+          # Estandarización de inputs para inspector.yml
+          gh workflow run inspector.yml \
+            --ref main \
+            -f workflow_name="${{ github.workflow }}" \
+            -f run_id="${{ github.run_id }}" \
+            -f status="${{ job.status }}" \
+            -f kaos-user-start="${{ github.triggering_actor }}"
