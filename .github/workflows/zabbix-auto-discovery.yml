@@ -43,9 +43,10 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Environment
-        uses: ./.github/actions/setup-environment
-        with:
-          os-type: 'linux'
+        run: |
+          echo "Iniciando módulo: ${{ env.KAOS_MODULE }}"
+          echo "Run ID: ${{ env.KAOS_CODE }}"
+          echo "Actor: ${{ env.KAOS_ACTOR }}"
 
       # [BLOQUE PERSONALIZABLE] Lógica del workflow
       - name: Setup Python
