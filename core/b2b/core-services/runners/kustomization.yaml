@@ -5,19 +5,6 @@ namespace: actions-runner-system
 
 resources:
   - namespace.yaml
-
-helmCharts:
-  - name: gha-runner-scale-set-controller
-    repo: oci://ghcr.io/actions/actions-runner-controller-charts
-    releaseName: actions-runner-controller
-    version: 0.10.1 # Latest stable verified version
-    namespace: actions-runner-system
-    valuesFile: values-controller.yaml
-    includeCRDs: true
-
-  - name: gha-runner-scale-set
-    repo: oci://ghcr.io/actions/actions-runner-controller-charts
-    releaseName: swarm-runners-scaleset
-    version: 0.10.1
-    namespace: actions-runner-system
-    valuesFile: values-runner-set.yaml
+  - rendered/00-crds.yaml
+  - rendered/10-controller.yaml
+  - rendered/20-runnerset.yaml

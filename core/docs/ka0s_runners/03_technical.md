@@ -4,29 +4,32 @@
 
 | Archivo | Propósito |
 | :--- | :--- |
-| `kustomization.yaml` | Orquestador Kustomize. Define `helmCharts` y recursos estáticos. |
+| `kustomization.yaml` | Orquestador Kustomize. Ensambla YAML estático (sin Helm en CD). |
 | `namespace.yaml` | Definición del namespace `actions-runner-system`. |
 | `values-controller.yaml` | `values.yaml` para el chart `gha-runner-scale-set-controller`. |
 | `values-runner-set.yaml` | `values.yaml` para el chart `gha-runner-scale-set`. Aquí se define `maxRunners`. |
+| `rendered/00-crds.yaml` | CRDs de ARC (versionadas como YAML). |
+| `rendered/10-controller.yaml` | ARC Controller (renderizado desde Helm y versionado como YAML). |
+| `rendered/20-runnerset.yaml` | Runner Scale Set (renderizado desde Helm y versionado como YAML). |
 
-### Instalación (Manual / Script)
+### Política de despliegue (YAML)
 
-Se ha recuperado el script `deploy.sh` que utiliza los charts OCI oficiales.
+El despliegue de runners sigue la misma política que el resto de `core-services`: **`kubectl apply -k`**.
+Por ello, los charts se **renderizan a YAML** y se versionan en `rendered/`.
+
+### Regeneración de YAML renderizado
+
+Se regenera cuando cambian `values-*.yaml` o se actualiza la versión del chart.
+
+Ejemplo (desde repo):
 
 ```bash
-# Versión del Chart: 0.13.1 (Latest)
-# Imagen del Runner: ghcr.io/actions/actions-runner:latest (Oficial)
-# Grupo de Runners: Default (sin especificar runnerGroup)
+./.tools/helm/helm.exe pull oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set-controller --version 0.10.1 --untar --untardir .tmp/arc
+cat .tmp/arc/gha-runner-scale-set-controller/crds/*.yaml > core/b2b/core-services/runners/rendered/00-crds.yaml
+./.tools/helm/helm.exe template actions-runner-controller .tmp/arc/gha-runner-scale-set-controller -n actions-runner-system -f core/b2b/core-services/runners/values-controller.yaml > core/b2b/core-services/runners/rendered/10-controller.yaml
 
-helm upgrade --install actions-runner-controller \
-  oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set-controller \
-  --namespace actions-runner-system \
-  --skip-crds
-
-helm upgrade --install swarm-runners-scaleset \
-  oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set \
-  --namespace actions-runner-system \
-  -f values-runner-set.yaml
+./.tools/helm/helm.exe pull oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set --version 0.10.1 --untar --untardir .tmp/arc
+./.tools/helm/helm.exe template swarm-runners-scaleset .tmp/arc/gha-runner-scale-set -n actions-runner-system -f core/b2b/core-services/runners/values-runner-set.yaml > core/b2b/core-services/runners/rendered/20-runnerset.yaml
 ```
 
 ### Configuración de Values

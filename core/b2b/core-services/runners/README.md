@@ -19,9 +19,19 @@ Utiliza el secreto de repositorio `PRIVATE_KEY_PEM` configurado en GitHub.
 ## Despliegue (CD)
 
 El despliegue está automatizado a través del workflow `.github/workflows/cd-core-services.yml`.
-Cualquier cambio en los archivos YAML de este directorio (`core/b2b/core-services/runners/`) disparará un despliegue automático al hacer push a `main`.
+Cualquier cambio en los archivos de este directorio (`core/b2b/core-services/runners/`) disparará un despliegue automático al hacer push a `main`.
 
 El pipeline detectará el servicio `runners` e inyectará las credenciales necesarias antes de aplicar los manifiestos.
+
+## Política de despliegue (YAML)
+
+Este servicio se despliega **solo con YAML** para seguir la misma política de CD que el resto de `core-services`.
+
+- `rendered/00-crds.yaml`: CRDs necesarios para ARC.
+- `rendered/10-controller.yaml`: Controlador ARC (renderizado desde Helm, versionado como YAML).
+- `rendered/20-runnerset.yaml`: Runner Scale Set (renderizado desde Helm, versionado como YAML).
+
+Los YAML de `rendered/` se regeneran cuando se cambian `values-controller.yaml` / `values-runner-set.yaml` o se actualiza la versión del chart.
 
 ## Configuración de Escalado
 

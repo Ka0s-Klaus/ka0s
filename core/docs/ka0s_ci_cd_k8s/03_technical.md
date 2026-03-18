@@ -10,6 +10,13 @@ Este documento detalla los componentes técnicos que hacen posible la automatiza
     *   `trivy` (instalado dinámicamente si falta)
     *   `git`
 
+### Nota: Bootstrapping del propio Runner
+El servicio `core/b2b/core-services/runners` es especial: es el que provee el runner self-hosted que a su vez ejecuta CD.
+
+- Política: el despliegue se mantiene consistente con el resto de servicios vía `kubectl apply -k`.
+- Implicación: el servicio de runners debe estar versionado como YAML (incluyendo CRDs/controlador) para que CD no dependa de Helm.
+- Operación: si el runner está offline, la primera recuperación puede requerir aplicar manualmente `core/b2b/core-services/runners/` para romper el ciclo.
+
 ## Detalles de los Workflows
 
 ### 1. CI Validate (`ci-k8s-validate.yml`)
