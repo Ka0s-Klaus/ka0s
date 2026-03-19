@@ -1,0 +1,97 @@
+name: "[Ka0s] Agent Feedback"
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+env:
+  KAOS_MODULE: "[Ka0S] Agent Feedback"
+  KAOS_CODE: ${{ github.run_id }}
+  KAOS_ACTOR: ${{ github.actor }}
+
+jobs:
+  capture:
+    if: >-
+      github.event.issue.pull_request == null &&
+      contains(github.event.issue.labels.*.name, 'ka0s-agent-eval') &&
+      startsWith(github.event.comment.body, '/feedback')
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+
+      - name: Capture Feedback
+        id: capture
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+          COMMENT_AUTHOR: ${{ github.event.comment.user.login }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          set -e
+          FILE_PATH=$(python .github/scripts/capture-agent-feedback.py \
+            --repo "$REPO" \
+            --issue-number "$ISSUE_NUMBER" \
+            --comment-body "$COMMENT_BODY" \
+            --comment-author "$COMMENT_AUTHOR" \
+            --run-id "$RUN_ID" \
+            --out-dir "audit/feedback")
+          echo "path=$FILE_PATH" >> "$GITHUB_OUTPUT"
+
+      - name: Create PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          set -e
+          FILE_PATH="${{ steps.capture.outputs.path }}"
+          if [ -z "$FILE_PATH" ]; then
+            echo "No feedback file generated."
+            exit 0
+          fi
+          BRANCH="feedback/issue-${ISSUE_NUMBER}-${{ github.run_id }}"
+          git checkout -b "$BRANCH"
+          git add "$FILE_PATH"
+          if git diff --staged --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git commit -m "audit(feedback): issue ${ISSUE_NUMBER}"
+          git push -u origin "$BRANCH"
+          gh pr create \
+            --title "audit(feedback): issue ${ISSUE_NUMBER}" \
+            --body "Evidencia de feedback registrada en: \`${FILE_PATH}\`" \
+            --base main \
+            --head "$BRANCH"
+
+      - name: Acknowledge
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `✅ Feedback recibido. Queda auditado y trazado.\n\n🔗 Run: ${runUrl}`
+            });
+

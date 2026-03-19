@@ -32,6 +32,15 @@ Cada caso debe incluir:
 - Local: `python core/ai/eval/run_eval.py`
 - CI: `.github/workflows/kaos-agent-eval.yml`
 
+## Feedback humano (cierre del loop)
+Para que el sistema mejore de forma sistemática, el feedback humano debe quedar **capturado** y **auditado**.
+
+- Comandos en la issue:
+  - Bueno: `/feedback good`
+  - Malo: `/feedback bad : <notas>`
+- Evidencia: se genera un archivo en `audit/feedback/` con pregunta, respuesta y rating.
+- Automatización: `.github/workflows/kaos-agent-feedback.yml` crea un PR con esa evidencia.
+
 ## Pruebas realizadas y conclusiones
 
 ### 1) Modelo/endpoint vs “model not found”
