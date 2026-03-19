@@ -23,6 +23,26 @@ GENERATION_MODEL = os.getenv("GENERATION_MODEL") or "deepseek-r1:8b" # Or llama3
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
+
+def is_kubernetes_topic(query: str) -> bool:
+    q = query.lower()
+    return any(k in q for k in [
+        "kubernetes",
+        "k8s",
+        "cluster",
+        "namespace",
+        "pod",
+        "deployment",
+        "ingress",
+        "svc",
+        "service",
+        "kustomize",
+        "gitops",
+        "core/b2b",
+        "kustomization.yaml",
+        "overlays",
+    ])
+
 def get_db_connection():
     try:
         conn = psycopg2.connect(
@@ -231,17 +251,18 @@ def is_flow_question(query: str) -> bool:
 
 def is_itil_question(query: str) -> bool:
     q = query.lower()
-    return any(k in q for k in [
-        "itil",
-        "cab",
-        "rfc",
-        "ticket",
-        "cmdb",
-        "itop",
-        "cambio",
-        "producción",
-        "produccion",
+    def has_word(w: str) -> bool:
+        return re.search(rf"\b{re.escape(w)}\b", q) is not None
+
+    strong = any(has_word(w) for w in ["itil", "cab", "rfc", "cmdb", "itop"]) or bool(
+        re.search(r"\btickets?\b", q)
+    )
+    change_mgmt = any(k in q for k in [
+        "gestión de cambios",
+        "gestion de cambios",
+        "change management",
     ])
+    return strong or change_mgmt
 
 
 def find_repo_files(query: str, repo_root: str, max_hits: int = 40, prefer_prefixes: Optional[List[str]] = None) -> List[str]:
@@ -323,16 +344,69 @@ def read_text_file(path: Path, max_chars: int) -> str:
         return ""
 
 
-def load_trae_context(repo_root: str, max_chars: int = 12000) -> List[Dict[str, Any]]:
+def load_trae_context(query: str, repo_root: str, max_chars: int = 12000) -> List[Dict[str, Any]]:
     root = Path(repo_root)
-    rel_paths = [
-        "compliance/trae/rules/reglas.md",
-        "compliance/trae/rules/rules_library/rule_006_skill_first.md",
-        "compliance/trae/rules/rules_library/rule_007_kubernetes.md",
-        "compliance/trae/rules/rules_library/rule_011_ubicacion.md",
-        "compliance/trae/rules/rules_library/rule_013_honestidad_ia.md",
-        "compliance/trae/skills/kubernetes-expert/SKILL.md",
-    ]
+    q = query.lower()
+
+    rel_paths: List[str] = []
+    if any(k in q for k in ["reglas", "regla", "constitución", "constitucion", "compliance", "skill", "skills"]):
+        rel_paths.append("compliance/trae/rules/reglas.md")
+
+    if any(k in q for k in ["done", "verificación", "verificacion", "test", "lint", "dry-run", "prueba"]):
+        rel_paths.append("compliance/trae/rules/rules_library/rule_001_verificacion.md")
+
+    if any(k in q for k in ["docs", "documentación", "documentacion", "mkdocs", "mermaid", "update-docs-index"]):
+        rel_paths.extend([
+            "compliance/trae/rules/rules_library/rule_002_docs_vivos.md",
+            "compliance/trae/rules/rules_library/rule_010_documentation.md",
+            "compliance/trae/skills/mkdocs-expert/SKILL.md",
+        ])
+
+    if any(k in q for k in ["audit", "auditoría", "auditoria", "evidencia", "recomendations", "recommendations"]):
+        rel_paths.append("compliance/trae/rules/rules_library/rule_004_auditoria.md")
+
+    if any(k in q for k in ["memoria", "contexto", "cierre de sesión", "cierre de sesion"]):
+        rel_paths.append("compliance/trae/rules/rules_library/rule_005_memoria.md")
+
+    if any(k in q for k in ["itil", "cab", "rfc", "ticket", "cmdb", "itop", "cambio", "producción", "produccion"]):
+        rel_paths.extend([
+            "compliance/trae/rules/rules_library/rule_006_skill_first.md",
+            "compliance/trae/skills/itil-expert/SKILL.md",
+            "compliance/trae/skills/itop-expert/SKILL.md",
+        ])
+
+    if is_kubernetes_topic(query):
+        rel_paths.extend([
+            "compliance/trae/rules/rules_library/rule_007_kubernetes.md",
+            "compliance/trae/skills/kubernetes-expert/SKILL.md",
+        ])
+
+    if any(k in q for k in ["python", "bash", "script", "scripts", "automatización", "automatizacion"]):
+        rel_paths.extend([
+            "compliance/trae/rules/rules_library/rule_008_scripting.md",
+            "compliance/trae/skills/python-expert/SKILL.md",
+        ])
+
+    if any(k in q for k in ["observabilidad", "observability", "zabbix", "metabase", "logs", "logging"]):
+        rel_paths.extend([
+            "compliance/trae/rules/rules_library/rule_009_observability.md",
+            "compliance/trae/skills/observability-expert/SKILL.md",
+            "compliance/trae/skills/metabase-expert/SKILL.md",
+        ])
+
+    if any(k in q for k in ["ubicación", "ubicacion", "ruta", "rutas", "dónde", "donde"]):
+        rel_paths.append("compliance/trae/rules/rules_library/rule_011_ubicacion.md")
+
+    if any(k in q for k in ["workflow", "workflows", "github actions", "actions", "runner", ".github/workflows"]):
+        rel_paths.append("compliance/trae/skills/github-expert/SKILL.md")
+
+    if any(k in q for k in ["secrets", "secretos", "security", "seguridad", "trivy", "wazuh", "vault"]):
+        rel_paths.append("compliance/trae/skills/security-expert/SKILL.md")
+
+    rel_paths.append("compliance/trae/rules/rules_library/rule_013_honestidad_ia.md")
+
+    seen = set()
+    rel_paths = [p for p in rel_paths if not (p in seen or seen.add(p))]
     parts: List[str] = []
     budget = max_chars
     for rel in rel_paths:
@@ -360,15 +434,67 @@ def load_trae_context(repo_root: str, max_chars: int = 12000) -> List[Dict[str, 
 def build_repo_context(query: str, repo_root: str, max_files: int = 4, max_chars_per_file: int = 4000) -> List[Dict[str, Any]]:
     allowed_ext = {".md", ".yaml", ".yml", ".py", ".sh", ".sql", ".json"}
     root = Path(repo_root)
+
+    explicit_paths: List[str] = []
+    for m in re.finditer(r"(?P<p>(?:\.?\.github/workflows/)[A-Za-z0-9._\-/]+\.(?:ya?ml))", query):
+        explicit_paths.append(m.group("p").lstrip("./"))
+    for m in re.finditer(r"`(?P<p>[^`]+\.(?:ya?ml|md|py|sh|sql|json))`", query):
+        p = m.group("p").strip().lstrip("./")
+        if p.startswith(".github/") or p.startswith("core/") or p.startswith("devops/") or p.startswith("compliance/"):
+            explicit_paths.append(p)
+    seen_exp = set()
+    explicit_paths = [p for p in explicit_paths if not (p in seen_exp or seen_exp.add(p))]
+
+    def pick_workflow_files(q: str, max_pick: int = 2) -> List[str]:
+        if not is_flow_question(q):
+            return []
+        if re.search(r"\.?\.github/workflows/[^\s`]+\.(?:ya?ml)", q.lower()):
+            return []
+        workflows_dir = root / ".github" / "workflows"
+        if not workflows_dir.exists() or not workflows_dir.is_dir():
+            return []
+        tokens = [t for t in re.split(r"\W+", q.lower()) if len(t) >= 4]
+        tokens = [t for t in tokens if t not in {
+            "existe",
+            "flujo",
+            "workflow",
+            "workflows",
+            "github",
+            "actions",
+            "pipeline",
+            "core",
+            "docs",
+            "audit",
+            "regla",
+            "reglas",
+            "documentación",
+            "documentacion",
+        }]
+        if not tokens:
+            return []
+        scored: List[tuple[int, str]] = []
+        for p in workflows_dir.glob("*.y*ml"):
+            rel = str(p.relative_to(root)).replace("\\", "/")
+            name = p.name.lower()
+            content = read_text_file(p, max_chars=24000).lower()
+            score = sum(1 for t in tokens if (t in name or t in content))
+            if score:
+                scored.append((score, rel))
+        scored.sort(key=lambda x: (-x[0], x[1]))
+        return [r for _, r in scored[:max_pick]]
+
     prefer_prefixes: Optional[List[str]] = None
     if is_flow_question(query):
         prefer_prefixes = [
             ".github/workflows/",
+            ".github/scripts/",
             "core/monitoring/",
             "core/docs/",
             "core/b2b/",
+            "devops/",
         ]
-    file_paths = find_repo_files(query, repo_root=repo_root, max_hits=60, prefer_prefixes=prefer_prefixes)
+    workflow_picks = pick_workflow_files(query, max_pick=2)
+    file_paths = explicit_paths + workflow_picks + find_repo_files(query, repo_root=repo_root, max_hits=60, prefer_prefixes=prefer_prefixes)
     picked: List[Path] = []
     for rel in file_paths:
         p = root / rel
@@ -395,6 +521,9 @@ def build_repo_context(query: str, repo_root: str, max_files: int = 4, max_chars
 def answer_from_trae_policies(query: str, repo_root: str) -> str:
     q = query.lower()
     root = Path(repo_root)
+
+    if not is_kubernetes_topic(query):
+        return ""
 
     skill_k8s_path = root / "compliance" / "trae" / "skills" / "kubernetes-expert" / "SKILL.md"
     rule_006_path = root / "compliance" / "trae" / "rules" / "rules_library" / "rule_006_skill_first.md"
@@ -659,6 +788,44 @@ def is_query_about_rules_or_skills(query: str) -> bool:
 def answer_flow_discovery(query: str, repo_root: str) -> str:
     if not is_flow_question(query):
         return ""
+
+    q = query.lower()
+    discovery_intent = any(k in q for k in [
+        "que workflows",
+        "qué workflows",
+        "cuales workflows",
+        "cuáles workflows",
+        "listar workflows",
+        "lista de workflows",
+        "listado de workflows",
+        "donde esta el workflow",
+        "dónde está el workflow",
+        "donde está el workflow",
+        "ubicacion del workflow",
+        "ubicación del workflow",
+        "que flujos",
+        "qué flujos",
+        "listar flujos",
+        "lista de flujos",
+        "que pipeline",
+        "qué pipeline",
+        "listar pipeline",
+        "lista de pipeline",
+    ])
+    analysis_intent = any(k in q for k in [
+        "analiza",
+        "analizar",
+        "explica",
+        "explicar",
+        "como funciona",
+        "cómo funciona",
+        "identifica",
+        "propón",
+        "propon",
+        "revis",
+    ])
+    if not discovery_intent or analysis_intent:
+        return ""
     root = Path(repo_root)
     tokens = [t for t in re.split(r"\W+", query.lower()) if len(t) >= 4]
     tokens = [t for t in tokens if t not in {"existe", "existan", "flujo", "workflow", "workflows", "github", "actions", "pipeline"}]
@@ -780,7 +947,13 @@ def main():
     if deterministic_answer:
         print(deterministic_answer)
         return
-    trae_context = load_trae_context(repo_root)
+
+    include_trae_context = bool(
+        is_query_about_rules_or_skills(query)
+        or is_itil_question(query)
+        or is_kubernetes_topic(query)
+    )
+    trae_context = load_trae_context(query, repo_root) if include_trae_context else []
     if should_return_file_list(query) and not is_query_about_rules_or_skills(query):
         prefer = None
         if is_flow_question(query):
