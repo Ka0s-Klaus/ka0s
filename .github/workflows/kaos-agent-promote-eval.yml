@@ -1,0 +1,143 @@
+name: Ka0s Agent Promote Eval Case
+
+on:
+  issues:
+    types: [labeled]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: "Issue number to promote"
+        required: true
+        type: string
+      suite:
+        description: "Target suite (docs|skills|rules|general)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+env:
+  KAOS_MODULE: "[Ka0S] Agent Promote Eval"
+  KAOS_CODE: ${{ github.run_id }}
+
+jobs:
+  promote:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.issue.labels.*.name, 'ka0s-agent-promote-eval')
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Compute Inputs
+        id: vars
+        shell: bash
+        run: |
+          set -e
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            ISSUE_NUMBER="${{ inputs.issue_number }}"
+            SUITE="${{ inputs.suite }}"
+          else
+            ISSUE_NUMBER="${{ github.event.issue.number }}"
+            SUITE="general"
+            for l in ${{ join(github.event.issue.labels.*.name, ' ') }}; do
+              case "$l" in
+                eval-suite:docs) SUITE="docs";;
+                eval-suite:skills) SUITE="skills";;
+                eval-suite:rules) SUITE="rules";;
+                eval-suite:general) SUITE="general";;
+              esac
+            done
+          fi
+          echo "issue_number=$ISSUE_NUMBER" >> $GITHUB_OUTPUT
+          echo "suite=$SUITE" >> $GITHUB_OUTPUT
+
+          echo "ISSUE_NUMBER=$ISSUE_NUMBER" >> $GITHUB_ENV
+
+      - name: Promote Issue to Eval Case
+        id: promote
+        env:
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          set -e
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            python - <<'PY' > /tmp/issue.txt
+            import json
+            import os
+            import urllib.request
+
+            repo = os.environ.get('GITHUB_REPOSITORY')
+            issue_number = os.environ.get('ISSUE_NUMBER')
+            token = os.environ.get('GITHUB_TOKEN')
+            url = f"https://api.github.com/repos/{repo}/issues/{issue_number}"
+            req = urllib.request.Request(url, headers={
+              'Accept': 'application/vnd.github+json',
+              'Authorization': f'Bearer {token}',
+            })
+            with urllib.request.urlopen(req, timeout=30) as r:
+              payload = json.loads(r.read().decode('utf-8'))
+            title = payload.get('title','')
+            body = payload.get('body','')
+            print(title)
+            print('---')
+            print(body)
+            PY
+            ISSUE_TITLE=$(sed -n '1p' /tmp/issue.txt)
+            ISSUE_BODY=$(sed -n '3,$p' /tmp/issue.txt)
+            export ISSUE_TITLE
+            export ISSUE_BODY
+          fi
+          TARGET=$(python core/ai/eval/promote_from_issue.py --issue-number "${{ steps.vars.outputs.issue_number }}" --suite "${{ steps.vars.outputs.suite }}")
+          echo "target=$TARGET" >> $GITHUB_OUTPUT
+
+      - name: Run Offline Eval
+        run: python core/ai/eval/run_eval.py
+
+      - name: Create PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          ISSUE_NUMBER="${{ steps.vars.outputs.issue_number }}"
+          SUITE="${{ steps.vars.outputs.suite }}"
+          BRANCH="eval/issue-${ISSUE_NUMBER}-${SUITE}"
+          git checkout -b "$BRANCH"
+          git add "${{ steps.promote.outputs.target }}" || true
+          if git diff --staged --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git commit -m "test(agent): promote issue ${ISSUE_NUMBER} to eval suite (${SUITE})"
+          git push -u origin "$BRANCH"
+          gh pr create \
+            --title "test(agent): promote issue #${ISSUE_NUMBER} to eval" \
+            --body "Promoción automática de la issue #${ISSUE_NUMBER} a suite `${SUITE}`.\n\nArchivo: `${{ steps.promote.outputs.target }}`" \
+            --base main \
+            --head "$BRANCH"
+
+      - name: Comment Back
+        if: github.event_name != 'workflow_dispatch'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const suite = '${{ steps.vars.outputs.suite }}';
+            const target = '${{ steps.promote.outputs.target }}';
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `✅ Promoción ejecutada. Suite: \`${suite}\` Archivo: \`${target}\`\n\n🔗 Run: ${runUrl}`
+            });

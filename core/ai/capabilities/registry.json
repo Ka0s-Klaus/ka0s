@@ -1,0 +1,71 @@
+{
+  "version": "1.0",
+  "capabilities": [
+    {
+      "id": "answer_offline",
+      "name": "Responder sin infraestructura (offline)",
+      "description": "Responde usando repo/rules cuando DB/LLM no están disponibles.",
+      "inputs": ["pregunta"],
+      "outputs": ["respuesta markdown"],
+      "evidence": ["rutas del repo", "reglas/skills aplicables"],
+      "entrypoints": ["core/ai/inference/query.py --offline"],
+      "guardrails": ["no inventar", "citar paths", "proponer verificación"],
+      "status": "stable"
+    },
+    {
+      "id": "answer_rag",
+      "name": "Responder con memoria (RAG)",
+      "description": "Busca chunks en Postgres/pgvector y genera respuesta con contexto.",
+      "inputs": ["pregunta"],
+      "outputs": ["respuesta markdown"],
+      "evidence": ["chunks recuperados", "similarity"],
+      "entrypoints": ["core/ai/inference/query.py"],
+      "guardrails": ["fallback a offline", "umbral de similitud"],
+      "status": "stable"
+    },
+    {
+      "id": "ingest_repo",
+      "name": "Ingesta del repo a memoria",
+      "description": "Chunking + embeddings + inserción incremental en Postgres.",
+      "inputs": ["módulo"],
+      "outputs": ["tabla kaos_memory actualizada"],
+      "evidence": ["content_hash", "conteo de chunks"],
+      "entrypoints": ["core/ai/memory/ingest_local.py"],
+      "guardrails": ["no secretos", "incremental"],
+      "status": "stable"
+    },
+    {
+      "id": "ingest_audit_mongo",
+      "name": "Ingesta de audit/ a Mongo",
+      "description": "Carga ficheros de audit en Mongo por DB/colección y dedupe por hash.",
+      "inputs": ["audit/"],
+      "outputs": ["documentos en Mongo"],
+      "evidence": ["hash", "ruta del fichero"],
+      "entrypoints": ["devops/core/mongo/scripts/add-doc-to-db.py"],
+      "guardrails": ["dedupe", "no secretos"],
+      "status": "stable"
+    },
+    {
+      "id": "mongo_to_vector",
+      "name": "Vectorización Mongo -> Postgres",
+      "description": "CronJob que vectoriza allowlist de colecciones Mongo a pgvector.",
+      "inputs": ["db/colección allowlist"],
+      "outputs": ["kaos_memory + estado incremental"],
+      "evidence": ["kaos_mongo_ingest_state"],
+      "entrypoints": ["core/b2b/core-services/ka0s-knowledge/mongo-vectorize-cronjob.yaml"],
+      "guardrails": ["allowlist", "incremental"],
+      "status": "stable"
+    },
+    {
+      "id": "agent_eval",
+      "name": "Evaluación offline",
+      "description": "Ejecuta casos mínimos y falla CI si hay regresión.",
+      "inputs": ["core/ai/eval/eval_cases.json"],
+      "outputs": ["PASS/FAIL"],
+      "evidence": ["logs del runner"],
+      "entrypoints": ["core/ai/eval/run_eval.py", ".github/workflows/kaos-agent-eval.yml"],
+      "guardrails": ["determinismo", "rápido"],
+      "status": "stable"
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+Name:             ollama-5bb8fddf7c-hbscd
+Namespace:        ollama
+Priority:         0
+Service Account:  default
+Node:             k8-manager/192.168.1.10
+Start Time:       Thu, 19 Mar 2026 09:01:10 +0000
+Labels:           app=ollama
+                  pod-template-hash=5bb8fddf7c
+Annotations:      cni.projectcalico.org/containerID: 245bc7a6d5ac42c0040fb1132f8ad8345fe47a8086cb87ea7d7dd42dc3f51c0e
+                  cni.projectcalico.org/podIP: 172.16.74.5/32
+                  cni.projectcalico.org/podIPs: 172.16.74.5/32
+Status:           Running
+IP:               172.16.74.5
+IPs:
+  IP:           172.16.74.5
+Controlled By:  ReplicaSet/ollama-5bb8fddf7c
+Containers:
+  ollama:
+    Container ID:   containerd://130e7bba9dd8dee51b57fdb2a05489a27ae585ab345df94f36be7d214f463b5b
+    Image:          ollama/ollama:latest
+    Image ID:       docker.io/ollama/ollama@sha256:5a5d014aa774f78ebe1340c0d4afc2e35afc12a2c3b34c84e71f78ea20af4ba3
+    Port:           11434/TCP
+    Host Port:      0/TCP
+    State:          Running
+      Started:      Thu, 19 Mar 2026 09:05:43 +0000
+    Ready:          True
+    Restart Count:  0
+    Limits:
+      gpu.intel.com/i915:  1
+    Requests:
+      gpu.intel.com/i915:  1
+    Environment:
+      OLLAMA_KEEP_ALIVE:  24h
+      OLLAMA_HOST:        0.0.0.0
+      OLLAMA_ORIGINS:     *
+    Mounts:
+      /root/.ollama from models (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-8dwnj (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True 
+  Initialized                 True 
+  Ready                       True 
+  ContainersReady             True 
+  PodScheduled                True 
+Volumes:
+  models:
+    Type:       PersistentVolumeClaim (a reference to a PersistentVolumeClaim in the same namespace)
+    ClaimName:  ollama-pvc
+    ReadOnly:   false
+  kube-api-access-8dwnj:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              ka0s.io/ollama-node=true
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:                      <none>

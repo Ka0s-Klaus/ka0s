@@ -1,0 +1,36 @@
+name: Ka0s Agent Eval
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'core/ai/**'
+      - '.github/workflows/kaos-agent-issue-responder.yaml'
+      - '.github/workflows/kaos-agent-query.yaml'
+  workflow_dispatch:
+  schedule:
+    - cron: '0 3 * * *'
+
+permissions:
+  contents: read
+
+env:
+  KAOS_MODULE: "[Ka0S] Agent Eval"
+  KAOS_CODE: ${{ github.run_id }}
+  KAOS_ACTOR: ${{ github.actor }}
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run Offline Eval
+        run: python core/ai/eval/run_eval.py
+
