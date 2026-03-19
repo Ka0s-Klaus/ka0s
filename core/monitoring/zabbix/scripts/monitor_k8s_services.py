@@ -158,28 +158,10 @@ class ZabbixK8sMonitor:
 
         print(f"Creating base template '{template_name}'...")
         
-        # En Zabbix 6.2+, los templates deben pertenecer a un "Template Group" (templategroup)
-        # en lugar de un "Host Group" (hostgroup). Intentaremos obtener/crear un templategroup.
-        # Si falla, recurrimos al hostgroup clásico por retrocompatibilidad.
-        group_id = None
-        group_type = "hostgroup"
-        
-        try:
-            tg_res = self._post("templategroup.get", {"filter": {"name": ["Templates/Kubernetes"]}})
-            if tg_res:
-                group_id = tg_res[0]["groupid"]
-                group_type = "templategroup"
-            else:
-                tg_create = self._post("templategroup.create", {"name": "Templates/Kubernetes"})
-                if tg_create and "groupids" in tg_create:
-                    group_id = tg_create["groupids"][0]
-                    group_type = "templategroup"
-        except Exception as e:
-            print(f"templategroup API not available (older Zabbix?): {e}")
-            
+        # En Zabbix 6.0/6.4 los templates deben usar groups (host groups)
+        group_id = self.get_or_create_hostgroup("Templates/Kubernetes")
         if not group_id:
-            group_id = self.get_or_create_hostgroup("Templates/Kubernetes")
-            group_type = "hostgroup"
+            group_id = self.get_or_create_hostgroup("Templates")
             
         if not group_id:
             print("Failed to get/create a group for the template")
@@ -190,8 +172,7 @@ class ZabbixK8sMonitor:
         
         res = self._post("template.create", {
             "host": template_name,
-            "groups": groups_param if group_type == "hostgroup" else [],
-            "templategroups": groups_param if group_type == "templategroup" else []
+            "groups": groups_param
         })
 
         if not res:
