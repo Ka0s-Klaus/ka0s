@@ -1067,6 +1067,88 @@ def answer_agent_automation_howto(query: str, repo_root: str) -> str:
     return "\n".join(parts).strip() + "\n"
 
 
+def answer_docs_howto(query: str, repo_root: str) -> str:
+    q = query.lower()
+    docs_intent = any(k in q for k in [
+        "documentación",
+        "documentacion",
+        "docs",
+        "mkdocs",
+        "core/docs",
+        "mkdocs.yml",
+        "readme",
+        "índice",
+        "indice",
+        "nav",
+        "portal de docs",
+        "docs portal",
+    ])
+    howto_intent = any(k in q for k in [
+        "cómo",
+        "como",
+        "guía",
+        "guia",
+        "pasos",
+        "estructura",
+        "dónde",
+        "donde",
+        "publicar",
+        "desplegar",
+        "actualizar",
+        "agregar",
+        "añadir",
+    ])
+    if not (docs_intent and howto_intent):
+        return ""
+
+    root = Path(repo_root)
+    key_paths = [
+        "core/docs/README.md",
+        "mkdocs.yml",
+        ".github/scripts/update-docs-index.py",
+        ".github/workflows/docs-autoupdate.yml",
+        ".github/workflows/docs-index-auto-update.yml",
+        ".github/workflows/deploy-docs-portal.yml",
+        "compliance/trae/rules/rules_library/rule_002_docs_vivos.md",
+        "compliance/trae/rules/rules_library/rule_001_verificacion.md",
+    ]
+    existing = [p for p in key_paths if (root / p).exists()]
+
+    parts: List[str] = []
+    parts.append("## Guía Ka0s: documentación (core/docs)")
+    parts.append("")
+    parts.append("### 1) Dónde vive la documentación")
+    parts.append("- Raíz: `core/docs/`.")
+    parts.append("- Navegación: `mkdocs.yml` (nav).")
+    parts.append("")
+    parts.append("### 2) Cómo crear un nuevo módulo de docs")
+    parts.append("- Crea carpeta: `core/docs/<modulo>/`.")
+    parts.append("- Crea `core/docs/<modulo>/00_main.md` como portada del módulo.")
+    parts.append("- Si necesitas subsecciones: `01_*.md`, `02_*.md` (nombres estables, markdown estricto).")
+    parts.append("")
+    parts.append("### 3) Cómo actualizar índice y navegación")
+    parts.append("- El índice se autogenera con `.github/scripts/update-docs-index.py`.")
+    parts.append("- Ese script actualiza `core/docs/README.md`, `index.md` y `mkdocs.yml`.")
+    parts.append("")
+    parts.append("### 4) Cómo se publica")
+    parts.append("- Al hacer push a `main` tocando `core/docs/**` o `mkdocs.yml`, se ejecuta el deploy del portal de docs.")
+    parts.append("")
+    parts.append("### 5) Verificación mínima (antes de darlo por Done)")
+    parts.append("- Ejecuta el generador de índice localmente y revisa el diff en `mkdocs.yml` y `core/docs/README.md`.")
+    parts.append("- Verifica enlaces/rutas y que los títulos sean consistentes.")
+    parts.append("")
+    parts.append("### 6) Estructura mínima recomendada")
+    parts.append("```text\ncore/docs/\n  <modulo>/\n    00_main.md\n    01_concept.md\n    02_usage.md\n```")
+
+    if existing:
+        parts.append("")
+        parts.append("### Referencias en este repo")
+        for p in existing:
+            parts.append(f"- `{p}`")
+
+    return "\n".join(parts).strip() + "\n"
+
+
 def answer_agent_capabilities(query: str, repo_root: str) -> str:
     q = query.lower()
     if not any(k in q for k in [
@@ -1154,6 +1236,7 @@ def route_deterministic_answer(query: str, repo_root: str) -> str:
         answer_agent_vision,
         answer_agent_capabilities,
         answer_agent_automation_howto,
+        answer_docs_howto,
         answer_from_trae_policies,
         answer_itil_gate,
         answer_flow_discovery,
