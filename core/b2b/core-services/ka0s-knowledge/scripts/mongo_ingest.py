@@ -127,6 +127,7 @@ def pg_connect(cfg: PgConfig):
         database=cfg.db,
         user=cfg.user,
         password=cfg.password,
+        connect_timeout=5,
     )
 
 
@@ -386,7 +387,25 @@ def vectorize_collection(
 def run() -> int:
     setup_logging()
     mongo_cfg, pg_cfg, ollama_cfg, run_cfg = load_configs()
-    ensure_pg_schema(pg_cfg)
+
+    retries = 5
+    for attempt in range(retries):
+        try:
+            ensure_pg_schema(pg_cfg)
+            break
+        except Exception as e:
+            if attempt == retries - 1:
+                logger.error("Postgres schema init failed (final): %s", e)
+                return 3
+            backoff = 2**attempt
+            logger.warning(
+                "Postgres schema init failed (%s/%s): %s; retrying in %ss",
+                attempt + 1,
+                retries,
+                e,
+                backoff,
+            )
+            time.sleep(backoff)
 
     mongo_client = mongo_connect(mongo_cfg)
     try:
