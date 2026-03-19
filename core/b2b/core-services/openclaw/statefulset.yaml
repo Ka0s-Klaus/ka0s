@@ -20,6 +20,23 @@ spec:
     spec:
       securityContext:
         fsGroup: 1000
+      initContainers:
+        - name: seed-config
+          image: busybox
+          command: ["sh", "-lc"]
+          args:
+            - >-
+              set -e;
+              mkdir -p /data/workspace;
+              if [ ! -f /data/openclaw.json ]; then cp /seed/openclaw.json /data/openclaw.json; fi;
+              for f in SOUL.md USER.md TOOLS.md AGENTS.md; do
+                if [ ! -f "/data/workspace/$f" ]; then cp "/seed/$f" "/data/workspace/$f"; fi;
+              done
+          volumeMounts:
+            - name: openclaw-data
+              mountPath: /data
+            - name: openclaw-config
+              mountPath: /seed
       containers:
         - name: openclaw
           image: ghcr.io/openclaw/openclaw:latest
@@ -57,26 +74,6 @@ spec:
           volumeMounts:
             - name: openclaw-data
               mountPath: /home/node/.openclaw
-            - name: openclaw-config
-              mountPath: /home/node/.openclaw/openclaw.json
-              subPath: openclaw.json
-              readOnly: true
-            - name: openclaw-config
-              mountPath: /home/node/.openclaw/workspace/SOUL.md
-              subPath: SOUL.md
-              readOnly: true
-            - name: openclaw-config
-              mountPath: /home/node/.openclaw/workspace/USER.md
-              subPath: USER.md
-              readOnly: true
-            - name: openclaw-config
-              mountPath: /home/node/.openclaw/workspace/TOOLS.md
-              subPath: TOOLS.md
-              readOnly: true
-            - name: openclaw-config
-              mountPath: /home/node/.openclaw/workspace/AGENTS.md
-              subPath: AGENTS.md
-              readOnly: true
       volumes:
         - name: openclaw-data
           persistentVolumeClaim:
