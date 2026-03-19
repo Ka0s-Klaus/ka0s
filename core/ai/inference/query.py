@@ -5,6 +5,7 @@ import requests
 import logging
 import json
 import re
+import sys
 from pathlib import Path
 from typing import List, Dict, Any, Optional, Callable
 
@@ -1626,6 +1627,10 @@ def route_deterministic_answer(query: str, repo_root: str) -> str:
     return ""
 
 def main():
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
     parser = argparse.ArgumentParser(description="Ka0s Agent Inference CLI")
     parser.add_argument("query", type=str, help="The question to ask the agent")
     parser.add_argument("--offline", action="store_true", help="Disable DB/LLM calls and answer using repo/rules only")
