@@ -28,7 +28,8 @@ spec:
             - >-
               set -e;
               mkdir -p /data/workspace;
-              if [ ! -f /data/openclaw.json ]; then cp /seed/openclaw.json /data/openclaw.json; fi;
+              CFG=/data/openclaw.json;
+              if [ ! -s "$CFG" ]; then cp /seed/openclaw.json "$CFG"; fi;
               for f in SOUL.md USER.md TOOLS.md AGENTS.md; do
                 if [ ! -f "/data/workspace/$f" ]; then cp "/seed/$f" "/data/workspace/$f"; fi;
               done
