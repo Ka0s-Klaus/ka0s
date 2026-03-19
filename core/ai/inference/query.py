@@ -984,8 +984,6 @@ def answer_agent_automation_howto(query: str, repo_root: str) -> str:
         "workflow del responder",
         "issue responder",
         "agent responder",
-        "audit/",
-        "core/docs",
     ]):
         return ""
     if not any(k in q for k in [
@@ -1069,9 +1067,18 @@ def answer_agent_automation_howto(query: str, repo_root: str) -> str:
 
 def answer_docs_howto(query: str, repo_root: str) -> str:
     q = query.lower()
+    if any(k in q for k in [
+        "automatización",
+        "automatizacion",
+        "nueva automatización",
+        "nueva automatizacion",
+        "workflow del responder",
+        "issue responder",
+        "agent responder",
+    ]):
+        return ""
+
     docs_intent = any(k in q for k in [
-        "documentación",
-        "documentacion",
         "docs",
         "mkdocs",
         "core/docs",
@@ -1083,6 +1090,8 @@ def answer_docs_howto(query: str, repo_root: str) -> str:
         "portal de docs",
         "docs portal",
     ])
+    if not docs_intent:
+        docs_intent = any(k in q for k in ["documentación", "documentacion"])
     howto_intent = any(k in q for k in [
         "cómo",
         "como",
@@ -1235,8 +1244,8 @@ def route_deterministic_answer(query: str, repo_root: str) -> str:
     for fn in [
         answer_agent_vision,
         answer_agent_capabilities,
-        answer_agent_automation_howto,
         answer_docs_howto,
+        answer_agent_automation_howto,
         answer_from_trae_policies,
         answer_itil_gate,
         answer_flow_discovery,
