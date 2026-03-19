@@ -11,7 +11,14 @@ data:
     {
       agents: {
         defaults: {
-          workspace: "/home/node/.openclaw/workspace"
+          workspace: "/home/node/.openclaw/workspace",
+          model: {
+            primary: "vllm/ka0s-local"
+          },
+          memorySearch: {
+            provider: "local",
+            fallback: "none"
+          }
         }
       },
       models: {
@@ -30,15 +37,6 @@ data:
               }
             ]
           }
-        }
-      },
-      agent: {
-        model: {
-          primary: "vllm/ka0s-local"
-        },
-        memorySearch: {
-          provider: "local",
-          fallback: "none"
         }
       }
     }
