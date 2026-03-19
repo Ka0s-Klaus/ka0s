@@ -14,5 +14,8 @@ PASS dir_github_overview: ok
 PASS dir_core_overview: ok
 PASS dir_compliance_overview: ok
 PASS dir_bin_overview: ok
+PASS dir_core_ai_overview: ok
+PASS dir_core_b2b_overview: ok
+PASS dir_core_config_overview: ok
+PASS dir_core_automation_overview: ok
 ```
-

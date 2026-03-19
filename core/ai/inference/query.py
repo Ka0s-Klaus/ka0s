@@ -1328,6 +1328,8 @@ def answer_repo_directory_overview(query: str, repo_root: str) -> str:
         "para qué sirve",
         "para que sirve",
         "sirve",
+        "explícame",
+        "explicame",
         "estructura",
     ])
     if not intent:
@@ -1336,6 +1338,14 @@ def answer_repo_directory_overview(query: str, repo_root: str) -> str:
     targets = []
     if ".github" in q or "github" in q:
         targets.append(".github")
+    if "core/ai" in q or "core ai" in q:
+        targets.append("core/ai")
+    if "core/b2b" in q:
+        targets.append("core/b2b")
+    if "core/config" in q:
+        targets.append("core/config")
+    if "core/automation" in q:
+        targets.append("core/automation")
     if "core/" in q or " core" in q or q.strip() == "core":
         targets.append("core")
     if "compliance" in q:
@@ -1383,6 +1393,59 @@ def answer_repo_directory_overview(query: str, repo_root: str) -> str:
             blocks.append("## Directorio: core")
             blocks.append("- Propósito: núcleo funcional (IA, automatización, despliegues, configuración y docs).")
             blocks.append("- Subcarpetas: `ai/`, `automation/`, `b2b/`, `config/`, `docs/`.")
+            if paths:
+                blocks.append("- Rutas clave:")
+                blocks.extend([f"  - `{p.replace('\\\\', '/')}/`" if (root / p).is_dir() else f"  - `{p.replace('\\\\', '/')}`" for p in paths])
+            blocks.append("")
+        elif t == "core/ai":
+            paths = existing_paths([
+                "core/ai/inference",
+                "core/ai/eval",
+                "core/ai/memory",
+                "core/ai/capabilities/registry.json",
+                "core/ai/inference/query.py",
+                "core/ai/eval/run_eval.py",
+            ])
+            blocks.append("## Directorio: core/ai")
+            blocks.append("- Propósito: agente (inferencia), evaluación (regresión) y memoria/ingest.")
+            blocks.append("- Subcarpetas: `inference/`, `eval/`, `memory/`, `capabilities/`.")
+            if paths:
+                blocks.append("- Rutas clave:")
+                blocks.extend([f"  - `{p.replace('\\\\', '/')}/`" if (root / p).is_dir() else f"  - `{p.replace('\\\\', '/')}`" for p in paths])
+            blocks.append("")
+        elif t == "core/b2b":
+            paths = existing_paths([
+                "core/b2b/core-services",
+                "core/b2b/core-services/docs-portal",
+                "core/b2b/core-services/itop",
+            ])
+            blocks.append("## Directorio: core/b2b")
+            blocks.append("- Propósito: despliegues de servicios core (Kubernetes).")
+            blocks.append("- Estructura: `core-services/<servicio>/` con manifests y, a veces, `kustomization.yaml`.")
+            if paths:
+                blocks.append("- Rutas clave:")
+                blocks.extend([f"  - `{p.replace('\\\\', '/')}/`" if (root / p).is_dir() else f"  - `{p.replace('\\\\', '/')}`" for p in paths])
+            blocks.append("")
+        elif t == "core/config":
+            paths = existing_paths([
+                "core/config/control-file.json",
+                "core/config/control-file.yaml",
+                "core/config/core/ka0s_c0re_files.json",
+                "core/config/core/kaos-yamllint-config.yaml",
+            ])
+            blocks.append("## Directorio: core/config")
+            blocks.append("- Propósito: ficheros de control y configuración de validadores/linters.")
+            if paths:
+                blocks.append("- Rutas clave:")
+                blocks.extend([f"  - `{p.replace('\\\\', '/')}`" for p in paths])
+            blocks.append("")
+        elif t == "core/automation":
+            paths = existing_paths([
+                "core/automation/itop-sync",
+                "core/automation/itop-sync/requirements.txt",
+            ])
+            blocks.append("## Directorio: core/automation")
+            blocks.append("- Propósito: automatizaciones por dominio (integraciones y sincronizaciones).")
             if paths:
                 blocks.append("- Rutas clave:")
                 blocks.extend([f"  - `{p.replace('\\\\', '/')}/`" if (root / p).is_dir() else f"  - `{p.replace('\\\\', '/')}`" for p in paths])
