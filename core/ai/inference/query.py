@@ -1234,6 +1234,87 @@ def answer_project_onboarding(query: str, repo_root: str) -> str:
     return "\n".join(parts).strip() + "\n"
 
 
+def answer_platform_strengths_and_description(query: str, repo_root: str) -> str:
+    q = query.lower()
+    strengths_intent = any(k in q for k in [
+        "puntos fuertes",
+        "puntos mas fuertes",
+        "fortalezas",
+        "resumen",
+        "breve resumen",
+    ])
+    description_intent = any(k in q for k in [
+        "descripción",
+        "descripcion",
+        "15 líneas",
+        "15 lineas",
+        "15 líneas",
+    ])
+    if not (strengths_intent and description_intent):
+        return ""
+
+    root = Path(repo_root)
+    key_paths = [
+        "core/docs/README.md",
+        "mkdocs.yml",
+        ".github/workflows/kaos.yml",
+        ".github/workflows/ci-core-validate.yml",
+        ".github/workflows/deploy-docs-portal.yml",
+        ".github/workflows/kaos-agent-issue-responder.yaml",
+        ".github/workflows/kaos-agent-eval.yml",
+        ".github/workflows/kaos-agent-feedback.yml",
+        "core/ai/inference/query.py",
+        "core/ai/eval/run_eval.py",
+        "core/ai/eval/eval_cases.json",
+        "compliance/trae/rules/rules_library/rule_001_verificacion.md",
+        "compliance/trae/rules/rules_library/rule_002_docs_vivos.md",
+        "audit/",
+    ]
+    existing = [p for p in key_paths if (root / p).exists()]
+
+    strengths = [
+        "GitOps como fuente de verdad: cambios trazables en repo + automatización reproducible.",
+        "Evidencia obligatoria: los workflows generan outputs en `audit/` con `run_id` y artefactos.",
+        "Docs vivas: estructura modular en `core/docs/` y navegación gestionada por `mkdocs.yml`.",
+        "Automatización operativa amplia: `.github/workflows/` cubre CI, auditorías, reports y operaciones.",
+        "Agente integrado en Issues: responder y evaluar respuestas con workflows dedicados.",
+        "Quality loop humano: feedback `/feedback good|bad` que deja evidencia y facilita PRs.",
+        "Normativa/guardrails explícitos: reglas en `compliance/` que actúan como quality gate.",
+        "Patrones consistentes de verificación: linters, checks y ejecución controlada antes de ‘Done’."
+    ]
+
+    desc_lines = [
+        "Ka0s es una plataforma operativa orientada a GitOps para estandarizar y automatizar operaciones técnicas.",
+        "El repositorio es la fuente de verdad: workflows, scripts, docs y reglas conviven en un mismo lugar.",
+        "Su núcleo vive en `core/`, donde se agrupan piezas reutilizables y lógica compartida.",
+        "La documentación es viva y modular en `core/docs/`.",
+        "La navegación y publicación del portal se gobierna desde `mkdocs.yml`.",
+        "Las automatizaciones se implementan principalmente en `.github/workflows/`.",
+        "Las ejecuciones dejan evidencia en `audit/` para trazabilidad y auditoría.",
+        "Ka0s incorpora un agente que interactúa en Issues para responder preguntas y acelerar tareas.",
+        "El agente se ejecuta mediante workflows como `kaos-agent-issue-responder.yaml`.",
+        "La calidad se refuerza con evaluación continua y casos en `core/ai/eval/`.",
+        "El loop humano se cierra con feedback explícito y evidencias versionadas.",
+        "Las reglas y políticas se documentan en `compliance/` para evitar desviaciones.",
+        "El enfoque prioriza verificaciones mínimas y repetibles antes de dar cambios por finalizados.",
+        "El diseño favorece la mantenibilidad separando dominio, automatización, documentación y auditoría.",
+        "El resultado es un sistema coherente para operar, auditar y evolucionar la plataforma con seguridad."
+    ]
+
+    parts: List[str] = []
+    parts.append("## Puntos fuertes de Ka0s")
+    for s in strengths[:8]:
+        parts.append(f"- {s}")
+    parts.append("")
+    parts.append("## Descripción (15 líneas)")
+    parts.extend(desc_lines)
+    parts.append("")
+    parts.append("## Referencias en el repo")
+    for p in existing[:12]:
+        parts.append(f"- `{p}`")
+    return "\n".join(parts).strip() + "\n"
+
+
 def answer_agent_capabilities(query: str, repo_root: str) -> str:
     q = query.lower()
     if not any(k in q for k in [
@@ -1321,6 +1402,7 @@ def route_deterministic_answer(query: str, repo_root: str) -> str:
         answer_agent_vision,
         answer_agent_capabilities,
         answer_project_onboarding,
+        answer_platform_strengths_and_description,
         answer_docs_howto,
         answer_agent_automation_howto,
         answer_from_trae_policies,
