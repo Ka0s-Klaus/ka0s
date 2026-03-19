@@ -3,22 +3,11 @@ kind: Job
 metadata:
   name: pull-llama3-2
   namespace: ollama
-  annotations:
-    argocd.argoproj.io/hook: PostSync
-    argocd.argoproj.io/hook-delete-policy: HookSucceeded
 spec:
   template:
     spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: kubernetes.io/hostname
-                    operator: NotIn
-                    values:
-                      - k8-node-30
-                      - k8-node-40
+      nodeSelector:
+        ka0s.io/ollama-node: "true"
       containers:
       - name: pull-model
         image: curlimages/curl:latest

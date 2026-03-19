@@ -14,16 +14,8 @@ spec:
       backoffLimit: 2
       template:
         spec:
-          affinity:
-            nodeAffinity:
-              requiredDuringSchedulingIgnoredDuringExecution:
-                nodeSelectorTerms:
-                  - matchExpressions:
-                      - key: kubernetes.io/hostname
-                        operator: NotIn
-                        values:
-                          - k8-node-30
-                          - k8-node-40
+          nodeSelector:
+            ka0s.io/default-worker: "true"
           restartPolicy: OnFailure
           containers:
             - name: mongo-vectorize
