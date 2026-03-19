@@ -157,11 +157,21 @@ class ZabbixK8sMonitor:
             return templates[0]['templateid']
 
         print(f"Creating base template '{template_name}'...")
+        
+        # Ensure template group exists (Zabbix 6.2+ uses Template groups, older uses Host groups)
+        # We'll use the get_or_create_hostgroup to ensure we have a valid group for the template
+        group_id = self.get_or_create_hostgroup("Templates/Kubernetes")
+        if not group_id:
+            group_id = self.get_or_create_hostgroup("Templates")
+            
+        if not group_id:
+            print("Failed to get/create a group for the template")
+            return None
 
         # Create Template
         res = self._post("template.create", {
             "host": template_name,
-            "groups": [{"groupid": self.get_group_id("Templates")}]
+            "groups": [{"groupid": group_id}]
         })
 
         if not res:
@@ -205,19 +215,17 @@ class ZabbixK8sMonitor:
 
         return template_id
 
-    def get_template_id(self, name):
-        templates = self._post(
-            "template.get",
-            {"filter": {"host": [name]}}
-        )
-        if templates:
-            return templates[0]['templateid']
-
-        # Fallback to our custom base template
-        print(
-            f"Template '{name}' not found, using 'K8s Basic Service'..."
-        )
-        return self.ensure_base_template()
+    def get_template_id(self, template_name):
+        res = self._post("template.get", {
+            "output": ["templateid"],
+            "filter": {"host": [template_name]}
+        })
+        if res:
+            return res[0]['templateid']
+        else:
+            # Si no existe, usamos el base
+            print(f"Template '{template_name}' not found, ensuring 'K8s Basic Service' exists...")
+            return self.ensure_base_template()
 
     def create_host(self, service):
         # Soportar tanto formato crudo de k8s como diccionario simple
@@ -260,11 +268,11 @@ class ZabbixK8sMonitor:
 
         print(f"Processing Service: {host_name} ({dns_name}:{target_port})")
 
-        group_id = self.get_group_id("Kubernetes Services")
+        group_id = self.get_or_create_hostgroup("Kubernetes Services")
         template_id = self.get_template_id(template_name)
 
         if not group_id or not template_id:
-            print("Skipping: Missing Group or Template ID")
+            print(f"Cannot create host: missing template_id={template_id} or host_group_id={group_id}")
             return None
 
         # Create Host
