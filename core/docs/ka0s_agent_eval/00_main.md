@@ -41,6 +41,8 @@ Para que el sistema mejore de forma sistemática, el feedback humano debe quedar
 - Evidencia: se genera un archivo en `audit/feedback/` con pregunta, respuesta y rating.
 - Automatización: `.github/workflows/kaos-agent-feedback.yml` crea un PR con esa evidencia.
 
+Detalles: ver [Feedback humano](01_feedback_humano.md).
+
 ## Pruebas realizadas y conclusiones
 
 ### 1) Modelo/endpoint vs “model not found”
