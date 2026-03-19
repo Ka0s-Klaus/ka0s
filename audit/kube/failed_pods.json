@@ -1,0 +1,218 @@
+[
+  {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+      "annotations": {
+        "kubectl.kubernetes.io/restartedAt": "2026-03-19T16:16:06Z"
+      },
+      "creationTimestamp": "2026-03-19T16:16:07Z",
+      "generateName": "docs-portal-5f986c7bc9-",
+      "labels": {
+        "app": "docs-portal",
+        "pod-template-hash": "5f986c7bc9"
+      },
+      "name": "docs-portal-5f986c7bc9-kv44m",
+      "namespace": "docs-portal",
+      "ownerReferences": [
+        {
+          "apiVersion": "apps/v1",
+          "blockOwnerDeletion": true,
+          "controller": true,
+          "kind": "ReplicaSet",
+          "name": "docs-portal-5f986c7bc9",
+          "uid": "847c8f46-215e-4251-a69b-7bc3a6ccb69f"
+        }
+      ],
+      "resourceVersion": "19643887",
+      "uid": "de6f590c-8261-4701-b4ea-7eda927bb870"
+    },
+    "spec": {
+      "containers": [
+        {
+          "command": [
+            "mkdocs",
+            "serve",
+            "-f",
+            "/repo/mkdocs.yml",
+            "-a",
+            "0.0.0.0:8000"
+          ],
+          "image": "squidfunk/mkdocs-material:latest",
+          "imagePullPolicy": "Always",
+          "name": "docs-portal",
+          "ports": [
+            {
+              "containerPort": 8000,
+              "protocol": "TCP"
+            }
+          ],
+          "resources": {
+            "limits": {
+              "cpu": "500m",
+              "memory": "256Mi"
+            },
+            "requests": {
+              "cpu": "100m",
+              "memory": "128Mi"
+            }
+          },
+          "securityContext": {
+            "runAsUser": 1000
+          },
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/repo",
+              "name": "repo-volume"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-sd8xz",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "dnsPolicy": "ClusterFirst",
+      "enableServiceLinks": true,
+      "imagePullSecrets": [
+        {
+          "name": "ghcr-secret"
+        }
+      ],
+      "initContainers": [
+        {
+          "command": [
+            "/bin/sh",
+            "-c",
+            "git clone --depth 1 https://x-access-token:${GIT_TOKEN}@github.com/Ka0s-Klaus/ka0s.git /repo\nchown -R 1000:1000 /repo\n"
+          ],
+          "env": [
+            {
+              "name": "GIT_TOKEN",
+              "valueFrom": {
+                "secretKeyRef": {
+                  "key": "password",
+                  "name": "git-credentials"
+                }
+              }
+            }
+          ],
+          "image": "alpine/git",
+          "imagePullPolicy": "Always",
+          "name": "git-clone",
+          "resources": {},
+          "securityContext": {
+            "runAsUser": 0
+          },
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/repo",
+              "name": "repo-volume"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-sd8xz",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "nodeSelector": {
+        "kubernetes.io/hostname": "k8-node-30"
+      },
+      "preemptionPolicy": "PreemptLowerPriority",
+      "priority": 0,
+      "restartPolicy": "Always",
+      "schedulerName": "default-scheduler",
+      "securityContext": {
+        "fsGroup": 1000
+      },
+      "serviceAccount": "default",
+      "serviceAccountName": "default",
+      "terminationGracePeriodSeconds": 30,
+      "tolerations": [
+        {
+          "effect": "NoSchedule",
+          "key": "restricted",
+          "operator": "Equal",
+          "value": "true"
+        },
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/not-ready",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        },
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/unreachable",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        }
+      ],
+      "volumes": [
+        {
+          "emptyDir": {},
+          "name": "repo-volume"
+        },
+        {
+          "name": "kube-api-access-sd8xz",
+          "projected": {
+            "defaultMode": 420,
+            "sources": [
+              {
+                "serviceAccountToken": {
+                  "expirationSeconds": 3607,
+                  "path": "token"
+                }
+              },
+              {
+                "configMap": {
+                  "items": [
+                    {
+                      "key": "ca.crt",
+                      "path": "ca.crt"
+                    }
+                  ],
+                  "name": "kube-root-ca.crt"
+                }
+              },
+              {
+                "downwardAPI": {
+                  "items": [
+                    {
+                      "fieldRef": {
+                        "apiVersion": "v1",
+                        "fieldPath": "metadata.namespace"
+                      },
+                      "path": "namespace"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "status": {
+      "conditions": [
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-19T16:16:07Z",
+          "message": "0/4 nodes are available: 2 node(s) didn't match Pod's node affinity/selector, 2 node(s) had untolerated taint {ka0s.io/no-new-pods: true}. preemption: 0/4 nodes are available: 4 Preemption is not helpful for scheduling.",
+          "reason": "Unschedulable",
+          "status": "False",
+          "type": "PodScheduled"
+        }
+      ],
+      "phase": "Pending",
+      "qosClass": "Burstable"
+    }
+  }
+]
