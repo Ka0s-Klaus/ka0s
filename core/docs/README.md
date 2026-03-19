@@ -33,7 +33,7 @@ Si, parece increible pero hemos decidido en el equipo usar una terminología "es
 
 - [Ka0s Admin Agent - Diseño Técnico](./admin-agent/design.md)
 - [Ka0s Kubernetes Audits](./k8s-audits/00_main.md)
-- [Módulo Ka0s (Core Orchestrator)](./ka0s/00_main.md)
+- [Detallaremos el uso de las variables y sus contenidos](./ka0s/secrets.md)
 - [Ka0s Agent AI](./ka0s_agent_ai/00_main.md)
 - [Ka0s Agent Ingest - Estrategia Modular](./ka0s_agent_ingest/00_main.md)
 - [Ka0s Agent Knowledge Pipeline (DB Embeddings)](./ka0s_agent_knowledge_pipeline/00_main.md)
