@@ -1158,6 +1158,82 @@ def answer_docs_howto(query: str, repo_root: str) -> str:
     return "\n".join(parts).strip() + "\n"
 
 
+def answer_project_onboarding(query: str, repo_root: str) -> str:
+    q = query.lower()
+    onboarding_intent = any(k in q for k in [
+        "onboarding",
+        "bienvenida",
+        "introducción",
+        "introduccion",
+        "cómo empezar",
+        "como empezar",
+        "getting started",
+        "primeros pasos",
+    ])
+    if not onboarding_intent:
+        return ""
+
+    root = Path(repo_root)
+    key_paths = [
+        "README.md",
+        "core/docs/README.md",
+        "mkdocs.yml",
+        ".github/workflows/kaos.yml",
+        ".github/workflows/ci-core-validate.yml",
+        ".github/workflows/kaos-agent-issue-responder.yaml",
+        ".github/workflows/kaos-agent-eval.yml",
+        "core/ai/inference/query.py",
+        "core/ai/eval/run_eval.py",
+        "core/ai/eval/eval_cases.json",
+        "compliance/trae/rules/rules_library/rule_001_verificacion.md",
+        "compliance/trae/rules/rules_library/rule_002_docs_vivos.md",
+    ]
+    existing = [p for p in key_paths if (root / p).exists()]
+
+    parts: List[str] = []
+    parts.append("## Onboarding rápido: proyecto Ka0s")
+    parts.append("")
+    parts.append("### 1) Qué es Ka0s (en una frase)")
+    parts.append("- Framework operativo/DevOps orientado a GitOps, evidencia y automatización reproducible (workflows + scripts + docs vivas).")
+    parts.append("")
+    parts.append("### 2) Mapa del repo (lo mínimo para orientarte)")
+    parts.append("- `core/`: núcleo (IA, validadores, plantillas, lógica compartida).")
+    parts.append("- `core/docs/`: documentación viva (portal MkDocs).")
+    parts.append("- `.github/workflows/`: automatizaciones (CI/CD, auditorías, agente).")
+    parts.append("- `.github/scripts/`: scripts de soporte usados por workflows.")
+    parts.append("- `compliance/`: reglas/políticas (guardrails de Ka0s).")
+    parts.append("- `audit/`: evidencias generadas por ejecuciones (run_id, outputs, reportes).")
+    parts.append("")
+    parts.append("### 3) Documentación: cómo se organiza y cómo se publica")
+    parts.append("- Raíz: `core/docs/`.")
+    parts.append("- Navegación/portal: `mkdocs.yml`.")
+    parts.append("- Índice/nav: `.github/scripts/update-docs-index.py` actualiza `core/docs/README.md`, `index.md` y `mkdocs.yml`.")
+    parts.append("- Publicación: cambios en `core/docs/**` o `mkdocs.yml` en `main` disparan el deploy del portal.")
+    parts.append("")
+    parts.append("### 4) Automatización: cómo se ejecuta el agente en issues")
+    parts.append("- Label de disparo: `ka0s-agent`.")
+    parts.append("- Workflow: `.github/workflows/kaos-agent-issue-responder.yaml` concatena `title + body` y responde comentando en la issue.")
+    parts.append("")
+    parts.append("### 5) Contribución típica (patrón Ka0s)")
+    parts.append("- Cambias código/scripts/workflows.")
+    parts.append("- Añades/actualizas docs en `core/docs/<modulo>/`.")
+    parts.append("- Dejas evidencia cuando aplica en `audit/<dominio>/`.")
+    parts.append("- Refuerzas el comportamiento con casos en `core/ai/eval/` si afecta al agente.")
+    parts.append("")
+    parts.append("### 6) Verificación mínima (antes de decir ‘Done’)")
+    parts.append("- Docs: ejecutar `.github/scripts/update-docs-index.py` y revisar diffs (`mkdocs.yml`, `core/docs/README.md`).")
+    parts.append("- Agente: ejecutar evaluación offline con `python core/ai/eval/run_eval.py` (si tocaste routing/respuestas).")
+    parts.append("- Workflows: pasar linters/validadores de YAML (CI del repo).")
+
+    if existing:
+        parts.append("")
+        parts.append("### Referencias en este repo")
+        for p in existing:
+            parts.append(f"- `{p}`")
+
+    return "\n".join(parts).strip() + "\n"
+
+
 def answer_agent_capabilities(query: str, repo_root: str) -> str:
     q = query.lower()
     if not any(k in q for k in [
@@ -1244,6 +1320,7 @@ def route_deterministic_answer(query: str, repo_root: str) -> str:
     for fn in [
         answer_agent_vision,
         answer_agent_capabilities,
+        answer_project_onboarding,
         answer_docs_howto,
         answer_agent_automation_howto,
         answer_from_trae_policies,
