@@ -276,7 +276,7 @@ class ZabbixK8sMonitor:
             print(f"Cannot create host: missing template_id={template_id} or host_group_id={group_id}")
             return None
 
-        # Create or update Host
+        # Create or update host
         params = {
             "host": host_name,
             "name": f"K8s Service: {ns}/{name}",
