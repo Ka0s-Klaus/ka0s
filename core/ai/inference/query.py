@@ -5,6 +5,7 @@ import requests
 import logging
 import json
 import re
+import sys
 from pathlib import Path
 from typing import List, Dict, Any, Optional, Callable
 
@@ -1335,31 +1336,143 @@ def answer_repo_directory_overview(query: str, repo_root: str) -> str:
     if not intent:
         return ""
 
-    targets = []
-    if ".github" in q or "github" in q:
-        targets.append(".github")
-    if "core/ai" in q or "core ai" in q:
-        targets.append("core/ai")
-    if "core/b2b" in q:
-        targets.append("core/b2b")
-    if "core/config" in q:
-        targets.append("core/config")
-    if "core/automation" in q:
-        targets.append("core/automation")
-    if "core/" in q or " core" in q or q.strip() == "core":
-        targets.append("core")
-    if "compliance" in q:
-        targets.append("compliance")
-    if "bin" in q or "bin/" in q:
-        targets.append("bin")
-
-    if not targets:
-        return ""
-
     root = Path(repo_root)
 
-    def existing_paths(paths: list[str]) -> list[str]:
-        return [p for p in paths if (root / p).exists()]
+    def normalize_path(s: str) -> str:
+        p = s.strip().strip("`\"'[](){} ")
+        p = p.replace("\\", "/")
+        while p.startswith("./"):
+            p = p[2:]
+        while p.endswith("/"):
+            p = p[:-1]
+        return p
+
+    def should_ignore_dir(path: Path) -> bool:
+        ignore = {
+            ".git",
+            ".venv",
+            "node_modules",
+            "__pycache__",
+            ".pytest_cache",
+            ".mypy_cache",
+            ".ruff_cache",
+            ".idea",
+            ".vscode",
+        }
+        return any(part in ignore for part in path.parts)
+
+    if any(k in q for k in [
+        "lista todos los directorios",
+        "listar todos los directorios",
+        "árbol de directorios",
+        "arbol de directorios",
+        "estructura completa",
+        "no te dejes ninguno",
+    ]):
+        count = 0
+        try:
+            count = sum(1 for p in root.rglob("*") if p.is_dir() and not should_ignore_dir(p))
+        except Exception:
+            count = 0
+        return "\n".join([
+            "## Directorios del repo (árbol completo)",
+            "- Referencia: `core/docs/ka0s_repo_directories_tree/01_tree.md`.",
+            "- Generación: `python .github/scripts/generate-repo-directories-tree.py`. ",
+            f"- Total directorios (sin ignorados): {count}.",
+            "",
+            "Pide un directorio concreto por ruta (ej: `core/b2b/core-services/itop/`) y te saco propósito + top de subdirectorios/archivos.",
+            "",
+        ]).strip() + "\n"
+
+    def describe_directory(rel_dir: str) -> str:
+        rel_dir = normalize_path(rel_dir)
+        p = root / rel_dir
+        if not p.exists() or not p.is_dir() or should_ignore_dir(p):
+            return ""
+
+        purpose = "Directorio del repositorio."
+        if rel_dir == "audit" or rel_dir.startswith("audit/"):
+            purpose = "Evidencia y artefactos de ejecución (outputs de workflows y auditorías)."
+        elif rel_dir == ".github" or rel_dir.startswith(".github/"):
+            purpose = "Automatización del repo (workflows, actions, scripts y templates)."
+        elif rel_dir == "core/b2b" or rel_dir.startswith("core/b2b/"):
+            purpose = "Despliegues de servicios core (Kubernetes)."
+        elif rel_dir == "core/ai" or rel_dir.startswith("core/ai/"):
+            purpose = "Agente (inferencia), evaluación (regresión) y memoria/ingest."
+        elif rel_dir == "core" or rel_dir.startswith("core/"):
+            purpose = "Núcleo funcional (IA/agente, automatización, despliegues, configuración y docs)."
+        elif rel_dir == "compliance" or rel_dir.startswith("compliance/"):
+            purpose = "guardrails y estándares (quality gate) del proyecto."
+        elif rel_dir == "bin" or rel_dir.startswith("bin/"):
+            purpose = "utilidades locales y bootstrap."
+
+        dirs = sorted([c.name for c in p.iterdir() if c.is_dir() and not should_ignore_dir(c)])
+        files = sorted([c.name for c in p.iterdir() if c.is_file()])
+
+        key_files: list[str] = []
+        for fn in ["README.md", "readme.md", "mkdocs.yml", "kustomization.yaml", "kustomization.yml"]:
+            if fn in files:
+                key_files.append(fn)
+        for fn in files:
+            if fn in key_files:
+                continue
+            if fn.endswith((".yml", ".yaml", ".py", ".sh", ".md", ".json")):
+                key_files.append(fn)
+            if len(key_files) >= 12:
+                break
+
+        extra_paths: list[str] = []
+        if rel_dir == "compliance":
+            for ep in ["compliance/trae/rules", "compliance/trae/skills"]:
+                if (root / ep).exists():
+                    extra_paths.append(ep + "/")
+        if rel_dir == "core/ai":
+            for ep in [
+                "core/ai/inference/query.py",
+                "core/ai/eval/run_eval.py",
+                "core/ai/eval/suites/",
+                "core/ai/memory/",
+            ]:
+                if (root / ep.rstrip("/")).exists():
+                    extra_paths.append(ep)
+        if rel_dir == "core/b2b":
+            for ep in ["core/b2b/core-services/"]:
+                if (root / ep.rstrip("/")).exists():
+                    extra_paths.append(ep)
+
+        out: list[str] = []
+        out.append(f"## Directorio: {rel_dir}")
+        out.append(f"- Propósito: {purpose}")
+        if extra_paths:
+            out.append("- Rutas clave:")
+            for ep in extra_paths[:18]:
+                out.append(f"  - `{ep}`")
+        if dirs:
+            out.append("- Subdirectorios (top):")
+            for d in dirs[:18]:
+                out.append(f"  - `{rel_dir}/{d}/`")
+        if key_files:
+            out.append("- Archivos clave (top):")
+            for f in key_files[:18]:
+                out.append(f"  - `{rel_dir}/{f}`")
+        return "\n".join(out).strip()
+
+    targets: list[str] = []
+
+    raw = query.replace("\\", "/")
+    candidates = re.findall(r"(?:\.?[A-Za-z0-9._-]+/)+[A-Za-z0-9._-]+/?", raw)
+    candidates.extend(re.findall(r"\b(?:\.github|audit|bin|core|compliance)(?:/)?\b", raw))
+    for c in candidates:
+        n = normalize_path(c)
+        if not n:
+            continue
+        if (root / n).exists() and (root / n).is_dir() and not should_ignore_dir(root / n):
+            targets.append(n)
+
+    if not targets:
+        for k in [".github", "audit", "core", "compliance", "bin"]:
+            if k in q:
+                targets.append(k)
 
     def to_posix(path: str) -> str:
         return path.replace("\\", "/")
@@ -1670,6 +1783,7 @@ def route_deterministic_answer(query: str, repo_root: str) -> str:
         answer_agent_capabilities,
         answer_project_onboarding,
         answer_platform_strengths_and_description,
+        answer_workflow_failure_hint,
         answer_repo_directory_overview,
         answer_docs_howto,
         answer_agent_automation_howto,
@@ -1683,6 +1797,10 @@ def route_deterministic_answer(query: str, repo_root: str) -> str:
     return ""
 
 def main():
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
     parser = argparse.ArgumentParser(description="Ka0s Agent Inference CLI")
     parser.add_argument("query", type=str, help="The question to ask the agent")
     parser.add_argument("--offline", action="store_true", help="Disable DB/LLM calls and answer using repo/rules only")

@@ -22,5 +22,13 @@ Esta sección detalla los fallos comunes y cómo abordarlos para el módulo de A
 - **Causa**: Problemas intermedios en el pipeline de shell (`kubectl | jq`) que no fueron capturados (pre-parche de robustez).
 - **Acción**: Tras las mejoras de robustez, este error debería manifestarse como un fallo explícito en el script auditor. Revisa los logs de la acción para identificar el comando exacto que falló.
 
+### Error: "cannot pull with rebase: You have unstaged changes"
+- **Síntoma**: El step de commit falla con exit code `128` al ejecutar `git pull --rebase`.
+- **Causa**: El workflow genera/modifica ficheros (por ejemplo `audit/kube/failed_pods.json` y `audit/itop/`) antes de hacer `pull --rebase`, dejando cambios locales sin commitear.
+- **Acción**:
+    1. Aplica autostash antes del pull (`git stash -u` / `--autostash`).
+    2. Realiza `git pull --rebase` y restaura el stash.
+    3. Continúa con `git add` + `git commit` + `git push`.
+
 ## Escalado
 Si el problema persiste tras verificar la conectividad y las credenciales, abre un issue con la etiqueta `triage` adjuntando los logs completos del Run ID fallido.
