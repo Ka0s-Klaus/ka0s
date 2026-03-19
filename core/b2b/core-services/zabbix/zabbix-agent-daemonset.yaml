@@ -20,6 +20,8 @@ spec:
       containers:
         - name: zabbix-agent
           image: zabbix/zabbix-agent2:latest
+          command: ["zabbix_agent2"]
+          args: ["-c", "/etc/zabbix/zabbix_agent2.conf", "-f"]
           ports:
             - containerPort: 10050
               hostPort: 10050
@@ -45,6 +47,9 @@ spec:
               readOnly: true
             - name: var-run
               mountPath: /var/run
+            - name: zabbix-agent2-config
+              mountPath: /etc/zabbix/zabbix_agent2.conf
+              subPath: zabbix_agent2.conf
       volumes:
         - name: rootfs
           hostPath:
@@ -52,3 +57,6 @@ spec:
         - name: var-run
           hostPath:
             path: /var/run
+        - name: zabbix-agent2-config
+          configMap:
+            name: zabbix-agent2-config

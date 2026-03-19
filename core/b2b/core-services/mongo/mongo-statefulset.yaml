@@ -54,43 +54,6 @@ spec:
         volumeMounts:
         - name: mongo-persistent-storage
           mountPath: /data/db
-      - name: zabbix-agent
-        image: zabbix/zabbix-agent2:ubuntu-7.0-latest
-        ports:
-        - containerPort: 10050
-          name: zabbix-agent
-        env:
-        - name: ZBX_HOSTNAME
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.name
-        - name: ZBX_SERVER_HOST
-          value: "zabbix-server.zabbix.svc.cluster.local,172.16.64.148"
-        - name: ZBX_METADATA
-          value: "mongo"
-        - name: ZBX_PLUGINS_MONGODB_SESSIONS_DEFAULT_URI
-          value: "tcp://localhost:27017"
-        - name: ZBX_PLUGINS_MONGODB_SESSIONS_DEFAULT_USER
-          value: "root"
-        - name: ZBX_PLUGINS_MONGODB_SESSIONS_DEFAULT_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: mongo-secret
-              key: mongo-root-password
-        - name: MONGODB_USER
-          value: "root"
-        - name: MONGODB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: mongo-secret
-              key: mongo-root-password
-        resources:
-          requests:
-            cpu: 10m
-            memory: 64Mi
-          limits:
-            cpu: 100m
-            memory: 128Mi
   volumeClaimTemplates:
   - metadata:
       name: mongo-persistent-storage

@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: zabbix-agent2-config
+  namespace: zabbix
+data:
+  zabbix_agent2.conf: |
+    PidFile=/tmp/zabbix_agent2.pid
+    LogType=console
+    LogFile=
+    LogFileSize=0
+    DebugLevel=3
+
+    ListenPort=10050
+    Server=zabbix-server,172.16.0.0/12,127.0.0.1,192.168.0.0/16
+    ServerActive=zabbix-server
+
+    HostnameItem=system.hostname
+    HostMetadata=k8s-node
+
+    Timeout=5
