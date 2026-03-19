@@ -12,18 +12,19 @@ spec:
     spec:
       ttlSecondsAfterFinished: 3600
       backoffLimit: 2
+      activeDeadlineSeconds: 900
       template:
         spec:
           nodeSelector:
             ka0s.io/default-worker: "true"
-          restartPolicy: OnFailure
+          restartPolicy: Never
           containers:
             - name: mongo-vectorize
               image: python:3.11-slim
               imagePullPolicy: IfNotPresent
               command: ["sh", "-lc"]
               args:
-                - "pip install --no-cache-dir -r /config/requirements.txt && python /config/mongo_ingest.py"
+                - "python -m pip install --disable-pip-version-check --no-cache-dir --retries 10 --timeout 60 -r /config/requirements.txt && python /config/mongo_ingest.py"
               resources:
                 requests:
                   cpu: 50m
@@ -32,6 +33,10 @@ spec:
                   cpu: 500m
                   memory: 512Mi
               env:
+                - name: PIP_DISABLE_PIP_VERSION_CHECK
+                  value: "1"
+                - name: PIP_NO_CACHE_DIR
+                  value: "1"
                 - name: MONGO_URI
                   valueFrom:
                     secretKeyRef:
