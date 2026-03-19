@@ -1315,6 +1315,172 @@ def answer_platform_strengths_and_description(query: str, repo_root: str) -> str
     return "\n".join(parts).strip() + "\n"
 
 
+def answer_repo_directory_overview(query: str, repo_root: str) -> str:
+    q = query.lower()
+    intent = any(k in q for k in [
+        "directorio",
+        "carpeta",
+        "qué hay en",
+        "que hay en",
+        "qué contiene",
+        "que contiene",
+        "contiene",
+        "para qué sirve",
+        "para que sirve",
+        "sirve",
+        "explícame",
+        "explicame",
+        "estructura",
+    ])
+    if not intent:
+        return ""
+
+    targets = []
+    if ".github" in q or "github" in q:
+        targets.append(".github")
+    if "core/ai" in q or "core ai" in q:
+        targets.append("core/ai")
+    if "core/b2b" in q:
+        targets.append("core/b2b")
+    if "core/config" in q:
+        targets.append("core/config")
+    if "core/automation" in q:
+        targets.append("core/automation")
+    if "core/" in q or " core" in q or q.strip() == "core":
+        targets.append("core")
+    if "compliance" in q:
+        targets.append("compliance")
+    if "bin" in q or "bin/" in q:
+        targets.append("bin")
+
+    if not targets:
+        return ""
+
+    root = Path(repo_root)
+
+    def existing_paths(paths: list[str]) -> list[str]:
+        return [p for p in paths if (root / p).exists()]
+
+    blocks: list[str] = []
+    for t in dict.fromkeys(targets):
+        if t == ".github":
+            paths = existing_paths([
+                ".github/workflows",
+                ".github/actions",
+                ".github/scripts",
+                ".github/ISSUE_TEMPLATE",
+                ".github/workflows/kaos-agent-issue-responder.yaml",
+                ".github/workflows/kaos-agent-eval.yml",
+                ".github/workflows/kaos-agent-feedback.yml",
+            ])
+            blocks.append("## Directorio: .github")
+            blocks.append("- Propósito: automatización del repo (CI/CD, operaciones y agente).")
+            blocks.append("- Subcarpetas: `workflows/`, `actions/`, `scripts/`, `ISSUE_TEMPLATE/`.")
+            if paths:
+                blocks.append("- Rutas clave:")
+                blocks.extend([f"  - `{p.replace('\\\\', '/')}/`" if (root / p).is_dir() else f"  - `{p.replace('\\\\', '/')}`" for p in paths])
+            blocks.append("")
+        elif t == "core":
+            paths = existing_paths([
+                "core/ai",
+                "core/automation",
+                "core/b2b",
+                "core/config",
+                "core/docs",
+                "core/ai/inference/query.py",
+                "core/ai/eval/run_eval.py",
+            ])
+            blocks.append("## Directorio: core")
+            blocks.append("- Propósito: núcleo funcional (IA, automatización, despliegues, configuración y docs).")
+            blocks.append("- Subcarpetas: `ai/`, `automation/`, `b2b/`, `config/`, `docs/`.")
+            if paths:
+                blocks.append("- Rutas clave:")
+                blocks.extend([f"  - `{p.replace('\\\\', '/')}/`" if (root / p).is_dir() else f"  - `{p.replace('\\\\', '/')}`" for p in paths])
+            blocks.append("")
+        elif t == "core/ai":
+            paths = existing_paths([
+                "core/ai/inference",
+                "core/ai/eval",
+                "core/ai/memory",
+                "core/ai/capabilities/registry.json",
+                "core/ai/inference/query.py",
+                "core/ai/eval/run_eval.py",
+            ])
+            blocks.append("## Directorio: core/ai")
+            blocks.append("- Propósito: agente (inferencia), evaluación (regresión) y memoria/ingest.")
+            blocks.append("- Subcarpetas: `inference/`, `eval/`, `memory/`, `capabilities/`.")
+            if paths:
+                blocks.append("- Rutas clave:")
+                blocks.extend([f"  - `{p.replace('\\\\', '/')}/`" if (root / p).is_dir() else f"  - `{p.replace('\\\\', '/')}`" for p in paths])
+            blocks.append("")
+        elif t == "core/b2b":
+            paths = existing_paths([
+                "core/b2b/core-services",
+                "core/b2b/core-services/docs-portal",
+                "core/b2b/core-services/itop",
+            ])
+            blocks.append("## Directorio: core/b2b")
+            blocks.append("- Propósito: despliegues de servicios core (Kubernetes).")
+            blocks.append("- Estructura: `core-services/<servicio>/` con manifests y, a veces, `kustomization.yaml`.")
+            if paths:
+                blocks.append("- Rutas clave:")
+                blocks.extend([f"  - `{p.replace('\\\\', '/')}/`" if (root / p).is_dir() else f"  - `{p.replace('\\\\', '/')}`" for p in paths])
+            blocks.append("")
+        elif t == "core/config":
+            paths = existing_paths([
+                "core/config/control-file.json",
+                "core/config/control-file.yaml",
+                "core/config/core/ka0s_c0re_files.json",
+                "core/config/core/kaos-yamllint-config.yaml",
+            ])
+            blocks.append("## Directorio: core/config")
+            blocks.append("- Propósito: ficheros de control y configuración de validadores/linters.")
+            if paths:
+                blocks.append("- Rutas clave:")
+                blocks.extend([f"  - `{p.replace('\\\\', '/')}`" for p in paths])
+            blocks.append("")
+        elif t == "core/automation":
+            paths = existing_paths([
+                "core/automation/itop-sync",
+                "core/automation/itop-sync/requirements.txt",
+            ])
+            blocks.append("## Directorio: core/automation")
+            blocks.append("- Propósito: automatizaciones por dominio (integraciones y sincronizaciones).")
+            if paths:
+                blocks.append("- Rutas clave:")
+                blocks.extend([f"  - `{p.replace('\\\\', '/')}/`" if (root / p).is_dir() else f"  - `{p.replace('\\\\', '/')}`" for p in paths])
+            blocks.append("")
+        elif t == "compliance":
+            paths = existing_paths([
+                "compliance/trae/rules",
+                "compliance/trae/skills",
+                "compliance/itil",
+                "compliance/yaml",
+                "compliance/json",
+                "compliance/markdown",
+            ])
+            blocks.append("## Directorio: compliance")
+            blocks.append("- Propósito: guardrails y estándares (quality gate) del proyecto.")
+            blocks.append("- Contenido: reglas/skills Trae, estilos por formato y datasets ITIL.")
+            if paths:
+                blocks.append("- Rutas clave:")
+                blocks.extend([f"  - `{p.replace('\\\\', '/')}/`" if (root / p).is_dir() else f"  - `{p.replace('\\\\', '/')}`" for p in paths])
+            blocks.append("")
+        elif t == "bin":
+            paths = existing_paths([
+                "bin/README.md",
+                "bin/setup-kubectl.sh",
+            ])
+            blocks.append("## Directorio: bin")
+            blocks.append("- Propósito: utilidades locales y bootstrap.")
+            if paths:
+                blocks.append("- Rutas clave:")
+                blocks.extend([f"  - `{p.replace('\\\\', '/')}`" for p in paths])
+            blocks.append("")
+
+    return "\n".join(blocks).strip() + "\n"
+
+
 def answer_agent_capabilities(query: str, repo_root: str) -> str:
     q = query.lower()
     if not any(k in q for k in [
@@ -1403,6 +1569,7 @@ def route_deterministic_answer(query: str, repo_root: str) -> str:
         answer_agent_capabilities,
         answer_project_onboarding,
         answer_platform_strengths_and_description,
+        answer_repo_directory_overview,
         answer_docs_howto,
         answer_agent_automation_howto,
         answer_from_trae_policies,

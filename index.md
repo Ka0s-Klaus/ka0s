@@ -71,6 +71,7 @@ Bienvenido al centro de documentación del proyecto Ka0s. A continuación encont
 *   [Ka0s iTop Core Module](core/docs/ka0s_itop_core/00_main.md)
 *   [Ka0s Remediation Module](core/docs/ka0s_remediation/00_main.md)
 *   [Ka0s Remediation: High CPU/Load Workflow](core/docs/ka0s_remediation_high_load/01_concept.md)
+*   [`bin/`: utilidades y bootstrap](core/docs/ka0s_repo_directories/04_bin.md)
 *   [Ka0s Runners (ARC)](core/docs/ka0s_runners/00_main.md)
 *   [Documentación del Módulo: Ka0s Self Service Portal](core/docs/ka0s_self_service_portal/00_main.md)
 *   [Concepto: Monitoring as Code (Zabbix IaC)](core/docs/ka0s_zabbix_iac/01_concept.md)
