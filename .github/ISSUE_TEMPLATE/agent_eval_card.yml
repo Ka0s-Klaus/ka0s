@@ -1,0 +1,57 @@
+name: "Ka0s Agent - Eval Card"
+description: "Itera una pregunta hasta quedar satisfecho y promuévela a la batería de tests."
+title: "[AGENT-EVAL]: "
+labels: ["ka0s-agent", "ka0s-agent-eval"]
+body:
+  - type: dropdown
+    id: suite
+    attributes:
+      label: Suite
+      description: "Dónde quieres que viva el caso de evaluación cuando lo promociones."
+      options:
+        - docs
+        - skills
+        - rules
+        - general
+    validations:
+      required: true
+
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Mode
+      description: "Para CI estable, usa offline (sin DB/LLM)."
+      options:
+        - offline
+        - rag
+    validations:
+      required: true
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Pregunta
+      description: "Escribe la pregunta final que quieres que el agente responda."
+      placeholder: "Ej: ¿Cómo añado una automatización nueva cumpliendo reglas Ka0s?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: must_contain
+    attributes:
+      label: Debe contener (must_contain)
+      description: "Strings mínimos que deben aparecer en la respuesta (uno por línea o con guiones)."
+      placeholder: |
+        - core/docs/
+        - .github/workflows/
+        - audit/
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        **Flujo**
+        1) Itera editando esta issue hasta estar satisfecho.
+        2) Cuando esté OK, añade la etiqueta `ka0s-agent-promote-eval` para generar PR con el caso de evaluación.
+

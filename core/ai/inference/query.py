@@ -868,16 +868,23 @@ def answer_flow_discovery(query: str, repo_root: str) -> str:
     tokens = [t for t in re.split(r"\W+", query.lower()) if len(t) >= 4]
     tokens = [t for t in tokens if t not in {"existe", "existan", "flujo", "workflow", "workflows", "github", "actions", "pipeline"}]
 
+    boost_agent = any(k in q for k in ["agente", "agent", "kaos-agent", "ka0s-agent"])
+
     relevant_scored: List[tuple[int, str]] = []
     workflows_dir = root / ".github" / "workflows"
     if workflows_dir.exists() and workflows_dir.is_dir():
-        for p in sorted(workflows_dir.glob("*.yml")):
+        for p in sorted(list(workflows_dir.glob("*.yml")) + list(workflows_dir.glob("*.yaml"))):
             name = p.name.lower()
             content = read_text_file(p, max_chars=24000).lower()
             if not tokens:
-                relevant_scored.append((0, str(p.relative_to(root)).replace("\\", "/")))
+                score = 0
+                if boost_agent and "agent" in name:
+                    score += 5
+                relevant_scored.append((score, str(p.relative_to(root)).replace("\\", "/")))
                 continue
             score = sum(1 for t in tokens if (t in name or t in content))
+            if boost_agent and "agent" in name:
+                score += 5
             if score:
                 relevant_scored.append((score, str(p.relative_to(root)).replace("\\", "/")))
 
@@ -965,8 +972,192 @@ def answer_itil_gate(query: str, repo_root: str) -> str:
     return "\n".join(parts).strip() + "\n"
 
 
+def answer_agent_automation_howto(query: str, repo_root: str) -> str:
+    q = query.lower()
+    if not any(k in q for k in [
+        "automatización",
+        "automatizacion",
+        "nueva automatización",
+        "nueva automatizacion",
+        "extienda el agente",
+        "extender el agente",
+        "workflow del responder",
+        "issue responder",
+        "agent responder",
+        "audit/",
+        "core/docs",
+    ]):
+        return ""
+    if not any(k in q for k in [
+        "dónde",
+        "donde",
+        "ruta",
+        "rutas",
+        "documentación",
+        "documentacion",
+        "evidencia",
+        "audit",
+        "verificación",
+        "verificacion",
+        "lint",
+        "dry-run",
+        "done",
+        "tree",
+        "estructura",
+    ]):
+        return ""
+
+    root = Path(repo_root)
+
+    key_paths = [
+        ".github/workflows/kaos-agent-issue-responder.yaml",
+        ".github/workflows/kaos-agent-query.yaml",
+        ".github/workflows/kaos-agent-ingest.yaml",
+        ".github/scripts/update-docs-index.py",
+        "core/ai/inference/query.py",
+        "core/ai/memory/ingest_local.py",
+        "core/docs/README.md",
+        "compliance/trae/rules/rules_library/rule_001_verificacion.md",
+        "compliance/trae/rules/rules_library/rule_002_docs_vivos.md",
+        "compliance/trae/rules/rules_library/rule_004_auditoria.md",
+        "compliance/trae/rules/rules_library/rule_011_ubicacion.md",
+        "compliance/trae/skills/github-expert/SKILL.md",
+        "compliance/trae/rules/rules_library/rule_013_honestidad_ia.md",
+    ]
+    existing = [p for p in key_paths if (root / p).exists()]
+
+    parts: List[str] = []
+    parts.append("## Guía operativa (Ka0s): nueva automatización del agente")
+    parts.append("")
+
+    parts.append("### 1) Dónde debe vivir el código (rutas exactas)")
+    parts.append("- Workflows GitHub Actions: `.github/workflows/` (estándar Ka0s para automatización).")
+    parts.append("- Lógica reusable >50 líneas: `.github/actions/<accion>/` (composite action).")
+    parts.append("- Scripts operativos idempotentes: `devops/core/<dominio>/` (ej: `devops/core/k8s/`, `devops/core/mongo/scripts/`).")
+    parts.append("- Código del agente (inferencia): `core/ai/inference/`.")
+    parts.append("- Pipeline de memoria/ingesta: `core/ai/memory/`.")
+    parts.append("")
+
+    parts.append("### 2) Qué documentación crear/actualizar")
+    parts.append("- Crea un módulo en `core/docs/<modulo>/` con al menos `00_main.md` (qué hace, cómo ejecutar, inputs/outputs, límites).")
+    parts.append("- Actualiza el índice de docs (se autogenera): `.github/scripts/update-docs-index.py` actualiza `core/docs/README.md` y `mkdocs.yml`.")
+    parts.append("")
+
+    parts.append("### 3) Qué evidencia generar en `audit/` (nomenclatura)")
+    parts.append("- Guarda evidencias bajo una subcarpeta por dominio: `audit/<dominio>/` (ej: `audit/response/`, `audit/k8services/`).")
+    parts.append("- Nomenclatura recomendada (ya usada en workflows): `<YYYYMMDD_HHMMSS>_<RUN_ID>_<slug>.md`.")
+    parts.append("- Incluye siempre: pregunta/inputs, fecha, `github.run_id`, fuentes consultadas y resultado.")
+    parts.append("")
+
+    parts.append("### 4) Verificación mínima antes de marcar Done")
+    parts.append("- Validación YAML (workflows): ejecutar el workflow `yamllint.yml` o el linter equivalente del repo.")
+    parts.append("- Dry-run local del script (si aplica): ejecución con datos de ejemplo y salida en `audit/`.")
+    parts.append("- Prueba de workflow: `workflow_dispatch` con inputs mínimos + evidencia commit en `audit/`.")
+    parts.append("")
+
+    parts.append("### 5) Ejemplo de estructura resultante")
+    parts.append("```text\n.github/\n  workflows/\n    kaos-agent-my-automation.yml\n  actions/\n    my-automation/\n      action.yml\n      entrypoint.sh\ndevops/\n  core/\n    my-domain/\n      run-my-automation.sh\ncore/\n  ai/\n    inference/\n      my_feature.py\ncore/\n  docs/\n    ka0s_agent_my_automation/\n      00_main.md\naudit/\n  my-automation/\n    20260319_123000_<RUN_ID>_my-automation.md\n```")
+    parts.append("")
+
+    if existing:
+        parts.append("### Referencias en este repo")
+        for p in existing:
+            parts.append(f"- `{p}`")
+
+    return "\n".join(parts).strip() + "\n"
+
+
+def answer_agent_capabilities(query: str, repo_root: str) -> str:
+    q = query.lower()
+    if not any(k in q for k in [
+        "capacidad",
+        "capacidades",
+        "habilidad",
+        "habilidades",
+        "qué puedes hacer",
+        "que puedes hacer",
+        "capabilities",
+        "acciones",
+    ]):
+        return ""
+
+    root = Path(repo_root)
+    reg_path = root / "core" / "ai" / "capabilities" / "registry.json"
+    if not reg_path.exists():
+        return ""
+
+    try:
+        payload = json.loads(read_text_file(reg_path, max_chars=120000) or "{}")
+    except Exception:
+        return ""
+
+    caps = payload.get("capabilities") if isinstance(payload, dict) else None
+    if not isinstance(caps, list) or not caps:
+        return ""
+
+    parts: List[str] = []
+    parts.append("## Capacidades del Ka0s Agent")
+    parts.append("- Registro: `core/ai/capabilities/registry.json`")
+    parts.append("")
+    for c in caps[:12]:
+        if not isinstance(c, dict):
+            continue
+        cid = c.get("id")
+        name = c.get("name")
+        status = c.get("status")
+        if cid and name:
+            s = f"{name}"
+            if status:
+                s += f" (`{status}`)"
+            parts.append(f"- `{cid}`: {s}")
+    parts.append("")
+    parts.append("### Cómo extenderlo")
+    parts.append("- Añade una capability con `id`, `entrypoints`, `evidence` y `guardrails`.")
+    parts.append("- Crea docs en `core/docs/<modulo>/00_main.md` y agrega casos en `core/ai/eval/eval_cases.json`.")
+    return "\n".join(parts).strip() + "\n"
+
+
+def answer_agent_vision(query: str, repo_root: str) -> str:
+    q = query.lower()
+    if not any(k in q for k in [
+        "visión",
+        "vision",
+        "visionario",
+        "futurista",
+        "futuro",
+        "roadmap",
+        "siguiente nivel",
+        "next level",
+    ]):
+        return ""
+
+    root = Path(repo_root)
+    doc = root / "core" / "docs" / "ka0s_agent_future" / "00_main.md"
+    if not doc.exists():
+        return ""
+
+    parts: List[str] = []
+    parts.append("## Visión (Ka0s Agent)")
+    parts.append("- North Star: operador técnico autónomo con evidencia y trazabilidad.")
+    parts.append("- Ruta: robustez -> memoria -> operación -> autonomía supervisada.")
+    parts.append("")
+    parts.append("### Documento")
+    parts.append("- `core/docs/ka0s_agent_future/00_main.md`")
+    parts.append("")
+    parts.append("### Próxima apuesta técnica")
+    parts.append("- Router de modelos + citación obligatoria + evaluación continua como quality gate.")
+    return "\n".join(parts).strip() + "\n"
+
+
 def route_deterministic_answer(query: str, repo_root: str) -> str:
-    for fn in [answer_from_trae_policies, answer_itil_gate, answer_flow_discovery]:
+    for fn in [
+        answer_agent_vision,
+        answer_agent_capabilities,
+        answer_agent_automation_howto,
+        answer_from_trae_policies,
+        answer_itil_gate,
+        answer_flow_discovery,
+    ]:
         out = fn(query, repo_root)
         if out:
             return out
@@ -975,6 +1166,7 @@ def route_deterministic_answer(query: str, repo_root: str) -> str:
 def main():
     parser = argparse.ArgumentParser(description="Ka0s Agent Inference CLI")
     parser.add_argument("query", type=str, help="The question to ask the agent")
+    parser.add_argument("--offline", action="store_true", help="Disable DB/LLM calls and answer using repo/rules only")
     args = parser.parse_args()
     
     query = args.query
@@ -984,6 +1176,25 @@ def main():
     deterministic_answer = route_deterministic_answer(query, repo_root)
     if deterministic_answer:
         print(deterministic_answer)
+        return
+
+    if args.offline:
+        trae_context = load_trae_context(query, repo_root)
+        repo_context = build_repo_context(query, repo_root=repo_root, max_files=8)
+        if repo_context or trae_context:
+            sources = [c.get("source") for c in (repo_context + trae_context) if c.get("source")]
+            sources = [s for s in sources if isinstance(s, str)]
+            parts = [
+                "## Modo offline",
+                "- No se ha usado DB/LLM; respuesta basada en repo/rules.",
+            ]
+            if sources:
+                parts.append("\n## Contexto localizado")
+                parts.extend([f"- `{s}`" for s in sources[:12]])
+            parts.append("\n" + build_verification_plan(query, repo_root=repo_root).strip())
+            print("\n".join(parts).strip() + "\n")
+            return
+        print(build_verification_plan(query, repo_root=repo_root))
         return
 
     include_trae_context = bool(

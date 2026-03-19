@@ -56,6 +56,65 @@ jobs:
       - name: Install Dependencies
         run: pip install psycopg2-binary requests
 
+      - name: Ollama Preflight (Models)
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import sys
+          import urllib.request
+
+          host = os.environ.get('OLLAMA_HOST', 'localhost')
+          port = os.environ.get('OLLAMA_PORT', '11434')
+          base = f"http://{host}:{port}"
+
+          required = [
+            os.environ.get('GENERATION_MODEL', '').strip(),
+            os.environ.get('EMBEDDING_MODEL', '').strip(),
+          ]
+          required = [m for m in required if m]
+
+          def req(url, data=None):
+            if data is None:
+              r = urllib.request.Request(url, method='GET')
+            else:
+              r = urllib.request.Request(url, data=json.dumps(data).encode('utf-8'), headers={'Content-Type':'application/json'}, method='POST')
+            with urllib.request.urlopen(r, timeout=30) as resp:
+              return resp.status, resp.read().decode('utf-8', errors='ignore')
+
+          try:
+            status, body = req(base + '/v1/models')
+          except Exception as e:
+            print(f"ERROR: no se pudo consultar {base}/v1/models: {e}")
+            sys.exit(1)
+
+          payload = json.loads(body)
+          ids = set(str(i.get('id')) for i in payload.get('data', []) if isinstance(i, dict) and i.get('id'))
+
+          missing = [m for m in required if m not in ids]
+          if not missing:
+            print('OK: modelos presentes')
+            sys.exit(0)
+
+          print('WARN: faltan modelos, intentando pull via /api/pull:', ', '.join(missing))
+          for m in missing:
+            try:
+              s, b = req(base + '/api/pull', {'name': m, 'stream': False})
+              print(f"pull {m}: http={s}")
+            except Exception as e:
+              print(f"ERROR: pull {m} falló: {e}")
+              sys.exit(1)
+
+          status2, body2 = req(base + '/v1/models')
+          payload2 = json.loads(body2)
+          ids2 = set(str(i.get('id')) for i in payload2.get('data', []) if isinstance(i, dict) and i.get('id'))
+          still = [m for m in required if m not in ids2]
+          if still:
+            print('ERROR: modelos aún ausentes tras pull:', ', '.join(still))
+            sys.exit(1)
+          print('OK: modelos presentes tras pull')
+          PY
+
       - name: Query Agent
         id: query
         env:
