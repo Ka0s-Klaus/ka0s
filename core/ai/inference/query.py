@@ -1361,6 +1361,9 @@ def answer_repo_directory_overview(query: str, repo_root: str) -> str:
     def existing_paths(paths: list[str]) -> list[str]:
         return [p for p in paths if (root / p).exists()]
 
+    def to_posix(path: str) -> str:
+        return path.replace("\\", "/")
+
     blocks: list[str] = []
     for t in dict.fromkeys(targets):
         if t == ".github":
@@ -1378,7 +1381,7 @@ def answer_repo_directory_overview(query: str, repo_root: str) -> str:
             blocks.append("- Subcarpetas: `workflows/`, `actions/`, `scripts/`, `ISSUE_TEMPLATE/`.")
             if paths:
                 blocks.append("- Rutas clave:")
-                blocks.extend([f"  - `{p.replace('\\\\', '/')}/`" if (root / p).is_dir() else f"  - `{p.replace('\\\\', '/')}`" for p in paths])
+                blocks.extend([f"  - `{to_posix(p)}/`" if (root / p).is_dir() else f"  - `{to_posix(p)}`" for p in paths])
             blocks.append("")
         elif t == "core":
             paths = existing_paths([
@@ -1395,7 +1398,7 @@ def answer_repo_directory_overview(query: str, repo_root: str) -> str:
             blocks.append("- Subcarpetas: `ai/`, `automation/`, `b2b/`, `config/`, `docs/`.")
             if paths:
                 blocks.append("- Rutas clave:")
-                blocks.extend([f"  - `{p.replace('\\\\', '/')}/`" if (root / p).is_dir() else f"  - `{p.replace('\\\\', '/')}`" for p in paths])
+                blocks.extend([f"  - `{to_posix(p)}/`" if (root / p).is_dir() else f"  - `{to_posix(p)}`" for p in paths])
             blocks.append("")
         elif t == "core/ai":
             paths = existing_paths([
@@ -1411,7 +1414,7 @@ def answer_repo_directory_overview(query: str, repo_root: str) -> str:
             blocks.append("- Subcarpetas: `inference/`, `eval/`, `memory/`, `capabilities/`.")
             if paths:
                 blocks.append("- Rutas clave:")
-                blocks.extend([f"  - `{p.replace('\\\\', '/')}/`" if (root / p).is_dir() else f"  - `{p.replace('\\\\', '/')}`" for p in paths])
+                blocks.extend([f"  - `{to_posix(p)}/`" if (root / p).is_dir() else f"  - `{to_posix(p)}`" for p in paths])
             blocks.append("")
         elif t == "core/b2b":
             paths = existing_paths([
@@ -1424,7 +1427,7 @@ def answer_repo_directory_overview(query: str, repo_root: str) -> str:
             blocks.append("- Estructura: `core-services/<servicio>/` con manifests y, a veces, `kustomization.yaml`.")
             if paths:
                 blocks.append("- Rutas clave:")
-                blocks.extend([f"  - `{p.replace('\\\\', '/')}/`" if (root / p).is_dir() else f"  - `{p.replace('\\\\', '/')}`" for p in paths])
+                blocks.extend([f"  - `{to_posix(p)}/`" if (root / p).is_dir() else f"  - `{to_posix(p)}`" for p in paths])
             blocks.append("")
         elif t == "core/config":
             paths = existing_paths([
@@ -1437,7 +1440,7 @@ def answer_repo_directory_overview(query: str, repo_root: str) -> str:
             blocks.append("- Propósito: ficheros de control y configuración de validadores/linters.")
             if paths:
                 blocks.append("- Rutas clave:")
-                blocks.extend([f"  - `{p.replace('\\\\', '/')}`" for p in paths])
+                blocks.extend([f"  - `{to_posix(p)}`" for p in paths])
             blocks.append("")
         elif t == "core/automation":
             paths = existing_paths([
@@ -1448,7 +1451,7 @@ def answer_repo_directory_overview(query: str, repo_root: str) -> str:
             blocks.append("- Propósito: automatizaciones por dominio (integraciones y sincronizaciones).")
             if paths:
                 blocks.append("- Rutas clave:")
-                blocks.extend([f"  - `{p.replace('\\\\', '/')}/`" if (root / p).is_dir() else f"  - `{p.replace('\\\\', '/')}`" for p in paths])
+                blocks.extend([f"  - `{to_posix(p)}/`" if (root / p).is_dir() else f"  - `{to_posix(p)}`" for p in paths])
             blocks.append("")
         elif t == "compliance":
             paths = existing_paths([
@@ -1464,7 +1467,7 @@ def answer_repo_directory_overview(query: str, repo_root: str) -> str:
             blocks.append("- Contenido: reglas/skills Trae, estilos por formato y datasets ITIL.")
             if paths:
                 blocks.append("- Rutas clave:")
-                blocks.extend([f"  - `{p.replace('\\\\', '/')}/`" if (root / p).is_dir() else f"  - `{p.replace('\\\\', '/')}`" for p in paths])
+                blocks.extend([f"  - `{to_posix(p)}/`" if (root / p).is_dir() else f"  - `{to_posix(p)}`" for p in paths])
             blocks.append("")
         elif t == "bin":
             paths = existing_paths([
@@ -1475,7 +1478,7 @@ def answer_repo_directory_overview(query: str, repo_root: str) -> str:
             blocks.append("- Propósito: utilidades locales y bootstrap.")
             if paths:
                 blocks.append("- Rutas clave:")
-                blocks.extend([f"  - `{p.replace('\\\\', '/')}`" for p in paths])
+                blocks.extend([f"  - `{to_posix(p)}`" for p in paths])
             blocks.append("")
 
     return "\n".join(blocks).strip() + "\n"
