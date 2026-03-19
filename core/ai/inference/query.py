@@ -1566,8 +1566,106 @@ def answer_agent_vision(query: str, repo_root: str) -> str:
     return "\n".join(parts).strip() + "\n"
 
 
+def answer_github_actions_run_failure(query: str, repo_root: str) -> str:
+    m = re.search(r"https://github\.com/([^/]+)/([^/]+)/actions/runs/(\d+)", query)
+    if not m:
+        return ""
+
+    owner, repo, run_id = m.group(1), m.group(2), m.group(3)
+    token = os.getenv("GITHUB_TOKEN") or os.getenv("GH_TOKEN")
+
+    run_url = f"https://github.com/{owner}/{repo}/actions/runs/{run_id}"
+    api_base = f"https://api.github.com/repos/{owner}/{repo}"
+
+    if not token:
+        return "\n".join([
+            "## Diagnóstico (parcial)",
+            f"- Run: {run_url}",
+            "- No tengo token para leer detalles de Actions desde la API en este entorno.",
+            "",
+            "## Qué necesito", 
+            "- Pega el extracto del error (20-40 líneas) del step que falla, o el texto exacto del `Process completed with exit code ...`.",
+            "",
+        ]).strip() + "\n"
+
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+    }
+
+    jobs_payload = None
+    try:
+        r = requests.get(f"{api_base}/actions/runs/{run_id}/jobs?per_page=100", headers=headers, timeout=30)
+        if r.status_code == 200:
+            jobs_payload = r.json()
+    except Exception:
+        jobs_payload = None
+
+    failed_jobs: list[dict] = []
+    if isinstance(jobs_payload, dict):
+        jobs = jobs_payload.get("jobs")
+        if isinstance(jobs, list):
+            failed_jobs = [j for j in jobs if isinstance(j, dict) and j.get("conclusion") == "failure"]
+
+    failed_steps: list[tuple[str, str]] = []
+    for j in failed_jobs:
+        jname = str(j.get("name") or "")
+        steps = j.get("steps")
+        if not isinstance(steps, list):
+            continue
+        for s in steps:
+            if not isinstance(s, dict):
+                continue
+            if s.get("conclusion") == "failure":
+                sname = str(s.get("name") or "")
+                if jname and sname:
+                    failed_steps.append((jname, sname))
+
+    log_text = ""
+    if failed_jobs:
+        job_id = failed_jobs[0].get("id")
+        if job_id:
+            try:
+                lr = requests.get(f"{api_base}/actions/jobs/{job_id}/logs", headers=headers, timeout=30, allow_redirects=True)
+                if lr.status_code == 200:
+                    log_text = lr.text
+            except Exception:
+                log_text = ""
+
+    ql = (query + "\n" + log_text).lower()
+    is_rebase_dirty = (
+        "cannot pull with rebase" in ql
+        and "unstaged changes" in ql
+        and ("exit code 128" in ql or "process completed with exit code 128" in ql)
+    )
+
+    parts: List[str] = []
+    parts.append("## Diagnóstico")
+    parts.append(f"- Run: {run_url}")
+    if failed_steps:
+        parts.append("- Step(s) fallidos:")
+        for jname, sname in failed_steps[:6]:
+            parts.append(f"  - `{jname}` → `{sname}`")
+    if is_rebase_dirty:
+        parts.append("- Causa raíz: `git pull --rebase` se ejecuta con cambios locales sin commitear (working tree sucio).")
+        parts.append("- Git bloquea el rebase y termina con exit code `128`.")
+        parts.append("")
+        parts.append("## Fix recomendado")
+        parts.append("- Hacer autostash antes del `pull --rebase` y restaurar después.")
+        parts.append("- Ejemplo: `git stash push -u` → `git pull --rebase` → `git stash pop` → `git add/commit/push`.")
+        parts.append("")
+        parts.append("## Referencia")
+        parts.append("- Workflow: `.github/workflows/audit-pods.yml` (step `Commit Results`).")
+    else:
+        parts.append("- Si el fallo no es de `git pull --rebase`, pega el extracto del error del step fallido para diagnóstico exacto.")
+
+    return "\n".join(parts).strip() + "\n"
+
+
 def route_deterministic_answer(query: str, repo_root: str) -> str:
     for fn in [
+        answer_github_actions_run_failure,
         answer_agent_vision,
         answer_agent_capabilities,
         answer_project_onboarding,
