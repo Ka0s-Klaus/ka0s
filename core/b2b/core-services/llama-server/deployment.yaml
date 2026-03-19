@@ -17,6 +17,77 @@ spec:
         app: llama-server
         managed-by: ka0s-core-cd
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: NotIn
+                    values:
+                      - k8-node-30
+                      - k8-node-40
+      initContainers:
+        - name: download-model
+          image: ghcr.io/ggml-org/llama.cpp:full
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh", "-lc"]
+          args:
+            - |
+              set -eu
+              MODEL_DIR=/models
+              OUT_FILE="${MODEL_OUT:-ka0s-local.gguf}"
+
+              if [ -f "${MODEL_DIR}/${OUT_FILE}" ]; then
+                exit 0
+              fi
+
+              BASE_URL="${MODEL_BASE_URL:?MODEL_BASE_URL required}"
+
+              if [ -n "${MODEL_FILE:-}" ]; then
+                curl -fL "${BASE_URL}/${MODEL_FILE}" -o "${MODEL_DIR}/${OUT_FILE}"
+              else
+                PART1="${MODEL_PART_1:?MODEL_PART_1 required}"
+                PART2="${MODEL_PART_2:?MODEL_PART_2 required}"
+                PART3="${MODEL_PART_3:-}"
+
+                curl -fL "${BASE_URL}/${PART1}" -o "${MODEL_DIR}/${PART1}"
+                curl -fL "${BASE_URL}/${PART2}" -o "${MODEL_DIR}/${PART2}"
+                if [ -n "${PART3}" ]; then
+                  curl -fL "${BASE_URL}/${PART3}" -o "${MODEL_DIR}/${PART3}"
+                fi
+
+                SPLIT_BIN="$(command -v llama-gguf-split || true)"
+                if [ -z "${SPLIT_BIN}" ]; then
+                  for c in /app/llama-gguf-split /usr/local/bin/llama-gguf-split /bin/llama-gguf-split; do
+                    if [ -x "$c" ]; then
+                      SPLIT_BIN="$c"
+                      break
+                    fi
+                  done
+                fi
+                if [ -z "${SPLIT_BIN}" ]; then
+                  echo "llama-gguf-split not found in image"
+                  exit 1
+                fi
+
+                "${SPLIT_BIN}" --merge "${MODEL_DIR}/${PART1}" "${MODEL_DIR}/${OUT_FILE}"
+
+                rm -f "${MODEL_DIR:?}/${PART1}" "${MODEL_DIR:?}/${PART2}"
+                if [ -n "${PART3}" ]; then
+                  rm -f "${MODEL_DIR:?}/${PART3}"
+                fi
+              fi
+
+              if [ -n "${MODEL_SHA256:-}" ] && command -v sha256sum >/dev/null 2>&1; then
+                echo "${MODEL_SHA256}  ${MODEL_DIR}/${OUT_FILE}" | sha256sum -c -
+              fi
+          envFrom:
+            - configMapRef:
+                name: llama-model-download
+          volumeMounts:
+            - name: models
+              mountPath: /models
       containers:
         - name: llama-server
           image: ghcr.io/ggml-org/llama.cpp:server

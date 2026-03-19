@@ -17,8 +17,16 @@ spec:
       labels:
         app: nfs-client-provisioner
     spec:
-      nodeSelector:
-        kubernetes.io/hostname: k8-node-30
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: NotIn
+                    values:
+                      - k8-node-30
+                      - k8-node-40
       tolerations:
         - key: restricted
           operator: Equal
