@@ -32,3 +32,20 @@ Cada caso debe incluir:
 - Local: `python core/ai/eval/run_eval.py`
 - CI: `.github/workflows/kaos-agent-eval.yml`
 
+## Pruebas realizadas y conclusiones
+
+### 1) Modelo/endpoint vs “model not found”
+- Observación: Ollama puede devolver `404` cuando el modelo no está descargado (aunque la API exista).
+- Conclusión: antes de inferencia hay que validar/pullar modelos (preflight) o la señal se interpreta mal.
+
+### 2) Degradación real
+- Observación: el job degradado no debe depender de DB/LLM.
+- Conclusión: el modo `--offline` permite respuestas accionables incluso sin infraestructura.
+
+### 3) Encoding en Windows
+- Observación: caracteres como `→` pueden romper ejecuciones (UnicodeEncodeError) dependiendo de la consola.
+- Conclusión: evitar caracteres frágiles en rutas/strings críticos y forzar `utf-8` en el harness de evaluación.
+
+### 4) Evolución sin regresiones
+- Observación: mejorar respuesta “a mano” en una issue funciona, pero se pierde si no se captura en tests.
+- Conclusión: toda respuesta satisfecha debe promoverse a suite (rules/skills/docs) y validarse en CI.

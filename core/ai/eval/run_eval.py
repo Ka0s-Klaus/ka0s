@@ -26,6 +26,8 @@ def run_case(repo_root: Path, case: dict) -> tuple[bool, str]:
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
+        encoding="utf-8",
+        errors="replace",
         env=env,
         timeout=120,
     )
