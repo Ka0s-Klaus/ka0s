@@ -1,0 +1,431 @@
+[
+  {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+      "annotations": {
+        "actions.github.com/patch-id": "2611",
+        "actions.github.com/runner-group-name": "Default",
+        "actions.github.com/runner-scale-set-name": "swarm-runners-scaleset",
+        "actions.github.com/runner-spec-hash": "5fb4c7b9c5",
+        "cni.projectcalico.org/containerID": "2d9cf7daf115fc323472a4a360c8dd1972897f5db33e538e09fbc44f1dab98ea",
+        "cni.projectcalico.org/podIP": "172.16.209.49/32",
+        "cni.projectcalico.org/podIPs": "172.16.209.49/32"
+      },
+      "creationTimestamp": "2026-03-19T14:00:52Z",
+      "labels": {
+        "actions-ephemeral-runner": "True",
+        "actions.github.com/organization": "Ka0s-Klaus",
+        "actions.github.com/repository": "ka0s",
+        "actions.github.com/scale-set-name": "swarm-runners-scaleset",
+        "actions.github.com/scale-set-namespace": "actions-runner-system",
+        "app.kubernetes.io/component": "runner",
+        "app.kubernetes.io/instance": "swarm-runners-scaleset",
+        "app.kubernetes.io/managed-by": "Helm",
+        "app.kubernetes.io/name": "swarm-runners-scaleset",
+        "app.kubernetes.io/part-of": "gha-runner-scale-set",
+        "app.kubernetes.io/version": "0.10.1",
+        "helm.sh/chart": "gha-rs-0.10.1",
+        "pod-template-hash": "55b549d645"
+      },
+      "name": "swarm-runners-scaleset-4dsfd-runner-djjm9",
+      "namespace": "actions-runner-system",
+      "ownerReferences": [
+        {
+          "apiVersion": "actions.github.com/v1alpha1",
+          "blockOwnerDeletion": true,
+          "controller": true,
+          "kind": "EphemeralRunner",
+          "name": "swarm-runners-scaleset-4dsfd-runner-djjm9",
+          "uid": "f6a59154-24d2-412f-9e0c-c699848f4e04"
+        }
+      ],
+      "resourceVersion": "19614524",
+      "uid": "334f95f0-f375-412a-a62e-e98451652644"
+    },
+    "spec": {
+      "containers": [
+        {
+          "command": [
+            "/home/runner/run.sh"
+          ],
+          "env": [
+            {
+              "name": "ACTIONS_RUNNER_INPUT_JITCONFIG",
+              "valueFrom": {
+                "secretKeyRef": {
+                  "key": "jitToken",
+                  "name": "swarm-runners-scaleset-4dsfd-runner-djjm9"
+                }
+              }
+            },
+            {
+              "name": "GITHUB_ACTIONS_RUNNER_EXTRA_USER_AGENT",
+              "value": "actions-runner-controller/0.10.1"
+            }
+          ],
+          "image": "ghcr.io/actions/actions-runner:latest",
+          "imagePullPolicy": "Always",
+          "name": "runner",
+          "resources": {},
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-v7nf7",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "dnsPolicy": "ClusterFirst",
+      "enableServiceLinks": true,
+      "nodeName": "k8-node-20",
+      "preemptionPolicy": "PreemptLowerPriority",
+      "priority": 0,
+      "restartPolicy": "Never",
+      "schedulerName": "default-scheduler",
+      "securityContext": {},
+      "serviceAccount": "swarm-runners-scaleset-gha-rs-no-permission",
+      "serviceAccountName": "swarm-runners-scaleset-gha-rs-no-permission",
+      "terminationGracePeriodSeconds": 30,
+      "tolerations": [
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/not-ready",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        },
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/unreachable",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        }
+      ],
+      "volumes": [
+        {
+          "name": "kube-api-access-v7nf7",
+          "projected": {
+            "defaultMode": 420,
+            "sources": [
+              {
+                "serviceAccountToken": {
+                  "expirationSeconds": 3607,
+                  "path": "token"
+                }
+              },
+              {
+                "configMap": {
+                  "items": [
+                    {
+                      "key": "ca.crt",
+                      "path": "ca.crt"
+                    }
+                  ],
+                  "name": "kube-root-ca.crt"
+                }
+              },
+              {
+                "downwardAPI": {
+                  "items": [
+                    {
+                      "fieldRef": {
+                        "apiVersion": "v1",
+                        "fieldPath": "metadata.namespace"
+                      },
+                      "path": "namespace"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "status": {
+      "conditions": [
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-19T14:00:52Z",
+          "status": "False",
+          "type": "PodReadyToStartContainers"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-19T14:00:52Z",
+          "status": "True",
+          "type": "Initialized"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-19T14:00:52Z",
+          "message": "containers with unready status: [runner]",
+          "reason": "ContainersNotReady",
+          "status": "False",
+          "type": "Ready"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-19T14:00:52Z",
+          "message": "containers with unready status: [runner]",
+          "reason": "ContainersNotReady",
+          "status": "False",
+          "type": "ContainersReady"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-19T14:00:52Z",
+          "status": "True",
+          "type": "PodScheduled"
+        }
+      ],
+      "containerStatuses": [
+        {
+          "image": "ghcr.io/actions/actions-runner:latest",
+          "imageID": "",
+          "lastState": {},
+          "name": "runner",
+          "ready": false,
+          "restartCount": 0,
+          "started": false,
+          "state": {
+            "waiting": {
+              "reason": "ContainerCreating"
+            }
+          },
+          "volumeMounts": [
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-v7nf7",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            }
+          ]
+        }
+      ],
+      "hostIP": "192.168.1.20",
+      "hostIPs": [
+        {
+          "ip": "192.168.1.20"
+        }
+      ],
+      "phase": "Pending",
+      "qosClass": "BestEffort",
+      "startTime": "2026-03-19T14:00:52Z"
+    }
+  },
+  {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+      "annotations": {
+        "kubectl.kubernetes.io/restartedAt": "2026-03-19T11:58:34Z"
+      },
+      "creationTimestamp": "2026-03-19T11:58:34Z",
+      "generateName": "docs-portal-86b8798fb4-",
+      "labels": {
+        "app": "docs-portal",
+        "pod-template-hash": "86b8798fb4"
+      },
+      "name": "docs-portal-86b8798fb4-6x6p7",
+      "namespace": "docs-portal",
+      "ownerReferences": [
+        {
+          "apiVersion": "apps/v1",
+          "blockOwnerDeletion": true,
+          "controller": true,
+          "kind": "ReplicaSet",
+          "name": "docs-portal-86b8798fb4",
+          "uid": "12371749-f393-45ee-9dbb-640ca7e751d3"
+        }
+      ],
+      "resourceVersion": "19590237",
+      "uid": "5c22ac10-8777-4d2a-a265-ac2e53d16aa6"
+    },
+    "spec": {
+      "containers": [
+        {
+          "command": [
+            "mkdocs",
+            "serve",
+            "-f",
+            "/repo/mkdocs.yml",
+            "-a",
+            "0.0.0.0:8000"
+          ],
+          "image": "squidfunk/mkdocs-material:latest",
+          "imagePullPolicy": "Always",
+          "name": "docs-portal",
+          "ports": [
+            {
+              "containerPort": 8000,
+              "protocol": "TCP"
+            }
+          ],
+          "resources": {
+            "limits": {
+              "cpu": "500m",
+              "memory": "256Mi"
+            },
+            "requests": {
+              "cpu": "100m",
+              "memory": "128Mi"
+            }
+          },
+          "securityContext": {
+            "runAsUser": 1000
+          },
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/repo",
+              "name": "repo-volume"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-z2fcv",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "dnsPolicy": "ClusterFirst",
+      "enableServiceLinks": true,
+      "initContainers": [
+        {
+          "command": [
+            "/bin/sh",
+            "-c",
+            "git clone --depth 1 https://x-access-token:${GIT_TOKEN}@github.com/Ka0s-Klaus/ka0s.git /repo\nchown -R 1000:1000 /repo\n"
+          ],
+          "env": [
+            {
+              "name": "GIT_TOKEN",
+              "valueFrom": {
+                "secretKeyRef": {
+                  "key": "password",
+                  "name": "git-credentials"
+                }
+              }
+            }
+          ],
+          "image": "alpine/git",
+          "imagePullPolicy": "Always",
+          "name": "git-clone",
+          "resources": {},
+          "securityContext": {
+            "runAsUser": 0
+          },
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/repo",
+              "name": "repo-volume"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-z2fcv",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "nodeSelector": {
+        "kubernetes.io/hostname": "k8-node-30"
+      },
+      "preemptionPolicy": "PreemptLowerPriority",
+      "priority": 0,
+      "restartPolicy": "Always",
+      "schedulerName": "default-scheduler",
+      "securityContext": {
+        "fsGroup": 1000
+      },
+      "serviceAccount": "default",
+      "serviceAccountName": "default",
+      "terminationGracePeriodSeconds": 30,
+      "tolerations": [
+        {
+          "effect": "NoSchedule",
+          "key": "restricted",
+          "operator": "Equal",
+          "value": "true"
+        },
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/not-ready",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        },
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/unreachable",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        }
+      ],
+      "volumes": [
+        {
+          "emptyDir": {},
+          "name": "repo-volume"
+        },
+        {
+          "name": "kube-api-access-z2fcv",
+          "projected": {
+            "defaultMode": 420,
+            "sources": [
+              {
+                "serviceAccountToken": {
+                  "expirationSeconds": 3607,
+                  "path": "token"
+                }
+              },
+              {
+                "configMap": {
+                  "items": [
+                    {
+                      "key": "ca.crt",
+                      "path": "ca.crt"
+                    }
+                  ],
+                  "name": "kube-root-ca.crt"
+                }
+              },
+              {
+                "downwardAPI": {
+                  "items": [
+                    {
+                      "fieldRef": {
+                        "apiVersion": "v1",
+                        "fieldPath": "metadata.namespace"
+                      },
+                      "path": "namespace"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "status": {
+      "conditions": [
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-19T11:58:34Z",
+          "message": "0/4 nodes are available: 2 node(s) didn't match Pod's node affinity/selector, 2 node(s) had untolerated taint {ka0s.io/no-new-pods: true}. preemption: 0/4 nodes are available: 4 Preemption is not helpful for scheduling.",
+          "reason": "Unschedulable",
+          "status": "False",
+          "type": "PodScheduled"
+        }
+      ],
+      "phase": "Pending",
+      "qosClass": "Burstable"
+    }
+  }
+]
