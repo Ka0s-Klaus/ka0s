@@ -1,0 +1,15 @@
+[
+  {
+    "name": "workflow_fail_audit_pods_git_rebase_dirty",
+    "query": "La ejecucion de Ka0s Audit Failed Pods -> iTop\nerror:\nRun git config --global user.name \"***\"\nerror: cannot pull with rebase: You have unstaged changes.\nerror: Please commit or stash them.\nError: Process completed with exit code 128.\n\nExplícame por qué falla y qué cambio aplicarías en el workflow.",
+    "mode": "offline",
+    "must_contain": [
+      "## Diagnóstico",
+      "git pull --rebase",
+      "exit code `128`",
+      ".github/workflows/audit-pods.yml",
+      "git stash"
+    ]
+  }
+]
+
