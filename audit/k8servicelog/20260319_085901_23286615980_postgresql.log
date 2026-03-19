@@ -1,0 +1,19 @@
+=== Logs for Service: postgresql (Namespace: postgresql) ===
+=== Date: Thu Mar 19 08:59:47 UTC 2026 ===
+=== Selector: app=postgresql,managed-by=ka0s-core-cd,role=primary ===
+
+[pod/postgresql-0/postgresql] 2026-03-19 08:59:42.626 UTC [83383] LOG:  could not send data to client: Broken pipe
+[pod/postgresql-0/postgresql] 2026-03-19 08:59:42.626 UTC [83383] FATAL:  connection to client lost
+[pod/postgresql-0/postgresql] 2026-03-19 08:59:43.209 UTC [27] LOG:  checkpoint starting: time
+[pod/postgresql-0/postgresql] 2026-03-19 08:59:43.826 UTC [82561] ERROR:  canceling statement due to user request
+[pod/postgresql-0/postgresql] 2026-03-19 08:59:43.826 UTC [82561] STATEMENT:  SELECT pg_database_size(datname::text)
+[pod/postgresql-0/postgresql] 			FROM pg_catalog.pg_database
+[pod/postgresql-0/postgresql] 	   		WHERE datistemplate = false
+[pod/postgresql-0/postgresql] 				 AND datname = $1;
+[pod/postgresql-0/postgresql] 2026-03-19 08:59:43.827 UTC [82561] LOG:  could not send data to client: Broken pipe
+[pod/postgresql-0/postgresql] 2026-03-19 08:59:43.827 UTC [82561] FATAL:  connection to client lost
+[pod/postgresql-0/zabbix-agent] 2026/03/19 08:59:37.506222 [PostgreSQL] failed to handle metric: query execution timeout 3s exceeded: Cannot fetch data: context deadline exceeded.
+[pod/postgresql-0/zabbix-agent] 2026/03/19 08:59:40.509610 [PostgreSQL] failed to handle metric: query execution timeout 3s exceeded: Cannot fetch data: context deadline exceeded.
+[pod/postgresql-0/zabbix-agent] 2026/03/19 08:59:41.509142 [PostgreSQL] failed to handle metric: query execution timeout 3s exceeded: Cannot fetch data: context deadline exceeded.
+[pod/postgresql-0/zabbix-agent] 2026/03/19 08:59:42.509283 [PostgreSQL] failed to handle metric: query execution timeout 3s exceeded: Cannot fetch data: context deadline exceeded.
+[pod/postgresql-0/zabbix-agent] 2026/03/19 08:59:43.507448 [PostgreSQL] failed to handle metric: query execution timeout 3s exceeded: Cannot fetch data: context deadline exceeded.
