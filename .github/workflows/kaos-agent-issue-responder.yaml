@@ -6,6 +6,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
   issues: write # Necesario para comentar en la issue
 
 env:
@@ -44,6 +45,7 @@ jobs:
       - name: Query Agent (Degraded)
         id: query
         env:
+          GITHUB_TOKEN: ${{ github.token }}
           QUESTION_TITLE: ${{ github.event.issue.title }}
           QUESTION_BODY: ${{ github.event.issue.body }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
@@ -110,6 +112,7 @@ jobs:
       - name: Query Agent
         id: query
         env:
+          GITHUB_TOKEN: ${{ github.token }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_IA_PASSWORD }}
           # Extraer el cuerpo de la issue como pregunta
           QUESTION_TITLE: ${{ github.event.issue.title }}
