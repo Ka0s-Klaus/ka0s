@@ -17,16 +17,8 @@ spec:
         app: llama-server
         managed-by: ka0s-core-cd
     spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: kubernetes.io/hostname
-                    operator: NotIn
-                    values:
-                      - k8-node-30
-                      - k8-node-40
+      nodeSelector:
+        ka0s.io/default-worker: "true"
       initContainers:
         - name: download-model
           image: ghcr.io/ggml-org/llama.cpp:full
