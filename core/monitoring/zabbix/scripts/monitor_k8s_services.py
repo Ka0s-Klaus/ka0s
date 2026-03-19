@@ -158,20 +158,40 @@ class ZabbixK8sMonitor:
 
         print(f"Creating base template '{template_name}'...")
         
-        # Ensure template group exists (Zabbix 6.2+ uses Template groups, older uses Host groups)
-        # We'll use the get_or_create_hostgroup to ensure we have a valid group for the template
-        group_id = self.get_or_create_hostgroup("Templates/Kubernetes")
+        # En Zabbix 6.2+, los templates deben pertenecer a un "Template Group" (templategroup)
+        # en lugar de un "Host Group" (hostgroup). Intentaremos obtener/crear un templategroup.
+        # Si falla, recurrimos al hostgroup clásico por retrocompatibilidad.
+        group_id = None
+        group_type = "hostgroup"
+        
+        try:
+            tg_res = self._post("templategroup.get", {"filter": {"name": ["Templates/Kubernetes"]}})
+            if tg_res:
+                group_id = tg_res[0]["groupid"]
+                group_type = "templategroup"
+            else:
+                tg_create = self._post("templategroup.create", {"name": "Templates/Kubernetes"})
+                if tg_create and "groupids" in tg_create:
+                    group_id = tg_create["groupids"][0]
+                    group_type = "templategroup"
+        except Exception as e:
+            print(f"templategroup API not available (older Zabbix?): {e}")
+            
         if not group_id:
-            group_id = self.get_or_create_hostgroup("Templates")
+            group_id = self.get_or_create_hostgroup("Templates/Kubernetes")
+            group_type = "hostgroup"
             
         if not group_id:
             print("Failed to get/create a group for the template")
             return None
 
         # Create Template
+        groups_param = [{"groupid": str(group_id)}]
+        
         res = self._post("template.create", {
             "host": template_name,
-            "groups": [{"groupid": group_id}]
+            "groups": groups_param if group_type == "hostgroup" else [],
+            "templategroups": groups_param if group_type == "templategroup" else []
         })
 
         if not res:
@@ -275,11 +295,12 @@ class ZabbixK8sMonitor:
             print(f"Cannot create host: missing template_id={template_id} or host_group_id={group_id}")
             return None
 
-        # Create Host
+        # Create or update Host
         params = {
             "host": host_name,
-            "groups": [{"groupid": group_id}],
-            "templates": [{"templateid": template_id}],
+            "name": f"K8s Service: {ns}/{name}",
+            "groups": [{"groupid": str(group_id)}],
+            "templates": [{"templateid": str(template_id)}],
             "interfaces": [{
                 "type": 1,
                 "main": 1,
