@@ -58,16 +58,30 @@ def get_db_connection():
         return None
 
 def generate_embedding(text: str) -> List[float]:
-    url = f"http://{OLLAMA_HOST}:{OLLAMA_PORT}/api/embeddings"
-    payload = {
+    base = f"http://{OLLAMA_HOST}:{OLLAMA_PORT}"
+    api_url = f"{base}/api/embeddings"
+    api_payload = {
         "model": EMBEDDING_MODEL,
-        "prompt": text
+        "prompt": text,
     }
-    
     try:
-        response = requests.post(url, json=payload, timeout=30)
+        response = requests.post(api_url, json=api_payload, timeout=30)
+        if response.status_code == 404:
+            v1_url = f"{base}/v1/embeddings"
+            v1_payload = {
+                "model": EMBEDDING_MODEL,
+                "input": text,
+            }
+            response = requests.post(v1_url, json=v1_payload, timeout=30)
         response.raise_for_status()
-        return response.json()["embedding"]
+        data = response.json()
+        if isinstance(data, dict) and "embedding" in data:
+            return data["embedding"]
+        if isinstance(data, dict) and "data" in data and isinstance(data["data"], list) and data["data"]:
+            first = data["data"][0]
+            if isinstance(first, dict) and "embedding" in first:
+                return first["embedding"]
+        return []
     except Exception as e:
         logger.error(f"Embedding generation failed: {e}")
         return []
@@ -179,7 +193,8 @@ def generate_answer(query: str, context: List[Dict[str, Any]], repo_root: str) -
     if not context:
         return build_verification_plan(query, repo_root)
 
-    url = f"http://{OLLAMA_HOST}:{OLLAMA_PORT}/api/generate"
+    base = f"http://{OLLAMA_HOST}:{OLLAMA_PORT}"
+    url = f"{base}/api/generate"
     
     context_str = "\n\n".join([f"--- Source: {r['source']} (Score: {r['similarity']:.2f}) ---\n{r['content']}" for r in context])
     
@@ -213,15 +228,38 @@ def generate_answer(query: str, context: List[Dict[str, Any]], repo_root: str) -
         "prompt": prompt,
         "stream": False,
         "options": {
-            "temperature": 0.1,  # Low temp for factual answers
-            "top_k": 20          # Restricted vocabulary for precision
-        }
+            "temperature": 0.1,
+            "top_k": 20,
+        },
     }
     
     try:
         response = requests.post(url, json=payload, timeout=600)
+        if response.status_code == 404:
+            v1_url = f"{base}/v1/chat/completions"
+            v1_payload = {
+                "model": GENERATION_MODEL,
+                "messages": [
+                    {"role": "system", "content": "You are Ka0s Agent. Answer using ONLY the provided context."},
+                    {"role": "user", "content": prompt},
+                ],
+                "temperature": 0.1,
+                "stream": False,
+            }
+            response = requests.post(v1_url, json=v1_payload, timeout=600)
         response.raise_for_status()
-        return response.json().get("response", "Error: Empty response from LLM")
+        data = response.json()
+        if isinstance(data, dict) and "response" in data:
+            return data.get("response") or "Error: Empty response from LLM"
+        if isinstance(data, dict) and "choices" in data and isinstance(data["choices"], list) and data["choices"]:
+            choice0 = data["choices"][0]
+            if isinstance(choice0, dict):
+                msg = choice0.get("message")
+                if isinstance(msg, dict) and msg.get("content"):
+                    return msg["content"]
+                if choice0.get("text"):
+                    return choice0["text"]
+        return "Error: Empty response from LLM"
     except Exception as e:
         logger.error(f"Generation failed: {e}")
         plan = build_verification_plan(query, repo_root)
