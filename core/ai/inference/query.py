@@ -1597,6 +1597,40 @@ def answer_repo_directory_overview(query: str, repo_root: str) -> str:
     return "\n".join(blocks).strip() + "\n"
 
 
+def answer_workflow_failure_hint(query: str, repo_root: str) -> str:
+    q = query.lower()
+    if not any(k in q for k in [
+        "workflow",
+        "actions",
+        "github actions",
+        "fall",
+        "failed",
+        "error:",
+        "exit code",
+    ]):
+        return ""
+
+    is_rebase_dirty = (
+        "cannot pull with rebase" in q
+        and "unstaged changes" in q
+        and "exit code 128" in q
+    )
+
+    if not is_rebase_dirty:
+        return ""
+
+    parts: List[str] = []
+    parts.append("## Diagnóstico")
+    parts.append("- Causa raíz: `git pull --rebase` se ejecuta con cambios locales sin commitear (working tree sucio).")
+    parts.append("- Git bloquea el rebase y termina con exit code `128`.")
+    parts.append("")
+    parts.append("## Fix recomendado")
+    parts.append("- Hacer autostash antes del pull y restaurar después.")
+    parts.append("- Ejemplo: `git stash push -u` → `git pull --rebase` → `git stash pop`.")
+    parts.append("")
+    return "\n".join(parts).strip() + "\n"
+
+
 def answer_agent_capabilities(query: str, repo_root: str) -> str:
     q = query.lower()
     if not any(k in q for k in [
