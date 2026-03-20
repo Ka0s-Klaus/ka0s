@@ -1338,6 +1338,9 @@ def answer_repo_directory_overview(query: str, repo_root: str) -> str:
 
     root = Path(repo_root)
 
+    def existing_paths(paths: list[str]) -> list[str]:
+        return [p for p in paths if (root / p).exists()]
+
     def normalize_path(s: str) -> str:
         p = s.strip().strip("`\"'[](){} ")
         p = p.replace("\\", "/")
@@ -1582,6 +1585,18 @@ def answer_repo_directory_overview(query: str, repo_root: str) -> str:
                 blocks.append("- Rutas clave:")
                 blocks.extend([f"  - `{to_posix(p)}/`" if (root / p).is_dir() else f"  - `{to_posix(p)}`" for p in paths])
             blocks.append("")
+        elif t == "audit":
+            paths = existing_paths([
+                "audit/eresults",
+                "audit/kube",
+            ])
+            blocks.append("## Directorio: audit")
+            blocks.append("- Propósito: Evidencia y artefactos de ejecución (outputs de workflows y auditorías).")
+            blocks.append("- Contenido típico: `audit/eresults/` (respuestas/evidencias), `audit/kube/` (auditorías kube).")
+            if paths:
+                blocks.append("- Rutas clave:")
+                blocks.extend([f"  - `{to_posix(p)}/`" if (root / p).is_dir() else f"  - `{to_posix(p)}`" for p in paths])
+            blocks.append("")
         elif t == "bin":
             paths = existing_paths([
                 "bin/README.md",
@@ -1593,8 +1608,56 @@ def answer_repo_directory_overview(query: str, repo_root: str) -> str:
                 blocks.append("- Rutas clave:")
                 blocks.extend([f"  - `{to_posix(p)}`" for p in paths])
             blocks.append("")
+        else:
+            block = describe_directory(t)
+            if block:
+                blocks.append(block)
+                blocks.append("")
 
     return "\n".join(blocks).strip() + "\n"
+
+
+def answer_workflow_failure_hint(query: str, repo_root: str) -> str:
+    q = query.lower()
+    if not any(k in q for k in [
+        "workflow",
+        "actions",
+        "github actions",
+        "fall",
+        "failed",
+        "error:",
+        "exit code",
+    ]):
+        return ""
+
+    is_rebase_dirty = (
+        "cannot pull with rebase" in q
+        and "unstaged changes" in q
+        and "exit code 128" in q
+    )
+    is_audit_pods = "ka0s audit failed pods" in q and "itop" in q
+
+    if not (is_rebase_dirty or is_audit_pods):
+        return ""
+
+    parts: List[str] = []
+    parts.append("## Diagnóstico")
+    parts.append("- El step está ejecutando `git pull --rebase` con cambios locales sin commitear (working tree sucio).")
+    parts.append("- En este workflow, esos cambios los genera el propio job antes del pull (artefactos en `audit/`).")
+    parts.append("- Git bloquea el rebase y termina con exit code `128`.")
+    parts.append("")
+    parts.append("## Qué pasarle al agente")
+    parts.append("- Sí: el texto del error + el nombre del workflow/job/step o el link del Run.")
+    parts.append("- Mejor: pega también 20-40 líneas alrededor del fallo (para saber el step exacto).")
+    parts.append("")
+    parts.append("## Fix recomendado (repo)")
+    parts.append("- Workflow: `.github/workflows/audit-pods.yml` (step `Commit Results`).")
+    parts.append("- Solución: hacer autostash antes del `pull --rebase` y restaurar después.")
+    parts.append("")
+    parts.append("### Ejemplo")
+    parts.append("- `git stash push -u` → `git pull --rebase` → `git stash pop` → `git add/commit/push`.")
+    parts.append("")
+    return "\n".join(parts).strip() + "\n"
 
 
 def answer_agent_capabilities(query: str, repo_root: str) -> str:
@@ -1690,16 +1753,10 @@ def answer_github_actions_run_failure(query: str, repo_root: str) -> str:
     run_url = f"https://github.com/{owner}/{repo}/actions/runs/{run_id}"
     api_base = f"https://api.github.com/repos/{owner}/{repo}"
 
-    if not token:
-        return "\n".join([
-            "## Diagnóstico (parcial)",
-            f"- Run: {run_url}",
-            "- No tengo token para leer detalles de Actions desde la API en este entorno.",
-            "",
-            "## Qué necesito", 
-            "- Pega el extracto del error (20-40 líneas) del step que falla, o el texto exacto del `Process completed with exit code ...`.",
-            "",
-        ]).strip() + "\n"
+    step_hint = ""
+    m_step = re.search(r"\bStep fallido:\s*(.+)", query)
+    if m_step:
+        step_hint = m_step.group(1).strip()
 
     headers = {
         "Authorization": f"Bearer {token}",
@@ -1708,12 +1765,13 @@ def answer_github_actions_run_failure(query: str, repo_root: str) -> str:
     }
 
     jobs_payload = None
-    try:
-        r = requests.get(f"{api_base}/actions/runs/{run_id}/jobs?per_page=100", headers=headers, timeout=30)
-        if r.status_code == 200:
-            jobs_payload = r.json()
-    except Exception:
-        jobs_payload = None
+    if token:
+        try:
+            r = requests.get(f"{api_base}/actions/runs/{run_id}/jobs?per_page=100", headers=headers, timeout=30)
+            if r.status_code == 200:
+                jobs_payload = r.json()
+        except Exception:
+            jobs_payload = None
 
     failed_jobs: list[dict] = []
     if isinstance(jobs_payload, dict):
@@ -1736,7 +1794,7 @@ def answer_github_actions_run_failure(query: str, repo_root: str) -> str:
                     failed_steps.append((jname, sname))
 
     log_text = ""
-    if failed_jobs:
+    if token and failed_jobs:
         job_id = failed_jobs[0].get("id")
         if job_id:
             try:
@@ -1756,10 +1814,14 @@ def answer_github_actions_run_failure(query: str, repo_root: str) -> str:
     parts: List[str] = []
     parts.append("## Diagnóstico")
     parts.append(f"- Run: {run_url}")
+    if step_hint:
+        parts.append(f"- Step fallido (según issue): `{step_hint}`")
     if failed_steps:
         parts.append("- Step(s) fallidos:")
         for jname, sname in failed_steps[:6]:
             parts.append(f"  - `{jname}` → `{sname}`")
+    if not token:
+        parts.append("- Nota: sin token no puedo consultar jobs/logs por API; diagnóstico basado en el texto aportado.")
     if is_rebase_dirty:
         parts.append("- Causa raíz: `git pull --rebase` se ejecuta con cambios locales sin commitear (working tree sucio).")
         parts.append("- Git bloquea el rebase y termina con exit code `128`.")
