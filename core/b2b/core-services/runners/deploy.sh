@@ -111,7 +111,8 @@ helm template "${RUNNER_SCALESET_RELEASE_NAME}" \
   --set-string githubConfigUrl="https://github.com/${GITHUB_REPO}" \
   --set githubConfigSecret=controller-manager \
   --set runnerScaleSet.minRunners=1 \
-  --set runnerScaleSet.maxRunners=50 \
+  --set runnerScaleSet.maxRunners=15 \
+  --set template.spec.nodeSelector."kubernetes\.io/hostname"="k8-node-20" \
   --set runnerScaleSet.runnerGroup="${RUNNER_GROUP}" | kubectl apply -f -
 
 # --- Cleanup ---
