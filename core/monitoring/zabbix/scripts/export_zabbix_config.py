@@ -30,7 +30,7 @@ class ZabbixAPI:
         }
         headers = {'Content-Type': 'application/json'}
         try:
-            response = requests.post(self.url, data=json.dumps(payload), headers=headers, timeout=10)
+            response = requests.post(self.url, data=json.dumps(payload), headers=headers, timeout=30)
             print(f"DEBUG: Response status: {response.status_code}")
             response.raise_for_status()
             result = response.json()
