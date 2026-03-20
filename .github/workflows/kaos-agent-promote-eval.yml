@@ -13,6 +13,14 @@ on:
         description: "Target suite (docs|skills|rules|general)"
         required: true
         type: string
+      issue_title:
+        description: "(Opcional) Título de la issue (evita fetch por API)"
+        required: false
+        type: string
+      issue_body:
+        description: "(Opcional) Body completo de la issue (evita fetch por API)"
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -75,7 +83,11 @@ jobs:
         run: |
           set -e
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            python -c "import json, os, urllib.request; repo=os.environ.get('GITHUB_REPOSITORY'); issue_number=os.environ.get('ISSUE_NUMBER'); token=os.environ.get('GITHUB_TOKEN'); url=f'https://api.github.com/repos/{repo}/issues/{issue_number}'; req=urllib.request.Request(url, headers={'Accept':'application/vnd.github+json','Authorization':f'Bearer {token}'}); payload=json.loads(urllib.request.urlopen(req, timeout=30).read().decode('utf-8')); print(payload.get('title','')); print('---'); print(payload.get('body',''))" > /tmp/issue.txt
+            if [ -n "${{ inputs.issue_body }}" ]; then
+              printf "%s\n---\n%s\n" "${{ inputs.issue_title }}" "${{ inputs.issue_body }}" > /tmp/issue.txt
+            else
+              python -c "import json, os, urllib.request; repo=os.environ.get('GITHUB_REPOSITORY'); issue_number=os.environ.get('ISSUE_NUMBER'); token=os.environ.get('GITHUB_TOKEN'); url=f'https://api.github.com/repos/{repo}/issues/{issue_number}'; req=urllib.request.Request(url, headers={'Accept':'application/vnd.github+json','Authorization':f'Bearer {token}'}); payload=json.loads(urllib.request.urlopen(req, timeout=30).read().decode('utf-8')); print(payload.get('title','')); print('---'); print(payload.get('body',''))" > /tmp/issue.txt
+            fi
             ISSUE_TITLE=$(sed -n '1p' /tmp/issue.txt)
             ISSUE_BODY=$(sed -n '3,$p' /tmp/issue.txt)
             export ISSUE_TITLE
