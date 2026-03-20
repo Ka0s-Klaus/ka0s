@@ -1,1 +1,513 @@
-[]
+[
+  {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+      "annotations": {
+        "checksum/config": "f2cb89b63679ca59adcc42c87858e5c0f202bcbf7c2728b529039b5f3c830c83",
+        "container.apparmor.security.beta.kubernetes.io/netdata": "unconfined"
+      },
+      "creationTimestamp": "2026-03-20T08:14:31Z",
+      "generateName": "netdata-k8s-state-6948c65fdd-",
+      "labels": {
+        "app": "netdata",
+        "pod-template-hash": "6948c65fdd",
+        "release": "netdata",
+        "role": "k8sState"
+      },
+      "name": "netdata-k8s-state-6948c65fdd-zgvv8",
+      "namespace": "default",
+      "ownerReferences": [
+        {
+          "apiVersion": "apps/v1",
+          "blockOwnerDeletion": true,
+          "controller": true,
+          "kind": "ReplicaSet",
+          "name": "netdata-k8s-state-6948c65fdd",
+          "uid": "f2f7d555-cf21-4814-9bda-47dbba027a0d"
+        }
+      ],
+      "resourceVersion": "19836240",
+      "uid": "af66c48a-323b-4fd6-891b-251d7c02905a"
+    },
+    "spec": {
+      "containers": [
+        {
+          "env": [
+            {
+              "name": "MY_POD_NAME",
+              "valueFrom": {
+                "fieldRef": {
+                  "apiVersion": "v1",
+                  "fieldPath": "metadata.name"
+                }
+              }
+            },
+            {
+              "name": "MY_POD_NAMESPACE",
+              "valueFrom": {
+                "fieldRef": {
+                  "apiVersion": "v1",
+                  "fieldPath": "metadata.namespace"
+                }
+              }
+            },
+            {
+              "name": "NETDATA_LISTENER_PORT",
+              "value": "19999"
+            }
+          ],
+          "image": "netdata/netdata:stable",
+          "imagePullPolicy": "Always",
+          "livenessProbe": {
+            "exec": {
+              "command": [
+                "/usr/sbin/netdatacli",
+                "ping"
+              ]
+            },
+            "failureThreshold": 3,
+            "periodSeconds": 30,
+            "successThreshold": 1,
+            "timeoutSeconds": 1
+          },
+          "name": "netdata",
+          "ports": [
+            {
+              "containerPort": 19999,
+              "name": "http",
+              "protocol": "TCP"
+            }
+          ],
+          "readinessProbe": {
+            "exec": {
+              "command": [
+                "/usr/sbin/netdatacli",
+                "ping"
+              ]
+            },
+            "failureThreshold": 3,
+            "periodSeconds": 30,
+            "successThreshold": 1,
+            "timeoutSeconds": 1
+          },
+          "resources": {},
+          "securityContext": {
+            "appArmorProfile": {
+              "type": "Unconfined"
+            }
+          },
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/host/etc/os-release",
+              "name": "os-release"
+            },
+            {
+              "mountPath": "/etc/netdata/go.d.conf",
+              "name": "configmap",
+              "subPath": "go.d"
+            },
+            {
+              "mountPath": "/etc/netdata/go.d/k8s_state.conf",
+              "name": "configmap",
+              "subPath": "go.d-k8s_state"
+            },
+            {
+              "mountPath": "/etc/netdata/netdata.conf",
+              "name": "configmap",
+              "subPath": "netdata"
+            },
+            {
+              "mountPath": "/etc/netdata/stream.conf",
+              "name": "configmap",
+              "subPath": "stream"
+            },
+            {
+              "mountPath": "/var/lib/netdata",
+              "name": "varlib"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-6qsnz",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "dnsPolicy": "ClusterFirstWithHostNet",
+      "enableServiceLinks": true,
+      "preemptionPolicy": "PreemptLowerPriority",
+      "priority": 0,
+      "restartPolicy": "Always",
+      "schedulerName": "default-scheduler",
+      "securityContext": {
+        "fsGroup": 201
+      },
+      "serviceAccount": "netdata",
+      "serviceAccountName": "netdata",
+      "terminationGracePeriodSeconds": 30,
+      "tolerations": [
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/not-ready",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        },
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/unreachable",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        }
+      ],
+      "volumes": [
+        {
+          "hostPath": {
+            "path": "/etc/os-release",
+            "type": ""
+          },
+          "name": "os-release"
+        },
+        {
+          "configMap": {
+            "defaultMode": 420,
+            "name": "netdata-conf-k8s-state",
+            "optional": true
+          },
+          "name": "configmap"
+        },
+        {
+          "name": "configsecret",
+          "secret": {
+            "defaultMode": 420,
+            "optional": true,
+            "secretName": "netdata-conf-k8s-state"
+          }
+        },
+        {
+          "name": "varlib",
+          "persistentVolumeClaim": {
+            "claimName": "netdata-k8s-state-varlib"
+          }
+        },
+        {
+          "name": "kube-api-access-6qsnz",
+          "projected": {
+            "defaultMode": 420,
+            "sources": [
+              {
+                "serviceAccountToken": {
+                  "expirationSeconds": 3607,
+                  "path": "token"
+                }
+              },
+              {
+                "configMap": {
+                  "items": [
+                    {
+                      "key": "ca.crt",
+                      "path": "ca.crt"
+                    }
+                  ],
+                  "name": "kube-root-ca.crt"
+                }
+              },
+              {
+                "downwardAPI": {
+                  "items": [
+                    {
+                      "fieldRef": {
+                        "apiVersion": "v1",
+                        "fieldPath": "metadata.namespace"
+                      },
+                      "path": "namespace"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "status": {
+      "conditions": [
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-20T08:14:31Z",
+          "message": "0/4 nodes are available: pod has unbound immediate PersistentVolumeClaims. preemption: 0/4 nodes are available: 4 Preemption is not helpful for scheduling.",
+          "reason": "Unschedulable",
+          "status": "False",
+          "type": "PodScheduled"
+        }
+      ],
+      "phase": "Pending",
+      "qosClass": "BestEffort"
+    }
+  },
+  {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+      "annotations": {
+        "checksum/config": "633b701bab3879ec2b429324260e1c9a7d5b80500449163696ba4df3af135189"
+      },
+      "creationTimestamp": "2026-03-20T08:14:31Z",
+      "generateName": "netdata-parent-744f598b79-",
+      "labels": {
+        "app": "netdata",
+        "pod-template-hash": "744f598b79",
+        "release": "netdata",
+        "role": "parent"
+      },
+      "name": "netdata-parent-744f598b79-p4gc4",
+      "namespace": "default",
+      "ownerReferences": [
+        {
+          "apiVersion": "apps/v1",
+          "blockOwnerDeletion": true,
+          "controller": true,
+          "kind": "ReplicaSet",
+          "name": "netdata-parent-744f598b79",
+          "uid": "b4ba4018-bcb4-41a5-bc45-54483305c35e"
+        }
+      ],
+      "resourceVersion": "19836248",
+      "uid": "0df45459-d053-400f-aea6-8da8a7d2a5e3"
+    },
+    "spec": {
+      "containers": [
+        {
+          "env": [
+            {
+              "name": "NETDATA_CLAIM_URL",
+              "value": "https://api.netdata.cloud"
+            },
+            {
+              "name": "NETDATA_CLAIM_TOKEN",
+              "value": "KXCtURCyZnQ5VgH-9dSG_pI0KNxqdCqp4NsI29Fz_JpKniJDNV8QpO2xLvE3NUDIw4AxItv6wGj8wbF7kb_PDb1XN8eUVnNzyw2-mrtVo-TeaLY0FvpJufmqhg6n8YrXhHrqmWA"
+            },
+            {
+              "name": "NETDATA_CLAIM_ROOMS",
+              "value": "22b59e8f-2418-480d-8acd-33d019568f3d"
+            },
+            {
+              "name": "MY_POD_NAME",
+              "valueFrom": {
+                "fieldRef": {
+                  "apiVersion": "v1",
+                  "fieldPath": "metadata.name"
+                }
+              }
+            },
+            {
+              "name": "MY_POD_NAMESPACE",
+              "valueFrom": {
+                "fieldRef": {
+                  "apiVersion": "v1",
+                  "fieldPath": "metadata.namespace"
+                }
+              }
+            },
+            {
+              "name": "NETDATA_LISTENER_PORT",
+              "value": "19999"
+            }
+          ],
+          "image": "netdata/netdata:stable",
+          "imagePullPolicy": "Always",
+          "livenessProbe": {
+            "exec": {
+              "command": [
+                "/usr/sbin/netdatacli",
+                "ping"
+              ]
+            },
+            "failureThreshold": 3,
+            "periodSeconds": 30,
+            "successThreshold": 1,
+            "timeoutSeconds": 1
+          },
+          "name": "netdata",
+          "ports": [
+            {
+              "containerPort": 19999,
+              "name": "http",
+              "protocol": "TCP"
+            }
+          ],
+          "readinessProbe": {
+            "exec": {
+              "command": [
+                "/usr/sbin/netdatacli",
+                "ping"
+              ]
+            },
+            "failureThreshold": 3,
+            "periodSeconds": 30,
+            "successThreshold": 1,
+            "timeoutSeconds": 1
+          },
+          "resources": {},
+          "securityContext": {
+            "runAsGroup": 201,
+            "runAsUser": 201
+          },
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/host/etc/os-release",
+              "name": "os-release"
+            },
+            {
+              "mountPath": "/etc/netdata/health_alarm_notify.conf",
+              "name": "configmap",
+              "subPath": "health"
+            },
+            {
+              "mountPath": "/etc/netdata/netdata.conf",
+              "name": "configmap",
+              "subPath": "netdata"
+            },
+            {
+              "mountPath": "/etc/netdata/stream.conf",
+              "name": "configmap",
+              "subPath": "stream"
+            },
+            {
+              "mountPath": "/var/cache/netdata",
+              "name": "database"
+            },
+            {
+              "mountPath": "/var/lib/netdata",
+              "name": "alarms"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-tlddp",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "dnsPolicy": "Default",
+      "enableServiceLinks": true,
+      "preemptionPolicy": "PreemptLowerPriority",
+      "priority": 0,
+      "restartPolicy": "Always",
+      "schedulerName": "default-scheduler",
+      "securityContext": {
+        "fsGroup": 201
+      },
+      "serviceAccount": "netdata",
+      "serviceAccountName": "netdata",
+      "terminationGracePeriodSeconds": 300,
+      "tolerations": [
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/not-ready",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        },
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/unreachable",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        }
+      ],
+      "volumes": [
+        {
+          "hostPath": {
+            "path": "/etc/os-release",
+            "type": ""
+          },
+          "name": "os-release"
+        },
+        {
+          "configMap": {
+            "defaultMode": 420,
+            "name": "netdata-conf-parent",
+            "optional": true
+          },
+          "name": "configmap"
+        },
+        {
+          "name": "configsecret",
+          "secret": {
+            "defaultMode": 420,
+            "optional": true,
+            "secretName": "netdata-conf-parent"
+          }
+        },
+        {
+          "name": "database",
+          "persistentVolumeClaim": {
+            "claimName": "netdata-parent-database"
+          }
+        },
+        {
+          "name": "alarms",
+          "persistentVolumeClaim": {
+            "claimName": "netdata-parent-alarms"
+          }
+        },
+        {
+          "name": "kube-api-access-tlddp",
+          "projected": {
+            "defaultMode": 420,
+            "sources": [
+              {
+                "serviceAccountToken": {
+                  "expirationSeconds": 3607,
+                  "path": "token"
+                }
+              },
+              {
+                "configMap": {
+                  "items": [
+                    {
+                      "key": "ca.crt",
+                      "path": "ca.crt"
+                    }
+                  ],
+                  "name": "kube-root-ca.crt"
+                }
+              },
+              {
+                "downwardAPI": {
+                  "items": [
+                    {
+                      "fieldRef": {
+                        "apiVersion": "v1",
+                        "fieldPath": "metadata.namespace"
+                      },
+                      "path": "namespace"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "status": {
+      "conditions": [
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-20T08:14:31Z",
+          "message": "0/4 nodes are available: pod has unbound immediate PersistentVolumeClaims. preemption: 0/4 nodes are available: 4 Preemption is not helpful for scheduling.",
+          "reason": "Unschedulable",
+          "status": "False",
+          "type": "PodScheduled"
+        }
+      ],
+      "phase": "Pending",
+      "qosClass": "BestEffort"
+    }
+  }
+]
