@@ -1633,7 +1633,7 @@ def answer_workflow_failure_hint(query: str, repo_root: str) -> str:
     is_rebase_dirty = (
         "cannot pull with rebase" in q
         and "unstaged changes" in q
-        and "exit code 128" in q
+        and ("exit code 128" in q or "process completed with exit code 128" in q)
     )
 
     if not is_rebase_dirty:
@@ -1641,12 +1641,16 @@ def answer_workflow_failure_hint(query: str, repo_root: str) -> str:
 
     parts: List[str] = []
     parts.append("## Diagnóstico")
+    parts.append("- Step típico: `Commit Results`.")
     parts.append("- Causa raíz: `git pull --rebase` se ejecuta con cambios locales sin commitear (working tree sucio).")
     parts.append("- Git bloquea el rebase y termina con exit code `128`.")
     parts.append("")
     parts.append("## Fix recomendado")
     parts.append("- Hacer autostash antes del pull y restaurar después.")
-    parts.append("- Ejemplo: `git stash push -u` → `git pull --rebase` → `git stash pop`.")
+    parts.append("- Ejemplo: `git stash push -u` → `git pull --rebase` → `git stash pop` → `git add/commit/push`.")
+    parts.append("")
+    parts.append("## Referencia")
+    parts.append("- Workflow: `.github/workflows/audit-pods.yml` (step `Commit Results`).")
     parts.append("")
     return "\n".join(parts).strip() + "\n"
 
