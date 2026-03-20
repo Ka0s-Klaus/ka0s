@@ -128,6 +128,7 @@ jobs:
 
       - name: Create PR (API)
         if: steps.pr.outputs.has_changes == '1'
+        continue-on-error: true
         uses: actions/github-script@v7
         with:
           github-token: ${{ github.token }}
@@ -149,6 +150,12 @@ jobs:
             const body = `Promoción automática de la issue #${issueNumber} a suite \`${suite}\`.\n\nArchivo: \`${target}\``
             const { data: pr } = await github.rest.pulls.create({ owner, repo, title, head, base, body })
             core.info(`PR creada: ${pr.html_url}`)
+
+      - name: PR Summary
+        if: steps.pr.outputs.has_changes == '1'
+        run: |
+          echo "Branch: ${{ steps.pr.outputs.branch }}"
+          echo "Target file: ${{ steps.promote.outputs.target }}"
 
       - name: Comment Back
         if: github.event_name != 'workflow_dispatch'
