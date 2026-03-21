@@ -42,7 +42,7 @@ class ZabbixK8sMonitor:
                 self.url,
                 data=json.dumps(payload),
                 headers=headers,
-                timeout=10
+                timeout=30
             )
             response.raise_for_status()
             result = response.json()
@@ -65,8 +65,13 @@ class ZabbixK8sMonitor:
         # Try with 'username' (Zabbix >= 7.0)
         params = {"username": self.user, "password": self.password}
         self.auth_token = self._post("user.login", params)
+        
+        # If the auth_token is still None, it could be a timeout or an old Zabbix version.
+        # We can attempt to retry with 'user' only if we suspect it's an old version,
+        # but to be safe, we will just try it. However, if the first request was a network error,
+        # the second will likely fail too or give an API error.
         if not self.auth_token:
-            print("Failed login with 'username', trying 'user'")
+            print("Failed login with 'username', trying 'user' as fallback for older Zabbix versions...")
             params_old = {"user": self.user, "password": self.password}
             self.auth_token = self._post("user.login", params_old)
 

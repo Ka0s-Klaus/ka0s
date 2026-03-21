@@ -32,7 +32,7 @@ class ZabbixInventory:
             headers['Authorization'] = f"Bearer {self.auth_token}"
             # payload["auth"] = self.auth_token # REMOVED: sending in header only
         try:
-            response = requests.post(self.url, data=json.dumps(payload), headers=headers, timeout=10)
+            response = requests.post(self.url, data=json.dumps(payload), headers=headers, timeout=30)
             response.raise_for_status()
             result = response.json()
             self.request_id += 1
