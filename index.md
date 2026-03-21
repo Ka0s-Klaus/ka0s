@@ -66,6 +66,7 @@ Bienvenido al centro de documentación del proyecto Ka0s. A continuación encont
 *   [Ka0s Kubernetes Audits](core/docs/k8s-audits/00_main.md)
 *   [Ka0s Agent: Batería de pruebas y mejora iterativa](core/docs/ka0s_agent_eval/00_main.md)
 *   [Ka0s Agent: Visión y Roadmap](core/docs/ka0s_agent_future/00_main.md)
+*   [Ka0s AnythingLLM (Frontend de IA)](core/docs/ka0s_anythingllm/00_main.md)
 *   [Protocolo de Verificación de Incidencias (SOP)](core/docs/ka0s_incident_response/01_issue_verification.md)
 *   [Módulo Ka0s ITIL Sync](core/docs/ka0s_itil_sync/00_main.md)
 *   [Ka0s iTop Core Module](core/docs/ka0s_itop_core/00_main.md)
