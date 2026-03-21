@@ -1,0 +1,30 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pull-nomic-embed-text
+  namespace: anythingllm
+  labels:
+    app: anythingllm
+    managed-by: ka0s-core-cd
+spec:
+  template:
+    metadata:
+      labels:
+        app: anythingllm
+        managed-by: ka0s-core-cd
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: k8-node-20
+      restartPolicy: OnFailure
+      containers:
+        - name: pull-model
+          image: curlimages/curl:latest
+          command: ["/bin/sh", "-lc"]
+          args:
+            - |
+              set -eu
+              OLLAMA_URL="http://ollama.ollama.svc.cluster.local:11434"
+              until curl -fsS "${OLLAMA_URL}/api/tags" >/dev/null; do
+                sleep 5
+              done
+              curl -fsS -X POST "${OLLAMA_URL}/api/pull" -d '{"name":"nomic-embed-text:latest"}'

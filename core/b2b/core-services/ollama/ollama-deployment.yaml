@@ -23,8 +23,14 @@ spec:
         ports:
         - containerPort: 11434
         env:
+        - name: OLLAMA_NUM_PARALLEL
+          value: "4"
+        - name: OLLAMA_MAX_QUEUE
+          value: "10"
         - name: OLLAMA_KEEP_ALIVE
-          value: "24h"
+          value: "60m"
+        - name: OLLAMA_FLASH_ATTENTION
+          value: "1"
         - name: OLLAMA_HOST
           value: "0.0.0.0"
         - name: OLLAMA_ORIGINS
