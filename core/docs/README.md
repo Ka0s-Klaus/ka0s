@@ -39,6 +39,7 @@ Si, parece increible pero hemos decidido en el equipo usar una terminología "es
 - [Ka0s Agent: Visión y Roadmap](./ka0s_agent_future/00_main.md)
 - [Ka0s Agent Ingest - Estrategia Modular](./ka0s_agent_ingest/00_main.md)
 - [Ka0s Agent Knowledge Pipeline (DB Embeddings)](./ka0s_agent_knowledge_pipeline/00_main.md)
+- [Ka0s AnythingLLM (Frontend de IA)](./ka0s_anythingllm/00_main.md)
 - [Arquitectura: Core (Núcleo del Sistema)](./ka0s_architecture/core.md)
 - [Módulo Ka0s Audit Failed Pods](./ka0s_audit_pods/00_main.md)
 - [Ka0s Kubernetes CI/CD Automation](./ka0s_ci_cd_k8s/00_main.md)
