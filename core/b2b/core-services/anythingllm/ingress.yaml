@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: anythingllm-ingress
+  namespace: anythingllm
+  labels:
+    app: anythingllm
+    managed-by: ka0s-core-cd
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    nginx.ingress.kubernetes.io/limit-connections: "3"
+    nginx.ingress.kubernetes.io/limit-rps: "5"
+spec:
+  rules:
+    - host: anythingllm.ka0s.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: anythingllm
+                port:
+                  number: 3001
