@@ -1,0 +1,237 @@
+[
+  {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+      "annotations": {
+        "cni.projectcalico.org/containerID": "177f6f7d431b9e390e80a20f0a5d4e9ebb5f438c8d43754a37e9061d158ee539",
+        "cni.projectcalico.org/podIP": "",
+        "cni.projectcalico.org/podIPs": ""
+      },
+      "creationTimestamp": "2026-03-21T11:50:50Z",
+      "generateName": "ollama-686fdf96c-",
+      "labels": {
+        "app": "ollama",
+        "pod-template-hash": "686fdf96c"
+      },
+      "name": "ollama-686fdf96c-kf25j",
+      "namespace": "ollama",
+      "ownerReferences": [
+        {
+          "apiVersion": "apps/v1",
+          "blockOwnerDeletion": true,
+          "controller": true,
+          "kind": "ReplicaSet",
+          "name": "ollama-686fdf96c",
+          "uid": "62b4c751-ec52-46aa-a7bb-a66eaac8586c"
+        }
+      ],
+      "resourceVersion": "20418598",
+      "uid": "93392139-571d-4ee9-9504-3def04a9b6a7"
+    },
+    "spec": {
+      "containers": [
+        {
+          "env": [
+            {
+              "name": "OLLAMA_NUM_PARALLEL",
+              "value": "4"
+            },
+            {
+              "name": "OLLAMA_MAX_QUEUE",
+              "value": "10"
+            },
+            {
+              "name": "OLLAMA_KEEP_ALIVE",
+              "value": "60m"
+            },
+            {
+              "name": "OLLAMA_FLASH_ATTENTION",
+              "value": "1"
+            },
+            {
+              "name": "OLLAMA_HOST",
+              "value": "0.0.0.0"
+            },
+            {
+              "name": "OLLAMA_ORIGINS",
+              "value": "*"
+            }
+          ],
+          "image": "ollama/ollama:latest",
+          "imagePullPolicy": "Always",
+          "name": "ollama",
+          "ports": [
+            {
+              "containerPort": 11434,
+              "protocol": "TCP"
+            }
+          ],
+          "resources": {
+            "limits": {
+              "gpu.intel.com/i915": "1"
+            },
+            "requests": {
+              "gpu.intel.com/i915": "1"
+            }
+          },
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/root/.ollama",
+              "name": "models"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-7nczz",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "dnsPolicy": "ClusterFirst",
+      "enableServiceLinks": true,
+      "nodeName": "k8-manager",
+      "nodeSelector": {
+        "ka0s.io/ollama-node": "true"
+      },
+      "preemptionPolicy": "PreemptLowerPriority",
+      "priority": 0,
+      "restartPolicy": "Always",
+      "schedulerName": "default-scheduler",
+      "securityContext": {},
+      "serviceAccount": "default",
+      "serviceAccountName": "default",
+      "terminationGracePeriodSeconds": 30,
+      "tolerations": [
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/not-ready",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        },
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/unreachable",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        }
+      ],
+      "volumes": [
+        {
+          "name": "models",
+          "persistentVolumeClaim": {
+            "claimName": "ollama-pvc"
+          }
+        },
+        {
+          "name": "kube-api-access-7nczz",
+          "projected": {
+            "defaultMode": 420,
+            "sources": [
+              {
+                "serviceAccountToken": {
+                  "expirationSeconds": 3607,
+                  "path": "token"
+                }
+              },
+              {
+                "configMap": {
+                  "items": [
+                    {
+                      "key": "ca.crt",
+                      "path": "ca.crt"
+                    }
+                  ],
+                  "name": "kube-root-ca.crt"
+                }
+              },
+              {
+                "downwardAPI": {
+                  "items": [
+                    {
+                      "fieldRef": {
+                        "apiVersion": "v1",
+                        "fieldPath": "metadata.namespace"
+                      },
+                      "path": "namespace"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "status": {
+      "conditions": [
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-22T09:31:04Z",
+          "status": "False",
+          "type": "PodReadyToStartContainers"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-22T09:31:04Z",
+          "status": "True",
+          "type": "Initialized"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-22T09:31:04Z",
+          "reason": "PodFailed",
+          "status": "False",
+          "type": "Ready"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-22T09:31:04Z",
+          "reason": "PodFailed",
+          "status": "False",
+          "type": "ContainersReady"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-03-22T09:31:04Z",
+          "status": "True",
+          "type": "PodScheduled"
+        }
+      ],
+      "containerStatuses": [
+        {
+          "containerID": "containerd://d676b51ba67df33c27dd9e1b97f8ccdc770fb8654d9031e69d4503706a921dae",
+          "image": "docker.io/ollama/ollama:latest",
+          "imageID": "docker.io/ollama/ollama@sha256:5a5d014aa774f78ebe1340c0d4afc2e35afc12a2c3b34c84e71f78ea20af4ba3",
+          "lastState": {},
+          "name": "ollama",
+          "ready": false,
+          "restartCount": 0,
+          "started": false,
+          "state": {
+            "terminated": {
+              "containerID": "containerd://d676b51ba67df33c27dd9e1b97f8ccdc770fb8654d9031e69d4503706a921dae",
+              "exitCode": 255,
+              "finishedAt": "2026-03-22T09:29:06Z",
+              "reason": "Unknown",
+              "startedAt": "2026-03-21T11:50:52Z"
+            }
+          }
+        }
+      ],
+      "hostIP": "192.168.1.10",
+      "hostIPs": [
+        {
+          "ip": "192.168.1.10"
+        }
+      ],
+      "message": "Pod was rejected: Allocate failed due to no healthy devices present; cannot allocate unhealthy devices gpu.intel.com/i915, which is unexpected",
+      "phase": "Failed",
+      "qosClass": "BestEffort",
+      "reason": "UnexpectedAdmissionError",
+      "startTime": "2026-03-21T11:50:50Z"
+    }
+  }
+]
