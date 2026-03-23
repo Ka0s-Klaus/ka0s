@@ -30,7 +30,7 @@ spec:
               set -eu
               mkdir -p /data/storage /data/collector/hotdir /data/collector/outputs
               touch /data/storage/anythingllm.db
-              chmod -R 0777 /data/storage /data/collector
+              chmod 0777 /data/storage /data/collector /data/collector/hotdir /data/collector/outputs
           volumeMounts:
             - name: data
               mountPath: /data
@@ -43,6 +43,10 @@ spec:
           env:
             - name: STORAGE_DIR
               value: /app/server/storage
+            - name: JWT_SECRET
+              value: "ka0s-super-secret-jwt-token-2026"
+            - name: AUTH_TOKEN
+              value: "ka0s-super-secret-auth-token-2026"
             - name: LLM_PROVIDER
               value: ollama
             - name: OLLAMA_BASE_PATH
