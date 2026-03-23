@@ -1,0 +1,120 @@
+name: "Ka0s Ops: Pull Ollama Model"
+on:
+  workflow_dispatch:
+    inputs:
+      model_name:
+        description: 'Nombre del modelo a descargar (ej: llama3.2, mistral, gemma)'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  KAOS_MODULE: "[Ka0s] Ops Ollama"
+  KAOS_CODE: ${{ github.run_id }}
+
+jobs:
+  pull-model:
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Kubectl Tunnel
+        uses: ./.github/actions/kubectl-tunnel
+        with:
+          host: ${{ secrets.KAOS_SSH_HOST_1 }}
+          username: ${{ secrets.KAOS_SSH_USER }}
+          key: ${{ secrets.KAOS_SSH_KEY_PRIV }}
+          port: ${{ secrets.KAOS_SSH_PORT_1 }}
+
+      - name: Pull Model
+        run: |
+          chmod +x .github/scripts/pull-ollama-model.sh
+          ./.github/scripts/pull-ollama-model.sh "${{ inputs.model_name }}"
+
+  handle-success:
+    runs-on: swarm-runners-scaleset
+    needs: [pull-model]
+    if: ${{ success() }}
+    steps:
+      - name: Notify Success
+        run: echo "✅ ${{ env.KAOS_MODULE }} Modelo descargado correctamente."
+
+  handle-failure:
+    name: Handle Failure
+    needs: [pull-model]
+    if: failure()
+    runs-on: swarm-runners-scaleset
+    permissions:
+      issues: write
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+      - name: Create Incident Issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --title "[INCIDENT]: Fallo en workflow ${{ github.workflow }}" \
+            --label "itop-incident,triage,automated" \
+            --body "### Organización
+          Ka0s
+          
+          ### Solicitante
+          @${{ github.actor }}
+          
+          ### Estado
+          New
+          
+          ### Impacto
+          Service
+          
+          ### Urgencia
+          Medium
+          
+          ### Servicio / CI afectado
+          GitHub Actions / ${{ github.workflow }}
+          
+          ### Descripción
+          El workflow **${{ github.workflow }}** ha fallado durante la descarga del modelo **${{ inputs.model_name }}**.
+          
+          **Detalles Técnicos:**
+          - **Módulo**: ${{ env.KAOS_MODULE }}
+          - **Run ID**: ${{ github.run_id }}
+          - **Commit**: ${{ github.sha }}
+          - **Branch/Ref**: ${{ github.ref_name }}
+          - **Actor**: ${{ github.actor }}
+          
+          ### Pasos / Evidencias
+          Logs de ejecución: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          "
+
+  end-workflow:
+    needs: [handle-success, handle-failure]
+    if: always()
+    runs-on: swarm-runners-scaleset
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+      - name: Trigger Inspector
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run inspector.yml \
+            -f workflow_name="${{ github.workflow }}" \
+            -f run_id="${{ github.run_id }}" \
+            -f status="${{ job.status }}"
