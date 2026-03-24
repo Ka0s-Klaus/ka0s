@@ -72,6 +72,9 @@ jobs:
       actions: write
       contents: read
     steps:
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+        
       - name: Trigger Audit Cluster Status
         env:
           GH_TOKEN: ${{ github.token }}
