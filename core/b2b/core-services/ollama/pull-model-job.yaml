@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: pull-llama3-2
+  name: pull-llama3-1-8b
   namespace: ollama
 spec:
   template:
@@ -19,6 +19,6 @@ spec:
             echo "Waiting..."
             sleep 5
           done
-          echo "Pulling llama3.2..."
-          curl -X POST http://ollama:11434/api/pull -d '{"name": "llama3.2"}'
+          echo "Pulling llama3.1:8b..."
+          curl -X POST http://ollama:11434/api/pull -d '{"name": "llama3.1:8b"}'
       restartPolicy: OnFailure
