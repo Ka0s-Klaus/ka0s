@@ -9,11 +9,13 @@ resources:
   - mongo-vectorize-json-cronjob.yaml
   - mongo-vectorize-log-cronjob.yaml
   - mongo-vectorize-server-cronjob.yaml
+  - mongo-vectorize-k8config-cronjob.yaml
 
 configMapGenerator:
   - name: mongo-vectorize-scripts
     files:
       - mongo_ingest.py=scripts/mongo_ingest.py
+      - mongo_k8config_diff.py=scripts/mongo_k8config_diff.py
       - requirements.txt=scripts/requirements.txt
 
 generatorOptions:
