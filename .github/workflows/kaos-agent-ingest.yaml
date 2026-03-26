@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       module:
-        description: 'Module to ingest (docs, skills, infra, code, audit, compliance, devops, github, all)'
+        description: 'Module to ingest (docs, skills, infra, code, compliance, devops, github, all)'
         required: true
         default: 'all'
         type: choice
@@ -13,7 +13,6 @@ on:
           - skills
           - infra
           - code
-          - audit
           - compliance
           - devops
           - github
@@ -115,7 +114,8 @@ jobs:
           
           if [ "$TARGET_MODULE" == "all" ]; then
             # Ejecución secuencial ordenada para el Nightly/Full
-            modules=("skills" "docs" "infra" "devops" "github" "compliance" "audit" "code")
+            # Audit removed as it's handled by CronJobs
+            modules=("skills" "docs" "infra" "devops" "github" "compliance" "code")
             for mod in "${modules[@]}"; do
               echo "::group::Ingesting $mod"
               python core/ai/memory/ingest_local.py --module $mod

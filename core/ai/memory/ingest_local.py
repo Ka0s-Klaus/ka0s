@@ -26,6 +26,36 @@ EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL") or "nomic-embed-text"
 # Ingestion Strategy: Modular & Argument Driven
 # Usage: python ingest_local.py --module [docs|skills|infra|code|audit|compliance|devops|github|all]
 
+def is_ignored(filepath: str) -> bool:
+    ignored_patterns = [
+        "node_modules",
+        "__pycache__",
+        "audit/",         # Excluded entirely as it's ingested via CronJobs
+        "site_build/",    # Excluded entirely as it's ingested via CronJobs
+        ".log"
+    ]
+    for pattern in ignored_patterns:
+        if pattern in filepath:
+            return True
+    return False
+
+def chunk_content(content: str, file_path: str, max_chunk_size=2000) -> List[str]:
+    """
+    Semantic line-aware chunking to avoid breaking code/JSON in the middle of a line.
+    """
+    lines = content.splitlines(True)
+    chunks = []
+    current_chunk = ""
+    for line in lines:
+        if len(current_chunk) + len(line) > max_chunk_size and current_chunk:
+            chunks.append(current_chunk)
+            current_chunk = line
+        else:
+            current_chunk += line
+    if current_chunk:
+        chunks.append(current_chunk)
+    return chunks
+
 def process_file_to_cache(file_path: str, cache_file: str):
     """
     Process file, generate embeddings, and append to a JSONL cache file.
@@ -35,7 +65,7 @@ def process_file_to_cache(file_path: str, cache_file: str):
         with open(file_path, 'r', encoding='utf-8') as f:
             content = f.read()
             
-        chunks = [content[i:i+2000] for i in range(0, len(content), 2000)]
+        chunks = chunk_content(content, file_path)
         
         with open(cache_file, 'a', encoding='utf-8') as cf:
             for i, chunk in enumerate(chunks):
@@ -172,11 +202,7 @@ MODULES = {
         "core/**/*.sh",
         "core/**/*.sql"
     ],
-    "audit": [
-        "audit/**/*.md",
-        "audit/**/*.json",
-        "audit/**/*.log"
-    ],
+    # Audit is handled by external CronJobs, removing from GitHub Actions ingestion
     "compliance": [
         "compliance/**/*.json",
         "compliance/**/*.md"
@@ -441,14 +467,17 @@ def run_ingestion():
     
     for pattern in PATTERNS:
         files = glob.glob(pattern, recursive=True)
-        count = len(files)
-        logger.info(f"📂 Found {count} files for pattern: {pattern}")
+        # Filter out ignored files immediately
+        valid_files = [f for f in files if not is_ignored(f)]
+        
+        count = len(valid_files)
+        logger.info(f"📂 Found {count} valid files for pattern: {pattern}")
         if count > 0:
             # Print first 3 files as sample
-            sample = files[:3]
+            sample = valid_files[:3]
             logger.info(f"   Sample: {sample}")
         total_found += count
-        all_files.extend(files)
+        all_files.extend(valid_files)
         
     if total_found == 0:
         logger.warning("⚠️ No files found in pre-scan. Check paths or git checkout.")
@@ -460,23 +489,64 @@ def run_ingestion():
     init_db()
     load_existing_hashes() # Pre-load hashes from DB
     
+    # Track valid sources to clean up deleted files
+    valid_sources_in_scan = set(all_files)
+    
     cache_file = "ingest_cache.jsonl"
     if os.path.exists(cache_file):
         os.remove(cache_file)
         
     total_files = 0
-    for pattern in PATTERNS:
-        files = glob.glob(pattern, recursive=True)
-        logger.info(f"Found {len(files)} files for pattern: {pattern}")
-        for f in files:
-            # Skip hidden files or generated artifacts if necessary
-            if "node_modules" in f or "__pycache__" in f:
-                continue
-            process_file_to_cache(f, cache_file) # Changed to use cache
-            total_files += 1
+    for f in all_files:
+        process_file_to_cache(f, cache_file) # Changed to use cache
+        total_files += 1
             
     logger.info(f"Processing complete. Ingesting to DB...")
     ingest_from_cache(cache_file) # Bulk insert
+    
+    # ---------------------------------------------------------
+    # Handle Deleted Files (Sync DB with Filesystem)
+    # ---------------------------------------------------------
+    conn = get_db_connection()
+    if conn:
+        try:
+            cur = conn.cursor()
+            # Fetch all sources currently in the DB
+            cur.execute("SELECT DISTINCT source FROM kaos_memory")
+            db_sources = [row[0] for row in cur.fetchall()]
+            
+            deleted_count = 0
+            for db_source in db_sources:
+                # 'source' format is 'path/to/file.ext#chunk0'
+                base_file_path = db_source.split('#')[0]
+                
+                # Check if this db_source belongs to the current PATTERNS being scanned
+                # A simple way: if base_file_path is not in valid_sources_in_scan, 
+                # but we are scanning 'all' or its prefix matches our module, we should delete it.
+                # To be safe, we only delete if we are sure it's missing.
+                # Since we expanded all PATTERNS into valid_sources_in_scan, 
+                # any file that *would* match the pattern but is NOT in valid_sources_in_scan
+                # means it was deleted or ignored.
+                
+                # We need to know if base_file_path falls under the current module's purview.
+                # Let's check if it matches any of the glob patterns we used.
+                import fnmatch
+                matches_current_scope = any(fnmatch.fnmatch(base_file_path, p) for p in PATTERNS)
+                
+                if matches_current_scope and base_file_path not in valid_sources_in_scan:
+                    logger.info(f"🗑️ Deleting obsolete DB entries for: {base_file_path}")
+                    cur.execute("DELETE FROM kaos_memory WHERE source LIKE %s", (f"{base_file_path}#%",))
+                    deleted_count += 1
+            
+            conn.commit()
+            if deleted_count > 0:
+                logger.info(f"✅ Cleanup complete. Deleted obsolete chunks for {deleted_count} files.")
+            cur.close()
+            conn.close()
+        except Exception as e:
+            logger.error(f"Failed to clean up deleted files: {e}")
+            if conn: conn.rollback()
+
     logger.info(f"Ingestion complete. Total files processed: {total_files}")
 
 if __name__ == "__main__":
