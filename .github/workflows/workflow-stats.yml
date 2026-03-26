@@ -56,7 +56,10 @@ jobs:
 
       - name: Calculate Timestamp
         id: timestamp
-        run: echo "TIMESTAMP=$(date +%Y%m%d_%H%M%S)" >> $GITHUB_ENV
+        run: |
+          echo "TIMESTAMP=$(date +%Y%m%d_%H%M%S)" >> $GITHUB_ENV
+          echo "YESTERDAY=$(date -d '1 day ago' +%Y-%m-%d)" >> $GITHUB_ENV
+          echo "YESTERDAY_ISO=$(date -d '1 day ago' -u +'%Y-%m-%dT00:00:00Z')" >> $GITHUB_ENV
 
       - name: Generate names
         run: |
@@ -77,12 +80,13 @@ jobs:
           
           # Mostramos el fichero del que tenemos que partir
           jq -r '.[].id' ${{ env.KAOS_PATH_RESUME }}${{ env.TIMESTAMP }}_${{ github.run_id }}_workflow-stats-list.json | while read -r workflow_id; do
-            # 1. Obtener datos paginados
+            # 1. Obtener datos paginados (solo desde ayer)
             TEMP_RAW=$(mktemp)
-            gh api --paginate \
+            gh api -X GET --paginate \
               -H "Accept: application/vnd.github+json" \
               -H "Authorization: Bearer ${{ github.token }}" \
-              "/repos/${{ env.GH_REPO }}/actions/workflows/$workflow_id/runs?per_page=100" \
+              "/repos/${{ env.GH_REPO }}/actions/workflows/$workflow_id/runs" \
+              -f per_page=100 -f created=">=${{ env.YESTERDAY }}" \
               --jq '.workflow_runs' > "$TEMP_RAW"
 
             # 2. Procesar con todos los campos requeridos
@@ -149,8 +153,8 @@ jobs:
             LAST_ISSUE=0
           fi
           echo "LAST_ISSUE=$LAST_ISSUE" >> $GITHUB_ENV
-          # Descargar solo las issues posteriores a la última registrada
-          gh api "/repos/${{ env.GH_REPO }}/issues?state=all&filter=all&per_page=100" --paginate --jq '.' > audit/issues/all-issues.json
+          # Descargar solo las issues posteriores a la última registrada (y desde ayer)
+          gh api -X GET "/repos/${{ env.GH_REPO }}/issues" -f state=all -f filter=all -f per_page=100 -f since="${{ env.YESTERDAY_ISO }}" --paginate --jq '.' > audit/issues/all-issues.json
           jq -c '.[] | select(.number > $LAST_ISSUE)' --argjson LAST_ISSUE "$LAST_ISSUE" audit/issues/all-issues.json | while read -r issue; do
             number=$(echo "$issue" | jq -r '.number')
             echo "$issue" > audit/issues/${number}.json
@@ -160,8 +164,9 @@ jobs:
 
       - name: Generate actually issues
         run: |
-          gh api \
-            "/repos/${{ env.GH_REPO }}/issues?state=all&filter=all&per_page=100" \
+          gh api -X GET \
+            "/repos/${{ env.GH_REPO }}/issues" \
+            -f state=all -f filter=all -f per_page=100 -f since="${{ env.YESTERDAY_ISO }}" \
             --paginate \
             --jq '[.[] | select(.pull_request == null) | {
               assignees: ((.assignees // []) | map(.login) | join(";")),
@@ -239,12 +244,13 @@ jobs:
           # Creamos el fichero de PR
           touch ${{ env.KAOS_PATH_RESUME }}${{ env.TIMESTAMP }}_${{ github.run_id }}_pr-log.json
 
-          # Extraemos toda la información de las PR hasta el momento
-          echo "Extraemos toda la información de las PR hasta el momento"
-          gh api \
-            "/repos/${{ env.GH_REPO }}/pulls?state=all&per_page=100" \
+          # Extraemos toda la información de las PR desde ayer
+          echo "Extraemos toda la información de las PR desde ayer"
+          gh api -X GET \
+            "/repos/${{ env.GH_REPO }}/pulls" \
+            -f state=all -f per_page=100 -f sort=updated -f direction=desc \
             --paginate \
-            --jq '[.[] | {
+            --jq '[.[] | select(.updated_at >= "'"${{ env.YESTERDAY_ISO }}"'") | {
               additions,
               assignees: ((.assignees // []) | map(.login) | join(";")),
               author: (.user.login // ""),
@@ -478,6 +484,9 @@ jobs:
     needs: [handle-success, handle-failure]
     if: always()
     runs-on: swarm-runners-scaleset
+    permissions:
+      actions: write
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
