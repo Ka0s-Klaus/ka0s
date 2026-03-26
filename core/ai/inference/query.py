@@ -195,7 +195,7 @@ def generate_answer(query: str, context: List[Dict[str, Any]], repo_root: str) -
         return build_verification_plan(query, repo_root)
 
     base = f"http://{OLLAMA_HOST}:{OLLAMA_PORT}"
-    url = f"{base}/api/generate"
+    url = f"{base}/api/chat"
     
     context_str = "\n\n".join([f"--- Source: {r['source']} (Score: {r['similarity']:.2f}) ---\n{r['content']}" for r in context])
     
@@ -203,12 +203,12 @@ def generate_answer(query: str, context: List[Dict[str, Any]], repo_root: str) -
     You are **Ka0s Agent**, the expert AI engineer for the Ka0s Framework.
     
     ### 🛡️ Core Directive: HONESTY & ACCURACY
-    You must answer the User Question based **ONLY** on the provided Context.
+    You must answer the User Question based **ONLY** on the provided Context or using the provided tools.
     
     ### 🚫 Strict Prohibitions
     - **DO NOT INVENT** information, commands, or file paths not present in the Context.
     - **DO NOT HALLUCINATE** features or services.
-    - If the Context does not contain the answer, say clearly that you lack evidence and provide a short verification plan.
+    - If the Context does not contain the answer and you cannot find it via tools, say clearly that you lack evidence and provide a short verification plan.
     
     ### 📝 Style Guidelines
     - **Tone**: Professional, Technical, Helpful.
@@ -220,47 +220,163 @@ def generate_answer(query: str, context: List[Dict[str, Any]], repo_root: str) -
     
     ### 👤 User Question
     {query}
-    
-    ### 🤖 Your Answer:
     """
+    
+    # Tool definitions based on MCP Server
+    tools = [
+        {
+            "type": "function",
+            "function": {
+                "name": "get_gh_run_status",
+                "description": "Obtiene el estado y conclusión de una ejecución (run) de GitHub Actions proporcionando su URL.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "url": {
+                            "type": "string",
+                            "description": "URL completa de la ejecución de GitHub Actions (ej. https://github.com/owner/repo/actions/runs/123)"
+                        }
+                    },
+                    "required": ["url"]
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "get_gh_run_logs",
+                "description": "Obtiene los logs de una ejecución (run) de GitHub Actions para análisis. Extrae solo los pasos fallidos por defecto.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "url": {
+                            "type": "string",
+                            "description": "URL completa de la ejecución de GitHub Actions."
+                        },
+                        "failed_only": {
+                            "type": "boolean",
+                            "description": "Si es True, retorna solo los logs de pasos fallidos."
+                        }
+                    },
+                    "required": ["url"]
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "execute_gh_command",
+                "description": "Ejecuta cualquier comando de la CLI de GitHub (gh). NO incluir 'gh' en la lista de argumentos.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "args": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            },
+                            "description": "Lista de argumentos del comando gh (ej. ['issue', 'list'])."
+                        }
+                    },
+                    "required": ["args"]
+                }
+            }
+        }
+    ]
     
     payload = {
         "model": GENERATION_MODEL,
-        "prompt": prompt,
+        "messages": [{"role": "user", "content": prompt}],
         "stream": False,
+        "tools": tools,
         "options": {
             "temperature": 0.1,
             "top_k": 20,
-        },
+        }
     }
     
     try:
         response = requests.post(url, json=payload, timeout=600)
-        if response.status_code == 404:
-            v1_url = f"{base}/v1/chat/completions"
-            v1_payload = {
-                "model": GENERATION_MODEL,
-                "messages": [
-                    {"role": "system", "content": "You are Ka0s Agent. Answer using ONLY the provided context."},
-                    {"role": "user", "content": prompt},
-                ],
-                "temperature": 0.1,
-                "stream": False,
-            }
-            response = requests.post(v1_url, json=v1_payload, timeout=600)
         response.raise_for_status()
         data = response.json()
-        if isinstance(data, dict) and "response" in data:
-            return data.get("response") or "Error: Empty response from LLM"
-        if isinstance(data, dict) and "choices" in data and isinstance(data["choices"], list) and data["choices"]:
-            choice0 = data["choices"][0]
-            if isinstance(choice0, dict):
-                msg = choice0.get("message")
-                if isinstance(msg, dict) and msg.get("content"):
-                    return msg["content"]
-                if choice0.get("text"):
-                    return choice0["text"]
-        return "Error: Empty response from LLM"
+        
+        message = data.get("message", {})
+        
+        # Check if the model decided to call a tool
+        if "tool_calls" in message and message["tool_calls"]:
+            tool_call = message["tool_calls"][0]
+            function_name = tool_call["function"]["name"]
+            arguments = tool_call["function"]["arguments"]
+            
+            logger.info(f"LLM requested tool call: {function_name} with args {arguments}")
+            
+            # Execute the tool via our local MCP server logic (simulated for the agent script)
+            # In a real MCP setup over stdio, we would pipe this to the mcp client.
+            # Here, we import the main logic directly since it's in the same repo,
+            # or execute it via subprocess.
+            try:
+                import subprocess
+                mcp_script = os.path.join(repo_root, "core/ai/mcp/github-cli/main.py")
+                
+                # We'll write a quick bridge or just call the python script with the tool request
+                # For simplicity in this script, we'll execute the underlying gh commands directly
+                # since we know the exact implementation of the MCP tools.
+                tool_result = ""
+                
+                if function_name == "get_gh_run_status":
+                    url_arg = arguments.get("url", "")
+                    match = re.search(r'github\.com/([^/]+/[^/]+)/actions/runs/(\d+)', url_arg)
+                    if match:
+                        repo, run_id = match.group(1), match.group(2)
+                        res = subprocess.run(["gh", "run", "view", run_id, "-R", repo, "--json", "status,conclusion,name,jobs"], capture_output=True, text=True)
+                        tool_result = res.stdout if res.returncode == 0 else res.stderr
+                    else:
+                        tool_result = "Invalid URL"
+                        
+                elif function_name == "get_gh_run_logs":
+                    url_arg = arguments.get("url", "")
+                    match = re.search(r'github\.com/([^/]+/[^/]+)/actions/runs/(\d+)', url_arg)
+                    if match:
+                        repo, run_id = match.group(1), match.group(2)
+                        res = subprocess.run(["gh", "run", "view", run_id, "-R", repo, "--log-failed"], capture_output=True, text=True)
+                        tool_result = res.stdout if res.returncode == 0 else res.stderr
+                        if len(tool_result) > 8000:
+                            tool_result = "...(logs truncados)...\n" + tool_result[-8000:]
+                    else:
+                        tool_result = "Invalid URL"
+                        
+                elif function_name == "execute_gh_command":
+                    args = arguments.get("args", [])
+                    if args and not any(a in ["--interactive", "-i"] for a in args):
+                        res = subprocess.run(["gh"] + args, capture_output=True, text=True)
+                        tool_result = res.stdout if res.returncode == 0 else res.stderr
+                        if len(tool_result) > 15000:
+                            tool_result = "...(salida truncada)...\n" + tool_result[-15000:]
+                    else:
+                        tool_result = "Comando inválido o interactivo."
+                
+                # Send the tool result back to the model
+                messages = [
+                    {"role": "user", "content": prompt},
+                    message,
+                    {"role": "tool", "content": tool_result}
+                ]
+                
+                payload["messages"] = messages
+                payload.pop("tools", None) # Remove tools for the final answer generation to avoid loops
+                
+                response2 = requests.post(url, json=payload, timeout=600)
+                response2.raise_for_status()
+                data2 = response2.json()
+                return data2.get("message", {}).get("content", "Error: Empty response after tool call")
+                
+            except Exception as e:
+                logger.error(f"Error executing tool: {e}")
+                return f"El agente intentó usar la herramienta `{function_name}` pero falló: {str(e)}"
+        
+        # If no tool was called, return the direct response
+        return message.get("content", "Error: Empty response from LLM")
+        
     except Exception as e:
         logger.error(f"Generation failed: {e}")
         plan = build_verification_plan(query, repo_root)

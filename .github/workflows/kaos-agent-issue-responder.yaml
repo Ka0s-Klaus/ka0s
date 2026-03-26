@@ -40,7 +40,10 @@ jobs:
           python-version: '3.11'
 
       - name: Install Dependencies
-        run: pip install psycopg2-binary requests
+        run: pip install psycopg2-binary requests mcp pydantic
+
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
 
       - name: Query Agent (Degraded)
         id: query
