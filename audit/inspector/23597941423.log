@@ -1,0 +1,789 @@
+Core Execution	Set up job	﻿2026-03-26T13:51:20.5050334Z Current runner version: '2.333.0'
+Core Execution	Set up job	2026-03-26T13:51:20.5071387Z Runner name: 'swarm-runners-scaleset-97tpt-runner-m2vsn'
+Core Execution	Set up job	2026-03-26T13:51:20.5072737Z Runner group name: 'Default'
+Core Execution	Set up job	2026-03-26T13:51:20.5074110Z Machine name: 'swarm-runners-scaleset-97tpt-runner-m2vsn'
+Core Execution	Set up job	2026-03-26T13:51:20.5088873Z ##[group]GITHUB_TOKEN Permissions
+Core Execution	Set up job	2026-03-26T13:51:20.5092722Z Contents: write
+Core Execution	Set up job	2026-03-26T13:51:20.5094239Z Metadata: read
+Core Execution	Set up job	2026-03-26T13:51:20.5101083Z ##[endgroup]
+Core Execution	Set up job	2026-03-26T13:51:20.5104386Z Secret source: Actions
+Core Execution	Set up job	2026-03-26T13:51:20.5105784Z Prepare workflow directory
+Core Execution	Set up job	2026-03-26T13:51:20.6278827Z Prepare all required actions
+Core Execution	Set up job	2026-03-26T13:51:20.6329197Z Getting action download info
+Core Execution	Set up job	2026-03-26T13:51:21.2254370Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+Core Execution	Set up job	2026-03-26T13:51:22.3800471Z Complete job name: Core Execution
+Core Execution	Setup Environment	﻿2026-03-26T14:13:32.9898017Z ##[group]Run echo "Iniciando módulo: [Ka0S] K8s Config Extractor"
+Core Execution	Setup Environment	2026-03-26T14:13:32.9898724Z [36;1mecho "Iniciando módulo: [Ka0S] K8s Config Extractor"[0m
+Core Execution	Setup Environment	2026-03-26T14:13:32.9899150Z [36;1mecho "Run ID: 23597941423"[0m
+Core Execution	Setup Environment	2026-03-26T14:13:32.9899469Z [36;1mecho "Actor: asantacana1970"[0m
+Core Execution	Setup Environment	2026-03-26T14:13:32.9899798Z [36;1mmkdir -p audit/k8config[0m
+Core Execution	Setup Environment	2026-03-26T14:13:33.8958465Z shell: /usr/bin/bash -e {0}
+Core Execution	Setup Environment	2026-03-26T14:13:33.8958885Z env:
+Core Execution	Setup Environment	2026-03-26T14:13:33.8959139Z   KAOS_MODULE: [Ka0S] K8s Config Extractor
+Core Execution	Setup Environment	2026-03-26T14:13:33.8959463Z   KAOS_CODE: 23597941423
+Core Execution	Setup Environment	2026-03-26T14:13:33.8959731Z   KAOS_ACTOR: asantacana1970
+Core Execution	Setup Environment	2026-03-26T14:13:33.8960004Z ##[endgroup]
+Core Execution	Setup Environment	2026-03-26T14:13:40.2252706Z Iniciando módulo: [Ka0S] K8s Config Extractor
+Core Execution	Setup Environment	2026-03-26T14:13:40.2544224Z Run ID: 23597941423
+Core Execution	Setup Environment	2026-03-26T14:13:40.2548974Z Actor: asantacana1970
+Core Execution	Establish K8s Connection	﻿2026-03-26T14:13:42.2302715Z Prepare all required actions
+Core Execution	Establish K8s Connection	2026-03-26T14:13:42.4470311Z ##[group]Run ./.github/actions/kubectl-tunnel
+Core Execution	Establish K8s Connection	2026-03-26T14:13:42.4470664Z with:
+Core Execution	Establish K8s Connection	2026-03-26T14:13:42.4471075Z   host: ***
+Core Execution	Establish K8s Connection	2026-03-26T14:13:42.4471313Z   username: ***
+Core Execution	Establish K8s Connection	2026-03-26T14:13:42.4473390Z   key: ***
+Core Execution	Establish K8s Connection	2026-03-26T14:13:42.4473614Z   port: ***
+Core Execution	Establish K8s Connection	2026-03-26T14:13:42.4473859Z   k8s-api-port: 6443
+Core Execution	Establish K8s Connection	2026-03-26T14:13:42.4474116Z   kubectl-version: v1.30.0
+Core Execution	Establish K8s Connection	2026-03-26T14:13:42.4474369Z env:
+Core Execution	Establish K8s Connection	2026-03-26T14:13:42.4474603Z   KAOS_MODULE: [Ka0S] K8s Config Extractor
+Core Execution	Establish K8s Connection	2026-03-26T14:13:42.4475108Z   KAOS_CODE: 23597941423
+Core Execution	Establish K8s Connection	2026-03-26T14:13:42.4475428Z   KAOS_ACTOR: asantacana1970
+Core Execution	Establish K8s Connection	2026-03-26T14:13:42.4475696Z ##[endgroup]
+Core Execution	Establish K8s Connection	2026-03-26T14:13:42.4650873Z ##[group]Run # Download the latest stable release of kubectl
+Core Execution	Establish K8s Connection	2026-03-26T14:13:42.4651389Z [36;1m# Download the latest stable release of kubectl[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:13:42.4651900Z [36;1mcurl -LO "https://dl.k8s.io/release/v1.30.0/bin/linux/amd64/kubectl"[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:13:42.4652331Z [36;1m[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:13:42.4652885Z [36;1m# Validate binary (optional but recommended in official docs, skipping for speed/simplicity as per request)[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:13:42.4653453Z [36;1m[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:13:42.4653682Z [36;1m# Install kubectl[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:13:42.4654075Z [36;1msudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:13:42.4654491Z [36;1m[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:13:42.4654717Z [36;1m# Verify installation[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:13:42.4657392Z [36;1mkubectl version --client[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:13:42.4682891Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+Core Execution	Establish K8s Connection	2026-03-26T14:13:42.4683616Z env:
+Core Execution	Establish K8s Connection	2026-03-26T14:13:42.4683872Z   KAOS_MODULE: [Ka0S] K8s Config Extractor
+Core Execution	Establish K8s Connection	2026-03-26T14:13:42.4684194Z   KAOS_CODE: 23597941423
+Core Execution	Establish K8s Connection	2026-03-26T14:13:42.4684483Z   KAOS_ACTOR: asantacana1970
+Core Execution	Establish K8s Connection	2026-03-26T14:13:42.4684750Z ##[endgroup]
+Core Execution	Establish K8s Connection	2026-03-26T14:13:42.4944051Z   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+Core Execution	Establish K8s Connection	2026-03-26T14:13:42.4945178Z                                  Dload  Upload   Total   Spent    Left  Speed
+Core Execution	Establish K8s Connection	2026-03-26T14:13:42.4945753Z 
+Core Execution	Establish K8s Connection	2026-03-26T14:13:45.0160569Z   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+Core Execution	Establish K8s Connection	2026-03-26T14:13:59.4546172Z   0     0    0     0    0     0      0      0 --:--:--  0:00:02 --:--:--     0
+Core Execution	Establish K8s Connection	2026-03-26T14:14:05.6496336Z  19 49.0M   19 9972k    0     0   593k      0  0:01:24  0:00:16  0:01:08  593k
+Core Execution	Establish K8s Connection	2026-03-26T14:14:15.3416655Z  42 49.0M   42 20.7M    0     0   921k      0  0:00:54  0:00:23  0:00:31  921k
+Core Execution	Establish K8s Connection	2026-03-26T14:14:32.4198283Z  62 49.0M   62 30.4M    0     0   950k      0  0:00:52  0:00:32  0:00:20  950k
+Core Execution	Establish K8s Connection	2026-03-26T14:14:32.6655643Z  93 49.0M   93 45.7M    0     0   950k      0  0:00:52  0:00:49  0:00:03  950k
+Core Execution	Establish K8s Connection	2026-03-26T14:14:33.9385623Z  93 49.0M   93 45.7M    0     0   936k      0  0:00:53  0:00:50  0:00:03  985k
+Core Execution	Establish K8s Connection	2026-03-26T14:14:33.9386175Z 100 49.0M  100 49.0M    0     0   978k      0  0:00:51  0:00:51 --:--:-- 1166k
+Core Execution	Establish K8s Connection	2026-03-26T14:14:33.9386637Z 100 49.0M  100 49.0M    0     0   978k      0  0:00:51  0:00:51 --:--:-- 1025k
+Core Execution	Establish K8s Connection	2026-03-26T14:14:49.8362320Z Client Version: v1.30.0
+Core Execution	Establish K8s Connection	2026-03-26T14:14:49.8576561Z Kustomize Version: v5.0.4-0.20230601165947-6ce0bf390ce3
+Core Execution	Establish K8s Connection	2026-03-26T14:14:52.0620969Z ##[group]Run mkdir -p ~/.ssh
+Core Execution	Establish K8s Connection	2026-03-26T14:14:52.0621341Z [36;1mmkdir -p ~/.ssh[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:14:52.0621610Z [36;1m[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:14:52.0621857Z [36;1m# Write private key[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:14:52.0622551Z [36;1mecho "***[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:14:52.0623115Z [36;1m***[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:14:52.0623597Z [36;1m***[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:14:52.0624068Z [36;1m***[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:14:52.0624518Z [36;1m***[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:14:52.0720801Z [36;1m***[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:14:52.0721314Z [36;1m***" > ~/.ssh/id_rsa[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:14:52.0721609Z [36;1mchmod 600 ~/.ssh/id_rsa[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:14:52.0721889Z [36;1m[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:14:52.0722127Z [36;1m# Add host key to known_hosts[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:14:52.0722466Z [36;1mif [ -n "***" ]; then[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:14:52.0723048Z [36;1m    ssh-keyscan -p *** -H *** >> ~/.ssh/known_hosts 2>/dev/null || echo "Warning: ssh-keyscan failed"[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:14:52.0724193Z [36;1mfi[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:14:52.0859059Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+Core Execution	Establish K8s Connection	2026-03-26T14:14:52.0859505Z env:
+Core Execution	Establish K8s Connection	2026-03-26T14:14:52.0859796Z   KAOS_MODULE: [Ka0S] K8s Config Extractor
+Core Execution	Establish K8s Connection	2026-03-26T14:14:52.0860120Z   KAOS_CODE: 23597941423
+Core Execution	Establish K8s Connection	2026-03-26T14:14:52.0860391Z   KAOS_ACTOR: asantacana1970
+Core Execution	Establish K8s Connection	2026-03-26T14:14:52.0860658Z ##[endgroup]
+Core Execution	Establish K8s Connection	2026-03-26T14:15:13.6759741Z ##[group]Run echo "Starting SSH Tunnel to ***..."
+Core Execution	Establish K8s Connection	2026-03-26T14:15:13.6760260Z [36;1mecho "Starting SSH Tunnel to ***..."[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:15:13.6760678Z [36;1m# -f: Background, -N: No command, -L: Local forwarding[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:15:13.6761104Z [36;1m# Maps LocalPort:RemoteHost:RemotePort. [0m
+Core Execution	Establish K8s Connection	2026-03-26T14:15:13.6761642Z [36;1m# We map Runner:6443 -> Remote:Localhost:6443 (Assuming API is local to the SSH host)[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:15:13.6762141Z [36;1mssh -f -N -L 6443:127.0.0.1:6443 \[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:15:13.6762462Z [36;1m    -p *** \[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:15:13.6762736Z [36;1m    -i ~/.ssh/id_rsa \[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:15:13.6763071Z [36;1m    ***@***[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:15:13.6763313Z [36;1m[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:15:13.6763570Z [36;1mecho "Tunnel established on 127.0.0.1:6443"[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:15:14.2308229Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+Core Execution	Establish K8s Connection	2026-03-26T14:15:14.2308792Z env:
+Core Execution	Establish K8s Connection	2026-03-26T14:15:14.2309086Z   KAOS_MODULE: [Ka0S] K8s Config Extractor
+Core Execution	Establish K8s Connection	2026-03-26T14:15:14.4236684Z   KAOS_CODE: 23597941423
+Core Execution	Establish K8s Connection	2026-03-26T14:15:14.4237171Z   KAOS_ACTOR: asantacana1970
+Core Execution	Establish K8s Connection	2026-03-26T14:15:14.4238039Z ##[endgroup]
+Core Execution	Establish K8s Connection	2026-03-26T14:15:15.9506380Z Starting SSH Tunnel to ***...
+Core Execution	Establish K8s Connection	2026-03-26T14:15:23.7475477Z Tunnel established on 127.0.0.1:6443
+Core Execution	Establish K8s Connection	2026-03-26T14:15:24.7709134Z ##[group]Run # Fetch kubeconfig from default location on remote
+Core Execution	Establish K8s Connection	2026-03-26T14:15:24.7709694Z [36;1m# Fetch kubeconfig from default location on remote[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:15:24.7710105Z [36;1mecho "Fetching remote kubeconfig..."[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:15:25.0408191Z [36;1mssh -p *** -i ~/.ssh/id_rsa ***@*** "cat ~/.kube/config" > ./kubeconfig_raw[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:15:25.0408973Z [36;1m[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:15:25.0409284Z [36;1m# Patch the server URL to point to the local tunnel[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:15:25.0409756Z [36;1m# Replaces any IP/Hostname in the server URL with 127.0.0.1[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:15:25.0410380Z [36;1m# Example: https://***:6443 -> https://127.0.0.1:6443[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:15:25.0411064Z [36;1msed -E "s/server: https:\/\/[0-9a-zA-Z\.\-]+:6443/server: https:\/\/127.0.0.1:6443/g" ./kubeconfig_raw > ./kubeconfig_tunneled[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:15:25.0411669Z [36;1m[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:15:25.0411902Z [36;1m# Move to a standard location[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:15:25.0412217Z [36;1mmkdir -p ~/.kube[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:15:25.0412525Z [36;1mmv ./kubeconfig_tunneled ~/.kube/config[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:15:25.0412867Z [36;1mchmod 600 ~/.kube/config[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:15:25.0413140Z [36;1m[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:15:25.0413550Z [36;1m# Set Skip TLS Verify (since certificate is for the private IP/Hostname, not localhost)[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:15:25.0414206Z [36;1m# We must detect the cluster name dynamically because it might not be 'default'[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:15:25.0414659Z [36;1m[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:15:25.4865529Z [36;1mCURRENT_CONTEXT=$(kubectl config current-context)[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:15:25.4866459Z [36;1mCLUSTER_NAME=$(kubectl config view -o jsonpath="{.contexts[?(@.name=='$CURRENT_CONTEXT')].context.cluster}")[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:15:25.4867059Z [36;1m[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:15:25.4867391Z [36;1mecho "Configuring TLS skip for cluster: $CLUSTER_NAME"[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:15:25.4867851Z [36;1m[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:15:25.4868159Z [36;1m# Disable TLS verification for the active cluster[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:15:25.4868701Z [36;1mkubectl config set-cluster "$CLUSTER_NAME" --insecure-skip-tls-verify=true[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:15:25.4869188Z [36;1m[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:15:25.4869513Z [36;1m# Unset CA data to ensure insecure mode works (avoid conflicts)[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:15:25.4870113Z [36;1mkubectl config unset "clusters.$CLUSTER_NAME.certificate-authority-data"[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:15:25.4871539Z [36;1m[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:15:25.4871825Z [36;1mecho "path=~/.kube/config" >> $GITHUB_OUTPUT[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:15:25.4872229Z [36;1mecho "Kubeconfig configured successfully."[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:15:26.9716736Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+Core Execution	Establish K8s Connection	2026-03-26T14:15:26.9717153Z env:
+Core Execution	Establish K8s Connection	2026-03-26T14:15:26.9717405Z   KAOS_MODULE: [Ka0S] K8s Config Extractor
+Core Execution	Establish K8s Connection	2026-03-26T14:15:26.9717723Z   KAOS_CODE: 23597941423
+Core Execution	Establish K8s Connection	2026-03-26T14:15:26.9717986Z   KAOS_ACTOR: asantacana1970
+Core Execution	Establish K8s Connection	2026-03-26T14:15:26.9718269Z ##[endgroup]
+Core Execution	Establish K8s Connection	2026-03-26T14:15:30.2385592Z Fetching remote kubeconfig...
+Core Execution	Establish K8s Connection	2026-03-26T14:16:00.8915708Z Configuring TLS skip for cluster: kubernetes
+Core Execution	Establish K8s Connection	2026-03-26T14:16:11.8435686Z Cluster "kubernetes" set.
+Core Execution	Establish K8s Connection	2026-03-26T14:16:13.4732781Z Property "clusters.kubernetes.certificate-authority-data" unset.
+Core Execution	Establish K8s Connection	2026-03-26T14:16:13.4800118Z Kubeconfig configured successfully.
+Core Execution	Establish K8s Connection	2026-03-26T14:16:13.7636660Z ##[group]Run kubectl get nodes
+Core Execution	Establish K8s Connection	2026-03-26T14:16:13.7637042Z [36;1mkubectl get nodes[0m
+Core Execution	Establish K8s Connection	2026-03-26T14:16:13.7779352Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+Core Execution	Establish K8s Connection	2026-03-26T14:16:13.7779776Z env:
+Core Execution	Establish K8s Connection	2026-03-26T14:16:13.7785234Z   KAOS_MODULE: [Ka0S] K8s Config Extractor
+Core Execution	Establish K8s Connection	2026-03-26T14:16:13.7785633Z   KAOS_CODE: 23597941423
+Core Execution	Establish K8s Connection	2026-03-26T14:16:13.7785907Z   KAOS_ACTOR: asantacana1970
+Core Execution	Establish K8s Connection	2026-03-26T14:16:13.7786190Z ##[endgroup]
+Core Execution	Establish K8s Connection	2026-03-26T14:16:30.1866039Z NAME         STATUS   ROLES           AGE   VERSION
+Core Execution	Establish K8s Connection	2026-03-26T14:16:30.4945481Z k8-manager   Ready    control-plane   97d   v1.32.11
+Core Execution	Establish K8s Connection	2026-03-26T14:16:30.4946794Z k8-node-20   Ready    <none>          97d   v1.32.11
+Core Execution	Establish K8s Connection	2026-03-26T14:16:30.5415605Z k8-node-30   Ready    <none>          77d   v1.32.11
+Core Execution	Establish K8s Connection	2026-03-26T14:16:30.6655897Z k8-node-40   Ready    <none>          49d   v1.32.11
+Core Execution	Extract Kubernetes Configuration	﻿2026-03-26T14:16:35.3876523Z ##[group]Run echo "Extrayendo configuración del cluster a audit/k8config/23597941423.json..."
+Core Execution	Extract Kubernetes Configuration	2026-03-26T14:16:35.3877874Z [36;1mecho "Extrayendo configuración del cluster a audit/k8config/23597941423.json..."[0m
+Core Execution	Extract Kubernetes Configuration	2026-03-26T14:16:35.3878628Z [36;1m# Se extraen los componentes principales del cluster en formato JSON, omitiendo secrets por seguridad[0m
+Core Execution	Extract Kubernetes Configuration	2026-03-26T14:16:35.3879867Z [36;1mkubectl get nodes,namespaces,deployments,statefulsets,daemonsets,services,ingresses,configmaps,hpa,networkpolicies,pvc -A -o json > audit/k8config/23597941423.json[0m
+Core Execution	Extract Kubernetes Configuration	2026-03-26T14:16:35.3880816Z [36;1m[0m
+Core Execution	Extract Kubernetes Configuration	2026-03-26T14:16:35.3881177Z [36;1mecho "Limpiando configuraciones antiguas (mayores a 60 minutos)..."[0m
+Core Execution	Extract Kubernetes Configuration	2026-03-26T14:16:35.3881724Z [36;1mfind audit/k8config -name "*.json" -type f -mmin +60 -delete[0m
+Core Execution	Extract Kubernetes Configuration	2026-03-26T14:16:35.3882171Z [36;1m[0m
+Core Execution	Extract Kubernetes Configuration	2026-03-26T14:16:35.3882439Z [36;1mecho "Archivos actuales en audit/k8config:"[0m
+Core Execution	Extract Kubernetes Configuration	2026-03-26T14:16:35.3882800Z [36;1mls -lh audit/k8config/[0m
+Core Execution	Extract Kubernetes Configuration	2026-03-26T14:16:36.8046492Z shell: /usr/bin/bash -e {0}
+Core Execution	Extract Kubernetes Configuration	2026-03-26T14:16:36.8046847Z env:
+Core Execution	Extract Kubernetes Configuration	2026-03-26T14:16:36.8047096Z   KAOS_MODULE: [Ka0S] K8s Config Extractor
+Core Execution	Extract Kubernetes Configuration	2026-03-26T14:16:36.8047411Z   KAOS_CODE: 23597941423
+Core Execution	Extract Kubernetes Configuration	2026-03-26T14:16:36.8047689Z   KAOS_ACTOR: asantacana1970
+Core Execution	Extract Kubernetes Configuration	2026-03-26T14:16:36.8047956Z ##[endgroup]
+Core Execution	Extract Kubernetes Configuration	2026-03-26T14:16:38.9094997Z Extrayendo configuración del cluster a audit/k8config/23597941423.json...
+Core Execution	Extract Kubernetes Configuration	2026-03-26T14:17:46.6643486Z Limpiando configuraciones antiguas (mayores a 60 minutos)...
+Core Execution	Extract Kubernetes Configuration	2026-03-26T14:17:47.4331333Z Archivos actuales en audit/k8config:
+Core Execution	Extract Kubernetes Configuration	2026-03-26T14:17:47.7095832Z total 1.9M
+Core Execution	Extract Kubernetes Configuration	2026-03-26T14:17:47.7416044Z -rw-r--r-- 1 runner runner 1.9M Mar 26 14:17 23597941423.json
+Core Execution	Extract Kubernetes Configuration	2026-03-26T14:17:48.0306080Z -rw-r--r-- 1 runner runner   76 Mar 26 14:12 README.md
+Core Execution	Commit & Push Results	﻿2026-03-26T14:17:50.7803379Z ##[group]Run git config --global user.name "***"
+Core Execution	Commit & Push Results	2026-03-26T14:17:50.7803895Z [36;1mgit config --global user.name "***"[0m
+Core Execution	Commit & Push Results	2026-03-26T14:17:50.7804293Z [36;1mgit config --global user.email "***"[0m
+Core Execution	Commit & Push Results	2026-03-26T14:17:50.7804622Z [36;1m[0m
+Core Execution	Commit & Push Results	2026-03-26T14:17:51.6225343Z [36;1mgit pull --rebase origin main || git pull origin main[0m
+Core Execution	Commit & Push Results	2026-03-26T14:17:51.6225986Z [36;1m[0m
+Core Execution	Commit & Push Results	2026-03-26T14:17:51.6226329Z [36;1m# Añadir cambios (nuevos archivos y eliminaciones)[0m
+Core Execution	Commit & Push Results	2026-03-26T14:17:51.6226720Z [36;1mgit add audit/k8config/[0m
+Core Execution	Commit & Push Results	2026-03-26T14:17:51.6227007Z [36;1m[0m
+Core Execution	Commit & Push Results	2026-03-26T14:17:51.6227263Z [36;1mif ! git diff --staged --quiet; then[0m
+Core Execution	Commit & Push Results	2026-03-26T14:17:51.6227837Z [36;1m  git commit -m "chore(ka0s): update k8s config [Ka0S] K8s Config Extractor run 23597941423 [skip ci]"[0m
+Core Execution	Commit & Push Results	2026-03-26T14:17:51.6228454Z [36;1m  git push || (git pull --rebase origin main && git push)[0m
+Core Execution	Commit & Push Results	2026-03-26T14:17:51.6228830Z [36;1melse[0m
+Core Execution	Commit & Push Results	2026-03-26T14:17:51.6229090Z [36;1m  echo "No hay cambios para subir."[0m
+Core Execution	Commit & Push Results	2026-03-26T14:17:51.6229490Z [36;1mfi[0m
+Core Execution	Commit & Push Results	2026-03-26T14:17:52.2316661Z shell: /usr/bin/bash -e {0}
+Core Execution	Commit & Push Results	2026-03-26T14:17:52.2317005Z env:
+Core Execution	Commit & Push Results	2026-03-26T14:17:52.2317260Z   KAOS_MODULE: [Ka0S] K8s Config Extractor
+Core Execution	Commit & Push Results	2026-03-26T14:17:52.2317591Z   KAOS_CODE: 23597941423
+Core Execution	Commit & Push Results	2026-03-26T14:17:52.2317867Z   KAOS_ACTOR: asantacana1970
+Core Execution	Commit & Push Results	2026-03-26T14:17:52.2318145Z ##[endgroup]
+Core Execution	Commit & Push Results	2026-03-26T14:18:13.4525934Z From https://github.com/Ka0s-Klaus/ka0s
+Core Execution	Commit & Push Results	2026-03-26T14:18:13.4745472Z  * branch                main       -> FETCH_HEAD
+Core Execution	Commit & Push Results	2026-03-26T14:18:13.5066232Z    623f1d200..129408696  main       -> origin/main
+Core Execution	Commit & Push Results	2026-03-26T14:18:16.5365596Z Updating 623f1d200..129408696
+Core Execution	Commit & Push Results	2026-03-26T14:18:16.5365973Z Fast-forward
+Core Execution	Commit & Push Results	2026-03-26T14:18:17.6880027Z  audit/mongodb/23597904409.json | 32258 +++++++++++++++++++++++++++++++++++++++
+Core Execution	Commit & Push Results	2026-03-26T14:18:17.6881588Z  1 file changed, 32258 insertions(+)
+Core Execution	Commit & Push Results	2026-03-26T14:18:17.6881947Z  create mode 100644 audit/mongodb/23597904409.json
+Core Execution	Commit & Push Results	2026-03-26T14:18:19.7747539Z [main 977681600] chore(ka0s): update k8s config [Ka0S] K8s Config Extractor run 23597941423 [skip ci]
+Core Execution	Commit & Push Results	2026-03-26T14:18:19.7750189Z  1 file changed, 15839 insertions(+)
+Core Execution	Commit & Push Results	2026-03-26T14:18:19.7751692Z  create mode 100644 audit/k8config/23597941423.json
+Core Execution	Commit & Push Results	2026-03-26T14:18:25.4038777Z To https://github.com/Ka0s-Klaus/ka0s
+Core Execution	Commit & Push Results	2026-03-26T14:18:25.4044668Z    129408696..977681600  main -> main
+Core Execution	Post Checkout Code	﻿2026-03-26T14:18:31.9209426Z Post job cleanup.
+Core Execution	Post Checkout Code	2026-03-26T14:18:53.7165487Z [command]/usr/bin/git version
+Core Execution	Post Checkout Code	2026-03-26T14:18:55.0685736Z git version 2.53.0
+Core Execution	Post Checkout Code	2026-03-26T14:18:56.3906823Z Copying '/home/runner/.gitconfig' to '/home/runner/_work/_temp/25b4bc9d-cfb4-4889-b43d-a9a1f3d21a63/.gitconfig'
+Core Execution	Post Checkout Code	2026-03-26T14:18:56.3907882Z Temporarily overriding HOME='/home/runner/_work/_temp/25b4bc9d-cfb4-4889-b43d-a9a1f3d21a63' before making global git config changes
+Core Execution	Post Checkout Code	2026-03-26T14:18:56.4215670Z Adding repository directory to the temporary git global config as a safe directory
+Core Execution	Post Checkout Code	2026-03-26T14:18:56.9005994Z [command]/usr/bin/git config --global --add safe.directory /home/runner/_work/ka0s/ka0s
+Core Execution	Post Checkout Code	2026-03-26T14:18:58.3005997Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Core Execution	Post Checkout Code	2026-03-26T14:19:00.7886326Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Core Execution	Post Checkout Code	2026-03-26T14:19:06.4545746Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Core Execution	Post Checkout Code	2026-03-26T14:19:07.6345516Z http.https://github.com/.extraheader
+Core Execution	Post Checkout Code	2026-03-26T14:19:08.0855886Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+Core Execution	Post Checkout Code	2026-03-26T14:19:08.4379226Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Core Execution	Post Checkout Code	2026-03-26T14:19:14.7995767Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Core Execution	Post Checkout Code	2026-03-26T14:19:15.2047711Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Core Execution	Complete job	﻿2026-03-26T14:19:15.2819078Z Evaluate and set job outputs
+Core Execution	Complete job	2026-03-26T14:19:15.2824497Z Set output 'status'
+Core Execution	Complete job	2026-03-26T14:19:15.2826650Z Cleaning up orphan processes
+Core Execution	Complete job	2026-03-26T14:19:15.2882149Z Terminate orphan process: pid (389) (ssh)
+Core Execution	Complete job	2026-03-26T14:19:15.2929872Z ##[warning]Node.js 20 actions are deprecated. The following actions are running on Node.js 20 and may not work as expected: actions/checkout@v4. Actions will be forced to run with Node.js 24 by default starting June 2nd, 2026. Node.js 20 will be removed from the runner on September 16th, 2026. Please check if updated versions of these actions are available that support Node.js 24. To opt into Node.js 24 now, set the FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true environment variable on the runner or in your workflow file. Once Node.js 24 becomes the default, you can temporarily opt out by setting ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+Handle Success	Set up job	﻿2026-03-26T14:24:25.6653074Z Current runner version: '2.333.0'
+Handle Success	Set up job	2026-03-26T14:24:25.6841901Z Runner name: 'swarm-runners-scaleset-97tpt-runner-d6p4d'
+Handle Success	Set up job	2026-03-26T14:24:25.6843033Z Runner group name: 'Default'
+Handle Success	Set up job	2026-03-26T14:24:25.6844128Z Machine name: 'swarm-runners-scaleset-97tpt-runner-d6p4d'
+Handle Success	Set up job	2026-03-26T14:24:25.6848134Z ##[group]GITHUB_TOKEN Permissions
+Handle Success	Set up job	2026-03-26T14:24:25.6852010Z Contents: write
+Handle Success	Set up job	2026-03-26T14:24:25.6852498Z Metadata: read
+Handle Success	Set up job	2026-03-26T14:24:25.6852938Z ##[endgroup]
+Handle Success	Set up job	2026-03-26T14:24:25.6855216Z Secret source: Actions
+Handle Success	Set up job	2026-03-26T14:24:25.6855925Z Prepare workflow directory
+Handle Success	Set up job	2026-03-26T14:25:06.0171692Z Prepare all required actions
+Handle Success	Set up job	2026-03-26T14:25:11.5894549Z Complete job name: Handle Success
+Handle Success	Notify Success	﻿2026-03-26T14:25:44.9691827Z ##[group]Run echo "✅ Workflow [Ka0S] K8s Config Extractor completado correctamente."
+Handle Success	Notify Success	2026-03-26T14:25:44.9693105Z [36;1mecho "✅ Workflow [Ka0S] K8s Config Extractor completado correctamente."[0m
+Handle Success	Notify Success	2026-03-26T14:25:44.9728529Z shell: /usr/bin/bash -e {0}
+Handle Success	Notify Success	2026-03-26T14:25:44.9729523Z env:
+Handle Success	Notify Success	2026-03-26T14:25:44.9730084Z   KAOS_MODULE: [Ka0S] K8s Config Extractor
+Handle Success	Notify Success	2026-03-26T14:25:44.9730669Z   KAOS_CODE: 23597941423
+Handle Success	Notify Success	2026-03-26T14:25:44.9731156Z   KAOS_ACTOR: asantacana1970
+Handle Success	Notify Success	2026-03-26T14:25:44.9731656Z ##[endgroup]
+Handle Success	Notify Success	2026-03-26T14:25:48.1623102Z ✅ Workflow [Ka0S] K8s Config Extractor completado correctamente.
+Handle Success	Complete job	﻿2026-03-26T14:25:52.1252494Z Cleaning up orphan processes
+end-workflow	Set up job	﻿2026-03-26T14:28:18.9255612Z Current runner version: '2.333.0'
+end-workflow	Set up job	2026-03-26T14:28:18.9269178Z Runner name: 'swarm-runners-scaleset-97tpt-runner-fhb6d'
+end-workflow	Set up job	2026-03-26T14:28:18.9270882Z Runner group name: 'Default'
+end-workflow	Set up job	2026-03-26T14:28:18.9272493Z Machine name: 'swarm-runners-scaleset-97tpt-runner-fhb6d'
+end-workflow	Set up job	2026-03-26T14:28:18.9277776Z ##[group]GITHUB_TOKEN Permissions
+end-workflow	Set up job	2026-03-26T14:28:18.9283084Z Actions: write
+end-workflow	Set up job	2026-03-26T14:28:18.9284186Z Contents: read
+end-workflow	Set up job	2026-03-26T14:28:18.9285214Z Metadata: read
+end-workflow	Set up job	2026-03-26T14:28:18.9286033Z ##[endgroup]
+end-workflow	Set up job	2026-03-26T14:28:18.9290183Z Secret source: Actions
+end-workflow	Set up job	2026-03-26T14:28:18.9291809Z Prepare workflow directory
+end-workflow	Set up job	2026-03-26T14:28:23.3780046Z Prepare all required actions
+end-workflow	Set up job	2026-03-26T14:28:23.4612517Z Getting action download info
+end-workflow	Set up job	2026-03-26T14:28:27.5470689Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+end-workflow	Set up job	2026-03-26T14:28:33.5197558Z Complete job name: end-workflow
+end-workflow	Checkout Repository	﻿2026-03-26T14:28:36.7409841Z ##[group]Run actions/checkout@v4
+end-workflow	Checkout Repository	2026-03-26T14:28:36.7412466Z with:
+end-workflow	Checkout Repository	2026-03-26T14:28:36.7413208Z   fetch-depth: 0
+end-workflow	Checkout Repository	2026-03-26T14:28:36.7413864Z   repository: Ka0s-Klaus/ka0s
+end-workflow	Checkout Repository	2026-03-26T14:28:36.7419034Z   token: ***
+end-workflow	Checkout Repository	2026-03-26T14:28:36.7419778Z   ssh-strict: true
+end-workflow	Checkout Repository	2026-03-26T14:28:36.7420429Z   ssh-user: git
+end-workflow	Checkout Repository	2026-03-26T14:28:36.7421070Z   persist-credentials: true
+end-workflow	Checkout Repository	2026-03-26T14:28:36.7421772Z   clean: true
+end-workflow	Checkout Repository	2026-03-26T14:28:36.7422426Z   sparse-checkout-cone-mode: true
+end-workflow	Checkout Repository	2026-03-26T14:28:36.7423168Z   fetch-tags: false
+end-workflow	Checkout Repository	2026-03-26T14:28:36.7423820Z   show-progress: true
+end-workflow	Checkout Repository	2026-03-26T14:28:36.7424462Z   lfs: false
+end-workflow	Checkout Repository	2026-03-26T14:28:36.7435332Z   submodules: false
+end-workflow	Checkout Repository	2026-03-26T14:28:36.7436094Z   set-safe-directory: true
+end-workflow	Checkout Repository	2026-03-26T14:28:36.7437364Z env:
+end-workflow	Checkout Repository	2026-03-26T14:28:36.7438036Z   KAOS_MODULE: [Ka0S] K8s Config Extractor
+end-workflow	Checkout Repository	2026-03-26T14:28:36.7438832Z   KAOS_CODE: 23597941423
+end-workflow	Checkout Repository	2026-03-26T14:28:36.7457596Z   KAOS_ACTOR: asantacana1970
+end-workflow	Checkout Repository	2026-03-26T14:28:36.7458401Z ##[endgroup]
+end-workflow	Checkout Repository	2026-03-26T14:28:42.0166230Z Syncing repository: Ka0s-Klaus/ka0s
+end-workflow	Checkout Repository	2026-03-26T14:28:42.0168703Z ##[group]Getting Git version info
+end-workflow	Checkout Repository	2026-03-26T14:28:42.0169663Z Working directory is '/home/runner/_work/ka0s/ka0s'
+end-workflow	Checkout Repository	2026-03-26T14:28:42.0170993Z [command]/usr/bin/git version
+end-workflow	Checkout Repository	2026-03-26T14:28:42.5076860Z git version 2.53.0
+end-workflow	Checkout Repository	2026-03-26T14:28:42.5248552Z ##[endgroup]
+end-workflow	Checkout Repository	2026-03-26T14:28:42.5326427Z Temporarily overriding HOME='/home/runner/_work/_temp/2ce7fcfb-5b18-458f-8ff9-d8b9f1443073' before making global git config changes
+end-workflow	Checkout Repository	2026-03-26T14:28:42.5332504Z Adding repository directory to the temporary git global config as a safe directory
+end-workflow	Checkout Repository	2026-03-26T14:28:42.5344188Z [command]/usr/bin/git config --global --add safe.directory /home/runner/_work/ka0s/ka0s
+end-workflow	Checkout Repository	2026-03-26T14:28:42.5470595Z Deleting the contents of '/home/runner/_work/ka0s/ka0s'
+end-workflow	Checkout Repository	2026-03-26T14:28:42.5483368Z ##[group]Initializing the repository
+end-workflow	Checkout Repository	2026-03-26T14:28:42.5537733Z [command]/usr/bin/git init /home/runner/_work/ka0s/ka0s
+end-workflow	Checkout Repository	2026-03-26T14:28:42.5698551Z hint: Using 'master' as the name for the initial branch. This default branch name
+end-workflow	Checkout Repository	2026-03-26T14:28:42.5728001Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+end-workflow	Checkout Repository	2026-03-26T14:28:42.5730035Z hint: to use in all of your new repositories, which will suppress this warning,
+end-workflow	Checkout Repository	2026-03-26T14:28:42.5731432Z hint: call:
+end-workflow	Checkout Repository	2026-03-26T14:28:42.5732351Z hint:
+end-workflow	Checkout Repository	2026-03-26T14:28:42.5733332Z hint: 	git config --global init.defaultBranch <name>
+end-workflow	Checkout Repository	2026-03-26T14:28:42.5734413Z hint:
+end-workflow	Checkout Repository	2026-03-26T14:28:42.5735860Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+end-workflow	Checkout Repository	2026-03-26T14:28:42.5746304Z hint: 'development'. The just-created branch can be renamed via this command:
+end-workflow	Checkout Repository	2026-03-26T14:28:42.5747681Z hint:
+end-workflow	Checkout Repository	2026-03-26T14:28:42.5748596Z hint: 	git branch -m <name>
+end-workflow	Checkout Repository	2026-03-26T14:28:42.5749541Z hint:
+end-workflow	Checkout Repository	2026-03-26T14:28:42.5750694Z hint: Disable this message with "git config set advice.defaultBranchName false"
+end-workflow	Checkout Repository	2026-03-26T14:28:42.5752635Z Initialized empty Git repository in /home/runner/_work/ka0s/ka0s/.git/
+end-workflow	Checkout Repository	2026-03-26T14:28:42.5774228Z [command]/usr/bin/git remote add origin https://github.com/Ka0s-Klaus/ka0s
+end-workflow	Checkout Repository	2026-03-26T14:28:42.5896153Z ##[endgroup]
+end-workflow	Checkout Repository	2026-03-26T14:28:42.5897733Z ##[group]Disabling automatic garbage collection
+end-workflow	Checkout Repository	2026-03-26T14:28:42.5910855Z [command]/usr/bin/git config --local gc.auto 0
+end-workflow	Checkout Repository	2026-03-26T14:28:42.6026734Z ##[endgroup]
+end-workflow	Checkout Repository	2026-03-26T14:28:42.6036870Z ##[group]Setting up auth
+end-workflow	Checkout Repository	2026-03-26T14:28:42.6056452Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+end-workflow	Checkout Repository	2026-03-26T14:28:42.6158840Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+end-workflow	Checkout Repository	2026-03-26T14:28:43.7065271Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+end-workflow	Checkout Repository	2026-03-26T14:28:44.3140232Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+end-workflow	Checkout Repository	2026-03-26T14:28:45.4516992Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+end-workflow	Checkout Repository	2026-03-26T14:28:45.4737689Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+end-workflow	Checkout Repository	2026-03-26T14:28:47.3247386Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+end-workflow	Checkout Repository	2026-03-26T14:28:47.3567140Z ##[endgroup]
+end-workflow	Checkout Repository	2026-03-26T14:28:47.3569539Z ##[group]Fetching the repository
+end-workflow	Checkout Repository	2026-03-26T14:28:47.3653967Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2050628Z From https://github.com/Ka0s-Klaus/ka0s
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2053164Z  * [new branch]          F3450-modelo-operativo  -> origin/F3450-modelo-operativo
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2055793Z  * [new branch]          H4191-request-cambios   -> origin/H4191-request-cambios
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2058712Z  * [new branch]          H4200-request-recomendaciones-de-auditoria -> origin/H4200-request-recomendaciones-de-auditoria
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2065850Z  * [new branch]          H4322-request-plan-de-pruebas-de-agentes -> origin/H4322-request-plan-de-pruebas-de-agentes
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2099242Z  * [new branch]          chore/incident-cancelation-guard -> origin/chore/incident-cancelation-guard
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2099977Z  * [new branch]          chore/itop-debug-list   -> origin/chore/itop-debug-list
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2100618Z  * [new branch]          chore/itop-debug-url-version -> origin/chore/itop-debug-url-version
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2101243Z  * [new branch]          chore/itop-debug-version -> origin/chore/itop-debug-version
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2101871Z  * [new branch]          chore/remove-itop-debug-list -> origin/chore/remove-itop-debug-list
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2102467Z  * [new branch]          diag/ollama-api         -> origin/diag/ollama-api
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2103027Z  * [new branch]          docs/agent-feedback-loop -> origin/docs/agent-feedback-loop
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2103645Z  * [new branch]          docs/anythingllm-deploy -> origin/docs/anythingllm-deploy
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2104243Z  * [new branch]          docs/repo-directories-eval -> origin/docs/repo-directories-eval
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2115035Z  * [new branch]          eval/issue-5065-general -> origin/eval/issue-5065-general
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2116265Z  * [new branch]          eval/issue-5067-general -> origin/eval/issue-5067-general
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2116837Z  * [new branch]          eval/issue-5072-general -> origin/eval/issue-5072-general
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2117388Z  * [new branch]          eval/issue-5184-general -> origin/eval/issue-5184-general
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2117998Z  * [new branch]          feat/agent-docs-eval-battery -> origin/feat/agent-docs-eval-battery
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2118671Z  * [new branch]          feat/agent-eval-issue-driven -> origin/feat/agent-eval-issue-driven
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2119265Z  * [new branch]          feat/anythingllm        -> origin/feat/anythingllm
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2120322Z  * [new branch]          feat/ka0s-knowledge-pipeline -> origin/feat/ka0s-knowledge-pipeline
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2120939Z  * [new branch]          feat/kaos-itop-core     -> origin/feat/kaos-itop-core
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2121528Z  * [new branch]          feat/openclaw-local-brain -> origin/feat/openclaw-local-brain
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2122200Z  * [new branch]          feedback/issue-5053-23304729163 -> origin/feedback/issue-5053-23304729163
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2122891Z  * [new branch]          feedback/issue-5053-23305207993 -> origin/feedback/issue-5053-23305207993
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2123573Z  * [new branch]          feedback/issue-5065-23314527664 -> origin/feedback/issue-5065-23314527664
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2124254Z  * [new branch]          feedback/issue-5065-23314941583 -> origin/feedback/issue-5065-23314941583
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2126549Z  * [new branch]          feedback/issue-5067-23315177470 -> origin/feedback/issue-5067-23315177470
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2127791Z  * [new branch]          feedback/issue-5067-23315574180 -> origin/feedback/issue-5067-23315574180
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2128557Z  * [new branch]          feedback/issue-5072-23335096272 -> origin/feedback/issue-5072-23335096272
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2129224Z  * [new branch]          feedback/issue-5183-23589054034 -> origin/feedback/issue-5183-23589054034
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2129907Z  * [new branch]          feedback/issue-5190-23589890578 -> origin/feedback/issue-5190-23589890578
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2130576Z  * [new branch]          feedback/issue-5192-23593753104 -> origin/feedback/issue-5192-23593753104
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2131194Z  * [new branch]          fix/agent-eval-deps     -> origin/fix/agent-eval-deps
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2131750Z  * [new branch]          fix/anythingllm-sqlite  -> origin/fix/anythingllm-sqlite
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2132449Z  * [new branch]          fix/cmdb-full-sync-sparse-checkout -> origin/fix/cmdb-full-sync-sparse-checkout
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2133138Z  * [new branch]          fix/docs-5053-response  -> origin/fix/docs-5053-response
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2133817Z  * [new branch]          fix/eval-mustcontain-auditpods -> origin/fix/eval-mustcontain-auditpods
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2134659Z  * [new branch]          fix/feedback-accept-ka0s-agent -> origin/fix/feedback-accept-ka0s-agent
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2142490Z  * [new branch]          fix/issue-4770          -> origin/fix/issue-4770
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2143018Z  * [new branch]          fix/issue-4772          -> origin/fix/issue-4772
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2143497Z  * [new branch]          fix/issue-4776          -> origin/fix/issue-4776
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2143969Z  * [new branch]          fix/issue-4777          -> origin/fix/issue-4777
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2144447Z  * [new branch]          fix/issue-4781          -> origin/fix/issue-4781
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2155204Z  * [new branch]          fix/issue-5097          -> origin/fix/issue-5097
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2155980Z  * [new branch]          fix/issue-responder-nameerror -> origin/fix/issue-responder-nameerror
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2156714Z  * [new branch]          fix/issue-responder-syntax -> origin/fix/issue-responder-syntax
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2157324Z  * [new branch]          fix/itop-branding-css   -> origin/fix/itop-branding-css
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2157925Z  * [new branch]          fix/itop-deployment-cache -> origin/fix/itop-deployment-cache
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2158591Z  * [new branch]          fix/itop-deployment-recovery -> origin/fix/itop-deployment-recovery
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2159358Z  * [new branch]          fix/itop-deployment-recovery-final -> origin/fix/itop-deployment-recovery-final
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2160158Z  * [new branch]          fix/itop-list-orgs-on-missing -> origin/fix/itop-list-orgs-on-missing
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2160917Z  * [new branch]          fix/itop-org-id-numeric -> origin/fix/itop-org-id-numeric
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2161673Z  * [new branch]          fix/itop-sidebar-logo-behavior -> origin/fix/itop-sidebar-logo-behavior
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2162458Z  * [new branch]          fix/itop-ssl-verify     -> origin/fix/itop-ssl-verify
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2163764Z  * [new branch]          fix/itop-use-version-in-url -> origin/fix/itop-use-version-in-url
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2164451Z  * [new branch]          fix/promote-eval-heredoc -> origin/fix/promote-eval-heredoc
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2165103Z  * [new branch]          main                    -> origin/main
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2165535Z  * [new tag]             0.0.0                   -> 0.0.0
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2165940Z  * [new tag]             0.0.1                   -> 0.0.1
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2166599Z  * [new tag]             0.0.10                  -> 0.0.10
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2166986Z  * [new tag]             0.0.100                 -> 0.0.100
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2167379Z  * [new tag]             0.0.101                 -> 0.0.101
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2167774Z  * [new tag]             0.0.102                 -> 0.0.102
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2168158Z  * [new tag]             0.0.103                 -> 0.0.103
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2168792Z  * [new tag]             0.0.104                 -> 0.0.104
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2169180Z  * [new tag]             0.0.105                 -> 0.0.105
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2169551Z  * [new tag]             0.0.106                 -> 0.0.106
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2169932Z  * [new tag]             0.0.107                 -> 0.0.107
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2170301Z  * [new tag]             0.0.108                 -> 0.0.108
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2170676Z  * [new tag]             0.0.109                 -> 0.0.109
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2191046Z  * [new tag]             0.0.11                  -> 0.0.11
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2191551Z  * [new tag]             0.0.110                 -> 0.0.110
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2191953Z  * [new tag]             0.0.111                 -> 0.0.111
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2192334Z  * [new tag]             0.0.112                 -> 0.0.112
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2192711Z  * [new tag]             0.0.113                 -> 0.0.113
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2193103Z  * [new tag]             0.0.114                 -> 0.0.114
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2193561Z  * [new tag]             0.0.115                 -> 0.0.115
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2193952Z  * [new tag]             0.0.116                 -> 0.0.116
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2194366Z  * [new tag]             0.0.117                 -> 0.0.117
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2194788Z  * [new tag]             0.0.118                 -> 0.0.118
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2195265Z  * [new tag]             0.0.119                 -> 0.0.119
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2195643Z  * [new tag]             0.0.12                  -> 0.0.12
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2196014Z  * [new tag]             0.0.120                 -> 0.0.120
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2196391Z  * [new tag]             0.0.121                 -> 0.0.121
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2196779Z  * [new tag]             0.0.122                 -> 0.0.122
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2197150Z  * [new tag]             0.0.123                 -> 0.0.123
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2197524Z  * [new tag]             0.0.124                 -> 0.0.124
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2197912Z  * [new tag]             0.0.125                 -> 0.0.125
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2198294Z  * [new tag]             0.0.126                 -> 0.0.126
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2198663Z  * [new tag]             0.0.127                 -> 0.0.127
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2199045Z  * [new tag]             0.0.128                 -> 0.0.128
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2199422Z  * [new tag]             0.0.129                 -> 0.0.129
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2199793Z  * [new tag]             0.0.13                  -> 0.0.13
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2200171Z  * [new tag]             0.0.130                 -> 0.0.130
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2200543Z  * [new tag]             0.0.131                 -> 0.0.131
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2200918Z  * [new tag]             0.0.132                 -> 0.0.132
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2201291Z  * [new tag]             0.0.133                 -> 0.0.133
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2201671Z  * [new tag]             0.0.134                 -> 0.0.134
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2202052Z  * [new tag]             0.0.135                 -> 0.0.135
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2220771Z  * [new tag]             0.0.136                 -> 0.0.136
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2227316Z  * [new tag]             0.0.137                 -> 0.0.137
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2235592Z  * [new tag]             0.0.138                 -> 0.0.138
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2236392Z  * [new tag]             0.0.139                 -> 0.0.139
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2237840Z  * [new tag]             0.0.14                  -> 0.0.14
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2238406Z  * [new tag]             0.0.140                 -> 0.0.140
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2239001Z  * [new tag]             0.0.141                 -> 0.0.141
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2255256Z  * [new tag]             0.0.142                 -> 0.0.142
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2256790Z  * [new tag]             0.0.143                 -> 0.0.143
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2258668Z  * [new tag]             0.0.144                 -> 0.0.144
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2389671Z  * [new tag]             0.0.145                 -> 0.0.145
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2391094Z  * [new tag]             0.0.146                 -> 0.0.146
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2391630Z  * [new tag]             0.0.147                 -> 0.0.147
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2392029Z  * [new tag]             0.0.148                 -> 0.0.148
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2392530Z  * [new tag]             0.0.149                 -> 0.0.149
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2392907Z  * [new tag]             0.0.15                  -> 0.0.15
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2393393Z  * [new tag]             0.0.150                 -> 0.0.150
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2393767Z  * [new tag]             0.0.151                 -> 0.0.151
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2394257Z  * [new tag]             0.0.152                 -> 0.0.152
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2394749Z  * [new tag]             0.0.153                 -> 0.0.153
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2395488Z  * [new tag]             0.0.154                 -> 0.0.154
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2395865Z  * [new tag]             0.0.155                 -> 0.0.155
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2396348Z  * [new tag]             0.0.156                 -> 0.0.156
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2396724Z  * [new tag]             0.0.157                 -> 0.0.157
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2397216Z  * [new tag]             0.0.158                 -> 0.0.158
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2397581Z  * [new tag]             0.0.159                 -> 0.0.159
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2398071Z  * [new tag]             0.0.16                  -> 0.0.16
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2398438Z  * [new tag]             0.0.160                 -> 0.0.160
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2398923Z  * [new tag]             0.0.161                 -> 0.0.161
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2399400Z  * [new tag]             0.0.162                 -> 0.0.162
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2399769Z  * [new tag]             0.0.163                 -> 0.0.163
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2400253Z  * [new tag]             0.0.164                 -> 0.0.164
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2400625Z  * [new tag]             0.0.165                 -> 0.0.165
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2401105Z  * [new tag]             0.0.166                 -> 0.0.166
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2401482Z  * [new tag]             0.0.167                 -> 0.0.167
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2401967Z  * [new tag]             0.0.168                 -> 0.0.168
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2402339Z  * [new tag]             0.0.169                 -> 0.0.169
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2402817Z  * [new tag]             0.0.17                  -> 0.0.17
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2403295Z  * [new tag]             0.0.170                 -> 0.0.170
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2440555Z  * [new tag]             0.0.171                 -> 0.0.171
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2466389Z  * [new tag]             0.0.172                 -> 0.0.172
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2579050Z  * [new tag]             0.0.173                 -> 0.0.173
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2580507Z  * [new tag]             0.0.174                 -> 0.0.174
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2582449Z  * [new tag]             0.0.175                 -> 0.0.175
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2582841Z  * [new tag]             0.0.176                 -> 0.0.176
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2583233Z  * [new tag]             0.0.177                 -> 0.0.177
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2602197Z  * [new tag]             0.0.178                 -> 0.0.178
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2602583Z  * [new tag]             0.0.179                 -> 0.0.179
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2602957Z  * [new tag]             0.0.18                  -> 0.0.18
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2603323Z  * [new tag]             0.0.19                  -> 0.0.19
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2603682Z  * [new tag]             0.0.2                   -> 0.0.2
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2604043Z  * [new tag]             0.0.20                  -> 0.0.20
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2604401Z  * [new tag]             0.0.21                  -> 0.0.21
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2604763Z  * [new tag]             0.0.22                  -> 0.0.22
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2652477Z  * [new tag]             0.0.23                  -> 0.0.23
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2653008Z  * [new tag]             0.0.24                  -> 0.0.24
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2653392Z  * [new tag]             0.0.25                  -> 0.0.25
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2654193Z  * [new tag]             0.0.26                  -> 0.0.26
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2654570Z  * [new tag]             0.0.27                  -> 0.0.27
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2665689Z  * [new tag]             0.0.28                  -> 0.0.28
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2666226Z  * [new tag]             0.0.29                  -> 0.0.29
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2666618Z  * [new tag]             0.0.3                   -> 0.0.3
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2666989Z  * [new tag]             0.0.30                  -> 0.0.30
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2667357Z  * [new tag]             0.0.31                  -> 0.0.31
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2667718Z  * [new tag]             0.0.32                  -> 0.0.32
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2668086Z  * [new tag]             0.0.33                  -> 0.0.33
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2668448Z  * [new tag]             0.0.34                  -> 0.0.34
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2668809Z  * [new tag]             0.0.35                  -> 0.0.35
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2669167Z  * [new tag]             0.0.36                  -> 0.0.36
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2669559Z  * [new tag]             0.0.37                  -> 0.0.37
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2669921Z  * [new tag]             0.0.38                  -> 0.0.38
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2670278Z  * [new tag]             0.0.39                  -> 0.0.39
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2670641Z  * [new tag]             0.0.4                   -> 0.0.4
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2670999Z  * [new tag]             0.0.40                  -> 0.0.40
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2671361Z  * [new tag]             0.0.41                  -> 0.0.41
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2671717Z  * [new tag]             0.0.42                  -> 0.0.42
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2672080Z  * [new tag]             0.0.43                  -> 0.0.43
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2672444Z  * [new tag]             0.0.44                  -> 0.0.44
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2672804Z  * [new tag]             0.0.45                  -> 0.0.45
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2673174Z  * [new tag]             0.0.46                  -> 0.0.46
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2673538Z  * [new tag]             0.0.47                  -> 0.0.47
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2673908Z  * [new tag]             0.0.48                  -> 0.0.48
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2674266Z  * [new tag]             0.0.49                  -> 0.0.49
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2674632Z  * [new tag]             0.0.5                   -> 0.0.5
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2796931Z  * [new tag]             0.0.50                  -> 0.0.50
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2797459Z  * [new tag]             0.0.51                  -> 0.0.51
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2797836Z  * [new tag]             0.0.52                  -> 0.0.52
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2798199Z  * [new tag]             0.0.53                  -> 0.0.53
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2798569Z  * [new tag]             0.0.54                  -> 0.0.54
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2798930Z  * [new tag]             0.0.55                  -> 0.0.55
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2899723Z  * [new tag]             0.0.56                  -> 0.0.56
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2900214Z  * [new tag]             0.0.57                  -> 0.0.57
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2900718Z  * [new tag]             0.0.58                  -> 0.0.58
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2901482Z  * [new tag]             0.0.59                  -> 0.0.59
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2901841Z  * [new tag]             0.0.6                   -> 0.0.6
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2902196Z  * [new tag]             0.0.60                  -> 0.0.60
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2902557Z  * [new tag]             0.0.61                  -> 0.0.61
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2902908Z  * [new tag]             0.0.62                  -> 0.0.62
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2903263Z  * [new tag]             0.0.63                  -> 0.0.63
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2903613Z  * [new tag]             0.0.64                  -> 0.0.64
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2903969Z  * [new tag]             0.0.65                  -> 0.0.65
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2904315Z  * [new tag]             0.0.66                  -> 0.0.66
+end-workflow	Checkout Repository	2026-03-26T14:36:58.2904671Z  * [new tag]             0.0.67                  -> 0.0.67
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3002487Z  * [new tag]             0.0.68                  -> 0.0.68
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3002897Z  * [new tag]             0.0.69                  -> 0.0.69
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3003270Z  * [new tag]             0.0.7                   -> 0.0.7
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3003633Z  * [new tag]             0.0.70                  -> 0.0.70
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3003997Z  * [new tag]             0.0.71                  -> 0.0.71
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3004358Z  * [new tag]             0.0.72                  -> 0.0.72
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3004720Z  * [new tag]             0.0.73                  -> 0.0.73
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3027259Z  * [new tag]             0.0.74                  -> 0.0.74
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3027702Z  * [new tag]             0.0.75                  -> 0.0.75
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3028075Z  * [new tag]             0.0.76                  -> 0.0.76
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3028435Z  * [new tag]             0.0.77                  -> 0.0.77
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3028907Z  * [new tag]             0.0.78                  -> 0.0.78
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3029405Z  * [new tag]             0.0.79                  -> 0.0.79
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3151340Z  * [new tag]             0.0.8                   -> 0.0.8
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3152095Z  * [new tag]             0.0.80                  -> 0.0.80
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3152604Z  * [new tag]             0.0.81                  -> 0.0.81
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3152970Z  * [new tag]             0.0.82                  -> 0.0.82
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3153335Z  * [new tag]             0.0.83                  -> 0.0.83
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3153696Z  * [new tag]             0.0.84                  -> 0.0.84
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3154058Z  * [new tag]             0.0.85                  -> 0.0.85
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3154417Z  * [new tag]             0.0.86                  -> 0.0.86
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3154778Z  * [new tag]             0.0.87                  -> 0.0.87
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3195952Z  * [new tag]             0.0.88                  -> 0.0.88
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3196430Z  * [new tag]             0.0.89                  -> 0.0.89
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3196841Z  * [new tag]             0.0.9                   -> 0.0.9
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3197227Z  * [new tag]             0.0.90                  -> 0.0.90
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3197621Z  * [new tag]             0.0.91                  -> 0.0.91
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3197983Z  * [new tag]             0.0.92                  -> 0.0.92
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3198348Z  * [new tag]             0.0.93                  -> 0.0.93
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3198717Z  * [new tag]             0.0.94                  -> 0.0.94
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3199082Z  * [new tag]             0.0.95                  -> 0.0.95
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3199444Z  * [new tag]             0.0.96                  -> 0.0.96
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3199810Z  * [new tag]             0.0.97                  -> 0.0.97
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3200175Z  * [new tag]             0.0.98                  -> 0.0.98
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3200538Z  * [new tag]             0.0.99                  -> 0.0.99
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3200912Z  * [new tag]             0.1.0                   -> 0.1.0
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3201601Z  * [new tag]             0.1.1                   -> 0.1.1
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3201970Z  * [new tag]             0.2.0                   -> 0.2.0
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3202335Z  * [new tag]             0.3.0                   -> 0.3.0
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3202700Z  * [new tag]             0.3.1                   -> 0.3.1
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3203157Z  * [new tag]             0.3.10                  -> 0.3.10
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3203528Z  * [new tag]             0.3.11                  -> 0.3.11
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3203901Z  * [new tag]             0.3.12                  -> 0.3.12
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3204282Z  * [new tag]             0.3.13                  -> 0.3.13
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3204655Z  * [new tag]             0.3.14                  -> 0.3.14
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3205115Z  * [new tag]             0.3.15                  -> 0.3.15
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3205489Z  * [new tag]             0.3.16                  -> 0.3.16
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3316904Z  * [new tag]             0.3.17                  -> 0.3.17
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3317316Z  * [new tag]             0.3.2                   -> 0.3.2
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3317689Z  * [new tag]             0.3.3                   -> 0.3.3
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3318047Z  * [new tag]             0.3.4                   -> 0.3.4
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3318404Z  * [new tag]             0.3.5                   -> 0.3.5
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3318758Z  * [new tag]             0.3.6                   -> 0.3.6
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3319116Z  * [new tag]             0.3.7                   -> 0.3.7
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3319475Z  * [new tag]             0.3.8                   -> 0.3.8
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3319855Z  * [new tag]             0.3.9                   -> 0.3.9
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3320217Z  * [new tag]             0.4.0                   -> 0.4.0
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3320575Z  * [new tag]             0.4.1                   -> 0.4.1
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3320931Z  * [new tag]             0.4.2                   -> 0.4.2
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3321296Z  * [new tag]             0.4.3                   -> 0.4.3
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3321658Z  * [new tag]             0.4.4                   -> 0.4.4
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3322010Z  * [new tag]             0.4.5                   -> 0.4.5
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3322373Z  * [new tag]             0.4.6                   -> 0.4.6
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3322726Z  * [new tag]             0.4.7                   -> 0.4.7
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3323079Z  * [new tag]             0.4.8                   -> 0.4.8
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3323433Z  * [new tag]             0.4.9                   -> 0.4.9
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3323783Z  * [new tag]             0.5.0                   -> 0.5.0
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3324141Z  * [new tag]             0.5.1                   -> 0.5.1
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3324493Z  * [new tag]             0.5.2                   -> 0.5.2
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3324851Z  * [new tag]             0.6.0                   -> 0.6.0
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3345674Z  * [new tag]             0.6.1                   -> 0.6.1
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3346130Z  * [new tag]             0.6.2                   -> 0.6.2
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3346557Z  * [new tag]             0.6.3                   -> 0.6.3
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3346946Z  * [new tag]             0.6.4                   -> 0.6.4
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3347345Z  * [new tag]             0.6.5                   -> 0.6.5
+end-workflow	Checkout Repository	2026-03-26T14:36:58.3347737Z  * [new tag]             0.6.6                   -> 0.6.6
+end-workflow	Checkout Repository	2026-03-26T14:36:58.4728291Z [command]/usr/bin/git branch --list --remote origin/main
+end-workflow	Checkout Repository	2026-03-26T14:36:58.5335522Z   origin/main
+end-workflow	Checkout Repository	2026-03-26T14:36:58.5476247Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+end-workflow	Checkout Repository	2026-03-26T14:36:58.5596145Z 9342159a13bf23887e99b40776216446a553faf3
+end-workflow	Checkout Repository	2026-03-26T14:36:58.5736873Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules origin +623f1d200a0b999d35129efbd3b6c1d3f818d627:refs/remotes/origin/main
+end-workflow	Checkout Repository	2026-03-26T14:36:58.7356408Z From https://github.com/Ka0s-Klaus/ka0s
+end-workflow	Checkout Repository	2026-03-26T14:36:58.7367033Z  + 9342159a1...623f1d200 623f1d200a0b999d35129efbd3b6c1d3f818d627 -> origin/main  (forced update)
+end-workflow	Checkout Repository	2026-03-26T14:36:58.7616338Z ##[endgroup]
+end-workflow	Checkout Repository	2026-03-26T14:36:58.7617065Z ##[group]Determining the checkout info
+end-workflow	Checkout Repository	2026-03-26T14:36:58.7620141Z ##[endgroup]
+end-workflow	Checkout Repository	2026-03-26T14:36:58.7658672Z [command]/usr/bin/git sparse-checkout disable
+end-workflow	Checkout Repository	2026-03-26T14:36:58.8089507Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+end-workflow	Checkout Repository	2026-03-26T14:36:58.8298751Z ##[group]Checking out the ref
+end-workflow	Checkout Repository	2026-03-26T14:36:58.8497698Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+end-workflow	Checkout Repository	2026-03-26T14:36:59.8759735Z Updating files:  75% (1033/1376)
+end-workflow	Checkout Repository	2026-03-26T14:36:59.8925706Z Updating files:  76% (1046/1376)
+end-workflow	Checkout Repository	2026-03-26T14:36:59.8926391Z Updating files:  77% (1060/1376)
+end-workflow	Checkout Repository	2026-03-26T14:36:59.9045746Z Updating files:  78% (1074/1376)
+end-workflow	Checkout Repository	2026-03-26T14:36:59.9158390Z Updating files:  79% (1088/1376)
+end-workflow	Checkout Repository	2026-03-26T14:36:59.9418919Z Updating files:  80% (1101/1376)
+end-workflow	Checkout Repository	2026-03-26T14:36:59.9458509Z Updating files:  81% (1115/1376)
+end-workflow	Checkout Repository	2026-03-26T14:36:59.9535861Z Updating files:  82% (1129/1376)
+end-workflow	Checkout Repository	2026-03-26T14:36:59.9568666Z Updating files:  83% (1143/1376)
+end-workflow	Checkout Repository	2026-03-26T14:36:59.9611710Z Updating files:  84% (1156/1376)
+end-workflow	Checkout Repository	2026-03-26T14:36:59.9666220Z Updating files:  85% (1170/1376)
+end-workflow	Checkout Repository	2026-03-26T14:36:59.9722214Z Updating files:  86% (1184/1376)
+end-workflow	Checkout Repository	2026-03-26T14:36:59.9780790Z Updating files:  87% (1198/1376)
+end-workflow	Checkout Repository	2026-03-26T14:36:59.9781788Z Updating files:  88% (1211/1376)
+end-workflow	Checkout Repository	2026-03-26T14:36:59.9782317Z Updating files:  89% (1225/1376)
+end-workflow	Checkout Repository	2026-03-26T14:36:59.9790945Z Updating files:  90% (1239/1376)
+end-workflow	Checkout Repository	2026-03-26T14:36:59.9836696Z Updating files:  91% (1253/1376)
+end-workflow	Checkout Repository	2026-03-26T14:37:00.0084003Z Updating files:  92% (1266/1376)
+end-workflow	Checkout Repository	2026-03-26T14:37:00.0084424Z Updating files:  93% (1280/1376)
+end-workflow	Checkout Repository	2026-03-26T14:37:00.0084721Z Updating files:  94% (1294/1376)
+end-workflow	Checkout Repository	2026-03-26T14:37:00.0178965Z Updating files:  95% (1308/1376)
+end-workflow	Checkout Repository	2026-03-26T14:37:00.0179310Z Updating files:  96% (1321/1376)
+end-workflow	Checkout Repository	2026-03-26T14:37:00.0179572Z Updating files:  97% (1335/1376)
+end-workflow	Checkout Repository	2026-03-26T14:37:00.0179850Z Updating files:  98% (1349/1376)
+end-workflow	Checkout Repository	2026-03-26T14:37:00.0180135Z Updating files:  99% (1363/1376)
+end-workflow	Checkout Repository	2026-03-26T14:37:00.0180385Z Updating files: 100% (1376/1376)
+end-workflow	Checkout Repository	2026-03-26T14:37:00.0180644Z Updating files: 100% (1376/1376), done.
+end-workflow	Checkout Repository	2026-03-26T14:37:00.0396006Z Switched to a new branch 'main'
+end-workflow	Checkout Repository	2026-03-26T14:37:00.0488237Z branch 'main' set up to track 'origin/main'.
+end-workflow	Checkout Repository	2026-03-26T14:37:00.0819874Z ##[endgroup]
+end-workflow	Checkout Repository	2026-03-26T14:37:00.1127082Z [command]/usr/bin/git log -1 --format=%H
+end-workflow	Checkout Repository	2026-03-26T14:37:00.1365698Z 623f1d200a0b999d35129efbd3b6c1d3f818d627
+end-workflow	Install GH CLI	﻿2026-03-26T14:37:00.2217440Z Prepare all required actions
+end-workflow	Install GH CLI	2026-03-26T14:37:00.2357388Z ##[group]Run ./.github/actions/install-gh-cli
+end-workflow	Install GH CLI	2026-03-26T14:37:00.2357727Z env:
+end-workflow	Install GH CLI	2026-03-26T14:37:00.2357940Z   KAOS_MODULE: [Ka0S] K8s Config Extractor
+end-workflow	Install GH CLI	2026-03-26T14:37:00.2358224Z   KAOS_CODE: 23597941423
+end-workflow	Install GH CLI	2026-03-26T14:37:00.2358453Z   KAOS_ACTOR: asantacana1970
+end-workflow	Install GH CLI	2026-03-26T14:37:00.2358691Z ##[endgroup]
+end-workflow	Install GH CLI	2026-03-26T14:37:00.2563331Z ##[group]Run type -p curl >/dev/null || (sudo apt-get update && sudo apt-get install curl -y)
+end-workflow	Install GH CLI	2026-03-26T14:37:00.2564115Z [36;1mtype -p curl >/dev/null || (sudo apt-get update && sudo apt-get install curl -y)[0m
+end-workflow	Install GH CLI	2026-03-26T14:37:00.2565197Z [36;1mcurl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \[0m
+end-workflow	Install GH CLI	2026-03-26T14:37:00.2566058Z [36;1m&& sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \[0m
+end-workflow	Install GH CLI	2026-03-26T14:37:00.2567237Z [36;1m&& echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \[0m
+end-workflow	Install GH CLI	2026-03-26T14:37:00.2568499Z [36;1m&& sudo apt-get update \[0m
+end-workflow	Install GH CLI	2026-03-26T14:37:00.2568807Z [36;1m&& sudo apt-get install gh -y[0m
+end-workflow	Install GH CLI	2026-03-26T14:37:00.2599255Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+end-workflow	Install GH CLI	2026-03-26T14:37:00.2599665Z env:
+end-workflow	Install GH CLI	2026-03-26T14:37:00.2599896Z   KAOS_MODULE: [Ka0S] K8s Config Extractor
+end-workflow	Install GH CLI	2026-03-26T14:37:00.2600181Z   KAOS_CODE: 23597941423
+end-workflow	Install GH CLI	2026-03-26T14:37:00.2600866Z   KAOS_ACTOR: asantacana1970
+end-workflow	Install GH CLI	2026-03-26T14:37:00.2601112Z ##[endgroup]
+end-workflow	Install GH CLI	2026-03-26T14:37:00.3992113Z 4+1 records in
+end-workflow	Install GH CLI	2026-03-26T14:37:00.3994782Z 4+1 records out
+end-workflow	Install GH CLI	2026-03-26T14:37:00.3998629Z 2270 bytes (2.3 kB, 2.2 KiB) copied, 0.0881348 s, 25.8 kB/s
+end-workflow	Install GH CLI	2026-03-26T14:37:00.6636606Z Get:1 https://cli.github.com/packages stable InRelease [3917 B]
+end-workflow	Install GH CLI	2026-03-26T14:37:00.7437472Z Get:2 http://security.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+end-workflow	Install GH CLI	2026-03-26T14:37:00.8658790Z Get:3 https://ppa.launchpadcontent.net/git-core/ppa/ubuntu noble InRelease [24.3 kB]
+end-workflow	Install GH CLI	2026-03-26T14:37:00.8853140Z Get:4 http://archive.ubuntu.com/ubuntu noble InRelease [256 kB]
+end-workflow	Install GH CLI	2026-03-26T14:37:01.1332262Z Get:5 https://cli.github.com/packages stable/main amd64 Packages [354 B]
+end-workflow	Install GH CLI	2026-03-26T14:37:01.3757237Z Get:6 http://security.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [3429 kB]
+end-workflow	Install GH CLI	2026-03-26T14:37:01.5416730Z Get:7 http://archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+end-workflow	Install GH CLI	2026-03-26T14:37:01.6346213Z Get:8 http://security.ubuntu.com/ubuntu noble-security/multiverse amd64 Packages [34.8 kB]
+end-workflow	Install GH CLI	2026-03-26T14:37:01.6716715Z Get:9 http://security.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1504 kB]
+end-workflow	Install GH CLI	2026-03-26T14:37:01.6789111Z Get:10 http://archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+end-workflow	Install GH CLI	2026-03-26T14:37:01.7226064Z Get:11 http://security.ubuntu.com/ubuntu noble-security/main amd64 Packages [1954 kB]
+end-workflow	Install GH CLI	2026-03-26T14:37:01.7855363Z Get:12 https://ppa.launchpadcontent.net/git-core/ppa/ubuntu noble/main amd64 Packages [2992 B]
+end-workflow	Install GH CLI	2026-03-26T14:37:02.0904550Z Get:13 http://archive.ubuntu.com/ubuntu noble/universe amd64 Packages [19.3 MB]
+end-workflow	Install GH CLI	2026-03-26T14:37:03.2881580Z Get:14 http://archive.ubuntu.com/ubuntu noble/multiverse amd64 Packages [331 kB]
+end-workflow	Install GH CLI	2026-03-26T14:37:03.2956783Z Get:15 http://archive.ubuntu.com/ubuntu noble/restricted amd64 Packages [117 kB]
+end-workflow	Install GH CLI	2026-03-26T14:37:03.3155816Z Get:16 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages [1808 kB]
+end-workflow	Install GH CLI	2026-03-26T14:37:03.3557579Z Get:17 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [2334 kB]
+end-workflow	Install GH CLI	2026-03-26T14:37:03.4196810Z Get:18 http://archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [3601 kB]
+end-workflow	Install GH CLI	2026-03-26T14:37:03.5388314Z Get:19 http://archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Packages [38.1 kB]
+end-workflow	Install GH CLI	2026-03-26T14:37:03.5488181Z Get:20 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [2154 kB]
+end-workflow	Install GH CLI	2026-03-26T14:37:03.6426331Z Get:21 http://archive.ubuntu.com/ubuntu noble-backports/main amd64 Packages [49.5 kB]
+end-workflow	Install GH CLI	2026-03-26T14:37:03.6513170Z Get:22 http://archive.ubuntu.com/ubuntu noble-backports/multiverse amd64 Packages [695 B]
+end-workflow	Install GH CLI	2026-03-26T14:37:03.6537556Z Get:23 http://archive.ubuntu.com/ubuntu noble-backports/universe amd64 Packages [36.1 kB]
+end-workflow	Install GH CLI	2026-03-26T14:37:06.1089638Z Fetched 37.4 MB in 5s (6809 kB/s)
+end-workflow	Install GH CLI	2026-03-26T14:37:07.9497729Z Reading package lists...
+end-workflow	Install GH CLI	2026-03-26T14:37:09.5105970Z Reading package lists...
+end-workflow	Install GH CLI	2026-03-26T14:37:10.1347495Z Building dependency tree...
+end-workflow	Install GH CLI	2026-03-26T14:37:10.1348344Z Reading state information...
+end-workflow	Install GH CLI	2026-03-26T14:37:11.2907827Z The following NEW packages will be installed:
+end-workflow	Install GH CLI	2026-03-26T14:37:11.2926487Z   gh
+end-workflow	Install GH CLI	2026-03-26T14:37:11.4746747Z 0 upgraded, 1 newly installed, 0 to remove and 8 not upgraded.
+end-workflow	Install GH CLI	2026-03-26T14:37:11.4751466Z Need to get 14.3 MB of archives.
+end-workflow	Install GH CLI	2026-03-26T14:37:11.4755572Z After this operation, 40.2 MB of additional disk space will be used.
+end-workflow	Install GH CLI	2026-03-26T14:37:11.4757315Z Get:1 https://cli.github.com/packages stable/main amd64 gh amd64 2.89.0 [14.3 MB]
+end-workflow	Install GH CLI	2026-03-26T14:37:12.6125152Z debconf: delaying package configuration, since apt-utils is not installed
+end-workflow	Install GH CLI	2026-03-26T14:37:12.7587892Z Fetched 14.3 MB in 1s (18.8 MB/s)
+end-workflow	Install GH CLI	2026-03-26T14:37:12.8655454Z Selecting previously unselected package gh.
+end-workflow	Install GH CLI	2026-03-26T14:37:12.8797111Z (Reading database ... 
+end-workflow	Install GH CLI	2026-03-26T14:37:12.8819805Z (Reading database ... 5%
+end-workflow	Install GH CLI	2026-03-26T14:37:12.8824410Z (Reading database ... 10%
+end-workflow	Install GH CLI	2026-03-26T14:37:12.8837591Z (Reading database ... 15%
+end-workflow	Install GH CLI	2026-03-26T14:37:12.8838456Z (Reading database ... 20%
+end-workflow	Install GH CLI	2026-03-26T14:37:12.8842522Z (Reading database ... 25%
+end-workflow	Install GH CLI	2026-03-26T14:37:12.8877884Z (Reading database ... 30%
+end-workflow	Install GH CLI	2026-03-26T14:37:12.8882762Z (Reading database ... 35%
+end-workflow	Install GH CLI	2026-03-26T14:37:12.8883019Z (Reading database ... 40%
+end-workflow	Install GH CLI	2026-03-26T14:37:12.8883248Z (Reading database ... 45%
+end-workflow	Install GH CLI	2026-03-26T14:37:12.8885251Z (Reading database ... 50%
+end-workflow	Install GH CLI	2026-03-26T14:37:12.8895612Z (Reading database ... 55%
+end-workflow	Install GH CLI	2026-03-26T14:37:12.8898305Z (Reading database ... 60%
+end-workflow	Install GH CLI	2026-03-26T14:37:12.8944374Z (Reading database ... 65%
+end-workflow	Install GH CLI	2026-03-26T14:37:12.8990149Z (Reading database ... 70%
+end-workflow	Install GH CLI	2026-03-26T14:37:12.9047735Z (Reading database ... 75%
+end-workflow	Install GH CLI	2026-03-26T14:37:12.9109846Z (Reading database ... 80%
+end-workflow	Install GH CLI	2026-03-26T14:37:12.9147495Z (Reading database ... 85%
+end-workflow	Install GH CLI	2026-03-26T14:37:12.9185351Z (Reading database ... 90%
+end-workflow	Install GH CLI	2026-03-26T14:37:12.9216297Z (Reading database ... 95%
+end-workflow	Install GH CLI	2026-03-26T14:37:12.9251294Z (Reading database ... 100%
+end-workflow	Install GH CLI	2026-03-26T14:37:12.9255766Z (Reading database ... 14387 files and directories currently installed.)
+end-workflow	Install GH CLI	2026-03-26T14:37:12.9271682Z Preparing to unpack .../archives/gh_2.89.0_amd64.deb ...
+end-workflow	Install GH CLI	2026-03-26T14:37:12.9333107Z Unpacking gh (2.89.0) ...
+end-workflow	Install GH CLI	2026-03-26T14:37:14.3426389Z Setting up gh (2.89.0) ...
+end-workflow	Trigger Inspector	﻿2026-03-26T14:37:14.5396568Z ##[group]Run echo "🔍 Triggering Inspector for Audit..."
+end-workflow	Trigger Inspector	2026-03-26T14:37:14.5397428Z [36;1mecho "🔍 Triggering Inspector for Audit..."[0m
+end-workflow	Trigger Inspector	2026-03-26T14:37:14.5397788Z [36;1mgh workflow run inspector.yml \[0m
+end-workflow	Trigger Inspector	2026-03-26T14:37:14.5398081Z [36;1m  --ref main \[0m
+end-workflow	Trigger Inspector	2026-03-26T14:37:14.5398381Z [36;1m  -f workflow_name="Ka0s K8s Config Extractor" \[0m
+end-workflow	Trigger Inspector	2026-03-26T14:37:14.5398717Z [36;1m  -f run_id="23597941423" \[0m
+end-workflow	Trigger Inspector	2026-03-26T14:37:14.5398990Z [36;1m  -f status="success" \[0m
+end-workflow	Trigger Inspector	2026-03-26T14:37:14.5399405Z [36;1m  -f kaos-user-start="asantacana1970" || echo "No se pudo lanzar Inspector."[0m
+end-workflow	Trigger Inspector	2026-03-26T14:37:14.5477632Z shell: /usr/bin/bash -e {0}
+end-workflow	Trigger Inspector	2026-03-26T14:37:14.5477931Z env:
+end-workflow	Trigger Inspector	2026-03-26T14:37:14.5478148Z   KAOS_MODULE: [Ka0S] K8s Config Extractor
+end-workflow	Trigger Inspector	2026-03-26T14:37:14.5478433Z   KAOS_CODE: 23597941423
+end-workflow	Trigger Inspector	2026-03-26T14:37:14.5478682Z   KAOS_ACTOR: asantacana1970
+end-workflow	Trigger Inspector	2026-03-26T14:37:14.5479511Z   GH_TOKEN: ***
+end-workflow	Trigger Inspector	2026-03-26T14:37:14.5479720Z ##[endgroup]
+end-workflow	Trigger Inspector	2026-03-26T14:37:14.6005882Z 🔍 Triggering Inspector for Audit...
+end-workflow	Trigger Inspector	2026-03-26T14:37:16.9296220Z https://github.com/Ka0s-Klaus/ka0s/actions/runs/23600213208
+end-workflow	Post Checkout Repository	﻿2026-03-26T14:37:17.0931441Z Post job cleanup.
+end-workflow	Post Checkout Repository	2026-03-26T14:37:17.4076701Z [command]/usr/bin/git version
+end-workflow	Post Checkout Repository	2026-03-26T14:37:17.4557811Z git version 2.53.0
+end-workflow	Post Checkout Repository	2026-03-26T14:37:17.5176155Z Temporarily overriding HOME='/home/runner/_work/_temp/52cb5cf5-e874-45b8-bcd2-fed3e6812e79' before making global git config changes
+end-workflow	Post Checkout Repository	2026-03-26T14:37:17.5177658Z Adding repository directory to the temporary git global config as a safe directory
+end-workflow	Post Checkout Repository	2026-03-26T14:37:17.5210338Z [command]/usr/bin/git config --global --add safe.directory /home/runner/_work/ka0s/ka0s
+end-workflow	Post Checkout Repository	2026-03-26T14:37:17.5512913Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+end-workflow	Post Checkout Repository	2026-03-26T14:37:17.5746322Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+end-workflow	Post Checkout Repository	2026-03-26T14:37:17.6603330Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+end-workflow	Post Checkout Repository	2026-03-26T14:37:17.6695935Z http.https://github.com/.extraheader
+end-workflow	Post Checkout Repository	2026-03-26T14:37:17.6757440Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+end-workflow	Post Checkout Repository	2026-03-26T14:37:17.6894991Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+end-workflow	Post Checkout Repository	2026-03-26T14:37:17.7691206Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+end-workflow	Post Checkout Repository	2026-03-26T14:37:17.7787643Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+end-workflow	Complete job	﻿2026-03-26T14:37:18.0303506Z Cleaning up orphan processes
+end-workflow	Complete job	2026-03-26T14:37:18.0493144Z ##[warning]Node.js 20 actions are deprecated. The following actions are running on Node.js 20 and may not work as expected: actions/checkout@v4. Actions will be forced to run with Node.js 24 by default starting June 2nd, 2026. Node.js 20 will be removed from the runner on September 16th, 2026. Please check if updated versions of these actions are available that support Node.js 24. To opt into Node.js 24 now, set the FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true environment variable on the runner or in your workflow file. Once Node.js 24 becomes the default, you can temporarily opt out by setting ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
