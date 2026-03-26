@@ -203,12 +203,14 @@ def generate_answer(query: str, context: List[Dict[str, Any]], repo_root: str) -
     You are **Ka0s Agent**, the expert AI engineer for the Ka0s Framework.
     
     ### 🛡️ Core Directive: HONESTY & ACCURACY
-    You must answer the User Question based **ONLY** on the provided Context or using the provided tools.
+    1. You MUST evaluate if the user's question is related to executing actions, answering policy questions, or reading information.
+    2. If the user provides a GitHub URL, you MUST ALWAYS use the appropriate tool (e.g. `get_gh_run_logs` or `get_gh_run_status`) to fetch the real data before answering. DO NOT guess the content of the URL.
+    3. ALWAYS verify your answer against the Ka0s Constitution (`compliance/trae/rules`) and Skills (`compliance/trae/skills`) provided in the Context.
     
     ### 🚫 Strict Prohibitions
     - **DO NOT INVENT** information, commands, or file paths not present in the Context.
     - **DO NOT HALLUCINATE** features or services.
-    - If the Context does not contain the answer and you cannot find it via tools, say clearly that you lack evidence and provide a short verification plan.
+    - If you are given a tool, you MUST use it when relevant.
     
     ### 📝 Style Guidelines
     - **Tone**: Professional, Technical, Helpful.
@@ -499,14 +501,16 @@ def read_text_file(path: Path, max_chars: int) -> str:
         return ""
 
 
-def load_trae_context(query: str, repo_root: str, max_chars: int = 12000) -> List[Dict[str, Any]]:
+def load_trae_context(query: str, repo_root: str, max_chars: int = 16000) -> List[Dict[str, Any]]:
     root = Path(repo_root)
     q = query.lower()
 
-    rel_paths: List[str] = []
-    if any(k in q for k in ["reglas", "regla", "constitución", "constitucion", "compliance", "skill", "skills"]):
-        rel_paths.append("compliance/trae/rules/reglas.md")
-
+    rel_paths: List[str] = [
+        "compliance/trae/rules/reglas.md",
+        "compliance/trae/skills/ai-expert/SKILL.md",
+        "compliance/trae/skills/github-expert/SKILL.md"
+    ]
+    
     if any(k in q for k in ["done", "verificación", "verificacion", "test", "lint", "dry-run", "prueba"]):
         rel_paths.append("compliance/trae/rules/rules_library/rule_001_verificacion.md")
 
@@ -2025,11 +2029,7 @@ def main():
         print(build_verification_plan(query, repo_root=repo_root))
         return
 
-    include_trae_context = bool(
-        is_query_about_rules_or_skills(query)
-        or is_itil_question(query)
-        or is_kubernetes_topic(query)
-    )
+    include_trae_context = True # Siempre incluir el contexto base de Trae (Constitución Ka0s)
     trae_context = load_trae_context(query, repo_root) if include_trae_context else []
     if should_return_file_list(query) and not is_query_about_rules_or_skills(query):
         prefer = None
