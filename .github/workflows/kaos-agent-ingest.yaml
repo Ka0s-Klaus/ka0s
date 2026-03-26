@@ -20,12 +20,9 @@ on:
   schedule:
     - cron: '0 2 * * *' # Nightly Full Ingest (2:00 AM UTC)
   push:
-    paths:
-      - 'compliance/trae/skills/**'
-      - 'compliance/trae/rules/**'
-      - 'core/docs/**'
-      - 'core/b2b/**'
-      - '.github/workflows/**'
+    paths-ignore:
+      - 'audit/**'
+      - 'site_build/**'
 
 permissions:
   contents: read
@@ -79,51 +76,66 @@ jobs:
           # Removed heavy ML libs (torch/transformers) since we use Ollama via HTTP
           pip install psycopg2-binary requests --prefer-binary
 
-      # Lógica de detección de cambios para ejecución automática por push
-      - name: Determine Module (Auto-Trigger)
-        id: determine-module
+      # Lógica de detección de cambios exactos para ejecución automática por push
+      - name: Determine Changed Files (Auto-Trigger)
+        id: changed-files
         if: github.event_name == 'push'
         run: |
-          # Prioridad: Skills > Docs > Infra
-          if git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | grep -q "^.trae/"; then
-            echo "module=skills" >> $GITHUB_OUTPUT
-          elif git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | grep -q "^core/docs/"; then
-            echo "module=docs" >> $GITHUB_OUTPUT
-          elif git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | grep -q "^core/b2b/"; then
-            echo "module=infra" >> $GITHUB_OUTPUT
+          # Obtenemos ficheros modificados, añadidos o eliminados
+          if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
+            FILES=$(git diff-tree --no-commit-id --name-only -r ${{ github.sha }})
           else
-            echo "module=infra" >> $GITHUB_OUTPUT
+            FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }})
           fi
+          
+          VALID_FILES=""
+          for f in $FILES; do
+            # Ignorar carpetas excluidas explícitamente.
+            # Se incluyen ficheros borrados para que el script los elimine de la BD.
+            if [[ "$f" != audit/* ]] && [[ "$f" != site_build/* ]]; then
+              VALID_FILES="$VALID_FILES $f"
+            fi
+          done
+          
+          echo "files=$VALID_FILES" >> $GITHUB_OUTPUT
 
       - name: Set Module Variable
         id: set-var
+        if: github.event_name != 'push'
         run: |
           if [ "${{ github.event_name }}" == "schedule" ]; then
             echo "TARGET_MODULE=all" >> $GITHUB_ENV
           elif [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
             echo "TARGET_MODULE=${{ inputs.module }}" >> $GITHUB_ENV
-          else
-            echo "TARGET_MODULE=${{ steps.determine-module.outputs.module }}" >> $GITHUB_ENV
           fi
 
       - name: Run Ingestion
         env:
           DB_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         run: |
-          echo "🚀 Starting Ingestion for Module: $TARGET_MODULE"
-          
-          if [ "$TARGET_MODULE" == "all" ]; then
-            # Ejecución secuencial ordenada para el Nightly/Full
-            # Audit removed as it's handled by CronJobs
-            modules=("skills" "docs" "infra" "devops" "github" "compliance" "code")
-            for mod in "${modules[@]}"; do
-              echo "::group::Ingesting $mod"
-              python core/ai/memory/ingest_local.py --module $mod
-              echo "::endgroup::"
-            done
+          if [ "${{ github.event_name }}" == "push" ]; then
+            FILES="${{ steps.changed-files.outputs.files }}"
+            if [ -z "$FILES" ]; then
+              echo "✅ No valid files to ingest outside of audit/ or site_build/."
+              exit 0
+            fi
+            echo "🚀 Starting Ingestion for specific changed files: $FILES"
+            python core/ai/memory/ingest_local.py --files $FILES
           else
-            # Ejecución puntual
-            python core/ai/memory/ingest_local.py --module $TARGET_MODULE
+            echo "🚀 Starting Ingestion for Module: $TARGET_MODULE"
+            
+            if [ "$TARGET_MODULE" == "all" ]; then
+              # Ejecución secuencial ordenada para el Nightly/Full
+              modules=("skills" "docs" "infra" "devops" "github" "compliance" "code")
+              for mod in "${modules[@]}"; do
+                echo "::group::Ingesting $mod"
+                python core/ai/memory/ingest_local.py --module $mod
+                echo "::endgroup::"
+              done
+            else
+              # Ejecución puntual
+              python core/ai/memory/ingest_local.py --module $TARGET_MODULE
+            fi
           fi
 
   # -----------------------------------------------------------------------------

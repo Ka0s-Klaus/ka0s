@@ -241,11 +241,21 @@ if __name__ == "__main__":
         choices=['docs', 'skills', 'infra', 'code', 'audit', 'compliance', 'devops', 'github', 'all'],
         help='Specific module to ingest to prevent timeouts'
     )
+    parser.add_argument(
+        '--files',
+        type=str,
+        nargs='*',
+        help='Specific files to ingest (overrides --module)'
+    )
     args = parser.parse_args()
 
-    PATTERNS = get_patterns(args.module)
-    print(f"🚀 Starting ingestion for module: {args.module}")
-    print(f"📂 Patterns: {PATTERNS}")
+    if args.files:
+        PATTERNS = args.files
+        print(f"🚀 Starting ingestion for specific files: {args.files}")
+    else:
+        PATTERNS = get_patterns(args.module)
+        print(f"🚀 Starting ingestion for module: {args.module}")
+        print(f"📂 Patterns: {PATTERNS}")
     
 else:
     # Default for imports or testing
