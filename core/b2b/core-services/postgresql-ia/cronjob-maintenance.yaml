@@ -1,0 +1,60 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: pgvector-maintenance
+  namespace: postgresql-ia
+  labels:
+    app: postgresql-ia-maintenance
+spec:
+  schedule: "0 2 * * *" # Every day at 2:00 AM
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: postgresql-ia-maintenance
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: pgvector-maintenance
+            image: postgres:15-alpine
+            env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-ia-secret
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-ia-secret
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-ia-secret
+                  key: POSTGRES_DB
+            - name: PGHOST
+              value: "postgresql-ia"
+            command: ["/bin/sh", "-c"]
+            args:
+            - |
+              echo "Starting pgvector maintenance..."
+              export PGPASSWORD=$POSTGRES_PASSWORD
+              # We use vacuum analyze and reindex index concurrently to avoid locking the tables
+              psql -h $PGHOST -U $POSTGRES_USER -d $POSTGRES_DB -c "VACUUM ANALYZE anythingllm_vectors;"
+              psql -h $PGHOST -U $POSTGRES_USER -d $POSTGRES_DB -c "REINDEX TABLE CONCURRENTLY anythingllm_vectors;"
+              # If we have kaos_memory we should maintain it as well
+              psql -h $PGHOST -U $POSTGRES_USER -d $POSTGRES_DB -c "VACUUM ANALYZE kaos_memory;" || true
+              psql -h $PGHOST -U $POSTGRES_USER -d $POSTGRES_DB -c "REINDEX TABLE CONCURRENTLY kaos_memory;" || true
+              echo "pgvector maintenance completed."
+            resources:
+              requests:
+                memory: "64Mi"
+                cpu: "50m"
+              limits:
+                memory: "128Mi"
+                cpu: "100m"
