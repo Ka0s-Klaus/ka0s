@@ -17,6 +17,26 @@ spec:
     spec:
       nodeSelector:
         kubernetes.io/hostname: k8-manager
+      initContainers:
+      - name: pull-model
+        image: ollama/ollama:latest
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          echo "Starting Ollama server in background..."
+          ollama serve &
+          pid=$!
+          echo "Waiting for server to be ready..."
+          until ollama list >/dev/null 2>&1; do sleep 1; done
+          echo "Pulling nomic-embed-text..."
+          ollama pull nomic-embed-text
+          echo "Stopping Ollama server..."
+          kill $pid
+          wait $pid 2>/dev/null || true
+          echo "Model pulled successfully."
+        volumeMounts:
+        - name: models
+          mountPath: /root/.ollama
       containers:
       - name: ollama
         image: ollama/ollama:latest
