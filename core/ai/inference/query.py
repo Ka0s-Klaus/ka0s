@@ -298,7 +298,8 @@ def generate_answer(query: str, context: List[Dict[str, Any]], repo_root: str) -
     }
     
     try:
-        response = requests.post(url, json=payload, timeout=600)
+        # Aumentamos el timeout a 900s (15 min) para dar margen a la CPU
+        response = requests.post(url, json=payload, timeout=900)
         response.raise_for_status()
         data = response.json()
         
@@ -367,7 +368,7 @@ def generate_answer(query: str, context: List[Dict[str, Any]], repo_root: str) -
                 payload["messages"] = messages
                 payload.pop("tools", None) # Remove tools for the final answer generation to avoid loops
                 
-                response2 = requests.post(url, json=payload, timeout=600)
+                response2 = requests.post(url, json=payload, timeout=900)
                 response2.raise_for_status()
                 data2 = response2.json()
                 return data2.get("message", {}).get("content", "Error: Empty response after tool call")
@@ -1960,10 +1961,10 @@ def answer_github_actions_run_failure(query: str, repo_root: str) -> str:
         if log_text:
             context = [{
                 "source": f"Logs del Job Fallido ({run_url})",
-                "content": log_text[-8000:], # Los errores suelen estar al final del log
+                "content": log_text[-3000:], # Reducido a 3000 chars para evitar timeouts en inferencia por CPU
                 "similarity": 1.0
             }]
-            enhanced_query = query + "\n\nPor favor, analiza el error específico en el log adjunto y proporciona la causa raíz y una solución detallada."
+            enhanced_query = query + "\n\nPor favor, analiza el error específico en el log adjunto y proporciona la causa raíz y una solución detallada. Sé conciso."
             return generate_answer(enhanced_query, context, repo_root)
         else:
             parts.append("- Si el fallo no es de `git pull --rebase`, pega el extracto del error del step fallido para diagnóstico exacto.")
