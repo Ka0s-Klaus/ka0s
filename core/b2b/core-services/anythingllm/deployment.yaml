@@ -18,7 +18,7 @@ spec:
         managed-by: ka0s-core-cd
     spec:
       nodeSelector:
-        kubernetes.io/hostname: k8-node-20
+        kubernetes.io/hostname: k8-manager
       securityContext:
         fsGroup: 1000
       initContainers:
@@ -61,10 +61,10 @@ spec:
               value: pgvector
           resources:
             requests:
-              cpu: "1500m"
+              cpu: "1000m"
               memory: "2Gi"
             limits:
-              cpu: "3000m"
+              cpu: "2000m"
               memory: "4Gi"
           securityContext:
             capabilities:
