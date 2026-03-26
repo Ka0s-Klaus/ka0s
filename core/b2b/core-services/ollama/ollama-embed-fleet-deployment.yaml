@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ollama-embed-fleet
+  namespace: ollama
+  labels:
+    app: ollama-embed-fleet
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: ollama-embed-fleet
+  template:
+    metadata:
+      labels:
+        app: ollama-embed-fleet
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: k8-manager
+      containers:
+      - name: ollama
+        image: ollama/ollama:latest
+        ports:
+        - containerPort: 11434
+        env:
+        - name: OLLAMA_NUM_PARALLEL
+          value: "2"
+        - name: OLLAMA_HOST
+          value: "0.0.0.0"
+        - name: OLLAMA_ORIGINS
+          value: "*"
+        resources:
+          requests:
+            memory: "300Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "1"
+        volumeMounts:
+        - name: models
+          mountPath: /root/.ollama
+      volumes:
+      - name: models
+        emptyDir: {}
