@@ -1765,7 +1765,10 @@ def answer_github_actions_run_failure(query: str, repo_root: str) -> str:
             r = requests.get(f"{api_base}/actions/runs/{run_id}/jobs?per_page=100", headers=headers, timeout=30)
             if r.status_code == 200:
                 jobs_payload = r.json()
-        except Exception:
+            else:
+                logger.error(f"Failed to fetch jobs: {r.status_code} - {r.text}")
+        except Exception as e:
+            logger.error(f"Exception fetching jobs: {e}")
             jobs_payload = None
 
     failed_jobs: list[dict] = []
@@ -1796,8 +1799,14 @@ def answer_github_actions_run_failure(query: str, repo_root: str) -> str:
                 lr = requests.get(f"{api_base}/actions/jobs/{job_id}/logs", headers=headers, timeout=30, allow_redirects=True)
                 if lr.status_code == 200:
                     log_text = lr.text
-            except Exception:
+                else:
+                    logger.error(f"Failed to fetch logs for job {job_id}: {lr.status_code} - {lr.text}")
+            except Exception as e:
+                logger.error(f"Exception fetching logs: {e}")
                 log_text = ""
+    
+    if not log_text:
+        logger.warning("log_text is empty after API fetch attempts.")
 
     ql = (query + "\n" + log_text).lower()
     is_rebase_dirty = (
