@@ -72,14 +72,15 @@ jobs:
             os.environ.get('GENERATION_MODEL', '').strip(),
             os.environ.get('EMBEDDING_MODEL', '').strip(),
           ]
-          required = [m for m in required if m]
+          required = [m if ':' in m else m + ':latest' for m in required if m]
 
           def req(url, data=None):
             if data is None:
               r = urllib.request.Request(url, method='GET')
             else:
               r = urllib.request.Request(url, data=json.dumps(data).encode('utf-8'), headers={'Content-Type':'application/json'}, method='POST')
-            with urllib.request.urlopen(r, timeout=30) as resp:
+            # Timeout de 300s para permitir pulls largos
+            with urllib.request.urlopen(r, timeout=300) as resp:
               return resp.status, resp.read().decode('utf-8', errors='ignore')
 
           try:
