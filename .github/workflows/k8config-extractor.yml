@@ -1,0 +1,166 @@
+name: "Ka0s K8s Config Extractor"
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Motivo de la ejecución manual'
+        required: false
+        default: 'Extracción manual de configuración K8s'
+
+permissions:
+  contents: write
+
+env:
+  KAOS_MODULE: "[Ka0S] K8s Config Extractor"
+  KAOS_CODE: ${{ github.run_id }}
+  KAOS_ACTOR: ${{ github.actor }}
+
+jobs:
+  core-execution:
+    name: Core Execution
+    runs-on: swarm-runners-scaleset
+    outputs:
+      status: ${{ job.status }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Environment
+        run: |
+          echo "Iniciando módulo: ${{ env.KAOS_MODULE }}"
+          echo "Run ID: ${{ env.KAOS_CODE }}"
+          echo "Actor: ${{ env.KAOS_ACTOR }}"
+          mkdir -p audit/k8config
+
+      - name: Extract Kubernetes Configuration
+        run: |
+          echo "Extrayendo configuración del cluster a audit/k8config/${{ env.KAOS_CODE }}.json..."
+          # Se extraen los componentes principales del cluster en formato JSON, omitiendo secrets por seguridad
+          kubectl get nodes,namespaces,deployments,statefulsets,daemonsets,services,ingresses,configmaps,hpa,networkpolicies,pvc -A -o json > audit/k8config/${{ env.KAOS_CODE }}.json
+          
+          echo "Limpiando configuraciones antiguas (mayores a 60 minutos)..."
+          find audit/k8config -name "*.json" -type f -mmin +60 -delete
+          
+          echo "Archivos actuales en audit/k8config:"
+          ls -lh audit/k8config/
+
+      - name: Commit & Push Results
+        if: success()
+        run: |
+          git config --global user.name "${{ secrets.KAOS_BOT_NAME || 'Ka0s Bot' }}"
+          git config --global user.email "${{ secrets.KAOS_BOT_EMAIL || 'bot@ka0s.io' }}"
+          
+          # Añadir cambios (nuevos archivos y eliminaciones)
+          git add audit/k8config/
+          
+          if ! git diff --staged --quiet; then
+            git commit -m "chore(ka0s): update k8s config ${{ env.KAOS_MODULE }} run ${{ env.KAOS_CODE }} [skip ci]"
+            count=0
+            until git push origin HEAD:${{ github.ref_name }} || [ $count -eq 5 ]; do
+              echo "Push fallido, reintentando..."
+              git pull --rebase origin ${{ github.ref_name }}
+              ((count++))
+              sleep 2
+            done
+          else
+            echo "No hay cambios para subir."
+          fi
+
+  handle-success:
+    name: Handle Success
+    needs: [core-execution]
+    if: success()
+    runs-on: swarm-runners-scaleset
+    steps:
+      - name: Notify Success
+        run: echo "✅ Workflow ${{ env.KAOS_MODULE }} completado correctamente."
+
+  handle-failure:
+    name: Handle Failure
+    needs: [core-execution]
+    if: failure()
+    runs-on: swarm-runners-scaleset
+    permissions:
+      issues: write
+      contents: read
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+        continue-on-error: true
+
+      - name: Create Incident Issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --title "[INCIDENT]: Fallo en workflow ${{ github.workflow }}" \
+            --label "itop-incident,triage,automated" \
+            --body "### Organización
+          Ka0s
+          
+          ### Solicitante
+          @${{ github.actor }}
+          
+          ### Estado
+          New
+          
+          ### Impacto
+          Service
+          
+          ### Urgencia
+          Medium
+          
+          ### Servicio / CI afectado
+          GitHub Actions / ${{ github.workflow }}
+          
+          ### Descripción
+          El workflow **${{ github.workflow }}** ha fallado durante su ejecución.
+          
+          **Detalles Técnicos:**
+          - **Módulo**: ${{ env.KAOS_MODULE }}
+          - **Run ID**: ${{ github.run_id }}
+          - **Commit**: ${{ github.sha }}
+          - **Branch/Ref**: ${{ github.ref_name }}
+          - **Actor**: ${{ github.actor }}
+          
+          ### Pasos / Evidencias
+          Logs de ejecución: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          " || echo "No se pudo crear el issue, revisar token."
+
+  end-workflow:
+    needs: [handle-success, handle-failure]
+    if: always()
+    runs-on: swarm-runners-scaleset
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - id: repo
+        name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install GH CLI
+        uses: ./.github/actions/install-gh-cli
+        continue-on-error: true
+        
+      - name: Trigger Inspector
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "🔍 Triggering Inspector for Audit..."
+          gh workflow run inspector.yml \
+            --ref main \
+            -f workflow_name="${{ github.workflow }}" \
+            -f run_id="${{ github.run_id }}" \
+            -f status="${{ job.status }}" \
+            -f kaos-user-start="${{ github.triggering_actor }}" || echo "No se pudo lanzar Inspector."
