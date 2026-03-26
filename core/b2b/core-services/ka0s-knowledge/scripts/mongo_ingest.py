@@ -54,6 +54,7 @@ class RunConfig:
     max_docs: Optional[int]
     sleep_seconds_per_doc: float
     chunk_chars: int
+    chunk_overlap: int
     max_chunks_per_doc: Optional[int]
 
 
@@ -105,7 +106,8 @@ def load_configs() -> Tuple[MongoConfig, PgConfig, OllamaConfig, RunConfig]:
         batch_size=max(1, int(os.getenv("BATCH_SIZE", "10"))),
         max_docs=int(os.getenv("MAX_DOCS", "0")) or None,
         sleep_seconds_per_doc=float(os.getenv("SLEEP_SECONDS_PER_DOC", "0.25")),
-        chunk_chars=max(256, int(os.getenv("CHUNK_CHARS", "2000"))),
+        chunk_chars=max(256, int(os.getenv("CHUNK_CHARS", "1000"))),
+        chunk_overlap=max(0, int(os.getenv("CHUNK_OVERLAP", "200"))),
         max_chunks_per_doc=int(os.getenv("MAX_CHUNKS_PER_DOC", "0")) or None,
     )
 
@@ -202,10 +204,19 @@ def list_target_collections(db, cfg: MongoConfig) -> List[str]:
     return cols
 
 
-def chunk_text(text: str, chunk_chars: int) -> List[str]:
+def chunk_text(text: str, chunk_chars: int, overlap_chars: int = 0) -> List[str]:
     if not text:
         return []
-    return [text[i : i + chunk_chars] for i in range(0, len(text), chunk_chars)]
+    if chunk_chars <= 0:
+        return [text]
+    
+    step = max(1, chunk_chars - overlap_chars)
+    chunks = []
+    for i in range(0, len(text), step):
+        chunks.append(text[i : i + chunk_chars])
+        if i + chunk_chars >= len(text):
+            break
+    return chunks
 
 
 def md5_text(text: str) -> str:
@@ -214,12 +225,20 @@ def md5_text(text: str) -> str:
 
 def doc_to_text(db_name: str, collection_name: str, doc: Dict[str, Any]) -> str:
     doc_id = str(doc.get("_id", ""))
-    header = f"source=mongo db={db_name} collection={collection_name} id={doc_id}\n"
+    database_id = str(doc.get("databaseId", ""))
+    workflow_db_id = str(doc.get("workflowDatabaseId", ""))
+    
+    header = f"source=mongo db={db_name} collection={collection_name} id={doc_id}"
+    if database_id:
+        header += f" databaseId={database_id}"
+    if workflow_db_id:
+        header += f" workflowDatabaseId={workflow_db_id}"
+    header += "\n"
 
     if isinstance(doc.get("content"), str) and doc["content"].strip():
         body = doc["content"]
         if isinstance(doc.get("filename"), str):
-            header = f"{header}filename={doc['filename']}\n"
+            header = f"{header.strip()} filename={doc['filename']}\n"
         return header + "\n" + body
 
     if isinstance(doc.get("data"), (dict, list)):
@@ -354,7 +373,7 @@ def vectorize_collection(
 
             doc_id = str(doc.get("_id", ""))
             text = doc_to_text(db_name, collection_name, doc)
-            chunks = chunk_text(text, run_cfg.chunk_chars)
+            chunks = chunk_text(text, run_cfg.chunk_chars, run_cfg.chunk_overlap)
             if run_cfg.max_chunks_per_doc is not None:
                 chunks = chunks[: run_cfg.max_chunks_per_doc]
 

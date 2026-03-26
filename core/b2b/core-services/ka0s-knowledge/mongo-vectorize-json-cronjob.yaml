@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: mongo-vectorize
+  name: mongo-vectorize-json
   namespace: ka0s-knowledge
 spec:
   schedule: "*/10 * * * *"
@@ -84,14 +84,13 @@ spec:
                 - name: MAX_CHUNKS_PER_DOC
                   value: "4"
                 - name: SLEEP_SECONDS_PER_DOC
-                  value: "0.75"
+                  value: "0.25"
                 - name: LOG_LEVEL
                   value: "INFO"
               volumeMounts:
                 - name: scripts
                   mountPath: /config
                   readOnly: true
-
           volumes:
             - name: scripts
               configMap:
