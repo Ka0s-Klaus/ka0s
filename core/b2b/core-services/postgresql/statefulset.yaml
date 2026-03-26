@@ -60,7 +60,7 @@ spec:
             - ka0s_core
           initialDelaySeconds: 120 # Aumentado de 30s para dar tiempo al recovery
           periodSeconds: 20
-          timeoutSeconds: 10
+          timeoutSeconds: 15 # Aumentado de 10s para evitar timeouts por I/O de Zabbix
           failureThreshold: 10 # Más intentos antes de reiniciar
         readinessProbe:
           exec:
@@ -72,7 +72,7 @@ spec:
             - ka0s_core
           initialDelaySeconds: 60
           periodSeconds: 10
-          timeoutSeconds: 5
+          timeoutSeconds: 15 # Aumentado de 5s para evitar timeouts por I/O de Zabbix
           failureThreshold: 5
         volumeMounts:
         - name: postgres-data
@@ -88,7 +88,7 @@ spec:
             fieldRef:
               fieldPath: metadata.name
         - name: ZBX_SERVER_HOST
-          value: "zabbix-server.zabbix.svc.cluster.local,172.16.64.148"
+          value: "zabbix-server.zabbix.svc.cluster.local"
         - name: ZBX_METADATA
           value: "postgresql"
         - name: ZBX_PLUGINS_POSTGRESQL_SESSIONS_DEFAULT_URI
