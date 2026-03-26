@@ -8,8 +8,6 @@ metadata:
     managed-by: ka0s-core-cd
 spec:
   replicas: 1
-  strategy:
-    type: Recreate
   selector:
     matchLabels:
       app: anythingllm
@@ -67,10 +65,10 @@ spec:
               value: "anythingllm_vectors"
           resources:
             requests:
-              cpu: "1000m"
+              cpu: "500m"
               memory: "2Gi"
             limits:
-              cpu: "2000m"
+              cpu: "1000m"
               memory: "4Gi"
           securityContext:
             capabilities:
