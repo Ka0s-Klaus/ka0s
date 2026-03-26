@@ -45,7 +45,8 @@ jobs:
       - name: Query Agent (Degraded)
         id: query
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }} # PAT para API
           QUESTION_TITLE: ${{ github.event.issue.title }}
           QUESTION_BODY: ${{ github.event.issue.body }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
@@ -112,7 +113,8 @@ jobs:
       - name: Query Agent
         id: query
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }} # PAT para API
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_IA_PASSWORD }}
           # Extraer el cuerpo de la issue como pregunta
           QUESTION_TITLE: ${{ github.event.issue.title }}
