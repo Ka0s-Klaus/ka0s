@@ -1828,7 +1828,16 @@ def answer_github_actions_run_failure(query: str, repo_root: str) -> str:
         parts.append("## Referencia")
         parts.append("- Workflow: `.github/workflows/audit-pods.yml` (step `Commit Results`).")
     else:
-        parts.append("- Si el fallo no es de `git pull --rebase`, pega el extracto del error del step fallido para diagnóstico exacto.")
+        if log_text:
+            context = [{
+                "source": f"Logs del Job Fallido ({run_url})",
+                "content": log_text[-8000:], # Los errores suelen estar al final del log
+                "similarity": 1.0
+            }]
+            enhanced_query = query + "\n\nPor favor, analiza el error específico en el log adjunto y proporciona la causa raíz y una solución detallada."
+            return generate_answer(enhanced_query, context, repo_root)
+        else:
+            parts.append("- Si el fallo no es de `git pull --rebase`, pega el extracto del error del step fallido para diagnóstico exacto.")
 
     return "\n".join(parts).strip() + "\n"
 
