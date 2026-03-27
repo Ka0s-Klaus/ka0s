@@ -36,7 +36,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 2
 
       - name: Setup Kubectl Tunnel
         uses: ./.github/actions/kubectl-tunnel
@@ -60,6 +60,11 @@ jobs:
           fi
           
           echo "Diffing range: $BEFORE...$AFTER"
+          
+          # Ensure BEFORE commit is available for diffing
+          if [ "$BEFORE" != "HEAD~1" ]; then
+             git fetch origin "$BEFORE" || true
+          fi
           
           # Check for manual override via workflow_dispatch input
           MANUAL_SERVICE="${{ github.event.inputs.force_service }}"
@@ -300,13 +305,23 @@ jobs:
         run: |
           git config --global user.name "Ka0s CI Bot"
           git config --global user.email "ci@ka0s.io"
-          git pull --rebase
+          
+          # Evitar fallos si el checkout inicial falló
+          if [ ! -d ".git" ]; then
+            echo "Not a git repository, skipping commit."
+            exit 0
+          fi
+          
+          # Usar rebase con auto-stash y timeout para no bloquear el runner
+          timeout 30s git pull --rebase --autostash || echo "⚠️ Warning: git pull failed or timed out"
+          
+          mkdir -p audit/deploy
           git add audit/deploy/
           if git diff --staged --quiet; then
             echo "No changes to commit."
           else
             git commit -m "chore(cd): save deployment audit reports [skip ci]"
-            git push origin HEAD:${{ github.ref_name }}
+            git push origin HEAD:${{ github.ref_name }} || echo "⚠️ Warning: git push failed"
           fi
 
   handle-success:
