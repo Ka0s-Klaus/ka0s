@@ -5,8 +5,11 @@ on:
     inputs:
       question:
         description: 'Pregunta para el Agente Ka0s'
-        required: true
+        required: false
         default: '¿Cómo despliego un nuevo servicio?'
+      issue_number:
+        description: 'Número de Issue a analizar (opcional)'
+        required: false
       reason:
         description: 'Motivo de la ejecución manual'
         required: false
@@ -124,8 +127,23 @@ jobs:
         env:
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_IA_PASSWORD }}
           QUESTION: ${{ inputs.question }}
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Pregunta: $QUESTION"
+          # Si se proporciona una issue, extraemos su contenido y lo unimos a la pregunta
+          if [ -n "$ISSUE_NUMBER" ]; then
+            echo "Extrayendo contexto de la Issue #$ISSUE_NUMBER..."
+            ISSUE_TITLE=$(gh issue view $ISSUE_NUMBER --json title -q .title)
+            ISSUE_BODY=$(gh issue view $ISSUE_NUMBER --json body -q .body)
+            QUESTION="Por favor, analiza la siguiente Issue (#$ISSUE_NUMBER - $ISSUE_TITLE) y proporciona una solución o diagnóstico:
+            
+            CONTENIDO DE LA ISSUE:
+            $ISSUE_BODY
+            
+            PREGUNTA ADICIONAL: $QUESTION"
+          fi
+          
+          echo "Pregunta Final: $QUESTION"
           
           # Generar nombre de archivo único
           TIMESTAMP=$(date +'%Y%m%d_%H%M%S')
@@ -138,7 +156,10 @@ jobs:
           # Ejecutar script y capturar salida
           echo "# Respuesta del Agente Ka0s" > "$FILEPATH"
           echo "" >> "$FILEPATH"
-          echo "**Pregunta:** $QUESTION" >> "$FILEPATH"
+          if [ -n "$ISSUE_NUMBER" ]; then
+            echo "**Issue Analizada:** #$ISSUE_NUMBER" >> "$FILEPATH"
+          fi
+          echo "**Pregunta:** ${{ inputs.question }}" >> "$FILEPATH"
           echo "**Fecha:** $(date)" >> "$FILEPATH"
           echo "**Workflow ID:** ${{ github.run_id }}" >> "$FILEPATH"
           echo "" >> "$FILEPATH"
