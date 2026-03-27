@@ -183,19 +183,23 @@ def chat_with_agent(prompt: str):
             final_data = final_response.json()
             
             logger.info("✅ Respuesta final generada.")
-            print(final_data["message"]["content"])
+            # Forzar escritura estándar a stdout sin buffers para que '>>' en bash lo capture bien
+            sys.stdout.write(final_data["message"]["content"] + "\n")
+            sys.stdout.flush()
             
         else:
             # El modelo no necesitó herramientas
             logger.info("✅ El modelo respondió directamente sin usar herramientas.")
-            print(response_message.get("content", ""))
+            sys.stdout.write(response_message.get("content", "") + "\n")
+            sys.stdout.flush()
 
     except requests.exceptions.RequestException as e:
         logger.error(f"Error de comunicación con Ollama: {str(e)}")
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Uso: python query.py 'Tu consulta aquí'")
+        sys.stdout.write("Uso: python query.py 'Tu consulta aquí'\n")
+        sys.stdout.flush()
         sys.exit(1)
         
     user_query = " ".join(sys.argv[1:])
