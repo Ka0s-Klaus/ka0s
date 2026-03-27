@@ -19,7 +19,7 @@ POSTGRES_USER = os.getenv("DB_USER") or os.getenv("POSTGRES_USER") or "ka0s_ai"
 POSTGRES_PASSWORD = os.getenv("DB_PASSWORD") or os.getenv("POSTGRES_PASSWORD") or "change_me_in_production_vector_db_123!"
 
 OLLAMA_HOST = os.getenv("OLLAMA_HOST") or "localhost"
-OLLAMA_PORT = os.getenv("OLLAMA_PORT") or "11435"
+OLLAMA_PORT = os.getenv("OLLAMA_PORT") or "11434"
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL") or "nomic-embed-text"
 
 # Paths relative to where the script is run (project root)
@@ -346,7 +346,6 @@ def init_db():
     
     cur = conn.cursor()
     try:
-        # Enable vector extension
         cur.execute("CREATE EXTENSION IF NOT EXISTS vector;")
         
         # Create memory table with hash for incremental updates
@@ -356,15 +355,24 @@ def init_db():
                 source TEXT NOT NULL,
                 content TEXT NOT NULL,
                 content_hash TEXT,
-                metadata JSONB DEFAULT '{}'::jsonb,
                 embedding vector(768),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
             CREATE INDEX IF NOT EXISTS idx_kaos_memory_source ON kaos_memory(source);
             CREATE INDEX IF NOT EXISTS idx_kaos_memory_hash ON kaos_memory(content_hash);
-            CREATE INDEX IF NOT EXISTS idx_kaos_memory_metadata ON kaos_memory USING GIN (metadata);
             CREATE INDEX IF NOT EXISTS idx_kaos_memory_embedding ON kaos_memory USING hnsw (embedding vector_cosine_ops);
         """)
+
+        # Check if metadata column exists, add it if not
+        cur.execute("""
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name='kaos_memory' AND column_name='metadata';
+        """)
+        if not cur.fetchone():
+            cur.execute("ALTER TABLE kaos_memory ADD COLUMN metadata JSONB DEFAULT '{}'::jsonb;")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_kaos_memory_metadata ON kaos_memory USING GIN (metadata);")
+
         
         conn.commit()
         logger.info("Database schema initialized successfully.")
