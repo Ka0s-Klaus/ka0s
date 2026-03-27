@@ -175,6 +175,14 @@ jobs:
           # Exportar variable para el siguiente paso
           echo "FILEPATH=$FILEPATH" >> $GITHUB_ENV
 
+      - name: Comment on Issue
+        if: ${{ inputs.issue_number != '' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Añadiendo respuesta a la Issue #${{ inputs.issue_number }}..."
+          gh issue comment ${{ inputs.issue_number }} -F ${{ env.FILEPATH }}
+
       - name: Commit Response
         run: |
           git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
