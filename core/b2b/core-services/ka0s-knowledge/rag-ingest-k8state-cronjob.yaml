@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: mongo-vectorize-log
+  name: rag-ingest-k8state
   namespace: ka0s-knowledge
 spec:
   schedule: "*/15 * * * *"
@@ -12,7 +12,7 @@ spec:
     spec:
       ttlSecondsAfterFinished: 3600
       backoffLimit: 2
-      activeDeadlineSeconds: 1800
+      activeDeadlineSeconds: 900
       template:
         spec:
           nodeSelector:
@@ -24,11 +24,11 @@ spec:
               imagePullPolicy: IfNotPresent
               command: ["sh", "-lc"]
               args:
-                - "python -m pip install --disable-pip-version-check --no-cache-dir --retries 10 --timeout 60 -r /config/requirements.txt && python /config/mongo_ingest.py"
+                - "python -m pip install --disable-pip-version-check --no-cache-dir --retries 10 --timeout 60 -r /config/requirements.txt && python /config/mongo_k8config_diff.py"
               resources:
                 requests:
-                  cpu: 100m
-                  memory: 256Mi
+                  cpu: 50m
+                  memory: 128Mi
                 limits:
                   cpu: 500m
                   memory: 512Mi
@@ -74,17 +74,17 @@ spec:
                 - name: EMBEDDING_MODEL
                   value: "nomic-embed-text"
                 - name: MONGO_DB_ALLOWLIST
-                  value: "inspector"
+                  value: "k8config"
                 - name: MONGO_COLLECTION_ALLOWLIST
-                  value: "col_log"
+                  value: "col_json"
                 - name: BATCH_SIZE
-                  value: "5"
-                - name: MAX_DOCS
                   value: "10"
-                - name: MAX_CHUNKS_PER_DOC
+                - name: MAX_DOCS
                   value: "20"
+                - name: MAX_CHUNKS_PER_DOC
+                  value: "10"
                 - name: SLEEP_SECONDS_PER_DOC
-                  value: "0.75"
+                  value: "0.25"
                 - name: LOG_LEVEL
                   value: "INFO"
               volumeMounts:

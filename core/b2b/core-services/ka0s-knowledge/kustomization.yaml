@@ -6,10 +6,10 @@ namespace: ka0s-knowledge
 resources:
   - namespace.yaml
   - knowledge-sources-secret.yaml
-  - mongo-vectorize-json-cronjob.yaml
-  - mongo-vectorize-log-cronjob.yaml
-  - mongo-vectorize-server-cronjob.yaml
-  - mongo-vectorize-k8config-cronjob.yaml
+  - rag-ingest-code-devsecops-cronjob.yaml
+  - rag-ingest-telemetry-ops-cronjob.yaml
+  - rag-ingest-compliance-cronjob.yaml
+  - rag-ingest-k8state-cronjob.yaml
 
 configMapGenerator:
   - name: mongo-vectorize-scripts
@@ -17,6 +17,10 @@ configMapGenerator:
       - mongo_ingest.py=scripts/mongo_ingest.py
       - mongo_k8config_diff.py=scripts/mongo_k8config_diff.py
       - requirements.txt=scripts/requirements.txt
+      - ingest_devsecops_code.py=scripts/ingest_devsecops_code.py
+      - ingest_ops_telemetry.py=scripts/ingest_ops_telemetry.py
+      - ingest_compliance.py=scripts/ingest_compliance.py
+      - ingest_k8s_state.py=scripts/ingest_k8s_state.py
 
 generatorOptions:
   disableNameSuffixHash: true

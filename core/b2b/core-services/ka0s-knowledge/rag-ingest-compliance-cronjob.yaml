@@ -1,10 +1,10 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: mongo-vectorize-k8config
+  name: rag-ingest-compliance
   namespace: ka0s-knowledge
 spec:
-  schedule: "*/15 * * * *"
+  schedule: "*/20 * * * *"
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 2
   failedJobsHistoryLimit: 3
@@ -12,7 +12,7 @@ spec:
     spec:
       ttlSecondsAfterFinished: 3600
       backoffLimit: 2
-      activeDeadlineSeconds: 900
+      activeDeadlineSeconds: 1800
       template:
         spec:
           nodeSelector:
@@ -24,11 +24,11 @@ spec:
               imagePullPolicy: IfNotPresent
               command: ["sh", "-lc"]
               args:
-                - "python -m pip install --disable-pip-version-check --no-cache-dir --retries 10 --timeout 60 -r /config/requirements.txt && python /config/mongo_k8config_diff.py"
+                - "python -m pip install --disable-pip-version-check --no-cache-dir --retries 10 --timeout 60 -r /config/requirements.txt && python /config/ingest_compliance.py"
               resources:
                 requests:
-                  cpu: 50m
-                  memory: 128Mi
+                  cpu: 100m
+                  memory: 256Mi
                 limits:
                   cpu: 500m
                   memory: 512Mi
@@ -74,17 +74,21 @@ spec:
                 - name: EMBEDDING_MODEL
                   value: "nomic-embed-text"
                 - name: MONGO_DB_ALLOWLIST
-                  value: "k8config"
+                  value: "mongodb"
                 - name: MONGO_COLLECTION_ALLOWLIST
                   value: "col_json"
                 - name: BATCH_SIZE
-                  value: "10"
+                  value: "5"
                 - name: MAX_DOCS
-                  value: "20"
+                  value: "5"
                 - name: MAX_CHUNKS_PER_DOC
-                  value: "10"
+                  value: "100"
+                - name: CHUNK_CHARS
+                  value: "1000"
+                - name: CHUNK_OVERLAP
+                  value: "200"
                 - name: SLEEP_SECONDS_PER_DOC
-                  value: "0.25"
+                  value: "0.5"
                 - name: LOG_LEVEL
                   value: "INFO"
               volumeMounts:

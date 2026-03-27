@@ -1,10 +1,10 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: mongo-vectorize-server
+  name: rag-ingest-telemetry-ops
   namespace: ka0s-knowledge
 spec:
-  schedule: "*/20 * * * *"
+  schedule: "*/15 * * * *"
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 2
   failedJobsHistoryLimit: 3
@@ -24,7 +24,7 @@ spec:
               imagePullPolicy: IfNotPresent
               command: ["sh", "-lc"]
               args:
-                - "python -m pip install --disable-pip-version-check --no-cache-dir --retries 10 --timeout 60 -r /config/requirements.txt && python /config/mongo_ingest.py"
+                - "python -m pip install --disable-pip-version-check --no-cache-dir --retries 10 --timeout 60 -r /config/requirements.txt && python /config/ingest_ops_telemetry.py"
               resources:
                 requests:
                   cpu: 100m
@@ -74,21 +74,17 @@ spec:
                 - name: EMBEDDING_MODEL
                   value: "nomic-embed-text"
                 - name: MONGO_DB_ALLOWLIST
-                  value: "mongodb"
+                  value: "inspector"
                 - name: MONGO_COLLECTION_ALLOWLIST
-                  value: "col_json"
+                  value: "col_log"
                 - name: BATCH_SIZE
                   value: "5"
                 - name: MAX_DOCS
-                  value: "5"
+                  value: "10"
                 - name: MAX_CHUNKS_PER_DOC
-                  value: "100"
-                - name: CHUNK_CHARS
-                  value: "1000"
-                - name: CHUNK_OVERLAP
-                  value: "200"
+                  value: "20"
                 - name: SLEEP_SECONDS_PER_DOC
-                  value: "0.5"
+                  value: "0.75"
                 - name: LOG_LEVEL
                   value: "INFO"
               volumeMounts:
