@@ -9,10 +9,16 @@ from typing import Dict, Any
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("agent-inference")
 
-OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost")
+OLLAMA_PORT = os.getenv("OLLAMA_PORT", "11434")
+
 # Si OLLAMA_HOST no incluye esquema http o https, se lo añadimos por seguridad
 if not OLLAMA_HOST.startswith("http"):
     OLLAMA_HOST = f"http://{OLLAMA_HOST}"
+
+# Si OLLAMA_HOST no incluye el puerto al final, se lo añadimos
+if f":{OLLAMA_PORT}" not in OLLAMA_HOST:
+    OLLAMA_HOST = f"{OLLAMA_HOST}:{OLLAMA_PORT}"
 # El modelo recomendado para tool calling suele ser llama3.1 o qwen2.5
 MODEL = os.getenv("OLLAMA_MODEL", "llama3.1")
 
