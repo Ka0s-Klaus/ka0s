@@ -49,6 +49,23 @@ TOOLS = [
                 "required": ["command"]
             }
         }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_github_action_logs",
+            "description": "Descarga y muestra los logs de un workflow fallido de GitHub Actions dado su Run ID. Usar esto cuando se pide diagnosticar una Issue que menciona un Run ID.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "run_id": {
+                        "type": "string",
+                        "description": "El ID numérico de la ejecución del workflow (ej. '23642271681')."
+                    }
+                },
+                "required": ["run_id"]
+            }
+        }
     }
 ]
 
@@ -79,6 +96,25 @@ def execute_tool(name: str, args: Dict[str, Any]) -> str:
                 return f"Error ejecutando gh: {result.stderr}"
             return result.stdout or "Comando ejecutado sin salida."
             
+        elif name == "get_github_action_logs":
+            run_id = args.get("run_id")
+            # Usamos gh cli para ver los logs de los jobs fallidos
+            cmd = ["gh", "run", "view", str(run_id), "--log-failed"]
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=15)
+            if result.returncode != 0:
+                # Si falla, intentamos ver todos los logs resumidos
+                cmd_fallback = ["gh", "run", "view", str(run_id), "--log"]
+                res_fall = subprocess.run(cmd_fallback, capture_output=True, text=True, timeout=15)
+                if res_fall.returncode != 0:
+                     return f"Error obteniendo logs de GitHub: {res_fall.stderr}"
+                # Truncamos a las últimas 100 líneas para no saturar contexto
+                lines = res_fall.stdout.splitlines()[-100:]
+                return "\n".join(lines)
+            
+            # Si tiene éxito pero el log es muy largo, nos quedamos con el final
+            lines = result.stdout.splitlines()[-100:]
+            return "\n".join(lines)
+            
         else:
             return f"Error: Herramienta desconocida '{name}'."
             
@@ -96,7 +132,8 @@ def chat_with_agent(prompt: str):
             "role": "system",
             "content": "Eres un ingeniero DevSecOps experto en Ka0s. Tu objetivo es ayudar a los usuarios respondiendo preguntas sobre la infraestructura o diagnosticando problemas. "
                        "REGLA DE ORO: SIEMPRE DEBES RESPONDER EN ESPAÑOL, sin importar el idioma de los logs o del prompt del usuario. "
-                       "Usa las herramientas disponibles si necesitas buscar información en tiempo real."
+                       "Usa las herramientas disponibles si necesitas buscar información en tiempo real. "
+                       "Si el usuario menciona un 'Run ID' o 'Job ID' de GitHub Actions, DEBES usar la herramienta get_github_action_logs para leer los errores reales antes de responder."
         },
         {"role": "user", "content": prompt}
     ]
