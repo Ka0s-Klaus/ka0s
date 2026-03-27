@@ -19,8 +19,8 @@ if not OLLAMA_HOST.startswith("http"):
 # Si OLLAMA_HOST no incluye el puerto al final, se lo añadimos
 if f":{OLLAMA_PORT}" not in OLLAMA_HOST:
     OLLAMA_HOST = f"{OLLAMA_HOST}:{OLLAMA_PORT}"
-# El modelo recomendado para tool calling suele ser llama3.1 o qwen2.5
-MODEL = os.getenv("OLLAMA_MODEL", "llama3.1")
+# El modelo recomendado para tool calling suele ser llama3.2:7b
+MODEL = os.getenv("OLLAMA_MODEL", "llama3.2:7b")
 
 # 1. Definición de Herramientas (MCP-like Specification)
 # Estas son las "manos" del agente, que le indicamos al modelo que puede usar.

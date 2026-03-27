@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: pull-llama3-1-8b
+  name: pull-llama3-2-7b
   namespace: ollama
 spec:
   template:
@@ -14,11 +14,12 @@ spec:
         command: ["/bin/sh", "-c"]
         args:
         - |
-          echo "Waiting for Ollama service..."
-          until curl -s http://ollama:11434/api/tags > /dev/null; do
-            echo "Waiting..."
-            sleep 5
+          echo "Waiting for Ollama API..."
+          while ! curl -s http://ollama:11434/api/tags > /dev/null; do
+            sleep 2
           done
-          echo "Pulling llama3.1:8b..."
-          curl -X POST http://ollama:11434/api/pull -d '{"name": "llama3.1:8b"}'
+          echo "Pulling nomic-embed-text..."
+          curl -X POST http://ollama:11434/api/pull -d '{"name": "nomic-embed-text"}'
+          echo "Pulling llama3.2:7b..."
+          curl -X POST http://ollama:11434/api/pull -d '{"name": "llama3.2:7b"}'
       restartPolicy: OnFailure

@@ -8,7 +8,7 @@ import requests
 # Configuration from Environment or Defaults
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "ollama.ollama.svc.cluster.local")
 OLLAMA_PORT = os.getenv("OLLAMA_PORT", "11434")
-MODEL_NAME = os.getenv("MODEL_NAME", "llama3.2")
+MODEL_NAME = os.getenv("MODEL_NAME", "llama3.2:7b")
 API_URL = f"http://{OLLAMA_HOST}:{OLLAMA_PORT}/api/generate"
 
 

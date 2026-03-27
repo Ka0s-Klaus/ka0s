@@ -79,7 +79,7 @@ while ! curl -s http://localhost:11434/api/tags > /dev/null; do
 done
 
 # 8. Descarga del modelo
-MODEL_NAME="llama3.1:8b"
+MODEL_NAME="llama3.2:7b"
 echo -e "${YELLOW}[*] Descargando modelo: ${MODEL_NAME}... (Esto puede tardar unos minutos)${NC}"
 # Usamos sudo -u ollama para asegurarnos de que se descarga en el home del usuario del servicio
 ollama pull ${MODEL_NAME}

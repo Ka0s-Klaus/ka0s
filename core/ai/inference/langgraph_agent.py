@@ -19,7 +19,7 @@ class AgentState(TypedDict):
 # Config DB and Models
 DB_CONNECTION = "postgresql://ka0s_ai:change_me_in_production_vector_db_123!@localhost:5433/ka0s_memory"
 EMBEDDING_MODEL = "nomic-embed-text"
-LLM_MODEL = "llama3.2:latest"
+LLM_MODEL = "llama3.2:7b"
 
 # Initialize components
 embeddings = OllamaEmbeddings(
