@@ -147,7 +147,7 @@ jobs:
           
           # Generar nombre de archivo único
           TIMESTAMP=$(date +'%Y%m%d_%H%M%S')
-          SAFE_QUESTION=$(echo "$QUESTION" | sed 's/[^a-zA-Z0-9]/_/g' | cut -c 1-30)
+          SAFE_QUESTION=$(echo "${{ inputs.question }}" | sed 's/[^a-zA-Z0-9]/_/g' | cut -c 1-30)
           FILENAME="${TIMESTAMP}_${{ github.run_id }}_${SAFE_QUESTION}.md"
           FILEPATH="audit/response/$FILENAME"
           
