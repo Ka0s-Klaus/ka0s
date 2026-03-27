@@ -65,14 +65,22 @@ jobs:
       - name: Ollama Preflight (Models)
         run: |
           python - <<'PY'
-          import json
-          import os
-          import sys
           import urllib.request
+          import json
+          import sys
+          import time
+          import os
 
           host = os.environ.get('OLLAMA_HOST', 'localhost')
           port = os.environ.get('OLLAMA_PORT', '11434')
-          base = f"http://{host}:{port}"
+          
+          # Limpiar host si ya tiene esquema
+          if host.startswith("http://") or host.startswith("https://"):
+            base = f"{host}"
+            if f":{port}" not in host:
+               base = f"{host}:{port}"
+          else:
+            base = f"http://{host}:{port}"
 
           required = [
             os.environ.get('GENERATION_MODEL', '').strip(),
