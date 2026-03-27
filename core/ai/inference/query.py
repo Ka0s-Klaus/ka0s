@@ -10,6 +10,9 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger("agent-inference")
 
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+# Si OLLAMA_HOST no incluye esquema http o https, se lo añadimos por seguridad
+if not OLLAMA_HOST.startswith("http"):
+    OLLAMA_HOST = f"http://{OLLAMA_HOST}"
 # El modelo recomendado para tool calling suele ser llama3.1 o qwen2.5
 MODEL = os.getenv("OLLAMA_MODEL", "llama3.1")
 
