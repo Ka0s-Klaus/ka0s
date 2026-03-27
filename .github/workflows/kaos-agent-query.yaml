@@ -166,8 +166,8 @@ jobs:
           echo "---" >> "$FILEPATH"
           echo "" >> "$FILEPATH"
           
-          # Ejecutar inferencia. Como python manda los logs a stderr, redirigimos stdout al fichero de respuesta
-          python core/ai/inference/query.py "$QUESTION" >> "$FILEPATH"
+          # Ejecutar inferencia. Como python manda los logs a stderr, redirigimos stdout al fichero de respuesta y usamos tee para verlo
+          python core/ai/inference/query.py "$QUESTION" | tee -a "$FILEPATH"
           
           # Mostrar respuesta en el log del workflow
           cat "$FILEPATH"

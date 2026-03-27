@@ -183,15 +183,13 @@ def chat_with_agent(prompt: str):
             final_data = final_response.json()
             
             logger.info("✅ Respuesta final generada.")
-            # Forzar escritura estándar a stdout sin buffers para que '>>' en bash lo capture bien
-            sys.stdout.write(final_data["message"]["content"] + "\n")
-            sys.stdout.flush()
+            # Forzar escritura estándar a stdout sin buffers para que '>>' o 'tee' en bash lo capture bien
+            print(final_data["message"]["content"], flush=True)
             
         else:
             # El modelo no necesitó herramientas
             logger.info("✅ El modelo respondió directamente sin usar herramientas.")
-            sys.stdout.write(response_message.get("content", "") + "\n")
-            sys.stdout.flush()
+            print(response_message.get("content", ""), flush=True)
 
     except requests.exceptions.RequestException as e:
         logger.error(f"Error de comunicación con Ollama: {str(e)}")
