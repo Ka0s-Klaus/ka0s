@@ -1,13 +1,11 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: pull-llama3-2-7b
+  name: pull-llama3-1-8b
   namespace: ollama
 spec:
   template:
     spec:
-      nodeSelector:
-        ka0s.io/ollama-node: "true"
       containers:
       - name: pull-model
         image: curlimages/curl:latest
@@ -20,6 +18,6 @@ spec:
           done
           echo "Pulling nomic-embed-text..."
           curl -X POST http://ollama:11434/api/pull -d '{"name": "nomic-embed-text"}'
-          echo "Pulling llama3.2:7b..."
-          curl -X POST http://ollama:11434/api/pull -d '{"name": "llama3.2:7b"}'
+          echo "Pulling llama3.1:8b..."
+          curl -X POST http://ollama:11434/api/pull -d '{"name": "llama3.1:8b"}'
       restartPolicy: OnFailure

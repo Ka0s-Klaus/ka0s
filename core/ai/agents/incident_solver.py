@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger("incident-solver")
 
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
-MODEL = "llama3.2:7b"
+MODEL = "llama3.1:8b"
 
 # 1. Definición de Herramientas
 TOOLS = [

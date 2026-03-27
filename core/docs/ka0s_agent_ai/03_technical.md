@@ -8,7 +8,7 @@ El Agente Ka0s no es un simple chatbot, sino un sistema **activo** diseñado par
 
 El agente se apoya en tres pilares fundamentales:
 1. **Memoria (RAG):** Ingesta de la "Constitución Ka0s" y documentación técnica en una base de datos vectorial (PGVector) para proporcionar contexto normativo y técnico fiable.
-2. **Cerebro (LLM):** Modelos locales (Ollama) como `llama3.2:7b` que razonan utilizando el paradigma **ReAct** (Reason + Act).
+2. **Cerebro (LLM):** Modelos locales (Ollama) como `llama3.1:8b` que razonan utilizando el paradigma **ReAct** (Reason + Act).
 3. **Manos (Tool Calling / MCP):** Capacidad de ejecutar herramientas reales (ej. `kubectl`, `gh cli`) mediante el estándar Model Context Protocol (FastMCP) para leer el estado del clúster antes de diagnosticar.
 
 ## 2. Componentes Principales
@@ -35,7 +35,7 @@ El agente está integrado de forma nativa en el pipeline de CI/CD a través del 
 
 **Flujo de Ejecución del Workflow:**
 1. El usuario dispara el workflow proporcionando una pregunta.
-2. El runner (`swarm-runners-scaleset`) se levanta y verifica que los modelos necesarios (`llama3.2:7b`) estén disponibles en el pod de Ollama.
+2. El runner (`swarm-runners-scaleset`) se levanta y verifica que los modelos necesarios (`llama3.1:8b`) estén disponibles en el pod de Ollama.
 3. Ejecuta `core/ai/inference/query.py` pasándole la pregunta del usuario.
 4. El script formatea la respuesta final limpia (sin prefijos como "🤖 Agente DevSecOps:" para no ensuciar el markdown) y la guarda en `audit/response/`.
 5. El workflow hace un commit automático de la respuesta en el repositorio para mantener un registro auditable de la interacción.

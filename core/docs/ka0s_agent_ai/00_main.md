@@ -75,7 +75,7 @@ La interacción principal ocurre en las Issues de GitHub.
 
 ### Para Administradores
 *   **Actualizar Conocimiento**: Ejecuta el workflow `Ka0s Agent Ingest` después de cambios significativos en el código o documentación.
-*   **Cambiar Modelo**: Modifica la variable `GENERATION_MODEL` en los workflows y en `query.py` si necesitas más potencia (ej. `llama3.2:7b`) o velocidad (`qwen2:0.5b`).
+*   **Cambiar Modelo**: Modifica la variable `GENERATION_MODEL` en los workflows y en `query.py` si necesitas más potencia (ej. `llama3.1:8b`) o velocidad (`qwen2:0.5b`).
 
 ## Solución de Problemas
 

@@ -97,7 +97,7 @@ Este documento define la batería de pruebas estándar para validar el correcto 
 | :--- | :--- | :--- | :--- | :--- |
 | `qwen2:0.5b` | Tests rápidos | ⚡️ Muy Alta (<30s) | Baja (Alucinaciones) | Deprecado |
 | `qwen2:1.5b` | **Producción** | 🚀 Alta (<2m) | Media-Alta | **Activo** |
-| `llama3.2:7b` | Análisis complejo | 🐢 Baja (>5m) | Muy Alta | Timeout Risk |
+| `llama3.1:8b` | Análisis complejo | 🐢 Baja (>5m) | Muy Alta | Timeout Risk |
 | `phi3:mini` | Alternativa | 🚀 Alta (<2m) | Media-Alta | Backup |
 
 ---
