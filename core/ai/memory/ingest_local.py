@@ -39,22 +39,13 @@ def is_ignored(filepath: str) -> bool:
             return True
     return False
 
+from semantic_chunker import semantic_chunk
+
 def chunk_content(content: str, file_path: str, max_chunk_size=2000) -> List[str]:
     """
     Semantic line-aware chunking to avoid breaking code/JSON in the middle of a line.
     """
-    lines = content.splitlines(True)
-    chunks = []
-    current_chunk = ""
-    for line in lines:
-        if len(current_chunk) + len(line) > max_chunk_size and current_chunk:
-            chunks.append(current_chunk)
-            current_chunk = line
-        else:
-            current_chunk += line
-    if current_chunk:
-        chunks.append(current_chunk)
-    return chunks
+    return semantic_chunk(content, file_path, max_chunk_size)
 
 def process_file_to_cache(file_path: str, cache_file: str):
     """
@@ -87,10 +78,17 @@ def process_file_to_cache(file_path: str, cache_file: str):
                 if not embedding:
                     continue
                 
+                metadata = {
+                    "file_path": file_path,
+                    "file_type": os.path.splitext(file_path)[1].lower(),
+                    "chunk_index": i
+                }
+
                 record = {
                     "source": chunk_source,
                     "content": chunk_payload,
                     "content_hash": chunk_hash,
+                    "metadata": metadata,
                     "embedding": embedding
                 }
                 cf.write(json.dumps(record) + "\n")
@@ -158,9 +156,10 @@ def ingest_from_cache(cache_file: str):
                 # If we are here, it means content is new or changed (hash mismatch).
                 cur.execute("DELETE FROM kaos_memory WHERE source = %s", (record['source'],))
                 
+                metadata_json = json.dumps(record.get('metadata', {}))
                 cur.execute(
-                    "INSERT INTO kaos_memory (source, content, content_hash, embedding) VALUES (%s, %s, %s, %s)",
-                    (record['source'], record['content'], record['content_hash'], record['embedding'])
+                    "INSERT INTO kaos_memory (source, content, content_hash, metadata, embedding) VALUES (%s, %s, %s, %s, %s)",
+                    (record['source'], record['content'], record['content_hash'], metadata_json, record['embedding'])
                 )
                 count += 1
                 if count % 100 == 0:
@@ -357,11 +356,14 @@ def init_db():
                 source TEXT NOT NULL,
                 content TEXT NOT NULL,
                 content_hash TEXT,
+                metadata JSONB DEFAULT '{}'::jsonb,
                 embedding vector(768),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
             CREATE INDEX IF NOT EXISTS idx_kaos_memory_source ON kaos_memory(source);
             CREATE INDEX IF NOT EXISTS idx_kaos_memory_hash ON kaos_memory(content_hash);
+            CREATE INDEX IF NOT EXISTS idx_kaos_memory_metadata ON kaos_memory USING GIN (metadata);
+            CREATE INDEX IF NOT EXISTS idx_kaos_memory_embedding ON kaos_memory USING hnsw (embedding vector_cosine_ops);
         """)
         
         conn.commit()
