@@ -148,7 +148,7 @@ def chat_with_agent(prompt: str):
     try:
         # Paso 1: Pedir al modelo que analice el prompt
         logger.info("📡 Contactando a Ollama (api/chat)...")
-        response = requests.post(f"{OLLAMA_HOST}/api/chat", json=payload, timeout=30)
+        response = requests.post(f"{OLLAMA_HOST}/api/chat", json=payload, timeout=60)
         response.raise_for_status()
         data = response.json()
         
@@ -178,7 +178,7 @@ def chat_with_agent(prompt: str):
             payload["messages"] = messages
             payload.pop("tools", None) # Opcional: quitar tools para forzar la respuesta final
             
-            final_response = requests.post(f"{OLLAMA_HOST}/api/chat", json=payload, timeout=30)
+            final_response = requests.post(f"{OLLAMA_HOST}/api/chat", json=payload, timeout=60)
             final_response.raise_for_status()
             final_data = final_response.json()
             
