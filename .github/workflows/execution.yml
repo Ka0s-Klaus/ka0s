@@ -162,6 +162,7 @@ jobs:
     permissions:
       issues: write
       contents: read
+      actions: write
     steps:
       - id: repo
         name: Checkout repository
@@ -238,6 +239,9 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - id: comment
+        name: Add success comment
+        if: ${{ success() }}
         run: |
           # Si todo ha ido correcto añadimos el contenido del fichero 
           gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado de la ejecución se guardará en MongoDB"

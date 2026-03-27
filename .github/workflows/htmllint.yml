@@ -139,6 +139,9 @@ jobs:
      runs-on: swarm-runners-scaleset
      needs: [job-core]
      if: ${{ success() }}
+     permissions:
+       issues: write
+       contents: read
      steps:
        - uses: actions/checkout@v4
        - uses: ./.github/actions/install-gh-cli

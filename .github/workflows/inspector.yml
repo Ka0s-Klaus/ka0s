@@ -119,6 +119,9 @@ jobs:
     runs-on: swarm-runners-scaleset
     needs: [job-core]
     if: ${{ success() }}
+    permissions:
+      issues: write
+      contents: read
     steps: 
       - id: handle-success-execution
         run: |
