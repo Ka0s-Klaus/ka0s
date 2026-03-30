@@ -1,0 +1,1820 @@
+Core Execution	Set up job	﻿2026-03-30T22:08:39.9309641Z Current runner version: '2.333.1'
+Core Execution	Set up job	2026-03-30T22:08:39.9343047Z Runner name: 'swarm-runners-scaleset-97tpt-runner-lmn8z'
+Core Execution	Set up job	2026-03-30T22:08:39.9434505Z Runner group name: 'Default'
+Core Execution	Set up job	2026-03-30T22:08:39.9436938Z Machine name: 'swarm-runners-scaleset-97tpt-runner-lmn8z'
+Core Execution	Set up job	2026-03-30T22:08:39.9440814Z ##[group]GITHUB_TOKEN Permissions
+Core Execution	Set up job	2026-03-30T22:08:39.9444324Z Actions: write
+Core Execution	Set up job	2026-03-30T22:08:39.9444789Z Contents: write
+Core Execution	Set up job	2026-03-30T22:08:39.9477244Z Issues: write
+Core Execution	Set up job	2026-03-30T22:08:39.9477942Z Metadata: read
+Core Execution	Set up job	2026-03-30T22:08:39.9478404Z ##[endgroup]
+Core Execution	Set up job	2026-03-30T22:08:39.9486677Z Secret source: Actions
+Core Execution	Set up job	2026-03-30T22:08:39.9488077Z Prepare workflow directory
+Core Execution	Set up job	2026-03-30T22:08:40.4878143Z Prepare all required actions
+Core Execution	Set up job	2026-03-30T22:08:40.6416068Z Getting action download info
+Core Execution	Set up job	2026-03-30T22:08:41.8137773Z Download action repository 'actions/github-script@v7' (SHA:f28e40c7f34bde8b3046d885e986cb6290c5673b)
+Core Execution	Set up job	2026-03-30T22:08:43.7041218Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+Core Execution	Set up job	2026-03-30T22:08:44.6786563Z Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+Core Execution	Set up job	2026-03-30T22:08:47.1699000Z Complete job name: Core Execution
+Core Execution	Report Start (Issue Trace)	﻿2026-03-30T22:08:47.2991013Z ##[group]Run actions/github-script@v7
+Core Execution	Report Start (Issue Trace)	2026-03-30T22:08:47.2992233Z with:
+Core Execution	Report Start (Issue Trace)	2026-03-30T22:08:47.2993038Z   github-token: ***
+Core Execution	Report Start (Issue Trace)	2026-03-30T22:08:47.2995384Z   script: const issueNumber = Number(process.env.ISSUE_NUMBER || '');
+Core Execution	Report Start (Issue Trace)	if (!issueNumber) return;
+Core Execution	Report Start (Issue Trace)	const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+Core Execution	Report Start (Issue Trace)	const question = process.env.QUESTION || '';
+Core Execution	Report Start (Issue Trace)	const reason = process.env.REASON || '';
+Core Execution	Report Start (Issue Trace)	github.rest.issues.createComment({
+Core Execution	Report Start (Issue Trace)	  issue_number: issueNumber,
+Core Execution	Report Start (Issue Trace)	  owner: context.repo.owner,
+Core Execution	Report Start (Issue Trace)	  repo: context.repo.repo,
+Core Execution	Report Start (Issue Trace)	  body: [
+Core Execution	Report Start (Issue Trace)	    `### [Ka0s Agent Query] Inicio`,
+Core Execution	Report Start (Issue Trace)	    ``,
+Core Execution	Report Start (Issue Trace)	    `- Motivo: ${reason}`,
+Core Execution	Report Start (Issue Trace)	    `- Pregunta: ${question}`,
+Core Execution	Report Start (Issue Trace)	    `- Run: ${runUrl}`,
+Core Execution	Report Start (Issue Trace)	  ].join('\n')
+Core Execution	Report Start (Issue Trace)	})
+Core Execution	Report Start (Issue Trace)	
+Core Execution	Report Start (Issue Trace)	2026-03-30T22:08:47.2997867Z   debug: false
+Core Execution	Report Start (Issue Trace)	2026-03-30T22:08:47.2998173Z   user-agent: actions/github-script
+Core Execution	Report Start (Issue Trace)	2026-03-30T22:08:47.2998653Z   result-encoding: json
+Core Execution	Report Start (Issue Trace)	2026-03-30T22:08:47.2998966Z   retries: 0
+Core Execution	Report Start (Issue Trace)	2026-03-30T22:08:47.2999305Z   retry-exempt-status-codes: 400,401,403,404,422
+Core Execution	Report Start (Issue Trace)	2026-03-30T22:08:47.3000612Z env:
+Core Execution	Report Start (Issue Trace)	2026-03-30T22:08:47.3000917Z   KAOS_MODULE: [Ka0S] Agent Query
+Core Execution	Report Start (Issue Trace)	2026-03-30T22:08:47.3001308Z   KAOS_CODE: 23770098917
+Core Execution	Report Start (Issue Trace)	2026-03-30T22:08:47.3001855Z   KAOS_ACTOR: ***
+Core Execution	Report Start (Issue Trace)	2026-03-30T22:08:47.3002298Z   POSTGRES_HOST: postgresql-ia.postgresql-ia.svc.cluster.local
+Core Execution	Report Start (Issue Trace)	2026-03-30T22:08:47.3002787Z   POSTGRES_PORT: 5432
+Core Execution	Report Start (Issue Trace)	2026-03-30T22:08:47.3003146Z   POSTGRES_DB: ka0s_memory
+Core Execution	Report Start (Issue Trace)	2026-03-30T22:08:47.3003453Z   POSTGRES_USER: ka0s_ai
+Core Execution	Report Start (Issue Trace)	2026-03-30T22:08:47.3003862Z   OLLAMA_HOST: http://ollama.ollama.svc.cluster.local
+Core Execution	Report Start (Issue Trace)	2026-03-30T22:08:47.3004315Z   OLLAMA_PORT: 11434
+Core Execution	Report Start (Issue Trace)	2026-03-30T22:08:47.3004615Z   EMBEDDING_MODEL: nomic-embed-text
+Core Execution	Report Start (Issue Trace)	2026-03-30T22:08:47.3005143Z   GENERATION_MODEL: llama3.1:8b
+Core Execution	Report Start (Issue Trace)	2026-03-30T22:08:47.3005520Z   ISSUE_NUMBER: 5219
+Core Execution	Report Start (Issue Trace)	2026-03-30T22:08:47.3006108Z   QUESTION: ¿Qué ha pasado en la issue https://github.com/Ka0s-Klaus/ka0s/issues/5219 ?
+Core Execution	Report Start (Issue Trace)	2026-03-30T22:08:47.3006768Z   REASON: Consulta manual al agente
+Core Execution	Report Start (Issue Trace)	2026-03-30T22:08:47.3007143Z ##[endgroup]
+Core Execution	Checkout Code	﻿2026-03-30T22:08:49.3202124Z ##[group]Run actions/checkout@v4
+Core Execution	Checkout Code	2026-03-30T22:08:49.3202575Z with:
+Core Execution	Checkout Code	2026-03-30T22:08:49.3202821Z   fetch-depth: 0
+Core Execution	Checkout Code	2026-03-30T22:08:49.3203084Z   repository: Ka0s-Klaus/ka0s
+Core Execution	Checkout Code	2026-03-30T22:08:49.3203676Z   token: ***
+Core Execution	Checkout Code	2026-03-30T22:08:49.3203923Z   ssh-strict: true
+Core Execution	Checkout Code	2026-03-30T22:08:49.3204174Z   ssh-user: git
+Core Execution	Checkout Code	2026-03-30T22:08:49.3204423Z   persist-credentials: true
+Core Execution	Checkout Code	2026-03-30T22:08:49.3204711Z   clean: true
+Core Execution	Checkout Code	2026-03-30T22:08:49.3275544Z   sparse-checkout-cone-mode: true
+Core Execution	Checkout Code	2026-03-30T22:08:49.3276163Z   fetch-tags: false
+Core Execution	Checkout Code	2026-03-30T22:08:49.3276437Z   show-progress: true
+Core Execution	Checkout Code	2026-03-30T22:08:49.3276708Z   lfs: false
+Core Execution	Checkout Code	2026-03-30T22:08:49.3276957Z   submodules: false
+Core Execution	Checkout Code	2026-03-30T22:08:49.3277242Z   set-safe-directory: true
+Core Execution	Checkout Code	2026-03-30T22:08:49.3277547Z env:
+Core Execution	Checkout Code	2026-03-30T22:08:49.3277790Z   KAOS_MODULE: [Ka0S] Agent Query
+Core Execution	Checkout Code	2026-03-30T22:08:49.3278744Z   KAOS_CODE: 23770098917
+Core Execution	Checkout Code	2026-03-30T22:08:49.3279222Z   KAOS_ACTOR: ***
+Core Execution	Checkout Code	2026-03-30T22:08:49.3279614Z   POSTGRES_HOST: postgresql-ia.postgresql-ia.svc.cluster.local
+Core Execution	Checkout Code	2026-03-30T22:08:49.3280112Z   POSTGRES_PORT: 5432
+Core Execution	Checkout Code	2026-03-30T22:08:49.3280386Z   POSTGRES_DB: ka0s_memory
+Core Execution	Checkout Code	2026-03-30T22:08:49.3280670Z   POSTGRES_USER: ka0s_ai
+Core Execution	Checkout Code	2026-03-30T22:08:49.3281042Z   OLLAMA_HOST: http://ollama.ollama.svc.cluster.local
+Core Execution	Checkout Code	2026-03-30T22:08:49.3281433Z   OLLAMA_PORT: 11434
+Core Execution	Checkout Code	2026-03-30T22:08:49.3281712Z   EMBEDDING_MODEL: nomic-embed-text
+Core Execution	Checkout Code	2026-03-30T22:08:49.3282041Z   GENERATION_MODEL: llama3.1:8b
+Core Execution	Checkout Code	2026-03-30T22:08:49.3282359Z ##[endgroup]
+Core Execution	Checkout Code	2026-03-30T22:08:50.4405550Z Syncing repository: Ka0s-Klaus/ka0s
+Core Execution	Checkout Code	2026-03-30T22:08:50.4407111Z ##[group]Getting Git version info
+Core Execution	Checkout Code	2026-03-30T22:08:50.4407517Z Working directory is '/home/runner/_work/ka0s/ka0s'
+Core Execution	Checkout Code	2026-03-30T22:08:50.4408080Z [command]/usr/bin/git version
+Core Execution	Checkout Code	2026-03-30T22:08:50.5194487Z git version 2.53.0
+Core Execution	Checkout Code	2026-03-30T22:08:50.5484297Z ##[endgroup]
+Core Execution	Checkout Code	2026-03-30T22:08:50.5803504Z Temporarily overriding HOME='/home/runner/_work/_temp/06ab2a87-274b-41d2-b5a2-016fd8600981' before making global git config changes
+Core Execution	Checkout Code	2026-03-30T22:08:50.5890672Z Adding repository directory to the temporary git global config as a safe directory
+Core Execution	Checkout Code	2026-03-30T22:08:50.5996407Z [command]/usr/bin/git config --global --add safe.directory /home/runner/_work/ka0s/ka0s
+Core Execution	Checkout Code	2026-03-30T22:08:50.6731548Z Deleting the contents of '/home/runner/_work/ka0s/ka0s'
+Core Execution	Checkout Code	2026-03-30T22:08:50.6756661Z ##[group]Initializing the repository
+Core Execution	Checkout Code	2026-03-30T22:08:50.6913963Z [command]/usr/bin/git init /home/runner/_work/ka0s/ka0s
+Core Execution	Checkout Code	2026-03-30T22:08:50.7617130Z hint: Using 'master' as the name for the initial branch. This default branch name
+Core Execution	Checkout Code	2026-03-30T22:08:50.7618475Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+Core Execution	Checkout Code	2026-03-30T22:08:50.7620026Z hint: to use in all of your new repositories, which will suppress this warning,
+Core Execution	Checkout Code	2026-03-30T22:08:50.7620688Z hint: call:
+Core Execution	Checkout Code	2026-03-30T22:08:50.7621060Z hint:
+Core Execution	Checkout Code	2026-03-30T22:08:50.7621586Z hint: 	git config --global init.defaultBranch <name>
+Core Execution	Checkout Code	2026-03-30T22:08:50.7625502Z hint:
+Core Execution	Checkout Code	2026-03-30T22:08:50.7626081Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+Core Execution	Checkout Code	2026-03-30T22:08:50.7632231Z hint: 'development'. The just-created branch can be renamed via this command:
+Core Execution	Checkout Code	2026-03-30T22:08:50.7645339Z hint:
+Core Execution	Checkout Code	2026-03-30T22:08:50.7645807Z hint: 	git branch -m <name>
+Core Execution	Checkout Code	2026-03-30T22:08:50.7646190Z hint:
+Core Execution	Checkout Code	2026-03-30T22:08:50.7646733Z hint: Disable this message with "git config set advice.defaultBranchName false"
+Core Execution	Checkout Code	2026-03-30T22:08:50.7655770Z Initialized empty Git repository in /home/runner/_work/ka0s/ka0s/.git/
+Core Execution	Checkout Code	2026-03-30T22:08:50.7746546Z [command]/usr/bin/git remote add origin https://github.com/Ka0s-Klaus/ka0s
+Core Execution	Checkout Code	2026-03-30T22:08:50.8356650Z ##[endgroup]
+Core Execution	Checkout Code	2026-03-30T22:08:50.8436877Z ##[group]Disabling automatic garbage collection
+Core Execution	Checkout Code	2026-03-30T22:08:50.8653893Z [command]/usr/bin/git config --local gc.auto 0
+Core Execution	Checkout Code	2026-03-30T22:08:50.9409958Z ##[endgroup]
+Core Execution	Checkout Code	2026-03-30T22:08:50.9410790Z ##[group]Setting up auth
+Core Execution	Checkout Code	2026-03-30T22:08:50.9507930Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Core Execution	Checkout Code	2026-03-30T22:08:50.9968968Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Core Execution	Checkout Code	2026-03-30T22:08:51.2262892Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Core Execution	Checkout Code	2026-03-30T22:08:51.2450882Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Core Execution	Checkout Code	2026-03-30T22:08:51.5783445Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Core Execution	Checkout Code	2026-03-30T22:08:51.5839959Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Core Execution	Checkout Code	2026-03-30T22:08:51.9796414Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+Core Execution	Checkout Code	2026-03-30T22:08:52.0401627Z ##[endgroup]
+Core Execution	Checkout Code	2026-03-30T22:08:52.0440368Z ##[group]Fetching the repository
+Core Execution	Checkout Code	2026-03-30T22:08:52.0487669Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+Core Execution	Checkout Code	2026-03-30T22:10:33.3816814Z From https://github.com/Ka0s-Klaus/ka0s
+Core Execution	Checkout Code	2026-03-30T22:10:33.3827058Z  * [new branch]          F3450-modelo-operativo  -> origin/F3450-modelo-operativo
+Core Execution	Checkout Code	2026-03-30T22:10:33.3836630Z  * [new branch]          H4191-request-cambios   -> origin/H4191-request-cambios
+Core Execution	Checkout Code	2026-03-30T22:10:33.3837838Z  * [new branch]          H4200-request-recomendaciones-de-auditoria -> origin/H4200-request-recomendaciones-de-auditoria
+Core Execution	Checkout Code	2026-03-30T22:10:33.3839733Z  * [new branch]          H4322-request-plan-de-pruebas-de-agentes -> origin/H4322-request-plan-de-pruebas-de-agentes
+Core Execution	Checkout Code	2026-03-30T22:10:33.3840763Z  * [new branch]          chore/incident-cancelation-guard -> origin/chore/incident-cancelation-guard
+Core Execution	Checkout Code	2026-03-30T22:10:33.3841549Z  * [new branch]          chore/itop-debug-list   -> origin/chore/itop-debug-list
+Core Execution	Checkout Code	2026-03-30T22:10:33.3842296Z  * [new branch]          chore/itop-debug-url-version -> origin/chore/itop-debug-url-version
+Core Execution	Checkout Code	2026-03-30T22:10:33.3843036Z  * [new branch]          chore/itop-debug-version -> origin/chore/itop-debug-version
+Core Execution	Checkout Code	2026-03-30T22:10:33.3843781Z  * [new branch]          chore/remove-itop-debug-list -> origin/chore/remove-itop-debug-list
+Core Execution	Checkout Code	2026-03-30T22:10:33.3844476Z  * [new branch]          diag/ollama-api         -> origin/diag/ollama-api
+Core Execution	Checkout Code	2026-03-30T22:10:33.3845303Z  * [new branch]          docs/agent-feedback-loop -> origin/docs/agent-feedback-loop
+Core Execution	Checkout Code	2026-03-30T22:10:33.3846018Z  * [new branch]          docs/anythingllm-deploy -> origin/docs/anythingllm-deploy
+Core Execution	Checkout Code	2026-03-30T22:10:33.3846716Z  * [new branch]          docs/repo-directories-eval -> origin/docs/repo-directories-eval
+Core Execution	Checkout Code	2026-03-30T22:10:33.3866348Z  * [new branch]          eval/issue-5065-general -> origin/eval/issue-5065-general
+Core Execution	Checkout Code	2026-03-30T22:10:33.3867312Z  * [new branch]          eval/issue-5067-general -> origin/eval/issue-5067-general
+Core Execution	Checkout Code	2026-03-30T22:10:33.3868104Z  * [new branch]          eval/issue-5072-general -> origin/eval/issue-5072-general
+Core Execution	Checkout Code	2026-03-30T22:10:33.3871722Z  * [new branch]          eval/issue-5184-general -> origin/eval/issue-5184-general
+Core Execution	Checkout Code	2026-03-30T22:10:33.3872331Z  * [new branch]          feat/agent-docs-eval-battery -> origin/feat/agent-docs-eval-battery
+Core Execution	Checkout Code	2026-03-30T22:10:33.3872976Z  * [new branch]          feat/agent-eval-issue-driven -> origin/feat/agent-eval-issue-driven
+Core Execution	Checkout Code	2026-03-30T22:10:33.3873556Z  * [new branch]          feat/anythingllm        -> origin/feat/anythingllm
+Core Execution	Checkout Code	2026-03-30T22:10:33.3874116Z  * [new branch]          feat/ka0s-knowledge-pipeline -> origin/feat/ka0s-knowledge-pipeline
+Core Execution	Checkout Code	2026-03-30T22:10:33.3874689Z  * [new branch]          feat/kaos-itop-core     -> origin/feat/kaos-itop-core
+Core Execution	Checkout Code	2026-03-30T22:10:33.3896051Z  * [new branch]          feat/openclaw-local-brain -> origin/feat/openclaw-local-brain
+Core Execution	Checkout Code	2026-03-30T22:10:33.3896834Z  * [new branch]          feedback/issue-5053-23304729163 -> origin/feedback/issue-5053-23304729163
+Core Execution	Checkout Code	2026-03-30T22:10:33.3918256Z  * [new branch]          feedback/issue-5053-23305207993 -> origin/feedback/issue-5053-23305207993
+Core Execution	Checkout Code	2026-03-30T22:10:33.3918913Z  * [new branch]          feedback/issue-5065-23314527664 -> origin/feedback/issue-5065-23314527664
+Core Execution	Checkout Code	2026-03-30T22:10:33.3919566Z  * [new branch]          feedback/issue-5065-23314941583 -> origin/feedback/issue-5065-23314941583
+Core Execution	Checkout Code	2026-03-30T22:10:33.3920206Z  * [new branch]          feedback/issue-5067-23315177470 -> origin/feedback/issue-5067-23315177470
+Core Execution	Checkout Code	2026-03-30T22:10:33.3920931Z  * [new branch]          feedback/issue-5067-23315574180 -> origin/feedback/issue-5067-23315574180
+Core Execution	Checkout Code	2026-03-30T22:10:33.3921630Z  * [new branch]          feedback/issue-5072-23335096272 -> origin/feedback/issue-5072-23335096272
+Core Execution	Checkout Code	2026-03-30T22:10:33.3922269Z  * [new branch]          feedback/issue-5183-23589054034 -> origin/feedback/issue-5183-23589054034
+Core Execution	Checkout Code	2026-03-30T22:10:33.3960101Z  * [new branch]          feedback/issue-5190-23589890578 -> origin/feedback/issue-5190-23589890578
+Core Execution	Checkout Code	2026-03-30T22:10:33.3960923Z  * [new branch]          feedback/issue-5192-23593753104 -> origin/feedback/issue-5192-23593753104
+Core Execution	Checkout Code	2026-03-30T22:10:33.3961622Z  * [new branch]          feedback/issue-5194-23600082333 -> origin/feedback/issue-5194-23600082333
+Core Execution	Checkout Code	2026-03-30T22:10:33.3962216Z  * [new branch]          fix/agent-eval-deps     -> origin/fix/agent-eval-deps
+Core Execution	Checkout Code	2026-03-30T22:10:33.3962764Z  * [new branch]          fix/anythingllm-sqlite  -> origin/fix/anythingllm-sqlite
+Core Execution	Checkout Code	2026-03-30T22:10:33.3963417Z  * [new branch]          fix/cmdb-full-sync-sparse-checkout -> origin/fix/cmdb-full-sync-sparse-checkout
+Core Execution	Checkout Code	2026-03-30T22:10:33.3964063Z  * [new branch]          fix/docs-5053-response  -> origin/fix/docs-5053-response
+Core Execution	Checkout Code	2026-03-30T22:10:33.3964669Z  * [new branch]          fix/eval-mustcontain-auditpods -> origin/fix/eval-mustcontain-auditpods
+Core Execution	Checkout Code	2026-03-30T22:10:33.3988969Z  * [new branch]          fix/feedback-accept-ka0s-agent -> origin/fix/feedback-accept-ka0s-agent
+Core Execution	Checkout Code	2026-03-30T22:10:33.3989745Z  * [new branch]          fix/issue-4770          -> origin/fix/issue-4770
+Core Execution	Checkout Code	2026-03-30T22:10:33.3990274Z  * [new branch]          fix/issue-4772          -> origin/fix/issue-4772
+Core Execution	Checkout Code	2026-03-30T22:10:33.3990743Z  * [new branch]          fix/issue-4776          -> origin/fix/issue-4776
+Core Execution	Checkout Code	2026-03-30T22:10:33.3991205Z  * [new branch]          fix/issue-4777          -> origin/fix/issue-4777
+Core Execution	Checkout Code	2026-03-30T22:10:33.3991664Z  * [new branch]          fix/issue-4781          -> origin/fix/issue-4781
+Core Execution	Checkout Code	2026-03-30T22:10:33.3992134Z  * [new branch]          fix/issue-5097          -> origin/fix/issue-5097
+Core Execution	Checkout Code	2026-03-30T22:10:33.3992716Z  * [new branch]          fix/issue-responder-nameerror -> origin/fix/issue-responder-nameerror
+Core Execution	Checkout Code	2026-03-30T22:10:33.3993392Z  * [new branch]          fix/issue-responder-syntax -> origin/fix/issue-responder-syntax
+Core Execution	Checkout Code	2026-03-30T22:10:33.3994006Z  * [new branch]          fix/itop-branding-css   -> origin/fix/itop-branding-css
+Core Execution	Checkout Code	2026-03-30T22:10:33.3994591Z  * [new branch]          fix/itop-deployment-cache -> origin/fix/itop-deployment-cache
+Core Execution	Checkout Code	2026-03-30T22:10:33.4015925Z  * [new branch]          fix/itop-deployment-recovery -> origin/fix/itop-deployment-recovery
+Core Execution	Checkout Code	2026-03-30T22:10:33.4016749Z  * [new branch]          fix/itop-deployment-recovery-final -> origin/fix/itop-deployment-recovery-final
+Core Execution	Checkout Code	2026-03-30T22:10:33.4017494Z  * [new branch]          fix/itop-list-orgs-on-missing -> origin/fix/itop-list-orgs-on-missing
+Core Execution	Checkout Code	2026-03-30T22:10:33.4018119Z  * [new branch]          fix/itop-org-id-numeric -> origin/fix/itop-org-id-numeric
+Core Execution	Checkout Code	2026-03-30T22:10:33.4018769Z  * [new branch]          fix/itop-sidebar-logo-behavior -> origin/fix/itop-sidebar-logo-behavior
+Core Execution	Checkout Code	2026-03-30T22:10:33.4019376Z  * [new branch]          fix/itop-ssl-verify     -> origin/fix/itop-ssl-verify
+Core Execution	Checkout Code	2026-03-30T22:10:33.4019971Z  * [new branch]          fix/itop-use-version-in-url -> origin/fix/itop-use-version-in-url
+Core Execution	Checkout Code	2026-03-30T22:10:33.4020648Z  * [new branch]          fix/promote-eval-heredoc -> origin/fix/promote-eval-heredoc
+Core Execution	Checkout Code	2026-03-30T22:10:33.4021184Z  * [new branch]          main                    -> origin/main
+Core Execution	Checkout Code	2026-03-30T22:10:33.4022063Z  * [new tag]             0.0.0                   -> 0.0.0
+Core Execution	Checkout Code	2026-03-30T22:10:33.4022428Z  * [new tag]             0.0.1                   -> 0.0.1
+Core Execution	Checkout Code	2026-03-30T22:10:33.4022790Z  * [new tag]             0.0.10                  -> 0.0.10
+Core Execution	Checkout Code	2026-03-30T22:10:33.4023149Z  * [new tag]             0.0.100                 -> 0.0.100
+Core Execution	Checkout Code	2026-03-30T22:10:33.4023519Z  * [new tag]             0.0.101                 -> 0.0.101
+Core Execution	Checkout Code	2026-03-30T22:10:33.4023891Z  * [new tag]             0.0.102                 -> 0.0.102
+Core Execution	Checkout Code	2026-03-30T22:10:33.4024253Z  * [new tag]             0.0.103                 -> 0.0.103
+Core Execution	Checkout Code	2026-03-30T22:10:33.4024610Z  * [new tag]             0.0.104                 -> 0.0.104
+Core Execution	Checkout Code	2026-03-30T22:10:33.4075907Z  * [new tag]             0.0.105                 -> 0.0.105
+Core Execution	Checkout Code	2026-03-30T22:10:33.4076873Z  * [new tag]             0.0.106                 -> 0.0.106
+Core Execution	Checkout Code	2026-03-30T22:10:33.4077223Z  * [new tag]             0.0.107                 -> 0.0.107
+Core Execution	Checkout Code	2026-03-30T22:10:33.4077724Z  * [new tag]             0.0.108                 -> 0.0.108
+Core Execution	Checkout Code	2026-03-30T22:10:33.4078227Z  * [new tag]             0.0.109                 -> 0.0.109
+Core Execution	Checkout Code	2026-03-30T22:10:33.4078565Z  * [new tag]             0.0.11                  -> 0.0.11
+Core Execution	Checkout Code	2026-03-30T22:10:33.4079048Z  * [new tag]             0.0.110                 -> 0.0.110
+Core Execution	Checkout Code	2026-03-30T22:10:33.4079512Z  * [new tag]             0.0.111                 -> 0.0.111
+Core Execution	Checkout Code	2026-03-30T22:10:33.4079987Z  * [new tag]             0.0.112                 -> 0.0.112
+Core Execution	Checkout Code	2026-03-30T22:10:33.4080331Z  * [new tag]             0.0.113                 -> 0.0.113
+Core Execution	Checkout Code	2026-03-30T22:10:33.4080684Z  * [new tag]             0.0.114                 -> 0.0.114
+Core Execution	Checkout Code	2026-03-30T22:10:33.4081048Z  * [new tag]             0.0.115                 -> 0.0.115
+Core Execution	Checkout Code	2026-03-30T22:10:33.4081410Z  * [new tag]             0.0.116                 -> 0.0.116
+Core Execution	Checkout Code	2026-03-30T22:10:33.4081792Z  * [new tag]             0.0.117                 -> 0.0.117
+Core Execution	Checkout Code	2026-03-30T22:10:33.4082159Z  * [new tag]             0.0.118                 -> 0.0.118
+Core Execution	Checkout Code	2026-03-30T22:10:33.4082549Z  * [new tag]             0.0.119                 -> 0.0.119
+Core Execution	Checkout Code	2026-03-30T22:10:33.4082908Z  * [new tag]             0.0.12                  -> 0.0.12
+Core Execution	Checkout Code	2026-03-30T22:10:33.4083259Z  * [new tag]             0.0.120                 -> 0.0.120
+Core Execution	Checkout Code	2026-03-30T22:10:33.4083627Z  * [new tag]             0.0.121                 -> 0.0.121
+Core Execution	Checkout Code	2026-03-30T22:10:33.4083994Z  * [new tag]             0.0.122                 -> 0.0.122
+Core Execution	Checkout Code	2026-03-30T22:10:33.4084352Z  * [new tag]             0.0.123                 -> 0.0.123
+Core Execution	Checkout Code	2026-03-30T22:10:33.4084706Z  * [new tag]             0.0.124                 -> 0.0.124
+Core Execution	Checkout Code	2026-03-30T22:10:33.4116078Z  * [new tag]             0.0.125                 -> 0.0.125
+Core Execution	Checkout Code	2026-03-30T22:10:33.4116557Z  * [new tag]             0.0.126                 -> 0.0.126
+Core Execution	Checkout Code	2026-03-30T22:10:33.4116949Z  * [new tag]             0.0.127                 -> 0.0.127
+Core Execution	Checkout Code	2026-03-30T22:10:33.4117300Z  * [new tag]             0.0.128                 -> 0.0.128
+Core Execution	Checkout Code	2026-03-30T22:10:33.4176304Z  * [new tag]             0.0.129                 -> 0.0.129
+Core Execution	Checkout Code	2026-03-30T22:10:33.4176795Z  * [new tag]             0.0.13                  -> 0.0.13
+Core Execution	Checkout Code	2026-03-30T22:10:33.4177143Z  * [new tag]             0.0.130                 -> 0.0.130
+Core Execution	Checkout Code	2026-03-30T22:10:33.4177517Z  * [new tag]             0.0.131                 -> 0.0.131
+Core Execution	Checkout Code	2026-03-30T22:10:33.4177854Z  * [new tag]             0.0.132                 -> 0.0.132
+Core Execution	Checkout Code	2026-03-30T22:10:33.4178187Z  * [new tag]             0.0.133                 -> 0.0.133
+Core Execution	Checkout Code	2026-03-30T22:10:33.4178520Z  * [new tag]             0.0.134                 -> 0.0.134
+Core Execution	Checkout Code	2026-03-30T22:10:33.4178855Z  * [new tag]             0.0.135                 -> 0.0.135
+Core Execution	Checkout Code	2026-03-30T22:10:33.4179188Z  * [new tag]             0.0.136                 -> 0.0.136
+Core Execution	Checkout Code	2026-03-30T22:10:33.4179524Z  * [new tag]             0.0.137                 -> 0.0.137
+Core Execution	Checkout Code	2026-03-30T22:10:33.4179895Z  * [new tag]             0.0.138                 -> 0.0.138
+Core Execution	Checkout Code	2026-03-30T22:10:33.4180233Z  * [new tag]             0.0.139                 -> 0.0.139
+Core Execution	Checkout Code	2026-03-30T22:10:33.4180948Z  * [new tag]             0.0.14                  -> 0.0.14
+Core Execution	Checkout Code	2026-03-30T22:10:33.4181285Z  * [new tag]             0.0.140                 -> 0.0.140
+Core Execution	Checkout Code	2026-03-30T22:10:33.4181616Z  * [new tag]             0.0.141                 -> 0.0.141
+Core Execution	Checkout Code	2026-03-30T22:10:33.4181946Z  * [new tag]             0.0.142                 -> 0.0.142
+Core Execution	Checkout Code	2026-03-30T22:10:33.4182279Z  * [new tag]             0.0.143                 -> 0.0.143
+Core Execution	Checkout Code	2026-03-30T22:10:33.4182610Z  * [new tag]             0.0.144                 -> 0.0.144
+Core Execution	Checkout Code	2026-03-30T22:10:33.4182948Z  * [new tag]             0.0.145                 -> 0.0.145
+Core Execution	Checkout Code	2026-03-30T22:10:33.4183278Z  * [new tag]             0.0.146                 -> 0.0.146
+Core Execution	Checkout Code	2026-03-30T22:10:33.4183610Z  * [new tag]             0.0.147                 -> 0.0.147
+Core Execution	Checkout Code	2026-03-30T22:10:33.4184301Z  * [new tag]             0.0.148                 -> 0.0.148
+Core Execution	Checkout Code	2026-03-30T22:10:33.4215443Z  * [new tag]             0.0.149                 -> 0.0.149
+Core Execution	Checkout Code	2026-03-30T22:10:33.4216315Z  * [new tag]             0.0.15                  -> 0.0.15
+Core Execution	Checkout Code	2026-03-30T22:10:33.4216665Z  * [new tag]             0.0.150                 -> 0.0.150
+Core Execution	Checkout Code	2026-03-30T22:10:33.4217008Z  * [new tag]             0.0.151                 -> 0.0.151
+Core Execution	Checkout Code	2026-03-30T22:10:33.4217349Z  * [new tag]             0.0.152                 -> 0.0.152
+Core Execution	Checkout Code	2026-03-30T22:10:33.4217680Z  * [new tag]             0.0.153                 -> 0.0.153
+Core Execution	Checkout Code	2026-03-30T22:10:33.4218018Z  * [new tag]             0.0.154                 -> 0.0.154
+Core Execution	Checkout Code	2026-03-30T22:10:33.4218357Z  * [new tag]             0.0.155                 -> 0.0.155
+Core Execution	Checkout Code	2026-03-30T22:10:33.4218692Z  * [new tag]             0.0.156                 -> 0.0.156
+Core Execution	Checkout Code	2026-03-30T22:10:33.4219022Z  * [new tag]             0.0.157                 -> 0.0.157
+Core Execution	Checkout Code	2026-03-30T22:10:33.4219354Z  * [new tag]             0.0.158                 -> 0.0.158
+Core Execution	Checkout Code	2026-03-30T22:10:33.4219702Z  * [new tag]             0.0.159                 -> 0.0.159
+Core Execution	Checkout Code	2026-03-30T22:10:33.4220033Z  * [new tag]             0.0.16                  -> 0.0.16
+Core Execution	Checkout Code	2026-03-30T22:10:33.4220378Z  * [new tag]             0.0.160                 -> 0.0.160
+Core Execution	Checkout Code	2026-03-30T22:10:33.4220711Z  * [new tag]             0.0.161                 -> 0.0.161
+Core Execution	Checkout Code	2026-03-30T22:10:33.4221049Z  * [new tag]             0.0.162                 -> 0.0.162
+Core Execution	Checkout Code	2026-03-30T22:10:33.4221378Z  * [new tag]             0.0.163                 -> 0.0.163
+Core Execution	Checkout Code	2026-03-30T22:10:33.4221713Z  * [new tag]             0.0.164                 -> 0.0.164
+Core Execution	Checkout Code	2026-03-30T22:10:33.4222047Z  * [new tag]             0.0.165                 -> 0.0.165
+Core Execution	Checkout Code	2026-03-30T22:10:33.4225925Z  * [new tag]             0.0.166                 -> 0.0.166
+Core Execution	Checkout Code	2026-03-30T22:10:33.4226321Z  * [new tag]             0.0.167                 -> 0.0.167
+Core Execution	Checkout Code	2026-03-30T22:10:33.4226675Z  * [new tag]             0.0.168                 -> 0.0.168
+Core Execution	Checkout Code	2026-03-30T22:10:33.4227040Z  * [new tag]             0.0.169                 -> 0.0.169
+Core Execution	Checkout Code	2026-03-30T22:10:33.4227383Z  * [new tag]             0.0.17                  -> 0.0.17
+Core Execution	Checkout Code	2026-03-30T22:10:33.4227859Z  * [new tag]             0.0.170                 -> 0.0.170
+Core Execution	Checkout Code	2026-03-30T22:10:33.4228191Z  * [new tag]             0.0.171                 -> 0.0.171
+Core Execution	Checkout Code	2026-03-30T22:10:33.4265538Z  * [new tag]             0.0.172                 -> 0.0.172
+Core Execution	Checkout Code	2026-03-30T22:10:33.4266223Z  * [new tag]             0.0.173                 -> 0.0.173
+Core Execution	Checkout Code	2026-03-30T22:10:33.4266603Z  * [new tag]             0.0.174                 -> 0.0.174
+Core Execution	Checkout Code	2026-03-30T22:10:33.4266958Z  * [new tag]             0.0.175                 -> 0.0.175
+Core Execution	Checkout Code	2026-03-30T22:10:33.4267333Z  * [new tag]             0.0.176                 -> 0.0.176
+Core Execution	Checkout Code	2026-03-30T22:10:33.4267678Z  * [new tag]             0.0.177                 -> 0.0.177
+Core Execution	Checkout Code	2026-03-30T22:10:33.4268021Z  * [new tag]             0.0.178                 -> 0.0.178
+Core Execution	Checkout Code	2026-03-30T22:10:33.4268360Z  * [new tag]             0.0.179                 -> 0.0.179
+Core Execution	Checkout Code	2026-03-30T22:10:33.4268744Z  * [new tag]             0.0.18                  -> 0.0.18
+Core Execution	Checkout Code	2026-03-30T22:10:33.4269090Z  * [new tag]             0.0.19                  -> 0.0.19
+Core Execution	Checkout Code	2026-03-30T22:10:33.4269842Z  * [new tag]             0.0.2                   -> 0.0.2
+Core Execution	Checkout Code	2026-03-30T22:10:33.4270186Z  * [new tag]             0.0.20                  -> 0.0.20
+Core Execution	Checkout Code	2026-03-30T22:10:33.4270531Z  * [new tag]             0.0.21                  -> 0.0.21
+Core Execution	Checkout Code	2026-03-30T22:10:33.4270883Z  * [new tag]             0.0.22                  -> 0.0.22
+Core Execution	Checkout Code	2026-03-30T22:10:33.4271222Z  * [new tag]             0.0.23                  -> 0.0.23
+Core Execution	Checkout Code	2026-03-30T22:10:33.4271569Z  * [new tag]             0.0.24                  -> 0.0.24
+Core Execution	Checkout Code	2026-03-30T22:10:33.4271907Z  * [new tag]             0.0.25                  -> 0.0.25
+Core Execution	Checkout Code	2026-03-30T22:10:33.4272246Z  * [new tag]             0.0.26                  -> 0.0.26
+Core Execution	Checkout Code	2026-03-30T22:10:33.4272587Z  * [new tag]             0.0.27                  -> 0.0.27
+Core Execution	Checkout Code	2026-03-30T22:10:33.4273162Z  * [new tag]             0.0.28                  -> 0.0.28
+Core Execution	Checkout Code	2026-03-30T22:10:33.4273505Z  * [new tag]             0.0.29                  -> 0.0.29
+Core Execution	Checkout Code	2026-03-30T22:10:33.4273853Z  * [new tag]             0.0.3                   -> 0.0.3
+Core Execution	Checkout Code	2026-03-30T22:10:33.4274197Z  * [new tag]             0.0.30                  -> 0.0.30
+Core Execution	Checkout Code	2026-03-30T22:10:33.4274541Z  * [new tag]             0.0.31                  -> 0.0.31
+Core Execution	Checkout Code	2026-03-30T22:10:33.4275064Z  * [new tag]             0.0.32                  -> 0.0.32
+Core Execution	Checkout Code	2026-03-30T22:10:33.4275428Z  * [new tag]             0.0.33                  -> 0.0.33
+Core Execution	Checkout Code	2026-03-30T22:10:33.4275773Z  * [new tag]             0.0.34                  -> 0.0.34
+Core Execution	Checkout Code	2026-03-30T22:10:33.4276129Z  * [new tag]             0.0.35                  -> 0.0.35
+Core Execution	Checkout Code	2026-03-30T22:10:33.4276466Z  * [new tag]             0.0.36                  -> 0.0.36
+Core Execution	Checkout Code	2026-03-30T22:10:33.4276810Z  * [new tag]             0.0.37                  -> 0.0.37
+Core Execution	Checkout Code	2026-03-30T22:10:33.4277156Z  * [new tag]             0.0.38                  -> 0.0.38
+Core Execution	Checkout Code	2026-03-30T22:10:33.4277501Z  * [new tag]             0.0.39                  -> 0.0.39
+Core Execution	Checkout Code	2026-03-30T22:10:33.4277851Z  * [new tag]             0.0.4                   -> 0.0.4
+Core Execution	Checkout Code	2026-03-30T22:10:33.4278206Z  * [new tag]             0.0.40                  -> 0.0.40
+Core Execution	Checkout Code	2026-03-30T22:10:33.4278544Z  * [new tag]             0.0.41                  -> 0.0.41
+Core Execution	Checkout Code	2026-03-30T22:10:33.4278882Z  * [new tag]             0.0.42                  -> 0.0.42
+Core Execution	Checkout Code	2026-03-30T22:10:33.4279224Z  * [new tag]             0.0.43                  -> 0.0.43
+Core Execution	Checkout Code	2026-03-30T22:10:33.4279565Z  * [new tag]             0.0.44                  -> 0.0.44
+Core Execution	Checkout Code	2026-03-30T22:10:33.4279898Z  * [new tag]             0.0.45                  -> 0.0.45
+Core Execution	Checkout Code	2026-03-30T22:10:33.4280245Z  * [new tag]             0.0.46                  -> 0.0.46
+Core Execution	Checkout Code	2026-03-30T22:10:33.4280583Z  * [new tag]             0.0.47                  -> 0.0.47
+Core Execution	Checkout Code	2026-03-30T22:10:33.4280920Z  * [new tag]             0.0.48                  -> 0.0.48
+Core Execution	Checkout Code	2026-03-30T22:10:33.4281261Z  * [new tag]             0.0.49                  -> 0.0.49
+Core Execution	Checkout Code	2026-03-30T22:10:33.4281607Z  * [new tag]             0.0.5                   -> 0.0.5
+Core Execution	Checkout Code	2026-03-30T22:10:33.4281948Z  * [new tag]             0.0.50                  -> 0.0.50
+Core Execution	Checkout Code	2026-03-30T22:10:33.4282292Z  * [new tag]             0.0.51                  -> 0.0.51
+Core Execution	Checkout Code	2026-03-30T22:10:33.4282634Z  * [new tag]             0.0.52                  -> 0.0.52
+Core Execution	Checkout Code	2026-03-30T22:10:33.4282973Z  * [new tag]             0.0.53                  -> 0.0.53
+Core Execution	Checkout Code	2026-03-30T22:10:33.4283308Z  * [new tag]             0.0.54                  -> 0.0.54
+Core Execution	Checkout Code	2026-03-30T22:10:33.4283653Z  * [new tag]             0.0.55                  -> 0.0.55
+Core Execution	Checkout Code	2026-03-30T22:10:33.4283992Z  * [new tag]             0.0.56                  -> 0.0.56
+Core Execution	Checkout Code	2026-03-30T22:10:33.4284334Z  * [new tag]             0.0.57                  -> 0.0.57
+Core Execution	Checkout Code	2026-03-30T22:10:33.4284672Z  * [new tag]             0.0.58                  -> 0.0.58
+Core Execution	Checkout Code	2026-03-30T22:10:33.4325812Z  * [new tag]             0.0.59                  -> 0.0.59
+Core Execution	Checkout Code	2026-03-30T22:10:33.4326349Z  * [new tag]             0.0.6                   -> 0.0.6
+Core Execution	Checkout Code	2026-03-30T22:10:33.4326713Z  * [new tag]             0.0.60                  -> 0.0.60
+Core Execution	Checkout Code	2026-03-30T22:10:33.4327515Z  * [new tag]             0.0.61                  -> 0.0.61
+Core Execution	Checkout Code	2026-03-30T22:10:33.4327866Z  * [new tag]             0.0.62                  -> 0.0.62
+Core Execution	Checkout Code	2026-03-30T22:10:33.4328210Z  * [new tag]             0.0.63                  -> 0.0.63
+Core Execution	Checkout Code	2026-03-30T22:10:33.4328545Z  * [new tag]             0.0.64                  -> 0.0.64
+Core Execution	Checkout Code	2026-03-30T22:10:33.4328891Z  * [new tag]             0.0.65                  -> 0.0.65
+Core Execution	Checkout Code	2026-03-30T22:10:33.4329235Z  * [new tag]             0.0.66                  -> 0.0.66
+Core Execution	Checkout Code	2026-03-30T22:10:33.4335760Z  * [new tag]             0.0.67                  -> 0.0.67
+Core Execution	Checkout Code	2026-03-30T22:10:33.4336188Z  * [new tag]             0.0.68                  -> 0.0.68
+Core Execution	Checkout Code	2026-03-30T22:10:33.4336544Z  * [new tag]             0.0.69                  -> 0.0.69
+Core Execution	Checkout Code	2026-03-30T22:10:33.4336892Z  * [new tag]             0.0.7                   -> 0.0.7
+Core Execution	Checkout Code	2026-03-30T22:10:33.4337579Z  * [new tag]             0.0.70                  -> 0.0.70
+Core Execution	Checkout Code	2026-03-30T22:10:33.4337921Z  * [new tag]             0.0.71                  -> 0.0.71
+Core Execution	Checkout Code	2026-03-30T22:10:33.4338274Z  * [new tag]             0.0.72                  -> 0.0.72
+Core Execution	Checkout Code	2026-03-30T22:10:33.4338608Z  * [new tag]             0.0.73                  -> 0.0.73
+Core Execution	Checkout Code	2026-03-30T22:10:33.4338947Z  * [new tag]             0.0.74                  -> 0.0.74
+Core Execution	Checkout Code	2026-03-30T22:10:33.4339290Z  * [new tag]             0.0.75                  -> 0.0.75
+Core Execution	Checkout Code	2026-03-30T22:10:33.4339624Z  * [new tag]             0.0.76                  -> 0.0.76
+Core Execution	Checkout Code	2026-03-30T22:10:33.4339965Z  * [new tag]             0.0.77                  -> 0.0.77
+Core Execution	Checkout Code	2026-03-30T22:10:33.4340303Z  * [new tag]             0.0.78                  -> 0.0.78
+Core Execution	Checkout Code	2026-03-30T22:10:33.4340637Z  * [new tag]             0.0.79                  -> 0.0.79
+Core Execution	Checkout Code	2026-03-30T22:10:33.4340972Z  * [new tag]             0.0.8                   -> 0.0.8
+Core Execution	Checkout Code	2026-03-30T22:10:33.4341313Z  * [new tag]             0.0.80                  -> 0.0.80
+Core Execution	Checkout Code	2026-03-30T22:10:33.4341654Z  * [new tag]             0.0.81                  -> 0.0.81
+Core Execution	Checkout Code	2026-03-30T22:10:33.4341987Z  * [new tag]             0.0.82                  -> 0.0.82
+Core Execution	Checkout Code	2026-03-30T22:10:33.4342332Z  * [new tag]             0.0.83                  -> 0.0.83
+Core Execution	Checkout Code	2026-03-30T22:10:33.4342673Z  * [new tag]             0.0.84                  -> 0.0.84
+Core Execution	Checkout Code	2026-03-30T22:10:33.4343020Z  * [new tag]             0.0.85                  -> 0.0.85
+Core Execution	Checkout Code	2026-03-30T22:10:33.4343412Z  * [new tag]             0.0.86                  -> 0.0.86
+Core Execution	Checkout Code	2026-03-30T22:10:33.4343751Z  * [new tag]             0.0.87                  -> 0.0.87
+Core Execution	Checkout Code	2026-03-30T22:10:33.4344090Z  * [new tag]             0.0.88                  -> 0.0.88
+Core Execution	Checkout Code	2026-03-30T22:10:33.4344427Z  * [new tag]             0.0.89                  -> 0.0.89
+Core Execution	Checkout Code	2026-03-30T22:10:33.4344767Z  * [new tag]             0.0.9                   -> 0.0.9
+Core Execution	Checkout Code	2026-03-30T22:10:33.4396147Z  * [new tag]             0.0.90                  -> 0.0.90
+Core Execution	Checkout Code	2026-03-30T22:10:33.4396654Z  * [new tag]             0.0.91                  -> 0.0.91
+Core Execution	Checkout Code	2026-03-30T22:10:33.4397013Z  * [new tag]             0.0.92                  -> 0.0.92
+Core Execution	Checkout Code	2026-03-30T22:10:33.4397372Z  * [new tag]             0.0.93                  -> 0.0.93
+Core Execution	Checkout Code	2026-03-30T22:10:33.4397741Z  * [new tag]             0.0.94                  -> 0.0.94
+Core Execution	Checkout Code	2026-03-30T22:10:33.4398080Z  * [new tag]             0.0.95                  -> 0.0.95
+Core Execution	Checkout Code	2026-03-30T22:10:33.4398426Z  * [new tag]             0.0.96                  -> 0.0.96
+Core Execution	Checkout Code	2026-03-30T22:10:33.4398769Z  * [new tag]             0.0.97                  -> 0.0.97
+Core Execution	Checkout Code	2026-03-30T22:10:33.4399105Z  * [new tag]             0.0.98                  -> 0.0.98
+Core Execution	Checkout Code	2026-03-30T22:10:33.4399448Z  * [new tag]             0.0.99                  -> 0.0.99
+Core Execution	Checkout Code	2026-03-30T22:10:33.4399795Z  * [new tag]             0.1.0                   -> 0.1.0
+Core Execution	Checkout Code	2026-03-30T22:10:33.4400140Z  * [new tag]             0.1.1                   -> 0.1.1
+Core Execution	Checkout Code	2026-03-30T22:10:33.4400479Z  * [new tag]             0.2.0                   -> 0.2.0
+Core Execution	Checkout Code	2026-03-30T22:10:33.4400829Z  * [new tag]             0.3.0                   -> 0.3.0
+Core Execution	Checkout Code	2026-03-30T22:10:33.4401172Z  * [new tag]             0.3.1                   -> 0.3.1
+Core Execution	Checkout Code	2026-03-30T22:10:33.4401890Z  * [new tag]             0.3.10                  -> 0.3.10
+Core Execution	Checkout Code	2026-03-30T22:10:33.4402232Z  * [new tag]             0.3.11                  -> 0.3.11
+Core Execution	Checkout Code	2026-03-30T22:10:33.4402574Z  * [new tag]             0.3.12                  -> 0.3.12
+Core Execution	Checkout Code	2026-03-30T22:10:33.4402910Z  * [new tag]             0.3.13                  -> 0.3.13
+Core Execution	Checkout Code	2026-03-30T22:10:33.4591938Z  * [new tag]             0.3.14                  -> 0.3.14
+Core Execution	Checkout Code	2026-03-30T22:10:33.4592424Z  * [new tag]             0.3.15                  -> 0.3.15
+Core Execution	Checkout Code	2026-03-30T22:10:33.4592777Z  * [new tag]             0.3.16                  -> 0.3.16
+Core Execution	Checkout Code	2026-03-30T22:10:33.4593150Z  * [new tag]             0.3.17                  -> 0.3.17
+Core Execution	Checkout Code	2026-03-30T22:10:33.4593503Z  * [new tag]             0.3.2                   -> 0.3.2
+Core Execution	Checkout Code	2026-03-30T22:10:33.4593857Z  * [new tag]             0.3.3                   -> 0.3.3
+Core Execution	Checkout Code	2026-03-30T22:10:33.4656078Z  * [new tag]             0.3.4                   -> 0.3.4
+Core Execution	Checkout Code	2026-03-30T22:10:33.4656568Z  * [new tag]             0.3.5                   -> 0.3.5
+Core Execution	Checkout Code	2026-03-30T22:10:33.4656952Z  * [new tag]             0.3.6                   -> 0.3.6
+Core Execution	Checkout Code	2026-03-30T22:10:33.4657308Z  * [new tag]             0.3.7                   -> 0.3.7
+Core Execution	Checkout Code	2026-03-30T22:10:33.4657662Z  * [new tag]             0.3.8                   -> 0.3.8
+Core Execution	Checkout Code	2026-03-30T22:10:33.4658010Z  * [new tag]             0.3.9                   -> 0.3.9
+Core Execution	Checkout Code	2026-03-30T22:10:33.4658372Z  * [new tag]             0.4.0                   -> 0.4.0
+Core Execution	Checkout Code	2026-03-30T22:10:33.4658732Z  * [new tag]             0.4.1                   -> 0.4.1
+Core Execution	Checkout Code	2026-03-30T22:10:33.4659082Z  * [new tag]             0.4.2                   -> 0.4.2
+Core Execution	Checkout Code	2026-03-30T22:10:33.4659431Z  * [new tag]             0.4.3                   -> 0.4.3
+Core Execution	Checkout Code	2026-03-30T22:10:33.4659803Z  * [new tag]             0.4.4                   -> 0.4.4
+Core Execution	Checkout Code	2026-03-30T22:10:33.4660202Z  * [new tag]             0.4.5                   -> 0.4.5
+Core Execution	Checkout Code	2026-03-30T22:10:33.4660567Z  * [new tag]             0.4.6                   -> 0.4.6
+Core Execution	Checkout Code	2026-03-30T22:10:33.4660931Z  * [new tag]             0.4.7                   -> 0.4.7
+Core Execution	Checkout Code	2026-03-30T22:10:33.4661288Z  * [new tag]             0.4.8                   -> 0.4.8
+Core Execution	Checkout Code	2026-03-30T22:10:33.4661631Z  * [new tag]             0.4.9                   -> 0.4.9
+Core Execution	Checkout Code	2026-03-30T22:10:33.4661974Z  * [new tag]             0.5.0                   -> 0.5.0
+Core Execution	Checkout Code	2026-03-30T22:10:33.4662318Z  * [new tag]             0.5.1                   -> 0.5.1
+Core Execution	Checkout Code	2026-03-30T22:10:33.4662658Z  * [new tag]             0.5.2                   -> 0.5.2
+Core Execution	Checkout Code	2026-03-30T22:10:33.4662995Z  * [new tag]             0.6.0                   -> 0.6.0
+Core Execution	Checkout Code	2026-03-30T22:10:33.4663355Z  * [new tag]             0.6.1                   -> 0.6.1
+Core Execution	Checkout Code	2026-03-30T22:10:33.4663723Z  * [new tag]             0.6.2                   -> 0.6.2
+Core Execution	Checkout Code	2026-03-30T22:10:33.4664101Z  * [new tag]             0.6.3                   -> 0.6.3
+Core Execution	Checkout Code	2026-03-30T22:10:33.4664465Z  * [new tag]             0.6.4                   -> 0.6.4
+Core Execution	Checkout Code	2026-03-30T22:10:33.4664835Z  * [new tag]             0.6.5                   -> 0.6.5
+Core Execution	Checkout Code	2026-03-30T22:10:33.4665623Z  * [new tag]             0.6.6                   -> 0.6.6
+Core Execution	Checkout Code	2026-03-30T22:10:33.4836557Z [command]/usr/bin/git branch --list --remote origin/main
+Core Execution	Checkout Code	2026-03-30T22:10:33.4958012Z   origin/main
+Core Execution	Checkout Code	2026-03-30T22:10:33.4963846Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+Core Execution	Checkout Code	2026-03-30T22:10:33.5016537Z 9e351dc64c4bf960dee39f3badf7ddfc336d477b
+Core Execution	Checkout Code	2026-03-30T22:10:33.5021242Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules origin +270de0a2b449ef21e172dfd2609268ff714b5139:refs/remotes/origin/main
+Core Execution	Checkout Code	2026-03-30T22:10:33.5340813Z From https://github.com/Ka0s-Klaus/ka0s
+Core Execution	Checkout Code	2026-03-30T22:10:33.5344617Z  + 9e351dc64...270de0a2b 270de0a2b449ef21e172dfd2609268ff714b5139 -> origin/main  (forced update)
+Core Execution	Checkout Code	2026-03-30T22:10:33.5400675Z ##[endgroup]
+Core Execution	Checkout Code	2026-03-30T22:10:33.5401176Z ##[group]Determining the checkout info
+Core Execution	Checkout Code	2026-03-30T22:10:33.5401663Z ##[endgroup]
+Core Execution	Checkout Code	2026-03-30T22:10:33.5414217Z [command]/usr/bin/git sparse-checkout disable
+Core Execution	Checkout Code	2026-03-30T22:10:33.5501867Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+Core Execution	Checkout Code	2026-03-30T22:10:33.5664176Z ##[group]Checking out the ref
+Core Execution	Checkout Code	2026-03-30T22:10:33.5698973Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+Core Execution	Checkout Code	2026-03-30T22:10:34.9013013Z Updating files:  54% (843/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:34.9046087Z Updating files:  55% (855/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:34.9103645Z Updating files:  56% (871/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:34.9147365Z Updating files:  57% (886/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:34.9166669Z Updating files:  58% (902/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:34.9185323Z Updating files:  59% (917/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:34.9205856Z Updating files:  60% (933/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:34.9230729Z Updating files:  61% (948/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:34.9300143Z Updating files:  62% (964/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:34.9331709Z Updating files:  63% (980/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:34.9378166Z Updating files:  64% (995/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:34.9517453Z Updating files:  65% (1011/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:34.9688695Z Updating files:  66% (1026/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:34.9789588Z Updating files:  67% (1042/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:34.9860280Z Updating files:  68% (1057/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:34.9917213Z Updating files:  69% (1073/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:34.9996387Z Updating files:  70% (1088/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:35.0107876Z Updating files:  71% (1104/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:35.0252729Z Updating files:  72% (1119/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:35.0387317Z Updating files:  73% (1135/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:35.0525708Z Updating files:  74% (1150/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:35.0714146Z Updating files:  75% (1166/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:35.0855303Z Updating files:  76% (1182/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:35.0980594Z Updating files:  77% (1197/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:35.1046009Z Updating files:  78% (1213/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:35.1106158Z Updating files:  79% (1228/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:35.1159656Z Updating files:  80% (1244/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:35.1267708Z Updating files:  81% (1259/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:35.1367186Z Updating files:  82% (1275/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:35.1447390Z Updating files:  83% (1290/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:35.1527794Z Updating files:  84% (1306/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:35.1554645Z Updating files:  85% (1321/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:35.1597124Z Updating files:  86% (1337/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:35.1646769Z Updating files:  87% (1352/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:35.1672185Z Updating files:  88% (1368/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:35.1689391Z Updating files:  89% (1384/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:35.1706905Z Updating files:  90% (1399/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:35.1724701Z Updating files:  91% (1415/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:35.1764177Z Updating files:  92% (1430/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:35.1777988Z Updating files:  93% (1446/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:35.1805525Z Updating files:  94% (1461/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:35.1837586Z Updating files:  95% (1477/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:35.1843896Z Updating files:  96% (1492/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:35.1926247Z Updating files:  97% (1508/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:35.2059995Z Updating files:  98% (1523/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:35.2077350Z Updating files:  99% (1539/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:35.2080906Z Updating files: 100% (1554/1554)
+Core Execution	Checkout Code	2026-03-30T22:10:35.2081999Z Updating files: 100% (1554/1554), done.
+Core Execution	Checkout Code	2026-03-30T22:10:35.2135900Z Switched to a new branch 'main'
+Core Execution	Checkout Code	2026-03-30T22:10:35.2146549Z branch 'main' set up to track 'origin/main'.
+Core Execution	Checkout Code	2026-03-30T22:10:35.2244846Z ##[endgroup]
+Core Execution	Checkout Code	2026-03-30T22:10:35.2323889Z [command]/usr/bin/git log -1 --format=%H
+Core Execution	Checkout Code	2026-03-30T22:10:35.2377003Z 270de0a2b449ef21e172dfd2609268ff714b5139
+Core Execution	Report Step (Checkout Code)	﻿2026-03-30T22:10:35.2961423Z ##[group]Run actions/github-script@v7
+Core Execution	Report Step (Checkout Code)	2026-03-30T22:10:35.2961776Z with:
+Core Execution	Report Step (Checkout Code)	2026-03-30T22:10:35.2962271Z   github-token: ***
+Core Execution	Report Step (Checkout Code)	2026-03-30T22:10:35.2964839Z   script: const issueNumber = Number(process.env.ISSUE_NUMBER || '');
+Core Execution	Report Step (Checkout Code)	if (!issueNumber) return;
+Core Execution	Report Step (Checkout Code)	const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+Core Execution	Report Step (Checkout Code)	const stepName = process.env.STEP_NAME || '';
+Core Execution	Report Step (Checkout Code)	const outcome = process.env.STEP_OUTCOME || 'unknown';
+Core Execution	Report Step (Checkout Code)	github.rest.issues.createComment({
+Core Execution	Report Step (Checkout Code)	  issue_number: issueNumber,
+Core Execution	Report Step (Checkout Code)	  owner: context.repo.owner,
+Core Execution	Report Step (Checkout Code)	  repo: context.repo.repo,
+Core Execution	Report Step (Checkout Code)	  body: [
+Core Execution	Report Step (Checkout Code)	    `### [Ka0s Agent Query] Paso`,
+Core Execution	Report Step (Checkout Code)	    ``,
+Core Execution	Report Step (Checkout Code)	    `- Paso: ${stepName}`,
+Core Execution	Report Step (Checkout Code)	    `- Estado: ${outcome}`,
+Core Execution	Report Step (Checkout Code)	    `- Run: ${runUrl}`,
+Core Execution	Report Step (Checkout Code)	  ].join('\n')
+Core Execution	Report Step (Checkout Code)	})
+Core Execution	Report Step (Checkout Code)	
+Core Execution	Report Step (Checkout Code)	2026-03-30T22:10:35.2967424Z   debug: false
+Core Execution	Report Step (Checkout Code)	2026-03-30T22:10:35.2967640Z   user-agent: actions/github-script
+Core Execution	Report Step (Checkout Code)	2026-03-30T22:10:35.2967903Z   result-encoding: json
+Core Execution	Report Step (Checkout Code)	2026-03-30T22:10:35.2968116Z   retries: 0
+Core Execution	Report Step (Checkout Code)	2026-03-30T22:10:35.2968342Z   retry-exempt-status-codes: 400,401,403,404,422
+Core Execution	Report Step (Checkout Code)	2026-03-30T22:10:35.2968660Z env:
+Core Execution	Report Step (Checkout Code)	2026-03-30T22:10:35.2968841Z   KAOS_MODULE: [Ka0S] Agent Query
+Core Execution	Report Step (Checkout Code)	2026-03-30T22:10:35.2969101Z   KAOS_CODE: 23770098917
+Core Execution	Report Step (Checkout Code)	2026-03-30T22:10:35.2969358Z   KAOS_ACTOR: ***
+Core Execution	Report Step (Checkout Code)	2026-03-30T22:10:35.2969671Z   POSTGRES_HOST: postgresql-ia.postgresql-ia.svc.cluster.local
+Core Execution	Report Step (Checkout Code)	2026-03-30T22:10:35.2970403Z   POSTGRES_PORT: 5432
+Core Execution	Report Step (Checkout Code)	2026-03-30T22:10:35.2970632Z   POSTGRES_DB: ka0s_memory
+Core Execution	Report Step (Checkout Code)	2026-03-30T22:10:35.2971161Z   POSTGRES_USER: ka0s_ai
+Core Execution	Report Step (Checkout Code)	2026-03-30T22:10:35.2971460Z   OLLAMA_HOST: http://ollama.ollama.svc.cluster.local
+Core Execution	Report Step (Checkout Code)	2026-03-30T22:10:35.2971797Z   OLLAMA_PORT: 11434
+Core Execution	Report Step (Checkout Code)	2026-03-30T22:10:35.2972019Z   EMBEDDING_MODEL: nomic-embed-text
+Core Execution	Report Step (Checkout Code)	2026-03-30T22:10:35.2972295Z   GENERATION_MODEL: llama3.1:8b
+Core Execution	Report Step (Checkout Code)	2026-03-30T22:10:35.2972545Z   ISSUE_NUMBER: 5219
+Core Execution	Report Step (Checkout Code)	2026-03-30T22:10:35.2972755Z   STEP_NAME: Checkout Code
+Core Execution	Report Step (Checkout Code)	2026-03-30T22:10:35.2972994Z   STEP_OUTCOME: success
+Core Execution	Report Step (Checkout Code)	2026-03-30T22:10:35.2973209Z ##[endgroup]
+Core Execution	Setup Environment	﻿2026-03-30T22:10:36.5746317Z ##[group]Run echo "Iniciando módulo: [Ka0S] Agent Query"
+Core Execution	Setup Environment	2026-03-30T22:10:36.5747150Z [36;1mecho "Iniciando módulo: [Ka0S] Agent Query"[0m
+Core Execution	Setup Environment	2026-03-30T22:10:36.5747616Z [36;1mecho "Run ID: 23770098917"[0m
+Core Execution	Setup Environment	2026-03-30T22:10:36.5748262Z [36;1mecho "Actor: ***"[0m
+Core Execution	Setup Environment	2026-03-30T22:10:36.5774270Z shell: /usr/bin/bash -e {0}
+Core Execution	Setup Environment	2026-03-30T22:10:36.5774594Z env:
+Core Execution	Setup Environment	2026-03-30T22:10:36.5774798Z   KAOS_MODULE: [Ka0S] Agent Query
+Core Execution	Setup Environment	2026-03-30T22:10:36.5782323Z   KAOS_CODE: 23770098917
+Core Execution	Setup Environment	2026-03-30T22:10:36.5782737Z   KAOS_ACTOR: ***
+Core Execution	Setup Environment	2026-03-30T22:10:36.5783054Z   POSTGRES_HOST: postgresql-ia.postgresql-ia.svc.cluster.local
+Core Execution	Setup Environment	2026-03-30T22:10:36.5783444Z   POSTGRES_PORT: 5432
+Core Execution	Setup Environment	2026-03-30T22:10:36.5783671Z   POSTGRES_DB: ka0s_memory
+Core Execution	Setup Environment	2026-03-30T22:10:36.5783910Z   POSTGRES_USER: ka0s_ai
+Core Execution	Setup Environment	2026-03-30T22:10:36.5784203Z   OLLAMA_HOST: http://ollama.ollama.svc.cluster.local
+Core Execution	Setup Environment	2026-03-30T22:10:36.5784538Z   OLLAMA_PORT: 11434
+Core Execution	Setup Environment	2026-03-30T22:10:36.5784773Z   EMBEDDING_MODEL: nomic-embed-text
+Core Execution	Setup Environment	2026-03-30T22:10:36.5794565Z   GENERATION_MODEL: llama3.1:8b
+Core Execution	Setup Environment	2026-03-30T22:10:36.5796246Z ##[endgroup]
+Core Execution	Setup Environment	2026-03-30T22:10:36.5983873Z Iniciando módulo: [Ka0S] Agent Query
+Core Execution	Setup Environment	2026-03-30T22:10:36.5984350Z Run ID: 23770098917
+Core Execution	Setup Environment	2026-03-30T22:10:36.5984736Z Actor: ***
+Core Execution	Report Step (Setup Environment)	﻿2026-03-30T22:10:36.6339984Z ##[group]Run actions/github-script@v7
+Core Execution	Report Step (Setup Environment)	2026-03-30T22:10:36.6340321Z with:
+Core Execution	Report Step (Setup Environment)	2026-03-30T22:10:36.6340787Z   github-token: ***
+Core Execution	Report Step (Setup Environment)	2026-03-30T22:10:36.6342823Z   script: const issueNumber = Number(process.env.ISSUE_NUMBER || '');
+Core Execution	Report Step (Setup Environment)	if (!issueNumber) return;
+Core Execution	Report Step (Setup Environment)	const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+Core Execution	Report Step (Setup Environment)	const stepName = process.env.STEP_NAME || '';
+Core Execution	Report Step (Setup Environment)	const outcome = process.env.STEP_OUTCOME || 'unknown';
+Core Execution	Report Step (Setup Environment)	github.rest.issues.createComment({
+Core Execution	Report Step (Setup Environment)	  issue_number: issueNumber,
+Core Execution	Report Step (Setup Environment)	  owner: context.repo.owner,
+Core Execution	Report Step (Setup Environment)	  repo: context.repo.repo,
+Core Execution	Report Step (Setup Environment)	  body: [
+Core Execution	Report Step (Setup Environment)	    `### [Ka0s Agent Query] Paso`,
+Core Execution	Report Step (Setup Environment)	    ``,
+Core Execution	Report Step (Setup Environment)	    `- Paso: ${stepName}`,
+Core Execution	Report Step (Setup Environment)	    `- Estado: ${outcome}`,
+Core Execution	Report Step (Setup Environment)	    `- Run: ${runUrl}`,
+Core Execution	Report Step (Setup Environment)	  ].join('\n')
+Core Execution	Report Step (Setup Environment)	})
+Core Execution	Report Step (Setup Environment)	
+Core Execution	Report Step (Setup Environment)	2026-03-30T22:10:36.6355471Z   debug: false
+Core Execution	Report Step (Setup Environment)	2026-03-30T22:10:36.6355737Z   user-agent: actions/github-script
+Core Execution	Report Step (Setup Environment)	2026-03-30T22:10:36.6356010Z   result-encoding: json
+Core Execution	Report Step (Setup Environment)	2026-03-30T22:10:36.6356227Z   retries: 0
+Core Execution	Report Step (Setup Environment)	2026-03-30T22:10:36.6356584Z   retry-exempt-status-codes: 400,401,403,404,422
+Core Execution	Report Step (Setup Environment)	2026-03-30T22:10:36.6356974Z env:
+Core Execution	Report Step (Setup Environment)	2026-03-30T22:10:36.6357171Z   KAOS_MODULE: [Ka0S] Agent Query
+Core Execution	Report Step (Setup Environment)	2026-03-30T22:10:36.6357428Z   KAOS_CODE: 23770098917
+Core Execution	Report Step (Setup Environment)	2026-03-30T22:10:36.6357791Z   KAOS_ACTOR: ***
+Core Execution	Report Step (Setup Environment)	2026-03-30T22:10:36.6358114Z   POSTGRES_HOST: postgresql-ia.postgresql-ia.svc.cluster.local
+Core Execution	Report Step (Setup Environment)	2026-03-30T22:10:36.6358519Z   POSTGRES_PORT: 5432
+Core Execution	Report Step (Setup Environment)	2026-03-30T22:10:36.6358749Z   POSTGRES_DB: ka0s_memory
+Core Execution	Report Step (Setup Environment)	2026-03-30T22:10:36.6358987Z   POSTGRES_USER: ka0s_ai
+Core Execution	Report Step (Setup Environment)	2026-03-30T22:10:36.6359297Z   OLLAMA_HOST: http://ollama.ollama.svc.cluster.local
+Core Execution	Report Step (Setup Environment)	2026-03-30T22:10:36.6359638Z   OLLAMA_PORT: 11434
+Core Execution	Report Step (Setup Environment)	2026-03-30T22:10:36.6359893Z   EMBEDDING_MODEL: nomic-embed-text
+Core Execution	Report Step (Setup Environment)	2026-03-30T22:10:36.6360183Z   GENERATION_MODEL: llama3.1:8b
+Core Execution	Report Step (Setup Environment)	2026-03-30T22:10:36.6360433Z   ISSUE_NUMBER: 5219
+Core Execution	Report Step (Setup Environment)	2026-03-30T22:10:36.6360650Z   STEP_NAME: Setup Environment
+Core Execution	Report Step (Setup Environment)	2026-03-30T22:10:36.6360902Z   STEP_OUTCOME: success
+Core Execution	Report Step (Setup Environment)	2026-03-30T22:10:36.6361117Z ##[endgroup]
+Core Execution	Setup Python	﻿2026-03-30T22:10:37.6875883Z ##[group]Run actions/setup-python@v5
+Core Execution	Setup Python	2026-03-30T22:10:37.6885438Z with:
+Core Execution	Setup Python	2026-03-30T22:10:37.6885664Z   python-version: 3.11
+Core Execution	Setup Python	2026-03-30T22:10:37.6885897Z   check-latest: false
+Core Execution	Setup Python	2026-03-30T22:10:37.6886314Z   token: ***
+Core Execution	Setup Python	2026-03-30T22:10:37.6886519Z   update-environment: true
+Core Execution	Setup Python	2026-03-30T22:10:37.6886769Z   allow-prereleases: false
+Core Execution	Setup Python	2026-03-30T22:10:37.6887398Z   freethreaded: false
+Core Execution	Setup Python	2026-03-30T22:10:37.6887609Z env:
+Core Execution	Setup Python	2026-03-30T22:10:37.6887794Z   KAOS_MODULE: [Ka0S] Agent Query
+Core Execution	Setup Python	2026-03-30T22:10:37.6888042Z   KAOS_CODE: 23770098917
+Core Execution	Setup Python	2026-03-30T22:10:37.6888319Z   KAOS_ACTOR: ***
+Core Execution	Setup Python	2026-03-30T22:10:37.6888639Z   POSTGRES_HOST: postgresql-ia.postgresql-ia.svc.cluster.local
+Core Execution	Setup Python	2026-03-30T22:10:37.6889017Z   POSTGRES_PORT: 5432
+Core Execution	Setup Python	2026-03-30T22:10:37.6889241Z   POSTGRES_DB: ka0s_memory
+Core Execution	Setup Python	2026-03-30T22:10:37.6889475Z   POSTGRES_USER: ka0s_ai
+Core Execution	Setup Python	2026-03-30T22:10:37.6889769Z   OLLAMA_HOST: http://ollama.ollama.svc.cluster.local
+Core Execution	Setup Python	2026-03-30T22:10:37.6890095Z   OLLAMA_PORT: 11434
+Core Execution	Setup Python	2026-03-30T22:10:37.6890323Z   EMBEDDING_MODEL: nomic-embed-text
+Core Execution	Setup Python	2026-03-30T22:10:37.6890647Z   GENERATION_MODEL: llama3.1:8b
+Core Execution	Setup Python	2026-03-30T22:10:37.6890890Z ##[endgroup]
+Core Execution	Setup Python	2026-03-30T22:10:37.9237813Z ##[group]Installed versions
+Core Execution	Setup Python	2026-03-30T22:10:37.9291644Z Version 3.11 was not found in the local cache
+Core Execution	Setup Python	2026-03-30T22:10:39.2457360Z Version 3.11 is available for downloading
+Core Execution	Setup Python	2026-03-30T22:10:39.2458133Z Download from "https://github.com/actions/python-versions/releases/download/3.11.15-22631496413/python-3.11.15-linux-24.04-x64.tar.gz"
+Core Execution	Setup Python	2026-03-30T22:10:41.6666978Z Extract downloaded archive
+Core Execution	Setup Python	2026-03-30T22:10:41.6925744Z [command]/usr/bin/tar xz --warning=no-unknown-keyword --overwrite -C /home/runner/_work/_temp/6dcc4ee7-575c-4715-985e-cbb2c0812252 -f /home/runner/_work/_temp/53fb484a-fe64-467a-9d91-f2209a566974
+Core Execution	Setup Python	2026-03-30T22:10:46.3479604Z Execute installation script
+Core Execution	Setup Python	2026-03-30T22:10:46.3605803Z Check if Python hostedtoolcache folder exist...
+Core Execution	Setup Python	2026-03-30T22:10:46.3607407Z Creating Python hostedtoolcache folder...
+Core Execution	Setup Python	2026-03-30T22:10:46.3621534Z Create Python 3.11.15 folder
+Core Execution	Setup Python	2026-03-30T22:10:46.3639094Z Copy Python binaries to hostedtoolcache folder
+Core Execution	Setup Python	2026-03-30T22:10:49.4849197Z Create additional symlinks (Required for the UsePythonVersion Azure Pipelines task and the setup-python GitHub Action)
+Core Execution	Setup Python	2026-03-30T22:10:49.4920679Z Upgrading pip...
+Core Execution	Setup Python	2026-03-30T22:10:54.1509259Z Looking in links: /tmp/tmpl993475z
+Core Execution	Setup Python	2026-03-30T22:10:54.1526531Z Requirement already satisfied: setuptools in /home/runner/_work/_tool/Python/3.11.15/x64/lib/python3.11/site-packages (79.0.1)
+Core Execution	Setup Python	2026-03-30T22:10:54.1546347Z Requirement already satisfied: pip in /home/runner/_work/_tool/Python/3.11.15/x64/lib/python3.11/site-packages (24.0)
+Core Execution	Setup Python	2026-03-30T22:10:58.2845970Z Collecting pip
+Core Execution	Setup Python	2026-03-30T22:10:58.3431239Z Downloading pip-26.0.1-py3-none-any.whl.metadata (4.7 kB)
+Core Execution	Setup Python	2026-03-30T22:10:58.3685924Z Downloading pip-26.0.1-py3-none-any.whl (1.8 MB)
+Core Execution	Setup Python	2026-03-30T22:10:58.4486212Z ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.8/1.8 MB 24.2 MB/s eta 0:00:00
+Core Execution	Setup Python	2026-03-30T22:10:58.5205972Z Installing collected packages: pip
+Core Execution	Setup Python	2026-03-30T22:10:58.5206753Z   Attempting uninstall: pip
+Core Execution	Setup Python	2026-03-30T22:10:58.5218560Z Found existing installation: pip 24.0
+Core Execution	Setup Python	2026-03-30T22:10:58.6035620Z Uninstalling pip-24.0:
+Core Execution	Setup Python	2026-03-30T22:10:58.6170879Z Successfully uninstalled pip-24.0
+Core Execution	Setup Python	2026-03-30T22:10:59.6393179Z Successfully installed pip-26.0.1
+Core Execution	Setup Python	2026-03-30T22:10:59.7534352Z Create complete file
+Core Execution	Setup Python	2026-03-30T22:10:59.7595671Z Successfully set up CPython (3.11.15)
+Core Execution	Setup Python	2026-03-30T22:10:59.7597285Z ##[endgroup]
+Core Execution	Report Step (Setup Python)	﻿2026-03-30T22:10:59.8112043Z ##[group]Run actions/github-script@v7
+Core Execution	Report Step (Setup Python)	2026-03-30T22:10:59.8112420Z with:
+Core Execution	Report Step (Setup Python)	2026-03-30T22:10:59.8112866Z   github-token: ***
+Core Execution	Report Step (Setup Python)	2026-03-30T22:10:59.8115256Z   script: const issueNumber = Number(process.env.ISSUE_NUMBER || '');
+Core Execution	Report Step (Setup Python)	if (!issueNumber) return;
+Core Execution	Report Step (Setup Python)	const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+Core Execution	Report Step (Setup Python)	const stepName = process.env.STEP_NAME || '';
+Core Execution	Report Step (Setup Python)	const outcome = process.env.STEP_OUTCOME || 'unknown';
+Core Execution	Report Step (Setup Python)	github.rest.issues.createComment({
+Core Execution	Report Step (Setup Python)	  issue_number: issueNumber,
+Core Execution	Report Step (Setup Python)	  owner: context.repo.owner,
+Core Execution	Report Step (Setup Python)	  repo: context.repo.repo,
+Core Execution	Report Step (Setup Python)	  body: [
+Core Execution	Report Step (Setup Python)	    `### [Ka0s Agent Query] Paso`,
+Core Execution	Report Step (Setup Python)	    ``,
+Core Execution	Report Step (Setup Python)	    `- Paso: ${stepName}`,
+Core Execution	Report Step (Setup Python)	    `- Estado: ${outcome}`,
+Core Execution	Report Step (Setup Python)	    `- Run: ${runUrl}`,
+Core Execution	Report Step (Setup Python)	  ].join('\n')
+Core Execution	Report Step (Setup Python)	})
+Core Execution	Report Step (Setup Python)	
+Core Execution	Report Step (Setup Python)	2026-03-30T22:10:59.8117585Z   debug: false
+Core Execution	Report Step (Setup Python)	2026-03-30T22:10:59.8117790Z   user-agent: actions/github-script
+Core Execution	Report Step (Setup Python)	2026-03-30T22:10:59.8119697Z   result-encoding: json
+Core Execution	Report Step (Setup Python)	2026-03-30T22:10:59.8119925Z   retries: 0
+Core Execution	Report Step (Setup Python)	2026-03-30T22:10:59.8120154Z   retry-exempt-status-codes: 400,401,403,404,422
+Core Execution	Report Step (Setup Python)	2026-03-30T22:10:59.8120486Z env:
+Core Execution	Report Step (Setup Python)	2026-03-30T22:10:59.8120667Z   KAOS_MODULE: [Ka0S] Agent Query
+Core Execution	Report Step (Setup Python)	2026-03-30T22:10:59.8120917Z   KAOS_CODE: 23770098917
+Core Execution	Report Step (Setup Python)	2026-03-30T22:10:59.8121320Z   KAOS_ACTOR: ***
+Core Execution	Report Step (Setup Python)	2026-03-30T22:10:59.8121622Z   POSTGRES_HOST: postgresql-ia.postgresql-ia.svc.cluster.local
+Core Execution	Report Step (Setup Python)	2026-03-30T22:10:59.8121992Z   POSTGRES_PORT: 5432
+Core Execution	Report Step (Setup Python)	2026-03-30T22:10:59.8122204Z   POSTGRES_DB: ka0s_memory
+Core Execution	Report Step (Setup Python)	2026-03-30T22:10:59.8122425Z   POSTGRES_USER: ka0s_ai
+Core Execution	Report Step (Setup Python)	2026-03-30T22:10:59.8122711Z   OLLAMA_HOST: http://ollama.ollama.svc.cluster.local
+Core Execution	Report Step (Setup Python)	2026-03-30T22:10:59.8123034Z   OLLAMA_PORT: 11434
+Core Execution	Report Step (Setup Python)	2026-03-30T22:10:59.8123252Z   EMBEDDING_MODEL: nomic-embed-text
+Core Execution	Report Step (Setup Python)	2026-03-30T22:10:59.8123514Z   GENERATION_MODEL: llama3.1:8b
+Core Execution	Report Step (Setup Python)	2026-03-30T22:10:59.8123836Z   pythonLocation: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Report Step (Setup Python)	2026-03-30T22:10:59.8124430Z   PKG_CONFIG_PATH: /home/runner/_work/_tool/Python/3.11.15/x64/lib/pkgconfig
+Core Execution	Report Step (Setup Python)	2026-03-30T22:10:59.8125121Z   Python_ROOT_DIR: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Report Step (Setup Python)	2026-03-30T22:10:59.8125671Z   Python2_ROOT_DIR: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Report Step (Setup Python)	2026-03-30T22:10:59.8126089Z   Python3_ROOT_DIR: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Report Step (Setup Python)	2026-03-30T22:10:59.8126509Z   LD_LIBRARY_PATH: /home/runner/_work/_tool/Python/3.11.15/x64/lib
+Core Execution	Report Step (Setup Python)	2026-03-30T22:10:59.8126853Z   ISSUE_NUMBER: 5219
+Core Execution	Report Step (Setup Python)	2026-03-30T22:10:59.8127064Z   STEP_NAME: Setup Python
+Core Execution	Report Step (Setup Python)	2026-03-30T22:10:59.8127289Z   STEP_OUTCOME: success
+Core Execution	Report Step (Setup Python)	2026-03-30T22:10:59.8127494Z ##[endgroup]
+Core Execution	Install Dependencies	﻿2026-03-30T22:11:00.8299796Z ##[group]Run pip install psycopg2-binary requests mcp pydantic
+Core Execution	Install Dependencies	2026-03-30T22:11:00.8300421Z [36;1mpip install psycopg2-binary requests mcp pydantic[0m
+Core Execution	Install Dependencies	2026-03-30T22:11:00.8355215Z shell: /usr/bin/bash -e {0}
+Core Execution	Install Dependencies	2026-03-30T22:11:00.8355522Z env:
+Core Execution	Install Dependencies	2026-03-30T22:11:00.8355725Z   KAOS_MODULE: [Ka0S] Agent Query
+Core Execution	Install Dependencies	2026-03-30T22:11:00.8355980Z   KAOS_CODE: 23770098917
+Core Execution	Install Dependencies	2026-03-30T22:11:00.8356358Z   KAOS_ACTOR: ***
+Core Execution	Install Dependencies	2026-03-30T22:11:00.8356687Z   POSTGRES_HOST: postgresql-ia.postgresql-ia.svc.cluster.local
+Core Execution	Install Dependencies	2026-03-30T22:11:00.8357074Z   POSTGRES_PORT: 5432
+Core Execution	Install Dependencies	2026-03-30T22:11:00.8357294Z   POSTGRES_DB: ka0s_memory
+Core Execution	Install Dependencies	2026-03-30T22:11:00.8357531Z   POSTGRES_USER: ka0s_ai
+Core Execution	Install Dependencies	2026-03-30T22:11:00.8357832Z   OLLAMA_HOST: http://ollama.ollama.svc.cluster.local
+Core Execution	Install Dependencies	2026-03-30T22:11:00.8358159Z   OLLAMA_PORT: 11434
+Core Execution	Install Dependencies	2026-03-30T22:11:00.8358387Z   EMBEDDING_MODEL: nomic-embed-text
+Core Execution	Install Dependencies	2026-03-30T22:11:00.8358662Z   GENERATION_MODEL: llama3.1:8b
+Core Execution	Install Dependencies	2026-03-30T22:11:00.8358996Z   pythonLocation: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Install Dependencies	2026-03-30T22:11:00.8359497Z   PKG_CONFIG_PATH: /home/runner/_work/_tool/Python/3.11.15/x64/lib/pkgconfig
+Core Execution	Install Dependencies	2026-03-30T22:11:00.8359969Z   Python_ROOT_DIR: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Install Dependencies	2026-03-30T22:11:00.8360394Z   Python2_ROOT_DIR: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Install Dependencies	2026-03-30T22:11:00.8360824Z   Python3_ROOT_DIR: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Install Dependencies	2026-03-30T22:11:00.8361259Z   LD_LIBRARY_PATH: /home/runner/_work/_tool/Python/3.11.15/x64/lib
+Core Execution	Install Dependencies	2026-03-30T22:11:00.8361613Z ##[endgroup]
+Core Execution	Install Dependencies	2026-03-30T22:11:01.4497419Z Collecting psycopg2-binary
+Core Execution	Install Dependencies	2026-03-30T22:11:01.6106364Z   Downloading psycopg2_binary-2.9.11-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (4.9 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:01.6905745Z Collecting requests
+Core Execution	Install Dependencies	2026-03-30T22:11:01.6966046Z   Downloading requests-2.33.1-py3-none-any.whl.metadata (4.8 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:01.7451826Z Collecting mcp
+Core Execution	Install Dependencies	2026-03-30T22:11:01.7535842Z   Downloading mcp-1.26.0-py3-none-any.whl.metadata (89 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:01.9707784Z Collecting pydantic
+Core Execution	Install Dependencies	2026-03-30T22:11:01.9768974Z   Downloading pydantic-2.12.5-py3-none-any.whl.metadata (90 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:02.7267756Z Collecting charset_normalizer<4,>=2 (from requests)
+Core Execution	Install Dependencies	2026-03-30T22:11:02.7336290Z   Downloading charset_normalizer-3.4.6-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (40 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:02.7871094Z Collecting idna<4,>=2.5 (from requests)
+Core Execution	Install Dependencies	2026-03-30T22:11:02.7927827Z   Downloading idna-3.11-py3-none-any.whl.metadata (8.4 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:02.8453233Z Collecting urllib3<3,>=1.26 (from requests)
+Core Execution	Install Dependencies	2026-03-30T22:11:02.8511530Z   Downloading urllib3-2.6.3-py3-none-any.whl.metadata (6.9 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:02.9108691Z Collecting certifi>=2023.5.7 (from requests)
+Core Execution	Install Dependencies	2026-03-30T22:11:02.9196251Z   Downloading certifi-2026.2.25-py3-none-any.whl.metadata (2.5 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:02.9635109Z Collecting anyio>=4.5 (from mcp)
+Core Execution	Install Dependencies	2026-03-30T22:11:02.9688720Z   Downloading anyio-4.13.0-py3-none-any.whl.metadata (4.5 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:03.0115998Z Collecting httpx-sse>=0.4 (from mcp)
+Core Execution	Install Dependencies	2026-03-30T22:11:03.0177798Z   Downloading httpx_sse-0.4.3-py3-none-any.whl.metadata (9.7 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:03.0728064Z Collecting httpx>=0.27.1 (from mcp)
+Core Execution	Install Dependencies	2026-03-30T22:11:03.0799102Z   Downloading httpx-0.28.1-py3-none-any.whl.metadata (7.1 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:03.1420038Z Collecting jsonschema>=4.20.0 (from mcp)
+Core Execution	Install Dependencies	2026-03-30T22:11:03.1475729Z   Downloading jsonschema-4.26.0-py3-none-any.whl.metadata (7.6 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:03.2011715Z Collecting pydantic-settings>=2.5.2 (from mcp)
+Core Execution	Install Dependencies	2026-03-30T22:11:03.2076135Z   Downloading pydantic_settings-2.13.1-py3-none-any.whl.metadata (3.4 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:03.2636120Z Collecting pyjwt>=2.10.1 (from pyjwt[crypto]>=2.10.1->mcp)
+Core Execution	Install Dependencies	2026-03-30T22:11:03.2767744Z   Downloading pyjwt-2.12.1-py3-none-any.whl.metadata (4.1 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:03.3271479Z Collecting python-multipart>=0.0.9 (from mcp)
+Core Execution	Install Dependencies	2026-03-30T22:11:03.3338356Z   Downloading python_multipart-0.0.22-py3-none-any.whl.metadata (1.8 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:03.3807880Z Collecting sse-starlette>=1.6.1 (from mcp)
+Core Execution	Install Dependencies	2026-03-30T22:11:03.3875664Z   Downloading sse_starlette-3.3.4-py3-none-any.whl.metadata (14 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:03.4502554Z Collecting starlette>=0.27 (from mcp)
+Core Execution	Install Dependencies	2026-03-30T22:11:03.4576233Z   Downloading starlette-1.0.0-py3-none-any.whl.metadata (6.3 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:03.5117538Z Collecting typing-extensions>=4.9.0 (from mcp)
+Core Execution	Install Dependencies	2026-03-30T22:11:03.5194093Z   Downloading typing_extensions-4.15.0-py3-none-any.whl.metadata (3.3 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:03.5604169Z Collecting typing-inspection>=0.4.1 (from mcp)
+Core Execution	Install Dependencies	2026-03-30T22:11:03.5715896Z   Downloading typing_inspection-0.4.2-py3-none-any.whl.metadata (2.6 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:03.6474295Z Collecting uvicorn>=0.31.1 (from mcp)
+Core Execution	Install Dependencies	2026-03-30T22:11:03.6551721Z   Downloading uvicorn-0.42.0-py3-none-any.whl.metadata (6.7 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:03.7055688Z Collecting annotated-types>=0.6.0 (from pydantic)
+Core Execution	Install Dependencies	2026-03-30T22:11:03.7096450Z   Downloading annotated_types-0.7.0-py3-none-any.whl.metadata (15 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:04.7851588Z Collecting pydantic-core==2.41.5 (from pydantic)
+Core Execution	Install Dependencies	2026-03-30T22:11:04.7909350Z   Downloading pydantic_core-2.41.5-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (7.3 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:04.8606471Z Collecting httpcore==1.* (from httpx>=0.27.1->mcp)
+Core Execution	Install Dependencies	2026-03-30T22:11:04.8699347Z   Downloading httpcore-1.0.9-py3-none-any.whl.metadata (21 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:04.9302765Z Collecting h11>=0.16 (from httpcore==1.*->httpx>=0.27.1->mcp)
+Core Execution	Install Dependencies	2026-03-30T22:11:04.9369012Z   Downloading h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:04.9866700Z Collecting attrs>=22.2.0 (from jsonschema>=4.20.0->mcp)
+Core Execution	Install Dependencies	2026-03-30T22:11:04.9915403Z   Downloading attrs-26.1.0-py3-none-any.whl.metadata (8.8 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:05.0316686Z Collecting jsonschema-specifications>=2023.03.6 (from jsonschema>=4.20.0->mcp)
+Core Execution	Install Dependencies	2026-03-30T22:11:05.0356898Z   Downloading jsonschema_specifications-2025.9.1-py3-none-any.whl.metadata (2.9 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:05.1114036Z Collecting referencing>=0.28.4 (from jsonschema>=4.20.0->mcp)
+Core Execution	Install Dependencies	2026-03-30T22:11:05.1206717Z   Downloading referencing-0.37.0-py3-none-any.whl.metadata (2.8 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:05.5648685Z Collecting rpds-py>=0.25.0 (from jsonschema>=4.20.0->mcp)
+Core Execution	Install Dependencies	2026-03-30T22:11:05.5732229Z   Downloading rpds_py-0.30.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.1 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:05.6783597Z Collecting python-dotenv>=0.21.0 (from pydantic-settings>=2.5.2->mcp)
+Core Execution	Install Dependencies	2026-03-30T22:11:05.6848177Z   Downloading python_dotenv-1.2.2-py3-none-any.whl.metadata (27 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:05.9833372Z Collecting cryptography>=3.4.0 (from pyjwt[crypto]>=2.10.1->mcp)
+Core Execution	Install Dependencies	2026-03-30T22:11:05.9889377Z   Downloading cryptography-46.0.6-cp311-abi3-manylinux_2_34_x86_64.whl.metadata (5.7 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:06.2186023Z Collecting cffi>=2.0.0 (from cryptography>=3.4.0->pyjwt[crypto]>=2.10.1->mcp)
+Core Execution	Install Dependencies	2026-03-30T22:11:06.2352384Z   Downloading cffi-2.0.0-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (2.6 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:06.2975622Z Collecting pycparser (from cffi>=2.0.0->cryptography>=3.4.0->pyjwt[crypto]>=2.10.1->mcp)
+Core Execution	Install Dependencies	2026-03-30T22:11:06.3146148Z   Downloading pycparser-3.0-py3-none-any.whl.metadata (8.2 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:06.4036110Z Collecting click>=7.0 (from uvicorn>=0.31.1->mcp)
+Core Execution	Install Dependencies	2026-03-30T22:11:06.4129434Z   Downloading click-8.3.1-py3-none-any.whl.metadata (2.6 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:06.4709536Z Downloading psycopg2_binary-2.9.11-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (4.2 MB)
+Core Execution	Install Dependencies	2026-03-30T22:11:06.5682457Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.2/4.2 MB 42.8 MB/s  0:00:00
+Core Execution	Install Dependencies	2026-03-30T22:11:06.5815509Z Downloading requests-2.33.1-py3-none-any.whl (64 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:06.6166414Z Downloading charset_normalizer-3.4.6-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (204 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:06.6416433Z Downloading idna-3.11-py3-none-any.whl (71 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:06.6608860Z Downloading urllib3-2.6.3-py3-none-any.whl (131 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:06.6826035Z Downloading mcp-1.26.0-py3-none-any.whl (233 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:06.7010585Z Downloading pydantic-2.12.5-py3-none-any.whl (463 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:06.7330813Z Downloading pydantic_core-2.41.5-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (2.1 MB)
+Core Execution	Install Dependencies	2026-03-30T22:11:06.7911934Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.1/2.1 MB 38.9 MB/s  0:00:00
+Core Execution	Install Dependencies	2026-03-30T22:11:06.7976153Z Downloading annotated_types-0.7.0-py3-none-any.whl (13 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:06.8192168Z Downloading anyio-4.13.0-py3-none-any.whl (114 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:06.8414608Z Downloading certifi-2026.2.25-py3-none-any.whl (153 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:06.8627141Z Downloading httpx-0.28.1-py3-none-any.whl (73 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:06.8856609Z Downloading httpcore-1.0.9-py3-none-any.whl (78 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:06.9183846Z Downloading h11-0.16.0-py3-none-any.whl (37 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:06.9380873Z Downloading httpx_sse-0.4.3-py3-none-any.whl (9.0 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:06.9653143Z Downloading jsonschema-4.26.0-py3-none-any.whl (90 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:06.9876107Z Downloading attrs-26.1.0-py3-none-any.whl (67 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:07.0099264Z Downloading jsonschema_specifications-2025.9.1-py3-none-any.whl (18 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:07.0313840Z Downloading pydantic_settings-2.13.1-py3-none-any.whl (58 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:07.0567096Z Downloading pyjwt-2.12.1-py3-none-any.whl (29 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:07.0756530Z Downloading cryptography-46.0.6-cp311-abi3-manylinux_2_34_x86_64.whl (4.5 MB)
+Core Execution	Install Dependencies	2026-03-30T22:11:07.3066326Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.5/4.5 MB 19.1 MB/s  0:00:00
+Core Execution	Install Dependencies	2026-03-30T22:11:07.3199886Z Downloading cffi-2.0.0-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (215 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:07.4639040Z Downloading python_dotenv-1.2.2-py3-none-any.whl (22 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:07.5986098Z Downloading python_multipart-0.0.22-py3-none-any.whl (24 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:07.6501796Z Downloading referencing-0.37.0-py3-none-any.whl (26 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:07.6824430Z Downloading rpds_py-0.30.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (390 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:07.7177458Z Downloading sse_starlette-3.3.4-py3-none-any.whl (14 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:07.7396249Z Downloading starlette-1.0.0-py3-none-any.whl (72 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:07.7682598Z Downloading typing_extensions-4.15.0-py3-none-any.whl (44 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:07.7976725Z Downloading typing_inspection-0.4.2-py3-none-any.whl (14 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:07.8331489Z Downloading uvicorn-0.42.0-py3-none-any.whl (68 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:07.8604059Z Downloading click-8.3.1-py3-none-any.whl (108 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:07.8839486Z Downloading pycparser-3.0-py3-none-any.whl (48 kB)
+Core Execution	Install Dependencies	2026-03-30T22:11:08.1501822Z Installing collected packages: urllib3, typing-extensions, rpds-py, python-multipart, python-dotenv, pyjwt, pycparser, psycopg2-binary, idna, httpx-sse, h11, click, charset_normalizer, certifi, attrs, annotated-types, uvicorn, typing-inspection, requests, referencing, pydantic-core, httpcore, cffi, anyio, starlette, pydantic, jsonschema-specifications, httpx, cryptography, sse-starlette, pydantic-settings, jsonschema, mcp
+Core Execution	Install Dependencies	2026-03-30T22:11:11.1788009Z 
+Core Execution	Install Dependencies	2026-03-30T22:11:11.1890625Z Successfully installed annotated-types-0.7.0 anyio-4.13.0 attrs-26.1.0 certifi-2026.2.25 cffi-2.0.0 charset_normalizer-3.4.6 click-8.3.1 cryptography-46.0.6 h11-0.16.0 httpcore-1.0.9 httpx-0.28.1 httpx-sse-0.4.3 idna-3.11 jsonschema-4.26.0 jsonschema-specifications-2025.9.1 mcp-1.26.0 psycopg2-binary-2.9.11 pycparser-3.0 pydantic-2.12.5 pydantic-core-2.41.5 pydantic-settings-2.13.1 pyjwt-2.12.1 python-dotenv-1.2.2 python-multipart-0.0.22 referencing-0.37.0 requests-2.33.1 rpds-py-0.30.0 sse-starlette-3.3.4 starlette-1.0.0 typing-extensions-4.15.0 typing-inspection-0.4.2 urllib3-2.6.3 uvicorn-0.42.0
+Core Execution	Report Step (Install Dependencies)	﻿2026-03-30T22:11:12.3066759Z ##[group]Run actions/github-script@v7
+Core Execution	Report Step (Install Dependencies)	2026-03-30T22:11:12.3067078Z with:
+Core Execution	Report Step (Install Dependencies)	2026-03-30T22:11:12.3067486Z   github-token: ***
+Core Execution	Report Step (Install Dependencies)	2026-03-30T22:11:12.3069586Z   script: const issueNumber = Number(process.env.ISSUE_NUMBER || '');
+Core Execution	Report Step (Install Dependencies)	if (!issueNumber) return;
+Core Execution	Report Step (Install Dependencies)	const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+Core Execution	Report Step (Install Dependencies)	const stepName = process.env.STEP_NAME || '';
+Core Execution	Report Step (Install Dependencies)	const outcome = process.env.STEP_OUTCOME || 'unknown';
+Core Execution	Report Step (Install Dependencies)	github.rest.issues.createComment({
+Core Execution	Report Step (Install Dependencies)	  issue_number: issueNumber,
+Core Execution	Report Step (Install Dependencies)	  owner: context.repo.owner,
+Core Execution	Report Step (Install Dependencies)	  repo: context.repo.repo,
+Core Execution	Report Step (Install Dependencies)	  body: [
+Core Execution	Report Step (Install Dependencies)	    `### [Ka0s Agent Query] Paso`,
+Core Execution	Report Step (Install Dependencies)	    ``,
+Core Execution	Report Step (Install Dependencies)	    `- Paso: ${stepName}`,
+Core Execution	Report Step (Install Dependencies)	    `- Estado: ${outcome}`,
+Core Execution	Report Step (Install Dependencies)	    `- Run: ${runUrl}`,
+Core Execution	Report Step (Install Dependencies)	  ].join('\n')
+Core Execution	Report Step (Install Dependencies)	})
+Core Execution	Report Step (Install Dependencies)	
+Core Execution	Report Step (Install Dependencies)	2026-03-30T22:11:12.3071772Z   debug: false
+Core Execution	Report Step (Install Dependencies)	2026-03-30T22:11:12.3071988Z   user-agent: actions/github-script
+Core Execution	Report Step (Install Dependencies)	2026-03-30T22:11:12.3072258Z   result-encoding: json
+Core Execution	Report Step (Install Dependencies)	2026-03-30T22:11:12.3072469Z   retries: 0
+Core Execution	Report Step (Install Dependencies)	2026-03-30T22:11:12.3072699Z   retry-exempt-status-codes: 400,401,403,404,422
+Core Execution	Report Step (Install Dependencies)	2026-03-30T22:11:12.3073025Z env:
+Core Execution	Report Step (Install Dependencies)	2026-03-30T22:11:12.3073218Z   KAOS_MODULE: [Ka0S] Agent Query
+Core Execution	Report Step (Install Dependencies)	2026-03-30T22:11:12.3073477Z   KAOS_CODE: 23770098917
+Core Execution	Report Step (Install Dependencies)	2026-03-30T22:11:12.3073714Z   KAOS_ACTOR: ***
+Core Execution	Report Step (Install Dependencies)	2026-03-30T22:11:12.3074020Z   POSTGRES_HOST: postgresql-ia.postgresql-ia.svc.cluster.local
+Core Execution	Report Step (Install Dependencies)	2026-03-30T22:11:12.3074399Z   POSTGRES_PORT: 5432
+Core Execution	Report Step (Install Dependencies)	2026-03-30T22:11:12.3074624Z   POSTGRES_DB: ka0s_memory
+Core Execution	Report Step (Install Dependencies)	2026-03-30T22:11:12.3074852Z   POSTGRES_USER: ka0s_ai
+Core Execution	Report Step (Install Dependencies)	2026-03-30T22:11:12.3106959Z   OLLAMA_HOST: http://ollama.ollama.svc.cluster.local
+Core Execution	Report Step (Install Dependencies)	2026-03-30T22:11:12.3107308Z   OLLAMA_PORT: 11434
+Core Execution	Report Step (Install Dependencies)	2026-03-30T22:11:12.3107527Z   EMBEDDING_MODEL: nomic-embed-text
+Core Execution	Report Step (Install Dependencies)	2026-03-30T22:11:12.3107800Z   GENERATION_MODEL: llama3.1:8b
+Core Execution	Report Step (Install Dependencies)	2026-03-30T22:11:12.3108165Z   pythonLocation: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Report Step (Install Dependencies)	2026-03-30T22:11:12.3108635Z   PKG_CONFIG_PATH: /home/runner/_work/_tool/Python/3.11.15/x64/lib/pkgconfig
+Core Execution	Report Step (Install Dependencies)	2026-03-30T22:11:12.3109261Z   Python_ROOT_DIR: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Report Step (Install Dependencies)	2026-03-30T22:11:12.3109697Z   Python2_ROOT_DIR: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Report Step (Install Dependencies)	2026-03-30T22:11:12.3110135Z   Python3_ROOT_DIR: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Report Step (Install Dependencies)	2026-03-30T22:11:12.3110561Z   LD_LIBRARY_PATH: /home/runner/_work/_tool/Python/3.11.15/x64/lib
+Core Execution	Report Step (Install Dependencies)	2026-03-30T22:11:12.3110920Z   ISSUE_NUMBER: 5219
+Core Execution	Report Step (Install Dependencies)	2026-03-30T22:11:12.3111145Z   STEP_NAME: Install Dependencies
+Core Execution	Report Step (Install Dependencies)	2026-03-30T22:11:12.3111408Z   STEP_OUTCOME: success
+Core Execution	Report Step (Install Dependencies)	2026-03-30T22:11:12.3111621Z ##[endgroup]
+Core Execution	Install GH CLI	﻿2026-03-30T22:11:13.3109985Z Prepare all required actions
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3179288Z ##[group]Run ./.github/actions/install-gh-cli
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3179621Z env:
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3179819Z   KAOS_MODULE: [Ka0S] Agent Query
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3180435Z   KAOS_CODE: 23770098917
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3180785Z   KAOS_ACTOR: ***
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3181106Z   POSTGRES_HOST: postgresql-ia.postgresql-ia.svc.cluster.local
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3181487Z   POSTGRES_PORT: 5432
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3181713Z   POSTGRES_DB: ka0s_memory
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3181951Z   POSTGRES_USER: ka0s_ai
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3182248Z   OLLAMA_HOST: http://ollama.ollama.svc.cluster.local
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3182583Z   OLLAMA_PORT: 11434
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3182810Z   EMBEDDING_MODEL: nomic-embed-text
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3183082Z   GENERATION_MODEL: llama3.1:8b
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3183417Z   pythonLocation: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3183890Z   PKG_CONFIG_PATH: /home/runner/_work/_tool/Python/3.11.15/x64/lib/pkgconfig
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3184409Z   Python_ROOT_DIR: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3184840Z   Python2_ROOT_DIR: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3186274Z   Python3_ROOT_DIR: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3186726Z   LD_LIBRARY_PATH: /home/runner/_work/_tool/Python/3.11.15/x64/lib
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3187075Z ##[endgroup]
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3353134Z ##[group]Run type -p curl >/dev/null || (sudo apt-get update && sudo apt-get install curl -y)
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3353834Z [36;1mtype -p curl >/dev/null || (sudo apt-get update && sudo apt-get install curl -y)[0m
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3354716Z [36;1mcurl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \[0m
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3359648Z [36;1m&& sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \[0m
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3360813Z [36;1m&& echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \[0m
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3361867Z [36;1m&& sudo apt-get update \[0m
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3362154Z [36;1m&& sudo apt-get install gh -y[0m
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3390992Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3391379Z env:
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3391582Z   KAOS_MODULE: [Ka0S] Agent Query
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3391841Z   KAOS_CODE: 23770098917
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3392200Z   KAOS_ACTOR: ***
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3392526Z   POSTGRES_HOST: postgresql-ia.postgresql-ia.svc.cluster.local
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3392911Z   POSTGRES_PORT: 5432
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3393128Z   POSTGRES_DB: ka0s_memory
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3393365Z   POSTGRES_USER: ka0s_ai
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3393671Z   OLLAMA_HOST: http://ollama.ollama.svc.cluster.local
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3394007Z   OLLAMA_PORT: 11434
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3394229Z   EMBEDDING_MODEL: nomic-embed-text
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3394533Z   GENERATION_MODEL: llama3.1:8b
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3394998Z   pythonLocation: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3395475Z   PKG_CONFIG_PATH: /home/runner/_work/_tool/Python/3.11.15/x64/lib/pkgconfig
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3395964Z   Python_ROOT_DIR: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3396387Z   Python2_ROOT_DIR: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3396810Z   Python3_ROOT_DIR: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3397235Z   LD_LIBRARY_PATH: /home/runner/_work/_tool/Python/3.11.15/x64/lib
+Core Execution	Install GH CLI	2026-03-30T22:11:13.3397589Z ##[endgroup]
+Core Execution	Install GH CLI	2026-03-30T22:11:13.4272038Z 4+1 records in
+Core Execution	Install GH CLI	2026-03-30T22:11:13.4272431Z 4+1 records out
+Core Execution	Install GH CLI	2026-03-30T22:11:13.4272778Z 2270 bytes (2.3 kB, 2.2 KiB) copied, 0.039484 s, 57.5 kB/s
+Core Execution	Install GH CLI	2026-03-30T22:11:13.7444523Z Get:1 http://security.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+Core Execution	Install GH CLI	2026-03-30T22:11:13.7672611Z Get:2 https://cli.github.com/packages stable InRelease [3917 B]
+Core Execution	Install GH CLI	2026-03-30T22:11:13.8859601Z Get:3 https://ppa.launchpadcontent.net/git-core/ppa/ubuntu noble InRelease [24.3 kB]
+Core Execution	Install GH CLI	2026-03-30T22:11:13.9156843Z Get:4 http://archive.ubuntu.com/ubuntu noble InRelease [256 kB]
+Core Execution	Install GH CLI	2026-03-30T22:11:14.0889793Z Get:5 https://cli.github.com/packages stable/main amd64 Packages [354 B]
+Core Execution	Install GH CLI	2026-03-30T22:11:14.1231550Z Get:6 http://security.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1504 kB]
+Core Execution	Install GH CLI	2026-03-30T22:11:14.2037465Z Get:7 https://ppa.launchpadcontent.net/git-core/ppa/ubuntu noble/main amd64 Packages [2992 B]
+Core Execution	Install GH CLI	2026-03-30T22:11:14.2628698Z Get:8 http://security.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [3429 kB]
+Core Execution	Install GH CLI	2026-03-30T22:11:14.3336786Z Get:9 http://security.ubuntu.com/ubuntu noble-security/multiverse amd64 Packages [34.8 kB]
+Core Execution	Install GH CLI	2026-03-30T22:11:14.3366318Z Get:10 http://security.ubuntu.com/ubuntu noble-security/main amd64 Packages [1954 kB]
+Core Execution	Install GH CLI	2026-03-30T22:11:14.5505949Z Get:11 http://archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+Core Execution	Install GH CLI	2026-03-30T22:11:14.7030484Z Get:12 http://archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+Core Execution	Install GH CLI	2026-03-30T22:11:14.8614424Z Get:13 http://archive.ubuntu.com/ubuntu noble/universe amd64 Packages [19.3 MB]
+Core Execution	Install GH CLI	2026-03-30T22:11:15.8446320Z Get:14 http://archive.ubuntu.com/ubuntu noble/restricted amd64 Packages [117 kB]
+Core Execution	Install GH CLI	2026-03-30T22:11:15.8463918Z Get:15 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages [1808 kB]
+Core Execution	Install GH CLI	2026-03-30T22:11:15.8558584Z Get:16 http://archive.ubuntu.com/ubuntu noble/multiverse amd64 Packages [331 kB]
+Core Execution	Install GH CLI	2026-03-30T22:11:15.8559278Z Get:17 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [2155 kB]
+Core Execution	Install GH CLI	2026-03-30T22:11:15.9203470Z Get:18 http://archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [3601 kB]
+Core Execution	Install GH CLI	2026-03-30T22:11:16.0108376Z Get:19 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [2333 kB]
+Core Execution	Install GH CLI	2026-03-30T22:11:16.0966176Z Get:20 http://archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Packages [38.1 kB]
+Core Execution	Install GH CLI	2026-03-30T22:11:16.0981772Z Get:21 http://archive.ubuntu.com/ubuntu noble-backports/multiverse amd64 Packages [695 B]
+Core Execution	Install GH CLI	2026-03-30T22:11:16.0990711Z Get:22 http://archive.ubuntu.com/ubuntu noble-backports/universe amd64 Packages [36.1 kB]
+Core Execution	Install GH CLI	2026-03-30T22:11:16.0995781Z Get:23 http://archive.ubuntu.com/ubuntu noble-backports/main amd64 Packages [49.5 kB]
+Core Execution	Install GH CLI	2026-03-30T22:11:18.0546729Z Fetched 37.4 MB in 4s (8380 kB/s)
+Core Execution	Install GH CLI	2026-03-30T22:11:19.3306567Z Reading package lists...
+Core Execution	Install GH CLI	2026-03-30T22:11:20.6654493Z Reading package lists...
+Core Execution	Install GH CLI	2026-03-30T22:11:20.9800575Z Building dependency tree...
+Core Execution	Install GH CLI	2026-03-30T22:11:20.9801896Z Reading state information...
+Core Execution	Install GH CLI	2026-03-30T22:11:21.6190316Z The following NEW packages will be installed:
+Core Execution	Install GH CLI	2026-03-30T22:11:21.6245714Z   gh
+Core Execution	Install GH CLI	2026-03-30T22:11:21.7213031Z 0 upgraded, 1 newly installed, 0 to remove and 2 not upgraded.
+Core Execution	Install GH CLI	2026-03-30T22:11:21.7214176Z Need to get 14.3 MB of archives.
+Core Execution	Install GH CLI	2026-03-30T22:11:21.7215983Z After this operation, 40.2 MB of additional disk space will be used.
+Core Execution	Install GH CLI	2026-03-30T22:11:21.7216600Z Get:1 https://cli.github.com/packages stable/main amd64 gh amd64 2.89.0 [14.3 MB]
+Core Execution	Install GH CLI	2026-03-30T22:11:22.4362744Z debconf: delaying package configuration, since apt-utils is not installed
+Core Execution	Install GH CLI	2026-03-30T22:11:22.5007838Z Fetched 14.3 MB in 0s (32.8 MB/s)
+Core Execution	Install GH CLI	2026-03-30T22:11:22.5617161Z Selecting previously unselected package gh.
+Core Execution	Install GH CLI	2026-03-30T22:11:22.5665889Z (Reading database ... 
+Core Execution	Install GH CLI	2026-03-30T22:11:22.5666476Z (Reading database ... 5%
+Core Execution	Install GH CLI	2026-03-30T22:11:22.5666984Z (Reading database ... 10%
+Core Execution	Install GH CLI	2026-03-30T22:11:22.5667487Z (Reading database ... 15%
+Core Execution	Install GH CLI	2026-03-30T22:11:22.5667932Z (Reading database ... 20%
+Core Execution	Install GH CLI	2026-03-30T22:11:22.5668353Z (Reading database ... 25%
+Core Execution	Install GH CLI	2026-03-30T22:11:22.5679663Z (Reading database ... 30%
+Core Execution	Install GH CLI	2026-03-30T22:11:22.5680095Z (Reading database ... 35%
+Core Execution	Install GH CLI	2026-03-30T22:11:22.5680534Z (Reading database ... 40%
+Core Execution	Install GH CLI	2026-03-30T22:11:22.5680952Z (Reading database ... 45%
+Core Execution	Install GH CLI	2026-03-30T22:11:22.5681339Z (Reading database ... 50%
+Core Execution	Install GH CLI	2026-03-30T22:11:22.5688326Z (Reading database ... 55%
+Core Execution	Install GH CLI	2026-03-30T22:11:22.5688573Z (Reading database ... 60%
+Core Execution	Install GH CLI	2026-03-30T22:11:22.5716171Z (Reading database ... 65%
+Core Execution	Install GH CLI	2026-03-30T22:11:22.5718621Z (Reading database ... 70%
+Core Execution	Install GH CLI	2026-03-30T22:11:22.5729070Z (Reading database ... 75%
+Core Execution	Install GH CLI	2026-03-30T22:11:22.5765781Z (Reading database ... 80%
+Core Execution	Install GH CLI	2026-03-30T22:11:22.5779894Z (Reading database ... 85%
+Core Execution	Install GH CLI	2026-03-30T22:11:22.5799268Z (Reading database ... 90%
+Core Execution	Install GH CLI	2026-03-30T22:11:22.5822818Z (Reading database ... 95%
+Core Execution	Install GH CLI	2026-03-30T22:11:22.5823516Z (Reading database ... 100%
+Core Execution	Install GH CLI	2026-03-30T22:11:22.5824045Z (Reading database ... 14387 files and directories currently installed.)
+Core Execution	Install GH CLI	2026-03-30T22:11:22.5824701Z Preparing to unpack .../archives/gh_2.89.0_amd64.deb ...
+Core Execution	Install GH CLI	2026-03-30T22:11:22.5982593Z Unpacking gh (2.89.0) ...
+Core Execution	Install GH CLI	2026-03-30T22:11:23.2296268Z Setting up gh (2.89.0) ...
+Core Execution	Report Step (Install GH CLI)	﻿2026-03-30T22:11:23.4503446Z ##[group]Run actions/github-script@v7
+Core Execution	Report Step (Install GH CLI)	2026-03-30T22:11:23.4503772Z with:
+Core Execution	Report Step (Install GH CLI)	2026-03-30T22:11:23.4504194Z   github-token: ***
+Core Execution	Report Step (Install GH CLI)	2026-03-30T22:11:23.4536370Z   script: const issueNumber = Number(process.env.ISSUE_NUMBER || '');
+Core Execution	Report Step (Install GH CLI)	if (!issueNumber) return;
+Core Execution	Report Step (Install GH CLI)	const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+Core Execution	Report Step (Install GH CLI)	const stepName = process.env.STEP_NAME || '';
+Core Execution	Report Step (Install GH CLI)	const outcome = process.env.STEP_OUTCOME || 'unknown';
+Core Execution	Report Step (Install GH CLI)	github.rest.issues.createComment({
+Core Execution	Report Step (Install GH CLI)	  issue_number: issueNumber,
+Core Execution	Report Step (Install GH CLI)	  owner: context.repo.owner,
+Core Execution	Report Step (Install GH CLI)	  repo: context.repo.repo,
+Core Execution	Report Step (Install GH CLI)	  body: [
+Core Execution	Report Step (Install GH CLI)	    `### [Ka0s Agent Query] Paso`,
+Core Execution	Report Step (Install GH CLI)	    ``,
+Core Execution	Report Step (Install GH CLI)	    `- Paso: ${stepName}`,
+Core Execution	Report Step (Install GH CLI)	    `- Estado: ${outcome}`,
+Core Execution	Report Step (Install GH CLI)	    `- Run: ${runUrl}`,
+Core Execution	Report Step (Install GH CLI)	  ].join('\n')
+Core Execution	Report Step (Install GH CLI)	})
+Core Execution	Report Step (Install GH CLI)	
+Core Execution	Report Step (Install GH CLI)	2026-03-30T22:11:23.4538784Z   debug: false
+Core Execution	Report Step (Install GH CLI)	2026-03-30T22:11:23.4539010Z   user-agent: actions/github-script
+Core Execution	Report Step (Install GH CLI)	2026-03-30T22:11:23.4539290Z   result-encoding: json
+Core Execution	Report Step (Install GH CLI)	2026-03-30T22:11:23.4539507Z   retries: 0
+Core Execution	Report Step (Install GH CLI)	2026-03-30T22:11:23.4539735Z   retry-exempt-status-codes: 400,401,403,404,422
+Core Execution	Report Step (Install GH CLI)	2026-03-30T22:11:23.4540081Z env:
+Core Execution	Report Step (Install GH CLI)	2026-03-30T22:11:23.4540268Z   KAOS_MODULE: [Ka0S] Agent Query
+Core Execution	Report Step (Install GH CLI)	2026-03-30T22:11:23.4540523Z   KAOS_CODE: 23770098917
+Core Execution	Report Step (Install GH CLI)	2026-03-30T22:11:23.4540878Z   KAOS_ACTOR: ***
+Core Execution	Report Step (Install GH CLI)	2026-03-30T22:11:23.4541193Z   POSTGRES_HOST: postgresql-ia.postgresql-ia.svc.cluster.local
+Core Execution	Report Step (Install GH CLI)	2026-03-30T22:11:23.4541572Z   POSTGRES_PORT: 5432
+Core Execution	Report Step (Install GH CLI)	2026-03-30T22:11:23.4541799Z   POSTGRES_DB: ka0s_memory
+Core Execution	Report Step (Install GH CLI)	2026-03-30T22:11:23.4542027Z   POSTGRES_USER: ka0s_ai
+Core Execution	Report Step (Install GH CLI)	2026-03-30T22:11:23.4542328Z   OLLAMA_HOST: http://ollama.ollama.svc.cluster.local
+Core Execution	Report Step (Install GH CLI)	2026-03-30T22:11:23.4542661Z   OLLAMA_PORT: 11434
+Core Execution	Report Step (Install GH CLI)	2026-03-30T22:11:23.4542887Z   EMBEDDING_MODEL: nomic-embed-text
+Core Execution	Report Step (Install GH CLI)	2026-03-30T22:11:23.4543164Z   GENERATION_MODEL: llama3.1:8b
+Core Execution	Report Step (Install GH CLI)	2026-03-30T22:11:23.4543497Z   pythonLocation: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Report Step (Install GH CLI)	2026-03-30T22:11:23.4543968Z   PKG_CONFIG_PATH: /home/runner/_work/_tool/Python/3.11.15/x64/lib/pkgconfig
+Core Execution	Report Step (Install GH CLI)	2026-03-30T22:11:23.4544438Z   Python_ROOT_DIR: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Report Step (Install GH CLI)	2026-03-30T22:11:23.4555009Z   Python2_ROOT_DIR: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Report Step (Install GH CLI)	2026-03-30T22:11:23.4555590Z   Python3_ROOT_DIR: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Report Step (Install GH CLI)	2026-03-30T22:11:23.4556023Z   LD_LIBRARY_PATH: /home/runner/_work/_tool/Python/3.11.15/x64/lib
+Core Execution	Report Step (Install GH CLI)	2026-03-30T22:11:23.4556389Z   ISSUE_NUMBER: 5219
+Core Execution	Report Step (Install GH CLI)	2026-03-30T22:11:23.4556609Z   STEP_NAME: Install GH CLI
+Core Execution	Report Step (Install GH CLI)	2026-03-30T22:11:23.4556850Z   STEP_OUTCOME: success
+Core Execution	Report Step (Install GH CLI)	2026-03-30T22:11:23.4557060Z ##[endgroup]
+Core Execution	Ollama Preflight (Models)	﻿2026-03-30T22:11:25.0274315Z ##[group]Run python - <<'PY'
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0274694Z [36;1mpython - <<'PY'[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0316327Z [36;1mimport urllib.request[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0316728Z [36;1mimport json[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0316948Z [36;1mimport sys[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0317162Z [36;1mimport time[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0317368Z [36;1mimport os[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0317570Z [36;1m[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0345445Z [36;1mhost = os.environ.get('OLLAMA_HOST', 'localhost')[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0375575Z [36;1mport = os.environ.get('OLLAMA_PORT', '11434')[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0375963Z [36;1m[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0376197Z [36;1m# Limpiar host si ya tiene esquema[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0376606Z [36;1mif host.startswith("http://") or host.startswith("https://"):[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0376996Z [36;1m  base = f"{host}"[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0377250Z [36;1m  if f":{port}" not in host:[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0377524Z [36;1m     base = f"{host}:{port}"[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0378376Z [36;1melse:[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0378635Z [36;1m  base = f"http://{host}:{port}"[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0378905Z [36;1m[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0379088Z [36;1mrequired = [[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0379374Z [36;1m  os.environ.get('GENERATION_MODEL', '').strip(),[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0379772Z [36;1m  os.environ.get('EMBEDDING_MODEL', '').strip(),[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0380094Z [36;1m][0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0380394Z [36;1mrequired = [m if ':' in m else m + ':latest' for m in required if m][0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0380766Z [36;1m[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0380956Z [36;1mdef req(url, data=None):[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0381216Z [36;1m  if data is None:[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0381513Z [36;1m    r = urllib.request.Request(url, method='GET')[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0381839Z [36;1m  else:[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0382403Z [36;1m    r = urllib.request.Request(url, data=json.dumps(data).encode('utf-8'), headers={'Content-Type':'application/json'}, method='POST')[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0383102Z [36;1m  # Timeout de 300s para permitir pulls largos[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0383512Z [36;1m  with urllib.request.urlopen(r, timeout=300) as resp:[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0383997Z [36;1m    return resp.status, resp.read().decode('utf-8', errors='ignore')[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0384392Z [36;1m[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0384563Z [36;1mtry:[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0384804Z [36;1m  status, body = req(base + '/v1/models')[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0385199Z [36;1mexcept Exception as e:[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0385554Z [36;1m  print(f"ERROR: no se pudo consultar {base}/v1/models: {e}")[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0385932Z [36;1m  sys.exit(1)[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0386165Z [36;1m[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0386380Z [36;1mpayload = json.loads(body)[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0386919Z [36;1mids = set(str(i.get('id')) for i in payload.get('data', []) if isinstance(i, dict) and i.get('id'))[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0387425Z [36;1m[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0387672Z [36;1mmissing = [m for m in required if m not in ids][0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0388018Z [36;1mif not missing:[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0388263Z [36;1m  print('OK: modelos presentes')[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0388545Z [36;1m  sys.exit(0)[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0388758Z [36;1m[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0389117Z [36;1mprint('WARN: faltan modelos, intentando pull via /api/pull:', ', '.join(missing))[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0389580Z [36;1mfor m in missing:[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0389811Z [36;1m  try:[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0390094Z [36;1m    s, b = req(base + '/api/pull', {'name': m, 'stream': False})[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0390483Z [36;1m    print(f"pull {m}: http={s}")[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0390773Z [36;1m  except Exception as e:[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0391100Z [36;1m    print(f"ERROR: pull {m} falló: {e}")[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0391426Z [36;1m    sys.exit(1)[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0391651Z [36;1m[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0391878Z [36;1mstatus2, body2 = req(base + '/v1/models')[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0392192Z [36;1mpayload2 = json.loads(body2)[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0393108Z [36;1mids2 = set(str(i.get('id')) for i in payload2.get('data', []) if isinstance(i, dict) and i.get('id'))[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0393656Z [36;1mstill = [m for m in required if m not in ids2][0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0393970Z [36;1mif still:[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0394316Z [36;1m  print('ERROR: modelos aún ausentes tras pull:', ', '.join(still))[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0394714Z [36;1m  sys.exit(1)[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0413365Z [36;1mprint('OK: modelos presentes tras pull')[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0413718Z [36;1mPY[0m
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0450833Z shell: /usr/bin/bash -e {0}
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0451117Z env:
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0451314Z   KAOS_MODULE: [Ka0S] Agent Query
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0451569Z   KAOS_CODE: 23770098917
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0451915Z   KAOS_ACTOR: ***
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0452237Z   POSTGRES_HOST: postgresql-ia.postgresql-ia.svc.cluster.local
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0452629Z   POSTGRES_PORT: 5432
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0452847Z   POSTGRES_DB: ka0s_memory
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0453388Z   POSTGRES_USER: ka0s_ai
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0453689Z   OLLAMA_HOST: http://ollama.ollama.svc.cluster.local
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0454019Z   OLLAMA_PORT: 11434
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0454245Z   EMBEDDING_MODEL: nomic-embed-text
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0454522Z   GENERATION_MODEL: llama3.1:8b
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0454852Z   pythonLocation: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0473342Z   PKG_CONFIG_PATH: /home/runner/_work/_tool/Python/3.11.15/x64/lib/pkgconfig
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0473829Z   Python_ROOT_DIR: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0474256Z   Python2_ROOT_DIR: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0474679Z   Python3_ROOT_DIR: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0475301Z   LD_LIBRARY_PATH: /home/runner/_work/_tool/Python/3.11.15/x64/lib
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.0475663Z ##[endgroup]
+Core Execution	Ollama Preflight (Models)	2026-03-30T22:11:25.1856098Z OK: modelos presentes
+Core Execution	Report Step (Ollama Preflight)	﻿2026-03-30T22:11:25.2490341Z ##[group]Run actions/github-script@v7
+Core Execution	Report Step (Ollama Preflight)	2026-03-30T22:11:25.2490686Z with:
+Core Execution	Report Step (Ollama Preflight)	2026-03-30T22:11:25.2491108Z   github-token: ***
+Core Execution	Report Step (Ollama Preflight)	2026-03-30T22:11:25.2493198Z   script: const issueNumber = Number(process.env.ISSUE_NUMBER || '');
+Core Execution	Report Step (Ollama Preflight)	if (!issueNumber) return;
+Core Execution	Report Step (Ollama Preflight)	const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+Core Execution	Report Step (Ollama Preflight)	const stepName = process.env.STEP_NAME || '';
+Core Execution	Report Step (Ollama Preflight)	const outcome = process.env.STEP_OUTCOME || 'unknown';
+Core Execution	Report Step (Ollama Preflight)	github.rest.issues.createComment({
+Core Execution	Report Step (Ollama Preflight)	  issue_number: issueNumber,
+Core Execution	Report Step (Ollama Preflight)	  owner: context.repo.owner,
+Core Execution	Report Step (Ollama Preflight)	  repo: context.repo.repo,
+Core Execution	Report Step (Ollama Preflight)	  body: [
+Core Execution	Report Step (Ollama Preflight)	    `### [Ka0s Agent Query] Paso`,
+Core Execution	Report Step (Ollama Preflight)	    ``,
+Core Execution	Report Step (Ollama Preflight)	    `- Paso: ${stepName}`,
+Core Execution	Report Step (Ollama Preflight)	    `- Estado: ${outcome}`,
+Core Execution	Report Step (Ollama Preflight)	    `- Run: ${runUrl}`,
+Core Execution	Report Step (Ollama Preflight)	  ].join('\n')
+Core Execution	Report Step (Ollama Preflight)	})
+Core Execution	Report Step (Ollama Preflight)	
+Core Execution	Report Step (Ollama Preflight)	2026-03-30T22:11:25.2505645Z   debug: false
+Core Execution	Report Step (Ollama Preflight)	2026-03-30T22:11:25.2505885Z   user-agent: actions/github-script
+Core Execution	Report Step (Ollama Preflight)	2026-03-30T22:11:25.2506184Z   result-encoding: json
+Core Execution	Report Step (Ollama Preflight)	2026-03-30T22:11:25.2506426Z   retries: 0
+Core Execution	Report Step (Ollama Preflight)	2026-03-30T22:11:25.2506658Z   retry-exempt-status-codes: 400,401,403,404,422
+Core Execution	Report Step (Ollama Preflight)	2026-03-30T22:11:25.2507041Z env:
+Core Execution	Report Step (Ollama Preflight)	2026-03-30T22:11:25.2507239Z   KAOS_MODULE: [Ka0S] Agent Query
+Core Execution	Report Step (Ollama Preflight)	2026-03-30T22:11:25.2507495Z   KAOS_CODE: 23770098917
+Core Execution	Report Step (Ollama Preflight)	2026-03-30T22:11:25.2507746Z   KAOS_ACTOR: ***
+Core Execution	Report Step (Ollama Preflight)	2026-03-30T22:11:25.2508056Z   POSTGRES_HOST: postgresql-ia.postgresql-ia.svc.cluster.local
+Core Execution	Report Step (Ollama Preflight)	2026-03-30T22:11:25.2508443Z   POSTGRES_PORT: 5432
+Core Execution	Report Step (Ollama Preflight)	2026-03-30T22:11:25.2508664Z   POSTGRES_DB: ka0s_memory
+Core Execution	Report Step (Ollama Preflight)	2026-03-30T22:11:25.2508891Z   POSTGRES_USER: ka0s_ai
+Core Execution	Report Step (Ollama Preflight)	2026-03-30T22:11:25.2509190Z   OLLAMA_HOST: http://ollama.ollama.svc.cluster.local
+Core Execution	Report Step (Ollama Preflight)	2026-03-30T22:11:25.2509518Z   OLLAMA_PORT: 11434
+Core Execution	Report Step (Ollama Preflight)	2026-03-30T22:11:25.2509739Z   EMBEDDING_MODEL: nomic-embed-text
+Core Execution	Report Step (Ollama Preflight)	2026-03-30T22:11:25.2510015Z   GENERATION_MODEL: llama3.1:8b
+Core Execution	Report Step (Ollama Preflight)	2026-03-30T22:11:25.2510353Z   pythonLocation: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Report Step (Ollama Preflight)	2026-03-30T22:11:25.2510828Z   PKG_CONFIG_PATH: /home/runner/_work/_tool/Python/3.11.15/x64/lib/pkgconfig
+Core Execution	Report Step (Ollama Preflight)	2026-03-30T22:11:25.2511300Z   Python_ROOT_DIR: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Report Step (Ollama Preflight)	2026-03-30T22:11:25.2511725Z   Python2_ROOT_DIR: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Report Step (Ollama Preflight)	2026-03-30T22:11:25.2512164Z   Python3_ROOT_DIR: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Report Step (Ollama Preflight)	2026-03-30T22:11:25.2512592Z   LD_LIBRARY_PATH: /home/runner/_work/_tool/Python/3.11.15/x64/lib
+Core Execution	Report Step (Ollama Preflight)	2026-03-30T22:11:25.2512943Z   ISSUE_NUMBER: 5219
+Core Execution	Report Step (Ollama Preflight)	2026-03-30T22:11:25.2513173Z   STEP_NAME: Ollama Preflight (Models)
+Core Execution	Report Step (Ollama Preflight)	2026-03-30T22:11:25.2513451Z   STEP_OUTCOME: success
+Core Execution	Report Step (Ollama Preflight)	2026-03-30T22:11:25.2513662Z ##[endgroup]
+Core Execution	Query Agent	﻿2026-03-30T22:11:26.4493932Z ##[group]Run # Si se proporciona una issue, extraemos su contenido y lo unimos a la pregunta
+Core Execution	Query Agent	2026-03-30T22:11:26.4494760Z [36;1m# Si se proporciona una issue, extraemos su contenido y lo unimos a la pregunta[0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4505930Z [36;1mif [ -n "$ISSUE_NUMBER" ]; then[0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4506380Z [36;1m  echo "Extrayendo contexto de la Issue #$ISSUE_NUMBER..."[0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4506881Z [36;1m  ISSUE_TITLE=$(gh issue view $ISSUE_NUMBER --json title -q .title)[0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4507411Z [36;1m  ISSUE_BODY=$(gh issue view $ISSUE_NUMBER --json body -q .body)[0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4508582Z [36;1m  QUESTION="Por favor, analiza la siguiente Issue (#$ISSUE_NUMBER - $ISSUE_TITLE) y proporciona una solución o diagnóstico:[0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4509196Z [36;1m  [0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4509392Z [36;1m  CONTENIDO DE LA ISSUE:[0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4509658Z [36;1m  $ISSUE_BODY[0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4509875Z [36;1m  [0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4510085Z [36;1m  PREGUNTA ADICIONAL: $QUESTION"[0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4510394Z [36;1mfi[0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4510573Z [36;1m[0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4510774Z [36;1mecho "Pregunta Final: $QUESTION"[0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4511042Z [36;1m[0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4511258Z [36;1m# Generar nombre de archivo único[0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4511568Z [36;1mTIMESTAMP=$(date +'%Y%m%d_%H%M%S')[0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4512281Z [36;1mSAFE_QUESTION=$(echo "¿Qué ha pasado en la issue https://github.com/Ka0s-Klaus/ka0s/issues/5219 ?" | sed 's/[^a-zA-Z0-9]/_/g' | cut -c 1-30)[0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4513047Z [36;1mFILENAME="${TIMESTAMP}_23770098917_${SAFE_QUESTION}.md"[0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4513443Z [36;1mFILEPATH="audit/response/$FILENAME"[0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4513734Z [36;1m[0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4513928Z [36;1mmkdir -p audit/response[0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4514178Z [36;1m[0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4514394Z [36;1m# Ejecutar script y capturar salida[0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4514747Z [36;1mecho "# Respuesta del Agente Ka0s" > "$FILEPATH"[0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4515244Z [36;1mecho "" >> "$FILEPATH"[0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4515509Z [36;1mif [ -n "$ISSUE_NUMBER" ]; then[0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4515869Z [36;1m  echo "**Issue Analizada:** #$ISSUE_NUMBER" >> "$FILEPATH"[0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4516217Z [36;1mfi[0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4516691Z [36;1mecho "**Pregunta:** ¿Qué ha pasado en la issue https://github.com/Ka0s-Klaus/ka0s/issues/5219 ?" >> "$FILEPATH"[0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4517751Z [36;1mecho "**Fecha:** $(date)" >> "$FILEPATH"[0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4518124Z [36;1mecho "**Workflow ID:** 23770098917" >> "$FILEPATH"[0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4518465Z [36;1mecho "" >> "$FILEPATH"[0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4518722Z [36;1mecho "---" >> "$FILEPATH"[0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4518984Z [36;1mecho "" >> "$FILEPATH"[0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4519213Z [36;1m[0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4519754Z [36;1m# Ejecutar inferencia. Como python manda los logs a stderr, redirigimos stdout al fichero de respuesta y usamos tee para verlo[0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4520522Z [36;1mpython core/ai/rag_itops/main.py "$QUESTION" | tee -a "$FILEPATH"[0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4520913Z [36;1m[0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4521146Z [36;1m# Mostrar respuesta en el log del workflow[0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4521469Z [36;1mcat "$FILEPATH"[0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4521701Z [36;1m[0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4521932Z [36;1m# Exportar variable para el siguiente paso[0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4522288Z [36;1mecho "FILEPATH=$FILEPATH" >> $GITHUB_ENV[0m
+Core Execution	Query Agent	2026-03-30T22:11:26.4556085Z shell: /usr/bin/bash -e {0}
+Core Execution	Query Agent	2026-03-30T22:11:26.4556384Z env:
+Core Execution	Query Agent	2026-03-30T22:11:26.4556604Z   KAOS_MODULE: [Ka0S] Agent Query
+Core Execution	Query Agent	2026-03-30T22:11:26.4556860Z   KAOS_CODE: 23770098917
+Core Execution	Query Agent	2026-03-30T22:11:26.4557188Z   KAOS_ACTOR: ***
+Core Execution	Query Agent	2026-03-30T22:11:26.4557511Z   POSTGRES_HOST: postgresql-ia.postgresql-ia.svc.cluster.local
+Core Execution	Query Agent	2026-03-30T22:11:26.4557901Z   POSTGRES_PORT: 5432
+Core Execution	Query Agent	2026-03-30T22:11:26.4558123Z   POSTGRES_DB: ka0s_memory
+Core Execution	Query Agent	2026-03-30T22:11:26.4558358Z   POSTGRES_USER: ka0s_ai
+Core Execution	Query Agent	2026-03-30T22:11:26.4558658Z   OLLAMA_HOST: http://ollama.ollama.svc.cluster.local
+Core Execution	Query Agent	2026-03-30T22:11:26.4559521Z   OLLAMA_PORT: 11434
+Core Execution	Query Agent	2026-03-30T22:11:26.4559749Z   EMBEDDING_MODEL: nomic-embed-text
+Core Execution	Query Agent	2026-03-30T22:11:26.4560030Z   GENERATION_MODEL: llama3.1:8b
+Core Execution	Query Agent	2026-03-30T22:11:26.4560364Z   pythonLocation: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Query Agent	2026-03-30T22:11:26.4560828Z   PKG_CONFIG_PATH: /home/runner/_work/_tool/Python/3.11.15/x64/lib/pkgconfig
+Core Execution	Query Agent	2026-03-30T22:11:26.4561302Z   Python_ROOT_DIR: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Query Agent	2026-03-30T22:11:26.4561725Z   Python2_ROOT_DIR: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Query Agent	2026-03-30T22:11:26.4562382Z   Python3_ROOT_DIR: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Query Agent	2026-03-30T22:11:26.4562817Z   LD_LIBRARY_PATH: /home/runner/_work/_tool/Python/3.11.15/x64/lib
+Core Execution	Query Agent	2026-03-30T22:11:26.4563169Z   POSTGRES_PASSWORD: 
+Core Execution	Query Agent	2026-03-30T22:11:26.4563591Z   QUESTION: ¿Qué ha pasado en la issue https://github.com/Ka0s-Klaus/ka0s/issues/5219 ?
+Core Execution	Query Agent	2026-03-30T22:11:26.4564031Z   ISSUE_NUMBER: 5219
+Core Execution	Query Agent	2026-03-30T22:11:26.4564392Z   GH_TOKEN: ***
+Core Execution	Query Agent	2026-03-30T22:11:26.4564591Z ##[endgroup]
+Core Execution	Query Agent	2026-03-30T22:11:26.4704811Z Extrayendo contexto de la Issue #5219...
+Core Execution	Query Agent	2026-03-30T22:11:27.9260549Z Pregunta Final: Por favor, analiza la siguiente Issue (#5219 - [INCIDENT]: Fallo en workflow Ka0s Status MongDB Report) y proporciona una solución o diagnóstico:
+Core Execution	Query Agent	2026-03-30T22:11:27.9273599Z   
+Core Execution	Query Agent	2026-03-30T22:11:27.9275383Z   CONTENIDO DE LA ISSUE:
+Core Execution	Query Agent	2026-03-30T22:11:27.9276193Z   ### Organización
+Core Execution	Query Agent	2026-03-30T22:11:27.9276593Z Ka0s
+Core Execution	Query Agent	2026-03-30T22:11:27.9276892Z 
+Core Execution	Query Agent	2026-03-30T22:11:27.9277200Z ### Solicitante
+Core Execution	Query Agent	2026-03-30T22:11:27.9277709Z @***
+Core Execution	Query Agent	2026-03-30T22:11:27.9278072Z 
+Core Execution	Query Agent	2026-03-30T22:11:27.9278326Z ### Estado
+Core Execution	Query Agent	2026-03-30T22:11:27.9278710Z New
+Core Execution	Query Agent	2026-03-30T22:11:27.9279027Z 
+Core Execution	Query Agent	2026-03-30T22:11:27.9279277Z ### Impacto
+Core Execution	Query Agent	2026-03-30T22:11:27.9279636Z Service
+Core Execution	Query Agent	2026-03-30T22:11:27.9279894Z 
+Core Execution	Query Agent	2026-03-30T22:11:27.9280101Z ### Urgencia
+Core Execution	Query Agent	2026-03-30T22:11:27.9280528Z Medium
+Core Execution	Query Agent	2026-03-30T22:11:27.9280843Z 
+Core Execution	Query Agent	2026-03-30T22:11:27.9281103Z ### Servicio / CI afectado
+Core Execution	Query Agent	2026-03-30T22:11:27.9281568Z GitHub Actions / Ka0s Status MongDB Report
+Core Execution	Query Agent	2026-03-30T22:11:27.9281937Z 
+Core Execution	Query Agent	2026-03-30T22:11:27.9282273Z ### Descripción
+Core Execution	Query Agent	2026-03-30T22:11:27.9282867Z El workflow **Ka0s Status MongDB Report** ha fallado durante su ejecución.
+Core Execution	Query Agent	2026-03-30T22:11:27.9283442Z 
+Core Execution	Query Agent	2026-03-30T22:11:27.9283759Z **Detalles Técnicos:**
+Core Execution	Query Agent	2026-03-30T22:11:27.9309452Z - **Módulo**: [Ka0s] Status MongDB Report
+Core Execution	Query Agent	2026-03-30T22:11:27.9310318Z - **Run ID**: 23767367581
+Core Execution	Query Agent	2026-03-30T22:11:27.9311493Z - **Commit**: bcf4a09211a52235607ec942187cfe887a86a759
+Core Execution	Query Agent	2026-03-30T22:11:27.9318122Z - **Branch/Ref**: main
+Core Execution	Query Agent	2026-03-30T22:11:27.9318814Z - **Actor**: ***
+Core Execution	Query Agent	2026-03-30T22:11:27.9319048Z 
+Core Execution	Query Agent	2026-03-30T22:11:27.9319371Z ### Pasos / Evidencias
+Core Execution	Query Agent	2026-03-30T22:11:27.9320399Z Logs de ejecución: https://github.com/Ka0s-Klaus/ka0s/actions/runs/23767367581
+Core Execution	Query Agent	2026-03-30T22:11:27.9320846Z   
+Core Execution	Query Agent	2026-03-30T22:11:27.9322141Z   PREGUNTA ADICIONAL: ¿Qué ha pasado en la issue https://github.com/Ka0s-Klaus/ka0s/issues/5219 ?
+Core Execution	Query Agent	2026-03-30T22:11:28.1897890Z Traceback (most recent call last):
+Core Execution	Query Agent	2026-03-30T22:11:28.1911981Z   File "/home/runner/_work/ka0s/ka0s/core/ai/rag_itops/main.py", line 9, in <module>
+Core Execution	Query Agent	2026-03-30T22:11:28.1913718Z     from core.llm import detectar_rol, embed_query, generate_answer
+Core Execution	Query Agent	2026-03-30T22:11:28.1915622Z   File "/home/runner/_work/ka0s/ka0s/core/ai/rag_itops/core/llm.py", line 8, in <module>
+Core Execution	Query Agent	2026-03-30T22:11:28.1916268Z     from ..roles import AVAILABLE_ROLES, get_role_prompt
+Core Execution	Query Agent	2026-03-30T22:11:28.1916848Z ImportError: attempted relative import beyond top-level package
+Core Execution	Query Agent	2026-03-30T22:11:28.2359661Z # Respuesta del Agente Ka0s
+Core Execution	Query Agent	2026-03-30T22:11:28.2364672Z 
+Core Execution	Query Agent	2026-03-30T22:11:28.2366393Z **Issue Analizada:** #5219
+Core Execution	Query Agent	2026-03-30T22:11:28.2367493Z **Pregunta:** ¿Qué ha pasado en la issue https://github.com/Ka0s-Klaus/ka0s/issues/5219 ?
+Core Execution	Query Agent	2026-03-30T22:11:28.2369365Z **Fecha:** Mon Mar 30 22:11:27 UTC 2026
+Core Execution	Query Agent	2026-03-30T22:11:28.2369836Z **Workflow ID:** 23770098917
+Core Execution	Query Agent	2026-03-30T22:11:28.2370177Z 
+Core Execution	Query Agent	2026-03-30T22:11:28.2370560Z ---
+Core Execution	Query Agent	2026-03-30T22:11:28.2370803Z 
+Core Execution	Report Step (Query Agent)	﻿2026-03-30T22:11:28.2532932Z ##[group]Run actions/github-script@v7
+Core Execution	Report Step (Query Agent)	2026-03-30T22:11:28.2533269Z with:
+Core Execution	Report Step (Query Agent)	2026-03-30T22:11:28.2533717Z   github-token: ***
+Core Execution	Report Step (Query Agent)	2026-03-30T22:11:28.2536486Z   script: const issueNumber = Number(process.env.ISSUE_NUMBER || '');
+Core Execution	Report Step (Query Agent)	if (!issueNumber) return;
+Core Execution	Report Step (Query Agent)	const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+Core Execution	Report Step (Query Agent)	const stepName = process.env.STEP_NAME || '';
+Core Execution	Report Step (Query Agent)	const outcome = process.env.STEP_OUTCOME || 'unknown';
+Core Execution	Report Step (Query Agent)	const responsePath = process.env.RESPONSE_FILEPATH || '';
+Core Execution	Report Step (Query Agent)	const extra = responsePath ? `- Archivo: ${responsePath}` : null;
+Core Execution	Report Step (Query Agent)	const body = [
+Core Execution	Report Step (Query Agent)	  `### [Ka0s Agent Query] Paso`,
+Core Execution	Report Step (Query Agent)	  ``,
+Core Execution	Report Step (Query Agent)	  `- Paso: ${stepName}`,
+Core Execution	Report Step (Query Agent)	  `- Estado: ${outcome}`,
+Core Execution	Report Step (Query Agent)	  ...(extra ? [extra] : []),
+Core Execution	Report Step (Query Agent)	  `- Run: ${runUrl}`,
+Core Execution	Report Step (Query Agent)	].join('\n');
+Core Execution	Report Step (Query Agent)	github.rest.issues.createComment({
+Core Execution	Report Step (Query Agent)	  issue_number: issueNumber,
+Core Execution	Report Step (Query Agent)	  owner: context.repo.owner,
+Core Execution	Report Step (Query Agent)	  repo: context.repo.repo,
+Core Execution	Report Step (Query Agent)	  body
+Core Execution	Report Step (Query Agent)	})
+Core Execution	Report Step (Query Agent)	
+Core Execution	Report Step (Query Agent)	2026-03-30T22:11:28.2539531Z   debug: false
+Core Execution	Report Step (Query Agent)	2026-03-30T22:11:28.2539761Z   user-agent: actions/github-script
+Core Execution	Report Step (Query Agent)	2026-03-30T22:11:28.2540047Z   result-encoding: json
+Core Execution	Report Step (Query Agent)	2026-03-30T22:11:28.2540314Z   retries: 0
+Core Execution	Report Step (Query Agent)	2026-03-30T22:11:28.2540562Z   retry-exempt-status-codes: 400,401,403,404,422
+Core Execution	Report Step (Query Agent)	2026-03-30T22:11:28.2540861Z env:
+Core Execution	Report Step (Query Agent)	2026-03-30T22:11:28.2541051Z   KAOS_MODULE: [Ka0S] Agent Query
+Core Execution	Report Step (Query Agent)	2026-03-30T22:11:28.2541315Z   KAOS_CODE: 23770098917
+Core Execution	Report Step (Query Agent)	2026-03-30T22:11:28.2541594Z   KAOS_ACTOR: ***
+Core Execution	Report Step (Query Agent)	2026-03-30T22:11:28.2541920Z   POSTGRES_HOST: postgresql-ia.postgresql-ia.svc.cluster.local
+Core Execution	Report Step (Query Agent)	2026-03-30T22:11:28.2542317Z   POSTGRES_PORT: 5432
+Core Execution	Report Step (Query Agent)	2026-03-30T22:11:28.2542539Z   POSTGRES_DB: ka0s_memory
+Core Execution	Report Step (Query Agent)	2026-03-30T22:11:28.2542785Z   POSTGRES_USER: ka0s_ai
+Core Execution	Report Step (Query Agent)	2026-03-30T22:11:28.2543092Z   OLLAMA_HOST: http://ollama.ollama.svc.cluster.local
+Core Execution	Report Step (Query Agent)	2026-03-30T22:11:28.2543447Z   OLLAMA_PORT: 11434
+Core Execution	Report Step (Query Agent)	2026-03-30T22:11:28.2543682Z   EMBEDDING_MODEL: nomic-embed-text
+Core Execution	Report Step (Query Agent)	2026-03-30T22:11:28.2543955Z   GENERATION_MODEL: llama3.1:8b
+Core Execution	Report Step (Query Agent)	2026-03-30T22:11:28.2544295Z   pythonLocation: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Report Step (Query Agent)	2026-03-30T22:11:28.2544790Z   PKG_CONFIG_PATH: /home/runner/_work/_tool/Python/3.11.15/x64/lib/pkgconfig
+Core Execution	Report Step (Query Agent)	2026-03-30T22:11:28.2545574Z   Python_ROOT_DIR: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Report Step (Query Agent)	2026-03-30T22:11:28.2546004Z   Python2_ROOT_DIR: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Report Step (Query Agent)	2026-03-30T22:11:28.2546432Z   Python3_ROOT_DIR: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Report Step (Query Agent)	2026-03-30T22:11:28.2546861Z   LD_LIBRARY_PATH: /home/runner/_work/_tool/Python/3.11.15/x64/lib
+Core Execution	Report Step (Query Agent)	2026-03-30T22:11:28.2547380Z   FILEPATH: audit/response/20260330_221127_23770098917___Qu___ha_pasado_en_la_issue_h.md
+Core Execution	Report Step (Query Agent)	2026-03-30T22:11:28.2547845Z   ISSUE_NUMBER: 5219
+Core Execution	Report Step (Query Agent)	2026-03-30T22:11:28.2548085Z   STEP_NAME: Query Agent
+Core Execution	Report Step (Query Agent)	2026-03-30T22:11:28.2548314Z   STEP_OUTCOME: success
+Core Execution	Report Step (Query Agent)	2026-03-30T22:11:28.2559239Z   RESPONSE_FILEPATH: audit/response/20260330_221127_23770098917___Qu___ha_pasado_en_la_issue_h.md
+Core Execution	Report Step (Query Agent)	2026-03-30T22:11:28.2559774Z ##[endgroup]
+Core Execution	Comment on Issue	﻿2026-03-30T22:11:30.2154763Z ##[group]Run echo "Añadiendo respuesta a la Issue #5219..."
+Core Execution	Comment on Issue	2026-03-30T22:11:30.2178038Z [36;1mecho "Añadiendo respuesta a la Issue #5219..."[0m
+Core Execution	Comment on Issue	2026-03-30T22:11:30.2178782Z [36;1mgh issue comment 5219 -F audit/response/20260330_221127_23770098917___Qu___ha_pasado_en_la_issue_h.md[0m
+Core Execution	Comment on Issue	2026-03-30T22:11:30.2228316Z shell: /usr/bin/bash -e {0}
+Core Execution	Comment on Issue	2026-03-30T22:11:30.2228601Z env:
+Core Execution	Comment on Issue	2026-03-30T22:11:30.2228804Z   KAOS_MODULE: [Ka0S] Agent Query
+Core Execution	Comment on Issue	2026-03-30T22:11:30.2229062Z   KAOS_CODE: 23770098917
+Core Execution	Comment on Issue	2026-03-30T22:11:30.2229396Z   KAOS_ACTOR: ***
+Core Execution	Comment on Issue	2026-03-30T22:11:30.2229718Z   POSTGRES_HOST: postgresql-ia.postgresql-ia.svc.cluster.local
+Core Execution	Comment on Issue	2026-03-30T22:11:30.2230106Z   POSTGRES_PORT: 5432
+Core Execution	Comment on Issue	2026-03-30T22:11:30.2230354Z   POSTGRES_DB: ka0s_memory
+Core Execution	Comment on Issue	2026-03-30T22:11:30.2230587Z   POSTGRES_USER: ka0s_ai
+Core Execution	Comment on Issue	2026-03-30T22:11:30.2230883Z   OLLAMA_HOST: http://ollama.ollama.svc.cluster.local
+Core Execution	Comment on Issue	2026-03-30T22:11:30.2231219Z   OLLAMA_PORT: 11434
+Core Execution	Comment on Issue	2026-03-30T22:11:30.2231447Z   EMBEDDING_MODEL: nomic-embed-text
+Core Execution	Comment on Issue	2026-03-30T22:11:30.2231721Z   GENERATION_MODEL: llama3.1:8b
+Core Execution	Comment on Issue	2026-03-30T22:11:30.2232093Z   pythonLocation: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Comment on Issue	2026-03-30T22:11:30.2232570Z   PKG_CONFIG_PATH: /home/runner/_work/_tool/Python/3.11.15/x64/lib/pkgconfig
+Core Execution	Comment on Issue	2026-03-30T22:11:30.2233049Z   Python_ROOT_DIR: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Comment on Issue	2026-03-30T22:11:30.2233471Z   Python2_ROOT_DIR: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Comment on Issue	2026-03-30T22:11:30.2233893Z   Python3_ROOT_DIR: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Comment on Issue	2026-03-30T22:11:30.2234329Z   LD_LIBRARY_PATH: /home/runner/_work/_tool/Python/3.11.15/x64/lib
+Core Execution	Comment on Issue	2026-03-30T22:11:30.2255113Z   FILEPATH: audit/response/20260330_221127_23770098917___Qu___ha_pasado_en_la_issue_h.md
+Core Execution	Comment on Issue	2026-03-30T22:11:30.2256491Z   GH_TOKEN: ***
+Core Execution	Comment on Issue	2026-03-30T22:11:30.2256698Z ##[endgroup]
+Core Execution	Comment on Issue	2026-03-30T22:11:30.2430656Z Añadiendo respuesta a la Issue #5219...
+Core Execution	Comment on Issue	2026-03-30T22:11:31.4293551Z https://github.com/Ka0s-Klaus/ka0s/issues/5219#issuecomment-4158481789
+Core Execution	Report Step (Comment on Issue)	﻿2026-03-30T22:11:31.4518109Z ##[group]Run actions/github-script@v7
+Core Execution	Report Step (Comment on Issue)	2026-03-30T22:11:31.4518448Z with:
+Core Execution	Report Step (Comment on Issue)	2026-03-30T22:11:31.4518858Z   github-token: ***
+Core Execution	Report Step (Comment on Issue)	2026-03-30T22:11:31.4520956Z   script: const issueNumber = Number(process.env.ISSUE_NUMBER || '');
+Core Execution	Report Step (Comment on Issue)	if (!issueNumber) return;
+Core Execution	Report Step (Comment on Issue)	const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+Core Execution	Report Step (Comment on Issue)	const stepName = process.env.STEP_NAME || '';
+Core Execution	Report Step (Comment on Issue)	const outcome = process.env.STEP_OUTCOME || 'unknown';
+Core Execution	Report Step (Comment on Issue)	github.rest.issues.createComment({
+Core Execution	Report Step (Comment on Issue)	  issue_number: issueNumber,
+Core Execution	Report Step (Comment on Issue)	  owner: context.repo.owner,
+Core Execution	Report Step (Comment on Issue)	  repo: context.repo.repo,
+Core Execution	Report Step (Comment on Issue)	  body: [
+Core Execution	Report Step (Comment on Issue)	    `### [Ka0s Agent Query] Paso`,
+Core Execution	Report Step (Comment on Issue)	    ``,
+Core Execution	Report Step (Comment on Issue)	    `- Paso: ${stepName}`,
+Core Execution	Report Step (Comment on Issue)	    `- Estado: ${outcome}`,
+Core Execution	Report Step (Comment on Issue)	    `- Run: ${runUrl}`,
+Core Execution	Report Step (Comment on Issue)	  ].join('\n')
+Core Execution	Report Step (Comment on Issue)	})
+Core Execution	Report Step (Comment on Issue)	
+Core Execution	Report Step (Comment on Issue)	2026-03-30T22:11:31.4523176Z   debug: false
+Core Execution	Report Step (Comment on Issue)	2026-03-30T22:11:31.4523396Z   user-agent: actions/github-script
+Core Execution	Report Step (Comment on Issue)	2026-03-30T22:11:31.4523674Z   result-encoding: json
+Core Execution	Report Step (Comment on Issue)	2026-03-30T22:11:31.4523895Z   retries: 0
+Core Execution	Report Step (Comment on Issue)	2026-03-30T22:11:31.4524133Z   retry-exempt-status-codes: 400,401,403,404,422
+Core Execution	Report Step (Comment on Issue)	2026-03-30T22:11:31.4524482Z env:
+Core Execution	Report Step (Comment on Issue)	2026-03-30T22:11:31.4524674Z   KAOS_MODULE: [Ka0S] Agent Query
+Core Execution	Report Step (Comment on Issue)	2026-03-30T22:11:31.4525036Z   KAOS_CODE: 23770098917
+Core Execution	Report Step (Comment on Issue)	2026-03-30T22:11:31.4525285Z   KAOS_ACTOR: ***
+Core Execution	Report Step (Comment on Issue)	2026-03-30T22:11:31.4525608Z   POSTGRES_HOST: postgresql-ia.postgresql-ia.svc.cluster.local
+Core Execution	Report Step (Comment on Issue)	2026-03-30T22:11:31.4525997Z   POSTGRES_PORT: 5432
+Core Execution	Report Step (Comment on Issue)	2026-03-30T22:11:31.4526225Z   POSTGRES_DB: ka0s_memory
+Core Execution	Report Step (Comment on Issue)	2026-03-30T22:11:31.4526454Z   POSTGRES_USER: ka0s_ai
+Core Execution	Report Step (Comment on Issue)	2026-03-30T22:11:31.4526755Z   OLLAMA_HOST: http://ollama.ollama.svc.cluster.local
+Core Execution	Report Step (Comment on Issue)	2026-03-30T22:11:31.4527087Z   OLLAMA_PORT: 11434
+Core Execution	Report Step (Comment on Issue)	2026-03-30T22:11:31.4527315Z   EMBEDDING_MODEL: nomic-embed-text
+Core Execution	Report Step (Comment on Issue)	2026-03-30T22:11:31.4527594Z   GENERATION_MODEL: llama3.1:8b
+Core Execution	Report Step (Comment on Issue)	2026-03-30T22:11:31.4527948Z   pythonLocation: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Report Step (Comment on Issue)	2026-03-30T22:11:31.4528428Z   PKG_CONFIG_PATH: /home/runner/_work/_tool/Python/3.11.15/x64/lib/pkgconfig
+Core Execution	Report Step (Comment on Issue)	2026-03-30T22:11:31.4528907Z   Python_ROOT_DIR: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Report Step (Comment on Issue)	2026-03-30T22:11:31.4529350Z   Python2_ROOT_DIR: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Report Step (Comment on Issue)	2026-03-30T22:11:31.4529799Z   Python3_ROOT_DIR: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Report Step (Comment on Issue)	2026-03-30T22:11:31.4530240Z   LD_LIBRARY_PATH: /home/runner/_work/_tool/Python/3.11.15/x64/lib
+Core Execution	Report Step (Comment on Issue)	2026-03-30T22:11:31.4530788Z   FILEPATH: audit/response/20260330_221127_23770098917___Qu___ha_pasado_en_la_issue_h.md
+Core Execution	Report Step (Comment on Issue)	2026-03-30T22:11:31.4531262Z   ISSUE_NUMBER: 5219
+Core Execution	Report Step (Comment on Issue)	2026-03-30T22:11:31.4531496Z   STEP_NAME: Comment on Issue
+Core Execution	Report Step (Comment on Issue)	2026-03-30T22:11:31.4531764Z   STEP_OUTCOME: success
+Core Execution	Report Step (Comment on Issue)	2026-03-30T22:11:31.4531997Z ##[endgroup]
+Core Execution	Commit Response	﻿2026-03-30T22:11:33.2251562Z ##[group]Run git config --global user.name "***"
+Core Execution	Commit Response	2026-03-30T22:11:33.2252097Z [36;1mgit config --global user.name "***"[0m
+Core Execution	Commit Response	2026-03-30T22:11:33.2252482Z [36;1mgit config --global user.email "***"[0m
+Core Execution	Commit Response	2026-03-30T22:11:33.2252775Z [36;1mgit pull[0m
+Core Execution	Commit Response	2026-03-30T22:11:33.2253163Z [36;1mgit add audit/response/20260330_221127_23770098917___Qu___ha_pasado_en_la_issue_h.md[0m
+Core Execution	Commit Response	2026-03-30T22:11:33.2253604Z [36;1m[0m
+Core Execution	Commit Response	2026-03-30T22:11:33.2253904Z [36;1mgit commit -m "chore(ai): add agent response 23770098917 [skip ci]"[0m
+Core Execution	Commit Response	2026-03-30T22:11:33.2254282Z [36;1m[0m
+Core Execution	Commit Response	2026-03-30T22:11:33.2254477Z [36;1m# Reintento robusto de push[0m
+Core Execution	Commit Response	2026-03-30T22:11:33.2254733Z [36;1mcount=0[0m
+Core Execution	Commit Response	2026-03-30T22:11:33.2259554Z [36;1mMAX_RETRIES=5[0m
+Core Execution	Commit Response	2026-03-30T22:11:33.2259976Z [36;1muntil [ $count -ge $MAX_RETRIES ]; do[0m
+Core Execution	Commit Response	2026-03-30T22:11:33.2260421Z [36;1m  if git push origin HEAD:main; then[0m
+Core Execution	Commit Response	2026-03-30T22:11:33.2260715Z [36;1m    echo "✅ Push exitoso"[0m
+Core Execution	Commit Response	2026-03-30T22:11:33.2260966Z [36;1m    exit 0[0m
+Core Execution	Commit Response	2026-03-30T22:11:33.2261199Z [36;1m  fi[0m
+Core Execution	Commit Response	2026-03-30T22:11:33.2261478Z [36;1m  echo "⚠️ Push fallido. Reintentando pull --rebase..."[0m
+Core Execution	Commit Response	2026-03-30T22:11:33.2262189Z [36;1m  git pull --rebase origin main[0m
+Core Execution	Commit Response	2026-03-30T22:11:33.2262452Z [36;1m  ((count++))[0m
+Core Execution	Commit Response	2026-03-30T22:11:33.2262666Z [36;1m  sleep 5[0m
+Core Execution	Commit Response	2026-03-30T22:11:33.2262860Z [36;1mdone[0m
+Core Execution	Commit Response	2026-03-30T22:11:33.2263215Z [36;1mecho "❌ Error crítico: No se pudo hacer push después de $MAX_RETRIES intentos."[0m
+Core Execution	Commit Response	2026-03-30T22:11:33.2263639Z [36;1mexit 1[0m
+Core Execution	Commit Response	2026-03-30T22:11:33.2300345Z shell: /usr/bin/bash -e {0}
+Core Execution	Commit Response	2026-03-30T22:11:33.2300647Z env:
+Core Execution	Commit Response	2026-03-30T22:11:33.2300847Z   KAOS_MODULE: [Ka0S] Agent Query
+Core Execution	Commit Response	2026-03-30T22:11:33.2301099Z   KAOS_CODE: 23770098917
+Core Execution	Commit Response	2026-03-30T22:11:33.2301414Z   KAOS_ACTOR: ***
+Core Execution	Commit Response	2026-03-30T22:11:33.2301734Z   POSTGRES_HOST: postgresql-ia.postgresql-ia.svc.cluster.local
+Core Execution	Commit Response	2026-03-30T22:11:33.2302118Z   POSTGRES_PORT: 5432
+Core Execution	Commit Response	2026-03-30T22:11:33.2302332Z   POSTGRES_DB: ka0s_memory
+Core Execution	Commit Response	2026-03-30T22:11:33.2302564Z   POSTGRES_USER: ka0s_ai
+Core Execution	Commit Response	2026-03-30T22:11:33.2302901Z   OLLAMA_HOST: http://ollama.ollama.svc.cluster.local
+Core Execution	Commit Response	2026-03-30T22:11:33.2303228Z   OLLAMA_PORT: 11434
+Core Execution	Commit Response	2026-03-30T22:11:33.2303474Z   EMBEDDING_MODEL: nomic-embed-text
+Core Execution	Commit Response	2026-03-30T22:11:33.2303746Z   GENERATION_MODEL: llama3.1:8b
+Core Execution	Commit Response	2026-03-30T22:11:33.2304075Z   pythonLocation: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Commit Response	2026-03-30T22:11:33.2304540Z   PKG_CONFIG_PATH: /home/runner/_work/_tool/Python/3.11.15/x64/lib/pkgconfig
+Core Execution	Commit Response	2026-03-30T22:11:33.2336712Z   Python_ROOT_DIR: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Commit Response	2026-03-30T22:11:33.2337214Z   Python2_ROOT_DIR: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Commit Response	2026-03-30T22:11:33.2337630Z   Python3_ROOT_DIR: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Commit Response	2026-03-30T22:11:33.2338061Z   LD_LIBRARY_PATH: /home/runner/_work/_tool/Python/3.11.15/x64/lib
+Core Execution	Commit Response	2026-03-30T22:11:33.2338573Z   FILEPATH: audit/response/20260330_221127_23770098917___Qu___ha_pasado_en_la_issue_h.md
+Core Execution	Commit Response	2026-03-30T22:11:33.2339003Z ##[endgroup]
+Core Execution	Commit Response	2026-03-30T22:11:35.1826729Z From https://github.com/Ka0s-Klaus/ka0s
+Core Execution	Commit Response	2026-03-30T22:11:35.1828561Z    270de0a2b..e4a9dbd50  main       -> origin/main
+Core Execution	Commit Response	2026-03-30T22:11:35.3796020Z Updating 270de0a2b..e4a9dbd50
+Core Execution	Commit Response	2026-03-30T22:11:35.3797008Z Fast-forward
+Core Execution	Commit Response	2026-03-30T22:11:35.3847598Z  audit/inspector/23767351904.json |    1 +
+Core Execution	Commit Response	2026-03-30T22:11:35.3848448Z  audit/inspector/23767351904.log  | 1306 ++++++++++++++++++++++++++++++++++++++
+Core Execution	Commit Response	2026-03-30T22:11:35.3849078Z  audit/inspector/23768123795.json |    1 +
+Core Execution	Commit Response	2026-03-30T22:11:35.3850762Z  audit/inspector/23768123795.log  | 1245 ++++++++++++++++++++++++++++++++++++
+Core Execution	Commit Response	2026-03-30T22:11:35.3851326Z  audit/inspector/23768236217.json |    1 +
+Core Execution	Commit Response	2026-03-30T22:11:35.3851924Z  audit/inspector/23768236217.log  | 1252 ++++++++++++++++++++++++++++++++++++
+Core Execution	Commit Response	2026-03-30T22:11:35.3852635Z  audit/inspector/23769042996.json |    1 +
+Core Execution	Commit Response	2026-03-30T22:11:35.3861100Z  audit/inspector/23769042996.log  | 1050 ++++++++++++++++++++++++++++++
+Core Execution	Commit Response	2026-03-30T22:11:35.3861698Z  audit/inspector/23769288466.json |    1 +
+Core Execution	Commit Response	2026-03-30T22:11:35.3862711Z  audit/inspector/23769288466.log  | 1237 ++++++++++++++++++++++++++++++++++++
+Core Execution	Commit Response	2026-03-30T22:11:35.3864367Z  10 files changed, 6095 insertions(+)
+Core Execution	Commit Response	2026-03-30T22:11:35.3865470Z  create mode 100644 audit/inspector/23767351904.json
+Core Execution	Commit Response	2026-03-30T22:11:35.3866210Z  create mode 100644 audit/inspector/23767351904.log
+Core Execution	Commit Response	2026-03-30T22:11:35.3866721Z  create mode 100644 audit/inspector/23768123795.json
+Core Execution	Commit Response	2026-03-30T22:11:35.3868113Z  create mode 100644 audit/inspector/23768123795.log
+Core Execution	Commit Response	2026-03-30T22:11:35.3868648Z  create mode 100644 audit/inspector/23768236217.json
+Core Execution	Commit Response	2026-03-30T22:11:35.3869267Z  create mode 100644 audit/inspector/23768236217.log
+Core Execution	Commit Response	2026-03-30T22:11:35.3870437Z  create mode 100644 audit/inspector/23769042996.json
+Core Execution	Commit Response	2026-03-30T22:11:35.3870926Z  create mode 100644 audit/inspector/23769042996.log
+Core Execution	Commit Response	2026-03-30T22:11:35.3871357Z  create mode 100644 audit/inspector/23769288466.json
+Core Execution	Commit Response	2026-03-30T22:11:35.3871866Z  create mode 100644 audit/inspector/23769288466.log
+Core Execution	Commit Response	2026-03-30T22:11:35.4359517Z [main 317641a7b] chore(ai): add agent response 23770098917 [skip ci]
+Core Execution	Commit Response	2026-03-30T22:11:35.4365489Z  1 file changed, 9 insertions(+)
+Core Execution	Commit Response	2026-03-30T22:11:35.4376195Z  create mode 100644 audit/response/20260330_221127_23770098917___Qu___ha_pasado_en_la_issue_h.md
+Core Execution	Commit Response	2026-03-30T22:11:37.0735767Z To https://github.com/Ka0s-Klaus/ka0s
+Core Execution	Commit Response	2026-03-30T22:11:37.0736622Z    e4a9dbd50..317641a7b  HEAD -> main
+Core Execution	Commit Response	2026-03-30T22:11:37.0853417Z ✅ Push exitoso
+Core Execution	Report Step (Commit Response)	﻿2026-03-30T22:11:37.1033954Z ##[group]Run actions/github-script@v7
+Core Execution	Report Step (Commit Response)	2026-03-30T22:11:37.1034261Z with:
+Core Execution	Report Step (Commit Response)	2026-03-30T22:11:37.1034650Z   github-token: ***
+Core Execution	Report Step (Commit Response)	2026-03-30T22:11:37.1037031Z   script: const issueNumber = Number(process.env.ISSUE_NUMBER || '');
+Core Execution	Report Step (Commit Response)	if (!issueNumber) return;
+Core Execution	Report Step (Commit Response)	const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+Core Execution	Report Step (Commit Response)	const stepName = process.env.STEP_NAME || '';
+Core Execution	Report Step (Commit Response)	const outcome = process.env.STEP_OUTCOME || 'unknown';
+Core Execution	Report Step (Commit Response)	github.rest.issues.createComment({
+Core Execution	Report Step (Commit Response)	  issue_number: issueNumber,
+Core Execution	Report Step (Commit Response)	  owner: context.repo.owner,
+Core Execution	Report Step (Commit Response)	  repo: context.repo.repo,
+Core Execution	Report Step (Commit Response)	  body: [
+Core Execution	Report Step (Commit Response)	    `### [Ka0s Agent Query] Paso`,
+Core Execution	Report Step (Commit Response)	    ``,
+Core Execution	Report Step (Commit Response)	    `- Paso: ${stepName}`,
+Core Execution	Report Step (Commit Response)	    `- Estado: ${outcome}`,
+Core Execution	Report Step (Commit Response)	    `- Run: ${runUrl}`,
+Core Execution	Report Step (Commit Response)	  ].join('\n')
+Core Execution	Report Step (Commit Response)	})
+Core Execution	Report Step (Commit Response)	
+Core Execution	Report Step (Commit Response)	2026-03-30T22:11:37.1039157Z   debug: false
+Core Execution	Report Step (Commit Response)	2026-03-30T22:11:37.1039366Z   user-agent: actions/github-script
+Core Execution	Report Step (Commit Response)	2026-03-30T22:11:37.1039766Z   result-encoding: json
+Core Execution	Report Step (Commit Response)	2026-03-30T22:11:37.1040096Z   retries: 0
+Core Execution	Report Step (Commit Response)	2026-03-30T22:11:37.1040319Z   retry-exempt-status-codes: 400,401,403,404,422
+Core Execution	Report Step (Commit Response)	2026-03-30T22:11:37.1040633Z env:
+Core Execution	Report Step (Commit Response)	2026-03-30T22:11:37.1040813Z   KAOS_MODULE: [Ka0S] Agent Query
+Core Execution	Report Step (Commit Response)	2026-03-30T22:11:37.1041060Z   KAOS_CODE: 23770098917
+Core Execution	Report Step (Commit Response)	2026-03-30T22:11:37.1041288Z   KAOS_ACTOR: ***
+Core Execution	Report Step (Commit Response)	2026-03-30T22:11:37.1041589Z   POSTGRES_HOST: postgresql-ia.postgresql-ia.svc.cluster.local
+Core Execution	Report Step (Commit Response)	2026-03-30T22:11:37.1041959Z   POSTGRES_PORT: 5432
+Core Execution	Report Step (Commit Response)	2026-03-30T22:11:37.1042176Z   POSTGRES_DB: ka0s_memory
+Core Execution	Report Step (Commit Response)	2026-03-30T22:11:37.1042396Z   POSTGRES_USER: ka0s_ai
+Core Execution	Report Step (Commit Response)	2026-03-30T22:11:37.1042681Z   OLLAMA_HOST: http://ollama.ollama.svc.cluster.local
+Core Execution	Report Step (Commit Response)	2026-03-30T22:11:37.1043002Z   OLLAMA_PORT: 11434
+Core Execution	Report Step (Commit Response)	2026-03-30T22:11:37.1043217Z   EMBEDDING_MODEL: nomic-embed-text
+Core Execution	Report Step (Commit Response)	2026-03-30T22:11:37.1043484Z   GENERATION_MODEL: llama3.1:8b
+Core Execution	Report Step (Commit Response)	2026-03-30T22:11:37.1043817Z   pythonLocation: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Report Step (Commit Response)	2026-03-30T22:11:37.1044277Z   PKG_CONFIG_PATH: /home/runner/_work/_tool/Python/3.11.15/x64/lib/pkgconfig
+Core Execution	Report Step (Commit Response)	2026-03-30T22:11:37.1044734Z   Python_ROOT_DIR: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Report Step (Commit Response)	2026-03-30T22:11:37.1045604Z   Python2_ROOT_DIR: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Report Step (Commit Response)	2026-03-30T22:11:37.1046033Z   Python3_ROOT_DIR: /home/runner/_work/_tool/Python/3.11.15/x64
+Core Execution	Report Step (Commit Response)	2026-03-30T22:11:37.1046461Z   LD_LIBRARY_PATH: /home/runner/_work/_tool/Python/3.11.15/x64/lib
+Core Execution	Report Step (Commit Response)	2026-03-30T22:11:37.1046972Z   FILEPATH: audit/response/20260330_221127_23770098917___Qu___ha_pasado_en_la_issue_h.md
+Core Execution	Report Step (Commit Response)	2026-03-30T22:11:37.1047408Z   ISSUE_NUMBER: 5219
+Core Execution	Report Step (Commit Response)	2026-03-30T22:11:37.1047625Z   STEP_NAME: Commit Response
+Core Execution	Report Step (Commit Response)	2026-03-30T22:11:37.1047858Z   STEP_OUTCOME: success
+Core Execution	Report Step (Commit Response)	2026-03-30T22:11:37.1048071Z ##[endgroup]
+Core Execution	Post Setup Python	﻿2026-03-30T22:11:38.1089511Z Post job cleanup.
+Core Execution	Post Checkout Code	﻿2026-03-30T22:11:38.3448441Z Post job cleanup.
+Core Execution	Post Checkout Code	2026-03-30T22:11:38.4777916Z [command]/usr/bin/git version
+Core Execution	Post Checkout Code	2026-03-30T22:11:38.4835591Z git version 2.53.0
+Core Execution	Post Checkout Code	2026-03-30T22:11:38.4908079Z Copying '/home/runner/.gitconfig' to '/home/runner/_work/_temp/5c3df4d7-02a0-4833-b74f-c77c8c56f657/.gitconfig'
+Core Execution	Post Checkout Code	2026-03-30T22:11:38.4936564Z Temporarily overriding HOME='/home/runner/_work/_temp/5c3df4d7-02a0-4833-b74f-c77c8c56f657' before making global git config changes
+Core Execution	Post Checkout Code	2026-03-30T22:11:38.4937429Z Adding repository directory to the temporary git global config as a safe directory
+Core Execution	Post Checkout Code	2026-03-30T22:11:38.4947641Z [command]/usr/bin/git config --global --add safe.directory /home/runner/_work/ka0s/ka0s
+Core Execution	Post Checkout Code	2026-03-30T22:11:38.5045968Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Core Execution	Post Checkout Code	2026-03-30T22:11:38.5098131Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Core Execution	Post Checkout Code	2026-03-30T22:11:38.5520827Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Core Execution	Post Checkout Code	2026-03-30T22:11:38.5590112Z http.https://github.com/.extraheader
+Core Execution	Post Checkout Code	2026-03-30T22:11:38.5615588Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+Core Execution	Post Checkout Code	2026-03-30T22:11:38.5677322Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Core Execution	Post Checkout Code	2026-03-30T22:11:38.6148241Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Core Execution	Post Checkout Code	2026-03-30T22:11:38.6212602Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Core Execution	Complete job	﻿2026-03-30T22:11:38.7411457Z Evaluate and set job outputs
+Core Execution	Complete job	2026-03-30T22:11:38.7418654Z Set output 'status'
+Core Execution	Complete job	2026-03-30T22:11:38.7420809Z Cleaning up orphan processes
+Core Execution	Complete job	2026-03-30T22:11:38.7516059Z ##[warning]Node.js 20 actions are deprecated. The following actions are running on Node.js 20 and may not work as expected: actions/checkout@v4, actions/github-script@v7, actions/setup-python@v5. Actions will be forced to run with Node.js 24 by default starting June 2nd, 2026. Node.js 20 will be removed from the runner on September 16th, 2026. Please check if updated versions of these actions are available that support Node.js 24. To opt into Node.js 24 now, set the FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true environment variable on the runner or in your workflow file. Once Node.js 24 becomes the default, you can temporarily opt out by setting ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+Handle Success	Set up job	﻿2026-03-30T22:11:54.6507460Z Current runner version: '2.333.1'
+Handle Success	Set up job	2026-03-30T22:11:54.6521389Z Runner name: 'swarm-runners-scaleset-97tpt-runner-vlhcw'
+Handle Success	Set up job	2026-03-30T22:11:54.6522731Z Runner group name: 'Default'
+Handle Success	Set up job	2026-03-30T22:11:54.6523829Z Machine name: 'swarm-runners-scaleset-97tpt-runner-vlhcw'
+Handle Success	Set up job	2026-03-30T22:11:54.6529143Z ##[group]GITHUB_TOKEN Permissions
+Handle Success	Set up job	2026-03-30T22:11:54.6532164Z Actions: write
+Handle Success	Set up job	2026-03-30T22:11:54.6532896Z Contents: write
+Handle Success	Set up job	2026-03-30T22:11:54.6533499Z Issues: write
+Handle Success	Set up job	2026-03-30T22:11:54.6534102Z Metadata: read
+Handle Success	Set up job	2026-03-30T22:11:54.6534644Z ##[endgroup]
+Handle Success	Set up job	2026-03-30T22:11:54.6544109Z Secret source: Actions
+Handle Success	Set up job	2026-03-30T22:11:54.6545117Z Prepare workflow directory
+Handle Success	Set up job	2026-03-30T22:11:54.7133417Z Prepare all required actions
+Handle Success	Set up job	2026-03-30T22:11:54.7202029Z Complete job name: Handle Success
+Handle Success	Notify Success	﻿2026-03-30T22:11:54.8276842Z ##[group]Run echo "✅ Workflow [Ka0S] Agent Query completado correctamente."
+Handle Success	Notify Success	2026-03-30T22:11:54.8278462Z [36;1mecho "✅ Workflow [Ka0S] Agent Query completado correctamente."[0m
+Handle Success	Notify Success	2026-03-30T22:11:54.8326893Z shell: /usr/bin/bash -e {0}
+Handle Success	Notify Success	2026-03-30T22:11:54.8327960Z env:
+Handle Success	Notify Success	2026-03-30T22:11:54.8328391Z   KAOS_MODULE: [Ka0S] Agent Query
+Handle Success	Notify Success	2026-03-30T22:11:54.8328901Z   KAOS_CODE: 23770098917
+Handle Success	Notify Success	2026-03-30T22:11:54.8329355Z   KAOS_ACTOR: ka0score
+Handle Success	Notify Success	2026-03-30T22:11:54.8329969Z   POSTGRES_HOST: postgresql-ia.postgresql-ia.svc.cluster.local
+Handle Success	Notify Success	2026-03-30T22:11:54.8330682Z   POSTGRES_PORT: 5432
+Handle Success	Notify Success	2026-03-30T22:11:54.8331138Z   POSTGRES_DB: ka0s_memory
+Handle Success	Notify Success	2026-03-30T22:11:54.8331621Z   POSTGRES_USER: ka0s_ai
+Handle Success	Notify Success	2026-03-30T22:11:54.8332178Z   OLLAMA_HOST: http://ollama.ollama.svc.cluster.local
+Handle Success	Notify Success	2026-03-30T22:11:54.8332833Z   OLLAMA_PORT: 11434
+Handle Success	Notify Success	2026-03-30T22:11:54.8333298Z   EMBEDDING_MODEL: nomic-embed-text
+Handle Success	Notify Success	2026-03-30T22:11:54.8333856Z   GENERATION_MODEL: llama3.1:8b
+Handle Success	Notify Success	2026-03-30T22:11:54.8334355Z ##[endgroup]
+Handle Success	Notify Success	2026-03-30T22:11:56.7005478Z ✅ Workflow [Ka0S] Agent Query completado correctamente.
+Handle Success	Complete job	﻿2026-03-30T22:11:56.7403754Z Cleaning up orphan processes
+end-workflow	Set up job	﻿2026-03-30T22:12:11.5485252Z Current runner version: '2.333.1'
+end-workflow	Set up job	2026-03-30T22:12:11.5510270Z Runner name: 'swarm-runners-scaleset-97tpt-runner-bn8f7'
+end-workflow	Set up job	2026-03-30T22:12:11.5511775Z Runner group name: 'Default'
+end-workflow	Set up job	2026-03-30T22:12:11.5513154Z Machine name: 'swarm-runners-scaleset-97tpt-runner-bn8f7'
+end-workflow	Set up job	2026-03-30T22:12:11.5517769Z ##[group]GITHUB_TOKEN Permissions
+end-workflow	Set up job	2026-03-30T22:12:11.5520973Z Actions: write
+end-workflow	Set up job	2026-03-30T22:12:11.5521749Z Contents: read
+end-workflow	Set up job	2026-03-30T22:12:11.5522285Z Metadata: read
+end-workflow	Set up job	2026-03-30T22:12:11.5522888Z ##[endgroup]
+end-workflow	Set up job	2026-03-30T22:12:11.5526634Z Secret source: Actions
+end-workflow	Set up job	2026-03-30T22:12:11.5527445Z Prepare workflow directory
+end-workflow	Set up job	2026-03-30T22:12:11.6319354Z Prepare all required actions
+end-workflow	Set up job	2026-03-30T22:12:11.6371544Z Getting action download info
+end-workflow	Set up job	2026-03-30T22:12:12.4163536Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+end-workflow	Set up job	2026-03-30T22:12:13.5536802Z Complete job name: end-workflow
+end-workflow	Checkout Code	﻿2026-03-30T22:12:13.7108216Z ##[group]Run actions/checkout@v4
+end-workflow	Checkout Code	2026-03-30T22:12:13.7109496Z with:
+end-workflow	Checkout Code	2026-03-30T22:12:13.7110075Z   repository: Ka0s-Klaus/ka0s
+end-workflow	Checkout Code	2026-03-30T22:12:13.7110936Z   token: ***
+end-workflow	Checkout Code	2026-03-30T22:12:13.7111395Z   ssh-strict: true
+end-workflow	Checkout Code	2026-03-30T22:12:13.7111864Z   ssh-user: git
+end-workflow	Checkout Code	2026-03-30T22:12:13.7112360Z   persist-credentials: true
+end-workflow	Checkout Code	2026-03-30T22:12:13.7112998Z   clean: true
+end-workflow	Checkout Code	2026-03-30T22:12:13.7113462Z   sparse-checkout-cone-mode: true
+end-workflow	Checkout Code	2026-03-30T22:12:13.7114020Z   fetch-depth: 1
+end-workflow	Checkout Code	2026-03-30T22:12:13.7114467Z   fetch-tags: false
+end-workflow	Checkout Code	2026-03-30T22:12:13.7115331Z   show-progress: true
+end-workflow	Checkout Code	2026-03-30T22:12:13.7115811Z   lfs: false
+end-workflow	Checkout Code	2026-03-30T22:12:13.7116499Z   submodules: false
+end-workflow	Checkout Code	2026-03-30T22:12:13.7116992Z   set-safe-directory: true
+end-workflow	Checkout Code	2026-03-30T22:12:13.7117836Z env:
+end-workflow	Checkout Code	2026-03-30T22:12:13.7118289Z   KAOS_MODULE: [Ka0S] Agent Query
+end-workflow	Checkout Code	2026-03-30T22:12:13.7118842Z   KAOS_CODE: 23770098917
+end-workflow	Checkout Code	2026-03-30T22:12:13.7119332Z   KAOS_ACTOR: ka0score
+end-workflow	Checkout Code	2026-03-30T22:12:13.7119989Z   POSTGRES_HOST: postgresql-ia.postgresql-ia.svc.cluster.local
+end-workflow	Checkout Code	2026-03-30T22:12:13.7120804Z   POSTGRES_PORT: 5432
+end-workflow	Checkout Code	2026-03-30T22:12:13.7121306Z   POSTGRES_DB: ka0s_memory
+end-workflow	Checkout Code	2026-03-30T22:12:13.7121831Z   POSTGRES_USER: ka0s_ai
+end-workflow	Checkout Code	2026-03-30T22:12:13.7122442Z   OLLAMA_HOST: http://ollama.ollama.svc.cluster.local
+end-workflow	Checkout Code	2026-03-30T22:12:13.7123124Z   OLLAMA_PORT: 11434
+end-workflow	Checkout Code	2026-03-30T22:12:13.7123626Z   EMBEDDING_MODEL: nomic-embed-text
+end-workflow	Checkout Code	2026-03-30T22:12:13.7124209Z   GENERATION_MODEL: llama3.1:8b
+end-workflow	Checkout Code	2026-03-30T22:12:13.7124733Z ##[endgroup]
+end-workflow	Checkout Code	2026-03-30T22:12:13.9154526Z Syncing repository: Ka0s-Klaus/ka0s
+end-workflow	Checkout Code	2026-03-30T22:12:13.9176596Z ##[group]Getting Git version info
+end-workflow	Checkout Code	2026-03-30T22:12:13.9177473Z Working directory is '/home/runner/_work/ka0s/ka0s'
+end-workflow	Checkout Code	2026-03-30T22:12:13.9178562Z [command]/usr/bin/git version
+end-workflow	Checkout Code	2026-03-30T22:12:13.9179117Z git version 2.53.0
+end-workflow	Checkout Code	2026-03-30T22:12:13.9217776Z ##[endgroup]
+end-workflow	Checkout Code	2026-03-30T22:12:13.9286718Z Temporarily overriding HOME='/home/runner/_work/_temp/11f4c4fa-d46d-42e2-abc3-15c79a4f960e' before making global git config changes
+end-workflow	Checkout Code	2026-03-30T22:12:13.9319857Z Adding repository directory to the temporary git global config as a safe directory
+end-workflow	Checkout Code	2026-03-30T22:12:13.9321757Z [command]/usr/bin/git config --global --add safe.directory /home/runner/_work/ka0s/ka0s
+end-workflow	Checkout Code	2026-03-30T22:12:13.9437877Z Deleting the contents of '/home/runner/_work/ka0s/ka0s'
+end-workflow	Checkout Code	2026-03-30T22:12:13.9442947Z ##[group]Initializing the repository
+end-workflow	Checkout Code	2026-03-30T22:12:13.9467817Z [command]/usr/bin/git init /home/runner/_work/ka0s/ka0s
+end-workflow	Checkout Code	2026-03-30T22:12:13.9598885Z hint: Using 'master' as the name for the initial branch. This default branch name
+end-workflow	Checkout Code	2026-03-30T22:12:13.9606133Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+end-workflow	Checkout Code	2026-03-30T22:12:13.9611052Z hint: to use in all of your new repositories, which will suppress this warning,
+end-workflow	Checkout Code	2026-03-30T22:12:13.9612828Z hint: call:
+end-workflow	Checkout Code	2026-03-30T22:12:13.9613311Z hint:
+end-workflow	Checkout Code	2026-03-30T22:12:13.9613876Z hint: 	git config --global init.defaultBranch <name>
+end-workflow	Checkout Code	2026-03-30T22:12:13.9614554Z hint:
+end-workflow	Checkout Code	2026-03-30T22:12:13.9620796Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+end-workflow	Checkout Code	2026-03-30T22:12:13.9622155Z hint: 'development'. The just-created branch can be renamed via this command:
+end-workflow	Checkout Code	2026-03-30T22:12:13.9623496Z hint:
+end-workflow	Checkout Code	2026-03-30T22:12:13.9623956Z hint: 	git branch -m <name>
+end-workflow	Checkout Code	2026-03-30T22:12:13.9624471Z hint:
+end-workflow	Checkout Code	2026-03-30T22:12:13.9634186Z hint: Disable this message with "git config set advice.defaultBranchName false"
+end-workflow	Checkout Code	2026-03-30T22:12:13.9636943Z Initialized empty Git repository in /home/runner/_work/ka0s/ka0s/.git/
+end-workflow	Checkout Code	2026-03-30T22:12:13.9644423Z [command]/usr/bin/git remote add origin https://github.com/Ka0s-Klaus/ka0s
+end-workflow	Checkout Code	2026-03-30T22:12:13.9694359Z ##[endgroup]
+end-workflow	Checkout Code	2026-03-30T22:12:13.9697164Z ##[group]Disabling automatic garbage collection
+end-workflow	Checkout Code	2026-03-30T22:12:13.9700867Z [command]/usr/bin/git config --local gc.auto 0
+end-workflow	Checkout Code	2026-03-30T22:12:13.9749077Z ##[endgroup]
+end-workflow	Checkout Code	2026-03-30T22:12:13.9749985Z ##[group]Setting up auth
+end-workflow	Checkout Code	2026-03-30T22:12:13.9762067Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+end-workflow	Checkout Code	2026-03-30T22:12:13.9942973Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+end-workflow	Checkout Code	2026-03-30T22:12:14.0413201Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+end-workflow	Checkout Code	2026-03-30T22:12:14.0450267Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+end-workflow	Checkout Code	2026-03-30T22:12:14.0826553Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+end-workflow	Checkout Code	2026-03-30T22:12:14.0869936Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+end-workflow	Checkout Code	2026-03-30T22:12:14.1240917Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+end-workflow	Checkout Code	2026-03-30T22:12:14.1313101Z ##[endgroup]
+end-workflow	Checkout Code	2026-03-30T22:12:14.1314067Z ##[group]Fetching the repository
+end-workflow	Checkout Code	2026-03-30T22:12:14.1324079Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +270de0a2b449ef21e172dfd2609268ff714b5139:refs/remotes/origin/main
+end-workflow	Checkout Code	2026-03-30T22:12:20.1101401Z From https://github.com/Ka0s-Klaus/ka0s
+end-workflow	Checkout Code	2026-03-30T22:12:20.1102212Z  * [new ref]         270de0a2b449ef21e172dfd2609268ff714b5139 -> origin/main
+end-workflow	Checkout Code	2026-03-30T22:12:20.1149588Z ##[endgroup]
+end-workflow	Checkout Code	2026-03-30T22:12:20.1150117Z ##[group]Determining the checkout info
+end-workflow	Checkout Code	2026-03-30T22:12:20.1150796Z ##[endgroup]
+end-workflow	Checkout Code	2026-03-30T22:12:20.1155727Z [command]/usr/bin/git sparse-checkout disable
+end-workflow	Checkout Code	2026-03-30T22:12:20.1211797Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+end-workflow	Checkout Code	2026-03-30T22:12:20.1253673Z ##[group]Checking out the ref
+end-workflow	Checkout Code	2026-03-30T22:12:20.1257666Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+end-workflow	Checkout Code	2026-03-30T22:12:20.7082248Z Switched to a new branch 'main'
+end-workflow	Checkout Code	2026-03-30T22:12:20.7116122Z branch 'main' set up to track 'origin/main'.
+end-workflow	Checkout Code	2026-03-30T22:12:20.7244274Z ##[endgroup]
+end-workflow	Checkout Code	2026-03-30T22:12:20.7320777Z [command]/usr/bin/git log -1 --format=%H
+end-workflow	Checkout Code	2026-03-30T22:12:20.7366379Z 270de0a2b449ef21e172dfd2609268ff714b5139
+end-workflow	Install GH CLI	﻿2026-03-30T22:12:20.8167904Z Prepare all required actions
+end-workflow	Install GH CLI	2026-03-30T22:12:20.9001441Z ##[group]Run ./.github/actions/install-gh-cli
+end-workflow	Install GH CLI	2026-03-30T22:12:20.9001833Z env:
+end-workflow	Install GH CLI	2026-03-30T22:12:20.9002035Z   KAOS_MODULE: [Ka0S] Agent Query
+end-workflow	Install GH CLI	2026-03-30T22:12:20.9002298Z   KAOS_CODE: 23770098917
+end-workflow	Install GH CLI	2026-03-30T22:12:20.9002529Z   KAOS_ACTOR: ka0score
+end-workflow	Install GH CLI	2026-03-30T22:12:20.9002859Z   POSTGRES_HOST: postgresql-ia.postgresql-ia.svc.cluster.local
+end-workflow	Install GH CLI	2026-03-30T22:12:20.9003251Z   POSTGRES_PORT: 5432
+end-workflow	Install GH CLI	2026-03-30T22:12:20.9003497Z   POSTGRES_DB: ka0s_memory
+end-workflow	Install GH CLI	2026-03-30T22:12:20.9003737Z   POSTGRES_USER: ka0s_ai
+end-workflow	Install GH CLI	2026-03-30T22:12:20.9004057Z   OLLAMA_HOST: http://ollama.ollama.svc.cluster.local
+end-workflow	Install GH CLI	2026-03-30T22:12:20.9004392Z   OLLAMA_PORT: 11434
+end-workflow	Install GH CLI	2026-03-30T22:12:20.9004641Z   EMBEDDING_MODEL: nomic-embed-text
+end-workflow	Install GH CLI	2026-03-30T22:12:20.9007617Z   GENERATION_MODEL: llama3.1:8b
+end-workflow	Install GH CLI	2026-03-30T22:12:20.9007886Z ##[endgroup]
+end-workflow	Install GH CLI	2026-03-30T22:12:20.9369636Z ##[group]Run type -p curl >/dev/null || (sudo apt-get update && sudo apt-get install curl -y)
+end-workflow	Install GH CLI	2026-03-30T22:12:20.9371072Z [36;1mtype -p curl >/dev/null || (sudo apt-get update && sudo apt-get install curl -y)[0m
+end-workflow	Install GH CLI	2026-03-30T22:12:20.9372064Z [36;1mcurl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \[0m
+end-workflow	Install GH CLI	2026-03-30T22:12:20.9372948Z [36;1m&& sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \[0m
+end-workflow	Install GH CLI	2026-03-30T22:12:20.9374136Z [36;1m&& echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \[0m
+end-workflow	Install GH CLI	2026-03-30T22:12:20.9375597Z [36;1m&& sudo apt-get update \[0m
+end-workflow	Install GH CLI	2026-03-30T22:12:20.9375902Z [36;1m&& sudo apt-get install gh -y[0m
+end-workflow	Install GH CLI	2026-03-30T22:12:20.9437845Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+end-workflow	Install GH CLI	2026-03-30T22:12:20.9438279Z env:
+end-workflow	Install GH CLI	2026-03-30T22:12:20.9438523Z   KAOS_MODULE: [Ka0S] Agent Query
+end-workflow	Install GH CLI	2026-03-30T22:12:20.9438781Z   KAOS_CODE: 23770098917
+end-workflow	Install GH CLI	2026-03-30T22:12:20.9439027Z   KAOS_ACTOR: ka0score
+end-workflow	Install GH CLI	2026-03-30T22:12:20.9439357Z   POSTGRES_HOST: postgresql-ia.postgresql-ia.svc.cluster.local
+end-workflow	Install GH CLI	2026-03-30T22:12:20.9439749Z   POSTGRES_PORT: 5432
+end-workflow	Install GH CLI	2026-03-30T22:12:20.9439972Z   POSTGRES_DB: ka0s_memory
+end-workflow	Install GH CLI	2026-03-30T22:12:20.9440213Z   POSTGRES_USER: ka0s_ai
+end-workflow	Install GH CLI	2026-03-30T22:12:20.9440536Z   OLLAMA_HOST: http://ollama.ollama.svc.cluster.local
+end-workflow	Install GH CLI	2026-03-30T22:12:20.9440875Z   OLLAMA_PORT: 11434
+end-workflow	Install GH CLI	2026-03-30T22:12:20.9441107Z   EMBEDDING_MODEL: nomic-embed-text
+end-workflow	Install GH CLI	2026-03-30T22:12:20.9441383Z   GENERATION_MODEL: llama3.1:8b
+end-workflow	Install GH CLI	2026-03-30T22:12:20.9441633Z ##[endgroup]
+end-workflow	Install GH CLI	2026-03-30T22:12:21.5385633Z 4+1 records in
+end-workflow	Install GH CLI	2026-03-30T22:12:21.5386549Z 4+1 records out
+end-workflow	Install GH CLI	2026-03-30T22:12:21.5387127Z 2270 bytes (2.3 kB, 2.2 KiB) copied, 0.039984 s, 56.8 kB/s
+end-workflow	Install GH CLI	2026-03-30T22:12:21.7393866Z Get:1 https://cli.github.com/packages stable InRelease [3917 B]
+end-workflow	Install GH CLI	2026-03-30T22:12:21.8392677Z Get:2 https://cli.github.com/packages stable/main amd64 Packages [354 B]
+end-workflow	Install GH CLI	2026-03-30T22:12:21.9129833Z Get:3 http://archive.ubuntu.com/ubuntu noble InRelease [256 kB]
+end-workflow	Install GH CLI	2026-03-30T22:12:21.9146433Z Get:4 http://security.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+end-workflow	Install GH CLI	2026-03-30T22:12:22.0690246Z Get:5 https://ppa.launchpadcontent.net/git-core/ppa/ubuntu noble InRelease [24.3 kB]
+end-workflow	Install GH CLI	2026-03-30T22:12:22.1975475Z Get:6 https://ppa.launchpadcontent.net/git-core/ppa/ubuntu noble/main amd64 Packages [2992 B]
+end-workflow	Install GH CLI	2026-03-30T22:12:22.5234345Z Get:7 http://security.ubuntu.com/ubuntu noble-security/multiverse amd64 Packages [34.8 kB]
+end-workflow	Install GH CLI	2026-03-30T22:12:22.5423732Z Get:8 http://archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+end-workflow	Install GH CLI	2026-03-30T22:12:22.6609122Z Get:9 http://security.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [3429 kB]
+end-workflow	Install GH CLI	2026-03-30T22:12:22.6958606Z Get:10 http://archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+end-workflow	Install GH CLI	2026-03-30T22:12:22.8515688Z Get:11 http://archive.ubuntu.com/ubuntu noble/multiverse amd64 Packages [331 kB]
+end-workflow	Install GH CLI	2026-03-30T22:12:22.9618881Z Get:12 http://archive.ubuntu.com/ubuntu noble/universe amd64 Packages [19.3 MB]
+end-workflow	Install GH CLI	2026-03-30T22:12:23.6491109Z Get:13 http://security.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1504 kB]
+end-workflow	Install GH CLI	2026-03-30T22:12:23.8008291Z Get:14 http://security.ubuntu.com/ubuntu noble-security/main amd64 Packages [1954 kB]
+end-workflow	Install GH CLI	2026-03-30T22:12:24.1990822Z Get:15 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages [1808 kB]
+end-workflow	Install GH CLI	2026-03-30T22:12:24.2116998Z Get:16 http://archive.ubuntu.com/ubuntu noble/restricted amd64 Packages [117 kB]
+end-workflow	Install GH CLI	2026-03-30T22:12:24.2144210Z Get:17 http://archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [3601 kB]
+end-workflow	Install GH CLI	2026-03-30T22:12:24.3396625Z Get:18 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [2333 kB]
+end-workflow	Install GH CLI	2026-03-30T22:12:24.4046169Z Get:19 http://archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Packages [38.1 kB]
+end-workflow	Install GH CLI	2026-03-30T22:12:24.4047071Z Get:20 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [2155 kB]
+end-workflow	Install GH CLI	2026-03-30T22:12:24.4721449Z Get:21 http://archive.ubuntu.com/ubuntu noble-backports/universe amd64 Packages [36.1 kB]
+end-workflow	Install GH CLI	2026-03-30T22:12:24.4726284Z Get:22 http://archive.ubuntu.com/ubuntu noble-backports/main amd64 Packages [49.5 kB]
+end-workflow	Install GH CLI	2026-03-30T22:12:24.4736746Z Get:23 http://archive.ubuntu.com/ubuntu noble-backports/multiverse amd64 Packages [695 B]
+end-workflow	Install GH CLI	2026-03-30T22:12:25.6413170Z Fetched 37.4 MB in 4s (9409 kB/s)
+end-workflow	Install GH CLI	2026-03-30T22:12:26.7537179Z Reading package lists...
+end-workflow	Install GH CLI	2026-03-30T22:12:28.9226176Z Reading package lists...
+end-workflow	Install GH CLI	2026-03-30T22:12:29.2360648Z Building dependency tree...
+end-workflow	Install GH CLI	2026-03-30T22:12:29.2365919Z Reading state information...
+end-workflow	Install GH CLI	2026-03-30T22:12:29.7135444Z The following NEW packages will be installed:
+end-workflow	Install GH CLI	2026-03-30T22:12:29.7154041Z   gh
+end-workflow	Install GH CLI	2026-03-30T22:12:29.8005586Z 0 upgraded, 1 newly installed, 0 to remove and 2 not upgraded.
+end-workflow	Install GH CLI	2026-03-30T22:12:29.8006049Z Need to get 14.3 MB of archives.
+end-workflow	Install GH CLI	2026-03-30T22:12:29.8006411Z After this operation, 40.2 MB of additional disk space will be used.
+end-workflow	Install GH CLI	2026-03-30T22:12:29.8007016Z Get:1 https://cli.github.com/packages stable/main amd64 gh amd64 2.89.0 [14.3 MB]
+end-workflow	Install GH CLI	2026-03-30T22:12:30.3176246Z debconf: delaying package configuration, since apt-utils is not installed
+end-workflow	Install GH CLI	2026-03-30T22:12:30.3746098Z Fetched 14.3 MB in 0s (40.7 MB/s)
+end-workflow	Install GH CLI	2026-03-30T22:12:30.4496144Z Selecting previously unselected package gh.
+end-workflow	Install GH CLI	2026-03-30T22:12:30.4569439Z (Reading database ... 
+end-workflow	Install GH CLI	2026-03-30T22:12:30.4570520Z (Reading database ... 5%
+end-workflow	Install GH CLI	2026-03-30T22:12:30.4570767Z (Reading database ... 10%
+end-workflow	Install GH CLI	2026-03-30T22:12:30.4571004Z (Reading database ... 15%
+end-workflow	Install GH CLI	2026-03-30T22:12:30.4571237Z (Reading database ... 20%
+end-workflow	Install GH CLI	2026-03-30T22:12:30.4571460Z (Reading database ... 25%
+end-workflow	Install GH CLI	2026-03-30T22:12:30.4571769Z (Reading database ... 30%
+end-workflow	Install GH CLI	2026-03-30T22:12:30.4571997Z (Reading database ... 35%
+end-workflow	Install GH CLI	2026-03-30T22:12:30.4572233Z (Reading database ... 40%
+end-workflow	Install GH CLI	2026-03-30T22:12:30.4572463Z (Reading database ... 45%
+end-workflow	Install GH CLI	2026-03-30T22:12:30.4572693Z (Reading database ... 50%
+end-workflow	Install GH CLI	2026-03-30T22:12:30.4572918Z (Reading database ... 55%
+end-workflow	Install GH CLI	2026-03-30T22:12:30.4573171Z (Reading database ... 60%
+end-workflow	Install GH CLI	2026-03-30T22:12:30.4595926Z (Reading database ... 65%
+end-workflow	Install GH CLI	2026-03-30T22:12:30.4605536Z (Reading database ... 70%
+end-workflow	Install GH CLI	2026-03-30T22:12:30.4615396Z (Reading database ... 75%
+end-workflow	Install GH CLI	2026-03-30T22:12:30.4635392Z (Reading database ... 80%
+end-workflow	Install GH CLI	2026-03-30T22:12:30.4645532Z (Reading database ... 85%
+end-workflow	Install GH CLI	2026-03-30T22:12:30.4666146Z (Reading database ... 90%
+end-workflow	Install GH CLI	2026-03-30T22:12:30.4685648Z (Reading database ... 95%
+end-workflow	Install GH CLI	2026-03-30T22:12:30.4685998Z (Reading database ... 100%
+end-workflow	Install GH CLI	2026-03-30T22:12:30.4686359Z (Reading database ... 14387 files and directories currently installed.)
+end-workflow	Install GH CLI	2026-03-30T22:12:30.4686852Z Preparing to unpack .../archives/gh_2.89.0_amd64.deb ...
+end-workflow	Install GH CLI	2026-03-30T22:12:30.4787953Z Unpacking gh (2.89.0) ...
+end-workflow	Install GH CLI	2026-03-30T22:12:30.8898471Z Setting up gh (2.89.0) ...
+end-workflow	Trigger Inspector	﻿2026-03-30T22:12:31.0738998Z ##[group]Run echo "🔍 Triggering Inspector for Audit..."
+end-workflow	Trigger Inspector	2026-03-30T22:12:31.0739479Z [36;1mecho "🔍 Triggering Inspector for Audit..."[0m
+end-workflow	Trigger Inspector	2026-03-30T22:12:31.0739918Z [36;1m# Estandarización de inputs para inspector.yml[0m
+end-workflow	Trigger Inspector	2026-03-30T22:12:31.0740305Z [36;1mgh workflow run inspector.yml \[0m
+end-workflow	Trigger Inspector	2026-03-30T22:12:31.0740589Z [36;1m  --ref main \[0m
+end-workflow	Trigger Inspector	2026-03-30T22:12:31.0741230Z [36;1m  -f workflow_name="Ka0s Agent Query" \[0m
+end-workflow	Trigger Inspector	2026-03-30T22:12:31.0741549Z [36;1m  -f run_id="23770098917" \[0m
+end-workflow	Trigger Inspector	2026-03-30T22:12:31.0741809Z [36;1m  -f status="" \[0m
+end-workflow	Trigger Inspector	2026-03-30T22:12:31.0742057Z [36;1m  -f kaos-user-start="ka0score"[0m
+end-workflow	Trigger Inspector	2026-03-30T22:12:31.0755931Z shell: /usr/bin/bash -e {0}
+end-workflow	Trigger Inspector	2026-03-30T22:12:31.0756194Z env:
+end-workflow	Trigger Inspector	2026-03-30T22:12:31.0756387Z   KAOS_MODULE: [Ka0S] Agent Query
+end-workflow	Trigger Inspector	2026-03-30T22:12:31.0756638Z   KAOS_CODE: 23770098917
+end-workflow	Trigger Inspector	2026-03-30T22:12:31.0756859Z   KAOS_ACTOR: ka0score
+end-workflow	Trigger Inspector	2026-03-30T22:12:31.0757186Z   POSTGRES_HOST: postgresql-ia.postgresql-ia.svc.cluster.local
+end-workflow	Trigger Inspector	2026-03-30T22:12:31.0757564Z   POSTGRES_PORT: 5432
+end-workflow	Trigger Inspector	2026-03-30T22:12:31.0757830Z   POSTGRES_DB: ka0s_memory
+end-workflow	Trigger Inspector	2026-03-30T22:12:31.0758064Z   POSTGRES_USER: ka0s_ai
+end-workflow	Trigger Inspector	2026-03-30T22:12:31.0758360Z   OLLAMA_HOST: http://ollama.ollama.svc.cluster.local
+end-workflow	Trigger Inspector	2026-03-30T22:12:31.0758982Z   OLLAMA_PORT: 11434
+end-workflow	Trigger Inspector	2026-03-30T22:12:31.0759206Z   EMBEDDING_MODEL: nomic-embed-text
+end-workflow	Trigger Inspector	2026-03-30T22:12:31.0759483Z   GENERATION_MODEL: llama3.1:8b
+end-workflow	Trigger Inspector	2026-03-30T22:12:31.0760116Z   GH_TOKEN: ***
+end-workflow	Trigger Inspector	2026-03-30T22:12:31.0760310Z ##[endgroup]
+end-workflow	Trigger Inspector	2026-03-30T22:12:31.0839538Z 🔍 Triggering Inspector for Audit...
+end-workflow	Trigger Inspector	2026-03-30T22:12:33.7968794Z https://github.com/Ka0s-Klaus/ka0s/actions/runs/23770251217
+end-workflow	Post Checkout Code	﻿2026-03-30T22:12:33.8449876Z Post job cleanup.
+end-workflow	Post Checkout Code	2026-03-30T22:12:33.9749522Z [command]/usr/bin/git version
+end-workflow	Post Checkout Code	2026-03-30T22:12:33.9846793Z git version 2.53.0
+end-workflow	Post Checkout Code	2026-03-30T22:12:33.9905109Z Temporarily overriding HOME='/home/runner/_work/_temp/ef7f2328-c810-4b4e-b53a-9c1e673a3b11' before making global git config changes
+end-workflow	Post Checkout Code	2026-03-30T22:12:33.9914071Z Adding repository directory to the temporary git global config as a safe directory
+end-workflow	Post Checkout Code	2026-03-30T22:12:33.9915302Z [command]/usr/bin/git config --global --add safe.directory /home/runner/_work/ka0s/ka0s
+end-workflow	Post Checkout Code	2026-03-30T22:12:34.0034040Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+end-workflow	Post Checkout Code	2026-03-30T22:12:34.0096667Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+end-workflow	Post Checkout Code	2026-03-30T22:12:34.0453391Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+end-workflow	Post Checkout Code	2026-03-30T22:12:34.0504463Z http.https://github.com/.extraheader
+end-workflow	Post Checkout Code	2026-03-30T22:12:34.0519334Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+end-workflow	Post Checkout Code	2026-03-30T22:12:34.0616893Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+end-workflow	Post Checkout Code	2026-03-30T22:12:34.0989157Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+end-workflow	Post Checkout Code	2026-03-30T22:12:34.1031641Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+end-workflow	Complete job	﻿2026-03-30T22:12:34.1623556Z Cleaning up orphan processes
+end-workflow	Complete job	2026-03-30T22:12:34.1674017Z ##[warning]Node.js 20 actions are deprecated. The following actions are running on Node.js 20 and may not work as expected: actions/checkout@v4. Actions will be forced to run with Node.js 24 by default starting June 2nd, 2026. Node.js 20 will be removed from the runner on September 16th, 2026. Please check if updated versions of these actions are available that support Node.js 24. To opt into Node.js 24 now, set the FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true environment variable on the runner or in your workflow file. Once Node.js 24 becomes the default, you can temporarily opt out by setting ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
