@@ -20,7 +20,7 @@ def embed_query(query: str) -> List[float]:
         response = requests.post(
             f"{OLLAMA_HOST}/api/embeddings",
             json={"model": EMBEDDING_MODEL, "prompt": query},
-            timeout=30
+            timeout=600  # Aumentado para tolerar arranques lentos
         )
         response.raise_for_status()
         return response.json().get("embedding", [])
@@ -54,7 +54,7 @@ def detectar_rol(query: str) -> str:
                     "num_predict": 10
                 }
             },
-            timeout=30
+            timeout=600  # Aumentado para tolerar arranques lentos (cold starts)
         )
         response.raise_for_status()
         detected_role = response.json().get("response", "").strip().lower()
@@ -112,7 +112,7 @@ Responde a la pregunta basándote en el contexto recuperado y en el resultado de
                     "temperature": 0.2
                 }
             },
-            timeout=120
+            timeout=600
         )
         response.raise_for_status()
         data = response.json()
@@ -150,7 +150,7 @@ Responde a la pregunta basándote en el contexto recuperado y en el resultado de
                     "stream": False,
                     "options": {"temperature": 0.2}
                 },
-                timeout=120
+                timeout=600
             )
             final_response.raise_for_status()
             return final_response.json().get("message", {}).get("content", "Error al generar la respuesta final.")
