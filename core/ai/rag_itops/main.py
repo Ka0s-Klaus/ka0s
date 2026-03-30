@@ -1,6 +1,11 @@
 import argparse
 import sys
+import os
 import logging
+
+# Configurar sys.path para importaciones
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 from core.llm import detectar_rol, embed_query, generate_answer
 from core.search import search_context
 from roles import AVAILABLE_ROLES

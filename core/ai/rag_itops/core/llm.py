@@ -1,8 +1,14 @@
 import requests
 import logging
+import sys
+import os
 from typing import List
-from .config import OLLAMA_HOST, LLM_MODEL, EMBEDDING_MODEL
-from ..roles import AVAILABLE_ROLES, get_role_prompt
+
+# Añadir el directorio padre al sys.path para importaciones
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from core.config import OLLAMA_HOST, LLM_MODEL, EMBEDDING_MODEL
+from roles import AVAILABLE_ROLES, get_role_prompt
 
 logger = logging.getLogger("rag_itops.llm")
 
