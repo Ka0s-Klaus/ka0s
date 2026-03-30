@@ -13,13 +13,13 @@ El agente utiliza una arquitectura RAG (Retrieval-Augmented Generation) que comb
 
 ```mermaid
 graph TD
-    User[Usuario] -->|Crea Issue| GH[GitHub Issue]
-    GH -->|Webhook| Action[GitHub Action: Issue Responder]
-    Action -->|Consulta| Script[Inference Script (query.py)]
-    Script -->|Busca Contexto| DB[(Postgres Vector DB)]
-    Script -->|Genera Respuesta| LLM[Ollama (Qwen2)]
+    User["Usuario"] -->|"Crea Issue"| GH["GitHub Issue"]
+    GH -->|"Webhook"| Action["GitHub Action: Issue Responder"]
+    Action -->|"Consulta"| Script["Inference Script (query.py)"]
+    Script -->|"Busca Contexto"| DB[("Postgres Vector DB")]
+    Script -->|"Genera Respuesta"| LLM["Ollama (Qwen2)"]
     LLM --> Script
-    Script -->|Comenta| GH
+    Script -->|"Comenta"| GH
 ```
 
 ## Componentes Clave

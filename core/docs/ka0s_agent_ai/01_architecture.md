@@ -53,17 +53,14 @@ Con RAG:  Pregunta → Buscar contexto → LLM + contexto → Respuesta fundamen
 ## 2. Componentes del sistema
 
 ```mermaid
-graph LR
-    A[👤 Usuario / GitHub Actions] --> B[🐍 Script Python]
-    B --> C[🧮 Ollama\nnomic-embed-text]
-    B --> D[(🗄️ PostgreSQL\n+ pgvector)]
-    B --> E[🤖 Ollama\nllama3.1:8b]
-
-    style A fill:#2d8a4e,color:#fff
-    style B fill:#3572A5,color:#fff
-    style C fill:#f39c12,color:#fff
-    style D fill:#336791,color:#fff
-    style E fill:#8e44ad,color:#fff
+graph TD
+    User["Usuario"] -->|"Crea Issue"| GH["GitHub Issue"]
+    GH -->|"Webhook"| Action["GitHub Action: Issue Responder"]
+    Action -->|"Consulta"| Script["Inference Script (rag_query.py)"]
+    Script -->|"Busca Contexto"| DB[("Postgres Vector DB")]
+    Script -->|"Genera Respuesta"| LLM["Ollama (llama3.1:8b)"]
+    LLM --> Script
+    Script -->|"Comenta"| GH
 ```
 
 |Componente                 |Tecnología                   |Función                                 |

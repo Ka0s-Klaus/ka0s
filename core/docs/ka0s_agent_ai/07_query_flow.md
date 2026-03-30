@@ -169,15 +169,15 @@ sequenceDiagram
     participant PG  as PostgreSQL
 
     GHA->>PY: pregunta (sin rol)
-    PY->>OLL: "Clasifica esta pregunta en: devops/finops/secops/iaops/itilops/docsops"
-    OLL-->>PY: "devops"
+    PY->>OLL: Clasifica esta pregunta en devops/finops/secops/iaops/itilops/docsops
+    OLL-->>PY: devops
     PY->>OLL: embed(pregunta) con nomic-embed-text
     OLL-->>PY: vector[768]
     PY->>PG: SELECT ... ORDER BY embedding <=> vector LIMIT 5
     PG-->>PY: fragmentos relevantes
     PY->>OLL: prompt = system_prompt(devops) + contexto + pregunta
     OLL-->>PY: respuesta en español con explicación
-    PY-->>GHA: output: rag_response, rol_usado, fragments_found
+    PY-->>GHA: output rag_response, rol_usado, fragments_found
 ```
 
 -----
@@ -291,9 +291,9 @@ python rag_query.py "¿Hay alguna vulnerabilidad en este endpoint?" --rol secops
 
 ```mermaid
 flowchart LR
-    A["Crear roles/netops.py<br>heredando BaseRole"] --> B["Registro automático<br>en roles/__init__.py"]
-    B --> C["Disponible en<br>auto-detección"]
-    B --> D["Disponible en<br>--rol netops"]
+    A["Crear roles/netops.py heredando BaseRole"] --> B["Registro automático en roles/__init__.py"]
+    B --> C["Disponible en auto-detección"]
+    B --> D["Disponible en --rol netops"]
 
     style A fill:#3572A5,color:#fff
     style C fill:#2d8a4e,color:#fff
