@@ -1,0 +1,34 @@
+=== Logs for Service: nri-bundle-nr-ebpf-agent (Namespace: newrelic) ===
+=== Date: Mon Mar 30 23:35:28 UTC 2026 ===
+=== Selector: app.kubernetes.io/instance=nri-bundle,app.kubernetes.io/name=nr-ebpf-agent,component=agent ===
+
+[pod/nr-ebpf-agent-kbwpg/nr-ebpf-agent] 2026-03-30 23:35:17.137111 3220347 otel_export_sink_node.cc:677 ERROR: OTel metrics endpoint is unavailable - check network connectivity and endpoint URL
+[pod/nr-ebpf-agent-kbwpg/nr-ebpf-agent] 2026-03-30 23:35:17.137260 3220347 otel_export_sink_node.cc:501 ERROR: Detailed OTel export failure - Node ID: 363, gRPC Status Code: 14 (UNAVAILABLE), Error Message: 'DNS resolution failed for otlp.eu01.nr-data.net:443: C-ares status is not ARES_SUCCESS qtype=A name=otlp.eu01.nr-data.net is_balancer=0: Timeout while contacting DNS servers', Error Details: ''
+[pod/nr-ebpf-agent-kbwpg/nr-ebpf-agent] 2026-03-30 23:35:17.137480 3220347 otel_export_sink_node.cc:170 INFO: Closing OTelExportSinkNode 363 in query 7f63a9a9-9855-48c7-bae9-cca3414c491e before receiving EOS
+[pod/nr-ebpf-agent-kbwpg/nr-ebpf-agent] 2026-03-30 23:35:17.137715 3220347 carnot.cc:414 ERROR: PlanWalker failed: OTel export (carnot node_id=363) failed with error 'UNAVAILABLE'. Details: DNS resolution failed for otlp.eu01.nr-data.net:443: C-ares status is not ARES_SUCCESS qtype=A name=otlp.eu01.nr-data.net is_balancer=0: Timeout while contacting DNS servers 
+[pod/nr-ebpf-agent-kbwpg/nr-ebpf-agent] 2026-03-30 23:35:17.137912 3220347 script_scheduler.cc:118 ERROR: Failed to execute script 'jvm-metrics': OTel export (carnot node_id=363) failed with error 'UNAVAILABLE'. Details: DNS resolution failed for otlp.eu01.nr-data.net:443: C-ares status is not ARES_SUCCESS qtype=A name=otlp.eu01.nr-data.net is_balancer=0: Timeout while contacting DNS servers 
+[pod/nr-ebpf-agent-kbwpg/nr-ebpf-agent] 2026-03-30 23:35:17.138000 3220347 script_scheduler.cc:238 ERROR: Script execution cycle failed: All script executions failed
+[pod/nr-ebpf-agent-kbwpg/nr-ebpf-agent] 2026-03-30 23:35:17.138110 3220347 script_scheduler.cc:251 INFO: Script execution cycle completed: 0 succeeded, 23 failed, took 0.17s; sleeping for 14.83s until next cycle
+[pod/nr-ebpf-agent-kbwpg/nr-ebpf-agent] 2026-03-30 23:35:17.940296 3220348 run_core_stats.cc:88 INFO: |49000,0,49000,61393,49591,11802,1,8,1145,0,0,0,0,0,0,0,0,947,0,1407,1219,2669,3069,5061,7332,26151,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+[pod/nr-ebpf-agent-kbwpg/nr-ebpf-agent] 2026-03-30 23:35:22.972921 3220297 dns_lookup_service.cc:100 WARNING: DNS lookup failed for otlp.nr-data.net: Temporary failure in name resolution
+[pod/nr-ebpf-agent-kbwpg/nr-ebpf-agent] 2026-03-30 23:35:22.973039 3220297 dns_lookup_service.cc:183 WARNING: No IP addresses found for OTel hostname: otlp.nr-data.net
+[pod/nr-ebpf-agent-kv6hz/nr-ebpf-agent] 2026-03-30 23:35:21.597978 3706647 carnot.cc:473 INFO: Executed script: mongodb-metrics, duration: 56.464ms, bytes processed: 0, records processed: 0
+[pod/nr-ebpf-agent-kv6hz/nr-ebpf-agent] 2026-03-30 23:35:21.660872 3706647 carnot.cc:473 INFO: Executed script: cassandra-metrics, duration: 62.015ms, bytes processed: 0, records processed: 0
+[pod/nr-ebpf-agent-kv6hz/nr-ebpf-agent] 2026-03-30 23:35:21.716938 3706647 carnot.cc:473 INFO: Executed script: mssql-metrics, duration: 55.348ms, bytes processed: 0, records processed: 0
+[pod/nr-ebpf-agent-kv6hz/nr-ebpf-agent] 2026-03-30 23:35:21.774879 3706647 carnot.cc:473 INFO: Executed script: dynamodb-metrics, duration: 57.276ms, bytes processed: 0, records processed: 0
+[pod/nr-ebpf-agent-kv6hz/nr-ebpf-agent] 2026-03-30 23:35:22.008134 3706647 carnot.cc:473 INFO: Executed script: thrift-metrics, duration: 232.156ms, bytes processed: 0, records processed: 0
+[pod/nr-ebpf-agent-kv6hz/nr-ebpf-agent] 2026-03-30 23:35:22.191484 3706647 carnot.cc:473 INFO: Executed script: tcp-metrics, duration: 181.386ms, bytes processed: 5384, records processed: 26
+[pod/nr-ebpf-agent-kv6hz/nr-ebpf-agent] 2026-03-30 23:35:22.252382 3706647 carnot.cc:473 INFO: Executed script: jvm-metrics, duration: 59.562ms, bytes processed: 0, records processed: 0
+[pod/nr-ebpf-agent-kv6hz/nr-ebpf-agent] 2026-03-30 23:35:22.252843 3706647 script_scheduler.cc:251 INFO: Script execution cycle completed: 23 succeeded, 0 failed, took 2.59s; sleeping for 12.41s until next cycle
+[pod/nr-ebpf-agent-kv6hz/nr-ebpf-agent] 2026-03-30 23:35:23.307026 3704046 dns_lookup_service.cc:100 WARNING: DNS lookup failed for gov-otlp.nr-data.net: Temporary failure in name resolution
+[pod/nr-ebpf-agent-kv6hz/nr-ebpf-agent] 2026-03-30 23:35:23.307130 3704046 dns_lookup_service.cc:183 WARNING: No IP addresses found for OTel hostname: gov-otlp.nr-data.net
+[pod/nr-ebpf-agent-qmn8p/nr-ebpf-agent] 2026-03-30 23:35:23.011998 2768015 carnot.cc:473 INFO: Executed script: postgresql-metrics, duration: 39.579ms, bytes processed: 0, records processed: 0
+[pod/nr-ebpf-agent-qmn8p/nr-ebpf-agent] 2026-03-30 23:35:23.049397 2768015 carnot.cc:473 INFO: Executed script: redis-metrics, duration: 36.05ms, bytes processed: 0, records processed: 0
+[pod/nr-ebpf-agent-qmn8p/nr-ebpf-agent] 2026-03-30 23:35:23.086607 2768015 carnot.cc:473 INFO: Executed script: mongodb-metrics, duration: 36.494ms, bytes processed: 0, records processed: 0
+[pod/nr-ebpf-agent-qmn8p/nr-ebpf-agent] 2026-03-30 23:35:23.124459 2768015 carnot.cc:473 INFO: Executed script: cassandra-metrics, duration: 37.458ms, bytes processed: 0, records processed: 0
+[pod/nr-ebpf-agent-qmn8p/nr-ebpf-agent] 2026-03-30 23:35:23.164048 2768015 carnot.cc:473 INFO: Executed script: mssql-metrics, duration: 39.2ms, bytes processed: 0, records processed: 0
+[pod/nr-ebpf-agent-qmn8p/nr-ebpf-agent] 2026-03-30 23:35:23.200379 2768015 carnot.cc:473 INFO: Executed script: dynamodb-metrics, duration: 35.986ms, bytes processed: 0, records processed: 0
+[pod/nr-ebpf-agent-qmn8p/nr-ebpf-agent] 2026-03-30 23:35:23.358994 2768015 carnot.cc:473 INFO: Executed script: thrift-metrics, duration: 158.041ms, bytes processed: 0, records processed: 0
+[pod/nr-ebpf-agent-qmn8p/nr-ebpf-agent] 2026-03-30 23:35:23.489099 2768015 carnot.cc:473 INFO: Executed script: tcp-metrics, duration: 127.738ms, bytes processed: 4446, records processed: 23
+[pod/nr-ebpf-agent-qmn8p/nr-ebpf-agent] 2026-03-30 23:35:23.528142 2768015 carnot.cc:473 INFO: Executed script: jvm-metrics, duration: 38ms, bytes processed: 0, records processed: 0
+[pod/nr-ebpf-agent-qmn8p/nr-ebpf-agent] 2026-03-30 23:35:23.528429 2768015 script_scheduler.cc:251 INFO: Script execution cycle completed: 23 succeeded, 0 failed, took 2.15s; sleeping for 12.85s until next cycle
