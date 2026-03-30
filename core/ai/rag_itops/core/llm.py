@@ -1,17 +1,151 @@
-import requests
 import logging
-import sys
-import os
+import re
 from typing import List
 
-# Añadir el directorio padre al sys.path para importaciones
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import requests
 
-from core.config import OLLAMA_HOST, LLM_MODEL, EMBEDDING_MODEL
-from roles import AVAILABLE_ROLES, get_role_prompt
-from tools.registry import AVAILABLE_TOOLS, execute_tool
+from .config import EMBEDDING_MODEL, LLM_MODEL, OLLAMA_HOST
+from ..roles import AVAILABLE_ROLES, get_role_prompt
+from ..tools.registry import AVAILABLE_TOOLS, execute_tool
 
 logger = logging.getLogger("rag_itops.llm")
+
+_EN_MARKERS = {
+    "the",
+    "and",
+    "or",
+    "is",
+    "are",
+    "was",
+    "were",
+    "this",
+    "that",
+    "these",
+    "those",
+    "here",
+    "some",
+    "key",
+    "points",
+    "possible",
+    "reasons",
+    "could",
+    "should",
+    "to",
+    "of",
+    "in",
+    "for",
+    "with",
+    "when",
+    "while",
+    "check",
+    "verify",
+    "workflow",
+    "logs",
+    "issue",
+    "error",
+    "fails",
+    "failure",
+}
+
+_ES_MARKERS = {
+    "el",
+    "la",
+    "los",
+    "las",
+    "y",
+    "o",
+    "es",
+    "son",
+    "fue",
+    "eran",
+    "esto",
+    "esta",
+    "estas",
+    "estos",
+    "aqui",
+    "aquí",
+    "algunos",
+    "puntos",
+    "posibles",
+    "razones",
+    "podria",
+    "podría",
+    "deberia",
+    "debería",
+    "para",
+    "de",
+    "en",
+    "con",
+    "cuando",
+    "mientras",
+    "comprobar",
+    "verificar",
+    "flujo",
+    "logs",
+    "issue",
+    "error",
+    "fallo",
+    "fallos",
+}
+
+
+def _tokenize_lang(text: str) -> List[str]:
+    pattern = r"[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ]+"
+    return re.findall(pattern, (text or "").lower())
+
+
+def _looks_english(text: str) -> bool:
+    lowered = (text or "").lower()
+    if "this is a log" in lowered or "here are some key points" in lowered:
+        return True
+
+    tokens = _tokenize_lang(text)
+    if not tokens:
+        return False
+
+    en = sum(1 for t in tokens if t in _EN_MARKERS)
+    es = sum(1 for t in tokens if t in _ES_MARKERS)
+
+    return en >= 6 and en > es * 2
+
+
+def _rewrite_to_spanish(text: str, system_prompt: str) -> str:
+    user_prompt = (
+        "Reescribe el texto en español manteniendo el significado y la estructura. "
+        "No traduzcas nombres propios, modelos, endpoints, comandos ni URLs. "
+        "Si hay bloques delimitados por ``` o secciones de logs, conserva su contenido literal. "
+        "Devuelve únicamente el texto final reescrito.\n\n"
+        f"TEXTO:\n{text}"
+    )
+
+    response = requests.post(
+        f"{OLLAMA_HOST}/api/chat",
+        json={
+            "model": LLM_MODEL,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            "stream": False,
+            "options": {"temperature": 0.0},
+        },
+        timeout=None,
+    )
+    response.raise_for_status()
+    return response.json().get("message", {}).get("content", "").strip() or text
+
+
+def _ensure_spanish(text: str, system_prompt: str) -> str:
+    if not text:
+        return text
+    if not _looks_english(text):
+        return text
+    try:
+        rewritten = _rewrite_to_spanish(text, system_prompt)
+        return rewritten
+    except Exception:
+        return text
+
 
 def embed_query(query: str) -> List[float]:
     """Genera el vector embedding para la pregunta usando nomic-embed-text."""
@@ -42,7 +176,7 @@ def detectar_rol(query: str) -> str:
     Rol:"""
     
     try:
-        logger.info(f"Detectando rol para la pregunta...")
+        logger.info("Detectando rol para la pregunta...")
         response = requests.post(
             f"{OLLAMA_HOST}/api/generate",
             json={
@@ -153,12 +287,15 @@ Responde a la pregunta basándote en el contexto recuperado y en el resultado de
                 timeout=None  # Espera indefinida
             )
             final_response.raise_for_status()
-            return final_response.json().get("message", {}).get("content", "Error al generar la respuesta final.")
+            content = final_response.json().get("message", {}).get(
+                "content", "Error al generar la respuesta final."
+            )
+            return _ensure_spanish(content, system_prompt)
             
         else:
             # El modelo no necesitó herramientas
             logger.info("El LLM generó la respuesta directamente sin herramientas.")
-            return response_message.get("content", "Respuesta vacía.")
+            return _ensure_spanish(response_message.get("content", "Respuesta vacía."), system_prompt)
 
     except Exception as e:
         logger.error(f"Error generando respuesta: {e}")
