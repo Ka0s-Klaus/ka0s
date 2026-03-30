@@ -1,12 +1,14 @@
 from .devops import DevOpsRole
 from .secops import SecOpsRole
 from .finops import FinOpsRole
+from .itilops import ITILOpsRole
 
 # Registro centralizado de roles para el router
 AVAILABLE_ROLES = {
     "devops": DevOpsRole,
     "secops": SecOpsRole,
-    "finops": FinOpsRole
+    "finops": FinOpsRole,
+    "itilops": ITILOpsRole
 }
 
 def get_role_prompt(role_name: str) -> str:
