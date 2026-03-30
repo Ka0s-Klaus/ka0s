@@ -289,23 +289,16 @@ python rag_query.py "¿Hay alguna vulnerabilidad en este endpoint?" --rol secops
 
 ### Añadir un nuevo rol
 
-```python
-# En el diccionario PERSONAS, añadir una nueva entrada:
-"nuevorol": {
-    "nombre": "Nombre del Rol",
-    "emoji": "🆕",
-    "system_prompt": f"""{CONOCIMIENTO_HERRAMIENTAS}
-{REGLAS_GLOBALES}
+```mermaid
+flowchart LR
+    A["Crear roles/netops.py<br>heredando BaseRole"] --> B["Registro automático<br>en roles/__init__.py"]
+    B --> C["Disponible en<br>auto-detección"]
+    B --> D["Disponible en<br>--rol netops"]
 
-Eres un especialista en...
-
-ENFOQUE DE ESTE ROL:
-- Regla específica 1
-- Regla específica 2"""
-}
+    style A fill:#3572A5,color:#fff
+    style C fill:#2d8a4e,color:#fff
+    style D fill:#2d8a4e,color:#fff
 ```
-
-Y añadirlo a `ROLES_VALIDOS` y al prompt del clasificador en `detectar_rol()`.
 
 ### Añadir una nueva herramienta
 
