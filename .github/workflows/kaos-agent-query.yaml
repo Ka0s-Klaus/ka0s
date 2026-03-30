@@ -40,29 +40,203 @@ jobs:
     outputs:
       status: ${{ job.status }}
     steps:
+      - name: Report Start (Issue Trace)
+        if: ${{ inputs.issue_number != '' }}
+        uses: actions/github-script@v7
+        env:
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
+          QUESTION: ${{ inputs.question }}
+          REASON: ${{ inputs.reason }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issueNumber = Number(process.env.ISSUE_NUMBER || '');
+            if (!issueNumber) return;
+            const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const question = process.env.QUESTION || '';
+            const reason = process.env.REASON || '';
+            github.rest.issues.createComment({
+              issue_number: issueNumber,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: [
+                `### [Ka0s Agent Query] Inicio`,
+                ``,
+                `- Motivo: ${reason}`,
+                `- Pregunta: ${question}`,
+                `- Run: ${runUrl}`,
+              ].join('\n')
+            })
+
       - name: Checkout Code
+        id: checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      - name: Report Step (Checkout Code)
+        if: ${{ inputs.issue_number != '' && always() }}
+        uses: actions/github-script@v7
+        env:
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
+          STEP_NAME: "Checkout Code"
+          STEP_OUTCOME: ${{ steps.checkout.outcome }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issueNumber = Number(process.env.ISSUE_NUMBER || '');
+            if (!issueNumber) return;
+            const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const stepName = process.env.STEP_NAME || '';
+            const outcome = process.env.STEP_OUTCOME || 'unknown';
+            github.rest.issues.createComment({
+              issue_number: issueNumber,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: [
+                `### [Ka0s Agent Query] Paso`,
+                ``,
+                `- Paso: ${stepName}`,
+                `- Estado: ${outcome}`,
+                `- Run: ${runUrl}`,
+              ].join('\n')
+            })
+
       - name: Setup Environment
+        id: setup_environment
         run: |
           echo "Iniciando módulo: ${{ env.KAOS_MODULE }}"
           echo "Run ID: ${{ env.KAOS_CODE }}"
           echo "Actor: ${{ env.KAOS_ACTOR }}"
 
+      - name: Report Step (Setup Environment)
+        if: ${{ inputs.issue_number != '' && always() }}
+        uses: actions/github-script@v7
+        env:
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
+          STEP_NAME: "Setup Environment"
+          STEP_OUTCOME: ${{ steps.setup_environment.outcome }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issueNumber = Number(process.env.ISSUE_NUMBER || '');
+            if (!issueNumber) return;
+            const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const stepName = process.env.STEP_NAME || '';
+            const outcome = process.env.STEP_OUTCOME || 'unknown';
+            github.rest.issues.createComment({
+              issue_number: issueNumber,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: [
+                `### [Ka0s Agent Query] Paso`,
+                ``,
+                `- Paso: ${stepName}`,
+                `- Estado: ${outcome}`,
+                `- Run: ${runUrl}`,
+              ].join('\n')
+            })
+
       - name: Setup Python
+        id: setup_python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
+      - name: Report Step (Setup Python)
+        if: ${{ inputs.issue_number != '' && always() }}
+        uses: actions/github-script@v7
+        env:
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
+          STEP_NAME: "Setup Python"
+          STEP_OUTCOME: ${{ steps.setup_python.outcome }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issueNumber = Number(process.env.ISSUE_NUMBER || '');
+            if (!issueNumber) return;
+            const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const stepName = process.env.STEP_NAME || '';
+            const outcome = process.env.STEP_OUTCOME || 'unknown';
+            github.rest.issues.createComment({
+              issue_number: issueNumber,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: [
+                `### [Ka0s Agent Query] Paso`,
+                ``,
+                `- Paso: ${stepName}`,
+                `- Estado: ${outcome}`,
+                `- Run: ${runUrl}`,
+              ].join('\n')
+            })
+
       - name: Install Dependencies
+        id: install_dependencies
         run: pip install psycopg2-binary requests mcp pydantic
 
+      - name: Report Step (Install Dependencies)
+        if: ${{ inputs.issue_number != '' && always() }}
+        uses: actions/github-script@v7
+        env:
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
+          STEP_NAME: "Install Dependencies"
+          STEP_OUTCOME: ${{ steps.install_dependencies.outcome }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issueNumber = Number(process.env.ISSUE_NUMBER || '');
+            if (!issueNumber) return;
+            const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const stepName = process.env.STEP_NAME || '';
+            const outcome = process.env.STEP_OUTCOME || 'unknown';
+            github.rest.issues.createComment({
+              issue_number: issueNumber,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: [
+                `### [Ka0s Agent Query] Paso`,
+                ``,
+                `- Paso: ${stepName}`,
+                `- Estado: ${outcome}`,
+                `- Run: ${runUrl}`,
+              ].join('\n')
+            })
+
       - name: Install GH CLI
+        id: install_gh_cli
         uses: ./.github/actions/install-gh-cli
 
+      - name: Report Step (Install GH CLI)
+        if: ${{ inputs.issue_number != '' && always() }}
+        uses: actions/github-script@v7
+        env:
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
+          STEP_NAME: "Install GH CLI"
+          STEP_OUTCOME: ${{ steps.install_gh_cli.outcome }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issueNumber = Number(process.env.ISSUE_NUMBER || '');
+            if (!issueNumber) return;
+            const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const stepName = process.env.STEP_NAME || '';
+            const outcome = process.env.STEP_OUTCOME || 'unknown';
+            github.rest.issues.createComment({
+              issue_number: issueNumber,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: [
+                `### [Ka0s Agent Query] Paso`,
+                ``,
+                `- Paso: ${stepName}`,
+                `- Estado: ${outcome}`,
+                `- Run: ${runUrl}`,
+              ].join('\n')
+            })
+
       - name: Ollama Preflight (Models)
+        id: ollama_preflight
         run: |
           python - <<'PY'
           import urllib.request
@@ -130,6 +304,34 @@ jobs:
           print('OK: modelos presentes tras pull')
           PY
 
+      - name: Report Step (Ollama Preflight)
+        if: ${{ inputs.issue_number != '' && always() }}
+        uses: actions/github-script@v7
+        env:
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
+          STEP_NAME: "Ollama Preflight (Models)"
+          STEP_OUTCOME: ${{ steps.ollama_preflight.outcome }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issueNumber = Number(process.env.ISSUE_NUMBER || '');
+            if (!issueNumber) return;
+            const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const stepName = process.env.STEP_NAME || '';
+            const outcome = process.env.STEP_OUTCOME || 'unknown';
+            github.rest.issues.createComment({
+              issue_number: issueNumber,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: [
+                `### [Ka0s Agent Query] Paso`,
+                ``,
+                `- Paso: ${stepName}`,
+                `- Estado: ${outcome}`,
+                `- Run: ${runUrl}`,
+              ].join('\n')
+            })
+
       - name: Query Agent
         id: query
         env:
@@ -183,7 +385,41 @@ jobs:
           # Exportar variable para el siguiente paso
           echo "FILEPATH=$FILEPATH" >> $GITHUB_ENV
 
+      - name: Report Step (Query Agent)
+        if: ${{ inputs.issue_number != '' && always() }}
+        uses: actions/github-script@v7
+        env:
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
+          STEP_NAME: "Query Agent"
+          STEP_OUTCOME: ${{ steps.query.outcome }}
+          RESPONSE_FILEPATH: ${{ env.FILEPATH }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issueNumber = Number(process.env.ISSUE_NUMBER || '');
+            if (!issueNumber) return;
+            const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const stepName = process.env.STEP_NAME || '';
+            const outcome = process.env.STEP_OUTCOME || 'unknown';
+            const responsePath = process.env.RESPONSE_FILEPATH || '';
+            const extra = responsePath ? `- Archivo: ${responsePath}` : null;
+            const body = [
+              `### [Ka0s Agent Query] Paso`,
+              ``,
+              `- Paso: ${stepName}`,
+              `- Estado: ${outcome}`,
+              ...(extra ? [extra] : []),
+              `- Run: ${runUrl}`,
+            ].join('\n');
+            github.rest.issues.createComment({
+              issue_number: issueNumber,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body
+            })
+
       - name: Comment on Issue
+        id: comment_on_issue
         if: ${{ inputs.issue_number != '' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -191,7 +427,36 @@ jobs:
           echo "Añadiendo respuesta a la Issue #${{ inputs.issue_number }}..."
           gh issue comment ${{ inputs.issue_number }} -F ${{ env.FILEPATH }}
 
+      - name: Report Step (Comment on Issue)
+        if: ${{ inputs.issue_number != '' && always() }}
+        uses: actions/github-script@v7
+        env:
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
+          STEP_NAME: "Comment on Issue"
+          STEP_OUTCOME: ${{ steps.comment_on_issue.outcome }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issueNumber = Number(process.env.ISSUE_NUMBER || '');
+            if (!issueNumber) return;
+            const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const stepName = process.env.STEP_NAME || '';
+            const outcome = process.env.STEP_OUTCOME || 'unknown';
+            github.rest.issues.createComment({
+              issue_number: issueNumber,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: [
+                `### [Ka0s Agent Query] Paso`,
+                ``,
+                `- Paso: ${stepName}`,
+                `- Estado: ${outcome}`,
+                `- Run: ${runUrl}`,
+              ].join('\n')
+            })
+
       - name: Commit Response
+        id: commit_response
         run: |
           git config --global user.name "${{ secrets.KAOS_BOT_NAME }}"
           git config --global user.email "${{ secrets.KAOS_BOT_EMAIL }}"
@@ -215,6 +480,34 @@ jobs:
           done
           echo "❌ Error crítico: No se pudo hacer push después de $MAX_RETRIES intentos."
           exit 1
+
+      - name: Report Step (Commit Response)
+        if: ${{ inputs.issue_number != '' && always() }}
+        uses: actions/github-script@v7
+        env:
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
+          STEP_NAME: "Commit Response"
+          STEP_OUTCOME: ${{ steps.commit_response.outcome }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issueNumber = Number(process.env.ISSUE_NUMBER || '');
+            if (!issueNumber) return;
+            const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const stepName = process.env.STEP_NAME || '';
+            const outcome = process.env.STEP_OUTCOME || 'unknown';
+            github.rest.issues.createComment({
+              issue_number: issueNumber,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: [
+                `### [Ka0s Agent Query] Paso`,
+                ``,
+                `- Paso: ${stepName}`,
+                `- Estado: ${outcome}`,
+                `- Run: ${runUrl}`,
+              ].join('\n')
+            })
 
   handle-success:
     name: Handle Success
