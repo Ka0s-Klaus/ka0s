@@ -336,19 +336,47 @@ def pg_set_state(conn, db_name: str, collection_name: str, last_id: str, docs_pr
 
 def pg_upsert_chunk(conn, source: str, chunk: str, content_hash: str, embedding: List[float]) -> None:
     with conn.cursor() as cur:
-        cur.execute(
-            """
-            INSERT INTO kaos_memory (source, content, content_hash, embedding)
-            VALUES (%s, %s, %s, %s)
-            ON CONFLICT (source)
-            DO UPDATE SET
-                content = EXCLUDED.content,
-                content_hash = EXCLUDED.content_hash,
-                embedding = EXCLUDED.embedding,
-                created_at = CURRENT_TIMESTAMP;
-            """,
-            (source, chunk, content_hash, embedding),
-        )
+        cur.execute("SAVEPOINT sp_pg_upsert_chunk")
+        try:
+            cur.execute(
+                """
+                INSERT INTO kaos_memory (source, content, content_hash, embedding)
+                VALUES (%s, %s, %s, %s)
+                ON CONFLICT (source)
+                DO UPDATE SET
+                    content = EXCLUDED.content,
+                    content_hash = EXCLUDED.content_hash,
+                    embedding = EXCLUDED.embedding,
+                    created_at = CURRENT_TIMESTAMP;
+                """,
+                (source, chunk, content_hash, embedding),
+            )
+        except psycopg2.errors.UniqueViolation:
+            cur.execute("ROLLBACK TO SAVEPOINT sp_pg_upsert_chunk")
+            cur.execute(
+                """
+                UPDATE kaos_memory
+                SET content=%s, content_hash=%s, embedding=%s, created_at=CURRENT_TIMESTAMP
+                WHERE source=%s;
+                """,
+                (chunk, content_hash, embedding, source),
+            )
+            if cur.rowcount == 0:
+                cur.execute(
+                    """
+                    INSERT INTO kaos_memory (source, content, content_hash, embedding)
+                    VALUES (%s, %s, %s, %s)
+                    ON CONFLICT (source)
+                    DO UPDATE SET
+                        content = EXCLUDED.content,
+                        content_hash = EXCLUDED.content_hash,
+                        embedding = EXCLUDED.embedding,
+                        created_at = CURRENT_TIMESTAMP;
+                    """,
+                    (source, chunk, content_hash, embedding),
+                )
+        finally:
+            cur.execute("RELEASE SAVEPOINT sp_pg_upsert_chunk")
 
 
 def pg_chunk_is_current(conn, source: str, content_hash: str) -> bool:

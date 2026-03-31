@@ -5,6 +5,8 @@ metadata:
   namespace: zabbix
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: zabbix-server
@@ -14,17 +16,26 @@ spec:
         app: zabbix-server
     spec:
       serviceAccountName: zabbix-service-account
-      # Modificado: Apunta explícitamente a k8-node-40
-      nodeSelector:
-        kubernetes.io/hostname: k8-node-40
-      # Añadido: Tolerancia para permitir que se ejecute en un nodo "cordoned" (SchedulingDisabled)
-      tolerations:
-      - key: "node.kubernetes.io/unschedulable"
-        operator: "Exists"
-        effect: "NoSchedule"
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: NotIn
+                    values:
+                      - k8-node-40
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - k8-node-20
       containers:
         - name: zabbix-server
-          image: zabbix/zabbix-server-pgsql:latest
+          image: zabbix/zabbix-server-pgsql@sha256:efa0418299cd4d5c2428758753caac80e0321859ad2cd7dba8f380d7868ac07d
           ports:
             - containerPort: 10051
           env:
@@ -33,7 +44,10 @@ spec:
             - name: POSTGRES_USER
               value: "zabbix"
             - name: POSTGRES_PASSWORD
-              value: "zabbix_secure_password"
+              valueFrom:
+                secretKeyRef:
+                  name: zabbix-db
+                  key: postgres-password
             - name: POSTGRES_DB
               value: "zabbix"
             - name: ZBX_CACHESIZE
@@ -46,6 +60,31 @@ spec:
               value: "256M"
             - name: ZBX_STARTVMWARECOLLECTORS
               value: "0"
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "1Gi"
+            limits:
+              cpu: "1500m"
+              memory: "3Gi"
+          startupProbe:
+            tcpSocket:
+              port: 10051
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 60
+          livenessProbe:
+            tcpSocket:
+              port: 10051
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 6
+          readinessProbe:
+            tcpSocket:
+              port: 10051
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 6
           volumeMounts:
             - name: zabbix-server-data
               mountPath: /var/lib/zabbix

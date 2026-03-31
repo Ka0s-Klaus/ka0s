@@ -1,0 +1,149 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: mongo-vectorize-log
+  namespace: ka0s-knowledge
+spec:
+  schedule: "*/15 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 3600
+      backoffLimit: 2
+      activeDeadlineSeconds: 1800
+      template:
+        spec:
+          nodeSelector:
+            ka0s.io/default-worker: "true"
+          restartPolicy: Never
+          initContainers:
+            - name: wait-postgresql-ia
+              image: postgres:15-alpine
+              imagePullPolicy: IfNotPresent
+              command: ["sh", "-lc"]
+              args:
+                - |
+                  start="$(date +%s)"
+                  max="${PG_WAIT_SECONDS:-600}"
+                  while ! pg_isready -h "$POSTGRES_HOST" -p "$POSTGRES_PORT" -U "$POSTGRES_USER" -d "$POSTGRES_DB"; do
+                    now="$(date +%s)"
+                    if [ "$((now-start))" -ge "$max" ]; then
+                      echo "Postgres not ready after ${max}s"
+                      exit 1
+                    fi
+                    sleep 2
+                  done
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+                limits:
+                  cpu: 100m
+                  memory: 128Mi
+              env:
+                - name: PG_WAIT_SECONDS
+                  value: "900"
+                - name: POSTGRES_HOST
+                  valueFrom:
+                    secretKeyRef:
+                      name: knowledge-sources
+                      key: POSTGRES_IA_HOST
+                - name: POSTGRES_PORT
+                  valueFrom:
+                    secretKeyRef:
+                      name: knowledge-sources
+                      key: POSTGRES_IA_PORT
+                - name: POSTGRES_DB
+                  valueFrom:
+                    secretKeyRef:
+                      name: knowledge-sources
+                      key: POSTGRES_IA_DB
+                - name: POSTGRES_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: knowledge-sources
+                      key: POSTGRES_IA_USER
+                - name: POSTGRES_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: knowledge-sources
+                      key: POSTGRES_IA_PASSWORD
+          containers:
+            - name: mongo-vectorize
+              image: python:3.11-slim
+              imagePullPolicy: IfNotPresent
+              command: ["sh", "-lc"]
+              args:
+                - "python -m pip install --disable-pip-version-check --no-cache-dir --retries 10 --timeout 60 -r /config/requirements.txt && python /config/mongo_ingest.py"
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 256Mi
+                limits:
+                  cpu: 500m
+                  memory: 512Mi
+              env:
+                - name: PIP_DISABLE_PIP_VERSION_CHECK
+                  value: "1"
+                - name: PIP_NO_CACHE_DIR
+                  value: "1"
+                - name: MONGO_URI
+                  valueFrom:
+                    secretKeyRef:
+                      name: knowledge-sources
+                      key: MONGO_URI
+                - name: POSTGRES_HOST
+                  valueFrom:
+                    secretKeyRef:
+                      name: knowledge-sources
+                      key: POSTGRES_IA_HOST
+                - name: POSTGRES_PORT
+                  valueFrom:
+                    secretKeyRef:
+                      name: knowledge-sources
+                      key: POSTGRES_IA_PORT
+                - name: POSTGRES_DB
+                  valueFrom:
+                    secretKeyRef:
+                      name: knowledge-sources
+                      key: POSTGRES_IA_DB
+                - name: POSTGRES_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: knowledge-sources
+                      key: POSTGRES_IA_USER
+                - name: POSTGRES_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: knowledge-sources
+                      key: POSTGRES_IA_PASSWORD
+                - name: OLLAMA_HOST
+                  value: "ollama.ollama.svc.cluster.local"
+                - name: OLLAMA_PORT
+                  value: "11434"
+                - name: EMBEDDING_MODEL
+                  value: "nomic-embed-text"
+                - name: MONGO_DB_ALLOWLIST
+                  value: "inspector"
+                - name: MONGO_COLLECTION_ALLOWLIST
+                  value: "col_log"
+                - name: BATCH_SIZE
+                  value: "5"
+                - name: MAX_DOCS
+                  value: "10"
+                - name: MAX_CHUNKS_PER_DOC
+                  value: "20"
+                - name: SLEEP_SECONDS_PER_DOC
+                  value: "0.75"
+                - name: LOG_LEVEL
+                  value: "INFO"
+              volumeMounts:
+                - name: scripts
+                  mountPath: /config
+                  readOnly: true
+          volumes:
+            - name: scripts
+              configMap:
+                name: mongo-vectorize-scripts

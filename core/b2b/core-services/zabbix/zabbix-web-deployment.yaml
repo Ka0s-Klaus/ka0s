@@ -13,17 +13,26 @@ spec:
       labels:
         app: zabbix-web
     spec:
-      # Modificado: Apunta explícitamente a k8-node-40
-      nodeSelector:
-        kubernetes.io/hostname: k8-node-40
-      # Añadido: Tolerancia para permitir que se ejecute en un nodo "cordoned" (SchedulingDisabled)
-      tolerations:
-      - key: "node.kubernetes.io/unschedulable"
-        operator: "Exists"
-        effect: "NoSchedule"
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: NotIn
+                    values:
+                      - k8-node-40
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - k8-node-20
       initContainers:
         - name: init-zabbix-web-branding
-          image: zabbix/zabbix-web-nginx-pgsql:latest
+          image: zabbix/zabbix-web-nginx-pgsql@sha256:67bc74b10d1dc443515153ec6080f0119ddb1f3ea07f3337779e067aa5440c78
           command:
             - sh
             - -c
@@ -75,7 +84,7 @@ spec:
               readOnly: true
       containers:
         - name: zabbix-web
-          image: zabbix/zabbix-web-nginx-pgsql:latest
+          image: zabbix/zabbix-web-nginx-pgsql@sha256:67bc74b10d1dc443515153ec6080f0119ddb1f3ea07f3337779e067aa5440c78
           ports:
             - containerPort: 8080
           env:
@@ -84,7 +93,10 @@ spec:
             - name: POSTGRES_USER
               value: "zabbix"
             - name: POSTGRES_PASSWORD
-              value: "zabbix_secure_password"
+              valueFrom:
+                secretKeyRef:
+                  name: zabbix-db
+                  key: postgres-password
             - name: POSTGRES_DB
               value: "zabbix"
             - name: ZBX_SERVER_HOST
@@ -100,6 +112,22 @@ spec:
             limits:
               memory: "1Gi"
               cpu: "1000m"
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 6
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 6
           volumeMounts:
             - name: zabbix-web-root
               mountPath: /usr/share/zabbix
