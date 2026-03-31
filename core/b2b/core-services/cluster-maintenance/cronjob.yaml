@@ -1,0 +1,28 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cleanup-terminated-pods
+  namespace: kube-system
+spec:
+  schedule: "0 6 * * *" # Todos los días a las 6:00 AM
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: pod-cleaner
+          containers:
+            - name: kubectl
+              image: bitnami/kubectl:latest
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  echo "Borrando pods en estado Failed..."
+                  kubectl delete pod --all-namespaces --field-selector=status.phase=Failed || true
+                  echo "Borrando pods en estado Succeeded..."
+                  kubectl delete pod --all-namespaces --field-selector=status.phase=Succeeded || true
+                  echo "Limpieza completada."
+          restartPolicy: OnFailure
