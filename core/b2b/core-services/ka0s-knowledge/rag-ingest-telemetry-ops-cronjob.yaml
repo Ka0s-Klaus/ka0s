@@ -18,6 +18,58 @@ spec:
           nodeSelector:
             ka0s.io/default-worker: "true"
           restartPolicy: Never
+          initContainers:
+            - name: wait-postgresql-ia
+              image: postgres:15-alpine
+              imagePullPolicy: IfNotPresent
+              command: ["sh", "-lc"]
+              args:
+                - |
+                  start="$(date +%s)"
+                  max="${PG_WAIT_SECONDS:-600}"
+                  while ! pg_isready -h "$POSTGRES_HOST" -p "$POSTGRES_PORT" -U "$POSTGRES_USER" -d "$POSTGRES_DB"; do
+                    now="$(date +%s)"
+                    if [ "$((now-start))" -ge "$max" ]; then
+                      echo "Postgres not ready after ${max}s"
+                      exit 1
+                    fi
+                    sleep 2
+                  done
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+                limits:
+                  cpu: 100m
+                  memory: 128Mi
+              env:
+                - name: PG_WAIT_SECONDS
+                  value: "900"
+                - name: POSTGRES_HOST
+                  valueFrom:
+                    secretKeyRef:
+                      name: knowledge-sources
+                      key: POSTGRES_IA_HOST
+                - name: POSTGRES_PORT
+                  valueFrom:
+                    secretKeyRef:
+                      name: knowledge-sources
+                      key: POSTGRES_IA_PORT
+                - name: POSTGRES_DB
+                  valueFrom:
+                    secretKeyRef:
+                      name: knowledge-sources
+                      key: POSTGRES_IA_DB
+                - name: POSTGRES_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: knowledge-sources
+                      key: POSTGRES_IA_USER
+                - name: POSTGRES_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: knowledge-sources
+                      key: POSTGRES_IA_PASSWORD
           containers:
             - name: mongo-vectorize
               image: python:3.11-slim

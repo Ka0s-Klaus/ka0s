@@ -16,7 +16,17 @@ spec:
       labels:
         app: postgresql-ia
     spec:
-      terminationGracePeriodSeconds: 10
+      terminationGracePeriodSeconds: 60
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            preference:
+              matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                - k8-node-20
       containers:
       - name: postgresql
         image: ankane/pgvector:v0.5.1 # PG15 with vector support
@@ -45,33 +55,40 @@ spec:
         args: ["postgres", "-c", "listen_addresses=*", "-c", "hba_file=/var/lib/postgresql/data/pgdata/pg_hba.conf"]
         resources:
           requests:
-            memory: "256Mi"
-            cpu: "100m"
+            memory: "768Mi"
+            cpu: "200m"
           limits:
-            memory: "1Gi"
-            cpu: "500m"
+            memory: "2Gi"
+            cpu: "1"
+        startupProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -lc
+            - pg_isready -h 127.0.0.1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"
+          failureThreshold: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
         livenessProbe:
           exec:
             command:
-            - pg_isready
-            - -U
-            - ka0s_ai
-            - -d
-            - ka0s_memory
-          initialDelaySeconds: 120 # Increased to allow initdb to complete
+            - /bin/sh
+            - -lc
+            - pg_isready -h 127.0.0.1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"
+          initialDelaySeconds: 60
           periodSeconds: 10
           timeoutSeconds: 5
+          failureThreshold: 6
         readinessProbe:
           exec:
             command:
-            - pg_isready
-            - -U
-            - ka0s_ai
-            - -d
-            - ka0s_memory
+            - /bin/sh
+            - -lc
+            - pg_isready -h 127.0.0.1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"
           initialDelaySeconds: 5
           periodSeconds: 10
           timeoutSeconds: 5
+          failureThreshold: 6
         volumeMounts:
         - name: postgres-ia-data
           mountPath: /var/lib/postgresql/data
@@ -110,8 +127,6 @@ spec:
           limits:
             cpu: 100m
             memory: 128Mi
-      nodeSelector:
-        kubernetes.io/hostname: k8-node-20
   volumeClaimTemplates:
   - metadata:
       name: postgres-ia-data

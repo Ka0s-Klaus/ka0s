@@ -133,8 +133,33 @@ def pg_connect(cfg: PgConfig):
     )
 
 
+def pg_connect_with_retry(cfg: PgConfig, max_wait_seconds: int):
+    deadline = time.time() + max_wait_seconds
+    attempt = 0
+    last_exc: Optional[Exception] = None
+    while time.time() < deadline:
+        try:
+            return pg_connect(cfg)
+        except Exception as e:
+            last_exc = e
+            backoff = min(30, 2**attempt)
+            remaining = max(0, int(deadline - time.time()))
+            sleep_s = min(backoff, remaining)
+            if sleep_s <= 0:
+                break
+            logger.warning(
+                "Postgres connect failed: %s; retrying in %ss",
+                e,
+                sleep_s,
+            )
+            time.sleep(sleep_s)
+            attempt += 1
+    raise last_exc or RuntimeError("Postgres connect failed")
+
+
 def ensure_pg_schema(cfg: PgConfig) -> None:
-    conn = pg_connect(cfg)
+    connect_wait_seconds = int(os.getenv("PG_CONNECT_MAX_WAIT_SECONDS", "600"))
+    conn = pg_connect_with_retry(cfg, connect_wait_seconds)
     try:
         with conn:
             with conn.cursor() as cur:
@@ -374,7 +399,8 @@ def vectorize_collection(
     db_name: str,
     collection_name: str,
 ) -> int:
-    pg_conn = pg_connect(pg_cfg)
+    connect_wait_seconds = int(os.getenv("PG_CONNECT_MAX_WAIT_SECONDS", "600"))
+    pg_conn = pg_connect_with_retry(pg_cfg, connect_wait_seconds)
     docs_done = 0
     try:
         pg_conn.autocommit = False
@@ -424,24 +450,27 @@ def run() -> int:
     setup_logging()
     mongo_cfg, pg_cfg, ollama_cfg, run_cfg = load_configs()
 
-    retries = 5
-    for attempt in range(retries):
+    schema_wait_seconds = int(os.getenv("PG_SCHEMA_MAX_WAIT_SECONDS", "600"))
+    deadline = time.time() + schema_wait_seconds
+    attempt = 0
+    while True:
         try:
             ensure_pg_schema(pg_cfg)
             break
         except Exception as e:
-            if attempt == retries - 1:
+            remaining = max(0, int(deadline - time.time()))
+            if remaining <= 0:
                 logger.error("Postgres schema init failed (final): %s", e)
                 return 3
-            backoff = 2**attempt
+            backoff = min(30, 2**attempt)
+            sleep_s = min(backoff, remaining)
             logger.warning(
-                "Postgres schema init failed (%s/%s): %s; retrying in %ss",
-                attempt + 1,
-                retries,
+                "Postgres schema init failed: %s; retrying in %ss",
                 e,
-                backoff,
+                sleep_s,
             )
-            time.sleep(backoff)
+            time.sleep(sleep_s)
+            attempt += 1
 
     mongo_client = mongo_connect(mongo_cfg)
     try:
