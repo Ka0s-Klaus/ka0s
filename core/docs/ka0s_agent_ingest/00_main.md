@@ -27,6 +27,12 @@ El repositorio utiliza un único workflow consolidado `kaos-agent-ingest.yaml` q
 3.  **Estándar**: Utiliza `swarm-runners-scaleset` para la ejecución, alineándose con la arquitectura de runners de Ka0s.
 4.  **Validación**: Realiza un "Pre-scan" de archivos antes de iniciar la ingesta para facilitar la depuración de rutas.
 
+## Requisitos (DB y Embeddings)
+
+- **PostgreSQL (vector DB)**: `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER` y `DB_PASSWORD`.
+- **Secret requerido en GitHub**: `POSTGRES_IA_PASSWORD` (fallback soportado: `POSTGRES_PASSWORD`).
+- **Ollama (embeddings)**: `OLLAMA_HOST` y `OLLAMA_PORT` accesibles desde los runners.
+
 ## Uso Manual
 
 Puedes ejecutar la ingesta localmente o en un entorno de desarrollo usando el script `ingest_local.py` con el argumento `--module`:

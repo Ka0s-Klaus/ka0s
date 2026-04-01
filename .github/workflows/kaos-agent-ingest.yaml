@@ -110,9 +110,38 @@ jobs:
             echo "TARGET_MODULE=${{ inputs.module }}" >> $GITHUB_ENV
           fi
 
+      - name: DB Preflight
+        env:
+          DB_PASSWORD: ${{ secrets.POSTGRES_IA_PASSWORD || secrets.POSTGRES_PASSWORD }}
+        run: |
+          python - << 'PY'
+          import os, sys, time
+          import psycopg2
+          host = os.environ.get("DB_HOST", "")
+          port = int(os.environ.get("DB_PORT", "5432"))
+          db = os.environ.get("DB_NAME", "")
+          user = os.environ.get("DB_USER", "")
+          password = os.environ.get("DB_PASSWORD", "")
+          if not password:
+            print("::error::DB_PASSWORD vacío. Configura el secret POSTGRES_IA_PASSWORD (o POSTGRES_PASSWORD) en el repo/entorno.")
+            sys.exit(1)
+          attempts = 30
+          for i in range(1, attempts + 1):
+            try:
+              conn = psycopg2.connect(host=host, port=port, database=db, user=user, password=password, connect_timeout=5)
+              conn.close()
+              print("✅ DB reachable.")
+              sys.exit(0)
+            except Exception as e:
+              if i == attempts:
+                print(f"::error::No se pudo conectar a la DB {db} en {host}:{port} tras {attempts} intentos: {e}")
+                sys.exit(1)
+              time.sleep(5)
+          PY
+
       - name: Run Ingestion
         env:
-          DB_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          DB_PASSWORD: ${{ secrets.POSTGRES_IA_PASSWORD || secrets.POSTGRES_PASSWORD }}
         run: |
           if [ "${{ github.event_name }}" == "push" ]; then
             FILES="${{ steps.changed-files.outputs.files }}"
