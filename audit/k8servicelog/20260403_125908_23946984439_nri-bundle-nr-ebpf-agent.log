@@ -1,0 +1,34 @@
+=== Logs for Service: nri-bundle-nr-ebpf-agent (Namespace: newrelic) ===
+=== Date: Fri Apr  3 12:59:15 UTC 2026 ===
+=== Selector: app.kubernetes.io/instance=nri-bundle,app.kubernetes.io/name=nr-ebpf-agent,component=agent ===
+
+[pod/nr-ebpf-agent-kv6hz/nr-ebpf-agent] 2026-04-03 12:59:05.564307 11066 otel_export_sink_node.cc:677 ERROR: OTel metrics endpoint is unavailable - check network connectivity and endpoint URL
+[pod/nr-ebpf-agent-kv6hz/nr-ebpf-agent] 2026-04-03 12:59:05.564363 11066 otel_export_sink_node.cc:501 ERROR: Detailed OTel export failure - Node ID: 363, gRPC Status Code: 14 (UNAVAILABLE), Error Message: 'DNS resolution failed for otlp.eu01.nr-data.net:443: C-ares status is not ARES_SUCCESS qtype=A name=otlp.eu01.nr-data.net is_balancer=0: Timeout while contacting DNS servers', Error Details: ''
+[pod/nr-ebpf-agent-kv6hz/nr-ebpf-agent] 2026-04-03 12:59:05.564541 11066 otel_export_sink_node.cc:170 INFO: Closing OTelExportSinkNode 363 in query 378abdcf-4bbf-4173-8a83-2f562a08acf0 before receiving EOS
+[pod/nr-ebpf-agent-kv6hz/nr-ebpf-agent] 2026-04-03 12:59:05.565023 11066 carnot.cc:414 ERROR: PlanWalker failed: OTel export (carnot node_id=363) failed with error 'UNAVAILABLE'. Details: DNS resolution failed for otlp.eu01.nr-data.net:443: C-ares status is not ARES_SUCCESS qtype=A name=otlp.eu01.nr-data.net is_balancer=0: Timeout while contacting DNS servers 
+[pod/nr-ebpf-agent-kv6hz/nr-ebpf-agent] 2026-04-03 12:59:05.565649 11066 script_scheduler.cc:118 ERROR: Failed to execute script 'jvm-metrics': OTel export (carnot node_id=363) failed with error 'UNAVAILABLE'. Details: DNS resolution failed for otlp.eu01.nr-data.net:443: C-ares status is not ARES_SUCCESS qtype=A name=otlp.eu01.nr-data.net is_balancer=0: Timeout while contacting DNS servers 
+[pod/nr-ebpf-agent-kv6hz/nr-ebpf-agent] 2026-04-03 12:59:05.565742 11066 script_scheduler.cc:238 ERROR: Script execution cycle failed: All script executions failed
+[pod/nr-ebpf-agent-kv6hz/nr-ebpf-agent] 2026-04-03 12:59:05.565788 11066 script_scheduler.cc:251 INFO: Script execution cycle completed: 0 succeeded, 23 failed, took 0.53s; sleeping for 14.47s until next cycle
+[pod/nr-ebpf-agent-kv6hz/nr-ebpf-agent] 2026-04-03 12:59:06.596390 08061 otel_data_exporter.cc:371 WARNING: Failed to export logs (attempt 3/5) - Error code: 4, Message: Deadline Exceeded
+[pod/nr-ebpf-agent-kv6hz/nr-ebpf-agent] 2026-04-03 12:59:11.869112 10448 dns_lookup_service.cc:100 WARNING: DNS lookup failed for staging-collector.newrelic.com: Temporary failure in name resolution
+[pod/nr-ebpf-agent-kv6hz/nr-ebpf-agent] 2026-04-03 12:59:11.869220 10448 dns_lookup_service.cc:164 WARNING: No IP addresses found for APM hostname: staging-collector.newrelic.com
+[pod/nr-ebpf-agent-qmn8p/nr-ebpf-agent]     @     0x5e7f5b68189d  (unknown)  ring_buffer__poll
+[pod/nr-ebpf-agent-qmn8p/nr-ebpf-agent]     @     0x5e7f5b39579d  (unknown)  px::stirling::bpf_tools::BCCWrapperImpl::PollRingBuffer()
+[pod/nr-ebpf-agent-qmn8p/nr-ebpf-agent]     @     0x5e7f5b395b9b  (unknown)  px::stirling::bpf_tools::BCCWrapperImpl::PollRingBuffers()
+[pod/nr-ebpf-agent-qmn8p/nr-ebpf-agent]     @     0x5e7f5b233660  (unknown)  px::stirling::SocketTraceConnector::UpdateCommonState()
+[pod/nr-ebpf-agent-qmn8p/nr-ebpf-agent]     @     0x5e7f5b236c64  (unknown)  px::stirling::SocketTraceConnector::TransferDataImpl()
+[pod/nr-ebpf-agent-qmn8p/nr-ebpf-agent]     @     0x5e7f5afdc6e7  (unknown)  px::stirling::StirlingImpl::RunCore()
+[pod/nr-ebpf-agent-qmn8p/nr-ebpf-agent]     @     0x5e7f5fa51933  (unknown)  execute_native_thread_routine
+[pod/nr-ebpf-agent-qmn8p/nr-ebpf-agent]     @     0x750ea1f8aaa4  (unknown)  (unknown)
+[pod/nr-ebpf-agent-qmn8p/nr-ebpf-agent]     @     0x750ea2017c6c  (unknown)  (unknown)
+[pod/nr-ebpf-agent-qmn8p/nr-ebpf-agent] 
+[pod/nr-ebpf-agent-kbwpg/nr-ebpf-agent] 2026-04-03 12:59:14.905285 3885754 carnot.cc:414 ERROR: PlanWalker failed: OTel export (carnot node_id=761) failed with error 'UNAVAILABLE'. Details: DNS resolution failed for otlp.eu01.nr-data.net:443: C-ares status is not ARES_SUCCESS qtype=A name=otlp.eu01.nr-data.net is_balancer=0: Timeout while contacting DNS servers 
+[pod/nr-ebpf-agent-kbwpg/nr-ebpf-agent] 2026-04-03 12:59:14.905565 3885754 script_scheduler.cc:118 ERROR: Failed to execute script 'tcp-metrics': OTel export (carnot node_id=761) failed with error 'UNAVAILABLE'. Details: DNS resolution failed for otlp.eu01.nr-data.net:443: C-ares status is not ARES_SUCCESS qtype=A name=otlp.eu01.nr-data.net is_balancer=0: Timeout while contacting DNS servers 
+[pod/nr-ebpf-agent-kbwpg/nr-ebpf-agent] 2026-04-03 12:59:14.906092 3885754 otel_export_sink_node.cc:668 ERROR: OTel metrics export failed - Error code: UNAVAILABLE, Message: DNS resolution failed for otlp.eu01.nr-data.net:443: C-ares status is not ARES_SUCCESS qtype=A name=otlp.eu01.nr-data.net is_balancer=0: Timeout while contacting DNS servers, Details: 
+[pod/nr-ebpf-agent-kbwpg/nr-ebpf-agent] 2026-04-03 12:59:14.906157 3885754 otel_export_sink_node.cc:677 ERROR: OTel metrics endpoint is unavailable - check network connectivity and endpoint URL
+[pod/nr-ebpf-agent-kbwpg/nr-ebpf-agent] 2026-04-03 12:59:14.906204 3885754 otel_export_sink_node.cc:501 ERROR: Detailed OTel export failure - Node ID: 363, gRPC Status Code: 14 (UNAVAILABLE), Error Message: 'DNS resolution failed for otlp.eu01.nr-data.net:443: C-ares status is not ARES_SUCCESS qtype=A name=otlp.eu01.nr-data.net is_balancer=0: Timeout while contacting DNS servers', Error Details: ''
+[pod/nr-ebpf-agent-kbwpg/nr-ebpf-agent] 2026-04-03 12:59:14.906262 3885754 otel_export_sink_node.cc:170 INFO: Closing OTelExportSinkNode 363 in query f4feaa39-aea1-40fe-87f5-f2f7da423a4f before receiving EOS
+[pod/nr-ebpf-agent-kbwpg/nr-ebpf-agent] 2026-04-03 12:59:14.906312 3885754 carnot.cc:414 ERROR: PlanWalker failed: OTel export (carnot node_id=363) failed with error 'UNAVAILABLE'. Details: DNS resolution failed for otlp.eu01.nr-data.net:443: C-ares status is not ARES_SUCCESS qtype=A name=otlp.eu01.nr-data.net is_balancer=0: Timeout while contacting DNS servers 
+[pod/nr-ebpf-agent-kbwpg/nr-ebpf-agent] 2026-04-03 12:59:14.906389 3885754 script_scheduler.cc:118 ERROR: Failed to execute script 'jvm-metrics': OTel export (carnot node_id=363) failed with error 'UNAVAILABLE'. Details: DNS resolution failed for otlp.eu01.nr-data.net:443: C-ares status is not ARES_SUCCESS qtype=A name=otlp.eu01.nr-data.net is_balancer=0: Timeout while contacting DNS servers 
+[pod/nr-ebpf-agent-kbwpg/nr-ebpf-agent] 2026-04-03 12:59:14.906406 3885754 script_scheduler.cc:238 ERROR: Script execution cycle failed: All script executions failed
+[pod/nr-ebpf-agent-kbwpg/nr-ebpf-agent] 2026-04-03 12:59:14.906415 3885754 script_scheduler.cc:251 INFO: Script execution cycle completed: 0 succeeded, 23 failed, took 0.03s; sleeping for 14.97s until next cycle
