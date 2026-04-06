@@ -21,7 +21,7 @@ Este skill actúa como un Ingeniero Principal de DevOps/SecOps especializado en 
 ## 2. Matriz de Decisión de Ubicación
 | Intención | Ruta Destino | Reglas |
 | :--- | :--- | :--- |
-| **Automatización** | `.github/workflows/` | Usar `swarm-runners-scaleset`. Para lógica >50 líneas, usar `.github/actions/`. |
+| **Automatización** | `.github/workflows/` | Usar `swarm-runners-scaleset-ka0s`. Para lógica >50 líneas, usar `.github/actions/`. |
 | **Evidencias** | `audit/` | Logs estructurados (JSON/CSV). **PROHIBIDO** logs en raíz. |
 | **Estándares** | `compliance/` | Scripts de validación, linters y políticas de seguridad. |
 | **Operaciones** | `devops/` | Scripts de mantenimiento idempotentes. |
@@ -29,7 +29,7 @@ Este skill actúa como un Ingeniero Principal de DevOps/SecOps especializado en 
 ## 3. Estándares de Implementación
 
 ### 3.1 Workflows de GitHub Actions
-- **Runners**: SIEMPRE `runs-on: swarm-runners-scaleset`.
+- **Runners**: SIEMPRE `runs-on: swarm-runners-scaleset-ka0s`.
 - **Identidad**: Definir `KAOS_MODULE` y `KAOS_CODE` en `env`.
 - **Ciclo de Vida**: Incluir jobs estándar de cierre (`handle-success`, `handle-failure`, `end-workflow`).
 - **Permisos**: Principle of Least Privilege (`contents: read` por defecto).
@@ -50,7 +50,7 @@ Este skill actúa como un Ingeniero Principal de DevOps/SecOps especializado en 
 ### Crear un Workflow de CI
 > "Crea un workflow para testear Node.js"
 - Genera `.github/workflows/ci-node.yml`.
-- Configura `runs-on: swarm-runners-scaleset`.
+- Configura `runs-on: swarm-runners-scaleset-ka0s`.
 - Incluye pasos de `npm test` y reporte de cobertura.
 - Finaliza con jobs de ciclo de vida Ka0s.
 

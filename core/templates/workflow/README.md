@@ -12,7 +12,7 @@ Esta plantilla (`basic-template.yaml`) define el estándar mínimo y recomendado
   - `KAOS_ACTOR`: Identifica quién disparó el evento.
 
 ### 2. Infraestructura (Runners)
-- **Runs-on**: Se debe usar `swarm-runners-scaleset` por defecto para aprovechar el pool de runners escalables del proyecto.
+- **Runs-on**: Se debe usar `swarm-runners-scaleset-ka0s` por defecto para aprovechar el pool de runners escalables del proyecto.
   - *Evitar `ubuntu-latest` salvo justificación explícita.*
 
 ### 3. Permisos

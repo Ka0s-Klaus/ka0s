@@ -17,7 +17,7 @@ env:
 
 jobs:
   rolling-restart:
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       contents: write
     steps:
@@ -64,7 +64,7 @@ jobs:
   handle-success:
     needs: [rolling-restart]
     if: success()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     steps:
       - name: Log Success
         run: echo "Cluster restart sequence completed successfully."
@@ -73,7 +73,7 @@ jobs:
     name: Handle Failure
     needs: [rolling-restart]
     if: failure()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       issues: write
       contents: read
@@ -114,7 +114,7 @@ jobs:
   end-workflow:
     needs: [handle-success, handle-failure]
     if: always()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       actions: write
       contents: read

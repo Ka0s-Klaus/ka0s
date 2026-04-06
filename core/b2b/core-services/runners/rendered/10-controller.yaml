@@ -3,22 +3,22 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: gha-rs-controller
+  name: gha-rs-controller-ka0s
   namespace: actions-runner-system
   labels:
-    helm.sh/chart: gha-rs-controller-0.10.1
-    app.kubernetes.io/name: gha-rs-controller
+    helm.sh/chart: gha-rs-controller-ka0s-0.10.1
+    app.kubernetes.io/name: gha-rs-controller-ka0s
     app.kubernetes.io/namespace: actions-runner-system
     app.kubernetes.io/instance: actions-runner-controller
     app.kubernetes.io/version: "0.10.1"
-    app.kubernetes.io/part-of: gha-rs-controller
+    app.kubernetes.io/part-of: gha-rs-controller-ka0s
     app.kubernetes.io/managed-by: Helm
 ---
 # Source: gha-runner-scale-set-controller/templates/manager_cluster_role.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: gha-rs-controller
+  name: gha-rs-controller-ka0s
 rules:
 - apiGroups:
   - actions.github.com
@@ -162,21 +162,21 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: gha-rs-controller
+  name: gha-rs-controller-ka0s
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: gha-rs-controller
+  name: gha-rs-controller-ka0s
 subjects:
 - kind: ServiceAccount
-  name: gha-rs-controller
+  name: gha-rs-controller-ka0s
   namespace: actions-runner-system
 ---
 # Source: gha-runner-scale-set-controller/templates/manager_listener_role.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: gha-rs-controller-listener
+  name: gha-rs-controller-ka0s-listener
   namespace: actions-runner-system
 rules:
 - apiGroups:
@@ -218,38 +218,38 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: gha-rs-controller-listener
+  name: gha-rs-controller-ka0s-listener
   namespace: actions-runner-system
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: gha-rs-controller-listener
+  name: gha-rs-controller-ka0s-listener
 subjects:
 - kind: ServiceAccount
-  name: gha-rs-controller
+  name: gha-rs-controller-ka0s
   namespace: actions-runner-system
 ---
 # Source: gha-runner-scale-set-controller/templates/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: gha-rs-controller
+  name: gha-rs-controller-ka0s
   namespace: actions-runner-system
   labels:
-    helm.sh/chart: gha-rs-controller-0.10.1
-    app.kubernetes.io/name: gha-rs-controller
+    helm.sh/chart: gha-rs-controller-ka0s-0.10.1
+    app.kubernetes.io/name: gha-rs-controller-ka0s
     app.kubernetes.io/namespace: actions-runner-system
     app.kubernetes.io/instance: actions-runner-controller
     app.kubernetes.io/version: "0.10.1"
-    app.kubernetes.io/part-of: gha-rs-controller
+    app.kubernetes.io/part-of: gha-rs-controller-ka0s
     app.kubernetes.io/managed-by: Helm
     actions.github.com/controller-service-account-namespace: actions-runner-system
-    actions.github.com/controller-service-account-name: gha-rs-controller
+    actions.github.com/controller-service-account-name: gha-rs-controller-ka0s
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app.kubernetes.io/name: gha-rs-controller
+      app.kubernetes.io/name: gha-rs-controller-ka0s
       app.kubernetes.io/namespace: actions-runner-system
       app.kubernetes.io/instance: actions-runner-controller
   template:
@@ -257,14 +257,14 @@ spec:
       annotations:
         kubectl.kubernetes.io/default-container: "manager"
       labels:
-        app.kubernetes.io/part-of: gha-rs-controller
+        app.kubernetes.io/part-of: gha-rs-controller-ka0s
         app.kubernetes.io/component: controller-manager
         app.kubernetes.io/version: 0.10.1
-        app.kubernetes.io/name: gha-rs-controller
+        app.kubernetes.io/name: gha-rs-controller-ka0s
         app.kubernetes.io/namespace: actions-runner-system
         app.kubernetes.io/instance: actions-runner-controller
     spec:
-      serviceAccountName: gha-rs-controller
+      serviceAccountName: gha-rs-controller-ka0s
       containers:
       - name: manager
         image: "ghcr.io/actions/gha-runner-scale-set-controller:0.10.1"

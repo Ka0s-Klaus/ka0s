@@ -30,7 +30,7 @@ jobs:
   # -----------------------------------------------------------------------------
   core-execution:
     name: Sync Service Management
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       contents: read
     outputs:
@@ -74,7 +74,7 @@ jobs:
     name: Handle Success
     needs: [core-execution]
     if: success()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     steps:
       - name: Notify Success
         run: echo "✅ Sincronización de Service Management completada correctamente."
@@ -87,7 +87,7 @@ jobs:
     name: Handle Failure
     needs: [core-execution]
     if: failure()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       issues: write
       contents: read
@@ -146,7 +146,7 @@ jobs:
   end-workflow:
     needs: [handle-success, handle-failure]
     if: always()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       actions: write
       contents: read

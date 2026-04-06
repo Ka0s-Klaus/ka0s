@@ -21,5 +21,5 @@ El objetivo final es la autonomía.
 4.  **Registrar** resultado (Evidencia).
 
 ## 4. Infraestructura de Ejecución
-- Los workflows de GitHub Actions deben usar `runs-on: swarm-runners-scaleset` para ejecución en infraestructura propia.
+- Los workflows de GitHub Actions deben usar `runs-on: swarm-runners-scaleset-ka0s` para ejecución en infraestructura propia.
 - Ciclo de vida estándar: `Setup -> Execute -> Verify (Inspector) -> Teardown`.

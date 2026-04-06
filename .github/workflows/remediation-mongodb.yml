@@ -22,7 +22,7 @@ env:
 jobs:
   remediate-mongodb:
     name: Remediate MongoDB
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -99,7 +99,7 @@ jobs:
     name: Handle Failure
     needs: [remediate-mongodb]
     if: failure()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       issues: write
     steps:
@@ -117,7 +117,7 @@ jobs:
   end-workflow:
     needs: [remediate-mongodb, handle-failure]
     if: always()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       actions: write
       contents: read

@@ -35,7 +35,7 @@ jobs:
       (github.event_name == 'issues' && (contains(github.event.issue.labels.*.name, 'itop-incident') || contains(github.event.issue.labels.*.name, 'itop-problem'))) ||
       (github.event_name == 'workflow_dispatch') ||
       (github.event_name == 'schedule')
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       contents: write
       issues: write
@@ -113,7 +113,7 @@ jobs:
     name: Handle Success
     needs: [core-execution]
     if: success()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     steps:
       - name: Notify Success
         run: echo "✅ Workflow ${{ env.KAOS_MODULE }} completado correctamente."
@@ -126,7 +126,7 @@ jobs:
     name: Handle Failure
     needs: [core-execution]
     if: failure()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       issues: write
       contents: read
@@ -181,7 +181,7 @@ jobs:
   end-workflow:
     needs: [handle-success, handle-failure]
     if: always()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       actions: write
       contents: read

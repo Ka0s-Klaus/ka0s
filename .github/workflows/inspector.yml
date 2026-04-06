@@ -37,7 +37,7 @@ env:
   KAOS_REPO: "/actions-runner/_work/kaos/kaos" # Variable de repositorio global
 jobs:
   job-core:
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       contents: write
       actions: read
@@ -116,7 +116,7 @@ jobs:
             sleep 2
           done
   handle-success:
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     needs: [job-core]
     if: ${{ success() }}
     permissions:
@@ -143,7 +143,7 @@ jobs:
             echo "Se ha encontrado el issue asociado a la ejecución."
           fi       
   handle-failure:
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     needs: [job-core]
     if: ${{ failure() }}
     permissions:

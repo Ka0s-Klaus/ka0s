@@ -32,7 +32,7 @@ env:
 
 jobs:
   manage-db:
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -56,7 +56,7 @@ jobs:
           ./.github/scripts/manage-postgres-db.sh "$ACTION" "$DB_NAME" "$DB_USER" "$TARGET_NS"
 
   handle-success:
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     needs: [manage-db]
     if: ${{ success() }}
     steps:
@@ -67,7 +67,7 @@ jobs:
     name: Handle Failure
     needs: [manage-db]
     if: failure()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       issues: write
       contents: read
@@ -120,7 +120,7 @@ jobs:
   end-workflow:
     needs: [handle-success, handle-failure]
     if: always()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       actions: write
       contents: read

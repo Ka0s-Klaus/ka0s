@@ -10,10 +10,10 @@ export GITHUB_APP_PRIVATE_KEY_FILE="private-key.pem"
 NAMESPACE="actions-runner-system"
 
 # Name for the controller Helm release
-CONTROLLER_RELEASE_NAME="actions-runner-controller"
+CONTROLLER_RELEASE_NAME="actions-runner-controller-ka0s"
 
 # Name for the runner scale set Helm release
-RUNNER_SCALESET_RELEASE_NAME="swarm-runners-scaleset"
+RUNNER_SCALESET_RELEASE_NAME="swarm-runners-scaleset-ka0s"
 
 # GitHub repository URL
 GITHUB_REPO="Ka0s-Klaus/ka0s"
@@ -78,7 +78,7 @@ echo "INFO: Desplegando el gha-runner-scale-set-controller con Helm (omitiendo C
 helm upgrade --install "${CONTROLLER_RELEASE_NAME}" \
   --namespace "${NAMESPACE}" \
   --set=authSecret.name=controller-manager \
-  --set fullnameOverride="gha-rs-controller" \
+  --set fullnameOverride="gha-rs-controller-ka0s" \
   --skip-crds \
   oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set-controller
 
@@ -106,7 +106,7 @@ echo "INFO: Desplegando el RunnerScaleSet '${RUNNER_SCALESET_RELEASE_NAME}' con 
 helm template "${RUNNER_SCALESET_RELEASE_NAME}" \
   oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set \
   --namespace "${NAMESPACE}" \
-  --set controllerServiceAccount.name="gha-rs-controller" \
+  --set controllerServiceAccount.name="gha-rs-controller-ka0s" \
   --set controllerServiceAccount.namespace="${NAMESPACE}" \
   --set-string githubConfigUrl="https://github.com/${GITHUB_REPO}" \
   --set githubConfigSecret=controller-manager \

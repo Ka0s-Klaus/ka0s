@@ -12,7 +12,7 @@ env:
 jobs:
   route-remediation:
     name: Route Remediation
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       actions: write
       issues: write
@@ -79,7 +79,7 @@ jobs:
     name: Handle Success
     needs: [route-remediation]
     if: success()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     steps:
       - run: echo "Routing completado."
 
@@ -87,7 +87,7 @@ jobs:
     name: Handle Failure
     needs: [route-remediation]
     if: failure()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       issues: write
     steps:

@@ -52,7 +52,7 @@ jobs:
   # -----------------------------------------------------------------------------
   core-execution:
     name: Ingest Execution
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     timeout-minutes: 360
     permissions:
       contents: read
@@ -175,7 +175,7 @@ jobs:
     name: Handle Success
     needs: [core-execution]
     if: success()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     steps:
       - name: Notify Success
         run: echo "✅ Ingestion for ${{ env.KAOS_MODULE }} completed successfully."
@@ -187,7 +187,7 @@ jobs:
     name: Handle Failure
     needs: [core-execution]
     if: failure()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       issues: write
       contents: read
@@ -243,7 +243,7 @@ jobs:
   end-workflow:
     needs: [handle-success, handle-failure]
     if: always()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       actions: write
       contents: read

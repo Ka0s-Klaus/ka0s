@@ -28,7 +28,7 @@ jobs:
   # -----------------------------------------------------------------------------
   core-execution:
     name: Core Execution
-    runs-on: swarm-runners-scaleset # Estándar de runners en Ka0s
+    runs-on: swarm-runners-scaleset-ka0s # Estándar de runners en Ka0s
     permissions:
       contents: write
     outputs:
@@ -83,7 +83,7 @@ jobs:
     name: Handle Success
     needs: [core-execution]
     if: success()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     steps:
       - name: Notify Success
         run: echo "✅ Workflow ${{ env.KAOS_MODULE }} completado correctamente."
@@ -97,7 +97,7 @@ jobs:
     name: Handle Failure
     needs: [core-execution]
     if: failure()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       issues: write
       contents: read
@@ -156,7 +156,7 @@ jobs:
   end-workflow:
     needs: [handle-success, handle-failure]
     if: always()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       actions: write
       contents: read

@@ -12,7 +12,7 @@ env:
 
 jobs:
   test-issue-commands:
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       issues: write
     steps:
@@ -62,7 +62,7 @@ jobs:
           gh issue close ${{ steps.create_issue.outputs.issue_number }} 
 
   test-workflow-and-run-commands:
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       actions: read
     steps:
@@ -92,7 +92,7 @@ jobs:
           gh run list --workflow="test-gh-cli.yml" --limit 5 
 
   test-api-command:
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -111,7 +111,7 @@ jobs:
     name: Handle Success
     needs: [test-issue-commands, test-workflow-and-run-commands, test-api-command]
     if: success()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     steps:
       - name: Log Success
         run: echo "GH CLI tests completed successfully."
@@ -120,7 +120,7 @@ jobs:
     name: Handle Failure
     needs: [test-issue-commands, test-workflow-and-run-commands, test-api-command]
     if: failure()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       issues: write
       contents: read
@@ -174,7 +174,7 @@ jobs:
   end-workflow:
     needs: [handle-success, handle-failure]
     if: always()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       actions: write
       contents: read

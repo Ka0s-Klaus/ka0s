@@ -28,7 +28,7 @@ env:
 
 jobs:
   job-core:
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       contents: write
     outputs:
@@ -64,7 +64,7 @@ jobs:
           path: ${{ env.KAOS_PATH_RESUME }}
 
   commit-results:
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     needs: [job-core]
     if: success() && needs.job-core.outputs.results_path != ''
     permissions:
@@ -94,7 +94,7 @@ jobs:
           fi
 
   handle-success:
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     needs: [job-core, commit-results]
     if: ${{ success() }}
     steps: 
@@ -106,7 +106,7 @@ jobs:
     name: Handle Failure
     needs: [job-core]
     if: failure()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       issues: write
       contents: read
@@ -160,7 +160,7 @@ jobs:
   end-workflow:
     needs: [handle-success, handle-failure]
     if: always()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       actions: write
       contents: read

@@ -25,7 +25,7 @@ env:
 jobs:
   deploy-services:
     name: Deploy Changed Services
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       contents: write
     env:
@@ -325,7 +325,7 @@ jobs:
           fi
 
   handle-success:
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     needs: [deploy-services]
     if: ${{ success() }}
     steps: 
@@ -335,7 +335,7 @@ jobs:
     name: Handle Failure
     needs: [deploy-services]
     if: failure()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       issues: write
       contents: read
@@ -389,7 +389,7 @@ jobs:
   end-workflow:
     needs: [handle-success, handle-failure]
     if: always()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       actions: write
       contents: read

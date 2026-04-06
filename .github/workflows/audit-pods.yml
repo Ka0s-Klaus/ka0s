@@ -14,7 +14,7 @@ env:
 
 jobs:
   audit-pods:
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       contents: write
       issues: write
@@ -69,7 +69,7 @@ jobs:
         run: python3 devops/core/k8s/create-github-problem.py
 
   handle-success:
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     needs: [audit-pods]
     if: ${{ success() }}
     steps: 
@@ -81,7 +81,7 @@ jobs:
     name: Handle Failure
     needs: [audit-pods]
     if: failure()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       issues: write
       contents: read
@@ -135,7 +135,7 @@ jobs:
   end-workflow:
     needs: [handle-success, handle-failure]
     if: always()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       actions: write
       contents: read

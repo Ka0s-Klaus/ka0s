@@ -23,15 +23,15 @@ info "Iniciando limpieza de runners autoescalados..."
 # 1. Eliminar el RunnerScaleSet para detener la creación de nuevos runners
 info "Eliminando RunnerScaleSet..."
 # Se añade '|| true' para que el script no falle si el tipo de recurso no existe
-kubectl delete runnerscaleset swarm-runners-scaleset -n actions-runner-system --ignore-not-found=true || true
+kubectl delete runnerscaleset swarm-runners-scaleset-ka0s -n actions-runner-system --ignore-not-found=true || true
 
 # 2. Desinstalar el controlador de runners con Helm
 info "Desinstalando actions-runner-controller..."
-helm uninstall actions-runner-controller -n actions-runner-system &>/dev/null || true
+helm uninstall actions-runner-controller-ka0s -n actions-runner-system &>/dev/null || true
 
-# 3. Eliminar el namespace del controlador de runners
-info "Eliminando el namespace 'actions-runner-system'..."
-kubectl delete namespace actions-runner-system --ignore-not-found=true --wait=false
+# 3. NO Eliminar el namespace del controlador de runners porque es compartido
+info "Omitiendo eliminación del namespace 'actions-runner-system' para no afectar otros proyectos..."
+# kubectl delete namespace actions-runner-system --ignore-not-found=true --wait=false
 
 info "Desinstalando cert-manager y sus componentes..."
 

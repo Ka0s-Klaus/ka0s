@@ -13,7 +13,7 @@ env:
 
 jobs:
   full-audit:
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       contents: write
     steps:
@@ -51,7 +51,7 @@ jobs:
     name: Handle Success
     needs: [full-audit]
     if: success()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     steps:
       - name: Log Success
         run: echo "Full infrastructure audit completed successfully."
@@ -60,7 +60,7 @@ jobs:
     name: Handle Failure
     needs: [full-audit]
     if: failure()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       issues: write
       contents: read
@@ -114,7 +114,7 @@ jobs:
   end-workflow:
     needs: [handle-success, handle-failure]
     if: always()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       actions: write
       contents: read

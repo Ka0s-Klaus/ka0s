@@ -14,7 +14,7 @@ env:
 
 jobs:
   generate-report:
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       contents: write
     env:
@@ -59,7 +59,7 @@ jobs:
           fi
 
   handle-success:
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     needs: [generate-report]
     if: ${{ success() }}
     steps:
@@ -70,7 +70,7 @@ jobs:
     name: Handle Failure
     needs: [generate-report]
     if: failure()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       issues: write
       contents: read
@@ -123,7 +123,7 @@ jobs:
   end-workflow:
     needs: [handle-success, handle-failure]
     if: always()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       actions: write
       contents: read

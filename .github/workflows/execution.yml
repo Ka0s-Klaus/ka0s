@@ -22,7 +22,7 @@ env:
   KAOS_ISSUE_USER: ${{ github.actor}}
 jobs:
   job-repo:
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     if: ${{ startsWith(github.event.issue.title, '[E]') && github.ref == 'refs/heads/main' }}
     permissions:
       issues: write
@@ -42,7 +42,7 @@ jobs:
           gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'Se ha iniciado la ejecución #${{ env.KAOS_CODE}} a través de la tarjeta #${{ env.KAOS_ISSUE_NUMBER }}.'
           gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'Se ha iniciado el Repositorio.' 
   check-issue:
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     needs: job-repo
     permissions:
       issues: write
@@ -69,7 +69,7 @@ jobs:
           echo "Añadimos la etiqueta automations a la tarjeta"
           gh issue edit $KAOS_ISSUE_NUMBER --add-label 'automations'
   check-data:
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     needs: check-issue
     outputs:
       KAOS_EXECUTION_TYPE: ${{ steps.extract.outputs.KAOS_EXECUTION_TYPE }}
@@ -128,7 +128,7 @@ jobs:
             # Cambiamos de Backlog a In Progress
             gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'Se comprobado los datos asociados a la tarjeta #${{ env.KAOS_ISSUE_NUMBER }}.'
   show-data:
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     needs: check-data
     permissions:
       issues: write
@@ -153,7 +153,7 @@ jobs:
               KAOS_ISSUE_TITLE: $KAOS_ISSUE_TITLE  \
               KAOS_ISSUE_BODY: $KAOS_ISSUE_BODY  '
   start-execution:
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     needs: [check-issue, check-data, show-data]
     outputs:
         KAOS_EXECUTION_RESULT: ${{ steps.execution.outputs.KAOS_EXECUTION_RESULT }}
@@ -207,7 +207,7 @@ jobs:
               ;;
           esac
   end-execution:
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     needs: [start-execution]
     permissions:
       issues: write
@@ -226,7 +226,7 @@ jobs:
           echo "End execution"
           gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body 'El resultado de la ejecución se añade a la tajeta #${{ env.KAOS_ISSUE_NUMBER }}, ha finalizado con el resultado SUCCESS.'        
   handle-success:
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     needs: [end-execution]
     if: ${{ success() }}
     permissions:
@@ -246,7 +246,7 @@ jobs:
           # Si todo ha ido correcto añadimos el contenido del fichero 
           gh issue comment ${{ env.KAOS_ISSUE_NUMBER }} --body "El proceso ha finalizado correctamente ${{ env.KAOS_CODE }}. El resultado de la ejecución se guardará en MongoDB"
   handle-failure:
-      runs-on: swarm-runners-scaleset
+      runs-on: swarm-runners-scaleset-ka0s
       needs: [job-repo, check-issue, check-data, show-data, start-execution, end-execution]
       if: ${{ failure() }} 
       permissions:
@@ -301,7 +301,7 @@ jobs:
   end-workflow:
     needs: [handle-success, handle-failure]
     if: always()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       actions: write
       contents: read

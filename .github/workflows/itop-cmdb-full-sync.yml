@@ -22,7 +22,7 @@ env:
 jobs:
   full-sync:
     name: Full Cluster Sync
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       contents: write
     steps:
@@ -136,7 +136,7 @@ jobs:
     name: Handle Success
     needs: [full-sync]
     if: success()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     steps:
       - name: Log Success
         run: echo "${{ env.KAOS_MODULE }} Success."
@@ -145,7 +145,7 @@ jobs:
     name: Handle Failure
     needs: [full-sync]
     if: failure()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       issues: write
       contents: read
@@ -199,7 +199,7 @@ jobs:
   end-workflow:
     needs: [handle-success, handle-failure]
     if: always()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       actions: write
       contents: read

@@ -84,7 +84,7 @@ jobs:
     # Permitir ambas variantes de la etiqueta (con 'o' y con '0')
     if: contains(github.event.issue.labels.*.name, 'ka0s-agent') || contains(github.event.issue.labels.*.name, 'kaos-agent')
     name: Agent Reply
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     concurrency:
       group: ${{ github.workflow }}-${{ github.event.issue.number }}
       cancel-in-progress: true
@@ -184,7 +184,7 @@ jobs:
   handle-failure:
     if: failure()
     needs: [agent-reply]
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       issues: write
     steps:

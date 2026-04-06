@@ -20,7 +20,7 @@ env:
 
 jobs:
   job-core:
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       contents: write
     env:
@@ -68,7 +68,7 @@ jobs:
           path: ${{ env.REPORT_PATH }}
 
   handle-success:
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     needs: [job-core]
     if: ${{ success() }}
     steps:
@@ -88,7 +88,7 @@ jobs:
           echo "Process completed successfully ${{ env.KAOS_CODE }}"
   handle-failure:
     name: Handle Failure
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     needs: [job-core]
     if: failure()
     permissions:
@@ -144,7 +144,7 @@ jobs:
   end-workflow:
     needs: [handle-success, handle-failure]
     if: always()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       actions: write
       contents: read

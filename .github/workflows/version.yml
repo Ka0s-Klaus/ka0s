@@ -19,7 +19,7 @@ env:
 jobs:
   version-bump:
     if: github.event.pull_request.merged == true
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     outputs:
       NEW_VERSION: ${{ steps.calculate.outputs.NEW_VERSION }}
       
@@ -136,7 +136,7 @@ jobs:
   handle-success:
     needs: [version-bump]
     if: success()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     steps:
       - name: Notify Success
         env:
@@ -148,7 +148,7 @@ jobs:
   handle-failure:
     needs: [version-bump]
     if: failure()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     steps:
       - name: Notify Failure
         env:

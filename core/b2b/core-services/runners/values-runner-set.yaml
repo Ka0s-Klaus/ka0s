@@ -1,14 +1,14 @@
 # Configuración del RunnerSet (gha-runner-scale-set)
 runnerScaleSet:
-  # runnerGroup: swarm-runners-scaleset
+  # runnerGroup: swarm-runners-scaleset-ka0s
   minRunners: 0
-  maxRunners: 10
+  maxRunners: 5
 
 githubConfigUrl: "https://github.com/Ka0s-Klaus/ka0s"
 githubConfigSecret: controller-manager
 
 controllerServiceAccount:
-  name: gha-rs-controller
+  name: gha-rs-controller-ka0s
   namespace: actions-runner-system
 
 template:
@@ -22,5 +22,5 @@ template:
 
 # Forzamos los valores a nivel raíz para que Helm los tome si la estructura anterior falla
 minRunners: 0
-maxRunners: 10
+maxRunners: 5
 # runnerGroup: swarm-runners

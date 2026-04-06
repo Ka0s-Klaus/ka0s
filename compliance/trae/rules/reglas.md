@@ -45,4 +45,4 @@ Este archivo actúa como el índice maestro de las normas obligatorias del proye
     *   **Resumen**: Definición estricta de dónde reside cada tipo de archivo (`core/`, `devops/`, etc.).
 
 12. **[Regla 012: Filosofía de Ejecución](rules_library/rule_012_filosofia.md)**
-    *   **Resumen**: Principios de Idempotencia, Autocuración y uso de `swarm-runners-scaleset`.
+    *   **Resumen**: Principios de Idempotencia, Autocuración y uso de `swarm-runners-scaleset-ka0s`.

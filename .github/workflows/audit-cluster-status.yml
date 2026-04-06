@@ -14,7 +14,7 @@ env:
 
 jobs:
   audit-cluster:
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       contents: write
     steps:
@@ -70,7 +70,7 @@ jobs:
           fi
 
   handle-success:
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     needs: [audit-cluster]
     if: ${{ success() }}
     steps:
@@ -88,7 +88,7 @@ jobs:
     name: Handle Failure
     needs: [audit-cluster]
     if: failure()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       issues: write
       contents: read
@@ -142,7 +142,7 @@ jobs:
   end-workflow:
     needs: [handle-success, handle-failure]
     if: always()
-    runs-on: swarm-runners-scaleset
+    runs-on: swarm-runners-scaleset-ka0s
     permissions:
       actions: write
       contents: read
