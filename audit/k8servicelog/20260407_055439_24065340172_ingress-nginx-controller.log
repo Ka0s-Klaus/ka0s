@@ -1,0 +1,13 @@
+=== Logs for Service: ingress-nginx-controller (Namespace: ingress-nginx) ===
+=== Date: Tue Apr  7 05:54:41 UTC 2026 ===
+=== Selector: app.kubernetes.io/component=controller,app.kubernetes.io/instance=ingress-nginx,app.kubernetes.io/name=ingress-nginx ===
+
+[pod/ingress-nginx-controller-5c78d86944-5ld5d/controller] 172.16.74.4 - - [07/Apr/2026:05:20:02 +0000] "GET / HTTP/1.1" 400 150 "-" "-" 18 0.000 [] [] - - - - f71b1a83d139732667ab10383d356dcb
+[pod/ingress-nginx-controller-5c78d86944-5ld5d/controller] 2026/04/07 05:27:42 [crit] 31#31: *5318570 SSL_do_handshake() failed (SSL: error:0A0000C6:SSL routines::packet length too long error:0A000139:SSL routines::record layer failure) while SSL handshaking, client: 172.16.74.4, server: 0.0.0.0:443
+[pod/ingress-nginx-controller-5c78d86944-5ld5d/controller] W0407 05:42:37.952634       7 controller.go:1451] Unexpected error validating SSL certificate "kubernetes-dashboard/ka0s-wildcard-tls" for server "dashboard.ka0s.io": x509: certificate relies on legacy Common Name field, use SANs instead
+[pod/ingress-nginx-controller-5c78d86944-5ld5d/controller] W0407 05:42:37.952770       7 controller.go:1452] Validating certificate against DNS names. This will be deprecated in a future version
+[pod/ingress-nginx-controller-5c78d86944-5ld5d/controller] W0407 05:42:37.952852       7 controller.go:1451] Unexpected error validating SSL certificate "itop/ka0s-wildcard-tls" for server "itsm.ka0s.io": x509: certificate relies on legacy Common Name field, use SANs instead
+[pod/ingress-nginx-controller-5c78d86944-5ld5d/controller] W0407 05:42:37.952923       7 controller.go:1452] Validating certificate against DNS names. This will be deprecated in a future version
+[pod/ingress-nginx-controller-5c78d86944-5ld5d/controller] W0407 05:42:37.953050       7 controller.go:1437] Error getting SSL certificate "metabase/metabase-tls": local SSL certificate metabase/metabase-tls was not found. Using default certificate
+[pod/ingress-nginx-controller-5c78d86944-5ld5d/controller] W0407 05:42:37.953302       7 controller.go:1437] Error getting SSL certificate "docs-portal/docs-ka0s-tls": local SSL certificate docs-portal/docs-ka0s-tls was not found. Using default certificate
+[pod/ingress-nginx-controller-5c78d86944-5ld5d/controller] 172.16.74.4 - - [07/Apr/2026:05:54:14 +0000] "\x16\x03\x01\x05\xA8\x01\x00\x05\xA4\x03\x03\x00]\x9D\x16\xD5.\x81\xE9\x97\x8B1E\xFC\x98\x9B\xF0L6o\x14\x99r\x994\xED\xA0\xE48H.4\x82 ?\x01\xD0X\x93\xF9D~\x91\xB5\xAA\xADwE\xB7<=3\xF4Uo=\x8A!3\x90t\xA4\xCA\xE1\x02\x9A\x00\x1A\xC0+\xC0/\xC0,\xC00\xCC\xA9\xCC\xA8\xC0\x09\xC0\x13\xC0" 400 150 "-" "-" 0 0.053 [] [] - - - - 2ec330d8d629a1c443119dfc3fb7dda6
