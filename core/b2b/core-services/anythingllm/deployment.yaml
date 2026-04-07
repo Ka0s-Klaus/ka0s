@@ -44,9 +44,15 @@ spec:
             - name: STORAGE_DIR
               value: /app/server/storage
             - name: JWT_SECRET
-              value: "ka0s-super-secret-jwt-token-2026"
+              valueFrom:
+                secretKeyRef:
+                  name: anythingllm-secrets
+                  key: JWT_SECRET
             - name: AUTH_TOKEN
-              value: "ka0s-super-secret-auth-token-2026"
+              valueFrom:
+                secretKeyRef:
+                  name: anythingllm-secrets
+                  key: AUTH_TOKEN
             - name: LLM_PROVIDER
               value: ollama
             - name: OLLAMA_BASE_PATH
@@ -60,7 +66,10 @@ spec:
             - name: VECTOR_DB
               value: pgvector
             - name: PGVECTOR_CONNECTION_STRING
-              value: "postgresql://ka0s_ai:change_me_in_production_vector_db_123!@postgresql-ia.postgresql-ia.svc.cluster.local:5432/ka0s_memory"
+              valueFrom:
+                secretKeyRef:
+                  name: anythingllm-secrets
+                  key: PGVECTOR_CONNECTION_STRING
             - name: PGVECTOR_TABLE_NAME
               value: "anythingllm_vectors"
           resources:
@@ -71,9 +80,10 @@ spec:
               cpu: "1000m"
               memory: "4Gi"
           securityContext:
-            capabilities:
-              add:
-                - SYS_ADMIN
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
           volumeMounts:
             - name: data
               mountPath: /app/server/storage
