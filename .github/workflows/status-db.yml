@@ -29,7 +29,7 @@ jobs:
       - id: repo
         name: Checkout code
         if: ${{ always() }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
           # token: ${{ secrets.KAOS_REPO_TOKEN }}
@@ -39,7 +39,7 @@ jobs:
         uses: ./.github/actions/install-gh-cli
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
@@ -62,7 +62,7 @@ jobs:
 
 
       - name: Upload report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: mongo-setup-report
           path: ${{ env.REPORT_PATH }}
@@ -75,7 +75,7 @@ jobs:
       - id: repo
         name: Checkout code
         if: ${{ always() }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
           # token: ${{ secrets.KAOS_REPO_TOKEN }}
@@ -97,7 +97,7 @@ jobs:
     steps:
       - id: repo
         name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Install GH CLI
@@ -150,7 +150,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Install GH CLI
